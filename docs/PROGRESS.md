@@ -38338,3 +38338,61 @@ Verified:   `tools/ci.ps1` green over edce9cc, the tree main holds at d3fefe5 bu
 Carried:    the operator's ruling on the two rules found and the decision's wording; each family's sweep on each
             index on the corrected membership, its figures in 15.4's run entries; 15.2's second half; 15.1's second
             half; phase 14's sign-off.
+
+### 15.1 - each index's provisional picks read on the night by the sweep's own code, the six reports taken in turn, and every page reading one index at a time chosen under Universe   2026-10-05
+
+Amended:    This checkpoint amends its own done condition: 15.1 lands in three pull requests, the overnight queue's
+            order across the three indices moved from the second to a third, which lands once the first night shows
+            each new member's facts file, since the queue judges each name off it and no pass has read an S&P 400 or
+            600 member's yet; the third's half of the done condition is written into the plan by this commit. This
+            entry is the second.
+Built:      the swing filter's step reads the S&P 400's and 600's provisional rules after the S&P 500's books, under
+            a stage of its own: each index's members read by the sweep's own code over the night's stored year,
+            strength ranked and breadth read within the index, the pullback's base, the breakout and the drift as
+            frozen, the floors and the profit gate, every member's answer stored under each family with the part of
+            the rule it failed, each index's list drawn with one trade a stock across every card of every index, its
+            trades kept and ended, and its sector heavyweights on design (a) rebalanced on the first night of a month
+            and carried every night, in five tables of their own (migration 64). The S&P 500's list holds back a
+            stock whose S&P 400 or 600 trade is still open, its row naming that index. The night's six reports are
+            taken in turn across the three indices' lists, one at a time, an index with none left passing its turn.
+            Tonight, Past picks, Run, Universe and Researched open with a selector labelled Universe stating each
+            index's members, kept in the link and the S&P 500 where it names none; every heading, count, breadth line
+            and market line names its index; each card's rule is written by code from its index's settings, the S&P
+            400's and 600's from those their night stored, stating the minimum price, the dollar volume floor, the
+            profit check and the cost; the status line reads "Provisional: not yet frozen" or "Live rule since"; the
+            drift's card on the S&P 400 and 600 carries its line of evidence and the heavyweights' names its design
+            and sector comparison; a held-back note names the index holding the trade; Past picks draws an index's
+            trades with their result before and after cost. `index-families` runs the step alone. Three decisions,
+            one superseding the first six of the S&P 500's page; CLAUDE.md's two hard rules; sections 7, 14, 15.7,
+            15.8, 15.10, 15.13, 15.15, 15.17 and 17; the checks roster's three rows; SCHEMA; the runbook; the plan;
+            the guide.
+Measured:   the stage's reading half over the live store read-only on 2026-10-02, from a scratch harness outside the
+            repository: the S&P 400's 400 members and 100,788 bars loaded in 1.3 s and read in 0.7 s, breadth 0.425
+            under the floor of 0.45, every list closed; the S&P 600's 602 members and 150,787 bars loaded in 1.4 s
+            and read in 1.3 s, breadth 0.513, one pullback pass, WABC, and three failing the profit check.
+Tests:      FILLED FROM THE RUN, from 1870: ten added, each index's night, list and trades, its sector
+            heavyweights, the S&P 500's list holding back on an S&P 400 trade, the six in turn over lists and over a
+            constructed night, the swing filter's step reading each index, the S&P 400's tonight, its card's words
+            changing with a setting changed, the four other pages under the selector, and an S&P 500 card naming the
+            index holding a trade.
+Claims:     983, from 981: the index families' catalogue and matrix rows, named beside phase 14's pair after its
+            report.
+Pins:       none moved. Read: the swing filter's, the rule versions' and the candidate evaluators' lists, the
+            breakout's, the drift's and the sector heavyweights' among them, 45 files; none of the 25 shipped sources
+            this pull request changes is among them, the heavyweights' book for each index kept in the index
+            families' own source for that reason.
+Mutated:    the rule, stated before the run: each property the done condition names that this pull request adds,
+            broken alone by hand, filtered to the tests holding it and reverted.
+            M1 the six taken a list at a time, every name of the S&P 500's before the 400's: red in both turn tests.
+            M2 the S&P 400's dollar volume floor written by hand as $10,000,000: red in the setting-change test, the
+            S&P 400 page's own test green since that is its floor, which is the case the setting-change test exists
+            for.
+            M3 the market line's breadth naming no index: red in the S&P 500's and the S&P 400's line tests.
+            M4 the held-back note naming no index: red in the S&P 500 card's test and the S&P 400 page's.
+            Added and not mutated: the selector's member counts, Past picks' result after cost, the Run page's
+            index night, the Universe and Researched pages' readings of one index, and the step's own row.
+            Results: M1 to M4 each red where stated, each reverted, the tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    every page screenshotted under each of the three choices and read back over the live store once a night
+            running this code has written the S&P 400's and 600's rows, in the entry after it; 15.1's third pull
+            request, the overnight queue's order; the night of 2026-10-05 read the next morning; phase 14's sign-off.

@@ -28,6 +28,29 @@ public partial class NightlyRun
             RequestDrain.TakenInTurn([["A1", "A2"], ["B1"], ["A1", "C2"]], 6));
     }
 
+    // The swing filter's step reads the S&P 400's and 600's provisional rules after the S&P 500's books, one night row
+    // an index, under a stage of its own, the fixture's night holding none of either index's members.
+    // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+    [Fact]
+    public async Task TheSwingFiltersStepReadsEachIndexsProvisionalRulesAfterTheSAndP500sBooks()
+    {
+        using var store = new TemporaryStore();
+
+        var (code, _, error) = await NightAsync(store, launcher: new NightLauncherForTheSuite());
+
+        Assert.True(code == 0, error);
+        Assert.Equal("index-families", EquityBrief.Worker.Indices.IndexFamilies.Stage);
+
+        var stages = Texts(store, "SELECT stage FROM run_log WHERE run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0 ORDER BY rowid;").ToList();
+
+        Assert.Equal(1, stages.Count(stage => stage == EquityBrief.Worker.Indices.IndexFamilies.Stage));
+        Assert.True(stages.IndexOf(EquityBrief.Worker.Families.HeavyweightBook.Stage) < stages.IndexOf(EquityBrief.Worker.Indices.IndexFamilies.Stage));
+        Assert.Equal(
+            ["MID|0", "SML|0"],
+            Texts(store, "SELECT index_code || '|' || members FROM index_family_night ORDER BY index_code;"));
+        Assert.StartsWith("MID: 0 member(s) read, breadth not read, the market check closed", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheNightAsksForItsSixReportsInTurnAcrossTheThreeIndicesPagesAndNamesEachIndexsList()
     {

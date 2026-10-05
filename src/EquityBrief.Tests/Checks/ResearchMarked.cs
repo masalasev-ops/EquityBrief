@@ -213,7 +213,8 @@ public class ResearchMarked
         // marking the rest or by losing the mark, changes the population this list is read over.
         var run = Assert.Single(partly);
 
-        Assert.Equal(("15.10 Run", 1, 5), (run.Heading, run.Rules, run.Paragraphs));
+        // Six paragraphs from 15.1's second half, which added the one on the page reading the index chosen under Universe.
+        Assert.Equal(("15.10 Run", 1, 6), (run.Heading, run.Rules, run.Paragraphs));
         Assert.DoesNotContain(run.Heading, Subsections);
     }
 

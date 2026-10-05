@@ -53,6 +53,14 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --index-funds --from
 
 `members` runs the night's membership and backfill steps alone, on the session it names, so a file's new members join on that session and their year ends there rather than on a session still trading; it writes no evaluation, no list and no book, under a run id the run page does not read as a night, and refuses a session the night would refuse. `quarters --companies --index` asks each member of that index no fetch has stored a company for, as 14.3's fill did for the S&P 500, about 1,000 asks at eleven weighted calls each; a run its quarter of an hour stops leaves the rest to the same line run again, which asks none it asked. `history-pull --index-funds` pulls SPY's, IJH's, IJR's and HYG's series from 2018, four requests, into the pulled history no night reads; the night stores their recent sessions itself.
 
+**The S&P 400's and 600's picks are read by hand where a night has not read them yet.** From 15.1's second half the night reads each index's provisional rules by the sweep's own code in the swing filter's step and stores every member's answer, each index's list, its trades and its sector heavyweights' book in tables of their own (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). The same step runs alone, over the newest session the store holds and asking the provider for nothing, after the merge and when no night is running:
+
+```
+dotnet run --project src/EquityBrief.Worker -- index-families
+```
+
+`index-families` writes under a run id the run page reads as run by hand, and a night run after it over the same session writes that session again. Each page then reads one index at a time chosen under Universe at its top, the S&P 500 where its link names none, and a link carries the choice, as `#/?universe=400` opens tonight's page for the S&P 400 (see: Every page reads one index at a time chosen under Universe, and every figure names its index).
+
 ### Registering the schedule
 
 Until 5.7 this section said to register the schedule with the platform's scheduler, which is an instruction and not a command, and nothing was ever registered. A night that nobody scheduled produces no evening of observation however long anyone waits for one, so the two figures that were waiting on a week of nights waited on this instead.

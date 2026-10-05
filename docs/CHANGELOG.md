@@ -11269,3 +11269,36 @@ Was:
 Now:
 > and the night's requests for six reports taken in turn across the S&P 500's, 400's and 600's pages, paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23, 2026-10-01 and 2026-10-04, ... (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)
 Why: the same ruling; the carve-out stays six paid passes a night whatever the three indices hold.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's swing filter step reads the S&P 400's and 600's provisional rules after the S&P 500's books
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew ... (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut).
+Now:
+> at most five a family, a stock once and none whose trade from any family of any index is still open, and record the session as one the families drew ... (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut); then read the S&amp;P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, storing every member's answer, drawing each index's list with none whose trade on any index's list is still open, ending and keeping its trades, and carrying and rebalancing its sector heavyweights (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: Each index's market check closes its own swing lists together on its own breadth).
+Why: the step runs the index families after the S&P 500's books, and the S&P 500's list holds back a stock whose trade on an S&P 400 or 600 list is still open.
+
+### 2026-10-05 - CLAUDE.md - the listings hard rule names the S&P 500 and states the S&P 400's and 600's answers beside it
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> **A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look)
+Now:
+> the same, then "The index is the S&P 500, whose rules alone read the listings; an S&P 400 or 600 member holding a bar on the night gets an answer under each of its index's families instead, passed or not, for the same reason." and the provisional picks' decision cited beside the candidates'
+Why: phase 15's plan restates the hard rules for three indices; the listings stay the S&P 500's, and each S&P 400 and 600 member's answers are written whether or not a family passed it.
+
+### 2026-10-05 - .claude/rules/checks.md - the read-surface, nightly-run and fixture-expectations rows carry 15.1's second half
+Authorised by: Every page reads one index at a time chosen under Universe, and every figure names its index
+Was:
+> read-surface's row ending "... and the heavyweights' card states the day its live rule registered with the variants kept beside it, read off the register |"; nightly-run's ending "... and the index and credit funds are pulled whole under a stage of their own |"; fixture-expectations' ending "... read back through the sweep history over what the pull stored |"
+Now:
+> each row with a clause beside its last: read-surface's every page reading one index at a time chosen under Universe, read back over a constructed store of the three indices; nightly-run's swing filter step reading the S&P 400's and 600's provisional rules and the six reports taken in turn; fixture-expectations' each index's night, list, trades and book worked by hand
+Why: the roster is where a check states what it asserts, and 15.1's second half added the tests each clause names (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+
+### 2026-10-05 - BUILD_PLAN.md - 15.1 lands in three pull requests, the overnight queue's order across the indices in the third
+Corrects: 15.1's second pull request named the overnight queue's order across the three indices, which it cannot show to work: the queue judges each name off its facts file, and no pass has read an S&P 400 or 600 member's yet, so a queue taking them blind could stop the night it runs inside. Found building the second pull request on 2026-10-05.
+Was:
+> **15.1 lands in two pull requests, each with its own entry and its half of the done condition.** ... the second, on its own branch after it, is ... the choice of index, the six reports in turn, the labeller and the queue's order, with no S&P 500 rule, stage or pin moving and the ladder not widened, as the operator ruled on 2026-10-05. Until the second lands the S&P 400's and 600's members are stored and computed and listed by nothing.
+Now:
+> **15.1 lands in three pull requests, each with its own entry and its part of the done condition.** ... the second ... the six reports in turn and the labeller, ...; and the third, after it, is the overnight queue's order across the three indices, which lands once the first night shows what each new member's facts file holds ... Until the second lands the S&P 400's and 600's members are stored and computed and listed by nothing, and until the third the queue reads the S&P 500's members alone.
+> and the done condition gains: "And for the queue, the third: over a constructed night the overnight queue takes the S&P 500's list, then the S&P 400's and then the S&P 600's, each in its page's order, before every other member, the S&P 500's first among those; and a pass over an S&P 400 member's facts file as the night stores it writes its sections."
+Why: the queue's order waits on evidence the first night over the three indices produces, and the cards and the selector do not.
