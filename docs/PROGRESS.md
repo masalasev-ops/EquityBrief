@@ -38264,7 +38264,9 @@ Plan:       15.1's second half reads each index's provisional rules by its sweep
             answer stored, the screenshots read back under each choice, the test of a 400 rule's setting, and each
             trade's index on Past picks and the "Still open" line, and states that no pin moved; section 20's row
             and phase 15's rulings paragraph say so. The prior text of each edit is in `CHANGELOG.md`.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: edce9cc, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1870 of 1870 tests ran with none failed, migrations 0 to 63 with none pending,
+            schema version 63, against `data-ci` and never `data`.
 Carried:    the 15.3 remedy, running; the same 30 checked again by hand and the final unmatched names; each family's
             sweep on each index on the corrected membership; 15.2's second half; 15.1's second half; phase 14's
             sign-off.
