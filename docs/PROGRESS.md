@@ -38415,7 +38415,13 @@ Mutated:    the rule, stated before the run: each property the done condition na
             index night, the Universe and Researched pages' readings of one index, the step's own row, and the
             guards on the S&P 500's list and on the report request.
             Results: M1 to M6 each red where stated, each reverted, the tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: b1b26cb, over
+            c6aefe4, the guards' commit, whose first run was stopped once its suite read this line without the words
+            the Windows run is read by. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1882 of 1882 tests ran
+            with none failed, migrations 0 to 64 with none pending, schema version 64, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 983 claims, 983 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            994 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster,
+            43 carried and 43 passed, 1882 of 1882 tests ran.
 Carried:    the merge before the night of 2026-10-05, on the operator's order of that day once the funds' closes, the
             guards and the rehearsal were green, with 22:30Z its cutoff; then
             `tools/remedies/2026-10-05-15.1-the-index-families.txt` from main's Release build, each index's book
