@@ -38393,6 +38393,8 @@ Mutated:    the rule, stated before the run: each property the done condition na
             index night, the Universe and Researched pages' readings of one index, and the step's own row.
             Results: M1 to M4 each red where stated, each reverted, the tests green over the reverted tree.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
-Carried:    every page screenshotted under each of the three choices and read back over the live store once a night
-            running this code has written the S&P 400's and 600's rows, in the entry after it; 15.1's third pull
-            request, the overnight queue's order; the night of 2026-10-05 read the next morning; phase 14's sign-off.
+Carried:    the merge, after the night of 2026-10-05 is read, since that night first stores IJH's and IJR's closes,
+            which each index's book reads, and is the first over the three indices, whose time the operating row reads;
+            then `tools/remedies/2026-10-05-15.1-the-index-families.txt` from main's Release build and 5152 restarted
+            from it, and every page screenshotted under each of the three choices and read back over the live store,
+            in the remedy's entry; 15.1's third pull request, the overnight queue's order; phase 14's sign-off.

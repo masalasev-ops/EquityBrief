@@ -2251,9 +2251,11 @@ public partial class NightlyRun
         // which a fund's file listing the same name does not make a member of its
         // index, and the close reads each index's members to count them; and from
         // 15.1's second half the index families read the S&P 400's and 600's
-        // members on the session to read their provisional rules.
+        // members on the session to read their provisional rules, and the read
+        // surface reads each index's members on the night twice: to count them
+        // beside the Universe selector, and to draw an index's members.
         Assert.Equal(
-            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
+            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

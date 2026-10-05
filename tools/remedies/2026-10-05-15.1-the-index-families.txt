@@ -1,0 +1,9 @@
+# The remedy of 15.1's second half (each index's provisional picks and the choice of index), as its PROGRESS entry
+# prints it: the merge adds migration 64, the index families' five tables and the column on the page's list naming the
+# index whose trade holds a stock back. The migration runs first; the index families step then runs alone over the
+# newest session the store holds, reading the S&P 400's and 600's provisional rules by the sweep's own code into their
+# tables and asking the provider for nothing, so each index's book reads its first rebalance on the session the S&P
+# 500's book read its own and every page can be read under each choice before the next night. No model call and
+# nothing bought. Run after the merge and before the night, when no night is running.
+migrate
+index-families
