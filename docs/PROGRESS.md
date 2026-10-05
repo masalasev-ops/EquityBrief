@@ -38124,7 +38124,11 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             M6 the year ending before the night's session taken: red in the test of that year.
             Results: M1 to M6 each red where stated, each reverted, and the 26 corporate-actions tests green over
             the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2917256.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1867 of 1867 tests ran with none failed, migrations
+            0 to 63 with none pending, schema version 63, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 981 claims, 981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    the night of 2026-10-05 asks for P's year, read the next morning on its actions row beside BLDR's,
             TAP's and TTD's; 15.2's second half; 15.1's second half; phase 14's sign-off.
