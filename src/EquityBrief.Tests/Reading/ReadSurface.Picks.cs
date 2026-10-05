@@ -176,9 +176,9 @@ public partial class ReadSurface
         // Five trades over two nights: PA and PB on the version 2 night and PC, PD and PE on the version 3
         // night. PF was one gate short and PG was passed on an evening the reasons listed, so neither is a
         // trade the list recommended.
-        Assert.Contains($"<section class=\"picks\" data-night=\"{PicksNewest}\" data-trades=\"5\" data-shown=\"5\" data-status=\"all\">", page, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks\"><span class=\"m-screen\">Past picks</span>", page, StringComparison.Ordinal);
-        Assert.Contains($"Every trade the list recommended, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
+        Assert.Contains($"<section class=\"picks\" data-night=\"{PicksNewest}\" data-universe=\"500\" data-trades=\"5\" data-shown=\"5\" data-status=\"all\">", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500\"><span class=\"m-screen\">Past picks: S&P 500</span>", page, StringComparison.Ordinal);
+        Assert.Contains($"Every trade the S&P 500's lists recommended, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PF\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PG\"", page, StringComparison.Ordinal);
 

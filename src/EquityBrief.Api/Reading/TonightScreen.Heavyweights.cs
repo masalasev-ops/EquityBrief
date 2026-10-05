@@ -76,7 +76,7 @@ public static partial class TonightScreen
                     ? FormattableString.Invariant($"No sector's largest companies led their sector's fund above nothing while passing the trend gate with a beta of at least one at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
                     : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
 
-        return new HeavyweightCardView(words.Heading, words.Eyebrow, words.Rule, HeavyweightRule.Live.LookBack, last, NextRebalance(night, last), cells, entered, ended, empty, liveSince, variants);
+        return new HeavyweightCardView(words.Heading, words.Eyebrow, RuleWords.Heavyweights(HeavyweightRule.Live), HeavyweightRule.Live.LookBack, last, NextRebalance(night, last), cells, entered, ended, empty, liveSince, variants);
     }
 
     // The session the book next rebalances on after a night: the next session where the book has read no rebalance in

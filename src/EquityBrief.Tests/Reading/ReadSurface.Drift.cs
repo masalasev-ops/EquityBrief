@@ -60,7 +60,9 @@ public partial class ReadSurface
         // The card: the third of the page's families, two picks, on provisional settings.
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\">"), card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 3 of {families} · After a strong report</div><h2>Earnings drift</h2>"), page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"lede\">{SetupFamilies.EarningsDrift.Rule}</p>", page, StringComparison.Ordinal);
+        // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
+        // on twice the volume and a target at 2.5 times the risk.
+        Assert.Contains("<p class=\"lede\">A company beats its estimate and the stock closes up at least 0.5 typical moves on 2 times its usual volume. Bought within 3 sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", page, StringComparison.Ordinal);
 
         Assert.Equal(
             [("E1", "6"), ("E2", "7")],

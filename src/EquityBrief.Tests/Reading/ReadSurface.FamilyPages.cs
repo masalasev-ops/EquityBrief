@@ -110,11 +110,16 @@ public partial class ReadSurface
         // still open, HELD's from the night before; B0's finished on 2026-09-30.
         var line = Assert.Single(Blocks(page, "<p class=\"market-line\".*?</p>"));
 
+        // The members a setup passed and the members of the index on the night, read off the store: the swing
+        // filter's passes and every other family's, and the S&P 500's spans holding the night.
+        var passed = Strings(store, $"SELECT COUNT(*) FROM (SELECT ticker FROM gate_result WHERE session_date = '{TheSwitch}' AND passed = 1 UNION SELECT ticker FROM family_result WHERE session_date = '{TheSwitch}' AND passed = 1);").Single();
+        var members = Strings(store, $"SELECT COUNT(DISTINCT ticker) FROM membership WHERE index_code = 'GSPC' AND (joined IS NULL OR joined <= '{TheSwitch}') AND (\"left\" IS NULL OR \"left\" > '{TheSwitch}');").Single();
+
         Assert.Equal(
-            FormattableString.Invariant($"<p class=\"market-line\" data-open=\"true\" data-breadth=\"0.6\" data-floor=\"0.5\" data-buy-points=\"7\" data-setups-listing=\"2\" data-setups=\"{families}\" data-close=\"2\" data-open-trades=\"1\">"),
+            FormattableString.Invariant($"<p class=\"market-line\" data-index=\"S&P 500\" data-open=\"true\" data-breadth=\"0.6\" data-floor=\"0.5\" data-passed=\"{passed}\" data-members=\"{members}\" data-buy-points=\"7\" data-setups-listing=\"2\" data-setups=\"{families}\" data-close=\"2\" data-open-trades=\"1\">"),
             line[..(line.IndexOf('>') + 1)]);
-        Assert.Contains("<b class=\"market-open\">The lists are open</b>: 60.0% of the members closed above their 200-day average, at or above its floor of 50%.", line, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"7 buy points tonight across 2 of {families} setups · 2 close to a buy point · <a href=\"#/picks?status=open\">1 open trade</a>"), line, StringComparison.Ordinal);
+        Assert.Contains("<b class=\"market-open\">The lists are open</b>: the S&P 500's breadth: 60.0% of its members closed above their 200-day average, at or above its floor of 50%.", line, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"{passed} of {members} S&P 500 members passed a setup · 7 buy points tonight across 2 of {families} setups · 2 close to a buy point · <a href=\"#/picks?status=open\">1 open trade</a>"), line, StringComparison.Ordinal);
 
         // Read back against the store: the buy points are the listed rows, and the open trade is the one
         // listed trade before the night with no outcome decided by it.
@@ -152,8 +157,9 @@ public partial class ReadSurface
 
         var shut = Assert.Single(Blocks(WebUtility.HtmlDecode(await closedClient.GetStringAsync($"/screens/tonight/{TheSwitch}")), "<p class=\"market-line\".*?</p>"));
 
-        Assert.Contains("data-open=\"false\" data-breadth=\"0.4\" data-floor=\"0.5\" data-buy-points=\"0\" data-setups-listing=\"0\"", shut, StringComparison.Ordinal);
-        Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: 40.0% of the members closed above their 200-day average, below its floor of 50%.", shut, StringComparison.Ordinal);
+        Assert.Contains("data-open=\"false\" data-breadth=\"0.4\" data-floor=\"0.5\" ", shut, StringComparison.Ordinal);
+        Assert.Contains("data-buy-points=\"0\" data-setups-listing=\"0\"", shut, StringComparison.Ordinal);
+        Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: the S&P 500's breadth: 40.0% of its members closed above their 200-day average, below its floor of 50%.", shut, StringComparison.Ordinal);
     }
 
     [Fact]

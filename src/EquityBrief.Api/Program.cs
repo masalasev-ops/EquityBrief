@@ -803,6 +803,55 @@ app.MapGet("/screens/tonight/{night?}", async (
     var about = NoticeSession(night, dated, clock);
     var notice = page.NightNotice(marks, NightFrom(await read.RunLogAsync(about), about, clock, store));
 
+    // The index the page reads, chosen under Universe and kept in the link, the S&P 500 where it names none.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/");
+
+    if (reading != Universes.Large)
+    {
+        var indexNight = await read.IndexNightAsync(reading.Code, dated);
+        var indexHeld = await read.IndexNightsAsync(reading.Code);
+
+        if (indexNight is null)
+        {
+            return Results.Content(
+                notice + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null),
+                "text/html; charset=utf-8");
+        }
+
+        var members = await read.IndexMembersAsync(reading.Code, dated);
+        var indexResults = await read.IndexResultsAsync(reading.Code, dated);
+        var (indexQueued, indexTimes, _) = await QueueRead(read, clock);
+        var indexCards = TonightScreen.IndexCards(
+            reading,
+            indexNight,
+            await read.IndexPicksAsync(reading.Code, dated),
+            indexResults,
+            members,
+            await read.ResearchedAsync(),
+            QueueTimes.States(indexQueued, indexTimes, clock.SessionZone));
+        var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
+
+        return Results.Content(
+            notice + page.IndexTonightRegion(
+                marks,
+                dated,
+                reading,
+                selector,
+                indexHeld,
+                TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen),
+                indexCards,
+                TonightScreen.IndexHeavyweights(
+                    reading,
+                    indexNight,
+                    await read.IndexHoldingsAsync(reading.Code, dated),
+                    await read.IndexLastRebalanceAsync(reading.Code, dated),
+                    await read.IndexHoldingClosesAsync(reading.Code, dated),
+                    members)),
+            "text/html; charset=utf-8");
+    }
+
     // The record starts on the swing filter's first night, and an evening before it is not drawn.
     // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     var first = await read.FirstFilterNightAsync();
@@ -972,9 +1021,10 @@ app.MapGet("/screens/tonight/{night?}", async (
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     var ruleView = TonightScreen.RuleView(rule, gates, market);
     var familyResults = onThePage is null ? [] : await read.FamilyResultsAsync(dated);
+    var pullbackSettings = gates?.FirstOrDefault() is { } stored ? await FilterSettingsOf(read, stored.Version) : null;
     var cards = onThePage is null || gates is null
         ? null
-        : TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, await read.RegisteredCandidatesAsync(), ruleView, familyResults);
+        : TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, await read.RegisteredCandidatesAsync(), ruleView, familyResults, pullbackSettings);
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -990,7 +1040,10 @@ app.MapGet("/screens/tonight/{night?}", async (
             cards,
             closeAcross!.Count,
             // A trade listed on the night itself is one of its buy points; the open trades are the earlier ones.
-            PicksScreen.Cells(picks, dated).Count(trade => trade.Night < dated && trade.Status == EquityBrief.Web.Marks.PickStatus.Open && trade.RepeatOf is null));
+            PicksScreen.Cells(picks, dated).Count(trade => trade.Night < dated && trade.Status == EquityBrief.Web.Marks.PickStatus.Open && trade.RepeatOf is null),
+            // The members a setup passed: the swing filter's passes, which are the pullback's, and every other family's.
+            gates!.Where(gate => gate.Passed).Select(gate => gate.Ticker).Concat(familyResults.Where(result => result.Passed).Select(result => result.Ticker)).Distinct(StringComparer.Ordinal).Count(),
+            universe.Count);
 
     return Results.Content(
         notice + page.TonightRegion(
@@ -1018,7 +1071,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             families: cards,
             line: line,
             closeAcross: closeAcross,
-            heavyweights: heavyweights),
+            heavyweights: heavyweights,
+            selector: selector),
         "text/html; charset=utf-8");
 });
 
@@ -1109,21 +1163,25 @@ app.MapGet("/screens/universe", async (
     SinglePageApp page) =>
 {
     // The index, from configuration with the same default the worker takes, so
-    // the screen and the night are over one universe rather than two.
+    // the screen and the night are over one universe rather than two, or the S&P 400 or
+    // 600 where the link chose one under Universe.
     // see: One universe now, the seam for more built now
-    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var index = reading == Universes.Large ? builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC" : reading.Code;
 
     // The index on the newest night the listings hold, which is the night the
     // screen's figures are from.
     var members = await read.UniverseAsync(index, await read.NewestNightAsync());
 
     // The listing history behind the two right-hand columns and the sector
-    // strip's count, over the window section 15.8 states.
+    // strip's count, over the window section 15.8 states, which the S&P 500's
+    // members alone hold.
     var history = new Dictionary<string, IReadOnlyList<ListingRow>>(StringComparer.Ordinal);
 
     foreach (var member in members)
     {
-        history[member.Ticker] = await read.ListingsAsync(member.Ticker, UniverseScreen.StripSessions);
+        history[member.Ticker] = reading == Universes.Large ? await read.ListingsAsync(member.Ticker, UniverseScreen.StripSessions) : [];
     }
 
     // The night the column counts sessions from, and every name's next dated
@@ -1167,7 +1225,9 @@ app.MapGet("/screens/universe", async (
             shown.At,
             UniverseScreen.PageSize,
             TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows)),
-            night),
+            night,
+            reading,
+            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.UniverseRoute) : string.Empty),
         "text/html; charset=utf-8");
 });
 
@@ -1189,6 +1249,29 @@ app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
 {
     var night = await read.NewestNightAsync();
+
+    // The index the page reads, chosen under Universe and kept in the link: an S&P 400's or 600's trades and holdings
+    // where it names one, and the S&P 500's otherwise.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PicksRoute) : string.Empty;
+
+    if (reading != Universes.Large)
+    {
+        var members = night is { } on ? await read.IndexMembersAsync(reading.Code, on) : [];
+        var companies = members.ToDictionary(member => member.Ticker, member => member.Company, StringComparer.Ordinal);
+
+        return Results.Content(
+            page.IndexPicksRegion(
+                marks,
+                night,
+                reading,
+                selector,
+                night is { } through ? PicksScreen.IndexTrades(await read.IndexTradesAsync(reading.Code, through), companies) : [],
+                night is { } kept ? PicksScreen.IndexHeavyweights(await read.IndexHoldingsAsync(reading.Code, kept)) : []),
+            "text/html; charset=utf-8");
+    }
+
     var cells = night is { } asOf
         ? PicksScreen.Cells(await read.PicksAsync(asOf), asOf, TonightScreen.ProvisionalSetups(await read.RegisteredCandidatesAsync(), asOf))
         : [];
@@ -1206,7 +1289,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var heavyweights = night is { } held ? PicksScreen.Heavyweights(await read.HeavyweightHoldingsAsync(held)) : [];
 
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights),
+        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights, selector),
         "text/html; charset=utf-8");
 });
 
@@ -1252,10 +1335,31 @@ IResult SweepReportPage(StoreLocation store, string? run)
 }
 
 // The researched names, section 15.8's researched region on a route of its own.
-app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
-    Results.Content(
-        page.ResearchedRegion([.. (await read.ResearchedAsync()).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))]),
-        "text/html; charset=utf-8"));
+// The names holding research among the members of the index chosen under Universe: an S&P 400's or 600's current
+// members where the link names one, and every other name where it names none, the S&P 500's former members among them.
+// see: Every page reads one index at a time chosen under Universe, and every figure names its index
+app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>
+{
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var night = await read.NewestNightAsync();
+    var wider = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+    foreach (var index in Universes.Offered.Where(choice => choice != Universes.Large))
+    {
+        wider[index.Code] = night is { } on ? [.. (await read.IndexMembersAsync(index.Code, on)).Select(member => member.Ticker)] : [];
+    }
+
+    bool Reads(string ticker) => reading == Universes.Large
+        ? !wider.Values.Any(members => members.Contains(ticker))
+        : wider[reading.Code].Contains(ticker);
+
+    return Results.Content(
+        page.ResearchedRegion(
+            [.. (await read.ResearchedAsync()).Where(row => Reads(row.Ticker)).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))],
+            reading,
+            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.ResearchedRoute) : string.Empty),
+        "text/html; charset=utf-8");
+});
 
 // The queue, section 15.15, read here and composed by the app. It reads the request
 // store and writes nothing: the presses that write it are the two routes above. When each
@@ -1307,6 +1411,7 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
 app.MapGet("/screens/run/{night?}", async (
     string? night,
     string? version,
+    string? universe,
     ReadApi read,
     MarkRenderer marks,
     SinglePageApp page,
@@ -1338,6 +1443,31 @@ app.MapGet("/screens/run/{night?}", async (
     {
         return Results.Content(
             SinglePageApp.BeforeTheRecord(dated, start, "Run evidence", SinglePageApp.RunRoute, SinglePageApp.RunRoute, held),
+            "text/html; charset=utf-8");
+    }
+
+    // The index the page reads, chosen under Universe and kept in the link: an S&P 400's or 600's own night and setups
+    // where it names one, and the S&P 500's page otherwise.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    var reading = Universes.Of(universe);
+    var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), SinglePageApp.RunRoute + dated.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+    if (reading != Universes.Large)
+    {
+        var indexNight = await read.IndexNightAsync(reading.Code, dated);
+        var indexPicks = await read.IndexPicksAsync(reading.Code, dated);
+        var indexTrades = await read.IndexTradesAsync(reading.Code, dated);
+        var indexHoldings = await read.IndexHoldingsAsync(reading.Code, dated);
+
+        return Results.Content(
+            page.IndexRunRegion(
+                marks,
+                dated,
+                reading,
+                selector,
+                await read.IndexNightsAsync(reading.Code),
+                indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
+                TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings)),
             "text/html; charset=utf-8");
     }
 
@@ -1479,7 +1609,8 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.FamilyTradesAsync(dated),
                     await read.FamilyReplaysAsync()),
             familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
-            storeCopy: RunScreen.StoreCopy(await read.StoreBackupsAsync(), store.DataRoot)),
+            storeCopy: RunScreen.StoreCopy(await read.StoreBackupsAsync(), store.DataRoot),
+            selector: selector),
         "text/html; charset=utf-8");
 });
 

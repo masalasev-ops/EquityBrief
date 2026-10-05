@@ -249,7 +249,7 @@ public sealed class SinglePageApp : IComponent
             screen.innerHTML = await picks.text();
           } else if (path === '{{{ResearchedRoute}}}') {
             view = 'researched';
-            const researched = await fetch('/screens/researched');
+            const researched = await fetch('/screens/researched' + (query ? '?' + query : ''));
             screen.innerHTML = await researched.text();
           } else if (path === '{{{WatchRoute}}}') {
             view = 'watch';
@@ -315,10 +315,13 @@ public sealed class SinglePageApp : IComponent
         }
         document.addEventListener('mouseover', placePop);
         document.addEventListener('focusin', placePop);
-        // The version a reader compares tonight's picks with lives in the link, so the view is one to share.
+        // The version a reader compares tonight's picks with lives in the link, so the view is one to share, and so
+        // does the index a page reads, chosen under Universe.
         document.addEventListener('change', (event) => {
           const chosen = event.target.closest ? event.target.closest('select[data-compare]') : null;
           if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
+          const universe = event.target.closest ? event.target.closest('select[data-universe-route]') : null;
+          if (universe) { location.hash = universe.getAttribute('data-universe-route') + '?{{{Universes.Query}}}=' + encodeURIComponent(universe.value); }
         });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
@@ -1173,8 +1176,12 @@ public sealed class SinglePageApp : IComponent
         int at = 1,
         int pageSize = 0,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
-        DateOnly? night = null)
+        DateOnly? night = null,
+        UniverseChoice? universe = null,
+        string selector = "")
     {
+        var reading = universe ?? Universes.Large;
+        var heading = "The universe: " + reading.Name;
         var shown = rows
             .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
             .Where(row => sectorFilter is null || row.Sector == sectorFilter)
@@ -1188,23 +1195,34 @@ public sealed class SinglePageApp : IComponent
 
         var region = new StringBuilder();
 
-        region.Append(Invariant($"<section class=\"universe\" data-names=\"{rows.Count}\" data-shown=\"{shown.Length}\" "));
+        region.Append(Invariant($"<section class=\"universe\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\" data-shown=\"{shown.Length}\" "));
         region.Append(Invariant($"data-drawn=\"{drawn.Count}\" data-page=\"{at}\" "));
         region.Append(Invariant($"data-trend-filter=\"{Escaped(trendFilter ?? "all")}\" data-sector-filter=\"{Escaped(sectorFilter ?? "all")}\">"));
 
         region.Append(Cards.Masthead(
-            "The universe",
-            "<span class=\"m-screen\">The universe</span>",
-            night is { } on ? Invariant($"Every name in the index on the night of {on:yyyy-MM-dd}") : "Every name in the index"));
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            night is { } on ? Invariant($"Every {reading.Name} member on the night of {on:yyyy-MM-dd}") : Invariant($"Every {reading.Name} member")));
+
+        region.Append(selector);
+
+        // The S&P 400's and 600's members are read by the stages every member's figures need, and not by the listings,
+        // the ladder or the swing readings, which read the S&P 500's alone, so their rows say so where those draw.
+        if (reading != Universes.Large)
+        {
+            region.Append(Invariant($"<p class=\"oneline\" data-universe-reads=\"members\">The {Escaped(reading.Possessive)} {rows.Count} members carry their closes, typical moves and bands; the trend, the swing readings and the listing strip are read for the S&amp;P 500's members alone, so those columns are empty here.</p>"));
+        }
 
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
         region.Append(Cards.Computed("Sectors", marks.SectorStrip(sectors), stamp: Cards.Night(night), region: "sectors"));
 
         var table = new StringBuilder();
 
-        table.Append(marks.UniverseFilters(rows, trendFilter, sectorFilter));
+        var kept = reading == Universes.Large ? null : reading.Word;
+
+        table.Append(marks.UniverseFilters(rows, trendFilter, sectorFilter, kept));
         table.Append("<div class=\"tbl-wrap\">").Append(marks.UniverseTable(drawn)).Append("</div>");
-        table.Append(marks.UniversePaging(shown.Length, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter));
+        table.Append(marks.UniversePaging(shown.Length, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter, kept));
         table.Append("<p class=\"oneline\">The two right-hand columns count evenings a name appeared on the list. They say nothing about index membership, which every name here has.</p>");
         table.Append(Cards.Key(
             "How to read the rows.",
@@ -1214,7 +1232,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(Cards.Computed(
             "The index",
             table.ToString(),
-            title: "Every name, nearest a level first",
+            title: Invariant($"Every {reading.Name} member, nearest a level first"),
             lede: "The top of the table is what nearly fired. Filters live in the address, so a filtered view is a link you can keep.",
             stamp: Cards.Night(night),
             region: "index"));
@@ -1245,8 +1263,10 @@ public sealed class SinglePageApp : IComponent
     // holding a researched section, newest first, each with the day its newest section was
     // written and how many sections it holds.
     // see: A researched name is one holding an accepted section besides the key under each figure
-    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows)
+    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "")
     {
+        var reading = universe ?? Universes.Large;
+        var heading = "Researched: " + reading.Name;
         var body = new StringBuilder();
 
         if (rows.Count == 0)
@@ -1273,15 +1293,16 @@ public sealed class SinglePageApp : IComponent
             "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. The key under each figure is not counted, because the overnight queue writes it for every name in the index each night.",
             "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
 
-        return Invariant($"<section class=\"researched\" data-names=\"{rows.Count}\">")
+        return Invariant($"<section class=\"researched\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\">")
             + Cards.Masthead(
-                "Researched",
-                "<span class=\"m-screen\">Researched names</span>",
-                rows.Count == 0 ? "No name holds researched sections yet" : Invariant($"{rows.Count} name(s) hold researched sections"))
+                heading,
+                $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+                rows.Count == 0 ? Invariant($"No {reading.Name} member holds researched sections yet") : Invariant($"{rows.Count} {reading.Name} member(s) hold researched sections"))
+            + selector
             + Cards.Computed(
                 "Researched",
                 body.ToString(),
-                title: "Names with research",
+                title: Invariant($"{reading.Name} members with research"),
                 lede: "Research is written when it is asked for on a name's page, and that page says when a filing, an earnings date or the name's news has made it stale.",
                 region: "researched")
             + "</section>";
@@ -1407,7 +1428,7 @@ public sealed class SinglePageApp : IComponent
 
         body.Append(Cards.Key(
             "What is listed.",
-            "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for the first six names its page draws, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
+            "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for six names taken in turn across the three indices' pages, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
             "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
 
         return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled.Length}\">")
@@ -1510,10 +1531,12 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<FamilyCardView>? families = null,
         MarketLineView? line = null,
         IReadOnlyList<CloseToBuyCell>? closeAcross = null,
-        HeavyweightCardView? heavyweights = null)
+        HeavyweightCardView? heavyweights = null,
+        string selector = "")
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
+        var heading = "Tonight: " + Universes.Large.Name;
 
         // A night whose readings of the reported quarters are stored draws its names state first, and one
         // before them in the filter's own order, so the card says which it drew.
@@ -1524,9 +1547,11 @@ public sealed class SinglePageApp : IComponent
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
         region.Append(Cards.Masthead(
-            "Tonight",
-            "<span class=\"m-screen\">Tonight</span>",
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
             Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
+
+        region.Append(selector);
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
@@ -1714,6 +1739,77 @@ public sealed class SinglePageApp : IComponent
         return region.ToString();
     }
 
+    // Tonight's page for the S&P 400 or the S&P 600: its heading naming the index, the Universe selector, the line its
+    // setups open on with the index's own breadth and counts, one card a swing family each provisional with its rule
+    // written from the index's settings, and the index's sector heavyweights' card. A night the index's families did not
+    // read says so.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public string IndexTonightRegion(
+        MarkRenderer marks,
+        DateOnly night,
+        UniverseChoice universe,
+        string selector,
+        IReadOnlyList<DateOnly> held,
+        MarketLineView? line,
+        IReadOnlyList<FamilyCardView> families,
+        HeavyweightCardView? heavyweights)
+    {
+        var region = new StringBuilder();
+        var heading = "Tonight: " + universe.Name;
+        var query = "?" + Universes.Query + "=" + universe.Word;
+
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"none\">"));
+
+        region.Append(Cards.Masthead(
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
+
+        region.Append(selector);
+
+        if (line is null)
+        {
+            region.Append(Invariant($"<p class=\"degraded\" data-index-night=\"none\">The {Escaped(universe.Possessive)} families read nothing for {night:yyyy-MM-dd}: no night of theirs is stored for it.</p>"));
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
+        region.Append(marks.MarketLine(line));
+
+        foreach (var card in families)
+        {
+            region.Append(Cards.Computed(
+                Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
+                marks.FamilyCard(card) + Cards.Key(
+                    "How to read the card.",
+                    $"Each row is one stock this setup lists tonight among the {Escaped(universe.Possessive)} members, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right, and the bar shows where the buy sits between them; report opens the stock's full page.",
+                    $"The rule runs on provisional settings until its freeze, read on the {Escaped(universe.Possessive)} own members alone, and its record starts at the freeze. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes under the rows name what was held back and on which index's list."),
+                title: Escaped(card.Heading),
+                lede: Escaped(card.Rule),
+                stamp: Cards.Night(night),
+                region: "family"));
+        }
+
+        if (heavyweights is not null)
+        {
+            region.Append(Cards.Computed(
+                Invariant($"Rotation · {heavyweights.Eyebrow}"),
+                marks.HeavyweightCard(heavyweights) + Cards.Key(
+                    "How to read the card.",
+                    $"Each row is a stock the {Escaped(universe.Possessive)} sector heavyweights hold at tonight's close, bought at a month's first close as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, or at its last close as a member of the index.",
+                    "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card."),
+                title: Escaped(heavyweights.Heading),
+                lede: Escaped(heavyweights.Rule),
+                stamp: Cards.Night(night),
+                region: "heavyweights"));
+        }
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
     // The refusal to rank, held once: the name page draws it, and sections 15.9 and 15.14 state it in these words.
     // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
     public const string RankRefusal =
@@ -1794,16 +1890,20 @@ public sealed class SinglePageApp : IComponent
         ReportsView? reports = null,
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
         IReadOnlyList<FamilyRecordRow>? familyRecords = null,
-        StoreCopyRead? storeCopy = null)
+        StoreCopyRead? storeCopy = null,
+        string selector = "")
     {
         var region = new StringBuilder();
+        var heading = "Run evidence: " + Universes.Large.Name;
 
-        region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
+        region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{Universes.Large.Word}\" data-stages=\"{stages.Count}\">"));
 
         region.Append(Cards.Masthead(
-            "Run evidence",
-            "<span class=\"m-screen\">Run evidence</span>",
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
             Invariant($"Night of {night:yyyy-MM-dd}") + Cards.NightPicker(night, held ?? [], RunRoute, RunRoute)));
+
+        region.Append(selector);
 
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
@@ -2240,17 +2340,19 @@ public sealed class SinglePageApp : IComponent
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null)
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null, string selector = "")
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : "all";
+        var heading = "Past picks: " + Universes.Large.Name;
 
-        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-trades=\"{summary.Listed}\" data-shown=\"{shown.Count}\" data-status=\"{lit}\">"));
+        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{Universes.Large.Word}\" data-trades=\"{summary.Listed}\" data-shown=\"{shown.Count}\" data-status=\"{lit}\">"));
         region.Append(Cards.Masthead(
-            "Past picks",
-            "<span class=\"m-screen\">Past picks</span>",
-            night is null ? "No night is stored yet" : Invariant($"Every trade the list recommended, as of the close of {drawn}")));
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            night is null ? "No night is stored yet" : Invariant($"Every trade the {Universes.Large.Possessive} lists recommended, as of the close of {drawn}")));
+        region.Append(selector);
 
         if (summary.Listed == 0)
         {
@@ -2309,6 +2411,135 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "picks"));
         region.Append(HeavyweightPicksCard(marks, night, heavyweights));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The Run page for the S&P 400 or the S&P 600: how the index's own night went, read off the rows its families
+    // stored, and its setups with what each listed and how their trades stand. The night's steps are one list for every
+    // index and are drawn under the S&P 500, which the page links to.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public string IndexRunRegion(
+        MarkRenderer marks,
+        DateOnly night,
+        UniverseChoice universe,
+        string selector,
+        IReadOnlyList<DateOnly> held,
+        IndexRunView? view,
+        IReadOnlyList<FamilyRunRow> setups)
+    {
+        var region = new StringBuilder();
+        var heading = "Run evidence: " + universe.Name;
+        var query = "?" + Universes.Query + "=" + universe.Word;
+
+        region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-stages=\"none\">"));
+        region.Append(Cards.Masthead(
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            Invariant($"Night of {night:yyyy-MM-dd}") + Cards.NightPicker(night, held, RunRoute, RunRoute + query, query)));
+        region.Append(selector);
+
+        var body = new StringBuilder();
+
+        if (view is null)
+        {
+            body.Append(Invariant($"<p class=\"degraded\" data-index-night=\"none\">The {Escaped(universe.Possessive)} families read nothing for {night:yyyy-MM-dd}: no night of theirs is stored for it.</p>"));
+        }
+        else
+        {
+            body.Append(Invariant($"<ul class=\"index-night\" data-members=\"{view.Members}\" data-passed=\"{view.Passed}\" data-listed=\"{view.Listed}\" data-held-back=\"{view.HeldBack}\" data-kept=\"{view.Kept}\" data-ended=\"{view.Ended}\" data-holdings=\"{view.Holdings}\" data-rebalanced=\"{(view.Rebalanced ? "true" : "false")}\">"));
+            body.Append(Invariant($"<li>{view.Members} {Escaped(universe.Name)} members read on {night:yyyy-MM-dd}</li>"));
+            body.Append(view.Breadth is { } breadth
+                ? Invariant($"<li>the {Escaped(universe.Possessive)} breadth: {breadth * 100:0.0}% of its members above their 200-day average, {(view.MarketOpen ? "at or above" : "below")} its floor of {view.Floor * 100:0.#}%, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>")
+                : Invariant($"<li>the {Escaped(universe.Possessive)} breadth was not available, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>"));
+            body.Append(Invariant($"<li>{view.Passed} of {view.Members} {Escaped(universe.Name)} members passed a setup, {view.Listed} listed and {view.HeldBack} held back by a trade still open on any index's list</li>"));
+            body.Append(Invariant($"<li>{view.Kept} {Escaped(universe.Name)} trade(s) kept tonight and {view.Ended} ended</li>"));
+            body.Append(Invariant($"<li>the {Escaped(universe.Possessive)} sector heavyweights {(view.Rebalanced ? "rebalanced" : "carried their holdings")} tonight and hold {view.Holdings}</li>"));
+            body.Append("</ul>");
+        }
+
+        body.Append(Invariant($"<p class=\"oneline\">The night's steps are one list for all three indices: <a href=\"{RunRoute}{night:yyyy-MM-dd}\">see them under the S&amp;P 500</a>.</p>"));
+
+        region.Append(Cards.Computed(
+            "Last night",
+            body.ToString(),
+            title: Invariant($"How the {universe.Possessive} night went"),
+            lede: Invariant($"Read off the rows the {universe.Possessive} families stored for the night, on its own members alone."),
+            stamp: Cards.Night(night),
+            region: "night"));
+
+        region.Append(Cards.Computed(
+            "Setups",
+            marks.FamilyRun(setups) + Cards.Key(
+                "How to read it.",
+                Invariant($"One row a setup of the {universe.Possessive} page, each on provisional settings: what it listed tonight and every trade its list has kept, open and finished."),
+                "A provisional rule's record starts at its freeze, so no record is read here until the operator freezes it."),
+            title: Invariant($"The {universe.Possessive} setups"),
+            lede: "Each a rule of its own on the index's own members, listing at most five a night.",
+            stamp: Cards.Night(night),
+            region: "setups"));
+
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // Past picks for the S&P 400 or the S&P 600: every trade its lists kept, newest first, each with its result before
+    // and after its cost, and its sector heavyweights' holdings, each named as the index's. Every rule of the index is
+    // provisional, so no share or average is drawn: each trade is followed and counts toward nothing until a freeze.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public string IndexPicksRegion(MarkRenderer marks, DateOnly? night, UniverseChoice universe, string selector, IReadOnlyList<IndexTradeCell> trades, IReadOnlyList<HeavyweightPickCell> holdings)
+    {
+        var region = new StringBuilder();
+        var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
+        var heading = "Past picks: " + universe.Name;
+        var open = trades.Count(trade => trade.EndedOn is null);
+
+        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{universe.Word}\" data-trades=\"{trades.Count}\" data-shown=\"{trades.Count}\" data-status=\"all\">"));
+        region.Append(Cards.Masthead(
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            night is null ? "No night is stored yet" : Invariant($"Every trade the {universe.Possessive} lists kept, as of the close of {drawn}")));
+        region.Append(selector);
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{trades.Count}\" data-trades=\"{trades.Count}\" data-open=\"{open}\">Showing {trades.Count} of {trades.Count} {Escaped(universe.Name)} trade{(trades.Count == 1 ? string.Empty : "s")}, {open} open</p>"));
+        body.Append(trades.Count == 0
+            ? Invariant($"<p class=\"degraded\" data-picks=\"none\">No trade has been listed on the {Escaped(universe.Possessive)} lists yet. Each night its families pass a stock, the first five a setup are listed and followed here from that close on.</p>")
+            : marks.IndexTrades(trades, universe.Name));
+        body.Append(Cards.Key(
+            "How to read it.",
+            "A trade is listed on the night its list drew it and stays open until a close reaches its target, a close falls through its stop or trailing stop, or its sessions run out. Its result is what it made in multiples of what it risked; its cost is its round trip at the published spread for its size and price, in the same units, and the result after cost is what the index's tests read.",
+            "Every rule of this index is provisional, so no share and no average is drawn: each trade is a fact and is followed, and none counts toward a rule's record until its freeze."));
+
+        region.Append(Cards.Computed(
+            "Past picks",
+            body.ToString(),
+            title: Invariant($"Every {universe.Name} trade, newest first"),
+            lede: Invariant($"Each listed by a setup on the {universe.Possessive} provisional settings, named with its index."),
+            stamp: Cards.Night(night),
+            region: "picks"));
+
+        if (holdings.Count > 0)
+        {
+            var ended = holdings.Count(holding => holding.Sold is not null);
+
+            region.Append(Cards.Computed(
+                "Past picks",
+                Invariant($"<p class=\"list-count\" data-holdings=\"{holdings.Count}\" data-ended=\"{ended}\">{holdings.Count} {Escaped(universe.Name)} holding{(holdings.Count == 1 ? string.Empty : "s")}, {ended} sold and {holdings.Count - ended} held</p>")
+                    + marks.HeavyweightPicks(holdings)
+                    + Cards.Key(
+                        "How to read it.",
+                        $"A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
+                        "Provisional like every rule of this index: followed, and in no record until its freeze."),
+                title: Invariant($"The {universe.Possessive} sector heavyweights, newest first"),
+                lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
+                stamp: Cards.Night(night),
+                region: "heavyweight-picks"));
+        }
+
         region.Append("</section>");
 
         return region.ToString();

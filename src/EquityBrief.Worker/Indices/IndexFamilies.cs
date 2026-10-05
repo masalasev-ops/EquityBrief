@@ -59,6 +59,9 @@ public sealed class IndexFamilies : IComponent
 
     public const string Stage = "index-families";
 
+    // The run ids the verb writes, which no page reads as a night.
+    public const string ByHandPrefix = "index-families-by-hand-";
+
     // The indices read, in the order the page offers them after the S&P 500.
     public static IReadOnlyList<string> Indices { get; } = [FundHoldings.MidCapIndex, FundHoldings.SmallCapIndex];
 
@@ -251,16 +254,23 @@ public sealed class IndexFamilies : IComponent
             $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")));
 
     // The rule each family runs on in the index, the words a card's description is written from: its settings, its
-    // floors and its gate.
+    // floors, its gate and the cost its trades pay.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     public static string Settings(string index) => JsonSerializer.Serialize(new
     {
-        floors = new { price = MemberReadings.LowestPrice, dollarVolume = MemberReadings.DollarVolumeFloor(index) },
-        profitGate = true,
+        floors = new { price = MemberReadings.LowestPrice, dollarVolume = MemberReadings.DollarVolumeFloor(index), sessions = MemberReadings.DollarVolumeSessions },
+        profitGate = new { quarters = MemberReadings.Quarters },
+        costs = CostsPaid,
         marketFloor = FamilySweep.MarketFloor,
         pullback = new { setting = SweepIdeas.BaseRule.Setting.Describe(SweepGrid.Extended), cap = IndexNightRead.PullbackCap },
         breakout = BreakoutSweep.Grid.Key(IndexNightRead.BreakoutAsFrozen),
         drift = DriftSweep.Grid.Key(IndexNightRead.DriftAsFrozen),
+        heavyweights = IndexHeavyweights.Provisional.Key,
     });
+
+    // The cost a trade of the index pays, which its stored result is read after.
+    // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+    public const string CostsPaid = "the published spread";
 
     // Each member's year of bars, every span the index held it for, its prints and surprises off the calendar, and its
     // quarters as filed.

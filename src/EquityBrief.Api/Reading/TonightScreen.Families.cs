@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -75,7 +76,8 @@ public static partial class TonightScreen
         IReadOnlyList<GateResultRow> gates,
         IReadOnlyList<CandidateRow> register,
         ListRuleView rule,
-        IReadOnlyList<FamilyResultRow>? results = null)
+        IReadOnlyList<FamilyResultRow>? results = null,
+        FilterSettings? pullback = null)
     {
         var rowByTicker = rows.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var gateByTicker = gates.ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
@@ -106,7 +108,7 @@ public static partial class TonightScreen
                 family.Label,
                 family.Heading,
                 family.Eyebrow,
-                family.Rule,
+                RuleOf(family, pullback),
                 at + 1,
                 families.Length,
                 liveSince,
@@ -118,6 +120,17 @@ public static partial class TonightScreen
 
         return cards;
     }
+
+    // An S&P 500 card's rule in words, written from the settings its live rule runs at: the pullback's from the swing
+    // filter version its night ran under, and the proposed settings where none is named.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    static string RuleOf(SetupFamily family, FilterSettings? pullback) => family.Name switch
+    {
+        SetupFamilies.Pullback => RuleWords.Pullback(pullback ?? FilterSettings.Proposed),
+        BreakoutRule.Name => RuleWords.Breakout(BreakoutRule.Live),
+        DriftRule.Name => RuleWords.Drift(DriftRule.Live),
+        _ => family.Rule,
+    };
 
     // A pick as its family's card draws it. A pullback's trade is the plan its night's trade gate read, off
     // its stored gate result, and its words are the figures its setup and trigger gates stored.
@@ -341,9 +354,10 @@ public static partial class TonightScreen
         foreach (var held in own.Where(pick => pick.State == FamilyList.OpenTrade).OrderBy(pick => pick.Ticker, StringComparer.Ordinal))
         {
             var from = held.HeldNight is { } listed ? listed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "an earlier night";
+            var where = held.HeldIndex is { } code ? $" on the {Universes.ByCode(code)?.Possessive ?? code} list" : string.Empty;
             var whose = held.HeldFamily is { } holder && holder != family.Name
-                ? $"its {(SetupFamilies.Named(holder)?.Label ?? holder).ToLowerInvariant()} trade from {from}"
-                : $"its trade from {from}";
+                ? $"its {(SetupFamilies.Named(holder)?.Label ?? holder).ToLowerInvariant()} trade from {from}{where}"
+                : $"its trade from {from}{where}";
 
             notes.Add($"{held.Ticker} qualified again tonight but {whose} is still open, so it is not listed. One stock, one trade.");
         }
@@ -600,10 +614,11 @@ public static partial class TonightScreen
             held);
     }
 
-    // The line the page opens its setups on: the market check's answer with its figures, the buy points the
-    // cards list and how many setups list one, the stocks close to one, and the trades still open on the night.
+    // The line the page opens its setups on: the market check's answer with its figures, how many of the index's
+    // members a setup passed where the night's answers are handed in, the buy points the cards list and how many
+    // setups list one, the stocks close to one, and the trades still open on the night.
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
-    public static MarketLineView Line(ListRuleView rule, IReadOnlyList<FamilyCardView> cards, int close, int openTrades) =>
+    public static MarketLineView Line(ListRuleView rule, IReadOnlyList<FamilyCardView> cards, int close, int openTrades, int? passed = null, int? members = null) =>
         new(
             rule.MarketOpen,
             rule.Breadth,
@@ -612,7 +627,10 @@ public static partial class TonightScreen
             cards.Count(card => card.Picks.Count > 0),
             cards.Count,
             close,
-            openTrades);
+            openTrades,
+            Universes.Large.Name,
+            passed,
+            members);
 
     // How far the members got down a family's gates, each count the members passing that gate and every
     // gate before it, the market check left out since it is one answer for every member.

@@ -31,7 +31,7 @@ public partial class ReadSurface
         {
             [ResearchRequests.FromList] = "from a row on tonight's list",
             [ResearchRequests.FromName] = "from a name's own page",
-            [RequestDrain.FromNight] = "by the night for the first six names its page draws",
+            [RequestDrain.FromNight] = "by the night for six names taken in turn across the three indices' pages",
         };
 
         var page = WebUtility.HtmlDecode(new SinglePageApp().QueueRegion([]));
