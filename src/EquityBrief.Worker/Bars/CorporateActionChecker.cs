@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
@@ -24,7 +25,10 @@ public sealed record ActionCheckOutcome(
     IReadOnlyList<string>? Retried = null,
     // Names left suspect with their nightly retries spent and not due their weekly one,
     // which this night did not ask for and names all the same.
-    IReadOnlyList<SpentName>? Spent = null);
+    IReadOnlyList<SpentName>? Spent = null,
+    // Members back after sessions in no index the night reads, whose years this night
+    // asked for whole.
+    IReadOnlyList<string>? Returning = null);
 
 // A suspect name whose nightly retries are spent: when it was last asked for, as the UTC
 // instant its row carries, and the reason that refetch failed for.
@@ -32,7 +36,7 @@ public sealed record SpentName(string Ticker, string LastAskedAt, string Reason)
 
 // The corporate action check. One bulk request per kind per night, and a
 // full-year refetch of any current member whose adjusted prices an action has
-// moved.
+// moved, or that returns after sessions in no index the night reads.
 //
 // The refetch replaces the name's whole year inside one transaction, which is
 // the only sanctioned removal of a bar besides retention. A partial replacement
@@ -149,6 +153,32 @@ public sealed class CorporateActionChecker : IComponent
                 AND (m.""left"" IS NULL OR m.""left"" > $session));
     ";
 
+    // The members back after sessions in no index the night reads: each holding a span
+    // that closed by tonight, with the latest such close and the instant this check last
+    // asked for its year, if it ever did. The night stored no bar for a name on the
+    // sessions it was in no index, and saw no action on it either, so its stored year
+    // stops where it left and may sit on an adjustment the provider has since moved.
+    // A name moving between indices on one night closes one span and opens another on
+    // the same session, so the sessions between them are none.
+    // see: A member that returns after sessions in no index the night reads has its year asked for again whole
+    const string ClosedSpans = @"
+        SELECT m.ticker, MAX(c.""left""), s.checked_at FROM membership m
+        JOIN membership c ON c.ticker = m.ticker AND c.""left"" IS NOT NULL AND c.""left"" <= $session
+        LEFT JOIN series_state s ON s.ticker = m.ticker
+        WHERE m." + IndexScope.Condition + @" AND (m.""left"" IS NULL OR m.""left"" > $session)
+        GROUP BY m.ticker;
+    ";
+
+    // The sessions a name holds from a day up to tonight's, which is what the
+    // sessions it was in no index are read against.
+    const string HeldSince = @"
+        SELECT session_date FROM bar
+        WHERE ticker = $ticker AND session_date >= $from AND session_date < $session;
+    ";
+
+    // A name holding no bar at all is the backfill's, which asks for its year.
+    const string FirstHeld = "SELECT MIN(session_date) FROM bar WHERE ticker = $ticker;";
+
     // The only sanctioned removal of a bar besides retention, and it is paired
     // with the insert that follows it inside one transaction.
     const string DropYear = @"
@@ -252,8 +282,16 @@ public sealed class CorporateActionChecker : IComponent
 
         var counted = suspects.ToDictionary(name => name.Ticker, name => name.Retries, StringComparer.OrdinalIgnoreCase);
 
+        // And every member back after sessions in no index the night reads, on its first
+        // night back. A name this check has asked for since its span closed is not asked
+        // again, so a stretch the provider cannot serve costs one request and then stands
+        // as a gap, named as any gap is.
+        // see: A member that returns after sessions in no index the night reads has its year asked for again whole
+        var returning = await ReturningAsync(connection, indexCode, session, wider);
+
         var affected = acted
             .Concat(retried)
+            .Concat(returning)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
             .ToArray();
@@ -311,10 +349,10 @@ public sealed class CorporateActionChecker : IComponent
                 // like a check that found nothing.
                 await transaction.RollbackAsync();
 
-                // A night an action lands on the name starts its count again, a
-                // session the count already holds adds nothing, and any other night
-                // it is asked for counts one more. The count is of sessions, not runs.
-                var retries = acted.Contains(ticker)
+                // A night an action lands on the name or it returns starts its count
+                // again, a session the count already holds adds nothing, and any other
+                // night it is asked for counts one more. The count is of sessions, not runs.
+                var retries = acted.Contains(ticker) || returning.Contains(ticker, StringComparer.OrdinalIgnoreCase)
                     ? 0
                     : counted.GetValueOrDefault(ticker) + (askedTonight.Contains(ticker) ? 0 : 1);
 
@@ -333,7 +371,8 @@ public sealed class CorporateActionChecker : IComponent
             suspect,
             refetchRequests,
             retried,
-            spent);
+            spent,
+            returning);
 
         await AppendAsync(connection, runId, observed, outcome);
 
@@ -344,12 +383,97 @@ public sealed class CorporateActionChecker : IComponent
 
     // The session a suspect name was last asked for on, read off the instant its row
     // carries in the form this check writes it, through the clock the night runs on.
-    DateOnly LastAskedSession(SuspectRow name) =>
+    DateOnly LastAskedSession(SuspectRow name) => SessionAsked(name.CheckedAt);
+
+    DateOnly SessionAsked(string checkedAt) =>
         clock.SessionDateAt(DateTimeOffset.ParseExact(
-            name.CheckedAt,
+            checkedAt,
             "yyyy-MM-ddTHH:mm:ssZ",
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal));
+
+    // The members back after sessions in no index the night reads that this check has not
+    // asked for since: each holding a bar, and missing a session the exchange traded from
+    // the latest close of its spans to tonight, read from its first stored bar within the
+    // year the night keeps.
+    async Task<IReadOnlyList<string>> ReturningAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
+    {
+        var closed = new List<(string Ticker, DateOnly Left, string? CheckedAt)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ClosedSpans;
+            IndexScope.Bind(command, indexCode, wider);
+            command.Parameters.AddWithValue("$session", Text(session));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                closed.Add((
+                    reader.GetString(0),
+                    DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.IsDBNull(2) ? null : reader.GetString(2)));
+            }
+        }
+
+        var returning = new List<string>();
+
+        foreach (var (ticker, left, checkedAt) in closed.OrderBy(name => name.Ticker, StringComparer.Ordinal))
+        {
+            if (checkedAt is not null && SessionAsked(checkedAt) >= left)
+            {
+                continue;
+            }
+
+            await using var first = connection.CreateCommand();
+            first.CommandText = FirstHeld;
+            first.Parameters.AddWithValue("$ticker", ticker);
+
+            if (await first.ExecuteScalarAsync() is not string firstHeld)
+            {
+                continue;
+            }
+
+            var from = new[]
+            {
+                left,
+                session.AddYears(-1),
+                ExchangeClosures.CoveredFrom,
+                DateOnly.ParseExact(firstHeld, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            }.Max();
+
+            var traded = ExchangeClosures.SessionsBetween(from.AddDays(-1), session);
+
+            if (traded.Count == 0)
+            {
+                continue;
+            }
+
+            await using var held = connection.CreateCommand();
+            held.CommandText = HeldSince;
+            held.Parameters.AddWithValue("$ticker", ticker);
+            held.Parameters.AddWithValue("$from", Text(from));
+            held.Parameters.AddWithValue("$session", Text(session));
+
+            var sessions = new HashSet<DateOnly>();
+            await using var reader = await held.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                sessions.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            }
+
+            if (!traded.All(sessions.Contains))
+            {
+                returning.Add(ticker);
+            }
+        }
+
+        return returning;
+    }
+
+    static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static async Task<IReadOnlyList<SuspectRow>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
     {
@@ -472,6 +596,9 @@ public sealed class CorporateActionChecker : IComponent
             $"{outcome.RefetchRequests} of the {outcome.Requests} request(s) per name, " +
             $"{(outcome.Retried ?? []).Count} retried from an earlier night" +
             ((outcome.Retried ?? []).Count == 0 ? string.Empty : ": " + string.Join(", ", outcome.Retried!)) +
+            ((outcome.Returning ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Returning!.Count} back after sessions in no index the night reads: " + string.Join(", ", outcome.Returning!)) +
             (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)) +
             (spent.Count == 0
                 ? string.Empty

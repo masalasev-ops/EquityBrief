@@ -37904,3 +37904,53 @@ Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-
             Release build; then the sweeps per index and family on today's members, survivors only, at the
             provisional floors and gate with the published table's costs, each reported as it finishes; 15.2's
             second half; 15.1's second half; phase 14's sign-off.
+
+### 15.1 - correction: a member back after sessions in no index the night reads has its year asked for again whole on its first night back   2026-10-05
+
+Built:      the corporate action check asks for the year of a member holding stored bars that misses a session
+            the exchange traded between the latest close of its spans and the night, read from its first stored
+            bar within the year the night keeps, and replaces it whole as it does an action's, once: a name it has
+            asked for since its span closed is not asked again, so a stretch the provider cannot serve stands as a
+            gap, and a refetch failing on the name's return marks it suspect with its count starting that night. A
+            name moved between indices on one night, a name holding no bar, which is the backfill's, and a name in
+            no index are not asked for. The stage's row names the members it asked for this way. A decision;
+            CLAUDE.md's first hard rule; sections 7 and 17; the checks roster's corporate-actions row; the runbook.
+Found:      reading the store after 15.1's remedy on 2026-10-05: BLDR, TAP and TTD left the S&P 500 on 2026-09-21
+            and IJR's file of 2026-10-02, the first the night read, lists them, so their stored years stop on
+            2026-09-18. The backfill asks only for a name holding no bar and the fetch stores only the night's
+            session, so from the night of 2026-10-05 each would have held a gap of the ten sessions it was away,
+            and every computation over it would have been withheld for a year. Every other member of the three
+            indices holds every session the store holds but P, missing 2026-09-18, 09-21 and 09-22 while it was a
+            member, which the price file did not carry around its ticker change: a different cause this
+            correction does not reach, put to the operator.
+Tests:      1858, from 1854: four added, a member back after ten sessions in no index refetched whole and not
+            again, the names not asked for, a stretch the provider cannot serve asked for once and standing as a
+            gap, and a refetch failing on the return; the scan of the night's membership reads holds the action
+            check's third read of the stored form.
+Claims:     979, unchanged: two cells of existing rows carry the new clause.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; the checker is in none of them, and the
+            exchange's closures and the trading calendar, in the swing filter's, are read and not edited.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree, filtered to the four tests and reverted.
+            M1 the returning names left out of the names refetched: red in three of the four.
+            M2 a name asked for since its span closed asked for again: red in the stretch the provider cannot
+            serve and the refetch failing on the return.
+            M3 every member holding a closed span asked for, whatever it holds: survived first, a missing property,
+            the test's one mover moving on the night itself so its stretch held no session and the held check was
+            never reached; the test gained a name moved a week before holding every session, then red in the test
+            of the names not asked for.
+            M4 a name holding no bar asked for: red in the test of the names not asked for.
+            M5 a returning name's failed refetch counted from one: red in the refetch failing on the return.
+            Results: M1 to M5 each red where stated once M3's test was extended, each reverted, and the four tests
+            green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: d28a11c, over
+            ebdbde7, the entry's commit, whose suite failed two tests, the scan of the night's membership reads
+            holding two of the action check's and the entry's placeholder lacking the Windows run's words, both
+            corrected in d28a11c. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1858 of 1858 tests ran with
+            none failed, migrations 0 to 62 with none pending, schema version 62, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 979 claims, 979 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 990 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on
+            the roster, 43 carried and 43 passed.
+Carried:    the night of 2026-10-05 asks for BLDR's, TAP's and TTD's years, read the next morning on its actions
+            row; P's gap put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.
