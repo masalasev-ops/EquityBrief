@@ -601,10 +601,11 @@ public sealed class SweepDesignSearch
         return [.. leaders.OrderByDescending(pair => pair.Edge).ThenBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => SweepSpace.Parse(pair.Key))];
     }
 
-    // The settings read with the highest edges among those holding the trade floor, whatever other floors they meet,
-    // and after them the rest by the most trades, a tie settled by the setting, which a search proposing nothing
-    // brings the operator: across a grid of millions the highest edges otherwise fall to settings of a few trades.
-    public IReadOnlyList<int[]> Strongest(int count)
+    // The settings read with the highest edges among those holding the trade floor, or a higher count given, whatever
+    // other floors they meet, and after them the rest by the most trades, a tie settled by the setting, which a search
+    // proposing nothing brings the operator: across a grid of millions the highest edges otherwise fall to settings
+    // of a few trades.
+    public IReadOnlyList<int[]> Strongest(int count, int floor = SweepMeasures.TradeFloor)
     {
         var read = new Dictionary<string, (float Edge, int Scored)>(StringComparer.Ordinal);
 
@@ -627,8 +628,8 @@ public sealed class SweepDesignSearch
         return
         [
             .. read
-                .OrderBy(pair => pair.Value.Scored >= SweepMeasures.TradeFloor ? 0 : 1)
-                .ThenByDescending(pair => pair.Value.Scored >= SweepMeasures.TradeFloor ? pair.Value.Edge : pair.Value.Scored)
+                .OrderBy(pair => pair.Value.Scored >= floor ? 0 : 1)
+                .ThenByDescending(pair => pair.Value.Scored >= floor ? pair.Value.Edge : pair.Value.Scored)
                 .ThenBy(pair => pair.Key, StringComparer.Ordinal)
                 .Take(count)
                 .Select(pair => SweepSpace.Parse(pair.Key)),

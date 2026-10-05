@@ -251,6 +251,10 @@ public partial class FixtureExpectations
         // their edges are the highest read; and the setting reading no edge nowhere.
         Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live), SweepSpace.Key(stronger), SweepSpace.Key(weaker)], search.Strongest(10).Select(point => SweepSpace.Key(point)));
         Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live)], search.Strongest(3).Select(point => SweepSpace.Key(point)));
+
+        // Given a higher count, as the second stage asks for, the settings holding it come first by their edges and the
+        // one at 300 falls among the rest by its trades.
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(live), SweepSpace.Key(down), SweepSpace.Key(stronger), SweepSpace.Key(weaker)], search.Strongest(10, 400).Select(point => SweepSpace.Key(point)));
     }
 
     [Fact]

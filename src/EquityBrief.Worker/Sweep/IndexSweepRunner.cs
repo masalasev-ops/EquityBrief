@@ -339,8 +339,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         }
 
         var ten = read
-            .OrderBy(one => one.Figures.Trades >= FamilySweep.TradeFloor ? 0 : 1)
-            .ThenByDescending(one => one.Figures.Trades >= FamilySweep.TradeFloor ? one.Figures.Edge ?? double.MinValue : one.Figures.Trades)
+            .OrderBy(one => one.Figures.Trades >= SweepDials.TradesHeld ? 0 : 1)
+            .ThenByDescending(one => one.Figures.Trades >= SweepDials.TradesHeld ? one.Figures.Edge ?? double.MinValue : one.Figures.Trades)
             .ThenBy(one => one.Figures.Key, StringComparer.Ordinal)
             .Take(SweepDials.Settings)
             .Select(one => one.Setting)
@@ -642,7 +642,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         // The second stage, every level read after costs: each new dial's levels and each market switch alone on the ten
         // strongest settings, and then the levels that survive crossed.
-        var ten = search.Strongest(SweepDials.Settings);
+        var ten = search.Strongest(SweepDials.Settings, SweepDials.TradesHeld);
         var withoutDials = ten.Select(MeasuresOf).ToArray();
         var industryReturns = new SweepIndustries(large, companies, industries);
         var largeBreadth = SweepSwitches.LargeBreadth(large, calendar).Select(share => share ?? double.NaN).ToArray();
@@ -890,7 +890,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         var page = new StringBuilder("<h3>The second stage: each new dial and switch alone on the ten strongest settings</h3>");
 
-        page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {settings.Count} strongest settings the first stage read, the highest edges after costs among those holding {SweepMeasures.TradeFloor} trades. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. {WebUtility.HtmlEncode(reading)}</p>"));
+        page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {settings.Count} strongest settings the first stage read, the highest edges after costs among those holding {SweepDials.TradesHeld} trades, twice the floor, so a level keeping half a setting's trades off can still be kept. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. {WebUtility.HtmlEncode(reading)}</p>"));
         page.Append("<div class=\"table\"><table><thead><tr><th>Dial</th><th>Level</th><th>Kept on</th><th>Median change</th><th>Survives</th></tr></thead><tbody>");
 
         foreach (var one in read)

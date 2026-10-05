@@ -36,8 +36,11 @@ public sealed record DialSurvivor(string Dial, string Level, bool Switch, int Ke
 // see: A market switch is judged on the year's total result, since the edge subtracts what every member made that night
 public static class SweepDials
 {
-    // The strongest settings each level is tried on.
+    // The strongest settings each level is tried on, the highest edges among those holding twice the trade floor, so a
+    // level keeping half a setting's trades off can still leave the floor and be kept.
     public const int Settings = 10;
+
+    public const int TradesHeld = 2 * SweepMeasures.TradeFloor;
 
     // The settings that must keep a level for it to survive.
     public const int KeptOn = 6;
