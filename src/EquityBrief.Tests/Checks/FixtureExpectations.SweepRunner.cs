@@ -192,6 +192,15 @@ public partial class FixtureExpectations
 
         Assert.Equal(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
 
+        // Index sweeps started side by side in one second each hold a folder of their own, the second and third
+        // taking the next seconds free, a folder another run holds never handed out again.
+        var instant = new DateTimeOffset(2026, 10, 5, 14, 57, 33, TimeSpan.Zero);
+        var claimed = new[] { IndexSweepRunner.Claim(root, instant), IndexSweepRunner.Claim(root, instant), IndexSweepRunner.Claim(root, instant) };
+
+        Assert.Equal(["20261005T145733Z", "20261005T145734Z", "20261005T145735Z"], claimed.Select(Path.GetFileName));
+        Assert.All(claimed, held => Assert.True(File.Exists(Path.Combine(held, IndexSweepRunner.ClaimFile))));
+        Assert.Equal("20261005T145736Z", Path.GetFileName(IndexSweepRunner.Claim(root, instant.AddSeconds(2))));
+
         // A finished run is never written again, and a run started by another build is not gone on with; each
         // says so and computes nothing.
         var (finished, _, _) = SweepWaiting(SweepUtc(9, 29, 12, 0), SweepNothing);

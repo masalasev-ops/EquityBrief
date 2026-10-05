@@ -128,9 +128,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         var companies = await history.HeavyweightAsync(through, cancellation);
         var income = await history.IncomeAsync(through, cancellation);
-        var folder = Path.Combine(SweepFolder.Resolve(configuredFolder, dataRoot), SweepFolder.RunName(started));
+        var folder = Claim(SweepFolder.Resolve(configuredFolder, dataRoot), started);
 
-        Directory.CreateDirectory(folder);
         output.WriteLine("run " + Path.GetFileName(folder));
 
         if (family == Pullback)
@@ -550,6 +549,35 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // How many of the search's strongest settings a report reads in full.
     const int StrongestRead = 5;
+
+    // The file a run creates in its folder to hold it, created only where none is.
+    public const string ClaimFile = "run.claim";
+
+    // A run's folder is named by the second it started, and a run started in a second another run's folder already
+    // holds takes the next second free: the index sweeps run side by side, and a second run writing into the first's
+    // folder would replace its report. A folder is held by the file created in it only where none is, which two runs
+    // cannot both create.
+    public static string Claim(string root, DateTimeOffset started)
+    {
+        for (var stamp = started; ; stamp = stamp.AddSeconds(1))
+        {
+            var folder = Path.Combine(root, SweepFolder.RunName(stamp));
+            var claim = Path.Combine(folder, ClaimFile);
+
+            Directory.CreateDirectory(folder);
+
+            try
+            {
+                using (new FileStream(claim, FileMode.CreateNew, FileAccess.Write))
+                {
+                    return folder;
+                }
+            }
+            catch (IOException) when (File.Exists(claim))
+            {
+            }
+        }
+    }
 
     // The sector heavyweights' design (a) on the index alone: each sector's return its members' mean, a leader's beta
     // read against the index's fund, the members each rebalance reads those clearing the floors and the gate on its
