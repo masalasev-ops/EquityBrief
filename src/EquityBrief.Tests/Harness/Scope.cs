@@ -2589,13 +2589,13 @@ internal static class Scope
             "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none; over a copy of the fixture's night whose readings are stored the queue takes the names the filter passed improving first, the ones reading no state next in the filter's order and deteriorating last, whatever their ranks; and over another copy it takes the list's name first, then the two one gate short nearer first against their tickers' order, then the member missing two",
             ByNight),
         // 11.4, the night's own request, after the queue.
-        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).")] = new Scoped(
             Verdict.Pass,
-            "over the fixture's night, on which no family passes a stock, the night asks for no report, starts no drain, runs after the queue with no model call and no request, and its row says why; over a constructed night the families drew, seven listed across two cards with one held back and one past five, it asks for the first six places in the page's order and no other, each marked as asked by the night; over a night before the families it asks down the swing filter's order, worked out by the test's own arithmetic off the gate rows rather than the stored rank, the improving business first where that night stored its readings; a name with a request waiting gets none, the next is asked for and the row says so, and a night run again for an earlier session asks for none; and over a constructed night the stocks the sector heavyweights bought that night are asked for after the families' picks in the order of their sectors, one already on a card asked for once, and a holding carried from an earlier month is asked for never",
+            "over the fixture's night, on which no family passes a stock, the night asks for no report, starts no drain, runs after the queue with no model call and no request, and its row says why; over a constructed night the families drew, seven listed across two cards with one held back and one past five, it asks for the first six places in the page's order and no other, each marked as asked by the night; over a night before the families it asks down the swing filter's order, worked out by the test's own arithmetic off the gate rows rather than the stored rank, the improving business first where that night stored its readings; a name with a request waiting gets none, the next is asked for and the row says so, and a night run again for an earlier session asks for none; and over a constructed night the stocks the sector heavyweights bought that night are asked for after the families' picks in the order of their sectors, one already on a card asked for once, and a holding carried from an earlier month is asked for never; and over a constructed night of the three indices the S&P 500's, the S&P 400's and the S&P 600's names are asked for in turn, an index's sector heavyweights' buys after its families' picks, the S&P 600 holding no second name passing its turn, each row naming the list it is on",
             ByNight),
         [CheckReach.Key(LimitsTable, "Reports the night asks for")] = new Scoped(
             Verdict.Pass,
-            "the night asks for one name, the constant the row states, over the fixture's night, and the launcher it was handed is asked to start one drain",
+            "the night asks for at most the constant the row states, over a constructed night listing more than it, and the launcher it was handed is asked to start one drain; over constructed lists and a constructed night of the three indices the six are taken in turn, two each where every index has picks, an index with none passing its turns and a name two lists hold taken once",
             ByNight),
         [CheckReach.Key(LimitsTable, "Overnight queue")] = new Scoped(
             Verdict.Pass,
@@ -3080,6 +3080,14 @@ internal static class Scope
             "the class declares the membership, bars, indicators, reported quarters and companies it reads and the heavyweight nights and holdings it reads and writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Heavyweight book")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Index families")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, market series, calendar, companies, reported quarters, gate results, filter versions, list rules, forward returns and family picks it reads and the five index family stores it reads and writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Index families")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
@@ -4049,6 +4057,8 @@ internal static class Scope
         ["Heavyweight book"] = "14.3",
         // 14.6's fetcher, which the plan describes by the variant reading what it asks for.
         ["Estimates fetcher"] = "14.6",
+        // 15.1's second half, which the plan describes by the picks it computes rather than by the component's name.
+        ["Index families"] = "15.1",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -5601,7 +5611,7 @@ internal static class Scope
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
-        ["Ask for a report on the first six names"] = "11.4",
+        ["Ask for six reports taken in turn"] = "11.4",
         // 12.6's correction, the news labeller the night starts after its request.
         ["Start the news labeller"] = "12.6",
         // The store's copy, the operator's ruling of 2026-10-02.

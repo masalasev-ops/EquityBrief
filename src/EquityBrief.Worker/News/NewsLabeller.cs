@@ -88,7 +88,8 @@ public sealed class NewsLabeller : IComponent
     // Tonight's list in the order it is drawn, with each member's name: the stocks the page lists, in the
     // page's order, on a night the families drew it; and on a night before them the members whose live
     // result passed, improving businesses first where the night stored its readings and the filter's own
-    // order within a state. A replayed result is none of the night's.
+    // order within a state. A replayed result is none of the night's. The S&P 400's and 600's lists are none of it.
+    // see: The news labeller reads the S&P 500's list alone until the operator widens it
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     static readonly string ListedOnNight = @"

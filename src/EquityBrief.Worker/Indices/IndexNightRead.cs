@@ -76,6 +76,8 @@ public static class IndexNightRead
 
         var sessions = SweepColumns.Sessions(series, calendar);
         var members = SweepBenchmark.On(series, calendar.Length);
+        // The index's own breadth over its own members closes every swing list of the index together.
+        // see: Each index's market check closes its own swing lists together on its own breadth
         var breadth = sessions[at].Breadth;
         var open = breadth >= FamilySweep.MarketFloor;
         var held = Enumerable.Range(0, series.Length).Where(name => BarOf(series[name], at) >= 0 && series[name].Member[BarOf(series[name], at)]).ToArray();

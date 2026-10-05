@@ -109,7 +109,7 @@ public sealed class RequestDrain : IComponent
     // After the night has run, it asks for a report on the first names drawn on its page, each marked
     // as asked by the night, and starts the drain as a press does. The night writes a row a name and
     // starts one process; each pass is the drain's own run, with its calls on its own rows.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
 
     // How many names the night asks for, counted down its page: six across every family, on the
     // operator's ruling of 2026-10-01, where the ruling of 2026-09-23 asked for the first alone.
@@ -132,7 +132,7 @@ public sealed class RequestDrain : IComponent
 
     // The stocks the sector heavyweights bought on the night, which the page draws after the families' picks and the
     // night asks for in that order; a holding carried from an earlier month is never one of them.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     const string BoughtOnTheNight = "SELECT ticker FROM heavyweight_holding WHERE entered_on = $night ORDER BY sector, ticker;";
 
     // Each S&P 400's and 600's list on the night in its page's order, then the stocks its sector heavyweights bought.

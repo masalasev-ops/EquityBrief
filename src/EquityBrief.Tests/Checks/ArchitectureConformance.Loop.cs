@@ -1038,7 +1038,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.7 Tonight", "The report's state"),
 
         // 11.4, section 14's step writing the night's own request and section 17's count of one.
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
 
         // 11.5, section 17's floor for a name's industry to be its group.
@@ -1074,7 +1074,7 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
         CheckReach.Key("15.7 Tonight", "The report's state"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
         CheckReach.Key("15.9 Name", "Each move beside its group"),
         CheckReach.Key(Scope.LimitsTable, "Group floor"),

@@ -107,7 +107,7 @@ public partial class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
 
             // 11.4 and 13.1, the night's own requests after the queue, and the count of six it asks for.
-            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)."),
             CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
@@ -1313,7 +1313,7 @@ public partial class NightlyRun
         Assert.StartsWith("Close the arithmetic", steps[^6], StringComparison.Ordinal);
         Assert.StartsWith("Ask the provider for the reported quarters", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Run the overnight queue", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for a report on the first six names", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
 
@@ -1479,7 +1479,7 @@ public partial class NightlyRun
 
         Assert.Equal(steps.Count - 3, queue);
         Assert.Equal((close + 1, close + 2), (quarters, queue));
-        Assert.StartsWith("Ask for a report on the first six names", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
 

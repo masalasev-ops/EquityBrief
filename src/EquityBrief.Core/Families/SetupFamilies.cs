@@ -25,7 +25,7 @@ public static class SetupFamilies
     public const int ListedANight = 5;
 
     // The most reports the night asks for, the first names down its page.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     public const int ReportsANight = 6;
 
     // The pullback, today's swing filter as it stands: its names are the ones the filter passed, improving

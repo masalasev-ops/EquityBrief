@@ -5,7 +5,7 @@ namespace EquityBrief.Tests.Checks;
 
 // nightly-run, 14.3: the night's own request for reports takes a stock the sector heavyweights bought that night after
 // every swing family's picks, and never one they carried from an earlier month.
-// see: The night asks for a report on the first six names its page draws
+// see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
 public partial class NightlyRun
 {

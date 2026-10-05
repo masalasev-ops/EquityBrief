@@ -564,13 +564,13 @@ public static class Nightly
             }, [OvernightQueue.Stage]),
             // Section 14's step 24, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
-            // name. The night asks for a report on the first six names its page draws and starts
-            // the drain as a press does: it writes a row a name and starts one process, and each
-            // pass is the drain's own run, its calls and requests on its own rows, at the off-peak
-            // rate. It is handed no token from the night's deadline, which bounds the arithmetic
-            // and may have passed while the queue ran. A night run again for an earlier session
-            // asks for nothing, since its list is not tonight's.
-            // see: The night asks for a report on the first six names its page draws
+            // name. The night asks for six reports taken in turn across the S&P 500's, 400's and
+            // 600's pages and starts the drain as a press does: it writes a row a name and starts
+            // one process, and each pass is the drain's own run, its calls and requests on its own
+            // rows, at the off-peak rate. It is handed no token from the night's deadline, which
+            // bounds the arithmetic and may have passed while the queue ran. A night run again for
+            // an earlier session asks for nothing, since its list is not tonight's.
+            // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
             new("report", async () =>
             {
                 var started = clock.UtcNow;

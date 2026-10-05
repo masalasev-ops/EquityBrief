@@ -1110,7 +1110,7 @@ public static class SchemaMigrations
     // comes from. A rebuild rather than an alter, because SQLite cannot change a check a table
     // was created with: every row is copied across whole, and the index refusing a second
     // outstanding request for a name is built again over them.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     const string RequestAskedByTheNight = @"
         CREATE TABLE research_request_rebuilt (
             ticker       TEXT NOT NULL,

@@ -11213,3 +11213,59 @@ Was:
 Now:
 > the family lister's Reads cell ending "..., family picks, index family trades"; the request drain's carrying "..., heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log"; and a catalogue row and a matrix row for the index families beside the heavyweight book's
 Why: the S&P 500's list holds back a stock whose S&P 400 or 600 trade is still open, the night's six reports are taken in turn across the three indices' lists, and the index families read and write each index's own tables.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's step asks for six reports taken in turn across the three indices' pages
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws).
+Now:
+> Ask for six reports taken in turn across the S&amp;P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: on the operator's ruling with phase 15's plan the six are taken one at a time from each index's page in turn, so each index holds two when it has picks and the paid passes a night stay six.
+
+### 2026-10-05 - ARCHITECTURE.html - the request drain's catalogue row writes the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> After the night's overnight queue it writes the night's own requests, one for each of the first six names the page draws, in the page's order across every family, the stocks the sector heavyweights bought that night after every swing family's picks and none they carried from an earlier month, each where that name has none outstanding or being written, and none on a night the page lists no stock (see: The night asks for a report on the first six names its page draws).
+Now:
+> After the night's overnight queue it writes the night's own requests, six in all, taken in turn from the S&amp;P 500's, the S&amp;P 400's and the S&amp;P 600's pages, one name at a time in that order and each page's own order across its families, the stocks each index's sector heavyweights bought that night after its swing families' picks and none they carried from an earlier month, an index with no name left passing its turn to the next, each where that name has none outstanding or being written, and none on a night no page lists a stock (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's note bounds the paid passes by the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> the passes they lead to are the drain's own runs, a number of paid passes a night the page's size bounds and the index's does not (see: The night asks for a report on the first six names its page draws).
+Now:
+> the passes they lead to are the drain's own runs, at most six paid passes a night taken in turn across the three indices' pages, a number the indices' sizes do not move (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling; with three pages the bound is the six and not one page's size.
+
+### 2026-10-05 - ARCHITECTURE.html - section 15.15's paragraph names the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> <p>A request is asked for from a row on tonight's list, from a name's own page, or by the night for the first six names its page draws, and all three write the same row, so this screen is where each is read (see: The night asks for a report on the first six names its page draws).
+Now:
+> <p>A request is asked for from a row on tonight's list, from a name's own page, or by the night for six names taken in turn across the three indices' pages, and all three write the same row, so this screen is where each is read (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - ARCHITECTURE.html - section 17's per-name row and its reports row cite the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> the per-name row's "(see: The night asks for a report on the first six names its page draws)"; the reports row's Value "at most 6 a night, the first names the page draws in its order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written, and none on a night the page lists no stock (see: The night asks for a report on the first six names its page draws)", its Why ending "since the count is set by what a reader needs rather than by the cap" and its Check "nightly-run, over a constructed night listing more than the count and a night before the families, with a launcher the test holds"
+Now:
+> the per-name row citing the new decision; the reports row's Value "at most 6 a night, taken in turn from the three indices' pages one name at a time, in the order the Universe selector offers them and each page's own order across its families, an index with no name left passing its turn to the next, one request a name marked as asked by the night unless that name has one outstanding or being written, and none on a night no page lists a stock (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)", its Why adding "taken in turn across the indices on the operator's ruling of 2026-10-04, so each index holds two when it has picks and the paid passes stay six", and its Check adding "and over constructed lists and a constructed night of the three indices taken in turn, two each where every index has picks, an index with none passing its turns and a name two lists hold taken once"
+Why: the same ruling, the count unchanged at six and its Value written without an index's number so the figure the pin reads stays the one constant.
+
+### 2026-10-05 - SCHEMA.md - the request drain inserts the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> and after the night's overnight queue it inserts the night's own requests, one for each of the first six names the night's page draws: the insert is split between the two by what asks, a press on a screen or the night (see: The night asks for a report on the first six names its page draws).
+Now:
+> and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - CLAUDE.md - the first hard rule's report carve-out takes the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> and the night's requests for a report on the first six names its page draws, paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23 and 2026-10-01, ... (see: The night asks for a report on the first six names its page draws)
+Now:
+> and the night's requests for six reports taken in turn across the S&P 500's, 400's and 600's pages, paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23, 2026-10-01 and 2026-10-04, ... (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)
+Why: the same ruling; the carve-out stays six paid passes a night whatever the three indices hold.
