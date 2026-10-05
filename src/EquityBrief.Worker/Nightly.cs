@@ -11,6 +11,7 @@ using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Families;
+using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -417,6 +418,11 @@ public static class Nightly
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
+                // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
+                // holds back a stock whose S&P 500 trade is still open.
+                // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
@@ -424,8 +430,9 @@ public static class Nightly
                     $"; {listed.Listed} on the page's list" +
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
-                    $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own";
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage]),
+                    $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
+                    $"; {string.Join(", ", indices.Nights.Select(one => $"{one.Listed} on the {one.Index} list"))}";
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

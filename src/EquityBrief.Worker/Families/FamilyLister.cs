@@ -251,9 +251,10 @@ public sealed class FamilyLister : IComponent
     }
 
     // For each of the names, the trade it still holds on the night, read by the open trade rule over every
-    // trade a list made before it.
+    // trade a list made before it; the S&P 400's and 600's lists read it to hold back a stock whose S&P 500 trade
+    // is still open.
     // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
-    static async Task<IReadOnlyDictionary<string, HeldTrade>> OpenTradesAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
+    public static async Task<IReadOnlyDictionary<string, HeldTrade>> OpenTradesAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
     {
         var wanted = tickers.ToHashSet(StringComparer.Ordinal);
         var trades = new Dictionary<string, List<(OpenTradeListing Listing, string Family)>>(StringComparer.Ordinal);

@@ -71,6 +71,11 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `heavyweight_holding` | HeavyweightBook | HeavyweightBook | HeavyweightBook |
 | `heavyweight_rule_night` | HeavyweightBook | none | HeavyweightBook |
 | `heavyweight_rule_holding` | HeavyweightBook | HeavyweightBook | HeavyweightBook |
+| `index_family_night` | IndexFamilies | none | IndexFamilies |
+| `index_family_result` | IndexFamilies | none | IndexFamilies |
+| `index_family_pick` | IndexFamilies | none | IndexFamilies |
+| `index_family_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `index_heavyweight_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -895,6 +900,114 @@ Grain: one row per registered heavyweights rule, stock and the session the rule 
 Primary key: `candidate`, `ticker`, `entered_on`.
 
 **The heavyweight book writes it for each registered rule's own book, in the swing filter's step, and is its own deleter** (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut). Each night it carries each of a rule's holdings and its size cut, ends the holdings the rule's exits end and buys the rule's leaders it does not hold, as `heavyweight_holding` is kept for the page's book, one holding a stock in each rule's book and none held back for another's. A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again. The rows are never deleted otherwise: they are each rule's record, its holdings' edge, the result less the size cut's return, read over blocks of 63 sessions by the session each ended on, which the run page draws beside the swing families' rules'.
+
+### index_family_night
+Grain: one row per session and index the S&P 400's and 600's provisional rules were read for.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `MID` for the S&P 400 or `SML` for the S&P 600 |
+| `session_date` | TEXT | the session read, the newest any name holds on the night |
+| `members` | INTEGER | the index's members the night read, each holding a bar on the session |
+| `breadth` | REAL | the share of those members holding a close and a 200-day average whose close stood above it, null where fewer than half hold both |
+| `market_open` | INTEGER | 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night |
+| `settings` | TEXT | JSON: each family's rule as the night read it, its settings, its floors and its gate, the words each card's description is written from |
+
+Primary key: `index_code`, `session_date`.
+
+**The index families write it in their step, after the S&P 500's families, and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). A night run again replaces its own rows.
+
+### index_family_result
+Grain: one row per session, index, member and family.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index the member was read in |
+| `session_date` | TEXT | the session read |
+| `ticker` | TEXT | |
+| `family` | TEXT | the family, by the word it is stored under |
+| `passed` | INTEGER | 1 where the family's provisional rule passed the member, its floors and its gate included, 0 otherwise |
+| `place` | INTEGER | the place among the members the family passed that night, in the family's own order, null for every other |
+| `entry` | TEXT | the price the trade is bought at, the night's close, null on a row that did not pass |
+| `stop` | TEXT | the trade's stop as the night placed it, the first level of a stop that trails, null on a row that did not pass |
+| `target` | TEXT | the trade's target, null for a family that trails its stop and names none |
+| `trail` | TEXT | the distance a trailing stop is held under the highest close since the buy, null for a family that names a target |
+| `cap` | INTEGER | the sessions the trade is given, its family's, null on a row that did not pass |
+| `order_by` | REAL | the figure the family's order reads, largest first, null where it reads none |
+| `reason` | TEXT | on a row that did not pass, the first part of the rule it failed in the rule's order: the market check, no setup, the price under $5, the dollar volume under the floor or the profit check; null on a row that passed |
+
+Primary key: `index_code`, `session_date`, `ticker`, `family`.
+
+**The index families write it in their step and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). Every member the night read gets a row under each family whether it passed or not, so a card says how far the members got and a count of members passing is read off the rows. A night run again replaces its own rows; a row that did not pass is deleted once its session is older than the oldest bar the store holds.
+
+### index_family_pick
+Grain: one row per session, index, stock and family that passed it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index whose list the row is on |
+| `session_date` | TEXT | the session the list was drawn for |
+| `ticker` | TEXT | |
+| `family` | TEXT | the family that passed the stock |
+| `state` | TEXT | `listed`, the index's page lists the stock under this family; `under another`, it is listed tonight under a family earlier in the page's order; `open trade`, a trade a list of any index made for it on an earlier night is still open; `past five`, the family's five places were taken |
+| `place` | INTEGER | a listed row's place down the index's page, counted from one across its families; null on a row held back |
+| `also` | TEXT | JSON: on a listed row, the other families the stock qualified under that night in the page's order; an empty list otherwise |
+| `held_index` | TEXT | on an `open trade` row, the index whose list made the trade still open, `GSPC` for the S&P 500's; null otherwise |
+| `held_family` | TEXT | on an `open trade` row, the family that listed the trade; null otherwise |
+| `held_night` | TEXT | on an `open trade` row, the session that trade was listed on; null otherwise |
+
+Primary key: `index_code`, `session_date`, `ticker`, `family`.
+
+**The index families write each index's list here and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). The list is drawn by the S&P 500's rule within each index: the families in the page's order, a family listing at most five, a stock listed once under the first family it qualified under, and a stock whose trade on any card of any index is still open listed by none. A night run again replaces its own rows.
+
+### index_family_trade
+Grain: one row per index, family, stock and session the index's list kept a trade on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index whose list kept the trade |
+| `family` | TEXT | the family that listed it |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session it was listed on, bought at that close |
+| `place` | INTEGER | its place down the index's page that night |
+| `entry` | TEXT | the night's close it was bought at |
+| `stop` | TEXT | its stop as the night placed it, the first level of a stop that trails |
+| `target` | TEXT | its target, null for a trade whose stop trails |
+| `trail` | TEXT | the distance its stop trails under the highest close since the buy, null for a trade with a target |
+| `cap` | INTEGER | the sessions it is given |
+| `ended_on` | TEXT | the session it ended on, null while it is open |
+| `result` | REAL | what it came to in multiples of its risk before its cost, null while open |
+| `cost` | REAL | its round trip in multiples of its risk at the published table, which the result after costs subtracts, null while open |
+| `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until every such trade has had its cap |
+| `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`.
+
+**The index families write it and are its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). Each night they first walk every trade not yet ended over the closes since and write where it ended, its result and its cost, and once a trade's cap has passed its benchmark; then they keep each listed row of tonight's lists. A night run again replaces the trades it kept for that night. The rows are never deleted otherwise: each index's Past picks and its forward-return scoring read them.
+
+### index_heavyweight_holding
+Grain: one row per index, stock and the session the index's sector heavyweights bought it on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index whose book holds it |
+| `ticker` | TEXT | |
+| `entered_on` | TEXT | the rebalance session it was bought on, at that close |
+| `sector` | TEXT | the sector it was bought as a leader of |
+| `entry_close` | TEXT | the close it was bought at |
+| `growth` | REAL | its close carried over its buy's, the product of each night's close over the close of the session it was last carried to |
+| `cut` | TEXT | JSON: each of the size cut it was chosen from, its ticker, its growth carried the same way and the session it was carried to |
+| `through` | TEXT | the session its growth was last carried to |
+| `ended_on` | TEXT | the session it was sold on, null while held |
+| `exit_close` | TEXT | the close it was sold at, null while held |
+| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held |
+| `result` | REAL | its growth less one at the sale, null while held |
+| `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+| `cost` | REAL | its round trip as a fraction of the buy at the published table, null while held |
+
+Primary key: `index_code`, `ticker`, `entered_on`.
+
+**The index families write it for each index's book and are its own deleter** (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). Each night they carry each holding and its size cut by tonight's closes, end a holding whose stock left the index and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, as the S&P 500's book is kept. A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. The rows are never deleted otherwise.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
