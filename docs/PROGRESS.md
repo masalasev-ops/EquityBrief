@@ -38041,3 +38041,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, the remedy's two bars pulls run again from main's Release build, and the rest of the
             remedy if it has not finished; the remedy's entry; the sweeps on membership as it stood; 15.2's second
             half; 15.1's second half; phase 14's sign-off.
+
+### 15.3 - the remedy: the funds' quarter-end holdings, and the history of every name they held and let go, pulled into the store   2026-10-05
+
+Ran:        `tools/migrate.ps1` from main's Release build at 91521ab, 62 to 63, then
+            `tools/remedies/2026-10-05-15.3-the-holdings.txt` from it, 07:55 to 08:13 UTC, with no night, queue,
+            report pass, labeller or store copy running and no night lock. The two bars pulls stopped at a year the
+            provider sends with a close of 0, PACW's and AEL's, and stored nothing; after 15.3's correction they ran
+            again from main's build at 49163df, 08:38 to 08:47 UTC.
+Snapshots:  IJH's 28 and IJR's 28, the quarter ends from 2019-09-30 to 2026-06-30, every filing read, 31 requests a
+            fund: the archive's list, the 28 filings and the provider's two symbol lists.
+Holdings:   IJH, 11,214 holdings of common stock, 11,011 matched by ISIN, 177 by name alone and 26 by neither; IJR,
+            16,887, 16,355, 405 and 127. The lowest snapshot is 98.34 per cent matched, IJR's of 2019-09-30, above the
+            98 per cent the rule stated before 15.0's run. Some snapshot holds 706 codes for the S&P 400 and 1,105 for
+            the 600, against 400 and 603 members today.
+By hand:    30 of the 75 codes matched by name, drawn with the seed 20261005 and each read against the provider's
+            name for the code: 24 are the holding's own company; 1 is uncertain, Safehold, which merged with iStar in
+            2023 under its name; and 5 are another security the name was later carried by: Aaron's Inc of 2019 read
+            as AAN, The Aaron's Company spun off in 2020; Aqua America as WTRU, its tangible equity units; McDermott
+            International as MCDIF, the shares issued after its 2020 bankruptcy; Noble Corp plc of 2019 as NE, the
+            company formed in 2022; and A. Schulman as SLMNP, a preferred line. So about one name match in six reads
+            another security, about 0.3 per cent of all holdings, most of them a code holding no bar in the years the
+            holding stood; put to the operator with the fix of keeping a name match only where its code holds a
+            pulled bar at the snapshot's quarter end.
+Bars:       719 of 724 names and 1,139 of 1,156 served, 191,374 and 658,133 bars and 3,129 and 10,627 earnings
+            prints; DOC_old1, SIX, TLN_old, MRP_old, TMST and VSNT_old not served, the provider sending no session,
+            and PACW, STOR, AEL, CIR, CONN, FRGI, HIBB, HT, LL, NXGN, PGTI, SLCA, TRHC and WIRE named, each year
+            carrying a close of 0; 15 and 52 names missing sessions, kept as sent.
+Surprises:  23,013 and 34,854 prints over 106 calendar months, 3,127 and 10,627 stored and the rest held by an
+            earlier pull.
+Companies:  every name answered, 724 and 1,156; 132 and 411 companies new, 10,908 and 34,548 share counts and
+            18,792 and 35,341 quarters of income stored.
+Splits:     every name answered, 16 and 64 splits new.
+Requests:   about 23,500 weighted calls of the day's 100,000 with the two stopped bars pulls, the archive's 112
+            requests free.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 28f40c5, the tree main holds at 49163df with
+            this entry the only change after it, 1863 of 1863 tests and 981 claims with 981 PASS; this entry read by
+            the checks that read the record, run filtered over the tree carrying it, 139 of 139 passing.
+Carried:    each family's sweep on each index on membership as it stood, its figures in 15.4's run entries; the fix
+            for a name match put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.
