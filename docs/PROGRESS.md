@@ -37944,7 +37944,13 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             M5 a returning name's failed refetch counted from one: red in the refetch failing on the return.
             Results: M1 to M5 each red where stated once M3's test was extended, each reverted, and the four tests
             green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: d28a11c, over
+            ebdbde7, the entry's commit, whose suite failed two tests, the scan of the night's membership reads
+            holding two of the action check's and the entry's placeholder lacking the Windows run's words, both
+            corrected in d28a11c. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1858 of 1858 tests ran with
+            none failed, migrations 0 to 62 with none pending, schema version 62, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 979 claims, 979 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 990 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on
+            the roster, 43 carried and 43 passed.
 Carried:    the night of 2026-10-05 asks for BLDR's, TAP's and TTD's years, read the next morning on its actions
             row; P's gap put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.
