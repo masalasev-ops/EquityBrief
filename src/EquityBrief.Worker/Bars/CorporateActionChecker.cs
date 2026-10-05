@@ -85,7 +85,7 @@ public sealed class CorporateActionChecker : IComponent
     // reason, named with it on every night it stays so, which puts the stage on the run
     // page's failed region rather than stopping in silence, and asked for again weekly.
     // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
-    // see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+    // see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
     public const int RetryNights = 5;
 
     // How many calendar days after the session a spent name was last asked for it is
@@ -125,7 +125,7 @@ public sealed class CorporateActionChecker : IComponent
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker FROM membership
-        WHERE index_code = $index AND (""left"" IS NULL OR ""left"" > $session);
+        WHERE " + IndexScope.Condition + @" AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     // The names a night before this one marked suspect, among the names the
@@ -145,7 +145,7 @@ public sealed class CorporateActionChecker : IComponent
         WHERE s.state = $suspect
           AND EXISTS (
               SELECT 1 FROM membership m
-              WHERE m.index_code = $index AND m.ticker = s.ticker
+              WHERE m." + IndexScope.Condition + @" AND m.ticker = s.ticker
                 AND (m.""left"" IS NULL OR m.""left"" > $session));
     ";
 
@@ -185,10 +185,13 @@ public sealed class CorporateActionChecker : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' stored years an action
+    // lands on as the index's own do.
     public async Task<ActionCheckOutcome> RunAsync(
         string indexCode,
         string runId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyList<string>? wider = null)
     {
         var started = clock.UtcNow;
         var session = clock.SessionDateAt(started);
@@ -197,7 +200,7 @@ public sealed class CorporateActionChecker : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync();
 
-        var members = await MembersAsync(connection, indexCode, session);
+        var members = await MembersAsync(connection, indexCode, session, wider);
         var before = await CountAsync(connection);
 
         // Both feeds counted from here, as deltas, so the figure is this run's
@@ -220,7 +223,7 @@ public sealed class CorporateActionChecker : IComponent
         // succeeds. A name whose retries are spent is asked for on a night its
         // week has come round or an action lands on it, and named on every other
         // night it stays suspect.
-        var suspects = await SuspectAsync(connection, indexCode, session);
+        var suspects = await SuspectAsync(connection, indexCode, session, wider);
 
         // A night run again for its session is that night: a name last asked for on
         // tonight's own session was due tonight, so it is asked again as that night
@@ -348,13 +351,13 @@ public sealed class CorporateActionChecker : IComponent
             CultureInfo.InvariantCulture,
             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal));
 
-    static async Task<IReadOnlyList<SuspectRow>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session)
+    static async Task<IReadOnlyList<SuspectRow>> SuspectAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = SuspectNames;
         command.Parameters.AddWithValue("$suspect", Suspect);
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var names = new List<SuspectRow>();
@@ -373,12 +376,12 @@ public sealed class CorporateActionChecker : IComponent
         return names;
     }
 
-    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session)
+    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

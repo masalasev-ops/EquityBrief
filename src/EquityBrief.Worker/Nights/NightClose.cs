@@ -83,14 +83,29 @@ public sealed class NightClose : IComponent
     // over.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string NamesStale = @"
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT m.ticker)
         FROM membership m
-        WHERE m.index_code = $index
+        WHERE m." + IndexScope.Condition + @"
           AND (m.joined IS NULL OR m.joined <= $session)
           AND (m.""left"" IS NULL OR m.""left"" > $session)
           AND IFNULL((SELECT MAX(b.session_date) FROM bar b WHERE b.ticker = m.ticker), '')
               < (SELECT MAX(session_date) FROM bar);
     ";
+
+    // Each index's members on tonight's session, which the run page's night line counts beside the time to the
+    // close once the night reads more than one index.
+    // owes: The night's time and growth over the three indices read on its first five nights
+    const string MembersByIndex = @"
+        SELECT index_code, COUNT(DISTINCT ticker)
+        FROM membership
+        WHERE " + IndexScope.Condition + @"
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session)
+        GROUP BY index_code;
+    ";
+
+    // What the close's row says of each index's members, read back by the run page.
+    public const string MembersMark = "; members on the session: ";
 
     // The night's own span, read off the rows its stages wrote rather than
     // measured here. The clock is read once for the row this stage appends and
@@ -118,10 +133,13 @@ public sealed class NightClose : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own: a member of any of them carrying
+    // yesterday's bars is stale, and each index's members are counted on the row.
     public async Task<NightCloseOutcome> RunAsync(
         string indexCode,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -131,8 +149,12 @@ public sealed class NightClose : IComponent
         var computed = await CountAsync(connection, NamesComputed, null, null, cancellation);
         var listed = await CountAsync(connection, OnTheList, null, null, cancellation);
         var reasons = await CountAsync(connection, ReasonsFired, null, null, cancellation);
-        var stale = await CountAsync(connection, NamesStale, indexCode, clock.SessionDateAt(startedAt), cancellation);
+        var stale = await CountAsync(connection, NamesStale, indexCode, clock.SessionDateAt(startedAt), cancellation, wider);
         var duration = await DurationAsync(connection, runId, cancellation);
+        var members = wider is { Count: > 0 }
+            ? MembersMark + string.Join(", ", (await MembersAsync(connection, indexCode, wider, clock.SessionDateAt(startedAt), cancellation))
+                .Select(index => FormattableString.Invariant($"{index.Index} {index.Members}")))
+            : string.Empty;
 
         await using var command = connection.CreateCommand();
 
@@ -145,7 +167,7 @@ public sealed class NightClose : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{computed} name(s) computed, {listed} on the list, {reasons} reason(s) fired, " +
-            $"{stale} stale, {duration}" + ClosureTableEnding(clock.SessionDateAt(startedAt)));
+            $"{stale} stale, {duration}" + members + ClosureTableEnding(clock.SessionDateAt(startedAt)));
 
         await command.ExecuteNonQueryAsync(cancellation);
 
@@ -325,7 +347,8 @@ public sealed class NightClose : IComponent
         string sql,
         string? indexCode,
         DateOnly? session,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        IReadOnlyList<string>? wider = null)
     {
         await using var command = connection.CreateCommand();
 
@@ -333,7 +356,7 @@ public sealed class NightClose : IComponent
 
         if (indexCode is not null)
         {
-            command.Parameters.AddWithValue("$index", indexCode);
+            IndexScope.Bind(command, indexCode, wider);
         }
 
         if (session is { } on)
@@ -342,6 +365,34 @@ public sealed class NightClose : IComponent
         }
 
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation));
+    }
+
+    // Each index's members on the session, the night's own index first and the wider ones in the order the night
+    // reads them, an index holding none counted as none.
+    static async Task<IReadOnlyList<(string Index, int Members)>> MembersAsync(
+        SqliteConnection connection,
+        string indexCode,
+        IReadOnlyList<string> wider,
+        DateOnly session,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MembersByIndex;
+        IndexScope.Bind(command, indexCode, wider);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var counted = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                counted[reader.GetString(0)] = reader.GetInt32(1);
+            }
+        }
+
+        return [.. IndexScope.Of(indexCode, wider).Select(index => (index, counted.GetValueOrDefault(index)))];
     }
 
     // A run whose rows carry no span says so rather than reporting nothing,

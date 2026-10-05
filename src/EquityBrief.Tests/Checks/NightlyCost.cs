@@ -112,6 +112,7 @@ public partial class NightlyCost
     internal static readonly string[] MayHoldAClient =
     [
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
+        "src/EquityBrief.Core/Providers/BlackRockFundHoldingsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
@@ -293,11 +294,12 @@ public partial class NightlyCost
         // The exempt count is stated rather than left to be inferred from an
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
-        // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does.
+        // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does,
+        // and sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night.
         Assert.True(
-            MayHoldAClient.Length <= 15,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are fifteen feed " +
-            "implementations. A sixteenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 16,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are sixteen feed " +
+            "implementations. A seventeenth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

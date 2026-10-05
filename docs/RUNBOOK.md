@@ -10,7 +10,7 @@ Five steps a night, from one scheduled invocation. None is part of the applicati
 
 | Job | When | What it does | Costs |
 |---|---|---|---|
-| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, the readings of each member's reported quarters and the state they give it, listings, the swing filter, the shape proposal, facts, forward returns, news pulse | one bulk bar request, one news feed request, one request each for the index's, the VIX's and the eleven sector funds' daily series, one fundamentals request for each member a rule reading analysts' estimates passes on everything else, one to three a night at 10 weighted calls each, a handful of calendar and membership calls. No model call |
+| `tools/nightly` | after the US close | the arithmetic: membership of the S&P 500, 400 and 600, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, the readings of each member's reported quarters and the state they give it, listings, the swing filter, the shape proposal, facts, forward returns, news pulse, every member of the three indices computed and the S&P 500's alone listed | one bulk bar request, one news feed request, one request each for the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series, one request each for the S&P 400's and 600's funds' holdings files on iShares' own site, which weigh nothing on the allowance, one fundamentals request for each member a rule reading analysts' estimates passes on everything else, one to three a night at 10 weighted calls each, a handful of calendar and membership calls. No model call |
 | the quarters step | after the arithmetic, same invocation | asks the provider for the reported quarters of the members that reported since the last night, of those whose new quarter was not yet posted, of a member joining the index, and of every member once at the start, at most 260 a night, starting no ask once its own limit of 15 minutes has passed or an ask would take the night past the day's allowance | 11 weighted calls a member whose answer stores a quarter and 10 where it does not; no model call |
 | the overnight queue | after the quarters step, same invocation | the local model writes the local lane's sections that rest on no document, for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed | nothing, and no request |
 | the news labeller | after the close, started by the night as a process of its own, as the report request's drain is | labels the stored news of the names on tonight's list through the news job's paid model, one call an article: the admitted articles of the thirty days before the night, newest first and at most twenty a name, the ones that profile has not labelled, under a run of its own | one paid call an article on the news job's profile, bounded by its own month limit and time limit and by the day and month caps; nothing on the night's own rows |
@@ -42,6 +42,17 @@ dotnet run --project src/EquityBrief.Worker -- quarters --companies --live
 
 From 14.3 every fetch the quarters step stores keeps the member's company, its filer and GICS classification, and each quarter's share count, from the answer it already asks for; but a member is asked only after it reports, so until each has reported once the sector heavyweights would value only some. This asks instead every member no fetch has stored a company for, about five hundred asks at eleven weighted calls each, so about 5,500 of the day's allowance, storing whatever quarters each answer carries beside its company. It keeps the step's own limit, so where the limit stops it a second run asks the members still owed and none it asked. Run it once after migration 59 and before the next night, when no night is running; the night's book reads every member from its first night, and rebalances on it (see: The night values a member from its newest fetch, tonight's close brought to the count's basis by the fetch's own close).
 
+**The S&P 400's and 600's members are loaded by hand before their first night, with their year of bars, their quarters and the four funds' history.** From 15.1 the night reads the S&P 400's and 600's members from their funds' holdings files beside the S&P 500's (see: The S&P 400's and 600's members are read each night from their funds' own holdings files). Left to the night, its first run would ask about a thousand new members for their year and fill their quarters 260 a night over four nights, so the remedy of 15.1 takes them by hand first, after the merge and when no night is running:
+
+```
+dotnet run --project src/EquityBrief.Worker -- members --session 2026-10-02 --live
+dotnet run --project src/EquityBrief.Worker -- quarters --companies --index MID --live
+dotnet run --project src/EquityBrief.Worker -- quarters --companies --index SML --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --index-funds --from 2018-01-01 --live
+```
+
+`members` runs the night's membership and backfill steps alone, on the session it names, so a file's new members join on that session and their year ends there rather than on a session still trading; it writes no evaluation, no list and no book, under a run id the run page does not read as a night, and refuses a session the night would refuse. `quarters --companies --index` asks each member of that index no fetch has stored a company for, as 14.3's fill did for the S&P 500, about 1,000 asks at eleven weighted calls each; a run its quarter of an hour stops leaves the rest to the same line run again, which asks none it asked. `history-pull --index-funds` pulls SPY's, IJH's, IJR's and HYG's series from 2018, four requests, into the pulled history no night reads; the night stores their recent sessions itself.
+
 ### Registering the schedule
 
 Until 5.7 this section said to register the schedule with the platform's scheduler, which is an instruction and not a command, and nothing was ever registered. A night that nobody scheduled produces no evening of observation however long anyone waits for one, so the two figures that were waiting on a week of nights waited on this instead.
@@ -59,20 +70,20 @@ $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday
 $trigger.StartBoundary = '2026-09-11T23:30:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
-             -ExecutionTimeLimit (New-TimeSpan -Hours 8)
+             -ExecutionTimeLimit (New-TimeSpan -Hours 12)
 Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
              -Trigger $trigger -Settings $settings
 ```
 
-Eight hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own, and the overnight queue and the report follow the close, so a limit of two would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own). A task registered with the earlier limit of two hours takes the new one from an elevated PowerShell:
+Twelve hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own of two hours from 15.1, and the overnight queue and the report follow the close, so a shorter limit would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move). A task registered with an earlier limit of two or eight hours takes the new one from an elevated PowerShell:
 
 ```powershell
 $t = Get-ScheduledTask -TaskName 'EquityBrief nightly'
-$t.Settings.ExecutionTimeLimit = 'PT8H'
+$t.Settings.ExecutionTimeLimit = 'PT12H'
 Set-ScheduledTask -InputObject $t
 ```
 
-Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT8H`.
+Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT12H`.
 
 `-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent.
 

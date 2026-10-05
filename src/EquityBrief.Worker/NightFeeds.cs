@@ -37,11 +37,17 @@ public sealed record NightFeeds(
     IFundamentalsFeed Fundamentals,
     IMarketSeriesFeed Market)
 {
+    // The ninth is the S&P 400's and 600's funds' holdings files, one request a fund a night at no weight on the
+    // provider's allowance, the indices the night reads beside its own being those it holds a file for. A set of
+    // feeds built without it reads its own index alone.
+    // see: The S&P 400's and 600's members are read each night from their funds' own holdings files
+    public IFundHoldingsFeed Funds { get; init; } = RecordedFundHoldingsFeed.None;
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
-        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests;
+        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests + Funds.Requests;
 
     // The same night in the units the provider bills in, which is the unit
     // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
@@ -68,7 +74,10 @@ public sealed record NightFeeds(
             RecordedEarningsCalendarFeed.FromFolder(folder),
             RecordedNewsFeed.FromFolder(folder),
             RecordedFundamentalsFeed.FromFolder(folder),
-            RecordedMarketSeriesFeed.FromFolder(folder));
+            RecordedMarketSeriesFeed.FromFolder(folder))
+        {
+            Funds = RecordedFundHoldingsFeed.FromFolder(folder),
+        };
 
     // The live bulk feed, from the two settings, or a refusal naming the one
     // that is missing.
@@ -96,7 +105,10 @@ public sealed record NightFeeds(
             EodhdEarningsCalendarFeed.Live(address, key),
             EodhdNewsFeed.Live(address, key),
             EodhdFundamentalsFeed.Live(address, key),
-            EodhdMarketSeriesFeed.Live(address, key));
+            EodhdMarketSeriesFeed.Live(address, key))
+        {
+            Funds = BlackRockFundHoldingsFeed.Live(),
+        };
     }
 
     // A blank base address falls back and a blank key does not. The address has
@@ -166,5 +178,6 @@ public sealed record NightFeeds(
         || Calendar is not RecordedEarningsCalendarFeed
         || News is not RecordedNewsFeed
         || Fundamentals is not RecordedFundamentalsFeed
-        || Market is not RecordedMarketSeriesFeed;
+        || Market is not RecordedMarketSeriesFeed
+        || Funds is not RecordedFundHoldingsFeed;
 }

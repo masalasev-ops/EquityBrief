@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Providers;
 // membership row. A provider that reported only today's members and no dates
 // could not fill this at all, and that is deliberate: the whole reason
 // membership is fetched rather than maintained is that the feed carries the
-// spans (see: The universe is the S&P 500, and membership is fetched, not maintained).
+// spans (see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched).
 //
 // Joined is null when the provider carries no join date, which it does more
 // often than the fixture suggested. The live payload holds 822 spans and 145 of
@@ -24,7 +24,7 @@ namespace EquityBrief.Core.Providers;
 // current members only. A departed name keeps whatever it was last seen with,
 // which is what the store already holds, and null is drawn as not on file rather
 // than falling into a bucket
-// (see: The universe is the S&P 500, and membership is fetched, not maintained).
+// (see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched).
 //
 // `Industry` is read from the same snapshot beside the sector and is null for the
 // same reason. It is the theme a name's industry research is shared under, from 6.9

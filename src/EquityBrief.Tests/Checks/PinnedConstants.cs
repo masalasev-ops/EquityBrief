@@ -71,8 +71,6 @@ public class PinnedConstants
         string progress,
         IReadOnlyList<(string Row, string Stated)> stated)
     {
-        string Value(string row) => limits.Body.Single(cells => cells.Count > 1 && cells[0] == row)[1];
-
         decimal Figure(string row, int at) => StatedFigures.ValueOf(stated.Where(figure => figure.Row == row).ElementAt(at).Stated);
 
         bool Recorded(string figure) => Regex.IsMatch(progress, $@"(?<![\d.,]){Regex.Escape(figure)}(?![\d]|[.,]\d)");
@@ -109,16 +107,17 @@ public class PinnedConstants
         [
             new(Calls, "0", 0, Zero),
             new("Per-name network calls in the nightly run", "0", 0, Zero),
-            new(Clock, "20", (decimal)RetryPolicy.WallClock.TotalMinutes, "RetryPolicy.WallClock in minutes"),
-            new(Clock, "363", null, Measured, () => Recorded("363")),
-            new(Clock, "665", null, Measured, () => Recorded("665")),
-            new(Clock, "500", null, "the index's nominal size, named as the figure the night does not read", () => Value(Clock).Contains("rather than as the literal 500", StringComparison.Ordinal)),
+            new(Clock, "40", (decimal)RetryPolicy.WallClock.TotalMinutes, "RetryPolicy.WallClock in minutes"),
             new(Clock, "503", null, Measured, () => Recorded("503")),
+            new(Clock, "580", null, Measured, () => Recorded("580")),
+            new(Clock, "701", null, Measured, () => Recorded("701")),
+            new(Clock, "29", null, Measured, () => Recorded("29")),
+            new(Clock, "35", null, Measured, () => Recorded("35")),
             new(Retry, "3", RetryPolicy.Standard.Attempts, "RetryPolicy.Standard.Attempts"),
             new(Retry, "2", (decimal)RetryPolicy.Standard.WaitBefore(2).TotalSeconds, "the wait before the second attempt"),
             new(Retry, "4", (decimal)RetryPolicy.Standard.WaitBefore(3).TotalSeconds, "the wait before the third attempt"),
             new(Retry, "30", (decimal)RetryPolicy.Standard.Timeout.TotalSeconds, "RetryPolicy.Standard.Timeout in seconds"),
-            new(Retry, "60", (decimal)RetryPolicy.Standard.Deadline.TotalMinutes, "RetryPolicy.Standard.Deadline in minutes"),
+            new(Retry, "120", (decimal)RetryPolicy.Standard.Deadline.TotalMinutes, "RetryPolicy.Standard.Deadline in minutes"),
             new("Waiting on another writer", "600", StoreConnection.WaitSeconds, "StoreConnection.WaitSeconds"),
             new(Budget, "100,000", ProviderWeights.DailyAllowance, "ProviderWeights.DailyAllowance"),
             new(Budget, "100", ProviderWeights.BulkEndOfDay, "ProviderWeights.BulkEndOfDay"),

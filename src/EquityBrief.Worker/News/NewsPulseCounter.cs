@@ -86,9 +86,9 @@ public sealed class NewsPulseCounter : IComponent
     // known, and not left by it.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
-        SELECT ticker
+        SELECT DISTINCT ticker
         FROM membership
-        WHERE index_code = $index
+        WHERE " + IndexScope.Condition + @"
           AND (joined IS NULL OR joined <= $session)
           AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
@@ -128,11 +128,14 @@ public sealed class NewsPulseCounter : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members the one dated query's
+    // articles are counted for as the index's own are.
     public async Task<NewsPulseOutcome> RunAsync(
         string indexCode,
         DateOnly sessionDate,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
         var before = feed.Requests;
@@ -147,7 +150,7 @@ public sealed class NewsPulseCounter : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, sessionDate, cancellation);
+        var members = await MembersAsync(connection, indexCode, sessionDate, cancellation, wider);
         var written = 0;
         var counted = 0;
         var stored = 0;
@@ -292,12 +295,13 @@ public sealed class NewsPulseCounter : IComponent
         SqliteConnection connection,
         string indexCode,
         DateOnly session,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        IReadOnlyList<string>? wider = null)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new List<string>();

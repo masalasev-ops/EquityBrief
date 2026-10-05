@@ -38,6 +38,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filter-history" => await FilterHistoryRun(args),
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
+    "members" => await MembersRun(args),
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
@@ -54,7 +55,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 22 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 23 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -88,7 +89,10 @@ static int NoVerb()
         "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
-        "sector and share counts beside its quarters, and " +
+        "sector and share counts beside its quarters, and '--index <MID or SML>' asks a wider index's members, " +
+        "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
+        "from their funds' files beside the index's and each member holding no bar asked for its year, " +
+        "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
@@ -332,6 +336,52 @@ static async Task<int> QuartersRun(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName]),
         SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
+}
+
+// The night's membership and backfill steps run by hand, on the session '--session' names or the clock's, for the
+// remedy that loads the S&P 400's and 600's members and their years before their first night. A named session is
+// refused by the night's own rule. The verb's work is in `MembersVerb`, so a test runs the verb a person runs.
+// see: The S&P 400's and 600's members are read each night from their funds' own holdings files
+static async Task<int> MembersRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+
+    if (Argument(args, "--session") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var session))
+        {
+            Console.Error.WriteLine($"members: '--session {named}' is not a date in yyyy-MM-dd.");
+
+            return 1;
+        }
+
+        if (NightSession.Refusal(session, clock.SessionDateAt(clock.UtcNow), NightSession.NewestStored(store.DatabaseFile)) is { } refused)
+        {
+            Console.Error.WriteLine(refused);
+
+            return 1;
+        }
+
+        clock = new ReplayClock(
+            new DateTimeOffset(session.ToDateTime(new TimeOnly(21, 10)), TimeSpan.Zero),
+            SessionZones.ResolveSessionZone(SessionZones.UnitedStates));
+    }
+
+    return await EquityBrief.Worker.Membership.MembersVerb.RunAsync(
+        args,
+        () => NightFeeds.Resolve(
+            args.Contains("--live") ? NightFeeds.LiveSource
+                : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
+                : configuration[NightFeeds.SourceKey],
+            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]),
+        clock,
         store.DatabaseFile,
         Console.Out,
         Console.Error);
