@@ -38236,3 +38236,37 @@ Carried:    the remedy, run after the merge: the two holdings pulls and the othe
             stating the documents read, the holdings matched by each key and by neither, the provider's asks and the
             same 30 checked again by hand; each family's sweep on each index on membership as it stood; 15.2's second
             half; 15.1's second half; phase 14's sign-off.
+
+### 15.1 ruling - each index's provisional picks computed on the night by the sweep's own code into tables of their own, and every page reading one index at a time chosen under Universe   2026-10-05
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-05, answering the question put with the sweeps on membership as it stood:
+            "Cards: yes. Compute each index's provisional picks on the night with the sweep's own code over the
+            night's stored year of prices, into tables of their own. Confirm they still feed one trade a stock
+            across every card, the reports taken in turn, Past picks and forward-return scoring, each per index."
+            And at 12:42 UTC, for 15.1's second half: a selector labelled Universe at the top of Tonight, Past
+            picks, Run, Universe and Researched, offering the S&P 500, 400 and 600 each with its member count, kept
+            in the URL and the S&P 500 by default; every figure naming its index, none mixing two; each card's
+            description drawn from its index's own rule settings, stating on the 400 and 600 what differs from the
+            500's, its status line "Provisional: not yet frozen" or "Live rule since" a date, the drift's evidence
+            line and the heavyweights' design and sector comparison; one trade a stock and the six reports in turn
+            across the three indices, the "Still open" line and Past picks naming each trade's index; done when
+            every page is screenshotted under each choice and read back, with a test that changes a 400 rule's
+            setting and sees its card's description change. The words are kept in `prompts/`.
+Decided:    "The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables
+            of their own" and "Every page reads one index at a time chosen under Universe, and every figure names
+            its index", new, superseding nothing: no decision stated the route through the S&P 500's stages, which
+            only 15.1's text carried. The picks feed, each per index, one open trade a stock across every card of
+            every index, the six reports in turn, Past picks and the scoring of each pick's forward returns.
+Plan:       15.1's second half reads each index's provisional rules by its sweep's own code into tables of their
+            own, with no S&P 500 rule, stage or pin moving and the ladder not widened; the selector stands on five
+            pages; its done condition gains each index's picks as its sweep's code reads them with every member's
+            answer stored, the screenshots read back under each choice, the test of a 400 rule's setting, and each
+            trade's index on Past picks and the "Still open" line, and states that no pin moved; section 20's row
+            and phase 15's rulings paragraph say so. The prior text of each edit is in `CHANGELOG.md`.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: edce9cc, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1870 of 1870 tests ran with none failed, migrations 0 to 63 with none pending,
+            schema version 63, against `data-ci` and never `data`.
+Carried:    the 15.3 remedy, running; the same 30 checked again by hand and the final unmatched names; each family's
+            sweep on each index on the corrected membership; 15.2's second half; 15.1's second half; phase 14's
+            sign-off.

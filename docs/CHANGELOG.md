@@ -11169,3 +11169,39 @@ Was:
 Now:
 > a row after it for a member showing a gap at a session the price file did not carry after the night that asked for its year: the provider served none either, nothing to do, and a later session going missing asks once more
 Why: the check asks once and leaves what the provider did not serve as a gap, which the operator reads on the name page and should not chase.
+
+### 2026-10-05 - BUILD_PLAN.md - 15.1's second half computes each index's picks by the sweep's own code into tables of their own
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> "strength is ranked and breadth read among each index's own members; a listings row is written for every member of each index; and one trade a stock holds across every card of every index."
+> "Every family runs on the 400 and the 600 as a rule of its own on provisional settings, marked "provisional: not yet frozen; its record starts at the freeze" (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing):"
+> "the second, on its own branch after it, is each index's provisional rules and cards, strength and breadth within each index, the listings of each index, one trade a stock across every card, the choice of index, the six reports in turn, the labeller and the queue's order, with the ladder's widening and the remedy its pin's move owes."
+> "And for the cards, the second: a name moving between indices keeps its open trade; strength and breadth are worked by hand within each index; each floor and the profit gate are worked by hand on both sides, a member with three quarters filed failing it; each index's cards are read back off the rendered page against the store in both directions; the six reports are taken in turn over constructed nights, two an index where each has picks, an index with none passing its turns and one with a single pick passing its second; and its entry states the pin lists read and the pin its ladder moved, with the remedy that move owes."
+Now:
+> a row written for every member of each index every night, the S&P 500's in the listings and the 400's and 600's in tables of their own; each family on the 400 and 600 read each night over the year of bars the night stored by the code its sweep reads it with and written into tables of their own, with the decision cited, its card's status line reading "Provisional: not yet frozen" and its record starting at its freeze; the second pull request carrying each index's provisional rules read by its sweep's own code with no S&P 500 rule, stage or pin moving and the ladder not widened; and its done condition adding each index's picks over a constructed night as its sweep's code reads them with every member's answer stored, every page screenshotted under each of the three choices and read back, a test changing a 400 rule's setting and finding its card's description changed, Past picks and the "Still open" line naming each trade's index, and the entry stating that no pin moved in place of the pin its ladder moved
+Why: the S&P 500's stages are pinned and replace their session's rows each night, and widening the listings would evaluate the S&P 500's candidates on the 400's and 600's members; the operator ruled the sweep's own code into tables of their own.
+
+### 2026-10-05 - BUILD_PLAN.md - 15.1's choice of index is a selector labelled Universe on five pages, and every figure names its index
+Authorised by: Every page reads one index at a time chosen under Universe, and every figure names its index
+Was:
+> "Tonight, Past picks, Run and Universe gain a choice of index, kept in the address so a link opens it, the S&P 500 first; each index draws its own cards in the page's order, and the drift's card on the 400 and 600 carries its line of evidence."
+> "about 30 at 15.1, the membership of three indices and its failure rows, the funds' files, each index's strength, breadth and market check, the provisional rules' floors and gate, the six reports in turn, the choice of index on three screens and the night's limits"
+Now:
+> Tonight, Past picks, Run, Universe and Researched open with a selector labelled Universe offering the three indices each with its member count, kept in the address and the S&P 500 where it names none, with the decision cited; every figure on a page names the index it is over and none mixes two; each card's description written by code from its index's own settings, stating on the 400 and 600 the minimum price, the dollar volume floor, the profit check and the costs taken off, the drift's card carrying its evidence and the heavyweights' naming its design and sector comparison; the "Still open" line and Past picks naming each trade's index; and the claims count reading "the choice of index on five screens"
+Why: the operator's addendum of 2026-10-05 for 15.1's second half asks for the selector on five pages, every figure naming its index and each card's words drawn from its index's settings.
+
+### 2026-10-05 - BUILD_PLAN.md - phase 15's rulings name the ruling of 15.1's second half
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> "The decisions that change what runs today, the universe, the market check, the six reports, the deadline and the news labeller, are written where they are built, at 15.1."
+Now:
+> the same sentence followed by "Ruling 15.1's second half on 2026-10-05, the operator chose each index's provisional picks computed on the night by the sweep's own code into tables of their own over the night's S&P 500 stages widened, and every page reading one index at a time chosen under Universe with every figure naming its index."
+Why: the phase's rulings paragraph names every ruling the phase rests on.
+
+### 2026-10-05 - ARCHITECTURE.html - section 20's phase 15 row names the sweep's own code and the selector on five pages
+Authorised by: Every page reads one index at a time chosen under Universe, and every figure names its index
+Was:
+> "with every family running on the 400 and 600 as provisional rules of their own and a choice of index on Tonight, Past picks and Run;"
+Now:
+> "with every family running on the 400 and 600 as provisional rules of their own, read on the night by each family's sweep's own code into tables of their own, and a choice of index under Universe on Tonight, Past picks, Run, Universe and Researched;"
+Why: the row states what the phase builds, and the operator ruled both on 2026-10-05.
