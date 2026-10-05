@@ -38132,3 +38132,71 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    the night of 2026-10-05 asks for P's year, read the next morning on its actions row beside BLDR's,
             TAP's and TTD's; 15.2's second half; 15.1's second half; phase 14's sign-off.
+
+### 15.3 - correction: a holding matched by name is kept only where its code traded at the quarter's end, and the N-Q of 2018-12-31 and the annual report of 2019-03-31 are read for each fund's complete schedule   2026-10-05
+
+Built:      a name match is kept only where its code traded in the six days to the snapshot's quarter end, read off
+            a pulled bar or, where none is pulled, off the provider's daily prices for those days, asked once a code
+            a quarter, and none is made where which codes traded is not known; several codes trading are settled by
+            a main exchange first, then a listed code and the code itself; a company renamed since is read by the
+            name its fund's own filings carry beside an ISIN, after the provider's names; and a non-voting class's
+            mark and what follows a slash are no part of a name. The holdings pull reads the N-Q for the quarter to
+            2018-12-31 and the annual report for the year to 2019-03-31, each one document of the trust's schedules,
+            for each fund's complete schedule: a summary passed over and refused alone, and a schedule running into
+            another fund's page before its total refused. A pull reading a quarter an earlier pull stored matches
+            its holdings again, a row's code and key alone, keeping the pull that stored it, so this morning's pulls
+            are matched again and not removed. Two decisions; sections 7, 11.4, 16 and 18; `SCHEMA.md`, its update
+            writer; 15.3's text and done condition; the runbook; the checks roster's fixture-expectations row; the
+            two captures with their manifest entries; and the remedy.
+Ruled:      by the operator on 2026-10-05: "Name matching: keep a name match only where its ticker traded at that
+            quarter end. Re-check the same 30 by hand after the fix and state the count." And: "The first nine
+            months of 2019: do not read them on the 2019-09-30 holdings, since that counts companies added during
+            2019. Use the 2018-12-31 N-Q and the 2019-03-31 annual report as planned; if they cannot be read, start
+            the 400 and 600 history at 2019-10-01 and state it on every figure." Both documents can be read.
+Amended:    this correction amends 15.3's done condition: a name whose codes did not trade at the quarter's end is
+            matched to none and a stored quarter is matched again, the two documents' captured pages are read for
+            each fund's complete schedule with a summary alone refused, and the correction's remedy entry checks the
+            same 30 again.
+Found:      the two documents read whole from the archive on 2026-10-05: the N-Q's IJH schedule names 400 holdings
+            of common stock and its IJR schedule 602; the annual report carries IJH's summary, 50 holdings and the
+            rest as other securities, its complete schedule further on, 400, and IJR's complete schedule, 602. Read
+            read-only against the store's pulled bars by the rule as built, before any ask of the provider: 375 of
+            the N-Q's 400 IJH holdings and 540 of its 602 IJR holdings match a code holding a pulled bar near
+            2018-12-31, and 382 and 550 of the annual report's near 2019-03-31; 19, 43, 13 and 35 more stand only on
+            codes the store holds no bar of, which the remedy's pulls ask the provider about; 6, 19, 5 and 17 match
+            no code, renamed companies the provider names otherwise among them, Owens-Illinois and U.S. Steel. The
+            same reading over the 30 name matches checked by hand at 15.3's remedy, before the asks: 23 the
+            holding's own company; 1 uncertain, Safehold; 2 another security still, Aqua America as WTRU, its equity
+            units, and A. Schulman as SLMNP, a preferred line, each of which traded at its quarter's end; and 4
+            matched to none: Aaron's Inc, McDermott International and Noble Corp plc, whose codes then were the
+            company spun off in 2020, the shares issued after the 2020 bankruptcy and the company formed in 2022, none
+            trading, and GrubHub at 2019-09-30, whose provider history starts on 2020-03-25. The asks may match
+            McDermott and Noble to their own delisted listings, which is why several codes trading are settled by a
+            main exchange first: Noble Group's lines over the counter share Noble Corp plc's name. The count is
+            stated again by hand after the remedy.
+Tests:      1869, from 1867: two added, the two documents' captured pages read for each fund's complete schedule,
+            and the name rule; the holdings pull's test widened to the two documents, the provider's asks and a
+            stored quarter matched again.
+Claims:     981, unchanged: cells of existing rows carry the new clauses.
+Pins:       none moved: no pin list names a file the correction changed.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree, filtered to the seven holdings tests and reverted.
+            M1 the provider's names matched whether or not their codes traded: red in the name rule and the pull.
+            M2 a name matched where which codes traded is not known: red in the name rule.
+            M3 the fund's own filings' names not read: red in the name rule and the pull.
+            M4 the non-voting mark read as part of a name: red in the pull; the name rule's Boston Beer, 40
+            characters long, still matched by its words but the last as a name cut at the form's width.
+            M5 the place after a slash read as part of a name: red in the name rule and the pull.
+            M6 a summary read as a complete schedule: red in the documents' test.
+            M7 the provider not asked about a code the store holds no bar of: red in the pull.
+            M8 a stored quarter's holdings not matched again: red in the pull.
+            M9 another fund's page not ending a schedule that has not closed: red in the documents' test.
+            M10 a listed code read before a main exchange's: red in the name rule.
+            Results: M1 to M10 each red where stated, each reverted, and the seven holdings tests green over the
+            reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    the remedy, run after the merge: the two holdings pulls and the other pulls for each index, its entry
+            stating the documents read, the holdings matched by each key and by neither, the provider's asks and the
+            same 30 checked again by hand; each family's sweep on each index on membership as it stood; 15.2's second
+            half; 15.1's second half; phase 14's sign-off.

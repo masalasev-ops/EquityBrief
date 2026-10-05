@@ -149,6 +149,19 @@ public partial class FixtureExpectations
         // A non-voting class's mark and a place after a slash are no part of a company's name.
         Assert.Equal("SAM", matcher.Match(new FiledHolding("Boston Beer Co. Inc. (The), Class A, NVS", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
         Assert.Equal("SCI", matcher.Match(new FiledHolding("Service Corp. International/U.S", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
+
+        // Noble Corp plc, which the S&P 600's fund held in 2019 and which the provider carries as a delisted listing on the
+        // NYSE, shares its name's key with Noble Group's lines over the counter, still listed and trading then: the index
+        // admits only stocks listed on a main exchange, so the delisted NYSE listing is read before them.
+        var noble = new HoldingMatcher(
+        [
+            new ListedSymbol("NE_old", "Noble Corp plc", "NYSE", ProviderSymbols.CommonStock, null, Delisted: true),
+            new ListedSymbol("NOBGF", "Noble Group Holdings Limited", "PINK", ProviderSymbols.CommonStock, null, Delisted: false),
+            new ListedSymbol("NOBGY", "Noble Group Holdings Ltd", "PINK", ProviderSymbols.CommonStock, null, Delisted: false),
+        ]);
+
+        Assert.Equal("NE_old", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
+        Assert.Equal("NOBGF", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), code => code != "NE_old").Ticker);
     }
 
     // A filing's document as the archive serves one, each fund's schedule a page headed by its date and the fund's name,

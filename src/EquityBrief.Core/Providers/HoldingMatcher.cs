@@ -13,8 +13,8 @@ public sealed record HoldingMatch(string? Ticker, string? By, IReadOnlyList<stri
 // taken out: the provider's names first, then the names the funds' own filings carry beside an ISIN, which read a company
 // renamed since under the name it was held by. A name names a company and not a security, so a match by it is kept only
 // where its code traded at the snapshot's quarter end, and none is made where which codes traded is not known. Two codes
-// for one ISIN are settled by which traded on that date where exactly one did; codes left standing, by a code still
-// listed before a delisted one, a main exchange before another, and the code itself.
+// for one ISIN are settled by which traded on that date where exactly one did; codes left standing, by a main exchange
+// before another, a code still listed before a delisted one, and the code itself.
 // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
 // see: A holding matched by name is kept only where its code traded at the quarter's end
 public sealed class HoldingMatcher
@@ -144,9 +144,11 @@ public sealed class HoldingMatcher
             return traded[0].Code;
         }
 
+        // A main exchange first, since the indices admit only stocks listed on one, so another company's line over the
+        // counter that shares the name and traded then is not read before the index's own delisted listing.
         return found
-            .OrderBy(symbol => symbol.Delisted)
-            .ThenBy(symbol => symbol.Exchange is { } exchange && Main.Contains(exchange) ? 0 : 1)
+            .OrderBy(symbol => symbol.Exchange is { } exchange && Main.Contains(exchange) ? 0 : 1)
+            .ThenBy(symbol => symbol.Delisted)
             .ThenBy(symbol => symbol.Code, StringComparer.Ordinal)
             .First()
             .Code;
