@@ -10,17 +10,18 @@ public sealed record DialTry(string Dial, string Level, bool Switch, int Setting
 }
 
 // One level of a new dial or one market switch as the second stage reads it: the quality, the multiple of the dollar
-// volume floor or the hold it sets in place of the provisional one, a test a candidate must pass beside the floors and
-// the gate, or the S&P 500's breadth read in place of the index's own.
-public sealed record DialLevel(
+// volume floor, the hold or the drift's window it sets in place of the provisional one, a test a candidate or a
+// listing must pass beside the floors and the gate, or the S&P 500's breadth read in place of the index's own.
+public sealed record DialLevel<T>(
     string Dial,
     string Name,
     bool Switch = false,
     IndexQuality? Quality = null,
     decimal? Floors = null,
     int? Hold = null,
-    Func<SweepCandidate, bool>? Keep = null,
-    bool LargeBreadth = false);
+    Func<T, bool>? Keep = null,
+    bool LargeBreadth = false,
+    int? Window = null);
 
 // One level that survived, with how many of the strongest settings kept it and the median change it made there, on the
 // edge after costs or, for a switch, on the result a trade.
@@ -71,6 +72,50 @@ public static class SweepDials
 
     // A year's total result, each scored trade's result in multiples of its risk summed, a year with none nothing.
     public static double Total(SweepMeasures measures, int year) => (measures.YearAverageMultiple[year] ?? 0) * measures.YearScored[year];
+
+    // A family's trades read as a setting's measures: the trades with a result, their average result and edge, and each
+    // year's count, average result and edge, the figures the year tests and the trade floor read; the shares a family's
+    // record does not state are none.
+    public static SweepMeasures Of(IReadOnlyList<FamilyTrade> trades)
+    {
+        var years = SweepFigures.Years;
+        var scored = trades.Where(trade => trade.Result is not null && trade.Year >= 0 && trade.Year < years).ToArray();
+        var edges = scored.Where(trade => !double.IsNaN(trade.Benchmark)).ToArray();
+        var yearScored = new int[years];
+        var yearMultiple = new double?[years];
+        var yearEdge = new double?[years];
+
+        for (var year = 0; year < years; year++)
+        {
+            var inYear = scored.Where(trade => trade.Year == year).ToArray();
+            var edgesInYear = edges.Where(trade => trade.Year == year).ToArray();
+
+            yearScored[year] = inYear.Length;
+            yearMultiple[year] = inYear.Length > 0 ? inYear.Average(trade => trade.Result!.Value) : null;
+            yearEdge[year] = edgesInYear.Length > 0 ? edgesInYear.Average(trade => trade.Result!.Value - trade.Benchmark) : null;
+        }
+
+        return new SweepMeasures(
+            trades.Count,
+            scored.Length,
+            scored.Length,
+            0,
+            null,
+            null,
+            null,
+            scored.Length > 0 ? scored.Average(trade => trade.Result!.Value) : null,
+            edges.Length > 0 ? edges.Average(trade => trade.Result!.Value - trade.Benchmark) : null,
+            yearScored,
+            new double?[years],
+            new double?[years],
+            new double?[years],
+            yearMultiple,
+            yearEdge,
+            0,
+            0,
+            0,
+            0);
+    }
 
     // Each level tried with how many settings kept it and the median change it made, the survivors those kept on at
     // least six, in the order the levels were tried.

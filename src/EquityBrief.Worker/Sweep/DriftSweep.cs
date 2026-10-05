@@ -52,11 +52,12 @@ public sealed class DriftSweep
     // Every member-session on or after the first scored session, held by the index with no gap, on a night the
     // market check left open, whose newest print reacted inside the widest window with a surprise above
     // nothing, a rise and a volume at least the loosest the grid reads, a close still above the reaction's low
-    // and a stop below the close: the readings any setting's listings are drawn from.
-    public IReadOnlyList<DriftReading> Readings(IReadOnlyList<SweepColumns.Session> sessions, int firstScored)
+    // and a stop below the close: the readings any setting's listings are drawn from. Given a window wider than the
+    // grid's, the readings reach that far back, as an index's second stage reads a wider window.
+    public IReadOnlyList<DriftReading> Readings(IReadOnlyList<SweepColumns.Session> sessions, int firstScored, double? widerWindow = null)
     {
         var floor = FamilySweep.MarketFloor;
-        var widest = Grid.Dials[0].Levels.Max();
+        var widest = Math.Max(Grid.Dials[0].Levels.Max(), widerWindow ?? 0);
         var lowestRise = Grid.Dials[1].Levels.Min();
         var lowestVolume = Grid.Dials[2].Levels.Min();
         var found = new List<DriftReading>();
@@ -131,9 +132,9 @@ public sealed class DriftSweep
     // at the close, stopped at the reaction's low and aimed at the nearer of the band and the setting's
     // multiple of the risk, in the order of the surprise. Given a floor, the stop is moved down to that many
     // typical moves under the close where the low sits nearer, as the drift's stop floor variant moves it.
-    public static IEnumerable<FamilyListing> Listings(IReadOnlyList<DriftReading> readings, int[] setting, double stopFloorMoves = 0)
+    public static IEnumerable<FamilyListing> Listings(IReadOnlyList<DriftReading> readings, int[] setting, double stopFloorMoves = 0, double? windowInstead = null)
     {
-        var window = Grid.Value(setting, 0);
+        var window = windowInstead ?? Grid.Value(setting, 0);
         var rise = Grid.Value(setting, 1);
         var volume = Grid.Value(setting, 2);
         var multiple = Grid.Value(setting, 3);

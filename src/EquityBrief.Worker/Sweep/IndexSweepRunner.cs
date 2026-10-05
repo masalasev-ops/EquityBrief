@@ -193,6 +193,181 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         }
 
         var proposal = FamilySweep.Propose(adapter.Grid, read);
+
+        // The second stage, every level read after costs: each new dial's levels and each market switch alone on the ten
+        // strongest settings of the grid, the highest edges among those holding the trade floor and the rest after by
+        // their trades, and then the levels that survive crossed.
+        var industries = await history.IndustriesAsync(cancellation);
+        var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], "HYG"], through, cancellation);
+
+        output.WriteLine("reading the S&P 500 as it stood for its industries, its breadth and its reports");
+
+        var large = await history.ReadAsync(through, null, cancellation);
+        var industryReturns = new SweepIndustries(large, companies, industries);
+        var largeBreadth = SweepSwitches.LargeBreadth(large, calendar);
+        var switches = new SweepSwitches(calendar, market, IndexFunds[indexCode]);
+        var breadthInstead = sessions.Select((one, at) => one with { Breadth = largeBreadth[at] }).ToArray();
+        var largeAdapter = FamilySweepRunner.For(family, series, breadthInstead, members, firstScored, calendar, floored ? stopFloor : 0);
+        var isBreakout = family == BreakoutRule.Name;
+        var isDrift = family == DriftRule.Name;
+        var wide = isDrift ? new DriftSweep(series, members) : null;
+        var wideReadings = wide?.Readings(sessions, firstScored, DriftWideWindow) ?? [];
+        var wideReadingsLarge = wide?.Readings(breadthInstead, firstScored, DriftWideWindow) ?? [];
+        var backOf = wideReadings.Concat(wideReadingsLarge).GroupBy(one => (one.Name, one.Bar)).ToDictionary(group => group.Key, group => group.First().Back);
+        var reports = large.Names
+            .Where(name => industries.ContainsKey(name.Ticker))
+            .SelectMany(name => name.Surprises.Select(surprise => (Name: name, Surprise: surprise)))
+            .GroupBy(pair => industries[pair.Name.Ticker], StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+
+        decimal Traded(FamilyListing listing)
+        {
+            var bar = series[listing.Name].Bars[listing.Bar];
+
+            return bar.RawClose > 0m ? bar.RawClose : bar.Close;
+        }
+
+        // The year's high a breakout is read against: the highest high of the 251 sessions before the listing, and the
+        // sessions since the session it was made on.
+        (double High, int Since) YearHigh(FamilyListing listing)
+        {
+            var bars = series[listing.Name].Bars;
+            var (high, at) = (double.NaN, -1);
+
+            for (var bar = Math.Max(0, listing.Bar - BreakoutYearSessions); bar < listing.Bar; bar++)
+            {
+                var value = Statistic.FromPrice(bars[bar].High);
+
+                if (double.IsNaN(high) || value >= high)
+                {
+                    (high, at) = (value, bar);
+                }
+            }
+
+            return (high, at < 0 ? int.MaxValue : listing.Bar - at);
+        }
+
+        // The drift's peer reading: the mean surprise of the S&P 500 members of the listing's industry that reported in
+        // the 20 sessions before its reaction session, each weighted by its company's value on the session before the
+        // reaction, above nothing; where none reported the reading is none, which is not above nothing.
+        bool PeersBeat(FamilyListing listing)
+        {
+            if (!backOf.TryGetValue((listing.Name, listing.Bar), out var back)
+                || listing.Session - back - PeerSessions < 0
+                || !industries.TryGetValue(tickers[listing.Name], out var industry)
+                || !reports.TryGetValue(industry, out var reported))
+            {
+                return false;
+            }
+
+            var reaction = listing.Session - back;
+            var (from, to) = (calendar[reaction - PeerSessions], calendar[reaction - 1]);
+            var (weighted, weight) = (0.0, 0.0);
+
+            foreach (var (name, surprise) in reported)
+            {
+                if (surprise.EventDate < from || surprise.EventDate > to || !name.MemberOn(surprise.EventDate)
+                    || SweepIndustries.BarOn(name, to) is not { } bar
+                    || CompanyValue.On(new SessionClose(bar.Session, bar.Close, bar.RawClose > 0m ? bar.RawClose : bar.Close), companies.Counts.GetValueOrDefault(name.Ticker) ?? [], companies.Splits.GetValueOrDefault(name.Ticker) ?? []) is not { } value
+                    || value <= 0m)
+                {
+                    continue;
+                }
+
+                weighted += Statistic.FromPrice(value) * surprise.Percent;
+                weight += Statistic.FromPrice(value);
+            }
+
+            return weight > 0 && weighted / weight > 0;
+        }
+
+        var levels = new List<DialLevel<FamilyListing>>
+        {
+            new("dollar volume floor", "half the provisional", Floors: DollarVolumeHalf),
+            new("dollar volume floor", "twice the provisional", Floors: 2m),
+            new("minimum price", "$10", Keep: listing => Traded(listing) >= HigherPrice),
+            new("quality", "off", Quality: IndexQuality.Off),
+            new("quality", "profit and cover", Quality: IndexQuality.Cover),
+            new("hold", "21 sessions", Hold: 21),
+            new("hold", "42 sessions", Hold: 42),
+        };
+
+        if (isDrift)
+        {
+            levels.Add(new("hold", "63 sessions", Hold: 63));
+        }
+
+        levels.Add(new("industry fall", "21 sessions", Keep: listing => !industryReturns.Fell(tickers[listing.Name], calendar, listing.Session, 21)));
+        levels.Add(new("industry fall", "63 sessions", Keep: listing => !industryReturns.Fell(tickers[listing.Name], calendar, listing.Session, 63)));
+
+        if (isBreakout)
+        {
+            levels.Add(new("nearness to the year's high", "at least 0.95", Keep: listing => listing.Entry / YearHigh(listing).High >= NearHigh));
+            levels.Add(new("nearness to the year's high", "at it or above", Keep: listing => listing.Entry / YearHigh(listing).High >= 1));
+            levels.Add(new("recency of the year's high", "within 63 sessions", Keep: listing => YearHigh(listing).Since <= RecentHighSessions));
+            levels.Add(new("recency of the year's high", "older than 63 sessions", Keep: listing => YearHigh(listing).Since > RecentHighSessions));
+            levels.Add(new("volume multiple", "3.0", Keep: listing => listing.Order >= HighestVolume));
+        }
+
+        if (isDrift)
+        {
+            levels.Add(new("window", $"{DriftWideWindow} sessions", Window: DriftWideWindow));
+            levels.Add(new("peer version", "on", Keep: PeersBeat));
+        }
+
+        levels.AddRange(Switches<FamilyListing>(indexCode, switches, listing => listing.Session));
+
+        // The trades a setting makes under a set of levels together, after costs: the provisional floors, gate, hold and
+        // window where none of them sets its own, and the S&P 500's breadth closing the market check where one asks it.
+        IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together)
+        {
+            var quality = together.Select(level => level.Quality).OfType<IndexQuality>().DefaultIfEmpty(IndexQuality.Profit).First();
+            var floors = together.Select(level => level.Floors).OfType<decimal>().DefaultIfEmpty(1m).First();
+            var hold = together.Select(level => level.Hold).OfType<int>().DefaultIfEmpty(0).First();
+            var window = together.Select(level => level.Window).OfType<int>().DefaultIfEmpty(0).First();
+            var instead = together.Any(level => level.LargeBreadth);
+            var listings = window > 0 && isDrift
+                ? DriftSweep.Listings(instead ? wideReadingsLarge : wideReadings, setting, floored ? stopFloor : 0, window)
+                : (instead ? largeAdapter : adapter).Listings(setting);
+            var kept = listings
+                .Where(listing => Clears(indexCode, series[listing.Name], listing.Bar, income.GetValueOrDefault(tickers[listing.Name]) ?? [], quality, floors, companies.Companies.GetValueOrDefault(tickers[listing.Name]).Sector)
+                    && together.All(level => level.Keep is not { } keep || keep(listing)))
+                .Select(listing => hold > 0 ? listing with { Cap = hold } : listing)
+                .ToArray();
+
+            return [.. FamilySweep.Walk(kept, tickers, YearOf, adapter.Exit, adapter.Benchmark).Select(trade => After(trade, 1))];
+        }
+
+        var ten = read
+            .OrderBy(one => one.Figures.Trades >= FamilySweep.TradeFloor ? 0 : 1)
+            .ThenByDescending(one => one.Figures.Trades >= FamilySweep.TradeFloor ? one.Figures.Edge ?? double.MinValue : one.Figures.Trades)
+            .ThenBy(one => one.Figures.Key, StringComparer.Ordinal)
+            .Take(SweepDials.Settings)
+            .Select(one => one.Setting)
+            .ToArray();
+
+        output.WriteLine(FormattableString.Invariant($"the second stage: {levels.Count} level(s) and switch(es) alone on the {ten.Length} strongest settings"));
+
+        var withoutDials = ten.Select(setting => SweepDials.Of(TradesUnder(setting, []))).ToArray();
+        var tries = levels
+            .SelectMany(level => ten.Select((setting, at) => new DialTry(level.Dial, level.Name, level.Switch, at, withoutDials[at], SweepDials.Of(TradesUnder(setting, [level])))))
+            .ToList();
+        var dialsRead = SweepDials.Read(tries);
+        var crossedLevels = dialsRead
+            .Where(one => one.KeptOn >= SweepDials.KeptOn)
+            .GroupBy(one => one.Dial)
+            .Select(dial => dial.OrderByDescending(one => one.KeptOn).ThenByDescending(one => one.MedianChange ?? double.MinValue).First())
+            .Select(best => levels.First(level => level.Dial == best.Dial && level.Name == best.Level))
+            .ToArray();
+        var crossed = crossedLevels.Length > 0 ? ten.Select(setting => SweepDials.Of(TradesUnder(setting, crossedLevels))).ToArray() : [];
+        var stage = StageSection(
+            dialsRead,
+            [.. ten.Select(setting => adapter.Grid.Key(setting))],
+            [.. crossedLevels.Select(level => level.Dial + ", " + level.Name)],
+            crossed,
+            isDrift
+                ? "The holds are read at 21, 42 and 63 sessions beside the drift's own 60, its window at 20 sessions beside the grid's, and its peer reading over the 20 sessions before the reaction; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it."
+                : "The holds are read at 21 and 42 sessions beside the family's own 63, and the year's high over the 251 sessions before the listing; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it.");
         var note = FormattableString.Invariant(
             $"{Membership(named, inputs)} A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings every setting made together cleared them, and {withIncome:N0} of the {inputs.Names.Count:N0} members hold quarters of income. Every edge on this page is after each trade's cost at the published table's value, and the table below sets the edge before costs and at double the cost beside it.");
         var run = new FamilySweepRun(family, $"{named} {words}", calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, floored ? note + FormattableString.Invariant($" The stop is held at least {stopFloor:0.##} typical moves under the buy where the reaction's low sits nearer, as the drift's stop floor variant holds it.") : note);
@@ -211,7 +386,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var report = Path.Combine(folder, SweepFolder.ReportFile);
         var figures = Path.Combine(folder, FiguresFile);
 
-        File.WriteAllText(report, FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled));
+        File.WriteAllText(report, FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled) + stage);
         File.WriteAllText(figures, JsonSerializer.Serialize(
             new
             {
@@ -223,12 +398,20 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 afterCosts = read.Select(one => one.Figures),
                 beforeCosts = before.Values,
                 atDoubleCost = doubled.Values,
+                strongestTen = ten.Select((setting, at) => new { setting = adapter.Grid.Key(setting), after = withoutDials[at] }),
+                dials = dialsRead,
+                tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
+                crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
+                crossed = crossed.Select((measures, at) => new { setting = adapter.Grid.Key(ten[at]), after = measures }),
             },
             SweepRunner.Json));
 
         output.WriteLine(proposal.Proposed is { } shownProposal
             ? FormattableString.Invariant($"proposed {shownProposal.Key}, edge after costs {FamilySweepReport.Number(shownProposal.Edge)} over {shownProposal.Trades} trades, before costs {FamilySweepReport.Number(before[shownProposal.Key].Edge)}, at double {FamilySweepReport.Number(doubled[shownProposal.Key].Edge)}")
             : "none passed: no setting meets the floors after costs, and the report states the strongest settings and what could be tried next");
+        output.WriteLine(crossedLevels.Length == 0
+            ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Length} strongest settings")
+            : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, the strongest of the ten reads {FamilySweepReport.Number(crossed.Max(one => one.Edge))} after costs over {crossed.OrderByDescending(one => one.Edge ?? double.MinValue).First().Scored} trades"));
         output.WriteLine("report " + report);
 
         return 0;
@@ -468,31 +651,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var ten = search.Strongest(SweepDials.Settings);
         var withoutDials = ten.Select(MeasuresOf).ToArray();
         var industryReturns = new SweepIndustries(large, companies, industries);
-        var largeAt = large.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
-        var largeSeries = new SweepSeries[large.Names.Count];
-
-        Parallel.For(0, large.Names.Count, name => largeSeries[name] = SweepColumns.Series(large.Names[name], largeAt));
-
-        var largeSessions = SweepColumns.Sessions(largeSeries, large.Sessions);
-        var largeBreadth = calendar.Select(day => largeAt.TryGetValue(day, out var at) && largeSessions[at].Breadth is { } share ? share : double.NaN).ToArray();
-        var (spy, fund, credit) = (Aligned("SPY"), Aligned(IndexFunds[indexCode]), Aligned("HYG"));
-
-        double[] Aligned(string code)
-        {
-            var closes = new double[calendar.Length];
-
-            Array.Fill(closes, double.NaN);
-
-            foreach (var (session, close) in market.FirstOrDefault(one => one.Series == code)?.Closes ?? [])
-            {
-                if (sessionAt.TryGetValue(session, out var at))
-                {
-                    closes[at] = close;
-                }
-            }
-
-            return closes;
-        }
+        var largeBreadth = SweepSwitches.LargeBreadth(large, calendar).Select(share => share ?? double.NaN).ToArray();
+        var switches = new SweepSwitches(calendar, market, IndexFunds[indexCode]);
 
         decimal Traded(SweepCandidate candidate)
         {
@@ -501,34 +661,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
             return bar.RawClose > 0m ? bar.RawClose : bar.Close;
         }
 
-        // Whether the candidate's industry's S&P 500 members fell over the window to its session; a candidate whose
-        // industry reads none did not.
-        bool IndustryFell(SweepCandidate candidate, int window) =>
-            candidate.Session - window >= 0
-            && industries.TryGetValue(series[candidate.Name].Name.Ticker, out var industry)
-            && industryReturns.Between(calendar[candidate.Session - window], calendar[candidate.Session]).TryGetValue(industry, out var change)
-            && change < 0;
-
-        // Each switch read on its own session's close, closed on a session its series misses.
-        bool SmallLeads(int session, int window) =>
-            session - window >= 0 && fund[session] / spy[session] / (fund[session - window] / spy[session - window]) > 1;
-
-        bool CreditAboveItsAverage(int session)
-        {
-            if (session < CreditAverageSessions - 1)
-            {
-                return false;
-            }
-
-            var span = credit[(session - CreditAverageSessions + 1)..(session + 1)];
-
-            return !span.Any(double.IsNaN) && credit[session] > span.Average();
-        }
-
-        bool CreditRising(int session) => session - CreditChangeSessions >= 0 && credit[session] / credit[session - CreditChangeSessions] > 1;
-
-        var fundName = IndexFunds[indexCode];
-        IReadOnlyList<DialLevel> levels =
+        IReadOnlyList<DialLevel<SweepCandidate>> levels =
         [
             new("dollar volume floor", "half the provisional", Floors: DollarVolumeHalf),
             new("dollar volume floor", "twice the provisional", Floors: 2m),
@@ -537,18 +670,14 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
             new("quality", "profit and cover", Quality: IndexQuality.Cover),
             new("hold", "20 sessions", Hold: 20),
             new("hold", "40 sessions", Hold: 40),
-            new("industry fall", "21 sessions", Keep: candidate => !IndustryFell(candidate, 21)),
-            new("industry fall", "63 sessions", Keep: candidate => !IndustryFell(candidate, 63)),
-            new("small against large", $"{fundName} over SPY up over 126 sessions", Switch: true, Keep: candidate => SmallLeads(candidate.Session, 126)),
-            new("small against large", $"{fundName} over SPY up over 252 sessions", Switch: true, Keep: candidate => SmallLeads(candidate.Session, 252)),
-            new("credit", "HYG above its 50-session average", Switch: true, Keep: candidate => CreditAboveItsAverage(candidate.Session)),
-            new("credit", "HYG up over 63 sessions", Switch: true, Keep: candidate => CreditRising(candidate.Session)),
-            new("the S&P 500's breadth", "in place of the index's own", Switch: true, LargeBreadth: true),
+            new("industry fall", "21 sessions", Keep: candidate => !industryReturns.Fell(series[candidate.Name].Name.Ticker, calendar, candidate.Session, 21)),
+            new("industry fall", "63 sessions", Keep: candidate => !industryReturns.Fell(series[candidate.Name].Name.Ticker, calendar, candidate.Session, 63)),
+            .. Switches<SweepCandidate>(indexCode, switches, candidate => candidate.Session),
         ];
 
         // The ten settings read under a set of levels together, the provisional floors, gate and hold where none of them
         // sets its own; the S&P 500's breadth stands in each candidate's own for the read alone.
-        SweepMeasures[] ReadUnder(IReadOnlyList<DialLevel> together)
+        SweepMeasures[] ReadUnder(IReadOnlyList<DialLevel<SweepCandidate>> together)
         {
             var quality = together.Select(level => level.Quality).OfType<IndexQuality>().DefaultIfEmpty(IndexQuality.Profit).First();
             var floors = together.Select(level => level.Floors).OfType<decimal>().DefaultIfEmpty(1m).First();
@@ -635,33 +764,12 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div>");
 
-        page.Append("<h3>The second stage: each new dial and switch alone on the ten strongest settings</h3>");
-        page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {ten.Count} strongest settings the search read, the highest edges after costs among those holding {SweepMeasures.TradeFloor} trades. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. The holds are read at 20, 40 and 63 sessions, the holds the candidates' exits carry, where the plan named 21, 42 and 63, and the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it.</p>"));
-        page.Append("<div class=\"table\"><table><thead><tr><th>Dial</th><th>Level</th><th>Kept on</th><th>Median change</th><th>Survives</th></tr></thead><tbody>");
-
-        foreach (var one in dialsRead)
-        {
-            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(one.Dial)}</td><td>{WebUtility.HtmlEncode(one.Level)}</td><td class=\"num\">{one.KeptOn} of {ten.Count}</td><td class=\"num\">{FamilySweepReport.Number(one.MedianChange)}{(one.Switch ? " a trade" : string.Empty)}</td><td>{(one.KeptOn >= SweepDials.KeptOn ? "yes" : "no")}</td></tr>"));
-        }
-
-        page.Append("</tbody></table></div>");
-
-        if (crossedLevels.Length == 0)
-        {
-            page.Append("<p>No level survives, so nothing is crossed.</p>");
-        }
-        else
-        {
-            page.Append($"<h3>The survivors crossed</h3><p>{WebUtility.HtmlEncode(string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name)))}, together on each of the ten settings.</p>");
-            page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Meets the floors</th></tr></thead><tbody>");
-
-            for (var at = 0; at < ten.Count; at++)
-            {
-                page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(space.Describe(ten[at]))}</td><td class=\"num\">{crossed[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(crossed[at].Edge)}</td><td class=\"num\">{YearsAbove(crossed[at])} of 8</td><td>{(Meets(crossed[at]) ? "yes" : "no")}</td></tr>"));
-            }
-
-            page.Append("</tbody></table></div>");
-        }
+        page.Append(StageSection(
+            dialsRead,
+            [.. ten.Select(point => space.Describe(point))],
+            [.. crossedLevels.Select(level => level.Dial + ", " + level.Name)],
+            crossed,
+            "The holds are read at 20, 40 and 63 sessions, the holds the candidates' exits carry, where the plan named 21, 42 and 63, and the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it."));
 
         if (refinement.Count + extensions.Count + limits.Count > 0)
         {
@@ -737,15 +845,75 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     // The file a run creates in its folder to hold it, created only where none is.
     public const string ClaimFile = "run.claim";
 
-    // The second stage's levels: half the provisional dollar volume floor, the higher minimum price, and the sessions
-    // the credit switch reads HYG's average and its change over.
+    // The second stage's levels: half the provisional dollar volume floor, the higher minimum price, the drift's wider
+    // window and the sessions before a reaction its peers' reports are read over.
     public const decimal DollarVolumeHalf = 0.5m;
 
     public const decimal HigherPrice = 10m;
 
-    public const int CreditAverageSessions = 50;
+    public const int DriftWideWindow = 20;
 
-    public const int CreditChangeSessions = 63;
+    public const int PeerSessions = 20;
+
+    // The breakout's levels: the sessions before a listing its year's high is read over, the nearness to it, the
+    // sessions within which it is recent and the highest volume multiple.
+    public const int BreakoutYearSessions = 251;
+
+    public const double NearHigh = 0.95;
+
+    public const int RecentHighSessions = 63;
+
+    public const double HighestVolume = 3.0;
+
+    // The market switches every second stage reads, each closing the list on a session it is closed: the index's fund
+    // against SPY up over 126 and over 252 sessions, HYG above its average and up over 63 sessions, and the S&P 500's
+    // breadth read in place of the index's own.
+    static IEnumerable<DialLevel<T>> Switches<T>(string indexCode, SweepSwitches switches, Func<T, int> sessionOf)
+    {
+        var fund = IndexFunds[indexCode];
+
+        yield return new($"small against large", $"{fund} over SPY up over 126 sessions", Switch: true, Keep: one => switches.SmallLeads(sessionOf(one), 126));
+        yield return new($"small against large", $"{fund} over SPY up over 252 sessions", Switch: true, Keep: one => switches.SmallLeads(sessionOf(one), 252));
+        yield return new("credit", "HYG above its 50-session average", Switch: true, Keep: one => switches.CreditAboveItsAverage(sessionOf(one)));
+        yield return new("credit", "HYG up over 63 sessions", Switch: true, Keep: one => switches.CreditRising(sessionOf(one)));
+        yield return new("the S&P 500's breadth", "in place of the index's own", Switch: true, LargeBreadth: true);
+    }
+
+    // The second stage's section of a report: each level alone with the settings that kept it and the median change it
+    // made, and the survivors crossed on each of the strongest settings with whether it meets the floors.
+    static string StageSection(IReadOnlyList<DialSurvivor> read, IReadOnlyList<string> settings, IReadOnlyList<string> crossedLevels, IReadOnlyList<SweepMeasures> crossed, string reading)
+    {
+        static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
+
+        var page = new StringBuilder("<h3>The second stage: each new dial and switch alone on the ten strongest settings</h3>");
+
+        page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {settings.Count} strongest settings the first stage read, the highest edges after costs among those holding {SweepMeasures.TradeFloor} trades. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. {WebUtility.HtmlEncode(reading)}</p>"));
+        page.Append("<div class=\"table\"><table><thead><tr><th>Dial</th><th>Level</th><th>Kept on</th><th>Median change</th><th>Survives</th></tr></thead><tbody>");
+
+        foreach (var one in read)
+        {
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(one.Dial)}</td><td>{WebUtility.HtmlEncode(one.Level)}</td><td class=\"num\">{one.KeptOn} of {settings.Count}</td><td class=\"num\">{FamilySweepReport.Number(one.MedianChange)}{(one.Switch ? " a trade" : string.Empty)}</td><td>{(one.KeptOn >= SweepDials.KeptOn ? "yes" : "no")}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div>");
+
+        if (crossedLevels.Count == 0)
+        {
+            return page.Append("<p>No level survives, so nothing is crossed.</p>").ToString();
+        }
+
+        page.Append($"<h3>The survivors crossed</h3><p>{WebUtility.HtmlEncode(string.Join("; ", crossedLevels))}, together on each of the ten settings.</p>");
+        page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Meets the floors</th></tr></thead><tbody>");
+
+        for (var at = 0; at < settings.Count; at++)
+        {
+            var meets = crossed[at].Scored >= FamilySweep.TradeFloor && YearsAbove(crossed[at]) >= FamilySweep.YearsBeating;
+
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(settings[at])}</td><td class=\"num\">{crossed[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(crossed[at].Edge)}</td><td class=\"num\">{YearsAbove(crossed[at])} of 8</td><td>{(meets ? "yes" : "no")}</td></tr>"));
+        }
+
+        return page.Append("</tbody></table></div>").ToString();
+    }
 
     // A run's folder is named by the second it started, and a run started in a second another run's folder already
     // holds takes the next second free: the index sweeps run side by side, and a second run writing into the first's

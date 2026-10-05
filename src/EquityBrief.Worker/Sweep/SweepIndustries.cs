@@ -40,8 +40,16 @@ public sealed class SweepIndustries(SweepHistoryInputs large, HeavyweightHistory
         return sums.Where(pair => pair.Value.Weight > 0).ToDictionary(pair => pair.Key, pair => pair.Value.Weighted / pair.Value.Weight, StringComparer.Ordinal);
     });
 
+    // Whether a name's industry's S&P 500 members fell over the window to a session of the calendar given; a name whose
+    // industry reads none did not.
+    public bool Fell(string ticker, IReadOnlyList<DateOnly> calendar, int session, int window) =>
+        session - window >= 0
+        && industries.TryGetValue(ticker, out var industry)
+        && Between(calendar[session - window], calendar[session]).TryGetValue(industry, out var change)
+        && change < 0;
+
     // A name's bar on a session, none where it holds none.
-    static SweepBar? BarOn(SweepName name, DateOnly day)
+    public static SweepBar? BarOn(SweepName name, DateOnly day)
     {
         var (low, high) = (0, name.Bars.Length - 1);
 
