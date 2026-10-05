@@ -38226,8 +38226,12 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             M15 the pull's close read without the splits filed after it: red in the pull.
             Results: M1 to M15 each red where stated, each reverted, and the eight holdings tests green over the
             reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 95e29f1.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1870 of 1870 tests ran with none failed, migrations
+            0 to 63 with none pending, schema version 63, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 981 claims, 981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    the remedy, run after the merge: the two holdings pulls and the other pulls for each index, its entry
             stating the documents read, the holdings matched by each key and by neither, the provider's asks and the
             same 30 checked again by hand; each family's sweep on each index on membership as it stood; 15.2's second
