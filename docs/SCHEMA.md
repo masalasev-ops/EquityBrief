@@ -45,6 +45,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_split` | HistoryPull | none | HistoryPull |
 | `pulled_revenue` | HistoryPull | none | HistoryPull |
 | `pulled_member` | HistoryPull | none | HistoryPull |
+| `pulled_income` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -372,6 +373,23 @@ Grain: one row per wider index per member its answer listed today.
 Primary key: `index_code`, `ticker`.
 
 **Today's members of the S&P 400 and 600, survivors alone, read by no night** (see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood). The operator's `history-pull --members --index <MID or SML>` asks that index's fundamentals once and stores each member its answer lists today. The answer carries no span of membership, so a row says only that the name is a member today, and a company that left either index before today is in neither. Every other pull given that index reads its names from these rows. The sweep history reads them as members on every session when the wider universe is asked for. Removed whole with its pull, and a second pull adds only the members no earlier pull holds.
+
+### pulled_income
+Grain: one row per ticker per quarter a companies pull answered with an income statement and the day it was filed.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `period_end` | TEXT | the last day of the quarter the income statement closes |
+| `filing_date` | TEXT | the day the statement was filed |
+| `net_income` | TEXT | decimal in code, the quarter's net income as filed, null where the statement states none |
+| `operating_income` | TEXT | decimal in code, the quarter's operating income as filed, null where the statement states none |
+| `interest_expense` | TEXT | decimal in code, the quarter's interest expense as filed, with the sign the provider files it under, null where the statement states none |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `period_end`.
+
+**Each company's quarterly income as its filer filed it, read by no night** (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing). From 15.2 the companies pull stores each quarter of the income statements the same answer carries beside its balance sheets, at no request of its own. The S&P 400's and 600's profit gate sums the net income of the four newest quarters filed before a session, and their coverage reads the operating income against the interest expense of the same four, so a sweep reads each as it stood. A statement carrying no filing date cannot be read as it stood and stores no row; the pull counts them on its row. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

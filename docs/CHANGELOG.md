@@ -11008,3 +11008,36 @@ Was:
 Now:
 > "the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series", and the row ending on what 15.1's tests assert of the three indices' membership, the stages reading them, the Run page's members, a fund's file, the `members` verb and the four funds' pull
 Why: the roster states what each check asserts, and 15.1's tests assert these.
+
+### 2026-10-05 - ARCHITECTURE.html - the pulled income, and the readings the S&P 400's and 600's rules read, in sections 16, 17 and 18 and the catalogue
+Authorised by: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+Was:
+> the history pull's catalogue row read "... pulled revenue, pulled members" in its reads and its writes, and the sweep history's "... pulled revenue, pulled members, calendar, gate results, heavyweight nights"; section 16's pulled history row read "... the session whose split basis the count is on, and, from a splits pull,"
+Now:
+> each names the pulled income beside the pulled members, and section 16's row states each quarter's net income, operating income and interest expense as filed; section 17 gains the rows for the liquidity floors, a trade's cost, and the profit gate and the coverage, and section 18 the row for a company filing no income statement with its date
+Why: 15.2's first half builds the readings the sweeps read and the income they sum.
+
+### 2026-10-05 - BUILD_PLAN.md - 15.2 lands in two pull requests, and the income statements move from 15.3 to it
+Authorised by: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+Was:
+> 15.2's done condition: "**Done when** each reading is worked by hand at a constructed session as it stood, a quarter filed the day after it not read; the cost is worked by hand in every value band and price band and at double, a company with no count read in its band; the edge after costs is the edge before it less the trade's own round trip; the S&P 500's records are read back unchanged; and the entry states the pin lists read and that no pin moved."
+> 15.3's "each 400 and 600 history name's company, CIK, GICS industry and share counts, and its quarterly income statements with the dates they were filed;"
+Now:
+> 15.2 lands in two pull requests, the readings the sweeps read with the income statements first, each with its half of the done condition; 15.3 reads "each 400 and 600 history name's company, CIK, GICS industry, share counts and quarterly income statements as filed, through the companies pull 15.2 widened;"
+Why: on the operator's order of 2026-10-05 the sweeps start as soon as the readings they need are built, and the profit gate they read sums the income statements.
+
+### 2026-10-05 - RUNBOOK.md - the companies pull stores each quarter's income, and is run again for the S&P 400 and 600
+Authorised by: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+Was:
+> "and stores each answered name's filer, GICS sector and delisting in `pulled_company` and its quarterly share counts with the days their balance sheets were filed in `pulled_shares`. It prints the names it could not get with why, the companies filing no sector, no count with its date or no CIK,"
+Now:
+> the same pull storing each quarter's income in `pulled_income` from the same answer and printing the companies filing no dated income statement and the statements carrying no date, and a paragraph giving 15.2's remedy, the pull again for each index
+Why: 15.2's first half widens the companies pull.
+
+### 2026-10-05 - .claude/rules/checks.md - fixture-expectations reads the readings the sweeps read
+Authorised by: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+Was:
+> `fixture-expectations`'s row ending "... every row and sentence giving a wider figure carrying the survivors' words, read back off a constructed report |"
+Now:
+> the row ending on what 15.2's tests assert of a trade's cost, the floors, the profit gate and the coverage, and the companies pull's income
+Why: the roster states what each check asserts, and 15.2's tests assert these.

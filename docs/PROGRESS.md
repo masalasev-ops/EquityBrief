@@ -37850,3 +37850,57 @@ Carried:    after the merge, `tools/remedies/2026-10-05-15.1-the-three-indices.t
             store's growth, in the remedy's entry; 15.1's second half, the cards; the session of 2026-10-02's
             stored evaluations and the two trades its registered family rules kept, which a night run again for it
             at 02:51 UTC replaced under code that had moved, put to the operator; phase 14's sign-off.
+
+### 15.2 - the readings the sweeps read: the floors, a trade's cost from the published table, the profit gate and the coverage, each one function, and each pulled company's quarterly income as filed   2026-10-05
+
+Amended:    This checkpoint amends its own done condition: on the operator's order of 2026-10-05 that the sweeps
+            start as soon as the readings they need are built, it lands in two pull requests, the readings the
+            sweeps read first and every reading stored on the night second, each with its own entry and its half of
+            the done condition, and the income statements move to it from 15.3, both written into the plan by this
+            commit. This entry is the first.
+Built:      one function each, read by the night and the sweep alike: the mean of close times volume over the 50
+            sessions to a session, none over fewer; the floors, a close of at least $5 and that mean at $10 million
+            on the S&P 400 and $5 million on the 600, none on the 500; a trade's cost, half the mean relative
+            effective spread of Collver (2014) Table 4 for its company's value band and its price at the buy and
+            half at the sale, at the table's value and at double, in dollars, in multiples of the risk and in per
+            cent, a company with no count in the $1 to 2 billion band and one above $5 billion in the last; the
+            profit gate, net income over the four newest quarters filed before the session above nothing; and the
+            coverage, operating income over the same four at least twice the interest expense, none filed or a
+            financial company passing. The companies pull asks for each quarter's income statement with the
+            balance sheets it already asks for, one request a name as before, and stores net income, operating
+            income and interest expense with the filing date in `pulled_income`, migration 62, removed whole by its
+            purge. Sections 16, 17 and 18 and the catalogue, SCHEMA, the runbook, the roster's row and the remedy
+            file.
+Tests:      1854, from 1850: four added, the cost in every band and at double against the paper's own figures,
+            the floors at their figures, the profit gate and the coverage as they stood, and the companies pull's
+            income with its purge.
+Claims:     979, from 975: section 17's three rows and section 18's one, named beside phase 14's pair after its
+            report.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; no file this tree edits is in any of them.
+Mutated:    the rule, stated before the run: each property the first half's done condition names broken alone,
+            made by hand over the working tree, filtered to the four tests and reverted.
+            R1 the dollar volume read over 49 sessions: survived first, a missing property, every one of the test's
+            fifty sessions the same so forty-nine read the same mean; the test gained a fiftieth session back at
+            another price, then red in the floors test.
+            R2 the S&P 400's floor read at the 600's $5 million: red in the floors test.
+            R3 a quarter filed on the session read by the profit gate: red in the gate test.
+            R4 the profit gate passing on three quarters: survived first, a missing property, the test's three
+            quarters summing to a loss so the count was never what failed them; the test gained three quarters
+            earning above nothing, then red in the gate test.
+            R5 the coverage passing at once the interest expense: red in the gate test.
+            R6 a company with no count read in the first value band: red in the cost test.
+            R7 the whole spread taken at each end: red in the cost test.
+            R8 a statement with no filing date stored as filed on its quarter's end: red in the income pull test.
+            Results: R1 to R8 each red where stated once R1's and R4's tests were extended, each reverted, and the
+            four tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a4f516e, main
+            merged over cb3ae24, the entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1854 of
+            1854 tests ran with none failed, migrations 0 to 62 with none pending, schema version 62, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 979 claims, 979 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 990 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43
+            checks on the roster, 43 carried and 43 passed.
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-15.2-the-income.txt` from main's
+            Release build; then the sweeps per index and family on today's members, survivors only, at the
+            provisional floors and gate with the published table's costs, each reported as it finishes; 15.2's
+            second half; 15.1's second half; phase 14's sign-off.

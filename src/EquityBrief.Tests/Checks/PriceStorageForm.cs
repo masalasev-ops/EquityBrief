@@ -203,6 +203,11 @@ public class PriceStorageForm
         // cent of the buy out, through `Statistic.FromRatio`. It is what a trade with no target is read in
         // multiples of, stated once where the filler and a test both hold it.
         // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
+        //
+        // `TradeCost.InRisk` and `TradeCost.InPercent` joined it at 15.2: a 400 or 600 trade's prices and its company's
+        // value in, its round trip out in multiples of its risk or in per cent of its buy, each through
+        // `Statistic.FromRatio`. They are what every after-cost figure the night and the sweep state is read through.
+        // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -215,6 +220,8 @@ public class PriceStorageForm
                 "Statistic.cs: ToPrice",
                 "SweepCandidates.cs: RiskPercent",
                 "SwingGates.cs: Moves",
+                "TradeCost.cs: InPercent",
+                "TradeCost.cs: InRisk",
                 "TrailingExit.cs: RiskPct",
                 "UniverseScreen.cs: Distance",
             ],

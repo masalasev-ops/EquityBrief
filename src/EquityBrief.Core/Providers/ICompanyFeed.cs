@@ -10,6 +10,9 @@ public sealed record SheetCount(DateOnly PeriodEnd, DateOnly FilingDate, decimal
 // One company as the provider files it: its CIK, its GICS sector, industry group, industry and sub-industry, the day
 // it was delisted, its quarterly share counts carrying a filing date, and how many of its quarterly balance sheets
 // carry no count or no filing date and so cannot be read as they stood.
+//
+// From 15.2 it carries the quarterly income statements as well, each with the day it was filed, which the S&P 400's and
+// 600's profit gate and coverage read, and how many carry no filing date and so cannot be read as they stood.
 public sealed record CompanyAnswer(
     string Ticker,
     string? Cik,
@@ -19,7 +22,12 @@ public sealed record CompanyAnswer(
     string? SubIndustry,
     DateOnly? DelistedOn,
     IReadOnlyList<SheetCount> Counts,
-    int SheetsUncounted);
+    int SheetsUncounted,
+    IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>? IncomeFiled = null,
+    int StatementsUndated = 0)
+{
+    public IReadOnlyList<EquityBrief.Core.Readings.FiledIncome> Income => IncomeFiled ?? [];
+}
 
 // One company's classification, filer and quarterly share counts, in one request a name.
 //
@@ -51,9 +59,10 @@ public static class CompanyAnswers
     public const string IsDelisted = "General::IsDelisted";
     public const string DelistedDate = "General::DelistedDate";
     public const string Sheets = "Financials::Balance_Sheet::quarterly";
+    public const string Statements = "Financials::Income_Statement::quarterly";
 
     // The filter the request sends, each path a key of the answer.
-    public static IReadOnlyList<string> Filter { get; } = [Code, Cik, Sector, IndustryGroup, Industry, SubIndustry, IsDelisted, DelistedDate, Sheets];
+    public static IReadOnlyList<string> Filter { get; } = [Code, Cik, Sector, IndustryGroup, Industry, SubIndustry, IsDelisted, DelistedDate, Sheets, Statements];
 
     public static CompanyAnswer Parse(string json, string ticker)
     {
@@ -89,6 +98,33 @@ public static class CompanyAnswers
             }
         }
 
+        // Each quarter's income statement with the day it was filed; a statement carrying no filing date cannot be read
+        // as it stood and is counted, and a figure the statement does not state is none.
+        var income = new List<EquityBrief.Core.Readings.FiledIncome>();
+        var undated = 0;
+
+        if (root.TryGetProperty(Statements, out var statements) && statements.ValueKind is JsonValueKind.Object)
+        {
+            foreach (var statement in statements.EnumerateObject())
+            {
+                if (statement.Value.ValueKind is JsonValueKind.Object
+                    && Date(Text(statement.Value, "date") ?? statement.Name) is { } periodEnd
+                    && Date(Text(statement.Value, "filing_date")) is { } filed)
+                {
+                    income.Add(new EquityBrief.Core.Readings.FiledIncome(
+                        periodEnd,
+                        filed,
+                        Number(statement.Value, "netIncome"),
+                        Number(statement.Value, "operatingIncome"),
+                        Number(statement.Value, "interestExpense")));
+                }
+                else
+                {
+                    undated++;
+                }
+            }
+        }
+
         return new CompanyAnswer(
             ticker,
             Filer(root),
@@ -98,7 +134,9 @@ public static class CompanyAnswers
             Text(root, SubIndustry),
             Date(Text(root, DelistedDate)),
             [.. counts.OrderBy(count => count.PeriodEnd)],
-            uncounted);
+            uncounted,
+            [.. income.OrderBy(quarter => quarter.PeriodEnd)],
+            undated);
     }
 
     // The CIK padded to the ten digits the archive is addressed by, from text or a number, none where none is filed.

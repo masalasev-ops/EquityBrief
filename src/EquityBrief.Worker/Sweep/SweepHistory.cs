@@ -109,6 +109,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.PulledMember, Touch.Read),
+            new StoreTouch(Store.PulledIncome, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),

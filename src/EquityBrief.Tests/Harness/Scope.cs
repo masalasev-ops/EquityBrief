@@ -2971,6 +2971,24 @@ internal static class Scope
             "over a store whose night the evaluator and the recorder ran, a stored trade whose end and result alone differ from the replay's restarts its rule at the registration with that trade named on its row and in the line the verb prints, while every rule the replay reproduced carries its record on from its first registration",
             ByExpectations),
 
+        // 15.2, the readings the S&P 400's and 600's rules and their sweeps read: section 17's three rows and section 18's.
+        [CheckReach.Key(LimitsTable, "Liquidity floors of the 400's and 600's rules")] = new Scoped(
+            Verdict.Pass,
+            "each floor at its figure and a step under it on both indices, fifty sessions read and forty-nine not and the oldest of more than fifty left out, and the large cap index's rules clearing every floor, by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Trade cost of the 400's and 600's rules")] = new Scoped(
+            Verdict.Pass,
+            "every value band and price band at the table's value and at double against the paper's figures written apart from the code's table, a trade across two price bands in dollars and in multiples of its risk, each band's edge, a company above the last band, below the first and with no count, by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Profit gate and coverage of the 400's and 600's rules")] = new Scoped(
+            Verdict.Pass,
+            "the gate on the day the fourth quarter was filed and the day after, a fifth quarter moving the oldest out, a quarter stating no net income and one filed twice, and the coverage at twice and a hundredth over, with either sign, none filed and a financial company, by hand",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A company filing no income statement with its date")] = new Scoped(
+            Verdict.Pass,
+            "over constructed answers, a statement carrying no filing date stores nothing and is counted, a company filing none is named on the pull's line, and the purge takes the stored quarters whole",
+            ByExpectations),
+
         // 14.2, the pulls and the readings over them: section 17's five rows and section 18's four.
         [CheckReach.Key(LimitsTable, "Company value")] = new Scoped(
             Verdict.Pass,
@@ -5498,6 +5516,10 @@ internal static class Scope
         // by the plan's own text and derive from it.
         ["Company value"] = "14.2",
         ["Archive requests"] = "14.2",
+        // The readings the S&P 400's and 600's rules and their sweeps read, 15.2.
+        ["Liquidity floors of the 400's and 600's rules"] = "15.2",
+        ["Trade cost of the 400's and 600's rules"] = "15.2",
+        ["Profit gate and coverage of the 400's and 600's rules"] = "15.2",
         // The sector heavyweights' settings, 14.3, frozen at 14.6 with their registrations, and the analysts' revisions.
         ["Heavyweights' size cut"] = "14.3",
         ["Heavyweights' look-back"] = "14.3",
