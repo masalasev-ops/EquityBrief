@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
@@ -128,6 +129,96 @@ public partial class FixtureExpectations
         Assert.Equal(["IA|102|1", "ID|102|2"], FamilyRows(store, "SELECT ticker, entry, place FROM index_family_trade WHERE index_code = 'MID' AND session_date = '" + IndexNight + "' ORDER BY ticker;"));
         Assert.Equal((2, 2), (mid.Listed, mid.HeldByATrade));
         Assert.Contains("\"dollarVolume\":10000000", FamilyRows(store, "SELECT settings FROM index_family_night WHERE index_code = 'MID';").Single(), StringComparison.Ordinal);
+    }
+
+    // Three S&P 400 members of one sector over 261 calendar days to 2026-10-01 and one more to 2026-10-02, and IJH beside
+    // them: the fund rising 1 per cent and falling 0.8 on alternate days, L1 moving 1.5 times the fund and 0.1 per cent a
+    // day more, L2 1.1 times and 0.1 more, and L3 half the fund and 0.3 less, each close rounded to four places, a
+    // million shares a day, a hundred million shares filed and four profitable quarters each.
+    static (TemporaryStore Store, Dictionary<string, decimal[]> Closes) HeavyweightIndexStore()
+    {
+        var store = new TemporaryStore().Migrated();
+        var night = new DateOnly(2026, 10, 1);
+        var days = Enumerable.Range(0, 262).Select(at => night.AddDays(at - 260)).ToArray();
+        var fund = new decimal[262];
+        var closes = new Dictionary<string, decimal[]>(StringComparer.Ordinal) { ["L1"] = new decimal[262], ["L2"] = new decimal[262], ["L3"] = new decimal[262] };
+        var moves = new Dictionary<string, (decimal Beta, decimal Drift)>(StringComparer.Ordinal) { ["L1"] = (1.5m, 0.001m), ["L2"] = (1.1m, 0.001m), ["L3"] = (0.5m, -0.003m) };
+
+        fund[0] = 100m;
+
+        foreach (var ticker in closes.Keys)
+        {
+            closes[ticker][0] = 100m;
+        }
+
+        for (var at = 1; at < 262; at++)
+        {
+            var move = at % 2 == 0 ? 0.01m : -0.008m;
+
+            fund[at] = Math.Round(fund[at - 1] * (1 + move), 4);
+
+            foreach (var (ticker, (beta, drift)) in moves)
+            {
+                closes[ticker][at] = Math.Round(closes[ticker][at - 1] * (1 + (beta * move) + drift), 4);
+            }
+        }
+
+        foreach (var (ticker, series) in closes)
+        {
+            StoreYear(store, ticker, [.. Enumerable.Range(0, 261).Select(at => new FamilyBar(days[at], Math.Round(series[at] * 1.005m, 4), Math.Round(series[at] * 0.995m, 4), series[at], 1_000_000))]);
+            store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', '{ticker}', '2025-01-02', NULL, '2025-01-02T00:00:00Z');");
+            store.Execute($"INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry) VALUES ('{ticker}', '2026-09-01T00:00:00Z', 'CIK{ticker}', 'Industrials', NULL, NULL, NULL);");
+            Quarters(store, ticker, 10m, 10m, 10m, 10m);
+            store.Execute($"UPDATE reported_quarter SET shares = '100000000', basis_session = '2026-06-30', basis_close = '100' WHERE ticker = '{ticker}';");
+        }
+
+        store.Execute(
+            "INSERT INTO market_bar (series, session_date, open, high, low, close, run_id) VALUES " +
+            string.Join(", ", Enumerable.Range(0, 262).Select(at => FormattableString.Invariant($"('IJH', '{Day(days[at])}', '{fund[at]}', '{fund[at]}', '{fund[at]}', '{fund[at]}', 'test')"))) + ";");
+
+        return (store, closes);
+    }
+
+    [Fact]
+    public async Task EachIndexsSectorHeavyweightsBuyTheLeadersOnTheFirstNightOfAMonthAndCarryAndSellAsTheBookKeepsThem()
+    {
+        var (store, closes) = HeavyweightIndexStore();
+
+        using (store)
+        {
+            var clock = FixedClock.At(new DateTimeOffset(2026, 10, 1, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+            // 2026-10-01, the book's first night: L1 returns 85.4 per cent over the 251 sessions and L2 68.9, against the
+            // sector's mean of 35.9, both above their 50-day average and it above their 200-day, with betas of 1.5 and
+            // 1.1; L3 returns -46.5 per cent with a beta of 0.5. The two leaders are bought at the night's closes.
+            var first = await new IndexFamilies(clock, store.DatabaseFile).RunAsync("night-first");
+
+            Assert.Equal(new IndexHeavyweightsOutcome(true, 2, 0, 2), first.Nights.Single(night => night.Index == "MID").Heavyweights);
+            Assert.Equal(
+                [$"L1|2026-10-01|Industrials|{closes["L1"][260]}|1|null|null", $"L2|2026-10-01|Industrials|{closes["L2"][260]}|1|null|null"],
+                FamilyRows(store, "SELECT ticker, entered_on, sector, entry_close, growth, ended_on, reason FROM index_heavyweight_holding WHERE index_code = 'MID' ORDER BY ticker;"));
+
+            // 2026-10-02, the same month: no rebalance. L1 is carried by its close over the night before's; L2 left the
+            // index that day, so it is sold at its last close as a member, the session it was last carried to, with its
+            // growth unchanged.
+            StoreYear(store, "L1", [new FamilyBar(new DateOnly(2026, 10, 2), closes["L1"][261], closes["L1"][261], closes["L1"][261], 1_000_000)]);
+            StoreYear(store, "L2", [new FamilyBar(new DateOnly(2026, 10, 2), closes["L2"][261], closes["L2"][261], closes["L2"][261], 1_000_000)]);
+            StoreYear(store, "L3", [new FamilyBar(new DateOnly(2026, 10, 2), closes["L3"][261], closes["L3"][261], closes["L3"][261], 1_000_000)]);
+            store.Execute("UPDATE membership SET \"left\" = '2026-10-02' WHERE ticker = 'L2';");
+
+            var second = await new IndexFamilies(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("night-second");
+            var carried = Statistic.FromRatio(closes["L1"][261] / closes["L1"][260]);
+
+            Assert.Equal(new IndexHeavyweightsOutcome(false, 0, 1, 1), second.Nights.Single(night => night.Index == "MID").Heavyweights);
+            Assert.Equal(
+                [
+                    FormattableString.Invariant($"L1|2026-10-02|null|null"),
+                    FormattableString.Invariant($"L2|2026-10-01|2026-10-01|{IndexHeavyweights.LeftTheIndex}"),
+                ],
+                FamilyRows(store, "SELECT ticker, through, ended_on, reason FROM index_heavyweight_holding WHERE index_code = 'MID' ORDER BY ticker;"));
+            Assert.Equal(carried, double.Parse(FamilyRows(store, "SELECT growth FROM index_heavyweight_holding WHERE ticker = 'L1';").Single(), CultureInfo.InvariantCulture), 9);
+            Assert.Equal(["2026-10-01|1", "2026-10-02|0"], FamilyRows(store, "SELECT session_date, rebalanced FROM index_family_night WHERE index_code = 'MID' ORDER BY session_date;"));
+        }
     }
 
     [Fact]
