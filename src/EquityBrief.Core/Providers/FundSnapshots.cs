@@ -28,6 +28,10 @@ public interface IFundSnapshotFeed
 
     // One filing's holdings.
     Task<FundSnapshot> SnapshotAsync(string accession, CancellationToken cancellation = default);
+
+    // One document of a filing, as the archive serves it.
+    // see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31
+    Task<string> DocumentAsync(string accession, string document, CancellationToken cancellation = default);
 }
 
 // Reads the archive's list of a fund's filings and a filing's holdings. The S&P 400's fund, IJH, and the S&P 600's, IJR,

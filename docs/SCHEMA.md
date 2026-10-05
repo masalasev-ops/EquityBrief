@@ -47,7 +47,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_member` | HistoryPull | none | HistoryPull |
 | `pulled_income` | HistoryPull | none | HistoryPull |
 | `pulled_snapshot` | HistoryPull | none | HistoryPull |
-| `pulled_holding` | HistoryPull | none | HistoryPull |
+| `pulled_holding` | HistoryPull | HistoryPull | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -400,7 +400,7 @@ Grain: one row per wider index per quarter end its fund filed its holdings for.
 |---|---|---|
 | `index_code` | TEXT | `MID` for the S&P 400's fund, IJH, and `SML` for the S&P 600's, IJR |
 | `period` | TEXT | the quarter end the filing's holdings are as of |
-| `accession` | TEXT | the filing's accession number at the SEC |
+| `accession` | TEXT | the filing's accession number at the SEC, an N-PORT or, for the quarter ends 2018-12-31 and 2019-03-31, the N-Q and the annual report carrying the fund's schedule |
 | `filed` | TEXT | the day the filing was filed |
 | `holdings` | INTEGER | every holding the filing lists |
 | `equity` | INTEGER | the holdings of common stock among them, each a row of `pulled_holding` |
@@ -417,15 +417,15 @@ Grain: one row per wider index per quarter end per holding of common stock its f
 | `period` | TEXT | as `pulled_snapshot` |
 | `holding` | TEXT | the key the holding is stored under |
 | `name` | TEXT | the holding's name as the fund filed it |
-| `cusip` | TEXT | null where the fund filed none |
+| `cusip` | TEXT | null where the fund filed none, as a schedule before the first N-PORT files none |
 | `isin` | TEXT | the ISIN filed, or the one the CUSIP makes, null where neither is filed |
-| `ticker` | TEXT | the provider's code the holding matched, null where it matched none |
-| `matched_by` | TEXT | `isin` or `name`, null where it matched none |
-| `pull` | TEXT | the run id of the pull that wrote the row |
+| `ticker` | TEXT | the provider's code the holding matched, null where it matched none; matched again by a later pull reading the quarter |
+| `matched_by` | TEXT | `isin` or `name`, null where it matched none; matched again with `ticker` |
+| `pull` | TEXT | the run id of the pull that wrote the row, kept when a later pull matches it again |
 
 Primary key: `index_code`, `period`, `holding`.
 
-**The S&P 400's and 600's funds' quarter-end holdings, read by no night** (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). From 15.3 the holdings pull reads each fund's public quarter-end filings at the SEC, the 28 from the quarter to 2019-09-30, and the provider's listed and delisted US symbols, and stores every holding of common stock with the code it matched: by its ISIN first, which names one security however its ticker was later reused, then by its name with the corporate suffixes taken out, a name standing between codes settled by which holds a pulled bar on the snapshot's date where exactly one does, and a holding matched by neither stored with no code and named on the pull's row. The sweeps read membership as it stood off these rows, a name a member from the first snapshot holding it to the last, and every other pull of a wider index asks for each code a snapshot matched beside the members today. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
+**The S&P 400's and 600's funds' quarter-end holdings, read by no night** (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). From 15.3 the holdings pull reads each fund's public quarter-end filings at the SEC, the 28 from the quarter to 2019-09-30, the N-Q for the quarter to 2018-12-31 and the annual report for the year to 2019-03-31, whose schedules name each holding with no identifier (see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31), and the provider's listed and delisted US symbols, and stores every holding of common stock with the code it matched: by its ISIN first, which names one security however its ticker was later reused, then by its name with the corporate suffixes taken out, the provider's names first and then the names the fund's own filings carry beside an ISIN, a name match kept only where its code traded in the six days to the quarter's end, read off a pulled bar or, where none is pulled, off the provider's own daily prices for those days (see: A holding matched by name is kept only where its code traded at the quarter's end), and a holding matched by neither stored with no code and named on the pull's row. The sweeps read membership as it stood off these rows, a name a member from the first snapshot holding it to the last, and every other pull of a wider index asks for each code a snapshot matched beside the members today. Removed whole with its pull. A second pull adds the quarters no earlier pull holds and matches the holdings of the others again, updating a row's code and key alone where the rule as it stands reads another, so a pull is never removed to be matched again.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.
