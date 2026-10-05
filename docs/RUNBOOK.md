@@ -562,6 +562,14 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --holdings --index S
 
 The sweeps read a name as a member from the first snapshot holding it to the last, the first being the N-Q's of 2018-12-31, so a name it holds is read from the history's start; the quarter to 2019-06-30 holds no snapshot, so a name held on 2019-03-31 and 2019-09-30 is read as a member between them.
 
+**A pull narrowed to named codes.** The bars, surprises, companies and splits pulls ask every name of the index again, whatever an earlier pull holds, and the companies pull costs ten weighted calls a name: about 19,700 over the S&P 400's and 600's names, which on 2026-10-05 was the day's whole allowance. Given `--names` with codes between commas, each asks only those of the index's names, a code the index does not hold asked for by none, so the few codes a match added cost their own asks alone; the surprises pull still reads every calendar month, one weighted call a month:
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --companies --from 2018-01-01 --index SML --names ARCH,OPITQ --live
+```
+
+Before any pull, the provider's own count of the day's calls is read off its user endpoint, and a pull is run on a day's allowance no night is drawing on.
+
 Remove a pull whole by its run id:
 
 ```

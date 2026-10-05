@@ -38563,3 +38563,24 @@ Carried:    the companies, splits and surprises pulls for the codes no earlier p
             allowance, once the pulls are narrowed to them; the operator's ruling on the S&P 600's pullback, which
             misses the plateau's one-step test, and on the two settings newly meeting the floors; 15.4's landing on
             the branch rebased onto main; 15.1's third pull request; phase 14's sign-off.
+
+### 15.3 - correction: a pull narrowed to named codes, so the few codes a match added cost their own asks   2026-10-05
+
+Built:      the bars, surprises, companies and splits pulls take `--names` with codes between commas and ask only
+            those of the index's names, a code the index does not hold asked for by none; unnarrowed, each asks every
+            name as before. The runbook states the option, what an unnarrowed companies pull costs and that a pull is
+            run on a day's allowance no night is drawing on. A remedy file runs the three pulls the afternoon's remedy
+            could not finish for the five codes the matching added that the history holds no company or no income for:
+            ARCH, OPITQ, CIR_old and BBBYQ in the S&P 600's fund and BBBYQ in the S&P 400's, about 270 weighted calls.
+Tests:      FILLED FROM THE RUN: one added, a companies pull narrowed to a held code and one the index does not hold
+            asking the held one alone, a splits pull narrowed asking once, and the same companies pull unnarrowed
+            asking every name.
+Claims:     FILLED FROM THE RUN.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the property this change adds, broken alone by hand, filtered to the
+            test holding it and reverted. M1 the narrowing left out of the names a pull asks: red in the narrowed pull's
+            test. Results: M1 red, reverted, the test green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    `tools/remedies/2026-10-05-15.3-the-named-pulls.txt` from main's build after the merge, once the night of
+            2026-10-05 has finished and on the next day's allowance; then the searches the profit gate reads the
+            added codes in, read again.
