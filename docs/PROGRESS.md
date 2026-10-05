@@ -38132,3 +38132,107 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    the night of 2026-10-05 asks for P's year, read the next morning on its actions row beside BLDR's,
             TAP's and TTD's; 15.2's second half; 15.1's second half; phase 14's sign-off.
+
+### 15.3 - correction: a holding matched by name is kept only where its code traded at the quarter's end, and the N-Q of 2018-12-31 and the annual report of 2019-03-31 are read for each fund's complete schedule   2026-10-05
+
+Built:      a name match is kept only where its code traded in the six days to the snapshot's quarter end, read off
+            a pulled bar or, where none is pulled, off the provider's daily prices for those days, asked once a code
+            a quarter, and none is made where which codes traded is not known; several codes trading are settled by
+            a main exchange first, then a listed code and the code itself; a company renamed since is read by the
+            name its fund's own filings carry beside an ISIN, after the provider's names; and a non-voting class's
+            mark and what follows a slash are no part of a name. The holdings pull reads the N-Q for the quarter to
+            2018-12-31 and the annual report for the year to 2019-03-31, each one document of the trust's schedules,
+            for each fund's complete schedule: a summary passed over and refused alone, and a schedule running into
+            another fund's page before its total refused. A pull reading a quarter an earlier pull stored matches
+            its holdings again, a row's code and key alone, keeping the pull that stored it, so this morning's pulls
+            are matched again and not removed. On the operator's second ruling, a name match stands only where its
+            code's close on the quarter's end, as the provider sends it or with the splits it files after undone, is
+            within 5 per cent of the value per share the fund filed, each holding's shares and value read off the
+            N-PORT filings and the schedules; the names any holdings pull stored with their ISIN's code are read
+            beside the pull's own, both funds' alike; and a name nothing matched is read again against the listed and
+            delisted symbols sharing its first word and half the words the two names hold between them, the five
+            closest, under the same tests, the provider asked about those the store holds no bar of; the pull's line
+            counts the wider matches and names the holdings whose codes traded only at another price. Two decisions;
+            sections 7, 11.4, 16 and 18; `SCHEMA.md`, its update writer; 15.3's text and done condition; the runbook;
+            the checks roster's fixture-expectations row; the two captures with their manifest entries; and the
+            remedy.
+Ruled:      by the operator on 2026-10-05: "Name matching: keep a name match only where its ticker traded at that
+            quarter end. Re-check the same 30 by hand after the fix and state the count." And: "The first nine
+            months of 2019: do not read them on the 2019-09-30 holdings, since that counts companies added during
+            2019. Use the 2018-12-31 N-Q and the 2019-03-31 annual report as planned; if they cannot be read, start
+            the 400 and 600 history at 2019-10-01 and state it on every figure." Both documents can be read. And
+            later the same day: "Unmatched names: before a name is left unmatched, search the provider's delisted
+            symbols by company name and dates for the code it traded under at that quarter end (for example
+            McDermott's and Noble's pre-restructuring listings), applying the same traded-that-quarter rule. Report
+            the final unmatched names, and how many of them later went bankrupt, were delisted or were taken over,
+            since those are the companies a fair history most needs." And: "Yes to the value-per-share check: a match
+            stands only where the filing's value per share is within a stated tolerance of the code's close at that
+            quarter end, which separates common stock from units and preferred lines. State the tolerance and the
+            matches it changes."
+Amended:    this correction amends 15.3's done condition: a name whose codes did not trade at the quarter's end, or
+            traded only at a close more than the stated tolerance from the fund's value a share, is matched to none,
+            a name nothing matched is read more widely and a stored quarter is matched again, the two documents'
+            captured pages are read for each fund's complete schedule with a summary alone refused, and the
+            correction's remedy entry checks the same 30 again.
+Found:      the two documents read whole from the archive on 2026-10-05: the N-Q's IJH schedule names 400 holdings
+            of common stock and its IJR schedule 602; the annual report carries IJH's summary, 50 holdings and the
+            rest as other securities, its complete schedule further on, 400, and IJR's complete schedule, 602. Read
+            read-only against the store's pulled bars by the rule as built, before any ask of the provider: 375 of
+            the N-Q's 400 IJH holdings and 540 of its 602 IJR holdings match a code holding a pulled bar near
+            2018-12-31, and 382 and 550 of the annual report's near 2019-03-31; 19, 43, 13 and 35 more stand only on
+            codes the store holds no bar of, which the remedy's pulls ask the provider about; 6, 19, 5 and 17 match
+            no code, renamed companies the provider names otherwise among them, Owens-Illinois and U.S. Steel. The
+            same reading over the 30 name matches checked by hand at 15.3's remedy, before the asks: 23 the
+            holding's own company; 1 uncertain, Safehold; 2 another security still, Aqua America as WTRU, its equity
+            units, and A. Schulman as SLMNP, a preferred line, each of which traded at its quarter's end; and 4
+            matched to none: Aaron's Inc, McDermott International and Noble Corp plc, whose codes then were the
+            company spun off in 2020, the shares issued after the 2020 bankruptcy and the company formed in 2022, none
+            trading, and GrubHub at 2019-09-30, whose provider history starts on 2020-03-25. The asks may match
+            McDermott and Noble to their own delisted listings, which is why several codes trading are settled by a
+            main exchange first: Noble Group's lines over the counter share Noble Corp plc's name. The count is
+            stated again by hand after the remedy. The tolerance, read before it was set, off the 56 N-PORT filings
+            fetched again from the archive with each holding's shares and value: of the 26,976 holdings matched by
+            ISIN with a pulled close near their quarter's end, 99.4 per cent sit within 1 per cent of the close as
+            sent, and 173 more than 2 per cent from it with or without the filed splits undone, most of them codes
+            whose provider history is another series's, Office Properties under GOV at 1,376 times the fund's price
+            and FGL under FG_old at 245, and the rest adjustments the provider made for spin-offs it files as no
+            split, XPO's and j2's; those are matches by ISIN, which the check does not hold, and they are brought to
+            the operator. Of the 543 matched by name, the 79 outside 2 per cent are all more than 20 per cent away:
+            Aqua America's units at $60.60 against $44.83, and the codes another company took with the name after a
+            merger, Caesars', Coherent's, Cadence's, Dime's, Safehold's and Gannett's among them.
+Tests:      1870, from 1867: three added, the two documents' captured pages read for each fund's complete schedule
+            with each row's shares and value, the name rule, and the value a share against the close; the holdings
+            pull's test widened to the two documents, the provider's asks, the value a share, a close with a later
+            split undone, the wider reading, the other fund's names and a stored quarter matched again.
+Claims:     981, unchanged: cells of existing rows carry the new clauses.
+Pins:       none moved: no pin list names a file the correction changed.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree, filtered to the holdings tests, seven and then eight with the value test, and reverted.
+            M1 the provider's names matched whether or not their codes traded: red in the name rule and the pull.
+            M2 a name matched where which codes traded is not known: red in the name rule.
+            M3 the fund's own filings' names not read: red in the name rule and the pull.
+            M4 the non-voting mark read as part of a name: red in the pull; the name rule's Boston Beer, 40
+            characters long, still matched by its words but the last as a name cut at the form's width.
+            M5 the place after a slash read as part of a name: red in the name rule and the pull.
+            M6 a summary read as a complete schedule: red in the documents' test.
+            M7 the provider not asked about a code the store holds no bar of: red in the pull.
+            M8 a stored quarter's holdings not matched again: red in the pull.
+            M9 another fund's page not ending a schedule that has not closed: red in the documents' test.
+            M10 a listed code read before a main exchange's: red in the name rule.
+            M11 every close read as at the fund's value a share: red in the value test and the pull.
+            M12 the close with a later split undone not read: red in the value test.
+            M13 the wider reading of a name not made: red in the value test and the pull.
+            M14 the names earlier pulls stored with their ISIN's code not read: red in the pull.
+            M15 the pull's close read without the splits filed after it: red in the pull.
+            Results: M1 to M15 each red where stated, each reverted, and the eight holdings tests green over the
+            reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 95e29f1.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1870 of 1870 tests ran with none failed, migrations
+            0 to 63 with none pending, schema version 63, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 981 claims, 981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    the remedy, run after the merge: the two holdings pulls and the other pulls for each index, its entry
+            stating the documents read, the holdings matched by each key and by neither, the provider's asks and the
+            same 30 checked again by hand; each family's sweep on each index on membership as it stood; 15.2's second
+            half; 15.1's second half; phase 14's sign-off.

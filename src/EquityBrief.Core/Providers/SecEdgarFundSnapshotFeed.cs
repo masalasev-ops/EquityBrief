@@ -51,6 +51,14 @@ public sealed class SecEdgarFundSnapshotFeed(
         return FundSnapshots.ParseSnapshot(body ?? throw new ProviderRefusal($"The archive holds no holdings document for the filing {accession}.", transient: false), accession);
     }
 
+    public async Task<string> DocumentAsync(string accession, string document, CancellationToken cancellation = default)
+    {
+        var address = new Uri($"https://www.sec.gov/Archives/edgar/data/{FundSnapshots.Trust}/{accession.Replace("-", string.Empty, StringComparison.Ordinal)}/{Uri.EscapeDataString(document)}");
+        var body = await FetchAsync(address, $"the document {document} of the filing {accession}", cancellation).ConfigureAwait(false);
+
+        return body ?? throw new ProviderRefusal($"The archive holds no document {document} for the filing {accession}.", transient: false);
+    }
+
     async Task<string?> FetchAsync(Uri address, string wanted, CancellationToken cancellation)
     {
         Requests++;

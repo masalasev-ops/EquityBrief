@@ -1,0 +1,21 @@
+# The remedy of the 15.3 correction (a name match kept only where its code traded at the quarter's end, and the N-Q and
+# the annual report before the first public N-PORT read), as its PROGRESS entry prints it. No migration. The holdings
+# pulls read each fund's 28 public quarter-end filings and the two documents of the trust's schedules at the SEC, free
+# and a tenth of a second apart, and the provider's two symbol lists, one weighted call each, and ask the provider's daily
+# prices for each code a holding's name could be read as where no pulled bar stands in the six days to its quarter's end,
+# one weighted call a code a quarter, a few hundred in all; they store the two new quarters and match every stored holding
+# again, changing a holding's code and key alone, so no pull is removed. The bars, surprises, companies and splits pulls
+# then run again for each index, asking every code the snapshots now match beside the members today, a name an earlier
+# pull holds keeping its rows: about twenty-two thousand weighted calls of the day's hundred thousand. Everything goes
+# into the pulled history's tables, read by no night. No model call and nothing bought. Run after the merge, when no
+# night is running.
+history-pull --holdings --index MID --live
+history-pull --holdings --index SML --live
+history-pull --from 2018-01-01 --index MID --live
+history-pull --from 2018-01-01 --index SML --live
+history-pull --surprises --from 2018-01-01 --index MID --live
+history-pull --surprises --from 2018-01-01 --index SML --live
+history-pull --companies --from 2018-01-01 --index MID --live
+history-pull --companies --from 2018-01-01 --index SML --live
+history-pull --splits --from 2018-01-01 --index MID --live
+history-pull --splits --from 2018-01-01 --index SML --live

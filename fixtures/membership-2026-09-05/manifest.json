@@ -1282,6 +1282,20 @@
       "trimmedTo": "5 of the 60,411 rows, every key the provider's: three common stocks carrying an ISIN and two carrying none. Kept for membership as it stood: 18,803 of the 60,411 delisted symbols carry an ISIN, which is why a holding is matched by its name where its ISIN finds nothing."
     },
     {
+      "file": "phase15-nq-2018-12-31.htm",
+      "endpoint": "Archives/edgar/data/1100663/000119312519059323/d655820dnq.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1100663/000119312519059323/d655820dnq.htm",
+      "fetchedAt": "2026-10-05T12:01:43Z",
+      "trimmedTo": "the first page of IJH's schedule of investments from its heading to its third holding of common stock and its total of common stocks, then the first page of IJR's to its second holding and its total, whole rows as served, of the document's 28,888,113 bytes carrying the schedules of dozens of the trust's funds. Kept as the N-Q for the quarter to 2018-12-31: each holding named by its company with its shares and value and no identifier, the date and the fund named on each page's heading, and Esterline Technologies held, which TransDigm bought in March 2019."
+    },
+    {
+      "file": "phase15-ncsr-2019-03-31.htm",
+      "endpoint": "Archives/edgar/data/1100663/000119312519167652/d738391dncsr.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1100663/000119312519167652/d738391dncsr.htm",
+      "fetchedAt": "2026-10-05T12:01:45Z",
+      "trimmedTo": "the first page of the shareholder report's summary of IJH's schedule to its first holding, its first line of other securities and its total, then the first page of IJR's complete schedule to its second holding and its total, then the first page of IJH's complete schedule further on to its third holding and its total, whole rows as served, of the document's 47,521,331 bytes. Kept as the annual report for the year to 2019-03-31: a summary carrying the largest holdings and the rest as other securities, which is not read, beside the complete schedule, which is, Esterline no longer held."
+    },
+    {
       "file": "phase15-nport-IJR-2019-09-30.xml",
       "endpoint": "Archives/edgar/data/1100663/000175272419177734/primary_doc.xml",
       "query": "https://www.sec.gov/Archives/edgar/data/1100663/000175272419177734/primary_doc.xml",
