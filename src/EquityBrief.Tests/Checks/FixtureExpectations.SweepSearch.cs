@@ -254,6 +254,50 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void ADialLevelIsKeptWhereItIsHigherInSixYearsWithTwoOfTheLastThreeAndSurvivesOnSixOfTheTenSettings()
+    {
+        static double?[] Edges(params double[] values) => [.. values.Select(value => (double?)value)];
+
+        // A setting at 0.1 every year over 40 trades a year.
+        var without = YearMeasures(SweepForty, Edges(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1));
+
+        // Higher in six years, two of them among the last three: kept. Higher in six with one of the last three, or in
+        // five: not kept.
+        Assert.True(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.0, 0.0, 0.2, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.2, 0.2)), onTotals: false));
+
+        // Higher every year with 300 trades left: kept; with 299: not.
+        Assert.True(SweepDials.Kept(without, YearMeasures([38, 38, 38, 38, 37, 37, 37, 37], Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures([38, 38, 38, 37, 37, 37, 37, 37], Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)), onTotals: false));
+
+        // A switch is read on the year's total: 38 trades a year at 0.105 is a higher edge every year and a lower total,
+        // 3.99 against 4, so a switch is not kept where a dial would be; 40 a year at 0.15 totals 6 and is kept.
+        var thinner = YearMeasures([38, 38, 38, 38, 38, 38, 38, 38], Edges(0.105, 0.105, 0.105, 0.105, 0.105, 0.105, 0.105, 0.105));
+
+        Assert.True(SweepDials.Kept(without, thinner, onTotals: false));
+        Assert.False(SweepDials.Kept(without, thinner, onTotals: true));
+        Assert.True(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15)), onTotals: true));
+
+        // A level kept on six of the ten settings survives and one kept on five does not, each with the median change
+        // its tries made to the edge: six at +0.1 and four at nothing is a median of +0.1, five and five +0.05.
+        var higher = YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2));
+        var tries = Enumerable.Range(0, SweepDials.Settings)
+            .SelectMany(setting => new[]
+            {
+                new DialTry("quality", "off", false, setting, without, setting < 6 ? higher : without),
+                new DialTry("hold", "20 sessions", false, setting, without, setting < 5 ? higher : without),
+            })
+            .ToArray();
+        var read = SweepDials.Read(tries);
+
+        Assert.Equal([("quality", "off", 6), ("hold", "20 sessions", 5)], read.Select(one => (one.Dial, one.Level, one.KeptOn)));
+        Assert.Equal(0.1, read[0].MedianChange!.Value, 6);
+        Assert.Equal(0.05, read[1].MedianChange!.Value, 6);
+        Assert.Equal(["quality"], read.Where(one => one.KeptOn >= SweepDials.KeptOn).Select(one => one.Dial));
+    }
+
+    [Fact]
     public void TheRefinementTakesTheDeepestMoveAndStopsWhenNoMoveIsDeeper()
     {
         var space = SweepSpace.For([]);

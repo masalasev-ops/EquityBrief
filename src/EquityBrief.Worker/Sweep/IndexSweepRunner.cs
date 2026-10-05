@@ -139,7 +139,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         if (family == PullbackSearch)
         {
-            return PullbackSearchRun(indexCode, named, words, inputs, companies, income, folder, started);
+            return await PullbackSearchAsync(indexCode, named, words, history, through, inputs, companies, income, folder, started, cancellation);
         }
 
         if (family == Heavyweights)
@@ -305,11 +305,20 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     // own members, a candidate kept only where it clears the floors and the gate on its session, and every trade's
     // result after its cost at the table's value, its benchmark paying none; the provisional base's setting read beside
     // the search's proposal, each before costs and at double the cost as well. A search proposing nothing, or a
-    // proposal short of the floors after costs, brings the strongest settings and what could be tried next.
+    // proposal short of the floors after costs, brings the strongest settings and what could be tried next. The second
+    // stage then tries each new dial's levels and each market switch alone on the ten strongest settings and crosses
+    // the levels that survive.
     // see: A trade's cost comes off the trade and not its benchmark
     // see: No family on any index is set aside or hidden by a test result without the operator's word
-    int PullbackSearchRun(string indexCode, string named, string words, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, DateTimeOffset started)
+    async Task<int> PullbackSearchAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, DateTimeOffset started, CancellationToken cancellation)
     {
+        var industries = await history.IndustriesAsync(cancellation);
+        var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], "HYG"], through, cancellation);
+
+        output.WriteLine("reading the S&P 500 as it stood for its industries and its breadth");
+
+        var large = await history.ReadAsync(through, null, cancellation);
+
         var calendar = inputs.Sessions;
         var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
         var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
@@ -328,23 +337,30 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         int BarOf(SweepCandidate candidate) => Array.BinarySearch(series[candidate.Name].SessionAt, candidate.Session);
 
+        bool ClearsAt(SweepCandidate candidate, IndexQuality quality, decimal floors) =>
+            Clears(indexCode, series[candidate.Name], BarOf(candidate), income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? [], quality, floors, companies.Companies.GetValueOrDefault(series[candidate.Name].Name.Ticker).Sector);
+
+        // The loosest every level of the second stage reads, no quality and half the dollar volume floor; the provisional
+        // floors and gate keep a part of it, which the search reads.
         var all = found.SelectMany(list => list).ToArray();
-        var candidates = all
-            .Where(candidate => BarOf(candidate) is var bar && bar >= 0 && Clears(indexCode, series[candidate.Name], bar, income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? []))
+        var pool = all
+            .Where(candidate => BarOf(candidate) >= 0 && ClearsAt(candidate, IndexQuality.Off, DollarVolumeHalf))
             .OrderBy(candidate => candidate.Session)
             .ThenBy(candidate => candidate.Name)
             .ToArray();
 
-        SweepBenchmark.Fill(candidates, series, members, parallelism);
+        SweepBenchmark.Fill(pool, series, members, parallelism);
+
+        var candidates = pool.Where(candidate => ClearsAt(candidate, IndexQuality.Profit, 1m)).ToArray();
 
         // Each trade's cost in multiples of its risk, a candidate's plans and exits apiece, taken off its result and put
         // back to read the edge before costs or at double.
         var exits = SweepAxes.Exits;
-        var costs = new float[candidates.Length][];
+        var costs = new float[pool.Length][];
 
-        Parallel.For(0, candidates.Length, at =>
+        Parallel.For(0, pool.Length, at =>
         {
-            var candidate = candidates[at];
+            var candidate = pool[at];
             var one = series[candidate.Name];
             var bar = BarOf(candidate);
             var entry = Statistic.FromPrice(one.Bars[bar].Close);
@@ -373,11 +389,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         void Charge(int multiple)
         {
-            for (var at = 0; at < candidates.Length; at++)
+            for (var at = 0; at < pool.Length; at++)
             {
-                for (var plan = 0; plan < candidates[at].Plans.Length; plan++)
+                for (var plan = 0; plan < pool[at].Plans.Length; plan++)
                 {
-                    if (candidates[at].Plans[plan] is not { } outcomes)
+                    if (pool[at].Plans[plan] is not { } outcomes)
                     {
                         continue;
                     }
@@ -447,6 +463,138 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         bool Meets(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
 
+        // The second stage, every level read after costs: each new dial's levels and each market switch alone on the ten
+        // strongest settings, and then the levels that survive crossed.
+        var ten = search.Strongest(SweepDials.Settings);
+        var withoutDials = ten.Select(MeasuresOf).ToArray();
+        var industryReturns = new SweepIndustries(large, companies, industries);
+        var largeAt = large.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var largeSeries = new SweepSeries[large.Names.Count];
+
+        Parallel.For(0, large.Names.Count, name => largeSeries[name] = SweepColumns.Series(large.Names[name], largeAt));
+
+        var largeSessions = SweepColumns.Sessions(largeSeries, large.Sessions);
+        var largeBreadth = calendar.Select(day => largeAt.TryGetValue(day, out var at) && largeSessions[at].Breadth is { } share ? share : double.NaN).ToArray();
+        var (spy, fund, credit) = (Aligned("SPY"), Aligned(IndexFunds[indexCode]), Aligned("HYG"));
+
+        double[] Aligned(string code)
+        {
+            var closes = new double[calendar.Length];
+
+            Array.Fill(closes, double.NaN);
+
+            foreach (var (session, close) in market.FirstOrDefault(one => one.Series == code)?.Closes ?? [])
+            {
+                if (sessionAt.TryGetValue(session, out var at))
+                {
+                    closes[at] = close;
+                }
+            }
+
+            return closes;
+        }
+
+        decimal Traded(SweepCandidate candidate)
+        {
+            var bar = series[candidate.Name].Bars[BarOf(candidate)];
+
+            return bar.RawClose > 0m ? bar.RawClose : bar.Close;
+        }
+
+        // Whether the candidate's industry's S&P 500 members fell over the window to its session; a candidate whose
+        // industry reads none did not.
+        bool IndustryFell(SweepCandidate candidate, int window) =>
+            candidate.Session - window >= 0
+            && industries.TryGetValue(series[candidate.Name].Name.Ticker, out var industry)
+            && industryReturns.Between(calendar[candidate.Session - window], calendar[candidate.Session]).TryGetValue(industry, out var change)
+            && change < 0;
+
+        // Each switch read on its own session's close, closed on a session its series misses.
+        bool SmallLeads(int session, int window) =>
+            session - window >= 0 && fund[session] / spy[session] / (fund[session - window] / spy[session - window]) > 1;
+
+        bool CreditAboveItsAverage(int session)
+        {
+            if (session < CreditAverageSessions - 1)
+            {
+                return false;
+            }
+
+            var span = credit[(session - CreditAverageSessions + 1)..(session + 1)];
+
+            return !span.Any(double.IsNaN) && credit[session] > span.Average();
+        }
+
+        bool CreditRising(int session) => session - CreditChangeSessions >= 0 && credit[session] / credit[session - CreditChangeSessions] > 1;
+
+        var fundName = IndexFunds[indexCode];
+        IReadOnlyList<DialLevel> levels =
+        [
+            new("dollar volume floor", "half the provisional", Floors: DollarVolumeHalf),
+            new("dollar volume floor", "twice the provisional", Floors: 2m),
+            new("minimum price", "$10", Keep: candidate => Traded(candidate) >= HigherPrice),
+            new("quality", "off", Quality: IndexQuality.Off),
+            new("quality", "profit and cover", Quality: IndexQuality.Cover),
+            new("hold", "20 sessions", Hold: 20),
+            new("hold", "40 sessions", Hold: 40),
+            new("industry fall", "21 sessions", Keep: candidate => !IndustryFell(candidate, 21)),
+            new("industry fall", "63 sessions", Keep: candidate => !IndustryFell(candidate, 63)),
+            new("small against large", $"{fundName} over SPY up over 126 sessions", Switch: true, Keep: candidate => SmallLeads(candidate.Session, 126)),
+            new("small against large", $"{fundName} over SPY up over 252 sessions", Switch: true, Keep: candidate => SmallLeads(candidate.Session, 252)),
+            new("credit", "HYG above its 50-session average", Switch: true, Keep: candidate => CreditAboveItsAverage(candidate.Session)),
+            new("credit", "HYG up over 63 sessions", Switch: true, Keep: candidate => CreditRising(candidate.Session)),
+            new("the S&P 500's breadth", "in place of the index's own", Switch: true, LargeBreadth: true),
+        ];
+
+        // The ten settings read under a set of levels together, the provisional floors, gate and hold where none of them
+        // sets its own; the S&P 500's breadth stands in each candidate's own for the read alone.
+        SweepMeasures[] ReadUnder(IReadOnlyList<DialLevel> together)
+        {
+            var quality = together.Select(level => level.Quality).OfType<IndexQuality>().DefaultIfEmpty(IndexQuality.Profit).First();
+            var floors = together.Select(level => level.Floors).OfType<decimal>().DefaultIfEmpty(1m).First();
+            var held = design with { Hold = together.Select(level => level.Hold).OfType<int>().DefaultIfEmpty(design.Hold).First() };
+            var kept = pool.Where(candidate => ClearsAt(candidate, quality, floors) && together.All(level => level.Keep is not { } keep || keep(candidate))).ToArray();
+            var breadths = together.Any(level => level.LargeBreadth) ? kept.Select(candidate => candidate.Breadth).ToArray() : null;
+
+            if (breadths is not null)
+            {
+                foreach (var candidate in kept)
+                {
+                    candidate.Breadth = largeBreadth[candidate.Session];
+                }
+            }
+
+            try
+            {
+                var levelPicks = SweepStages.Picks(kept, held);
+
+                return [.. ten.Select(point => SweepStages.Measures(levelPicks, held, space.Setting(point), space.Conditions(point), nights))];
+            }
+            finally
+            {
+                if (breadths is not null)
+                {
+                    for (var at = 0; at < kept.Length; at++)
+                    {
+                        kept[at].Breadth = breadths[at];
+                    }
+                }
+            }
+        }
+
+        output.WriteLine(FormattableString.Invariant($"the second stage: {levels.Count} level(s) and switch(es) alone on the {ten.Count} strongest settings"));
+
+        var tries = levels
+            .SelectMany(level => ReadUnder([level]).Select((with, at) => new DialTry(level.Dial, level.Name, level.Switch, at, withoutDials[at], with)))
+            .ToList();
+        var dialsRead = SweepDials.Read(tries);
+        var surviving = dialsRead.Where(one => one.KeptOn >= SweepDials.KeptOn).ToArray();
+        var crossedLevels = surviving
+            .GroupBy(one => one.Dial)
+            .Select(dial => dial.OrderByDescending(one => one.KeptOn).ThenByDescending(one => one.MedianChange ?? double.MinValue).First())
+            .Select(best => levels.First(level => level.Dial == best.Dial && level.Name == best.Level))
+            .ToArray();
+        var crossed = crossedLevels.Length > 0 ? ReadUnder(crossedLevels) : [];
         var proposed = proposal is not null && Meets(after[1]);
         var note = FormattableString.Invariant($"{Membership(named, inputs)} A candidate is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {candidates.Length:N0} of the {all.Length:N0} candidates the members made. Every edge is after each trade's cost at the published table's value, its benchmark the same plan on every member of the index paying none, and the table sets the edge before costs and at double beside it.");
         var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback search</title><style>" + SweepReport.Style + "</style></head><body><main>");
@@ -486,6 +634,34 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         }
 
         page.Append("</tbody></table></div>");
+
+        page.Append("<h3>The second stage: each new dial and switch alone on the ten strongest settings</h3>");
+        page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {ten.Count} strongest settings the search read, the highest edges after costs among those holding {SweepMeasures.TradeFloor} trades. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. The holds are read at 20, 40 and 63 sessions, the holds the candidates' exits carry, where the plan named 21, 42 and 63, and the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it.</p>"));
+        page.Append("<div class=\"table\"><table><thead><tr><th>Dial</th><th>Level</th><th>Kept on</th><th>Median change</th><th>Survives</th></tr></thead><tbody>");
+
+        foreach (var one in dialsRead)
+        {
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(one.Dial)}</td><td>{WebUtility.HtmlEncode(one.Level)}</td><td class=\"num\">{one.KeptOn} of {ten.Count}</td><td class=\"num\">{FamilySweepReport.Number(one.MedianChange)}{(one.Switch ? " a trade" : string.Empty)}</td><td>{(one.KeptOn >= SweepDials.KeptOn ? "yes" : "no")}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div>");
+
+        if (crossedLevels.Length == 0)
+        {
+            page.Append("<p>No level survives, so nothing is crossed.</p>");
+        }
+        else
+        {
+            page.Append($"<h3>The survivors crossed</h3><p>{WebUtility.HtmlEncode(string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name)))}, together on each of the ten settings.</p>");
+            page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Meets the floors</th></tr></thead><tbody>");
+
+            for (var at = 0; at < ten.Count; at++)
+            {
+                page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(space.Describe(ten[at]))}</td><td class=\"num\">{crossed[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(crossed[at].Edge)}</td><td class=\"num\">{YearsAbove(crossed[at])} of 8</td><td>{(Meets(crossed[at]) ? "yes" : "no")}</td></tr>"));
+            }
+
+            page.Append("</tbody></table></div>");
+        }
 
         if (refinement.Count + extensions.Count + limits.Count > 0)
         {
@@ -536,12 +712,20 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 proposed,
                 started,
                 read = shown.Select((one, at) => new { one.Label, setting = space.Describe(one.Point), after = after[at], before = before[at], doubled = doubled[at] }),
+                strongestTen = ten.Select((point, at) => new { setting = space.Describe(point), after = withoutDials[at] }),
+                dials = dialsRead,
+                tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
+                crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
+                crossed = crossed.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = Meets(measures) }),
             },
             SweepRunner.Json));
 
         output.WriteLine(proposed
             ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}")
             : FormattableString.Invariant($"none passed: the provisional base reads {FamilySweepReport.Number(after[0].Edge)} after costs over {after[0].Scored:N0} trades; the report states the strongest settings and what could be tried next"));
+        output.WriteLine(crossedLevels.Length == 0
+            ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Count} strongest settings")
+            : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, the strongest of the ten reads {FamilySweepReport.Number(crossed.Max(one => one.Edge))} after costs, {crossed.Count(Meets)} of {ten.Count} meeting the floors"));
         output.WriteLine("report " + report);
 
         return 0;
@@ -552,6 +736,16 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // The file a run creates in its folder to hold it, created only where none is.
     public const string ClaimFile = "run.claim";
+
+    // The second stage's levels: half the provisional dollar volume floor, the higher minimum price, and the sessions
+    // the credit switch reads HYG's average and its change over.
+    public const decimal DollarVolumeHalf = 0.5m;
+
+    public const decimal HigherPrice = 10m;
+
+    public const int CreditAverageSessions = 50;
+
+    public const int CreditChangeSessions = 63;
 
     // A run's folder is named by the second it started, and a run started in a second another run's folder already
     // holds takes the next second free: the index sweeps run side by side, and a second run writing into the first's
