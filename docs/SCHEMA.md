@@ -913,6 +913,7 @@ Grain: one row per session and index the S&P 400's and 600's provisional rules w
 | `breadth` | REAL | the share of those members holding a close and a 200-day average whose close stood above it, null where fewer than half hold both |
 | `market_open` | INTEGER | 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night |
 | `settings` | TEXT | JSON: each family's rule as the night read it, its settings, its floors and its gate, the words each card's description is written from |
+| `rebalanced` | INTEGER | 1 where the index's sector heavyweights read a rebalance that night, the first night of a month the book reads, 0 otherwise |
 
 Primary key: `index_code`, `session_date`.
 

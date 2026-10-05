@@ -703,6 +703,7 @@ public static class SchemaMigrations
             breadth       REAL,
             market_open   INTEGER NOT NULL,
             settings      TEXT NOT NULL,
+            rebalanced    INTEGER NOT NULL,
             PRIMARY KEY (index_code, session_date)
         ) STRICT;
 

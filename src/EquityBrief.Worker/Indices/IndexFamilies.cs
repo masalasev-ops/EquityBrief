@@ -17,7 +17,7 @@ namespace EquityBrief.Worker.Indices;
 // What the index families did for one index on the night: the members read, the breadth and the market check, how many
 // each family passed, how many of the index's list were listed and how many held back by a trade still open, and the
 // trades kept tonight and ended tonight.
-public sealed record IndexNightOutcome(string Index, int Members, double? Breadth, bool MarketOpen, IReadOnlyDictionary<string, int> Passed, int Listed, int HeldByATrade, int TradesKept, int TradesEnded);
+public sealed record IndexNightOutcome(string Index, int Members, double? Breadth, bool MarketOpen, IReadOnlyDictionary<string, int> Passed, int Listed, int HeldByATrade, int TradesKept, int TradesEnded, IndexHeavyweightsOutcome Heavyweights);
 
 // The night the index families read, none where the store holds no bar, and each index's outcome.
 public sealed record IndexFamiliesOutcome(DateOnly? Session, IReadOnlyList<IndexNightOutcome> Nights);
@@ -39,7 +39,9 @@ public sealed class IndexFamilies : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
@@ -50,6 +52,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.IndexFamilyResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -103,8 +106,8 @@ public sealed class IndexFamilies : IComponent
     ";
 
     const string InsertNight = @"
-        INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings)
-        VALUES ($index, $night, $members, $breadth, $open, $settings);
+        INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced)
+        VALUES ($index, $night, $members, $breadth, $open, $settings, $rebalanced);
     ";
 
     const string InsertResult = @"
@@ -180,8 +183,9 @@ public sealed class IndexFamilies : IComponent
             await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(session))], cancellation);
 
             var ended = await WalkAsync(connection, transaction, index, session, cancellation);
+            var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
 
-            await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index))], cancellation);
+            await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
 
             foreach (var answer in read.Answers)
             {
@@ -229,7 +233,8 @@ public sealed class IndexFamilies : IComponent
                 picks.Count(pick => pick.State == FamilyList.Listed),
                 picks.Count(pick => pick.State == FamilyList.OpenTrade),
                 kept,
-                ended);
+                ended,
+                heavyweights);
 
             outcomes.Add(outcome);
             rows += 1 + read.Answers.Count + picks.Count + kept;
@@ -243,7 +248,7 @@ public sealed class IndexFamilies : IComponent
     // What the stage's row says for each index.
     public static string Detail(IReadOnlyList<IndexNightOutcome> outcomes) =>
         string.Join("; ", outcomes.Select(outcome => FormattableString.Invariant(
-            $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended")));
+            $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")));
 
     // The rule each family runs on in the index, the words a card's description is written from: its settings, its
     // floors and its gate.
