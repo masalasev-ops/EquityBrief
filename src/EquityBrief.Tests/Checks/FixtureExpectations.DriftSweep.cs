@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Checks;
 // of a band and the setting's multiple of the risk, the night's print on the fixture's night, a print the
 // pulled surprises hold and the calendar does not read from the pull, and a constructed history whose report
 // states a known answer.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public partial class FixtureExpectations
 {
     // The claims the earnings drift's sweep makes, which this check reaches: section 17's row for its grid.
@@ -214,7 +214,7 @@ public partial class FixtureExpectations
         var report = FamilySweepReport.Build(run, adapter.Grid, read, proposal);
         var row = System.Text.RegularExpressions.Regex.Match(report, $"data-key=\"{System.Text.RegularExpressions.Regex.Escape(provisional.Key)}\" data-trades=\"(?<trades>\\d+)\" data-edge=\"(?<edge>[^\"]+)\"><td>The provisional setting</td>");
 
-        Assert.True(proposal.SetAside);
+        Assert.True(proposal.NonePassed);
         Assert.True(row.Success, "The report draws no row for the provisional setting.");
         Assert.Equal("1", row.Groups["trades"].Value);
         Assert.Equal(3 - benchmark, double.Parse(row.Groups["edge"].Value, CultureInfo.InvariantCulture), 3);

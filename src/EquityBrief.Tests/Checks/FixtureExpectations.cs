@@ -210,7 +210,7 @@ public partial class FixtureExpectations
             .. LeaderClaims,
 
             // 13.6, the breakouts' sweep: section 17's rows for its grid and every family sweep's floors and
-            // test, and section 18's row for a family set aside.
+            // test, and section 18's row for a family sweep no setting of which meets its floors.
             .. FamilySweepClaims,
 
             // 13.7, the earnings drift's sweep: section 17's row for its grid.

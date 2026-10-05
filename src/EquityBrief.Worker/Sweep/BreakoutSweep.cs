@@ -11,7 +11,7 @@ public readonly record struct BreakoutReading(int Name, int Bar, int Session, do
 
 // The breakout family's sweep: its rule's readings over the stored history, the listings each setting makes of
 // them, its trailing trade, and the benchmark of the same trailing plan entered on every member that night.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public sealed class BreakoutSweep
 {
     // The shorter window the year's high is read against beside the rule's own, half a year of sessions.

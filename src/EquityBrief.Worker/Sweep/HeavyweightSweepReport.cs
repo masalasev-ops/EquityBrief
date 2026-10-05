@@ -1,11 +1,13 @@
 using System.Net;
 using System.Text;
+using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Worker.Sweep;
 
-// The sector heavyweights' sweep report: the history read, the proposal beside the provisional setting or the family
-// set aside, every setting one step from the proposal, what luck alone would put above nothing, the replay held to the
-// rebalances the night's book stored, and every setting with its figures, each in percent of the buy.
+// The sector heavyweights' sweep report: the history read, the proposal beside the provisional setting with every
+// setting one step from it, or where no setting meets the floors the strongest settings and what could be tried next,
+// what luck alone would put above nothing, the replay held to the rebalances the night's book stored, and every setting
+// with its figures, each in percent of the buy.
 public static class HeavyweightSweepReport
 {
     public static string Build(
@@ -34,8 +36,26 @@ public static class HeavyweightSweepReport
         }
         else
         {
-            page.Append(Invariant($"<p class=\"set-aside\">No setting has at least {FamilySweep.TradeFloor} trades and an edge above nothing in at least {FamilySweep.YearsBeating} of the 8 years, so nothing is steady enough to propose and the family is set aside with its figures.</p>"));
-            page.Append(Table([("The provisional setting", provisional)]));
+            var strongest = SweepNonePassed.StrongestOf(read.Select(one => new Strongest(one.Figures.Key, one.Figures.Trades, one.Figures.YearsBeating, one.Figures.Edge)));
+            var next = new List<string>(SweepNonePassed.FloorsMissed(strongest));
+
+            // The dials the grid reads in order, the size cut, the look-back and the leaders a sector; the others are
+            // choices with no end to read past.
+            if (strongest.Count > 0)
+            {
+                var top = read.First(one => one.Figures.Key == strongest[0].Key).Setting;
+                IReadOnlyList<(string Dial, IReadOnlyList<string> Levels)> dials =
+                [
+                    ("the size cut", [.. HeavyweightSweep.Sizes.Select(size => size == HeavyweightSweep.EveryCompany ? "every company" : Invariant($"{size}"))]),
+                    ("the look-back", [.. HeavyweightSweep.LookBacks.Select(lookBack => Invariant($"{lookBack} sessions"))]),
+                    ("the leaders a sector", [.. HeavyweightSweep.LeaderCounts.Select(leaders => Invariant($"{leaders}"))]),
+                ];
+
+                next.AddRange(SweepNonePassed.GridEnds(dials, [SweepGrid.IndexOf(HeavyweightSweep.Sizes, top.Largest), SweepGrid.IndexOf(HeavyweightSweep.LookBacks, top.LookBack), SweepGrid.IndexOf(HeavyweightSweep.LeaderCounts, top.Leaders)]));
+            }
+
+            next.Add(SweepNonePassed.Ideas([]));
+            page.Append(SweepNonePassed.Section(strongest, next, Table([("The provisional setting", provisional)]), Percent));
         }
 
         page.Append("<h2>What luck alone would pass</h2>");

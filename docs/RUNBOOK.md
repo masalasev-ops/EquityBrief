@@ -545,7 +545,7 @@ It reads the live store directly over a read-only connection, one short read a n
 
 ### Sweeping a setup family
 
-Each setup family's rule is replayed over the stored history across its own grid, one family a run (see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors):
+Each setup family's rule is replayed over the stored history across its own grid, one family a run (see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does):
 
 ```
 dotnet run --project src/EquityBrief.Worker -c Release -- sweep-family --family breakout

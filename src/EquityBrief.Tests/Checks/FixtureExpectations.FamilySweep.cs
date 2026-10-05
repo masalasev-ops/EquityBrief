@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Checks;
 // stock, a setting's figures and the proposal over constructed records, the breakout's readings read back
 // against the rows the night stored over the fixture, and a constructed history whose report states a known
 // answer.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public partial class FixtureExpectations
 {
     // The claims the family sweeps make, which this check reaches: section 17's rows for the breakout's grid and
@@ -162,11 +162,70 @@ public partial class FixtureExpectations
         // Its neighbours, one step on one dial: a=2|b=20, a=1|b=10 and a=1|b=30, the higher edge first.
         Assert.Equal(["a=1|b=10", "a=1|b=30", "a=2|b=20"], proposal.Variants.Select(variant => variant.Key));
 
-        // Where no setting meets the floors, the family is set aside.
+        // Where no setting meets the floors, nothing is proposed.
         var none = FamilySweep.Propose(grid, [.. read.Select(one => (one.Setting, one.Figures with { Trades = 10 }))]);
 
-        Assert.True(none.SetAside);
+        Assert.True(none.NonePassed);
         Assert.Empty(none.Variants);
+    }
+
+    [Fact]
+    public void ASweepNoSettingOfWhichPassesStatesItsFiveStrongestWithTheirShortfallsAndWhatCouldBeTriedNext()
+    {
+        // Two dials of three levels, the provisional setting at the middle of each, and no setting meeting the
+        // floors. A setting's edge is a tenth of its two levels' places, each counted from one, summed, plus 0.3:
+        // a=3|b=30 the highest at 0.9 with 120 trades in 8 years, a=3|b=20 and a=2|b=30 tied at 0.8 and taken by
+        // the key, a=2|b=30 holding 100 trades past the floor and so short of nothing but its years. Every setting
+        // holds the trades and years the switch gives it.
+        var grid = new FamilyGrid([("a", [1, 2, 3]), ("b", [10, 20, 30])], [1, 1]);
+        var read = new List<(int[] Setting, FamilyFigures Figures)>();
+
+        foreach (var setting in grid.Settings)
+        {
+            var key = grid.Key(setting);
+            var edge = ((setting[0] + 1) + (setting[1] + 1)) / 10.0 + 0.3;
+            var (trades, years) = key switch
+            {
+                "a=3|b=30" => (120, 8),
+                "a=3|b=20" => (290, 5),
+                "a=2|b=30" => (FamilySweep.TradeFloor + 100, 4),
+                _ => (50, 2),
+            };
+
+            read.Add((setting, new FamilyFigures(key, trades, trades, 50, 100, edge, edge, new int[8], new double?[8], years, edge, edge, 0.01)));
+        }
+
+        var proposal = FamilySweep.Propose(grid, read);
+        var run = new FamilySweepRun(BreakoutRule.Name, "breakouts'", new DateOnly(2019, 1, 2), new DateOnly(2026, 10, 2), 3, 100, 100, 9, DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
+        var report = FamilySweepReport.Build(run, grid, read, proposal);
+
+        Assert.True(proposal.NonePassed);
+
+        // The five strongest, the highest edge first and a tie on the edge to the key: a=3|b=30 at 0.9, then
+        // a=2|b=30 and a=3|b=20 at 0.8, then a=1|b=30 and a=2|b=20 and a=3|b=10 at 0.7, the first two of them.
+        var strongest = System.Text.RegularExpressions.Regex.Matches(report, "<tr data-key=\"(?<key>[^\"]+)\" data-trades-short=\"(?<trades>\\d+)\" data-years-short=\"(?<years>\\d+)\">")
+            .Select(match => (match.Groups["key"].Value, int.Parse(match.Groups["trades"].Value, CultureInfo.InvariantCulture), int.Parse(match.Groups["years"].Value, CultureInfo.InvariantCulture)))
+            .ToArray();
+
+        Assert.Equal(
+            [("a=3|b=30", 180, 0), ("a=2|b=30", 0, 2), ("a=3|b=20", 10, 1), ("a=1|b=30", 250, 4), ("a=2|b=20", 250, 4)],
+            strongest);
+        Assert.Contains("<p class=\"none-passed\" data-shown=\"5\">", report, StringComparison.Ordinal);
+
+        // What could be tried next: four of the five short of the trades by 10 to 250, four short of the years by
+        // 1 to 4; the strongest reads both dials at the top of the grid; and the ideas' run's tests that fit the
+        // breakout, named, with the page saying it cannot tell which have run.
+        Assert.Contains("4 of the 5 fall short of 300 trades, by 10 to 250", report, StringComparison.Ordinal);
+        Assert.Contains("4 of the 5 fall short of an edge above nothing in 6 of the 8 years, by 1 to 4 year(s)", report, StringComparison.Ordinal);
+        Assert.Contains("The strongest setting reads a at 3, the highest level the grid holds: a level above it could be read.", report, StringComparison.Ordinal);
+        Assert.Contains("The strongest setting reads b at 30, the highest level the grid holds: a level above it could be read.", report, StringComparison.Ordinal);
+        Assert.Contains(System.Net.WebUtility.HtmlEncode(FamilyIdeas.For(BreakoutRule.Name)[0].Rule), report, StringComparison.Ordinal);
+        Assert.Contains("this page cannot say which of them have run on it", report, StringComparison.Ordinal);
+
+        // The family keeps its provisional settings and keeps listing, and the page never says it is set aside.
+        Assert.Contains("The family keeps its provisional settings and keeps listing until the operator rules on it", report, StringComparison.Ordinal);
+        Assert.DoesNotContain("set aside", report, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("set-aside", report, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -330,14 +389,14 @@ public partial class FixtureExpectations
         Assert.Equal((1, 1), (provisional.Listed, provisional.Trades));
         Assert.Equal(result - benchmark, provisional.Edge!.Value, 9);
 
-        // Every setting holding one trade at most, none meets the floors and the family is set aside; the
-        // report says so and states the provisional setting's record as read here.
+        // Every setting holding one trade at most, none meets the floors and nothing is proposed; the report says
+        // so and states the provisional setting's record as read here.
         var proposal = FamilySweep.Propose(BreakoutSweep.Grid, read);
         var run = new FamilySweepRun(BreakoutRule.Name, "breakouts'", calendar[firstScored], calendar[^1], 3, nights, nights, readings.Count, DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
         var report = FamilySweepReport.Build(run, BreakoutSweep.Grid, read, proposal);
 
-        Assert.True(proposal.SetAside);
-        Assert.Contains("class=\"set-aside\"", report, StringComparison.Ordinal);
+        Assert.True(proposal.NonePassed);
+        Assert.Contains("class=\"none-passed\"", report, StringComparison.Ordinal);
         Assert.Contains(System.Net.WebUtility.HtmlEncode(FamilySweepReport.Test), report, StringComparison.Ordinal);
 
         var row = System.Text.RegularExpressions.Regex.Match(report, $"data-key=\"{System.Text.RegularExpressions.Regex.Escape(provisional.Key)}\" data-trades=\"(?<trades>\\d+)\" data-edge=\"(?<edge>[^\"]+)\"><td>The provisional setting</td>");

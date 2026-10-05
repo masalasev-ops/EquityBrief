@@ -78,7 +78,7 @@ public sealed class HeavyweightSweepRunner(IClock clock, string databaseFile, Te
 
         output.WriteLine(proposal.Proposed is { } proposed
             ? "proposed " + proposed.Key + ", edge " + FamilySweepReport.Number(proposed.Edge) + " over " + proposed.Trades.ToString(CultureInfo.InvariantCulture) + " trades"
-            : "set aside: no setting meets the floors");
+            : "none passed: no setting meets the floors, and the report states the strongest settings and what could be tried next");
         output.WriteLine(FormattableString.Invariant($"the replay read {comparison.Matched} of the {comparison.Sectors} sector(s) the night stored over {comparison.Sessions} rebalance(s) as stored"));
         output.WriteLine("report " + report);
 

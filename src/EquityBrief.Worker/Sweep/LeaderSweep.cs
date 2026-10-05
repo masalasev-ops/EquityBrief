@@ -31,7 +31,7 @@ public readonly record struct LeaderReading(
 // pullback's setup, trigger and trade at the live settings read with leadership in place of the trend and
 // strength gate, the listings each setting of the grid makes, and the pullback's trade and its benchmark as
 // the sweep's candidates score them.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public static class LeaderSweep
 {
     public static FamilyGrid Grid { get; } = new(

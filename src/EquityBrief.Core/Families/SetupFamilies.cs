@@ -142,6 +142,6 @@ public static class SetupFamilies
         "CASE " + family + string.Concat(InPageOrder.Concat(Former).Select(one => FormattableString.Invariant($" WHEN '{one.Name}' THEN {one.CapSessions}"))) + FormattableString.Invariant($" ELSE {ForwardReturnSeries.SetupSessionCap} END");
 
     // What a family's card says of a rule no freeze has registered yet.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     public const string Provisional = "provisional: not yet frozen; its record starts at the freeze";
 }

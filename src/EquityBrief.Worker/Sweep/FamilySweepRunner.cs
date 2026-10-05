@@ -12,7 +12,7 @@ namespace EquityBrief.Worker.Sweep;
 // into a run folder of its own under the sweep's folder, beside the pullback sweep's runs. It writes nothing to
 // the store, and it does not start while the night holds the store or inside the night's window, since it runs
 // for minutes and a night would wait on its reads.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
 public sealed class FamilySweepRunner(IClock clock, string databaseFile, string dataRoot, string? configuredFolder, TextWriter output)
 {
@@ -169,7 +169,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
 
         output.WriteLine(proposal.Proposed is { } proposed
             ? "proposed " + proposed.Key + ", edge " + FamilySweepReport.Number(proposed.Edge) + " over " + proposed.Trades.ToString(CultureInfo.InvariantCulture) + " trades"
-            : "set aside: no setting meets the floors");
+            : "none passed: no setting meets the floors, and the report states the strongest settings and what could be tried next");
         output.WriteLine("report " + report);
 
         return 0;

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><edgarSubmission xmlns="http://www.sec.gov/edgar/nport" xmlns:com="http://www.sec.gov/edgar/common" xmlns:ncom="http://www.sec.gov/edgar/nportcommon" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sec.gov/edgar/nport eis_NPORT_Filer.xsd">
+  <headerData>
+    <submissionType>NPORT-P</submissionType>
+    <isConfidential>false</isConfidential>
+    <filerInfo>
+
+      <filer>
+        <issuerCredentials>
+          <cik>0001100663</cik>
+          <ccc>XXXXXXXX</ccc>
+        </issuerCredentials>
+      </filer>
+
+
+      <seriesClassInfo>
+        <seriesId>S000004313</seriesId>
+        <classId>C000012043</classId>
+      </seriesClassInfo>
+
+
+    </filerInfo>
+  </headerData>
+  <formData>
+    <genInfo>
+      <regName>iShares Trust</regName>
+      <regFileNumber>811-09729</regFileNumber>
+      <regCik>0001100663</regCik>
+      <regLei>5493000860OXIC4B5K91</regLei>
+      <regStreet1>400 Howard Street</regStreet1>
+      <regCity>San Francisco</regCity>
+      <regStateConditional regCountry="US" regState="US-CA"/>
+      <regZipOrPostalCode>94105</regZipOrPostalCode>
+      <regPhone>800-474-2737</regPhone>
+      <seriesName>iShares Core S&amp;P Small-Cap ETF</seriesName>
+      <seriesId>S000004313</seriesId>
+      <seriesLei>549300BZQ17QYN750B25</seriesLei>
+      <repPdEnd>2020-03-31</repPdEnd>
+      <repPdDate>2019-09-30</repPdDate>
+      <isFinalFiling>N</isFinalFiling>
+    </genInfo>
+    <invstOrSecs>
+      <invstOrSec>
+        <name>Aegion Corp</name>
+        <lei>549300AG3DVJURRIT691</lei>
+        <title>Aegion Corp</title>
+        <cusip>00770F104</cusip>
+        <identifiers>
+          <isin value="US00770F1049"/>
+        </identifiers>
+        <balance>1853154.00000000</balance>
+        <units>NS</units>
+        <curCd>USD</curCd>
+        <valUSD>39620432.52000000</valUSD>
+        <pctVal>0.090039943513</pctVal>
+        <payoffProfile>Long</payoffProfile>
+        <assetCat>EC</assetCat>
+        <issuerCat>CORP</issuerCat>
+        <invCountry>US</invCountry>
+        <isRestrictedSec>N</isRestrictedSec>
+
+        <fairValLevel>1</fairValLevel>
+        <securityLending>
+          <isCashCollateral>N</isCashCollateral>
+          <isNonCashCollateral>N</isNonCashCollateral>
+          <loanByFundCondition isLoanByFund="Y" loanVal="1342664.00000000"/>
+        </securityLending>
+      </invstOrSec>
+      <invstOrSec>
+        <name>Providence Service Corp/The</name>
+        <lei>549300EFZIFW7F7I0Q28</lei>
+        <title>Providence Service Corp/The</title>
+        <cusip>743815102</cusip>
+        <identifiers>
+          <isin value="US7438151026"/>
+        </identifiers>
+        <balance>697762.00000000</balance>
+        <units>NS</units>
+        <curCd>USD</curCd>
+        <valUSD>41488928.52000000</valUSD>
+        <pctVal>0.094286219073</pctVal>
+        <payoffProfile>Long</payoffProfile>
+        <assetCat>EC</assetCat>
+        <issuerCat>CORP</issuerCat>
+        <invCountry>US</invCountry>
+        <isRestrictedSec>N</isRestrictedSec>
+
+        <fairValLevel>1</fairValLevel>
+        <securityLending>
+          <isCashCollateral>N</isCashCollateral>
+          <isNonCashCollateral>N</isNonCashCollateral>
+          <loanByFundCondition isLoanByFund="Y" loanVal="2490541.56000000"/>
+        </securityLending>
+      </invstOrSec>
+      <invstOrSec>
+        <name>PH Glatfelter Co</name>
+        <lei>549300LDQLQBT38QDY28</lei>
+        <title>PH Glatfelter Co</title>
+        <cusip>377316104</cusip>
+        <identifiers>
+          <isin value="US3773161043"/>
+        </identifiers>
+        <balance>2641967.00000000</balance>
+        <units>NS</units>
+        <curCd>USD</curCd>
+        <valUSD>40659872.13000000</valUSD>
+        <pctVal>0.092402135892</pctVal>
+        <payoffProfile>Long</payoffProfile>
+        <assetCat>EC</assetCat>
+        <issuerCat>CORP</issuerCat>
+        <invCountry>US</invCountry>
+        <isRestrictedSec>N</isRestrictedSec>
+
+        <fairValLevel>1</fairValLevel>
+        <securityLending>
+          <isCashCollateral>N</isCashCollateral>
+          <isNonCashCollateral>N</isNonCashCollateral>
+          <isLoanByFund>N</isLoanByFund>
+        </securityLending>
+      </invstOrSec>
+    </invstOrSecs>
+  </formData>
+</edgarSubmission>

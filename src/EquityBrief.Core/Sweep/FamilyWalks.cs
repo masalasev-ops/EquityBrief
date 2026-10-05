@@ -2,7 +2,7 @@ namespace EquityBrief.Core.Sweep;
 
 // The exits a setup family's sweep walks its trades and their benchmarks under, on closes, each bought at the
 // listing's close, with the result in multiples of the risk the plan put up: the buy less its stop.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public static class FamilyWalks
 {
     // A trailing stop and no target: the stop starts where the plan put it and follows the highest close since

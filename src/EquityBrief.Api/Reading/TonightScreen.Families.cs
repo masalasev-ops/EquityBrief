@@ -300,7 +300,7 @@ public static partial class TonightScreen
     // stood at the night's end: the family's live candidate and the other candidates registered under its
     // evaluator, the pullback's the swing filter's. A family no registration stands for runs on provisional
     // settings and reads no day.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
     static (DateOnly? LiveSince, int Variants) Standing(SetupFamily family, IReadOnlyList<CandidateRow> register, DateOnly night) =>
         Standing(family.Name, register, night);
@@ -441,7 +441,7 @@ public static partial class TonightScreen
     // The setups whose trades are in no share as of a night: every one but the pullback that no standing
     // registration makes live. The pullback's trades are the live list's, counted from the swing filter's
     // first night whatever the register holds, as Past picks has always counted them.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     public static IReadOnlySet<string> ProvisionalSetups(IReadOnlyList<CandidateRow> register, DateOnly night) =>
         SetupFamilies.InPageOrder
             .Where(family => family.Name != SetupFamilies.Pullback && Standing(family, register, night).LiveSince is null)

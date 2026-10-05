@@ -1217,6 +1217,97 @@
       "query": "https://data.sec.gov/api/xbrl/companyconcept/CIK0000019617/us-gaap/RevenuesNetOfInterestExpense.json",
       "fetchedAt": "2026-10-03T23:35:56Z",
       "trimmedTo": "the 13 of the 149 facts filed in 2019, every key and nesting level the archive's: a bank, which files its revenue under a concept of its own. Each fact carries the date it was filed and its form, and a quarter a filing states again as a comparative is a fact of its own beside the one that first stated it."
+    },
+    {
+      "file": "phase15-eod-SPY.json",
+      "endpoint": "eod/SPY.US",
+      "query": "eod/SPY.US?from=2018-01-02&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:42Z",
+      "trimmedTo": "the first and the newest of the 2,200 sessions served, every key and type the provider's. Kept for the four funds' data check of 15.0: the adjusted close carries the fund's payouts, 0.876 of the raw close on its first session."
+    },
+    {
+      "file": "phase15-eod-IJH.json",
+      "endpoint": "eod/IJH.US",
+      "query": "eod/IJH.US?from=2018-01-02&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:42Z",
+      "trimmedTo": "the first and the newest of the 2,200 sessions served, every key and type the provider's. Kept as a fund that split five for one in 2024, its first adjusted close 0.176 of its raw close, the split and its payouts together."
+    },
+    {
+      "file": "phase15-eod-IJR.json",
+      "endpoint": "eod/IJR.US",
+      "query": "eod/IJR.US?from=2018-01-02&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:43Z",
+      "trimmedTo": "the first and the newest of the 2,200 sessions served, every key and type the provider's. Kept for the four funds' data check of 15.0, the S&P 600's fund that the small against large readings read against SPY."
+    },
+    {
+      "file": "phase15-eod-HYG.json",
+      "endpoint": "eod/HYG.US",
+      "query": "eod/HYG.US?from=2018-01-02&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:44Z",
+      "trimmedTo": "the first and the newest of the 2,200 sessions served, every key and type the provider's. Kept as the fund whose payouts move its raw close most: its first adjusted close 0.627 of its raw close, so its three-month change is read on adjusted closes."
+    },
+    {
+      "file": "phase15-fundamentals-ARWR.json",
+      "endpoint": "fundamentals/ARWR.US",
+      "query": "fundamentals/ARWR.US?filter=General,AnalystRatings,Financials::Income_Statement::quarterly&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:52Z",
+      "trimmedTo": "General's identifying and GICS fields, the analysts' ratings whole, and 5 of the 114 quarterly income statements, the four newest and the first of 2018, every key of each kept row the provider's. Kept as an S&P 400 member drawn in 15.0's sample of 30 whose four newest quarters' net income sums to a loss, each quarter carrying the date it was filed and its interest expense, and as the five rating counts the coverage reading sums."
+    },
+    {
+      "file": "phase15-fundamentals-GPS.json",
+      "endpoint": "fundamentals/GPS.US",
+      "query": "fundamentals/GPS.US?filter=General,AnalystRatings,Financials::Income_Statement::quarterly&fmt=json",
+      "fetchedAt": "2026-10-05T00:28:57Z",
+      "trimmedTo": "General's identifying and GICS fields, the analysts' ratings whole, and 2 of the 156 quarterly income statements, the newest and the first of 2018, every key of each kept row the provider's. Kept as a ticker the provider's S&P 400 member list still carries though the company trades as GAP: General says it is delisted and its newest quarter is that to 2024-07-31."
+    },
+    {
+      "file": "phase15-sec-facts-WSO.json",
+      "endpoint": "api/xbrl/companyfacts/CIK0000105016.json",
+      "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000105016.json",
+      "fetchedAt": "2026-10-05T00:30:10Z",
+      "trimmedTo": "two concepts of the filer's facts: the first two and the newest two of its 297 NetIncomeLoss facts, and the 4 of its 77 InterestExpense facts ending after 2018-01-01, every key and nesting level the archive's. Kept as a filer whose interest expense is tagged on two quarters since 2018, the sparseness that leaves interest coverage over the history read from the provider's quarters."
+    },
+    {
+      "file": "phase15-company-tickers-mf.json",
+      "endpoint": "files/company_tickers_mf.json",
+      "query": "https://www.sec.gov/files/company_tickers_mf.json",
+      "fetchedAt": "2026-10-05T00:31:02Z",
+      "trimmedTo": "the field list and the 2 of the 28,580 rows for IJH and IJR, as served. Kept as where each fund's series is read: IJH S000004307 and IJR S000004313, both of iShares Trust, CIK 1100663."
+    },
+    {
+      "file": "phase15-symbols-US-delisted.json",
+      "endpoint": "exchange-symbol-list/US",
+      "query": "exchange-symbol-list/US?delisted=1&fmt=json",
+      "fetchedAt": "2026-10-05T00:31:05Z",
+      "trimmedTo": "5 of the 60,411 rows, every key the provider's: three common stocks carrying an ISIN and two carrying none. Kept for membership as it stood: 18,803 of the 60,411 delisted symbols carry an ISIN, which is why a holding is matched by its name where its ISIN finds nothing."
+    },
+    {
+      "file": "phase15-nport-IJR-2019-09-30.xml",
+      "endpoint": "Archives/edgar/data/1100663/000175272419177734/primary_doc.xml",
+      "query": "https://www.sec.gov/Archives/edgar/data/1100663/000175272419177734/primary_doc.xml",
+      "fetchedAt": "2026-10-05T00:32:06Z",
+      "trimmedTo": "the header and the general information whole, and 3 of the 607 holdings, every element of each kept holding the filing's; the fund information between them left out. Kept as IJR's quarter-end holdings for 2019-09-30, each holding named with its CUSIP and ISIN and no ticker: Aegion matched to the provider's symbols by its ISIN, Providence Service matched by its name alone, and PH Glatfelter matched by neither."
+    },
+    {
+      "file": "phase15-ishares-IJR-holdings.csv",
+      "endpoint": "us/products/239774/ishares-core-s-p-small-cap-etf/latest-holdings.csv",
+      "query": "https://www.ishares.com/us/products/239774/ishares-core-s-p-small-cap-etf/latest-holdings.csv",
+      "fetchedAt": "2026-10-05T00:33:37Z",
+      "trimmedTo": "the header lines and 3 of the 650 rows as served, line endings made plain. Kept as the file the night reads the S&P 600's members from: tickers as they trade, CSW and UPBD where the provider's list carries CSWI and RCII, each with its GICS sector."
+    },
+    {
+      "file": "phase15-ishares-IJH-holdings.csv",
+      "endpoint": "us/products/239763/ishares-core-s-p-mid-cap-etf/latest-holdings.csv",
+      "query": "https://www.ishares.com/us/products/239763/ishares-core-s-p-mid-cap-etf/latest-holdings.csv",
+      "fetchedAt": "2026-10-05T00:33:26Z",
+      "trimmedTo": "the header lines and 3 of the 417 rows as served, line endings made plain. Kept as the file the night reads the S&P 400's members from: GAP, CDP and FLG, which the provider's list carries as GPS, OFC and NYCB."
+    },
+    {
+      "file": "phase15-ishares-IJR-dated-2019-01-31.txt",
+      "endpoint": "us/products/239774/ishares-core-sp-smallcap-etf/1467271812596.ajax",
+      "query": "https://www.ishares.com/us/products/239774/ishares-core-sp-smallcap-etf/1467271812596.ajax?fileType=csv&fileName=IJR_holdings&dataType=fund&asOfDate=20190131",
+      "fetchedAt": "2026-10-04T21:04:36Z",
+      "trimmedTo": "a note of what came back, with the answer's opening line and the holdings dates the page offers as served, of its 1,472,778 bytes. Kept as the dated holdings link answering the fund's product page and not its holdings, the page offering 2026-10-01, 2026-09-30 and 2025-12-31 alone."
     }
   ]
 }

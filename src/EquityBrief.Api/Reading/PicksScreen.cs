@@ -25,7 +25,7 @@ public static class PicksScreen
     // filter's own order where it stored none.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     // A trade a setup on provisional settings listed is marked so, by the setups handed in as provisional.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf, IReadOnlySet<string>? provisional = null)
     {
         // Each listing walked against the trades before it: a listing made while the stock's kept trade was
@@ -111,7 +111,7 @@ public static class PicksScreen
 
         // A trade a setup on provisional settings listed is in neither the share nor the average: its
         // setup's record starts at its freeze.
-        // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+        // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         var decided = finished.Where(cell => !cell.Provisional && ForwardReturnSeries.IsScored(Outcome(cell.Status), cell.BreakEven)).ToArray();
         var nights = decided.Select(cell => cell.Night).Distinct().Count();
         var met = decided.Length >= ReasonVerdict.MinimumResolved && nights >= ReasonVerdict.MinimumSessions;

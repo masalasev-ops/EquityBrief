@@ -197,7 +197,7 @@ public sealed record PickCell(
     bool Trailing = false,
     // Whether the setup that listed the trade runs on provisional settings, no freeze having registered it:
     // the trade is drawn and counted as listed, and is in no share and no average until the freeze.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     bool Provisional = false);
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
@@ -254,7 +254,7 @@ public sealed record PicksSummary(
     int Repeats = 0,
     // The trades among those listed that a setup on provisional settings listed: counted as listed, open
     // or finished, and in neither the share nor the average.
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     int Provisional = 0)
 {
     public int Finished => Target + Stopped + Time;

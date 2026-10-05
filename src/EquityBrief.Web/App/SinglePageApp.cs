@@ -2287,7 +2287,7 @@ public sealed class SinglePageApp : IComponent
             ? Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\">Showing {shown.Count} of {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")}</p>")
             : Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\" data-repeats=\"{summary.Repeats}\">Showing {shown.Count} of {summary.Listed + summary.Repeats} rows: {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")} and {summary.Repeats} listed again while an earlier trade was open</p>"));
         // The trades a setup on provisional settings listed are followed like any other and are in no share.
-        // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+        // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         if (summary.Provisional > 0)
         {
             body.Append(Invariant($"<p class=\"provisional-count\" data-provisional=\"{summary.Provisional}\">{summary.Provisional} of them {(summary.Provisional == 1 ? "was" : "were")} listed by a setup not yet frozen: followed like any other, and in no share and no average until its freeze.</p>"));
@@ -2317,7 +2317,7 @@ public sealed class SinglePageApp : IComponent
     // Past picks' card of the sector heavyweights' holdings, each in percent beside its sector's largest companies
     // over the same sessions, and nothing where the book has bought nothing.
     // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
-    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     static string HeavyweightPicksCard(MarkRenderer marks, DateOnly? night, IReadOnlyList<HeavyweightPickCell>? holdings)
     {
         if (holdings is not { Count: > 0 })
