@@ -38012,3 +38012,28 @@ Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-
             neither, and 30 name matches checked by hand; then each family's sweep on each index again on membership
             as it stood; the two schedules before 2019-09-30 put to the operator; 15.2's second half; 15.1's second
             half; phase 14's sign-off.
+
+### 15.3 - correction: the bars pull names a name whose year the provider sends in a form that cannot be read, and goes on   2026-10-05
+
+Built:      the history pull's bars, asked for a name whose year the provider sends with a session closing at
+            nothing, which the reader refuses whole, name it with the reader's reason as they name a name the
+            provider refuses, and store the others.
+Found:      running 15.3's remedy on 2026-10-05 from main's build of 91521ab: the bars pull of the S&P 400's history
+            stopped at PACW and the S&P 600's at AEL, each a name the funds held and let go whose year the provider
+            sends with a close of 0 on a session, and neither stored anything; the holdings and the surprises pulls
+            ran.
+Tests:      1863, unchanged: the test of a name the provider does not answer gains a name whose year cannot be read.
+Claims:     981, unchanged.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; the history pull is in none of them.
+Mutated:    the rule, stated before the run: the property the correction adds broken alone, made by hand over the
+            working tree, filtered to the history pull's tests and reverted.
+            U1 the pull catching the provider's refusal alone: red in the extended test, the reader's refusal
+            escaping it.
+            Results: U1 red where stated, reverted, and the history pull's fourteen tests green over the reverted
+            tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN
+Carried:    after the merge, the remedy's two bars pulls run again from main's Release build, and the rest of the
+            remedy if it has not finished; the remedy's entry; the sweeps on membership as it stood; 15.2's second
+            half; 15.1's second half; phase 14's sign-off.
