@@ -38415,7 +38415,7 @@ Mutated:    the rule, stated before the run: each property the done condition na
             index night, the Universe and Researched pages' readings of one index, the step's own row, and the
             guards on the S&P 500's list and on the report request.
             Results: M1 to M6 each red where stated, each reverted, the tests green over the reverted tree.
-Verified:   FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
 Carried:    the merge before the night of 2026-10-05, on the operator's order of that day once the funds' closes, the
             guards and the rehearsal were green, with 22:30Z its cutoff; then
             `tools/remedies/2026-10-05-15.1-the-index-families.txt` from main's Release build, each index's book
