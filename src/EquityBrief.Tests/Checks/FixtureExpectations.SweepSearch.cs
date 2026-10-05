@@ -213,6 +213,47 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheStrongestSettingsASearchBringsWhereNonePassesAreTheHighestEdgesHoldingTheTradeFloorAndThenTheMostTrades()
+    {
+        var space = SweepSpace.For([]);
+        var live = space.LivePoint();
+
+        int[] Moved(DialKind dial, int by)
+        {
+            var point = (int[])live.Clone();
+
+            point[(int)dial] += by;
+
+            return point;
+        }
+
+        // Five settings read, one reading no edge: the live point at 0.5 over 400 trades, a step up the reward to
+        // risk at 0.8 over 400, a step down at 0.6 over exactly the floor of 300, a step up the strength at 2.0
+        // over 299 and a step down at 3.5 over 2.
+        var (up, down, stronger, weaker, unread) = (Moved(DialKind.RewardToRisk, 1), Moved(DialKind.RewardToRisk, -1), Moved(DialKind.Strength, 1), Moved(DialKind.Strength, -1), Moved(DialKind.DepthLow, 1));
+        var read = new Dictionary<string, (int Scored, double Edge)>(StringComparer.Ordinal)
+        {
+            [SweepSpace.Key(live)] = (400, 0.5),
+            [SweepSpace.Key(up)] = (400, 0.8),
+            [SweepSpace.Key(down)] = (300, 0.6),
+            [SweepSpace.Key(stronger)] = (299, 2.0),
+            [SweepSpace.Key(weaker)] = (2, 3.5),
+            [SweepSpace.Key(unread)] = (400, double.NaN),
+        };
+        var search = new SweepDesignSearch(SweepDesign.Live, 300, 300, space, (point, _) => read[SweepSpace.Key(point)] is var (scored, edge) ? new SweepSummary(scored, 40, 35, 35, (float)edge, (float)edge, 4, 4, false, 10, 0.3f, 0) : default, point => SweepMeasuresAt(0));
+
+        foreach (var point in new[] { live, up, down, stronger, weaker, unread })
+        {
+            search.Evaluate(point);
+        }
+
+        // The three holding the floor by their edges, 300 among them; then 299 and 2 by their trades, though
+        // their edges are the highest read; and the setting reading no edge nowhere.
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live), SweepSpace.Key(stronger), SweepSpace.Key(weaker)], search.Strongest(10).Select(point => SweepSpace.Key(point)));
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live)], search.Strongest(3).Select(point => SweepSpace.Key(point)));
+    }
+
+    [Fact]
     public void TheRefinementTakesTheDeepestMoveAndStopsWhenNoMoveIsDeeper()
     {
         var space = SweepSpace.For([]);

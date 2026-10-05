@@ -601,17 +601,18 @@ public sealed class SweepDesignSearch
         return [.. leaders.OrderByDescending(pair => pair.Edge).ThenBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => SweepSpace.Parse(pair.Key))];
     }
 
-    // The settings read with the highest edges whatever floors they meet, a tie settled by the setting, which a search
-    // proposing nothing brings the operator.
+    // The settings read with the highest edges among those holding the trade floor, whatever other floors they meet,
+    // and after them the rest by the most trades, a tie settled by the setting, which a search proposing nothing
+    // brings the operator: across a grid of millions the highest edges otherwise fall to settings of a few trades.
     public IReadOnlyList<int[]> Strongest(int count)
     {
-        var read = new Dictionary<string, float>(StringComparer.Ordinal);
+        var read = new Dictionary<string, (float Edge, int Scored)>(StringComparer.Ordinal);
 
         foreach (var (key, summary) in evaluated)
         {
             if (summary.HasEdge)
             {
-                read[key] = summary.Edge;
+                read[key] = (summary.Edge, summary.Scored);
             }
         }
 
@@ -619,11 +620,19 @@ public sealed class SweepDesignSearch
         {
             if (sampleSummaries[at].HasEdge)
             {
-                read[SweepSpace.Key(SamplePoint(at))] = sampleSummaries[at].Edge;
+                read[SweepSpace.Key(SamplePoint(at))] = (sampleSummaries[at].Edge, sampleSummaries[at].Scored);
             }
         }
 
-        return [.. read.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key, StringComparer.Ordinal).Take(count).Select(pair => SweepSpace.Parse(pair.Key))];
+        return
+        [
+            .. read
+                .OrderBy(pair => pair.Value.Scored >= SweepMeasures.TradeFloor ? 0 : 1)
+                .ThenByDescending(pair => pair.Value.Scored >= SweepMeasures.TradeFloor ? pair.Value.Edge : pair.Value.Scored)
+                .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+                .Take(count)
+                .Select(pair => SweepSpace.Parse(pair.Key)),
+        ];
     }
 
     // Depth along one dial is the single steps that dial can move in one direction, the others held, before the
