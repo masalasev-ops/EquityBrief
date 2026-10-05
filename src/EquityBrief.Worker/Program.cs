@@ -58,7 +58,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 24 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 25 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -115,6 +115,10 @@ static int NoVerb()
         "'sweep-wider' replays each swing family at its frozen settings on the S&P 1500, today's 400 and 600 members " +
         "beside the S&P 500's history, against the 500 alone, every 1,500 figure saying it holds survivors only, reading " +
         "the store and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-index --index <MID or SML> --family <name>' sweeps a setup family on the S&P 400 or 600 alone, its " +
+        "strength, market check and benchmark read on that index and every result after costs, on membership as it " +
+        "stood or with '--survivors' on survivors only, reading the store and writing nothing to it, and writes its " +
+        "report and figures in a run folder of its own, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +

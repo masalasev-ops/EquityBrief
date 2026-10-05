@@ -640,6 +640,17 @@ dotnet run --project src/EquityBrief.Worker -c Release -- sweep-wider
 
 It reads the history twice from the live store, read-only, the S&P 500's alone and the 1,500 with the pulled members read as members on every session, writes nothing to the store, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run. It replays the pullback's base, the breakout and the earnings drift over each and judges the 1,500 against the 500 by the ideas' run's test on the edge, stating what luck alone passes over the three tries. Every figure it states for the 1,500 says it holds survivors only, since a history of today's members misses every company that left either index or failed. Its answer is the operator's rule: where no family improves, the widening is dropped and recorded as not adopted; where one does, nothing is adopted until the result holds on membership as it stood. It refuses to start before a members pull has stored either index, and waits for the night as the ideas' run does, allowing itself two hours before the night's window. Start it from `main`'s Release build. Nothing it shows is adopted, frozen or registered.
 
+### Sweeping a setup family on the S&P 400 or 600
+
+From 15.4 each setup family is swept on one index at a time, its strength, market check and benchmark read on that index's own members and every result after the published spread's cost, on membership as it stood where the store holds the index's fund's snapshots and on survivors only with `--survivors`, each figure saying which (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). The families are `pullback-search`, `breakout`, `drift` and the sector heavyweights' two designs, `heavyweights` and `heavyweights-b`; the drift takes `--stop-floor <typical moves>`:
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index SML --family pullback-search
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index MID --family drift --stop-floor 1
+```
+
+Each run reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep folder, claimed by a file only one run can create, so runs started in the same second do not share one. A run where no setting meets the floors says so and its report states the five strongest settings with the floor each misses and what could be tried next, and nothing is set aside (see: No family on any index is set aside or hidden by a test result without the operator's word).
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.
