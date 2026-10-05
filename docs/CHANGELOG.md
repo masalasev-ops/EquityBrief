@@ -11073,3 +11073,27 @@ Was:
 Now:
 > "from each of the twelve tables", and the row ending on what 15.3's tests assert of a captured filing and symbol list, the holdings pull over constructed answers, a reused ticker matched by ISIN, the codes every other pull asks for, and a name read as a member on both sides of a quarter end
 Why: the roster states what each check asserts, 15.3's tests assert these, and the pulled tables were ten before it.
+
+### 2026-10-05 - CLAUDE.md - the corporate action refetch's carve-out names a member returning after sessions in no index
+Authorised by: A member that returns after sessions in no index the night reads has its year asked for again whole
+Was:
+> "the corporate action refetch, which asks for a year again for a name an action landed on, on each of the five nights after a failed check and once a week after that until a refetch succeeds or the name leaves the index," and the citations running "(see: Adjusted history is re-fetched after a corporate action) (see: A suspect name is asked for again ..."
+Now:
+> "the corporate action refetch, which asks for a year again for a name an action landed on or a member returning after sessions in no index the night reads, once on its first night back, and on each of the five nights after a failed check and once a week after that until a refetch succeeds or the name leaves the index," and the new decision cited after the first of them
+Why: BLDR, TAP and TTD came back in the S&P 600 with their stored years stopping where they left the S&P 500, and the refetch that replaces such a year is a per-name request the rule names rather than leaves to be discovered.
+
+### 2026-10-05 - ARCHITECTURE.html - the corporate action checker replaces a returning member's year, in section 7's catalogue and section 17's per-name row
+Authorised by: A member that returns after sessions in no index the night reads has its year asked for again whole
+Was:
+> the catalogue row ending "... staying suspect until then with its name page, its row on tonight's list and the run page saying so", and the per-name row's reason running "... and on the fixture's captured day it is one name in five hundred. A name whose retries are spent stays suspect, ..."
+Now:
+> the catalogue row ending "; and a member back after sessions in no index the night reads has its year replaced the same way on its first night back, once, since an action may have landed on it unseen", with the decision cited, and the per-name row's reason carrying "A member back after sessions in no index the night reads is asked for once on its first night back, its year replaced as an action's is, which is bounded by the names returning rather than by the universe", with the decision cited, after "one name in five hundred."
+Why: the night stored no bar for a name while no index it reads held it, so its year is replaced on its return rather than left holding a gap for a year.
+
+### 2026-10-05 - .claude/rules/checks.md - corporate-actions reads a member returning after sessions in no index
+Authorised by: A member that returns after sessions in no index the night reads has its year asked for again whole
+Was:
+> `corporate-actions`'s row ending "... and a failure of the check itself marks the name suspect with its reason rather than passing |"
+Now:
+> the row going on to a member back after sessions in no index refetched whole on its first night back and not again, a stretch the provider cannot serve standing as a gap, the names not asked for, and a failed refetch on its return marked suspect with its count starting that night
+Why: the roster states what each check asserts, and the correction's four tests assert these.
