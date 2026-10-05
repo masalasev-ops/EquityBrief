@@ -33,11 +33,25 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         ["SML"] = "S&P 600",
     };
 
-    // The families a sweep of an index is built for so far, and the words its report names each by.
+    // The families a sweep of an index is built for so far, and the words its report names each by: the pullback's
+    // base at its provisional settings alone, its nine dials' search to come, and the sector heavyweights' design (a).
     public static IReadOnlyDictionary<string, string> Families { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
+        [Pullback] = "pullback's base",
         [BreakoutRule.Name] = "breakouts'",
         [DriftRule.Name] = "earnings drift's",
+        [Heavyweights] = "sector heavyweights'",
+    };
+
+    public const string Pullback = "pullback";
+
+    public const string Heavyweights = "heavyweights";
+
+    // The fund each index's heavyweights read a leader's beta against.
+    public static IReadOnlyDictionary<string, string> IndexFunds { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["MID"] = "IJH",
+        ["SML"] = "IJR",
     };
 
     public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default)
@@ -88,6 +102,16 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         Directory.CreateDirectory(folder);
         output.WriteLine("run " + Path.GetFileName(folder));
+
+        if (family == Pullback)
+        {
+            return await PullbackAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
+        }
+
+        if (family == Heavyweights)
+        {
+            return await HeavyweightsAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
+        }
 
         var calendar = inputs.Sessions;
         var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
@@ -170,6 +194,191 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         return 0;
     }
 
+    // The pullback's base on the index alone: the ideas' run's replay of the live design's picks with the base's reward
+    // to risk floor, read among the index's members, a listing kept only where it clears the floors and the gate, and
+    // each trade's result after its cost. Its nine dials' search is to come.
+    async Task<int> PullbackAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation)
+    {
+        var market = await history.MarketAsync(through, cancellation);
+        var (replay, ideas) = SweepIdeasRunner.Read(inputs, market, output.WriteLine);
+        var series = replay.Series;
+        var tickers = series.Select(one => one.Name.Ticker).ToArray();
+        var (listed, kept) = (0L, 0L);
+
+        bool Keep(int name, int bar)
+        {
+            var clears = Clears(indexCode, series[name], bar, income.GetValueOrDefault(tickers[name]) ?? []);
+
+            listed++;
+            kept += clears ? 1 : 0;
+
+            return clears;
+        }
+
+        var unfiltered = replay.Trades(SweepIdeas.BaseRule);
+        var trades = replay.Trades(SweepIdeas.BaseRule, Keep);
+
+        IdeaTrade After(IdeaTrade trade, int multiple)
+        {
+            if (trade.Result is not { } result)
+            {
+                return trade;
+            }
+
+            var one = series[trade.Listing.Name];
+            var entry = Statistic.FromPrice(one.Bars[trade.Listing.Bar].Close);
+            var stop = entry - (trade.Listing.StopMoves * one.Atr[trade.Listing.Bar]);
+
+            return trade with { Result = result - CostInRisk(one, trade.Listing.Bar, entry, stop, result, companies, multiple) };
+        }
+
+        var nights = ideas.ScoredNights;
+        var all = SweepIdeas.Figures("the base, with no floors or gate", unfiltered, nights);
+        var before = SweepIdeas.Figures("the base, before costs", trades, nights);
+        var after = SweepIdeas.Figures("the base, after costs", [.. trades.Select(trade => After(trade, 1))], nights);
+        var doubled = SweepIdeas.Figures("the base, at double the cost", [.. trades.Select(trade => After(trade, TradeCost.Doubled))], nights);
+        var note = FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone. A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings the base made cleared them.");
+        var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback base</title><style>" + SweepReport.Style + "</style></head><body><main>");
+
+        page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)}, at its provisional settings</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p><div class=\"table\"><table><thead><tr><th>Read</th><th>Trades</th><th>Edge</th><th>Error</th><th>2024 to 2026 edge</th><th>Without the five largest</th><th>Years above nothing</th><th>Near stops</th></tr></thead><tbody>"));
+
+        foreach (var figures in new[] { all, before, after, doubled })
+        {
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(figures.Key)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{SweepIdeasReport.Number(figures.Edge)}</td><td class=\"num\">{SweepIdeasReport.Number(figures.StandardError)}</td><td class=\"num\">{SweepIdeasReport.Number(figures.RecentEdge)}</td><td class=\"num\">{SweepIdeasReport.Number(figures.EdgeWithoutLargest)}</td><td class=\"num\">{figures.YearEdge.Count(edge => edge > 0)} of 8</td><td class=\"num\">{SweepIdeasReport.Number(figures.CloseStops)}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div></main></body></html>");
+
+        var report = Path.Combine(folder, SweepFolder.ReportFile);
+
+        File.WriteAllText(report, page.ToString());
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Pullback, note, listed, kept, all, before, after, doubled }, SweepRunner.Json));
+
+        output.WriteLine(FormattableString.Invariant($"the base: edge after costs {SweepIdeasReport.Number(after.Edge)} over {after.Trades} trades, before costs {SweepIdeasReport.Number(before.Edge)}, at double {SweepIdeasReport.Number(doubled.Edge)}, with no floors or gate {SweepIdeasReport.Number(all.Edge)} over {all.Trades}"));
+        output.WriteLine("report " + report);
+
+        return 0;
+    }
+
+    // The sector heavyweights' design (a) on the index alone: each sector's return its members' mean, a leader's beta
+    // read against the index's fund, the members each rebalance reads those clearing the floors and the gate on its
+    // session, and each holding's result in per cent after its round trip, its size cut's return paying none.
+    // see: A trade's cost comes off the trade and not its benchmark
+    async Task<int> HeavyweightsAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation)
+    {
+        var fund = (await history.SeriesOfAsync([IndexFunds[indexCode]], through, cancellation)).FirstOrDefault();
+        var calendar = inputs.Sessions;
+        var first = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+        var months = HeavyweightSweep.Rebalances(calendar, first, HeavyweightPeriod.Month);
+        var weeks = HeavyweightSweep.Rebalances(calendar, first, HeavyweightPeriod.Week);
+        var read = months.Concat(weeks).ToHashSet();
+
+        output.WriteLine(FormattableString.Invariant($"laying out {inputs.Names.Count} name(s), {read.Count} session(s) read by a rebalance, beta against {fund?.Series ?? "no fund"}"));
+
+        var (tape, sessions) = HeavyweightSweep.Lay(inputs, companies, fund, read, first);
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        int BarOf(int name, int session) => Array.BinarySearch(series[name].SessionAt, session);
+
+        var (members, clearing) = (0L, 0L);
+        var filtered = new Dictionary<int, HeavyweightSession>();
+
+        foreach (var (session, one) in sessions)
+        {
+            var kept = one.Members.Where(candidate => BarOf(candidate.Name, session) is var bar && bar >= 0 && Clears(indexCode, series[candidate.Name], bar, income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? [])).ToArray();
+
+            members += one.Members.Count;
+            clearing += kept.Length;
+            filtered[session] = one with { Members = kept };
+        }
+
+        HeavyweightTrade Costed(HeavyweightTrade trade, int multiple)
+        {
+            if (trade.Result is not { } result || trade.End is not { } end || BarOf(trade.Name, trade.Entry) is var buy && buy < 0 || BarOf(trade.Name, end) is var sale && sale < 0)
+            {
+                return trade;
+            }
+
+            var bars = series[trade.Name].Bars;
+            var ticker = series[trade.Name].Name.Ticker;
+            var bought = bars[buy];
+            var sold = bars[sale];
+            var entry = bought.RawClose > 0m ? bought.RawClose : bought.Close;
+            var exit = sold.RawClose > 0m ? sold.RawClose : sold.Close;
+            var value = CompanyValue.On(new SessionClose(bought.Session, bought.Close, entry), companies.Counts.GetValueOrDefault(ticker) ?? [], companies.Splits.GetValueOrDefault(ticker) ?? []);
+
+            return trade with { Result = result - (TradeCost.InPercent(value, entry, exit, multiple) / 100.0) };
+        }
+
+        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var settings = HeavyweightSweep.Settings.Where(setting => setting.Sector == HeavyweightSectorReturn.Members).ToArray();
+        var every = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();
+        var figures = new System.Collections.Concurrent.ConcurrentDictionary<string, (HeavyweightFigures Before, HeavyweightFigures After, HeavyweightFigures Doubled)>(StringComparer.Ordinal);
+
+        double? EveryOnce(int from, int to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To));
+
+        output.WriteLine(FormattableString.Invariant($"walking {settings.Length} setting(s) over {clearing:N0} of {members:N0} member-sessions clearing the floors and the gate"));
+
+        Parallel.ForEach(
+            settings.GroupBy(setting => (setting.Largest, setting.LookBack, setting.Leaders, setting.HighBeta)),
+            group =>
+            {
+                var rebalances = read.ToDictionary(session => session, session => HeavyweightSweep.Read(filtered[session], group.First(), names));
+
+                foreach (var setting in group)
+                {
+                    var period = setting.Period == HeavyweightPeriod.Month ? months : weeks;
+                    var trades = HeavyweightSweep.Walk(tape, period.ToDictionary(session => session, session => rebalances[session]), setting.Exit, EveryOnce);
+
+                    figures[setting.Key] = (
+                        HeavyweightSweep.Figures(setting.Key, trades),
+                        HeavyweightSweep.Figures(setting.Key, [.. trades.Select(trade => Costed(trade, 1))]),
+                        HeavyweightSweep.Figures(setting.Key, [.. trades.Select(trade => Costed(trade, TradeCost.Doubled))]));
+                }
+            });
+
+        var after = settings.Select(setting => (setting, figures[setting.Key].After)).ToArray();
+        var proposal = HeavyweightSweep.Propose(after);
+        var provisional = (HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members }).Key;
+        var note = FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session. Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. A member is read by a rebalance only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {clearing:N0} of {members:N0} member-sessions. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
+
+        static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
+
+        var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " heavyweights</title><style>" + SweepReport.Style + "</style></head><body><main>");
+
+        page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)} design (a)</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p>"));
+        page.Append(proposal.Proposed is { } proposed
+            ? $"<p>Proposed: {WebUtility.HtmlEncode(proposed.Key)}.</p>"
+            : "<p>No setting meets the floors after costs.</p>");
+        page.Append(FormattableString.Invariant($"<p>{after.Count(one => one.After.MeetsFloors)} of {settings.Length} settings meet the floors, where luck alone passes about {HeavyweightSweep.Luck(settings.Length):0} with no effect at all.</p>"));
+        page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Holdings</th><th>Edge before costs, points</th><th>After</th><th>At double</th><th>Years above nothing after</th><th>Without the five largest</th><th>Error</th></tr></thead><tbody>");
+
+        foreach (var key in new[] { provisional }.Concat(after.OrderByDescending(one => one.After.Edge ?? double.MinValue).Take(10).Select(one => one.setting.Key)).Distinct(StringComparer.Ordinal))
+        {
+            var (shownBefore, shownAfter, shownDoubled) = figures[key];
+
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(key)}</td><td class=\"num\">{shownAfter.Trades:N0}</td><td class=\"num\">{Points(shownBefore.Edge)}</td><td class=\"num\">{Points(shownAfter.Edge)}</td><td class=\"num\">{Points(shownDoubled.Edge)}</td><td class=\"num\">{shownAfter.YearsBeating} of 8</td><td class=\"num\">{Points(shownAfter.EdgeWithoutLargest)}</td><td class=\"num\">{Points(shownAfter.StandardError)}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div></main></body></html>");
+
+        var report = Path.Combine(folder, SweepFolder.ReportFile);
+
+        File.WriteAllText(report, page.ToString());
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = settings.Select(setting => new { setting.Key, figures[setting.Key].Before, figures[setting.Key].After, figures[setting.Key].Doubled }) }, SweepRunner.Json));
+
+        var (firstBefore, firstAfter, firstDoubled) = figures[provisional];
+
+        output.WriteLine(FormattableString.Invariant($"provisional {provisional}: edge after costs {Points(firstAfter.Edge)} points over {firstAfter.Trades} holdings, before {Points(firstBefore.Edge)}, at double {Points(firstDoubled.Edge)}, {firstAfter.YearsBeating} of 8 years"));
+        output.WriteLine(proposal.Proposed is { } shown ? "proposed " + shown.Key : "none passed: no setting meets the floors after costs");
+        output.WriteLine("report " + report);
+
+        return 0;
+    }
+
     // Whether a listing clears the index's floors and the profit gate on its session: the close as it traded, the mean
     // dollar volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume, and the quarters
     // filed before it.
@@ -186,19 +395,22 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // A kept trade's round trip in multiples of its risk at a multiple of the table, its company valued on the listing's
     // session and its prices read as they traded for their bands, the sale at the price its result puts it.
-    public static double CostInRisk(SweepSeries series, FamilyListing listing, double result, HeavyweightHistory companies, int multiple)
+    public static double CostInRisk(SweepSeries series, FamilyListing listing, double result, HeavyweightHistory companies, int multiple) =>
+        CostInRisk(series, listing.Bar, listing.Entry, listing.Stop, result, companies, multiple);
+
+    public static double CostInRisk(SweepSeries series, int bar, double entry, double stop, double result, HeavyweightHistory companies, int multiple)
     {
-        var held = series.Bars[listing.Bar];
+        var held = series.Bars[bar];
         var ticker = series.Name.Ticker;
         var traded = held.RawClose > 0m ? held.RawClose : held.Close;
         var value = CompanyValue.On(new SessionClose(held.Session, held.Close, traded), companies.Counts.GetValueOrDefault(ticker) ?? [], companies.Splits.GetValueOrDefault(ticker) ?? []);
         var factor = held.Close > 0m ? Statistic.FromRatio(traded / held.Close) : 1.0;
-        var sale = listing.Entry + (result * (listing.Entry - listing.Stop));
+        var sale = entry + (result * (entry - stop));
 
         return TradeCost.InRisk(
             value,
-            Statistic.ToPrice(listing.Entry * factor),
-            Statistic.ToPrice(listing.Stop * factor),
+            Statistic.ToPrice(entry * factor),
+            Statistic.ToPrice(stop * factor),
             Statistic.ToPrice(Math.Max(sale * factor, 0.01)),
             multiple);
     }

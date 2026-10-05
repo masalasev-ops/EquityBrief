@@ -407,6 +407,16 @@ public sealed class SweepHistory : IComponent
         return await SeriesAsync(connection, ["GSPC", "VIX"], through, cancellation);
     }
 
+    // The named series' closes through the history's end, none for a series the store holds no session of: the fund an
+    // index's heavyweights read their beta against.
+    public async Task<IReadOnlyList<SweepMarketSeries>> SeriesOfAsync(IReadOnlyList<string> named, DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await SeriesAsync(connection, named, through, cancellation);
+    }
+
     // Each named series' closes through the history's end with the pull that wrote them, one statement a series, and
     // none for a series the store holds no session of.
     static async Task<IReadOnlyList<SweepMarketSeries>> SeriesAsync(SqliteConnection connection, IReadOnlyList<string> named, DateOnly through, CancellationToken cancellation)
