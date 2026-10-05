@@ -38511,3 +38511,55 @@ Carried:    `tools/remedies/2026-10-05-15.3-the-holdings-in-step.txt` from main'
             families' searches on both indices again, from the sweeps' build, read family by family and index by
             index; the freeze of the S&P 600's pullback where it still meets every floor, and anything newly passing
             brought to the operator.
+
+### 15.3 - the correction's remedy: every stored holding matched again in step, a renamed company's code its fund held, and the four families searched again on both indices   2026-10-05
+
+Ran:        `tools/remedies/2026-10-05-15.3-the-holdings-in-step.txt` from main's build at 6812657, the merge of PR
+            367, 21:03:24 to 21:23:56 UTC, with no night, queue, report pass, labeller or store copy running and no
+            night lock.
+Holdings:   IJH, 12,014 holdings of common stock: 10,999 matched by ISIN, 951 by name alone, 16 of them by the
+            wider reading, 13 by a code its fund held by ISIN within a year, and 51 by none, 25 of those because every
+            code their name reads traded at a close the fund's value a share stood more than 5 per cent from; 36
+            holdings of earlier quarters matched again; 379 codes asked of the provider. IJR, 18,091: 16,306, 1,586
+            with 2 by the wider reading, 19 held, and 180 by none with 92 at another price; 122 matched again; 779
+            codes asked. Before this rule, IJH's by none were 66 and IJR's 191.
+Not in step: the eight codes, each matched to none at the quarters it was matched: BBBY_old in both funds, 3 and 11
+            quarters, COR_old 9, ARCH_old 4, BABY 5, EE_old 4, FG_old 2, GOV 5 and RPT_old 18. Recovered by the
+            company's own delisted listing in step: Bed Bath & Beyond as BBBYQ, 3 and 11 quarters; Arch Resources as
+            ARCH, 4; Natus Medical as NTUS, 5; and Office Properties Income Trust as OPITQ, 5. Left to none, the
+            provider serving no listing of theirs in step: CoreSite, El Paso Electric, FGL Holdings and RPT Realty.
+Held:       32 holdings matched under the key `held`, each to the company's own later code: Apergy as CHX, Aqua
+            America as WTRG, Cabot Microelectronics as CCMP, Owens-Illinois as OI and U.S. Steel as X in IJH; and
+            Investors Real Estate Trust as CSR, Office Depot as ODP, Glatfelter as GLT under two spellings, Park
+            Electrochemical as PKE, U.S. Ecology as ECOL and Universal Forest Products as UFPI in IJR.
+Pulls:      the bars pulls answered 756 of 761 names and 1,190 of 1,209, 608 and 2,398 bars and 0 and 56 earnings
+            prints new; BBBYQ's and ARCH's years stored, OPITQ's not served. The companies pull answered 211 of IJH's
+            761 names before the day's allowance ran out and none of IJR's; the splits pulls answered 2 and none, the
+            surprises pulls none. Each of those three asks every name again whatever an earlier pull holds, the
+            companies at ten weighted calls a name, so the remedy spent the day's allowance: 94,536 of 100,000 before
+            it and 100,000 after, the provider answering 402 from then. BBBYQ and ARCH hold no quarters of income, so
+            the profit gate reads neither until the companies pull is run again on a later day's allowance, narrowed
+            to the codes no earlier pull holds.
+Night:      on the operator's word that evening, the night of 2026-10-05 moved from 23:30 UTC to 02:00 UTC, 22:00 in
+            New York and still that session, after the allowance resets: the task's weekday trigger now starts at
+            2026-10-06 23:30 UTC and a trigger of its own runs it once at 2026-10-06 02:00 UTC.
+Searched:   all ten again from the sweeps' build at 124a054 over the matched membership, read only, against the
+            same ten this afternoon. The S&P 600's pullback proposes the same setting at 0.079 after costs over 2,762
+            trades, 6 of 8 years, 0.061 without the five largest, from 0.081 over 2,760 and 0.063; its depth on the
+            plateau 0, as before, a step on one dial taking it under the plateau's line at 0.036. The S&P 400's
+            pullback passes none as before, its base 0.051 over 1,769 trades from 0.052; its second stage now keeps
+            the profit and cover check, and of the ten settings crossed with it one meets the floors, 0.219 after
+            costs over 554 trades in 6 of 8 years, where none did. The S&P 400's drift now proposes window 3,
+            reaction 0.5, volume 1.5, target 2, 0.038 after costs over 2,031 trades in 6 of 8 years, 0.019 without
+            the five largest, the years 2025 and 2026 at -0.072 and -0.107, where none passed. The S&P 600's drift
+            and both breakouts pass none, as before. The heavyweights move little: design (a) 47 of 648 settings
+            meeting the floors on the S&P 400 and 80 on the S&P 600, from 49 and 77, where luck alone passes about
+            94; design (b) 7 and 3 of 72, from 6 and 4, where luck alone passes about 10, its proposals at 0.49
+            points over 687 holdings and 1.55 over 493, from 0.45 and 1.51.
+Verified:   `tools/ci.ps1` green over c6e4aa3, the tree main holds at 6812657 but for the correction's own figures,
+            1884 of 1884 tests; this entry read by the checks that read the record, run filtered over the tree
+            carrying it, 66 of 66 passing.
+Carried:    the companies, splits and surprises pulls for the codes no earlier pull holds, on a later day's
+            allowance, once the pulls are narrowed to them; the operator's ruling on the S&P 600's pullback, which
+            misses the plateau's one-step test, and on the two settings newly meeting the floors; 15.4's landing on
+            the branch rebased onto main; 15.1's third pull request; phase 14's sign-off.
