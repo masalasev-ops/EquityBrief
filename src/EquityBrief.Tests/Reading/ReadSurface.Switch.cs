@@ -168,8 +168,8 @@ public partial class ReadSurface
         // The header's count is the forty the filter passed of the forty-five, the fired count beside it
         // as context.
         Assert.Contains("data-listed=\"40\"", page, StringComparison.Ordinal);
-        Assert.Contains($"40 of 45 name(s) passed the swing filter on {TheSwitch}", page, StringComparison.Ordinal);
-        Assert.Contains($"6 of 45 name(s) fired on {TheSwitch}, as context", page, StringComparison.Ordinal);
+        Assert.Contains($"40 of 45 S&P 500 members passed the swing filter on {TheSwitch}", page, StringComparison.Ordinal);
+        Assert.Contains($"6 of 45 S&P 500 members fired on {TheSwitch}, as context", page, StringComparison.Ordinal);
 
         // The rule, and the line counting the rows against the count listed.
         Assert.Contains("data-rule=\"filter\">This evening was " + ListRules.EveningByFilter + ".</p>", list, StringComparison.Ordinal);

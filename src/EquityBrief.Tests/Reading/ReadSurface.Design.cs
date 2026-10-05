@@ -574,10 +574,10 @@ public partial class ReadSurface
         var run = await client.GetStringAsync("/screens/run");
         var page = await client.GetStringAsync($"/screens/name/{name}");
 
-        // Each screen opens with the line the masthead carries, naming what it is.
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight\">", tonight, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"The universe\">", universe, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Run evidence\">", run, StringComparison.Ordinal);
+        // Each screen opens with the line the masthead carries, naming what it is and the index it reads.
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&amp;P 500\">", tonight, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"The universe: S&amp;P 500\">", universe, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Run evidence: S&amp;P 500\">", run, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"screen-mast\" data-title=\"{name}\"><span class=\"m-tk\">{name}</span>", page, StringComparison.Ordinal);
         Assert.Contains("the last stored price", page, StringComparison.Ordinal);
 

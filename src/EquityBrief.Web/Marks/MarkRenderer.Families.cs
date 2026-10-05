@@ -37,11 +37,26 @@ public sealed record FamilyCardView(
     IReadOnlyList<string> Notes,
     string? Empty);
 
-// The line tonight's page opens on, on a night the families drew its list: whether the market check left
-// the lists open, the breadth it read against its floor, the buy points the page lists and how many of the
-// setups list one, the stocks a single gate short of one, and the trades still open.
+// The line tonight's page opens on, on a night the families drew its list: the index it is over, whether the
+// market check left the lists open, the breadth it read against its floor, how many of the index's members a
+// setup passed, the buy points the page lists and how many of the setups list one, the stocks a single gate
+// short of one where the night read them, and the trades still open.
 // see: The market check closes every swing family's list together, and the sector heavyweights read none
-public sealed record MarketLineView(bool Open, double? Breadth, double? Floor, int BuyPoints, int SetupsListing, int Setups, int Close, int OpenTrades);
+// see: Every page reads one index at a time chosen under Universe, and every figure names its index
+public sealed record MarketLineView(
+    bool Open,
+    double? Breadth,
+    double? Floor,
+    int BuyPoints,
+    int SetupsListing,
+    int Setups,
+    int Close,
+    int OpenTrades,
+    string Index = "S&P 500",
+    int? Passed = null,
+    int? Members = null,
+    bool CloseRead = true,
+    string? Universe = null);
 
 // One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's
 // word and label, the gate it missed, and that gate's own words.
@@ -66,8 +81,83 @@ public sealed record FamilyRunRow(string Family, string Heading, DateOnly? LiveS
 // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
 public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record, DateOnly? From = null, string? Restarted = null);
 
+// One trade an S&P 400's or 600's list kept, as Past picks draws it: the stock and its company, the setup that listed
+// it and the night, its plan, where it ended by the page's night, its result before its cost, its cost and its result
+// after, each in multiples of its risk and none while open.
+// see: Every page reads one index at a time chosen under Universe, and every figure names its index
+public sealed record IndexTradeCell(
+    string Ticker,
+    string? Company,
+    string Family,
+    string Setup,
+    DateOnly Listed,
+    decimal Entry,
+    decimal Stop,
+    decimal? Target,
+    bool Trailing,
+    DateOnly? EndedOn,
+    double? Result,
+    double? Cost,
+    double? AfterCost);
+
+// How an S&P 400's or 600's night went, as its Run page states it: the members read, the index's own breadth against
+// the floor and whether its swing lists were open, the members a setup passed, those listed and held back, the trades
+// kept and ended, and its sector heavyweights' rebalance and holdings.
+public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings, string? Fault = null);
+
 public sealed partial class MarkRenderer
 {
+    // What each column of an index's trades on Past picks holds.
+    public static IReadOnlyList<(string Heading, string Says)> IndexTradeHeadings { get; } =
+    [
+        ("Stock", "The ticker opens the stock's page, with the company beneath."),
+        ("Setup", "The setup that listed it, on the index's provisional settings."),
+        ("Listed", "The night its list drew it, bought at that evening's close."),
+        ("Buy", "The close it was bought at."),
+        ("Stop", "The price a close beneath ends it at a loss, or the first level of a stop that trails."),
+        ("Target", "The price a close at or above ends it at a gain; a setup that trails its stop names none."),
+        ("Status", "Open, or the session it ended on."),
+        ("Result", "What it made in multiples of what it risked, before its cost."),
+        ("Cost", "Its round trip at the published spread for its size and price, in multiples of its risk."),
+        ("After cost", "Its result less its cost, which is what the index's tests read."),
+    ];
+
+    // An index's trades on Past picks, newest first, each with its result before and after its cost.
+    public string IndexTrades(IReadOnlyList<IndexTradeCell> rows, string index)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table index-trades\" data-index=\"{Escaped(index)}\" data-rows=\"{rows.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in IndexTradeHeadings)
+        {
+            body.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or "Target" or "Result" or "Cost" or "After cost" ? "r" : null));
+        }
+
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var row in rows)
+        {
+            body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-index=\"{Escaped(index)}\" data-family=\"{Escaped(row.Family)}\" data-listed=\"{DayOf(row.Listed)}\" data-ended=\"{(row.EndedOn is { } end ? DayOf(end) : "open")}\" ");
+            body.Append(Invariant, $"data-result=\"{Stated(row.Result)}\" data-cost=\"{Stated(row.Cost)}\" data-after-cost=\"{Stated(row.AfterCost)}\">");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\">{Escaped(row.Setup)} · {Escaped(index)}</td>");
+            body.Append(Invariant, $"<td>{DayOf(row.Listed)}</td>");
+            body.Append(PriceCell("buy", row.Entry, null));
+            body.Append(PriceCell("stop", row.Stop, null));
+            body.Append(PriceCell("target", row.Target, row.Trailing ? "trailing" : null));
+            body.Append(row.EndedOn is { } ended ? Formatted($"<td>ended {DayOf(ended)}</td>") : "<td><b>open</b></td>");
+            body.Append(Invariant, $"<td class=\"r num\">{Multiple(row.Result)}</td><td class=\"r num\">{Multiple(row.Cost)}</td><td class=\"r num\">{Multiple(row.AfterCost)}</td></tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+
+        return body.ToString();
+    }
+
+    static string Multiple(double? value) =>
+        value is { } stated ? stated.ToString("+0.00;-0.00;0.00", Invariant) : "<span class=\"degraded\">none yet</span>";
+
     // The run page's setups, one row a family in the page's order.
     public string FamilyRun(IReadOnlyList<FamilyRunRow> rows)
     {
@@ -188,16 +278,25 @@ public sealed partial class MarkRenderer
     public string MarketLine(MarketLineView line)
     {
         var check = line.Breadth is { } breadth && line.Floor is { } floor
-            ? Formatted($"{breadth * 100:0.0}% of the members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
-            : "the night's breadth is not available";
+            ? Formatted($"the {line.Index}'s breadth: {breadth * 100:0.0}% of its members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
+            : $"the {line.Index}'s breadth is not available tonight";
 
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<p class=\"market-line\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
-        body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{line.Close}\" data-open-trades=\"{line.OpenTrades}\">");
+        body.Append(Invariant, $"<p class=\"market-line\" data-index=\"{Escaped(line.Index)}\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
+        body.Append(Invariant, $"data-passed=\"{(line.Passed is { } passed ? passed.ToString(Invariant) : "none")}\" data-members=\"{(line.Members is { } members ? members.ToString(Invariant) : "none")}\" ");
+        body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{(line.CloseRead ? line.Close.ToString(Invariant) : "none")}\" data-open-trades=\"{line.OpenTrades}\">");
         body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{(line.Open ? "The lists are open" : "The lists are closed")}</b>: {Escaped(check)}. ");
-        body.Append(Invariant, $"<span class=\"market-counts\">{Count(line.BuyPoints, "buy point")} tonight across {line.SetupsListing} of {Count(line.Setups, "setup")} · {line.Close} close to a buy point · ");
-        body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");
+        body.Append("<span class=\"market-counts\">");
+
+        if (line.Passed is { } through && line.Members is { } of)
+        {
+            body.Append(Invariant, $"{through} of {of} {Escaped(line.Index)} members passed a setup · ");
+        }
+
+        body.Append(Invariant, $"{Count(line.BuyPoints, "buy point")} tonight across {line.SetupsListing} of {Count(line.Setups, "setup")} · ");
+        body.Append(line.CloseRead ? Formatted($"{line.Close} close to a buy point · ") : string.Empty);
+        body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");
 
         return body.ToString();
     }
@@ -280,7 +379,7 @@ public sealed partial class MarkRenderer
         body.Append("<p class=\"family-state\">");
         body.Append(card.LiveSince is { } live
             ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
-            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>");
+            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}</b>");
         body.Append(Invariant, $" · {Count(card.Picks.Count, "pick")} tonight · {Count(card.Variants, "variant")} scoring in the background</p>");
 
         if (card.Picks.Count == 0)

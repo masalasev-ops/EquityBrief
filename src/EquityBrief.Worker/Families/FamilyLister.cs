@@ -7,6 +7,7 @@ using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Indices;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Families;
@@ -17,7 +18,8 @@ public sealed record FamilyListOutcome(
     int OpenTrade,
     int UnderAnother,
     int PastFive,
-    IReadOnlyList<(string Family, int Qualified, int Listed)> Families);
+    IReadOnlyList<(string Family, int Qualified, int Listed)> Families,
+    string? IndexTradesFault = null);
 
 // The family lister. Draws the page's list for the night from what each setup family passed, and stores it.
 //
@@ -42,6 +44,7 @@ public sealed class FamilyLister : IComponent
             new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.FamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -105,8 +108,8 @@ public sealed class FamilyLister : IComponent
     const string RecordTheNight = "INSERT INTO family_night (session_date, families) VALUES ($night, $families);";
 
     const string Insert = @"
-        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night)
-        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night);
+        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night, held_index)
+        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night, $held_index);
     ";
 
     const string AppendRun = @"
@@ -164,7 +167,37 @@ public sealed class FamilyLister : IComponent
             qualifying.Add(new FamilyQualifiers(family.Name, await QualifiersAsync(connection, family, session, cancellation)));
         }
 
-        var open = await OpenTradesAsync(connection, session, [.. qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal)], cancellation);
+        var tickers = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
+        var open = new Dictionary<string, HeldTrade>(await OpenTradesAsync(connection, session, tickers, cancellation), StringComparer.Ordinal);
+
+        // A stock whose trade on an S&P 400 or 600 list is still open is held back as well, its row naming that index.
+        // Their trades the store cannot read hold nothing back, and the row says so, so the list is drawn whatever became
+        // of theirs.
+        // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+        // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+        IReadOnlyDictionary<string, HeldTrade> elsewhere = new Dictionary<string, HeldTrade>(StringComparer.Ordinal);
+        IReadOnlyDictionary<string, string> heldIn = new Dictionary<string, string>(StringComparer.Ordinal);
+        string? indexTradesFault = null;
+
+        try
+        {
+            (elsewhere, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, session, tickers, cancellation);
+        }
+        catch (Exception failure) when (!cancellation.IsCancellationRequested)
+        {
+            indexTradesFault = IndexFamilies.Cause(failure);
+        }
+
+        var otherIndex = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var (ticker, held) in elsewhere)
+        {
+            if (open.TryAdd(ticker, held))
+            {
+                otherIndex[ticker] = heldIn[ticker];
+            }
+        }
+
         var picks = FamilyList.Draw(qualifying, open);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -202,6 +235,7 @@ public sealed class FamilyLister : IComponent
             insert.Parameters.AddWithValue("$also", JsonSerializer.Serialize(pick.Also));
             insert.Parameters.AddWithValue("$held_family", pick.HeldBy is { } held ? held.Family : DBNull.Value);
             insert.Parameters.AddWithValue("$held_night", pick.HeldBy is { } holding ? Stamp(holding.Listed) : DBNull.Value);
+            insert.Parameters.AddWithValue("$held_index", pick.HeldBy is not null && otherIndex.TryGetValue(pick.Ticker, out var index) ? index : DBNull.Value);
 
             await insert.ExecuteNonQueryAsync(cancellation);
         }
@@ -215,7 +249,8 @@ public sealed class FamilyLister : IComponent
             picks.Count(pick => pick.State == FamilyList.OpenTrade),
             picks.Count(pick => pick.State == FamilyList.UnderAnother),
             picks.Count(pick => pick.State == FamilyList.PastFive),
-            families);
+            families,
+            indexTradesFault);
 
         await AppendAsync(connection, transaction, runId, startedAt, picks.Count, Detail(outcome), cancellation);
         await transaction.CommitAsync(cancellation);
@@ -227,7 +262,8 @@ public sealed class FamilyLister : IComponent
     public static string Detail(FamilyListOutcome outcome) =>
         FormattableString.Invariant($"{outcome.Listed} listed for {outcome.Night:yyyy-MM-dd}: ")
         + string.Join(", ", outcome.Families.Select(family => FormattableString.Invariant($"{family.Listed} of the {family.Qualified} the {family.Family} family passed")))
-        + FormattableString.Invariant($"; {outcome.OpenTrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.PastFive} past a family's {SetupFamilies.ListedANight}");
+        + FormattableString.Invariant($"; {outcome.OpenTrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.PastFive} past a family's {SetupFamilies.ListedANight}")
+        + (outcome.IndexTradesFault is { } fault ? $"; the S&P 400's and 600's trades could not be read, so none held a stock back: {fault}" : string.Empty);
 
     // The names a family passed on the night, in its own order.
     static async Task<IReadOnlyList<string>> QualifiersAsync(SqliteConnection connection, SetupFamily family, DateOnly night, CancellationToken cancellation)
@@ -251,9 +287,10 @@ public sealed class FamilyLister : IComponent
     }
 
     // For each of the names, the trade it still holds on the night, read by the open trade rule over every
-    // trade a list made before it.
+    // trade a list made before it; the S&P 400's and 600's lists read it to hold back a stock whose S&P 500 trade
+    // is still open.
     // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
-    static async Task<IReadOnlyDictionary<string, HeldTrade>> OpenTradesAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
+    public static async Task<IReadOnlyDictionary<string, HeldTrade>> OpenTradesAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
     {
         var wanted = tickers.ToHashSet(StringComparer.Ordinal);
         var trades = new Dictionary<string, List<(OpenTradeListing Listing, string Family)>>(StringComparer.Ordinal);

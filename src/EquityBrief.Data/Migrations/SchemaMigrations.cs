@@ -684,7 +684,98 @@ public static class SchemaMigrations
         new Migration(61, "create pulled_member", CreatePulledMembers),
         new Migration(62, "create pulled_income", CreatePulledIncome),
         new Migration(63, "create pulled_snapshot and pulled_holding", CreatePulledHoldings),
+        new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding, and add family_pick.held_index", CreateIndexFamilies),
     ];
+
+    // The S&P 400's and 600's provisional rules as the night reads them with the sweep's own code over its year of
+    // bars, each index's rows apart from the S&P 500's: what each night read for an index, every member's answer under
+    // each family, the page's list for the index, each listed trade with its result before and after its cost, and the
+    // sector heavyweights' book within the index; and on the S&P 500's list, the index whose trade holds a stock back
+    // where it is an S&P 400's or 600's.
+    // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+    const string CreateIndexFamilies = @"
+        ALTER TABLE family_pick ADD COLUMN held_index TEXT;
+
+        CREATE TABLE index_family_night (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            members       INTEGER NOT NULL,
+            breadth       REAL,
+            market_open   INTEGER NOT NULL,
+            settings      TEXT NOT NULL,
+            rebalanced    INTEGER NOT NULL,
+            fault         TEXT,
+            PRIMARY KEY (index_code, session_date)
+        ) STRICT;
+
+        CREATE TABLE index_family_result (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            passed        INTEGER NOT NULL,
+            place         INTEGER,
+            entry         TEXT,
+            stop          TEXT,
+            target        TEXT,
+            trail         TEXT,
+            cap           INTEGER,
+            order_by      REAL,
+            reason        TEXT,
+            PRIMARY KEY (index_code, session_date, ticker, family)
+        ) STRICT;
+
+        CREATE TABLE index_family_pick (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            state         TEXT NOT NULL,
+            place         INTEGER,
+            also          TEXT NOT NULL,
+            held_index    TEXT,
+            held_family   TEXT,
+            held_night    TEXT,
+            PRIMARY KEY (index_code, session_date, ticker, family)
+        ) STRICT;
+
+        CREATE TABLE index_family_trade (
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            place         INTEGER NOT NULL,
+            entry         TEXT NOT NULL,
+            stop          TEXT NOT NULL,
+            target        TEXT,
+            trail         TEXT,
+            cap           INTEGER NOT NULL,
+            ended_on      TEXT,
+            result        REAL,
+            cost          REAL,
+            benchmark     REAL,
+            members       INTEGER,
+            PRIMARY KEY (index_code, family, ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE index_heavyweight_holding (
+            index_code    TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            entered_on    TEXT NOT NULL,
+            sector        TEXT NOT NULL,
+            entry_close   TEXT NOT NULL,
+            growth        REAL NOT NULL,
+            cut           TEXT NOT NULL,
+            through       TEXT NOT NULL,
+            ended_on      TEXT,
+            exit_close    TEXT,
+            reason        TEXT,
+            result        REAL,
+            cut_return    REAL,
+            cost          REAL,
+            PRIMARY KEY (index_code, ticker, entered_on)
+        ) STRICT;
+    ";
 
     // The S&P 400's and 600's funds' quarter-end holdings as the SEC holds their filings, one row a snapshot and one a
     // holding of common stock, each matched to the provider's code by ISIN, by name or by neither, marked by the pull that
@@ -1020,7 +1111,7 @@ public static class SchemaMigrations
     // comes from. A rebuild rather than an alter, because SQLite cannot change a check a table
     // was created with: every row is copied across whole, and the index refusing a second
     // outstanding request for a name is built again over them.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     const string RequestAskedByTheNight = @"
         CREATE TABLE research_request_rebuilt (
             ticker       TEXT NOT NULL,

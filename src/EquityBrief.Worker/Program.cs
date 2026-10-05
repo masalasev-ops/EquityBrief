@@ -13,6 +13,7 @@ using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Filter;
+using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.News;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
@@ -39,6 +40,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
     "members" => await MembersRun(args),
+    "index-families" => await IndexFamiliesRun(),
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
@@ -55,7 +57,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 23 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 24 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -92,6 +94,8 @@ static int NoVerb()
         "sector and share counts beside its quarters, and '--index <MID or SML>' asks a wider index's members, " +
         "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
         "from their funds' files beside the index's and each member holding no bar asked for its year, " +
+        "'index-families' runs the night's index families step by hand over the newest session the store holds, the S&P " +
+        "400's and 600's provisional rules read by the sweep's own code into their tables and asking for nothing, " +
         "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
@@ -399,6 +403,25 @@ static async Task<int> MembersRun(string[] args)
         store.DatabaseFile,
         Console.Out,
         Console.Error);
+}
+
+// The night's index families step by hand, over the newest session the store holds and under a run of its own: the S&P
+// 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, asking the
+// provider for nothing.
+// see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+static async Task<int> IndexFamiliesRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var runId = FormattableString.Invariant($"{IndexFamilies.ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
+    var outcome = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId);
+
+    Console.Out.WriteLine(outcome.Session is { } session
+        ? FormattableString.Invariant($"index-families: {session:yyyy-MM-dd} read under {runId}: {IndexFamilies.Detail(outcome.Nights)}")
+        : "index-families: the store holds no bar, so nothing was read.");
+
+    return 0;
 }
 
 // The sweep, by hand and never from the night: one process that reads the store, computes in chunks saved
@@ -1037,7 +1060,7 @@ static async Task<int> NightlyRun(string[] args)
     // The night's own request starts the worker's drain as a press does, from a copy of the build
     // this night runs from, in the checkout it runs in. A night run again for a session the
     // operator named asks for no report, since its list is not tonight's.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     var launcher = new WorkerDrainLauncher(
         Directory.GetCurrentDirectory(),
         AppContext.BaseDirectory,

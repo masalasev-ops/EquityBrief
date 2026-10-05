@@ -25,7 +25,7 @@ public static class SetupFamilies
     public const int ListedANight = 5;
 
     // The most reports the night asks for, the first names down its page.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     public const int ReportsANight = 6;
 
     // The pullback, today's swing filter as it stands: its names are the ones the filter passed, improving
@@ -141,7 +141,11 @@ public static class SetupFamilies
     public static string CapIn(string family) =>
         "CASE " + family + string.Concat(InPageOrder.Concat(Former).Select(one => FormattableString.Invariant($" WHEN '{one.Name}' THEN {one.CapSessions}"))) + FormattableString.Invariant($" ELSE {ForwardReturnSeries.SetupSessionCap} END");
 
-    // What a family's card says of a rule no freeze has registered yet.
+    // What a family's record says of a rule no freeze has registered yet.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     public const string Provisional = "provisional: not yet frozen; its record starts at the freeze";
+
+    // The status line a card draws for a rule no freeze has registered yet, beside "Live rule since" for one a freeze has.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public const string ProvisionalStatus = "Provisional: not yet frozen";
 }

@@ -7,6 +7,7 @@ using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Families;
+using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Nights;
 using Microsoft.Data.Sqlite;
 
@@ -33,6 +34,8 @@ public sealed class RequestDrain : IComponent
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
@@ -106,7 +109,7 @@ public sealed class RequestDrain : IComponent
     // After the night has run, it asks for a report on the first names drawn on its page, each marked
     // as asked by the night, and starts the drain as a press does. The night writes a row a name and
     // starts one process; each pass is the drain's own run, with its calls on its own rows.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
 
     // How many names the night asks for, counted down its page: six across every family, on the
     // operator's ruling of 2026-10-01, where the ruling of 2026-09-23 asked for the first alone.
@@ -129,8 +132,40 @@ public sealed class RequestDrain : IComponent
 
     // The stocks the sector heavyweights bought on the night, which the page draws after the families' picks and the
     // night asks for in that order; a holding carried from an earlier month is never one of them.
-    // see: The night asks for a report on the first six names its page draws
+    // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
     const string BoughtOnTheNight = "SELECT ticker FROM heavyweight_holding WHERE entered_on = $night ORDER BY sector, ticker;";
+
+    // Each S&P 400's and 600's list on the night in its page's order, then the stocks its sector heavyweights bought.
+    const string IndexListedOnTheNight = "SELECT ticker FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed' ORDER BY place, ticker;";
+
+    const string IndexBoughtOnTheNight = "SELECT ticker FROM index_heavyweight_holding WHERE index_code = $index AND entered_on = $night ORDER BY sector, ticker;";
+
+    // The names the night asks for, taken in turn from each index's list, one at a time in the order the lists are
+    // handed in, each in its own page's order; a list with no name left passes its turn to the next, and a name is
+    // taken once.
+    public static IReadOnlyList<(string Ticker, int List)> TakenInTurn(IReadOnlyList<IReadOnlyList<string>> lists, int count)
+    {
+        var taken = new List<(string, int)>();
+        var next = new int[lists.Count];
+
+        while (taken.Count < count && Enumerable.Range(0, lists.Count).Any(list => next[list] < lists[list].Count))
+        {
+            for (var list = 0; list < lists.Count && taken.Count < count; list++)
+            {
+                while (next[list] < lists[list].Count && taken.Any(one => one.Item1 == lists[list][next[list]]))
+                {
+                    next[list]++;
+                }
+
+                if (next[list] < lists[list].Count)
+                {
+                    taken.Add((lists[list][next[list]++], list));
+                }
+            }
+        }
+
+        return taken;
+    }
 
     // A request for the name nobody has settled, being one outstanding or being written.
     const string Waiting = @"
@@ -237,21 +272,67 @@ public sealed class RequestDrain : IComponent
             }
         }
 
-        var first = passed.Take(NightAsksFor).ToArray();
+        // The S&P 400's and 600's lists beside the S&P 500's, the six taken in turn across them. An index's list the
+        // store cannot read passes every turn, and the line says so.
+        // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+        var lists = new List<IReadOnlyList<string>> { passed };
+        var named = new List<string> { "S&P 500" };
+        var unread = new List<string>();
 
-        if (first.Length == 0)
+        foreach (var index in IndexFamilies.Indices)
         {
-            return new NightAsk([], drawnByFamilies
-                ? FormattableString.Invariant($"no stock is on the page's list for {night:yyyy-MM-dd}, so no report was asked for")
-                : FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"));
+            var listed = new List<string>();
+            var name = index == FundHoldings.MidCapIndex ? "S&P 400's" : "S&P 600's";
+
+            try
+            {
+                foreach (var query in new[] { IndexListedOnTheNight, IndexBoughtOnTheNight })
+                {
+                    await using var reading = connection.CreateCommand();
+
+                    reading.CommandText = query;
+                    reading.Parameters.AddWithValue("$index", index);
+                    reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                    await using var reader = await reading.ExecuteReaderAsync(cancellation);
+
+                    while (await reader.ReadAsync(cancellation))
+                    {
+                        if (!listed.Contains(reader.GetString(0), StringComparer.Ordinal))
+                        {
+                            listed.Add(reader.GetString(0));
+                        }
+                    }
+                }
+            }
+            catch (Exception failure) when (!cancellation.IsCancellationRequested)
+            {
+                listed.Clear();
+                unread.Add($"the {name} list could not be read, so it passed every turn: {IndexFamilies.Cause(failure)}");
+            }
+
+            lists.Add(listed);
+            named.Add(name);
+        }
+
+        var first = TakenInTurn(lists, NightAsksFor);
+
+        if (first.Count == 0)
+        {
+            return new NightAsk([], string.Join("; ", [
+                drawnByFamilies
+                    ? FormattableString.Invariant($"no stock is on the page's list for {night:yyyy-MM-dd}, so no report was asked for")
+                    : FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"),
+                .. unread]));
         }
 
         var asked = new List<string>();
-        var said = new List<string>();
+        var said = new List<string>(unread);
 
-        foreach (var (ticker, at) in first.Select((ticker, at) => (ticker, at)))
+        foreach (var (ticker, list) in first)
         {
-            var placed = at == 0 ? "first" : FormattableString.Invariant($"number {at + 1}");
+            var at = lists[list].ToList().IndexOf(ticker);
+            var placed = (at == 0 ? "first" : FormattableString.Invariant($"number {at + 1}")) + (list == 0 ? " on the list" : $" on the {named[list]} list");
 
             await using var waiting = connection.CreateCommand();
 
@@ -260,7 +341,7 @@ public sealed class RequestDrain : IComponent
 
             if (await waiting.ExecuteScalarAsync(cancellation) is string state)
             {
-                said.Add($"{ticker} is {placed} on the list and has a request {state} already, so none was added");
+                said.Add($"{ticker} is {placed} and has a request {state} already, so none was added");
 
                 continue;
             }
@@ -275,7 +356,7 @@ public sealed class RequestDrain : IComponent
             await asking.ExecuteNonQueryAsync(cancellation);
 
             asked.Add(ticker);
-            said.Add($"{ticker} is {placed} on the list, and a report on it was asked for");
+            said.Add($"{ticker} is {placed}, and a report on it was asked for");
         }
 
         return new NightAsk(asked, string.Join("; ", said));

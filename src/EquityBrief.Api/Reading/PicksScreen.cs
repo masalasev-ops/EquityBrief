@@ -65,6 +65,44 @@ public static class PicksScreen
     // The sector heavyweights' holdings as of a night, newest buy first and its sectors in order, each ended one with
     // its result, its size cut's return and the edge between them as the rule reads it, an open one with none.
     // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
+    // An S&P 400's or 600's trades newest first, each named by its setup's label with its result before and after its
+    // cost, and its sector heavyweights' holdings as the S&P 500's are drawn.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public static IReadOnlyList<IndexTradeCell> IndexTrades(IReadOnlyList<IndexTradeRow> trades, IReadOnlyDictionary<string, string?> companies) =>
+    [
+        .. trades
+            .OrderByDescending(trade => trade.Listed)
+            .ThenBy(trade => trade.Place)
+            .ThenBy(trade => trade.Ticker, StringComparer.Ordinal)
+            .Select(trade => new IndexTradeCell(
+                trade.Ticker,
+                companies.GetValueOrDefault(trade.Ticker),
+                trade.Family,
+                SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
+                trade.Listed,
+                trade.Entry,
+                trade.Stop,
+                trade.Target,
+                trade.Trail is not null,
+                trade.EndedOn,
+                trade.Result,
+                trade.Cost,
+                trade.Result is { } result && trade.Cost is { } cost ? result - cost : null)),
+    ];
+
+    public static IReadOnlyList<HeavyweightPickCell> IndexHeavyweights(IReadOnlyList<IndexHoldingRow> holdings) =>
+        Heavyweights([.. holdings.Select(holding => new HeavyweightHoldingRow(
+            holding.Ticker,
+            holding.EnteredOn,
+            holding.Sector,
+            string.Empty,
+            holding.EntryClose,
+            holding.EndedOn,
+            holding.ExitClose,
+            holding.Reason,
+            holding.Result,
+            holding.CutReturn))]);
+
     public static IReadOnlyList<HeavyweightPickCell> Heavyweights(IReadOnlyList<HeavyweightHoldingRow> holdings) =>
     [
         .. holdings

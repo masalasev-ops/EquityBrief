@@ -159,7 +159,10 @@ public partial class ReadSurface
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\">"), card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-09-25</b> · 5 picks tonight · 2 variants scoring in the background</p>", card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 1 of {families} · Pullback in an uptrend</div><h2>Pullbacks to support</h2>"), page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"lede\">{SetupFamilies.Pullbacks.Rule}</p>", page, StringComparison.Ordinal);
+        // Its rule in words, written from the settings of the version its night ran under, the version every row is
+        // stored under here: strength 0.5, depth 1 to 5, dry-up 1.5, reward to risk 1.5, stop 0.5 to 4, 15 sessions
+        // clear of a report and 3 to arrive.
+        Assert.Contains("<p class=\"lede\">A stock stronger than 50% of the members, in an uptrend, falls 1 to 5 typical moves into a support band on volume under 1.5 times its average and turns back up within 3 sessions, with no report due in the next 15. Stop 0.5 to 4 typical moves below, target at the next band above and at least 1.5 times the risk.</p>", page, StringComparison.Ordinal);
         Assert.Equal(SetupFamilies.InPageOrder.Count, Regex.Matches(page, "data-card=\"family\"").Count);
 
         // The picks, in the page's order, numbered by their place: F1 to F5, and no row for the two past
@@ -243,7 +246,8 @@ public partial class ReadSurface
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
             Assert.Contains("data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\"", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">provisional: not yet frozen; its record starts at the freeze</b> · 5 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">Provisional: not yet frozen</b> · 5 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
+            Assert.Equal("Provisional: not yet frozen", SetupFamilies.ProvisionalStatus);
             Assert.Equal("provisional: not yet frozen; its record starts at the freeze", SetupFamilies.Provisional);
         }
 

@@ -75,9 +75,12 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\">"), card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">provisional: not yet frozen; its record starts at the freeze</b> · 2 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">Provisional: not yet frozen</b> · 2 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 2 of {families} · Breakout from a base</div><h2>Breakouts to a new high</h2>"), page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"lede\">{SetupFamilies.Breakouts.Rule}</p>", page, StringComparison.Ordinal);
+
+        // Its rule in words, written from the settings it froze at: a 126-session high, 1.5 times the volume, ranges
+        // at 0.85 of the 20 sessions before and a stop 1.5 typical moves under.
+        Assert.Contains("<p class=\"lede\">A stock closes above its highest price of the 126 sessions before on 1.5 times its average volume, after its daily ranges narrowed to at most 0.85 of those over the 20 sessions before them. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target.</p>", page, StringComparison.Ordinal);
 
         // Its rows, in the page's order: K1 sixth and K2 seventh, and no row for F1 or K3.
         Assert.Equal(

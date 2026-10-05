@@ -129,6 +129,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Heavyweight book"),
             CheckReach.Key(Scope.MatrixTable, "Heavyweight book"),
 
+            // 15.1's second half, the index families.
+            CheckReach.Key(Scope.CatalogueTable, "Index families"),
+            CheckReach.Key(Scope.MatrixTable, "Index families"),
+
             // 14.6, the estimates fetcher.
             CheckReach.Key(Scope.CatalogueTable, "Estimates fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Estimates fetcher"),

@@ -177,7 +177,7 @@ public partial class ReadSurface
 
         Assert.Contains("<input id=\"find\" type=\"search\" list=\"findable\"", shell, StringComparison.Ordinal);
         Assert.Contains($"<a href=\"{SinglePageApp.ResearchedRoute}\" data-view=\"researched\">Researched</a>", shell, StringComparison.Ordinal);
-        Assert.Contains("fetch('/screens/researched')", shell, StringComparison.Ordinal);
+        Assert.Contains("fetch('/screens/researched' + (query ? '?' + query : ''))", shell, StringComparison.Ordinal);
         Assert.Contains("show().then(() => fetch('/screens/find'))", shell, StringComparison.Ordinal);
         Assert.Contains("'No name in the index matches '", shell, StringComparison.Ordinal);
 

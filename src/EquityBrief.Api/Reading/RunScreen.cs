@@ -804,7 +804,7 @@ public static class RunScreen
     // The run ids a person's command writes, stated here because the read surface holds no
     // reference to the worker; `read-surface` asserts they are the verbs' own. Their rows are
     // drawn as run by hand, apart from the night's stages.
-    public static IReadOnlyList<string> RunsByHand { get; } = ["version-", "register-", "filter-history-", "history-pull-", "history-purge-", "quarters-by-hand-"];
+    public static IReadOnlyList<string> RunsByHand { get; } = ["version-", "register-", "filter-history-", "history-pull-", "history-purge-", "quarters-by-hand-", "index-families-by-hand-"];
 
     public static bool IsByHand(string runId) => RunsByHand.Any(prefix => runId.StartsWith(prefix, StringComparison.Ordinal));
 
@@ -1181,7 +1181,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "index-families", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", QueueStage, "report", "label-news", "backup"]),
     ];

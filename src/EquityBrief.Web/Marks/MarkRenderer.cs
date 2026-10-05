@@ -5051,7 +5051,7 @@ public sealed partial class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null, int? listed = null)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null, int? listed = null, string indexName = "S&P 500")
     {
         var header = new StringBuilder();
 
@@ -5063,17 +5063,17 @@ public sealed partial class MarkRenderer : IComponent
         // fired count.
         // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
         header.Append(listed is { } passed
-            ? Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{passed}</div><div class=\"cap\">names the swing filter passed<span>out of {index} in the index</span></div></div>")
-            : Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>"));
+            ? Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{passed}</div><div class=\"cap\">names the swing filter passed<span>out of {index} in the {Escaped(indexName)}</span></div></div>")
+            : Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the {Escaped(indexName)}</span></div></div>"));
         header.Append("<div class=\"ops\">");
 
         if (listed is { } onTheList)
         {
-            header.Append(Invariant, $"<p class=\"listed\" data-listed=\"{onTheList}\">{onTheList} of {index} name(s) passed the swing filter on {night:yyyy-MM-dd}</p>");
+            header.Append(Invariant, $"<p class=\"listed\" data-listed=\"{onTheList}\">{onTheList} of {index} {Escaped(indexName)} members passed the swing filter on {night:yyyy-MM-dd}</p>");
         }
 
-        header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}{(listed is null ? string.Empty : ", as context")}</p>");
-        header.Append(BreadthLine(market));
+        header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} {Escaped(indexName)} members fired on {night:yyyy-MM-dd}{(listed is null ? string.Empty : ", as context")}</p>");
+        header.Append(BreadthLine(market, indexName));
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
 
         // The harness verdict, which section 15.7 states in this header and
@@ -5909,19 +5909,19 @@ public sealed partial class MarkRenderer : IComponent
     // The night's breadth line for tonight's header: the share of the members read closing above
     // their own long average, with how many it was counted over and the shorter average beside it
     // as context, and a line saying so where the night stored none or too few members to read.
-    static string BreadthLine(MarketView? market)
+    static string BreadthLine(MarketView? market, string indexName = "S&P 500")
     {
         if (market is null)
         {
-            return "<p class=\"breadth degraded\" data-breadth=\"none\">breadth: no market reading is stored for this night</p>";
+            return Formatted($"<p class=\"breadth degraded\" data-breadth=\"none\">the {Escaped(indexName)}'s breadth: no market reading is stored for this night</p>");
         }
 
         var head = Formatted($"<p class=\"breadth\" data-breadth=\"{Whole(market.Breadth)}\" data-counted=\"{market.Counted}\" data-members=\"{market.Members}\" data-breadth-context=\"{Whole(market.BreadthContext)}\">");
 
         return market.Breadth is { } share
-            ? head + Formatted($"breadth: {share * 100:0.0}% of the {market.Counted} members read close above their own {SwingReadings.BreadthAverageSessions}-day average") +
+            ? head + Formatted($"the {Escaped(indexName)}'s breadth: {share * 100:0.0}% of the {market.Counted} members read close above their own {SwingReadings.BreadthAverageSessions}-day average") +
                 (market.BreadthContext is { } context ? Formatted($", and {context * 100:0.0}% above their {SwingReadings.ContextAverageSessions}-day average, as context") : string.Empty) + "</p>"
-            : head + Formatted($"breadth: not available, {market.Counted} of the {market.Members} members hold a close and a {SwingReadings.BreadthAverageSessions}-day average, fewer than half</p>");
+            : head + Formatted($"the {Escaped(indexName)}'s breadth: not available, {market.Counted} of the {market.Members} members hold a close and a {SwingReadings.BreadthAverageSessions}-day average, fewer than half</p>");
     }
 
     // The run page's funnel, section 15.10's row: how many members each gate passed in order and how
@@ -6176,7 +6176,7 @@ public sealed partial class MarkRenderer : IComponent
     // five hundred rows is the only question paging raises. The count comes first,
     // beside its own word, and the page after it, so no figure follows another
     // across a comma, which a reader takes for one number with its thousands set off.
-    public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector)
+    public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector, string? universe = null)
     {
         var pages = Math.Max(1, (rows + pageSize - 1) / pageSize);
         var at = Math.Clamp(page, 1, pages);
@@ -6187,7 +6187,7 @@ public sealed partial class MarkRenderer : IComponent
         nav.Append(Invariant, $"data-rows=\"{rows}\" data-page-size=\"{pageSize}\">");
 
         string Link(int to, string label, string rel) =>
-            Formatted($"<a class=\"page\" rel=\"{rel}\" data-page=\"{to}\" href=\"{Query(to, trend, sector)}\">{Escaped(label)}</a>");
+            Formatted($"<a class=\"page\" rel=\"{rel}\" data-page=\"{to}\" href=\"{Query(to, trend, sector, universe)}\">{Escaped(label)}</a>");
 
         nav.Append(at > 1
             ? Link(at - 1, "previous", "prev")
@@ -6204,8 +6204,8 @@ public sealed partial class MarkRenderer : IComponent
         return nav.ToString();
     }
 
-    // The universe route's hash, with the filters it was drawn under kept.
-    static string Query(int page, string? trend, string? sector)
+    // The universe route's hash, with the filters it was drawn under kept, and the index chosen under Universe.
+    static string Query(int page, string? trend, string? sector, string? universe = null)
     {
         var parts = new List<string> { Formatted($"page={page}") };
 
@@ -6219,11 +6219,17 @@ public sealed partial class MarkRenderer : IComponent
             parts.Add(Formatted($"sector={Uri.EscapeDataString(sector)}"));
         }
 
+        if (universe is { Length: > 0 })
+        {
+            parts.Add(Formatted($"universe={Uri.EscapeDataString(universe)}"));
+        }
+
         return "#/universe?" + string.Join("&amp;", parts);
     }
 
-    public string UniverseFilters(IReadOnlyList<UniverseCell> rows, string? trend = null, string? sector = null)
+    public string UniverseFilters(IReadOnlyList<UniverseCell> rows, string? trend = null, string? sector = null, string? universe = null)
     {
+        var chosen = universe is { Length: > 0 } ? "&amp;universe=" + Uri.EscapeDataString(universe) : string.Empty;
         var states = rows
             .Select(row => row.TrendState ?? NotClassified)
             .Distinct(StringComparer.Ordinal)
@@ -6243,21 +6249,21 @@ public sealed partial class MarkRenderer : IComponent
         // Two rows of chips, each with an "all" chip, and the lit chip marked. A chip keeps
         // the other row's filter, so lighting a trend does not clear a sector.
         filters.Append("<span class=\"chips-label\">Trend</span>");
-        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"all\" aria-pressed=\"{Flag(trend is null)}\" href=\"{Query(1, null, sector)}\">all</a>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"all\" aria-pressed=\"{Flag(trend is null)}\" href=\"{Query(1, null, sector, universe)}\">all</a>");
 
         foreach (var state in states)
         {
             filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"{Escaped(state)}\" aria-pressed=\"{Flag(state == trend)}\" ");
-            filters.Append(Invariant, $"href=\"#/universe?trend={Uri.EscapeDataString(state)}{(sector is { Length: > 0 } kept ? "&amp;sector=" + Uri.EscapeDataString(kept) : string.Empty)}\">{Escaped(state.Replace('_', ' '))}</a>");
+            filters.Append(Invariant, $"href=\"#/universe?trend={Uri.EscapeDataString(state)}{(sector is { Length: > 0 } kept ? "&amp;sector=" + Uri.EscapeDataString(kept) : string.Empty)}{chosen}\">{Escaped(state.Replace('_', ' '))}</a>");
         }
 
         filters.Append("<span class=\"chip-break\"></span><span class=\"chips-label\">Sector</span>");
-        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"all\" aria-pressed=\"{Flag(sector is null)}\" href=\"{Query(1, trend, null)}\">all</a>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"all\" aria-pressed=\"{Flag(sector is null)}\" href=\"{Query(1, trend, null, universe)}\">all</a>");
 
         foreach (var named in sectors)
         {
             filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"{Escaped(named)}\" aria-pressed=\"{Flag(named == sector)}\" ");
-            filters.Append(Invariant, $"href=\"#/universe?sector={Uri.EscapeDataString(named)}{(trend is { Length: > 0 } kept ? "&amp;trend=" + Uri.EscapeDataString(kept) : string.Empty)}\">{Escaped(named)}</a>");
+            filters.Append(Invariant, $"href=\"#/universe?sector={Uri.EscapeDataString(named)}{(trend is { Length: > 0 } kept ? "&amp;trend=" + Uri.EscapeDataString(kept) : string.Empty)}{chosen}\">{Escaped(named)}</a>");
         }
 
         filters.Append("</nav>");

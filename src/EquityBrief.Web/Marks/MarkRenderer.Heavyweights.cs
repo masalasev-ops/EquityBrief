@@ -82,7 +82,7 @@ public sealed partial class MarkRenderer
         body.Append("<p class=\"family-state\">");
         body.Append(card.LiveSince is { } live
             ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
-            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>");
+            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}</b>");
         body.Append(Invariant, $" · {Count(card.Holdings.Count, "holding")} tonight · held while leading");
         body.Append(card.LiveSince is null ? string.Empty : Formatted($" · {Count(card.Variants, "variant")} kept in books of their own"));
         body.Append(card.LastRebalance is { } read ? Formatted($" · last rebalance {DayOf(read)}") : " · no rebalance read yet");

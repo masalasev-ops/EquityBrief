@@ -468,7 +468,25 @@ public sealed record FamilyPickRow(
     int? Place,
     IReadOnlyList<string> Also,
     string? HeldFamily,
-    DateOnly? HeldNight);
+    DateOnly? HeldNight,
+    string? HeldIndex = null);
+
+// One S&P 400 or 600 night as the index families stored it: the members read, the index's own breadth, whether its
+// market check left its swing lists open, the settings its rules ran on and whether its sector heavyweights rebalanced.
+// see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced, string? Fault = null);
+
+// One member's answer under one of an index's families on a night: whether the family's provisional rule passed it,
+// its place among those it passed and its trade, or the first part of the rule it failed.
+public sealed record IndexResultRow(string Ticker, string Family, bool Passed, int? Place, decimal? Entry, decimal? Stop, decimal? Target, decimal? Trail, int? Cap, double? OrderBy, string? Reason);
+
+// One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
+// multiples of its risk, none while open on the night.
+public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost);
+
+// One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
+// size cut's and its cost, each a fraction of its buy and none while it is held on the night.
+public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost);
 
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
@@ -670,6 +688,11 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.HeavyweightRuleNight, Touch.Read),
             new StoreTouch(Store.HeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.IndexFamilyNight, Touch.Read),
+            new StoreTouch(Store.IndexFamilyResult, Touch.Read),
+            new StoreTouch(Store.IndexFamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
@@ -3012,7 +3035,7 @@ public sealed class ReadApi : IComponent
     }
 
     const string FamilyPicksOn = @"
-        SELECT session_date, ticker, family, state, place, also, held_family, held_night
+        SELECT session_date, ticker, family, state, place, also, held_family, held_night, held_index
         FROM family_pick
         WHERE session_date = $on
         ORDER BY place IS NULL, place, family, ticker;
@@ -3043,7 +3066,350 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(4) ? null : reader.GetInt32(4),
                 System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(5)) ?? [],
                 reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    // ---- the S&P 400's and 600's nights, read one index at a time ----
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+
+    // How many members each index held on a session, which the Universe selector states beside each choice.
+    const string MembersByIndexOn = @"
+        SELECT index_code, COUNT(DISTINCT ticker) FROM membership
+        WHERE (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)
+        GROUP BY index_code;
+    ";
+
+    public async Task<IReadOnlyDictionary<string, int>> MembersByIndexAsync(DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MembersByIndexOn;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            counts[reader.GetString(0)] = reader.GetInt32(1);
+        }
+
+        return counts;
+    }
+
+    const string IndexNightsOf = "SELECT session_date FROM index_family_night WHERE index_code = $index ORDER BY session_date;";
+
+    // The nights an index's families stored, oldest first.
+    public async Task<IReadOnlyList<DateOnly>> IndexNightsAsync(string index)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexNightsOf;
+        command.Parameters.AddWithValue("$index", index);
+
+        var nights = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            nights.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return nights;
+    }
+
+    const string IndexNightOn = @"
+        SELECT index_code, session_date, members, breadth, market_open, settings, rebalanced, fault FROM index_family_night
+        WHERE index_code = $index AND session_date = $on;
+    ";
+
+    const string IndexLastRebalanceOn = @"
+        SELECT MAX(session_date) FROM index_family_night WHERE index_code = $index AND rebalanced = 1 AND session_date <= $on;
+    ";
+
+    // An index's night as its families stored it, with the failure that stopped it where its part of the night failed,
+    // and none for a night they did not read.
+    public async Task<IndexNightRow?> IndexNightAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexNightOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new IndexNightRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(2),
+                reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                reader.GetInt64(4) == 1,
+                reader.GetString(5),
+                reader.GetInt64(6) == 1,
+                reader.IsDBNull(7) ? null : reader.GetString(7))
+            : null;
+    }
+
+    // The last session an index's sector heavyweights rebalanced on, on or before a night.
+    public async Task<DateOnly?> IndexLastRebalanceAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexLastRebalanceOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
+    const string IndexPicksOn = @"
+        SELECT session_date, ticker, family, state, place, also, held_family, held_night, held_index
+        FROM index_family_pick
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY place IS NULL, place, family, ticker;
+    ";
+
+    // An index's list on a night: every stock a family passed, listed or held back, the listed ones first in the page's
+    // order.
+    public async Task<IReadOnlyList<FamilyPickRow>> IndexPicksAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexPicksOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FamilyPickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FamilyPickRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(5)) ?? [],
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    const string IndexResultsOn = @"
+        SELECT ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason
+        FROM index_family_result
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY family, place IS NULL, place, ticker;
+    ";
+
+    // Every member's answer under each of an index's families on a night.
+    public async Task<IReadOnlyList<IndexResultRow>> IndexResultsAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexResultsOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<IndexResultRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new IndexResultRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt64(2) == 1,
+                reader.IsDBNull(3) ? null : reader.GetInt32(3),
+                Price(4),
+                Price(5),
+                Price(6),
+                Price(7),
+                reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                reader.IsDBNull(10) ? null : reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
+    // Every trade an index's list kept on or before a night, its end read only where it ended by the night.
+    const string IndexTradesUpTo = @"
+        SELECT index_code, family, ticker, session_date, place, entry, stop, target, trail, cap,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cost END
+        FROM index_family_trade
+        WHERE index_code = $index AND session_date <= $on
+        ORDER BY session_date DESC, place, ticker;
+    ";
+
+    public async Task<IReadOnlyList<IndexTradeRow>> IndexTradesAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexTradesUpTo;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<IndexTradeRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new IndexTradeRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(4),
+                Money.FromStorage(reader.GetString(5)),
+                Money.FromStorage(reader.GetString(6)),
+                Price(7),
+                Price(8),
+                reader.GetInt32(9),
+                reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                reader.IsDBNull(12) ? null : reader.GetDouble(12)));
+        }
+
+        return rows;
+    }
+
+    // Every holding an index's sector heavyweights bought on or before a night, its end read only where it ended by the
+    // night.
+    const string IndexHoldingsUpTo = @"
+        SELECT index_code, ticker, entered_on, sector, entry_close,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN exit_close END,
+               CASE WHEN ended_on <= $on THEN reason END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               CASE WHEN ended_on <= $on THEN cost END
+        FROM index_heavyweight_holding
+        WHERE index_code = $index AND entered_on <= $on
+        ORDER BY entered_on, sector, ticker;
+    ";
+
+    public async Task<IReadOnlyList<IndexHoldingRow>> IndexHoldingsAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexHoldingsUpTo;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<IndexHoldingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new IndexHoldingRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(3),
+                Money.FromStorage(reader.GetString(4)),
+                reader.IsDBNull(5) ? null : DateOnly.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetDouble(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                reader.IsDBNull(10) ? null : reader.GetDouble(10)));
+        }
+
+        return rows;
+    }
+
+    // Each of an index's holdings open on a night, its close there and its 200-session average there.
+    const string IndexHoldingClosesOn = @"
+        SELECT h.ticker, b.close, i.value
+        FROM (SELECT DISTINCT ticker FROM index_heavyweight_holding WHERE index_code = $index AND entered_on <= $on AND (ended_on IS NULL OR ended_on > $on)) h
+        LEFT JOIN bar b ON b.ticker = h.ticker AND b.session_date = $on
+        LEFT JOIN indicator i ON i.ticker = h.ticker AND i.session_date = $on AND i.name = $average
+        ORDER BY h.ticker;
+    ";
+
+    public async Task<IReadOnlyList<HeavyweightCloseRow>> IndexHoldingClosesAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexHoldingClosesOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$average", EquityBrief.Core.Indicators.IndicatorSeries.Sma200);
+
+        var rows = new List<HeavyweightCloseRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new HeavyweightCloseRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : Money.FromStorage(reader.GetString(1)),
+                reader.IsDBNull(2) ? null : reader.GetDouble(2)));
+        }
+
+        return rows;
+    }
+
+    // Each member of an index on a night with the company its membership row names, and its close on the night.
+    const string IndexMembersOn = @"
+        SELECT m.ticker,
+               (SELECT n.name FROM membership n WHERE n.ticker = m.ticker AND n.name IS NOT NULL ORDER BY n.joined DESC LIMIT 1),
+               b.close
+        FROM (SELECT DISTINCT ticker FROM membership
+              WHERE index_code = $index AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)) m
+        LEFT JOIN bar b ON b.ticker = m.ticker AND b.session_date = $session
+        ORDER BY m.ticker;
+    ";
+
+    public async Task<IReadOnlyList<(string Ticker, string? Company, decimal? Close)>> IndexMembersAsync(string index, DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexMembersOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<(string, string?, decimal?)>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add((reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1), reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2))));
         }
 
         return rows;

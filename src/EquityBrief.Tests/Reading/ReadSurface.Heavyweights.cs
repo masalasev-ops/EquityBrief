@@ -109,9 +109,11 @@ public partial class ReadSurface
             card,
             StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Rotation · {SetupFamilies.SectorHeavyweights.Eyebrow}</div><h2>{SetupFamilies.SectorHeavyweights.Heading}</h2>", page, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"lede\">{SetupFamilies.SectorHeavyweights.Rule}</p>", page, StringComparison.Ordinal);
+        // Its rule in words, written from the settings its live rule runs at: each sector's 10 largest, a 251-session
+        // look-back, 2 leaders against the sector fund, a beta of at least one, sold when it no longer leads.
+        Assert.Contains("<p class=\"lede\">On each month's first session, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at that close. Held while it leads: sold at a month's first close where the rule would no longer buy it.</p>", page, StringComparison.Ordinal);
         Assert.Contains(
-            $"<p class=\"family-state\"><b class=\"provisional\">{SetupFamilies.Provisional}</b> · 3 holdings tonight · held while leading · last rebalance 2026-10-01 · next rebalance <b class=\"next-rebalance\">2026-11-02</b></p>",
+            $"<p class=\"family-state\"><b class=\"provisional\">{SetupFamilies.ProvisionalStatus}</b> · 3 holdings tonight · held while leading · last rebalance 2026-10-01 · next rebalance <b class=\"next-rebalance\">2026-11-02</b></p>",
             card,
             StringComparison.Ordinal);
 

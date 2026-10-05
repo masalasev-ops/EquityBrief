@@ -682,6 +682,9 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .lp-open{text-align:right;font-weight:600;margin:10px 0 0}
 .compare-picture .cp-choose{display:flex;flex-direction:column;gap:4px;max-width:360px;margin-bottom:10px}
 .compare-picture select{font:inherit;min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--stat);background:var(--surface);color:var(--ink)}
+.universe-pick{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+.universe-pick .universe-lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.universe-pick select{font:inherit;min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
 .compare-picture .cp-changes{background:var(--panel);border-radius:8px;padding:10px 14px}
 .compare-picture .cp-body{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:center}
 .overlap-rings{max-width:100%;height:auto}

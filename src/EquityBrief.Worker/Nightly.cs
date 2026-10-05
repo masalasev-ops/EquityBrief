@@ -11,6 +11,7 @@ using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Families;
+using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -417,6 +418,13 @@ public static class Nightly
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
+                // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
+                // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on
+                // their own row, and the step goes on.
+                // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+                // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
@@ -424,8 +432,9 @@ public static class Nightly
                     $"; {listed.Listed} on the page's list" +
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
-                    $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own";
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage]),
+                    $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
+                    $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}";
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.
@@ -557,13 +566,13 @@ public static class Nightly
             }, [OvernightQueue.Stage]),
             // Section 14's step 24, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
-            // name. The night asks for a report on the first six names its page draws and starts
-            // the drain as a press does: it writes a row a name and starts one process, and each
-            // pass is the drain's own run, its calls and requests on its own rows, at the off-peak
-            // rate. It is handed no token from the night's deadline, which bounds the arithmetic
-            // and may have passed while the queue ran. A night run again for an earlier session
-            // asks for nothing, since its list is not tonight's.
-            // see: The night asks for a report on the first six names its page draws
+            // name. The night asks for six reports taken in turn across the S&P 500's, 400's and
+            // 600's pages and starts the drain as a press does: it writes a row a name and starts
+            // one process, and each pass is the drain's own run, its calls and requests on its own
+            // rows, at the off-peak rate. It is handed no token from the night's deadline, which
+            // bounds the arithmetic and may have passed while the queue ran. A night run again for
+            // an earlier session asks for nothing, since its list is not tonight's.
+            // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
             new("report", async () =>
             {
                 var started = clock.UtcNow;

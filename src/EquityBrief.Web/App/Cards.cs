@@ -94,10 +94,24 @@ public static class Cards
 
     public static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+    // The Universe selector a page opens with: the three indices, each with how many members it holds, the one the
+    // page reads selected, and the choice kept in the page's link under the route given.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public static string Universe(UniverseChoice chosen, IReadOnlyDictionary<string, int> members, string route) =>
+        $"<label class=\"universe-pick\" data-universe=\"{chosen.Word}\"><span class=\"universe-lbl\">Universe</span> <select data-universe-route=\"{Escaped(route)}\" aria-label=\"Universe\">"
+        + string.Concat(Universes.Offered.Select(choice =>
+        {
+            var count = members.TryGetValue(choice.Code, out var held) ? held : 0;
+
+            return $"<option value=\"{choice.Word}\" data-members=\"{count.ToString(CultureInfo.InvariantCulture)}\"{(choice == chosen ? " selected" : string.Empty)}>{Escaped(choice.Name)} · {count.ToString(CultureInfo.InvariantCulture)} members</option>";
+        }))
+        + "</select></label>";
+
     // A dated screen's calendar: the night drawn, the stored nights either side of it, and a month
     // grid over the nights the screen draws, newest month first, in which a day holding a night is
-    // underlined and opens it, the night drawn is marked, and every other day is no link at all.
-    public static string NightPicker(DateOnly night, IReadOnlyList<DateOnly> held, string route, string newest)
+    // underlined and opens it, the night drawn is marked, and every other day is no link at all. A
+    // query handed in follows each night's link, so a page reading one index opens the others on it.
+    public static string NightPicker(DateOnly night, IReadOnlyList<DateOnly> held, string route, string newest, string query = "")
     {
         if (held.Count == 0)
         {
@@ -108,13 +122,13 @@ public static class Cards
         var after = held.Where(one => one > night).Select(one => (DateOnly?)one).Min();
 
         string Move(string move, string said, string mark, DateOnly? to) => to is { } day
-            ? $"<a class=\"np-move\" data-move=\"{move}\" href=\"{route}{Day(day)}\" title=\"{said}, {Day(day)}\" aria-label=\"{said}, {Day(day)}\">{mark}</a>"
+            ? $"<a class=\"np-move\" data-move=\"{move}\" href=\"{route}{Day(day)}{query}\" title=\"{said}, {Day(day)}\" aria-label=\"{said}, {Day(day)}\">{mark}</a>"
             : $"<span class=\"np-move\" data-move=\"{move}\" aria-disabled=\"true\">{mark}</span>";
 
         return $"<span class=\"night-picker\" data-route=\"{route}\" data-night=\"{Day(night)}\">"
             + Move("earlier", "The night before", "&#8249;", before)
             + $"<details class=\"np-cal\"><summary class=\"np-date\" aria-label=\"Choose a night to view\">{Day(night)}</summary>"
-            + $"<div class=\"np-months\">{Months(night, held, route)}</div></details>"
+            + $"<div class=\"np-months\">{Months(night, held, route, query)}</div></details>"
             + Move("later", "The night after", "&#8250;", after)
             + (after is null ? string.Empty : $"<a class=\"np-newest\" href=\"{newest}\">newest</a>")
             + "</span>";
@@ -122,7 +136,7 @@ public static class Cards
 
     // One grid a month, from the month of the newest night held back to the oldest's, seven columns from
     // Monday.
-    static string Months(DateOnly night, IReadOnlyList<DateOnly> held, string route)
+    static string Months(DateOnly night, IReadOnlyList<DateOnly> held, string route, string query)
     {
         var nights = held.ToHashSet();
         var drawn = new StringBuilder();
@@ -140,7 +154,7 @@ public static class Cards
             for (var day = month; day.Month == month.Month; day = day.AddDays(1))
             {
                 drawn.Append(nights.Contains(day)
-                    ? $"<a class=\"np-day\" href=\"{route}{Day(day)}\" data-night=\"{Day(day)}\"{(day == night ? " aria-current=\"date\"" : string.Empty)}>{day.Day}</a>"
+                    ? $"<a class=\"np-day\" href=\"{route}{Day(day)}{query}\" data-night=\"{Day(day)}\"{(day == night ? " aria-current=\"date\"" : string.Empty)}>{day.Day}</a>"
                     : $"<span class=\"np-off\">{day.Day}</span>");
             }
 

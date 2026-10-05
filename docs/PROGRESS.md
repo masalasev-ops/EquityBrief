@@ -38338,3 +38338,94 @@ Verified:   `tools/ci.ps1` green over edce9cc, the tree main holds at d3fefe5 bu
 Carried:    the operator's ruling on the two rules found and the decision's wording; each family's sweep on each
             index on the corrected membership, its figures in 15.4's run entries; 15.2's second half; 15.1's second
             half; phase 14's sign-off.
+
+### 15.1 - each index's provisional picks read on the night by the sweep's own code, the six reports taken in turn, and every page reading one index at a time chosen under Universe   2026-10-05
+
+Amended:    This checkpoint amends its own done condition: 15.1 lands in three pull requests, the overnight queue's
+            order across the three indices moved from the second to a third, which lands once the first night shows
+            each new member's facts file, since the queue judges each name off it and no pass has read an S&P 400 or
+            600 member's yet; the third's half of the done condition is written into the plan by this commit. This
+            entry is the second.
+Built:      the swing filter's step reads the S&P 400's and 600's provisional rules after the S&P 500's books, under
+            a stage of its own: each index's members read by the sweep's own code over the night's stored year,
+            strength ranked and breadth read within the index, the pullback's base, the breakout and the drift as
+            frozen, the floors and the profit gate, every member's answer stored under each family with the part of
+            the rule it failed, each index's list drawn with one trade a stock across every card of every index, its
+            trades kept and ended, and its sector heavyweights on design (a) rebalanced on the first night of a month
+            and carried every night, in five tables of their own (migration 64). The S&P 500's list holds back a
+            stock whose S&P 400 or 600 trade is still open, its row naming that index. The night's six reports are
+            taken in turn across the three indices' lists, one at a time, an index with none left passing its turn.
+            Tonight, Past picks, Run, Universe and Researched open with a selector labelled Universe stating each
+            index's members, kept in the link and the S&P 500 where it names none; every heading, count, breadth line
+            and market line names its index; each card's rule is written by code from its index's settings, the S&P
+            400's and 600's from those their night stored, stating the minimum price, the dollar volume floor, the
+            profit check and the cost; the status line reads "Provisional: not yet frozen" or "Live rule since"; the
+            drift's card on the S&P 400 and 600 carries its line of evidence and the heavyweights' names its design
+            and sector comparison; a held-back note names the index holding the trade; Past picks draws an index's
+            trades with their result before and after cost. `index-families` runs the step alone. Three decisions,
+            one superseding the first six of the S&P 500's page; CLAUDE.md's two hard rules; sections 7, 14, 15.7,
+            15.8, 15.10, 15.13, 15.15, 15.17 and 17; the checks roster's three rows; SCHEMA; the runbook; the plan;
+            the guide. On the operator's ruling of 2026-10-05, before the merge: a failure in one index's part undoes
+            that index's writes of the night, writes its night row naming the failure in a `fault` column added to
+            migration 64, and reads the next index, the stage's row written "not computed" with the failure; the
+            S&P 500's list and the night's report request read the S&P 400's and 600's tables behind guards of their
+            own; that index's Tonight opens on "Not computed tonight", every card of it saying the same, and its Run
+            page names the failure. A fourth decision; section 7's row and 15.7; SCHEMA; the runbook; the roster's
+            two rows.
+Measured:   the stage's reading half over the live store read-only on 2026-10-02, from a scratch harness outside the
+            repository: the S&P 400's 400 members and 100,788 bars loaded in 1.3 s and read in 0.7 s, breadth 0.425
+            under the floor of 0.45, every list closed; the S&P 600's 602 members and 150,787 bars loaded in 1.4 s
+            and read in 1.3 s, breadth 0.513, one pullback pass, WABC, and three failing the profit check.
+            On the operator's order of 2026-10-05, SPY's, IJH's, IJR's and HYG's closes fetched into the night's
+            market series by the night's own fetcher built from main, the other thirteen series not asked: 4
+            requests, 276 sessions each from 2025-08-28 to 2026-10-02, under the run id
+            history-pull-market-series-20261005T191735Z. Then the whole step rehearsed over 2026-10-02 on the live
+            store opened read-only, its five tables temporary ones on that connection, the store file's size and time
+            unchanged after: 3.34 s for both indices, 2.15 s the S&P 400's and 1.19 s the S&P 600's. The S&P 400:
+            400 members, breadth 0.425, every list closed, 1,200 answers, its book rebalanced and buying 7, SN, CRBG,
+            CORT, NVT, WCC, MTSI and SMTC. The S&P 600: 599 members, breadth 0.5135, 1,797 answers, WABC listed under
+            the pullback and kept as a trade at 59.60, stop 58.27, target 63.1023, 63 sessions; its book rebalanced
+            and buying 8, IRDM, URBN, ACA, MATX, AXTI, FORM, ESI and MTRN. The six in turn over that night: QCOM
+            (S&P 500), SN (S&P 400), WABC (S&P 600), CAT, CRBG, IRDM.
+Tests:      1882, from 1870: twelve added, each index's night, list and trades, its sector
+            heavyweights, the S&P 500's list holding back on an S&P 400 trade, the six in turn over lists and over a
+            constructed night, the swing filter's step reading each index, the S&P 400's tonight, its card's words
+            changing with a setting changed, the four other pages under the selector, an S&P 500 card naming the
+            index holding a trade, an S&P 400 book that throws leaving the S&P 500's list and the night built, and an
+            S&P 600 night whose part failed saying "Not computed tonight" on every card.
+Claims:     983, from 981: the index families' catalogue and matrix rows, named beside phase 14's pair after its
+            report.
+Pins:       none moved. Read: the swing filter's, the rule versions' and the candidate evaluators' lists, the
+            breakout's, the drift's and the sector heavyweights' among them, 45 files; none of the 25 shipped sources
+            this pull request changes is among them, the heavyweights' book for each index kept in the index
+            families' own source for that reason.
+Mutated:    the rule, stated before the run: each property the done condition names that this pull request adds,
+            broken alone by hand, filtered to the tests holding it and reverted.
+            M1 the six taken a list at a time, every name of the S&P 500's before the 400's: red in both turn tests.
+            M2 the S&P 400's dollar volume floor written by hand as $10,000,000: red in the setting-change test, the
+            S&P 400 page's own test green since that is its floor, which is the case the setting-change test exists
+            for.
+            M3 the market line's breadth naming no index: red in the S&P 500's and the S&P 400's line tests.
+            M4 the held-back note naming no index: red in the S&P 500 card's test and the S&P 400 page's.
+            M5 the index step's two catches never catching: red in the S&P 400 book's night test, the night failing
+            at its swing filter step on the holding the book cannot read.
+            M6 the cards' check of a failed night removed: red in the S&P 600 page's test, its cards reading the
+            market check closed.
+            Added and not mutated: the selector's member counts, Past picks' result after cost, the Run page's
+            index night, the Universe and Researched pages' readings of one index, the step's own row, and the
+            guards on the S&P 500's list and on the report request.
+            Results: M1 to M6 each red where stated, each reverted, the tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: b1b26cb, over
+            c6aefe4, the guards' commit, whose first run was stopped once its suite read this line without the words
+            the Windows run is read by. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1882 of 1882 tests ran
+            with none failed, migrations 0 to 64 with none pending, schema version 64, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 983 claims, 983 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            994 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster,
+            43 carried and 43 passed, 1882 of 1882 tests ran.
+Carried:    the merge before the night of 2026-10-05, on the operator's order of that day once the funds' closes, the
+            guards and the rehearsal were green, with 22:30Z its cutoff; then
+            `tools/remedies/2026-10-05-15.1-the-index-families.txt` from main's Release build, each index's book
+            reading its first rebalance on 2026-10-02, and 5152 restarted from it, and every page screenshotted under
+            each of the three choices and read back over the live store, in the remedy's entry; the night of
+            2026-10-05 read the morning after, the first over the three indices, whose time the operating row reads;
+            15.1's third pull request, the overnight queue's order; phase 14's sign-off.

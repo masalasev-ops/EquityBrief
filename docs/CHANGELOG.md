@@ -11205,3 +11205,132 @@ Was:
 Now:
 > "with every family running on the 400 and 600 as provisional rules of their own, read on the night by each family's sweep's own code into tables of their own, and a choice of index under Universe on Tonight, Past picks, Run, Universe and Researched;"
 Why: the row states what the phase builds, and the operator ruled both on 2026-10-05.
+
+### 2026-10-05 - ARCHITECTURE.html - the family lister and the request drain read the S&P 400's and 600's lists and trades
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> the family lister's Reads cell "bar store, gate results, filter versions, fundamental readings, list rules, forward returns, family results, family nights, family picks"; the request drain's "family nights, family picks, gate results, fundamental readings, heavyweight holdings, research requests, run log"
+Now:
+> the family lister's Reads cell ending "..., family picks, index family trades"; the request drain's carrying "..., heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log"; and a catalogue row and a matrix row for the index families beside the heavyweight book's
+Why: the S&P 500's list holds back a stock whose S&P 400 or 600 trade is still open, the night's six reports are taken in turn across the three indices' lists, and the index families read and write each index's own tables.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's step asks for six reports taken in turn across the three indices' pages
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws).
+Now:
+> Ask for six reports taken in turn across the S&amp;P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: on the operator's ruling with phase 15's plan the six are taken one at a time from each index's page in turn, so each index holds two when it has picks and the paid passes a night stay six.
+
+### 2026-10-05 - ARCHITECTURE.html - the request drain's catalogue row writes the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> After the night's overnight queue it writes the night's own requests, one for each of the first six names the page draws, in the page's order across every family, the stocks the sector heavyweights bought that night after every swing family's picks and none they carried from an earlier month, each where that name has none outstanding or being written, and none on a night the page lists no stock (see: The night asks for a report on the first six names its page draws).
+Now:
+> After the night's overnight queue it writes the night's own requests, six in all, taken in turn from the S&amp;P 500's, the S&amp;P 400's and the S&amp;P 600's pages, one name at a time in that order and each page's own order across its families, the stocks each index's sector heavyweights bought that night after its swing families' picks and none they carried from an earlier month, an index with no name left passing its turn to the next, each where that name has none outstanding or being written, and none on a night no page lists a stock (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's note bounds the paid passes by the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> the passes they lead to are the drain's own runs, a number of paid passes a night the page's size bounds and the index's does not (see: The night asks for a report on the first six names its page draws).
+Now:
+> the passes they lead to are the drain's own runs, at most six paid passes a night taken in turn across the three indices' pages, a number the indices' sizes do not move (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling; with three pages the bound is the six and not one page's size.
+
+### 2026-10-05 - ARCHITECTURE.html - section 15.15's paragraph names the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> <p>A request is asked for from a row on tonight's list, from a name's own page, or by the night for the first six names its page draws, and all three write the same row, so this screen is where each is read (see: The night asks for a report on the first six names its page draws).
+Now:
+> <p>A request is asked for from a row on tonight's list, from a name's own page, or by the night for six names taken in turn across the three indices' pages, and all three write the same row, so this screen is where each is read (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - ARCHITECTURE.html - section 17's per-name row and its reports row cite the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> the per-name row's "(see: The night asks for a report on the first six names its page draws)"; the reports row's Value "at most 6 a night, the first names the page draws in its order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written, and none on a night the page lists no stock (see: The night asks for a report on the first six names its page draws)", its Why ending "since the count is set by what a reader needs rather than by the cap" and its Check "nightly-run, over a constructed night listing more than the count and a night before the families, with a launcher the test holds"
+Now:
+> the per-name row citing the new decision; the reports row's Value "at most 6 a night, taken in turn from the three indices' pages one name at a time, in the order the Universe selector offers them and each page's own order across its families, an index with no name left passing its turn to the next, one request a name marked as asked by the night unless that name has one outstanding or being written, and none on a night no page lists a stock (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)", its Why adding "taken in turn across the indices on the operator's ruling of 2026-10-04, so each index holds two when it has picks and the paid passes stay six", and its Check adding "and over constructed lists and a constructed night of the three indices taken in turn, two each where every index has picks, an index with none passing its turns and a name two lists hold taken once"
+Why: the same ruling, the count unchanged at six and its Value written without an index's number so the figure the pin reads stays the one constant.
+
+### 2026-10-05 - SCHEMA.md - the request drain inserts the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> and after the night's overnight queue it inserts the night's own requests, one for each of the first six names the night's page draws: the insert is split between the two by what asks, a press on a screen or the night (see: The night asks for a report on the first six names its page draws).
+Now:
+> and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+Why: the same ruling.
+
+### 2026-10-05 - CLAUDE.md - the first hard rule's report carve-out takes the six in turn
+Authorised by: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+Was:
+> and the night's requests for a report on the first six names its page draws, paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23 and 2026-10-01, ... (see: The night asks for a report on the first six names its page draws)
+Now:
+> and the night's requests for six reports taken in turn across the S&P 500's, 400's and 600's pages, paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23, 2026-10-01 and 2026-10-04, ... (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)
+Why: the same ruling; the carve-out stays six paid passes a night whatever the three indices hold.
+
+### 2026-10-05 - ARCHITECTURE.html - section 14's swing filter step reads the S&P 400's and 600's provisional rules after the S&P 500's books
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew ... (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut).
+Now:
+> at most five a family, a stock once and none whose trade from any family of any index is still open, and record the session as one the families drew ... (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut); then read the S&amp;P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, storing every member's answer, drawing each index's list with none whose trade on any index's list is still open, ending and keeping its trades, and carrying and rebalancing its sector heavyweights (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: Each index's market check closes its own swing lists together on its own breadth).
+Why: the step runs the index families after the S&P 500's books, and the S&P 500's list holds back a stock whose trade on an S&P 400 or 600 list is still open.
+
+### 2026-10-05 - CLAUDE.md - the listings hard rule names the S&P 500 and states the S&P 400's and 600's answers beside it
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> **A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look)
+Now:
+> the same, then "The index is the S&P 500, whose rules alone read the listings; an S&P 400 or 600 member holding a bar on the night gets an answer under each of its index's families instead, passed or not, for the same reason." and the provisional picks' decision cited beside the candidates'
+Why: phase 15's plan restates the hard rules for three indices; the listings stay the S&P 500's, and each S&P 400 and 600 member's answers are written whether or not a family passed it.
+
+### 2026-10-05 - .claude/rules/checks.md - the read-surface, nightly-run and fixture-expectations rows carry 15.1's second half
+Authorised by: Every page reads one index at a time chosen under Universe, and every figure names its index
+Was:
+> read-surface's row ending "... and the heavyweights' card states the day its live rule registered with the variants kept beside it, read off the register |"; nightly-run's ending "... and the index and credit funds are pulled whole under a stage of their own |"; fixture-expectations' ending "... read back through the sweep history over what the pull stored |"
+Now:
+> each row with a clause beside its last: read-surface's every page reading one index at a time chosen under Universe, read back over a constructed store of the three indices; nightly-run's swing filter step reading the S&P 400's and 600's provisional rules and the six reports taken in turn; fixture-expectations' each index's night, list, trades and book worked by hand
+Why: the roster is where a check states what it asserts, and 15.1's second half added the tests each clause names (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+
+### 2026-10-05 - BUILD_PLAN.md - 15.1 lands in three pull requests, the overnight queue's order across the indices in the third
+Corrects: 15.1's second pull request named the overnight queue's order across the three indices, which it cannot show to work: the queue judges each name off its facts file, and no pass has read an S&P 400 or 600 member's yet, so a queue taking them blind could stop the night it runs inside. Found building the second pull request on 2026-10-05.
+Was:
+> **15.1 lands in two pull requests, each with its own entry and its half of the done condition.** ... the second, on its own branch after it, is ... the choice of index, the six reports in turn, the labeller and the queue's order, with no S&P 500 rule, stage or pin moving and the ladder not widened, as the operator ruled on 2026-10-05. Until the second lands the S&P 400's and 600's members are stored and computed and listed by nothing.
+Now:
+> **15.1 lands in three pull requests, each with its own entry and its part of the done condition.** ... the second ... the six reports in turn and the labeller, ...; and the third, after it, is the overnight queue's order across the three indices, which lands once the first night shows what each new member's facts file holds ... Until the second lands the S&P 400's and 600's members are stored and computed and listed by nothing, and until the third the queue reads the S&P 500's members alone.
+> and the done condition gains: "And for the queue, the third: over a constructed night the overnight queue takes the S&P 500's list, then the S&P 400's and then the S&P 600's, each in its page's order, before every other member, the S&P 500's first among those; and a pass over an S&P 400 member's facts file as the night stores it writes its sections."
+Why: the queue's order waits on evidence the first night over the three indices produces, and the cards and the selector do not.
+
+### 2026-10-05 - ARCHITECTURE.html - the index families' catalogue row states what a failure in one index's part does
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> ... replaces its own night where the night is run again, evaluates no S&amp;P 500 rule, makes no request and calls no model (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)</td></tr>
+Now:
+> the same, then "; a failure in one index's part undoes that index's writes of the night, writes its night row naming the failure and reads the next index, the stage's row then written "not computed" with the failure, so the step and the night go on" with the new decision cited
+Why: the operator ruled on 2026-10-05, before the cards merged, that a failure in the S&P 400's or 600's part of the night is caught and named and the S&P 500's night built regardless.
+
+### 2026-10-05 - ARCHITECTURE.html - section 15.7's Universe paragraph says what an index's page shows on a night its part failed
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> ... A note under a card naming a stock held back for a trade still open names the index whose list holds that trade, since one trade a stock holds across every card of every index (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order).</p>
+Now:
+> the same, then "On a night whose S&amp;P 400 or 600 part failed, that index's page opens on "Not computed tonight" in place of its market line, every card of it says the same and lists nothing, and its Run page names the failure" with the new decision cited
+Why: the same ruling; the operator asked that the index's cards say "not computed tonight".
+
+### 2026-10-05 - SCHEMA.md - index_family_night gains fault, and its writer's paragraph says what a failed index writes
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> **The index families write it in their step, after the S&P 500's families, and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). A night run again replaces its own rows.
+Now:
+> the same, then "An index whose part of the night failed has its writes of the night undone and a row naming the failure written in their place, where no earlier try of the night computed one" with the new decision cited; and a `fault` column, null where the index's night was computed and otherwise the failure's type and message
+Why: the same ruling; the night row is where the page reads that an index's part failed, and the migration creating the table has not yet run on the operator's store, so the column is added in it.
+
+### 2026-10-05 - .claude/rules/checks.md - the nightly-run and read-surface rows carry a failure in an index's part of the night
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> nightly-run's row ending "... over constructed lists and a constructed night whose rows name each list |"; read-surface's ending "... and an S&P 500 card names the index whose open trade holds a stock back |"
+Now:
+> nightly-run's adding "; and an S&P 400 book that throws on a holding it cannot read leaves the S&P 500's list, the night's close and its report step built, the S&P 400's night row and the stage's row naming the failure under "not computed" and the S&P 600 read"; read-surface's adding "; and an S&P 600 night whose part failed opens on "Not computed tonight" in place of its market line, every card of it saying the same and listing nothing, and its Run page names the failure"
+Why: the roster is where a check states what it asserts, and the ruling added a test under each.
