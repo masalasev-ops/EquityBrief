@@ -37777,7 +37777,11 @@ Mutated:    the rule, stated before the run: each property the no-pass section a
             M5 the section's words back to the family set aside: red in both tests.
             M6 the heavyweights' report stating no strongest setting: red in the heavyweights' test alone.
             Results: M1 to M6 each red where stated, each reverted, and both tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a3bdcd3, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1839 of 1839 tests ran with none
+            failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 973 claims, 973 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 984
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    15.1, the nightly 1,500 with provisional rules and a choice of index; phase 14's sign-off, owed by a
             session that committed none of its code; the night of 2026-10-05 read, the books' first rebalance in it.
