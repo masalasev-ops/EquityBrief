@@ -722,21 +722,14 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
 
-        var largeAt = large.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
-        var largeSeries = new SweepSeries[large.Names.Count];
-
-        Parallel.For(0, large.Names.Count, name => largeSeries[name] = SweepColumns.Series(large.Names[name], largeAt));
-
         var spyCloses = (spy?.Closes ?? []).ToDictionary(pair => pair.Session, pair => pair.Close);
+        var industryReturns = new SweepIndustries(large, companies, industries);
 
         int BarOf(int name, int session) => Array.BinarySearch(series[name].SessionAt, session);
 
-        SweepBar? LargeBar(int name, DateOnly day) =>
-            largeAt.TryGetValue(day, out var at) && Array.BinarySearch(largeSeries[name].SessionAt, at) is var bar && bar >= 0 ? largeSeries[name].Bars[bar] : null;
-
         string? SectorOf(string ticker) => companies.Companies.GetValueOrDefault(ticker).Sector;
 
-        // Each industry's lead over SPY on a rebalance at a window, read once.
+        // Each industry's lead over SPY on a rebalance at a window, read once: the industries leading, the strongest first.
         var leads = new System.Collections.Concurrent.ConcurrentDictionary<(int Session, int Window), IReadOnlyList<(string Industry, double Lead)>>();
 
         IReadOnlyList<(string Industry, double Lead)> LeadsOn(int session, int window) => leads.GetOrAdd((session, window), key =>
@@ -753,29 +746,9 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 return [];
             }
 
-            var sums = new Dictionary<string, (double Weighted, double Weight)>(StringComparer.Ordinal);
-
-            for (var name = 0; name < large.Names.Count; name++)
-            {
-                var ticker = large.Names[name].Ticker;
-
-                if (!large.Names[name].MemberOn(day) || !industries.TryGetValue(ticker, out var industry)
-                    || LargeBar(name, day) is not { } now || LargeBar(name, start) is not { } then || then.Close <= 0m
-                    || CompanyValue.On(new SessionClose(then.Session, then.Close, then.RawClose > 0m ? then.RawClose : then.Close), companies.Counts.GetValueOrDefault(ticker) ?? [], companies.Splits.GetValueOrDefault(ticker) ?? []) is not { } value
-                    || value <= 0m)
-                {
-                    continue;
-                }
-
-                var weight = Statistic.FromPrice(value);
-                var held = sums.GetValueOrDefault(industry);
-
-                sums[industry] = (held.Weighted + (weight * (Statistic.FromRatio(now.Close / then.Close) - 1.0)), held.Weight + weight);
-            }
-
             var market = (spyNow / spyThen) - 1.0;
 
-            return [.. sums.Where(pair => pair.Value.Weight > 0).Select(pair => (pair.Key, (pair.Value.Weighted / pair.Value.Weight) - market)).Where(pair => pair.Item2 > 0).OrderByDescending(pair => pair.Item2).ThenBy(pair => pair.Key, StringComparer.Ordinal)];
+            return [.. industryReturns.Between(start, day).Select(pair => (pair.Key, pair.Value - market)).Where(pair => pair.Item2 > 0).OrderByDescending(pair => pair.Item2).ThenBy(pair => pair.Key, StringComparer.Ordinal)];
         });
 
         HeavyweightTrade Costed(HeavyweightTrade trade, int multiple)
