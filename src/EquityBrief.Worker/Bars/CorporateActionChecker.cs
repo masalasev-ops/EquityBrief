@@ -28,7 +28,10 @@ public sealed record ActionCheckOutcome(
     IReadOnlyList<SpentName>? Spent = null,
     // Members back after sessions in no index the night reads, whose years this night
     // asked for whole.
-    IReadOnlyList<string>? Returning = null);
+    IReadOnlyList<string>? Returning = null,
+    // Members whose stored year misses a session the exchange traded, other than those
+    // an action, a retry or a return asked for, whose years this night asked for whole.
+    IReadOnlyList<string>? Missing = null);
 
 // A suspect name whose nightly retries are spent: when it was last asked for, as the UTC
 // instant its row carries, and the reason that refetch failed for.
@@ -36,7 +39,8 @@ public sealed record SpentName(string Ticker, string LastAskedAt, string Reason)
 
 // The corporate action check. One bulk request per kind per night, and a
 // full-year refetch of any current member whose adjusted prices an action has
-// moved, or that returns after sessions in no index the night reads.
+// moved, that returns after sessions in no index the night reads, or whose
+// stored year misses a session the exchange traded.
 //
 // The refetch replaces the name's whole year inside one transaction, which is
 // the only sanctioned removal of a bar besides retention. A partial replacement
@@ -179,6 +183,26 @@ public sealed class CorporateActionChecker : IComponent
     // A name holding no bar at all is the backfill's, which asks for its year.
     const string FirstHeld = "SELECT MIN(session_date) FROM bar WHERE ticker = $ticker;";
 
+    // The newest session a name holds to tonight's, which the fetch has stored before this
+    // check runs and which a refetch's year has to reach before it replaces the year.
+    const string NewestHeld = @"
+        SELECT MAX(session_date) FROM bar
+        WHERE ticker = $ticker AND session_date <= $session;
+    ";
+
+    // Every name's first stored bar, every session each holds from a day to tonight's, which
+    // the fetch has stored before this check reads, and the instant this check last asked for
+    // each, which the members missing a session are read from in three reads whatever the
+    // universe.
+    const string FirstHeldEach = "SELECT ticker, MIN(session_date) FROM bar GROUP BY ticker;";
+
+    const string HeldEach = @"
+        SELECT ticker, session_date FROM bar
+        WHERE session_date >= $from AND session_date <= $session;
+    ";
+
+    const string CheckedEach = "SELECT ticker, checked_at FROM series_state;";
+
     // The only sanctioned removal of a bar besides retention, and it is paired
     // with the insert that follows it inside one transaction.
     const string DropYear = @"
@@ -275,11 +299,6 @@ public sealed class CorporateActionChecker : IComponent
             .Select(name => name.Ticker)
             .ToArray();
 
-        var spent = suspects
-            .Where(name => !Due(name) && !acted.Contains(name.Ticker))
-            .Select(name => new SpentName(name.Ticker, name.CheckedAt, name.Reason))
-            .ToArray();
-
         var counted = suspects.ToDictionary(name => name.Ticker, name => name.Retries, StringComparer.OrdinalIgnoreCase);
 
         // And every member back after sessions in no index the night reads, on its first
@@ -289,9 +308,29 @@ public sealed class CorporateActionChecker : IComponent
         // see: A member that returns after sessions in no index the night reads has its year asked for again whole
         var returning = await ReturningAsync(connection, indexCode, session, wider);
 
+        // And every other member whose stored year misses a session the exchange traded,
+        // once for the newest session missing, so a session the price file did not carry
+        // costs one request and what the provider cannot serve then stands as a gap.
+        // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+        var missing = await MissingAsync(
+            connection,
+            members,
+            session,
+            acted.Concat(retried).Concat(returning).ToHashSet(StringComparer.OrdinalIgnoreCase));
+
+        // A new reason to ask starts a name's count again as an action does, so a spent
+        // name asked for tonight is not named as spent.
+        var fresh = acted.Concat(returning).Concat(missing).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var spent = suspects
+            .Where(name => !Due(name) && !fresh.Contains(name.Ticker))
+            .Select(name => new SpentName(name.Ticker, name.CheckedAt, name.Reason))
+            .ToArray();
+
         var affected = acted
             .Concat(retried)
             .Concat(returning)
+            .Concat(missing)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(ticker => ticker, StringComparer.Ordinal)
             .ToArray();
@@ -315,6 +354,28 @@ public sealed class CorporateActionChecker : IComponent
                 {
                     throw new InvalidOperationException(
                         "the refetch returned no bars, so replacing the year would empty it");
+                }
+
+                // A year the provider has not yet brought up to the sessions the night stored is
+                // refused as an empty one is, the stored year left as it was and the name asked
+                // for again on the nights after, rather than replaced by a shorter one that would
+                // leave the name stale and the figures stored over those sessions ahead of its bars.
+                // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+                await using (var newest = connection.CreateCommand())
+                {
+                    newest.CommandText = NewestHeld;
+                    newest.Parameters.AddWithValue("$ticker", ticker);
+                    newest.Parameters.AddWithValue("$session", Text(session));
+
+                    var last = year.Max(bar => bar.SessionDate);
+
+                    if (await newest.ExecuteScalarAsync() is string held
+                        && DateOnly.ParseExact(held, "yyyy-MM-dd", CultureInfo.InvariantCulture) > last)
+                    {
+                        throw new InvalidOperationException(
+                            $"the refetch's year ends on {Text(last)} before {held}, the newest session the night stored, " +
+                            "so replacing the year would drop sessions the store holds");
+                    }
                 }
 
                 await using (var drop = connection.CreateCommand())
@@ -349,10 +410,11 @@ public sealed class CorporateActionChecker : IComponent
                 // like a check that found nothing.
                 await transaction.RollbackAsync();
 
-                // A night an action lands on the name or it returns starts its count
-                // again, a session the count already holds adds nothing, and any other
-                // night it is asked for counts one more. The count is of sessions, not runs.
-                var retries = acted.Contains(ticker) || returning.Contains(ticker, StringComparer.OrdinalIgnoreCase)
+                // A night an action lands on the name, it returns or a session goes missing
+                // starts its count again, a session the count already holds adds nothing, and
+                // any other night it is asked for counts one more. The count is of sessions,
+                // not runs.
+                var retries = fresh.Contains(ticker)
                     ? 0
                     : counted.GetValueOrDefault(ticker) + (askedTonight.Contains(ticker) ? 0 : 1);
 
@@ -372,7 +434,8 @@ public sealed class CorporateActionChecker : IComponent
             refetchRequests,
             retried,
             spent,
-            returning);
+            returning,
+            missing);
 
         await AppendAsync(connection, runId, observed, outcome);
 
@@ -471,6 +534,107 @@ public sealed class CorporateActionChecker : IComponent
         }
 
         return returning;
+    }
+
+    // The members holding a stored bar whose year misses a session the exchange traded, read
+    // between the first stored bar within the year the night keeps and the newest, tonight's
+    // included, that this check has not asked for since the newest session missing. Sessions
+    // after the newest stored bar are a shorter history and not a gap, which a name the price
+    // file stops carrying holds on every night until it carries it again, so they ask nothing
+    // until a later bar makes them a gap. A name tonight already asks for is left to the
+    // reason asking for it, and a name holding no bar is the backfill's.
+    // see: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+    async Task<IReadOnlyList<string>> MissingAsync(
+        SqliteConnection connection,
+        IReadOnlyCollection<string> members,
+        DateOnly session,
+        IReadOnlySet<string> askedFor)
+    {
+        var year = new[] { session.AddYears(-1), ExchangeClosures.CoveredFrom }.Max();
+
+        var first = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        var held = new Dictionary<string, HashSet<DateOnly>>(StringComparer.OrdinalIgnoreCase);
+        var asked = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FirstHeldEach;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                first[reader.GetString(0)] = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = HeldEach;
+            command.Parameters.AddWithValue("$from", Text(year));
+            command.Parameters.AddWithValue("$session", Text(session));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var ticker = reader.GetString(0);
+
+                if (!held.TryGetValue(ticker, out var sessions))
+                {
+                    held[ticker] = sessions = [];
+                }
+
+                sessions.Add(DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = CheckedEach;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asked[reader.GetString(0)] = reader.GetString(1);
+            }
+        }
+
+        var missing = new List<string>();
+
+        foreach (var ticker in members.Where(name => !askedFor.Contains(name)).OrderBy(name => name, StringComparer.Ordinal))
+        {
+            if (!first.TryGetValue(ticker, out var firstHeld))
+            {
+                continue;
+            }
+
+            if (!held.TryGetValue(ticker, out var sessions))
+            {
+                continue;
+            }
+
+            var from = firstHeld > year ? firstHeld : year;
+
+            var gone = ExchangeClosures.SessionsBetween(from.AddDays(-1), sessions.Max())
+                .Where(traded => !sessions.Contains(traded))
+                .ToArray();
+
+            if (gone.Length == 0)
+            {
+                continue;
+            }
+
+            if (asked.TryGetValue(ticker, out var checkedAt) && SessionAsked(checkedAt) >= gone[^1])
+            {
+                continue;
+            }
+
+            missing.Add(ticker);
+        }
+
+        return missing;
     }
 
     static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -599,6 +763,9 @@ public sealed class CorporateActionChecker : IComponent
             ((outcome.Returning ?? []).Count == 0
                 ? string.Empty
                 : $", {outcome.Returning!.Count} back after sessions in no index the night reads: " + string.Join(", ", outcome.Returning!)) +
+            ((outcome.Missing ?? []).Count == 0
+                ? string.Empty
+                : $", {outcome.Missing!.Count} missing a session the exchange traded: " + string.Join(", ", outcome.Missing!)) +
             (outcome.Suspect.Count == 0 ? string.Empty : ", suspect: " + string.Join(", ", outcome.Suspect)) +
             (spent.Count == 0
                 ? string.Empty
