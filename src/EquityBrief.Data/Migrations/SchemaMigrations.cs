@@ -683,7 +683,39 @@ public static class SchemaMigrations
         new Migration(60, "add heavyweight_night.beta, create heavyweight_rule_night, heavyweight_rule_holding and estimate_reading", CreateRuleBooks),
         new Migration(61, "create pulled_member", CreatePulledMembers),
         new Migration(62, "create pulled_income", CreatePulledIncome),
+        new Migration(63, "create pulled_snapshot and pulled_holding", CreatePulledHoldings),
     ];
+
+    // The S&P 400's and 600's funds' quarter-end holdings as the SEC holds their filings, one row a snapshot and one a
+    // holding of common stock, each matched to the provider's code by ISIN, by name or by neither, marked by the pull that
+    // wrote it, removed whole by that pull and read by no night: membership as it stood, a name held from the first
+    // snapshot holding it to the last.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    const string CreatePulledHoldings = @"
+        CREATE TABLE pulled_snapshot (
+            index_code  TEXT NOT NULL,
+            period      TEXT NOT NULL,
+            accession   TEXT NOT NULL,
+            filed       TEXT NOT NULL,
+            holdings    INTEGER NOT NULL,
+            equity      INTEGER NOT NULL,
+            pull        TEXT NOT NULL,
+            PRIMARY KEY (index_code, period)
+        ) STRICT;
+
+        CREATE TABLE pulled_holding (
+            index_code  TEXT NOT NULL,
+            period      TEXT NOT NULL,
+            holding     TEXT NOT NULL,
+            name        TEXT NOT NULL,
+            cusip       TEXT,
+            isin        TEXT,
+            ticker      TEXT,
+            matched_by  TEXT,
+            pull        TEXT NOT NULL,
+            PRIMARY KEY (index_code, period, holding)
+        ) STRICT;
+    ";
 
     // Each pulled company's quarterly income as its filer filed it, one row a quarter, marked by the companies pull that
     // wrote it, removed whole by that pull and read by no night: the net income the S&P 400's and 600's profit gate sums

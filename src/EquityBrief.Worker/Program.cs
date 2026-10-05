@@ -259,11 +259,25 @@ static async Task<int> HistoryPullRun(string[] args)
             () => EodhdIndexComponentsFeed.Live(
                 string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
                 new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
-            "a members pull"));
+            "a members pull"),
+        () => FeedSource.Resolve<IFundSnapshotFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("holdings")),
+            () => SecEdgarFundSnapshotFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)),
+            "a holdings pull"),
+        () => FeedSource.Resolve<ISymbolListFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("holdings")),
+            () => EodhdSymbolListFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a holdings pull"));
 
-    // The companies, splits, revenue and members pulls ask the provider alone: the fixture holds the answers their
-    // readers were written against and no replay of a pull, so a pull over the fixture is refused rather than answered
-    // with nothing.
+    // The companies, splits, revenue, members and holdings pulls ask their sources alone: the fixture holds the answers
+    // their readers were written against and no replay of a pull, so a pull over the fixture is refused rather than
+    // answered with nothing.
     static string NoCapture(string what) =>
         $"The {what} pull asks the provider live and has no recorded answers to replay. Run it with '--live' or the source set to live.";
 }
