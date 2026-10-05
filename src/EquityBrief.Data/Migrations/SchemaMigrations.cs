@@ -684,15 +684,18 @@ public static class SchemaMigrations
         new Migration(61, "create pulled_member", CreatePulledMembers),
         new Migration(62, "create pulled_income", CreatePulledIncome),
         new Migration(63, "create pulled_snapshot and pulled_holding", CreatePulledHoldings),
-        new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding", CreateIndexFamilies),
+        new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding, and add family_pick.held_index", CreateIndexFamilies),
     ];
 
     // The S&P 400's and 600's provisional rules as the night reads them with the sweep's own code over its year of
     // bars, each index's rows apart from the S&P 500's: what each night read for an index, every member's answer under
     // each family, the page's list for the index, each listed trade with its result before and after its cost, and the
-    // sector heavyweights' book within the index.
+    // sector heavyweights' book within the index; and on the S&P 500's list, the index whose trade holds a stock back
+    // where it is an S&P 400's or 600's.
     // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
     const string CreateIndexFamilies = @"
+        ALTER TABLE family_pick ADD COLUMN held_index TEXT;
+
         CREATE TABLE index_family_night (
             index_code    TEXT NOT NULL,
             session_date  TEXT NOT NULL,

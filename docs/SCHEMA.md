@@ -779,6 +779,7 @@ Grain: one row per session, stock and family that passed it.
 | `also` | TEXT | JSON: on a listed row, the other families the stock qualified under that night, in the page's order; an empty list on every other row |
 | `held_family` | TEXT | on an `open trade` row, the family that listed the trade still open; null otherwise |
 | `held_night` | TEXT | on an `open trade` row, the session that trade was listed on; null otherwise |
+| `held_index` | TEXT | on an `open trade` row whose trade an S&P 400 or 600 list made, that index, `MID` or `SML`; null otherwise, the trade an S&P 500 card's, and on every row written before 15.1's second half |
 
 Primary key: `session_date`, `ticker`, `family`.
 

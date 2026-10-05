@@ -7,6 +7,7 @@ using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Indices;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Families;
@@ -42,6 +43,7 @@ public sealed class FamilyLister : IComponent
             new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.FamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -105,8 +107,8 @@ public sealed class FamilyLister : IComponent
     const string RecordTheNight = "INSERT INTO family_night (session_date, families) VALUES ($night, $families);";
 
     const string Insert = @"
-        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night)
-        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night);
+        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night, held_index)
+        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night, $held_index);
     ";
 
     const string AppendRun = @"
@@ -164,7 +166,22 @@ public sealed class FamilyLister : IComponent
             qualifying.Add(new FamilyQualifiers(family.Name, await QualifiersAsync(connection, family, session, cancellation)));
         }
 
-        var open = await OpenTradesAsync(connection, session, [.. qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal)], cancellation);
+        var tickers = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
+        var open = new Dictionary<string, HeldTrade>(await OpenTradesAsync(connection, session, tickers, cancellation), StringComparer.Ordinal);
+
+        // A stock whose trade on an S&P 400 or 600 list is still open is held back as well, its row naming that index.
+        // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+        var (elsewhere, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, session, tickers, cancellation);
+        var otherIndex = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var (ticker, held) in elsewhere)
+        {
+            if (open.TryAdd(ticker, held))
+            {
+                otherIndex[ticker] = heldIn[ticker];
+            }
+        }
+
         var picks = FamilyList.Draw(qualifying, open);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -202,6 +219,7 @@ public sealed class FamilyLister : IComponent
             insert.Parameters.AddWithValue("$also", JsonSerializer.Serialize(pick.Also));
             insert.Parameters.AddWithValue("$held_family", pick.HeldBy is { } held ? held.Family : DBNull.Value);
             insert.Parameters.AddWithValue("$held_night", pick.HeldBy is { } holding ? Stamp(holding.Listed) : DBNull.Value);
+            insert.Parameters.AddWithValue("$held_index", pick.HeldBy is not null && otherIndex.TryGetValue(pick.Ticker, out var index) ? index : DBNull.Value);
 
             await insert.ExecuteNonQueryAsync(cancellation);
         }

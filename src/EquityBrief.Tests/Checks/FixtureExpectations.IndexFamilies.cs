@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Time;
+using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
 using Xunit;
 
@@ -127,5 +128,34 @@ public partial class FixtureExpectations
         Assert.Equal(["IA|102|1", "ID|102|2"], FamilyRows(store, "SELECT ticker, entry, place FROM index_family_trade WHERE index_code = 'MID' AND session_date = '" + IndexNight + "' ORDER BY ticker;"));
         Assert.Equal((2, 2), (mid.Listed, mid.HeldByATrade));
         Assert.Contains("\"dollarVolume\":10000000", FamilyRows(store, "SELECT settings FROM index_family_night WHERE index_code = 'MID';").Single(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheSAndP500sListHoldsBackAStockWhoseTradeOnAnSAndP400ListIsStillOpenAndNamesThatIndex()
+    {
+        // The lister's own night of 2026-09-30, the pullback passing PE, PJ, PA, PB, PD, PF, PG, PH and PI in its order,
+        // PA's and PD's S&P 500 trades still open. PF's breakout trade on the S&P 400's list from 2026-09-29 has not
+        // ended, so PF is held back too and its row names the S&P 400; the five listed move down to PH.
+        using var store = FamilyStore();
+
+        store.Execute("INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap) VALUES ('MID', 'breakout', 'PF', '2026-09-29', 1, '50', '47', NULL, '3', 63);");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 9, 30, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        await new FamilyLister(clock, store.DatabaseFile).RunAsync("families-index");
+
+        Assert.Equal(
+            [
+                "PE|listed|1|null|null|null",
+                "PJ|listed|2|null|null|null",
+                "PB|listed|3|null|null|null",
+                "PG|listed|4|null|null|null",
+                "PH|listed|5|null|null|null",
+                "PA|open trade|null|pullback|2026-09-28|null",
+                "PD|open trade|null|pullback|2026-09-28|null",
+                "PF|open trade|null|breakout|2026-09-29|MID",
+                "PI|past five|null|null|null|null",
+            ],
+            FamilyRows(store, "SELECT ticker, state, place, held_family, held_night, held_index FROM family_pick WHERE session_date = '2026-09-30' ORDER BY state <> 'listed', state, place, ticker;"));
     }
 }

@@ -338,9 +338,33 @@ public sealed class IndexFamilies : IComponent
         foreach (var (ticker, held) in await FamilyLister.OpenTradesAsync(connection, night, tickers, cancellation))
         {
             open[ticker] = held;
-            index[ticker] = "GSPC";
+            index[ticker] = LargeIndex;
         }
 
+        var (elsewhere, heldIn) = await OpenIndexTradesAsync(connection, night, tickers, cancellation);
+
+        foreach (var (ticker, held) in elsewhere)
+        {
+            if (open.TryAdd(ticker, held))
+            {
+                index[ticker] = heldIn[ticker];
+            }
+        }
+
+        return (open, index);
+    }
+
+    // The code an S&P 500 card's trade is named by where a list of the S&P 400 or 600 holds a stock back for it.
+    public const string LargeIndex = "GSPC";
+
+    // The trade each of the names still holds on the night on an S&P 400 or 600 list, with that list's index: a trade
+    // listed before the night that has not ended, or ended on the night itself, since a stock is free the night after
+    // its trade ends. The S&P 500's list reads it to hold such a stock back too.
+    // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+    public static async Task<(IReadOnlyDictionary<string, HeldTrade> Open, IReadOnlyDictionary<string, string> Index)> OpenIndexTradesAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
+    {
+        var open = new Dictionary<string, HeldTrade>(StringComparer.Ordinal);
+        var index = new Dictionary<string, string>(StringComparer.Ordinal);
         var wanted = tickers.ToHashSet(StringComparer.Ordinal);
 
         await foreach (var row in RowsAsync(connection, IndexTrades, [("$night", Stamp(night))], cancellation))
