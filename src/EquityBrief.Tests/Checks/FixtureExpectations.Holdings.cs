@@ -204,9 +204,9 @@ public partial class FixtureExpectations
 
         QuarterEndClose? CloseOn(string code) => closes.GetValueOrDefault(code);
 
-        // The tolerance the decision states is the one the matcher holds.
+        // The tolerance the decision states is the one the matcher holds, measured against the code's close as it reads it.
         Assert.Contains(
-            FormattableString.Invariant($"is within {HoldingMatcher.ValueTolerance * 100:0} per cent of the value per share the fund filed"),
+            FormattableString.Invariant($"the value per share the fund filed is within {HoldingMatcher.ValueTolerance * 100:0} per cent of the code's close"),
             Corpus.Read("docs/DECISIONS.md"),
             StringComparison.Ordinal);
 
