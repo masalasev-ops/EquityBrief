@@ -222,6 +222,26 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheSixReportsANightAreTakenInTurnAcrossTheThreeIndicesOneAtATime()
+    {
+        // Every index with picks: two each, in turn, the S&P 500 first.
+        Assert.Equal(
+            [("A1", 0), ("B1", 1), ("C1", 2), ("A2", 0), ("B2", 1), ("C2", 2)],
+            EquityBrief.Worker.Research.RequestDrain.TakenInTurn([["A1", "A2", "A3"], ["B1", "B2", "B3"], ["C1", "C2"]], 6));
+
+        // The plan's own case: the S&P 600 lists nothing and the S&P 400 one, so the turns go 500, 400, 500, 500, 500,
+        // 500, the 400 passing its second turn and the 600 every turn.
+        Assert.Equal(
+            [("A1", 0), ("B1", 1), ("A2", 0), ("A3", 0), ("A4", 0), ("A5", 0)],
+            EquityBrief.Worker.Research.RequestDrain.TakenInTurn([["A1", "A2", "A3", "A4", "A5", "A6"], ["B1"], []], 6));
+
+        // A name on two lists is taken once, under the first list to reach it; fewer names than six take every one.
+        Assert.Equal(
+            [("A1", 0), ("B1", 1), ("C2", 2), ("A2", 0)],
+            EquityBrief.Worker.Research.RequestDrain.TakenInTurn([["A1", "A2"], ["B1"], ["A1", "C2"]], 6));
+    }
+
+    [Fact]
     public async Task TheSAndP500sListHoldsBackAStockWhoseTradeOnAnSAndP400ListIsStillOpenAndNamesThatIndex()
     {
         // The lister's own night of 2026-09-30, the pullback passing PE, PJ, PA, PB, PD, PF, PG, PH and PI in its order,
