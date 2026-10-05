@@ -103,10 +103,12 @@ public sealed record HeavyweightFigures(
 }
 
 // What the heavyweights' sweep proposes: the setting with the best edge among those meeting the floors with every
-// setting one step from it, or none where no setting meets them.
+// setting one step from it, or none where no setting meets them, the family keeping its settings and its book until
+// the operator rules.
+// see: No family on any index is set aside or hidden by a test result without the operator's word
 public sealed record HeavyweightProposal(HeavyweightSetting? Setting, HeavyweightFigures? Proposed, IReadOnlyList<(HeavyweightSetting Setting, HeavyweightFigures Figures)> Neighbours)
 {
-    public bool SetAside => Proposed is null;
+    public bool NonePassed => Proposed is null;
 }
 
 // How the replay at the provisional setting read the rebalances the night's book stored: the sessions and sectors

@@ -1,0 +1,5 @@
+The answer to the dated holdings link for 2019-01-31, text/csv by its content type and the fund's product page by its body, 1,472,778 bytes. Its opening line and the holdings dates the page offers, as served:
+
+<!DOCTYPE html>
+...
+"initAsOfDates":{"all":"20261001"},"initAsOfDateList":{"all":[20261001,20260930,20251231]}

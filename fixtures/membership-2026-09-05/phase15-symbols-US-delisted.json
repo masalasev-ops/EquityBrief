@@ -1,0 +1,47 @@
+[
+ {
+  "Code": "AAALY",
+  "Name": "Aareal Bank AG ADR",
+  "Country": "USA",
+  "Exchange": "PINK",
+  "Currency": "USD",
+  "Type": "Common Stock",
+  "Isin": "US00254K1088"
+ },
+ {
+  "Code": "AAAP_old",
+  "Name": "Advanced Accelerator Applications S.A",
+  "Country": "USA",
+  "Exchange": "NASDAQ",
+  "Currency": "USD",
+  "Type": "Common Stock",
+  "Isin": "US00790T1007"
+ },
+ {
+  "Code": "AABA",
+  "Name": "Altaba Inc",
+  "Country": "USA",
+  "Exchange": "NASDAQ",
+  "Currency": "USD",
+  "Type": "Common Stock",
+  "Isin": "US0213461017"
+ },
+ {
+  "Code": "AAAB",
+  "Name": "Admiralty Bancorp Inc",
+  "Country": "USA",
+  "Exchange": "NASDAQ",
+  "Currency": "USD",
+  "Type": "Common Stock",
+  "Isin": null
+ },
+ {
+  "Code": "AAAGY",
+  "Name": "Altana Aktiengesellschaft",
+  "Country": "USA",
+  "Exchange": "NYSE",
+  "Currency": "USD",
+  "Type": "Common Stock",
+  "Isin": null
+ }
+]

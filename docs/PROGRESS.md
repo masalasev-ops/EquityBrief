@@ -37724,3 +37724,64 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    5152 restarted from main's Release build after the merge; the night of 2026-10-05 read, the books' first
             rebalance in it; phase 14's sign-off.
+
+### 15.0 planning - phase 15 planned: the S&P 400 and 600 with rules of their own, the first test's verdict reversed, the literature and the data checked, and no family set aside by a test result   2026-10-05
+
+Not a checkpoint entry. It lands 15.0, the pass that plans phase 15, and builds none of the phase's night.
+Queue:      done, the 14.3 correction, PR 353; in progress, this pass; next, 15.1, then 15.2 to 15.6 in order, each
+            reported after it merges, and the night of 2026-10-05 read the morning after it.
+Ruled:      by the operator: the brief of 2026-10-04, four answers with the plan the same day, the review of
+            2026-10-05 with two corrections and everything else approved, and two answers after the data checks the
+            same morning, each word for word in `prompts/`. Phase 14's sign-off is owed after this plan rather than
+            before it: the operator ruled the order reversed for phase 15, so the S&P 1500's evaluation starts while
+            a session that committed none of phase 14's code signs phase 14 off beside it; the sign-off stays owed,
+            and no checkpoint of phase 15 discharges it.
+Planned:    `BUILD_PLAN.md`'s phase 15 section, its checkpoints 15.0 to 15.6 and its two carried obligations;
+            section 11.4's evidence for rules of each index's own, section 13.9's paragraph after the first test,
+            section 20's row and section 23's sources; the decisions the phase rests on that describe no running
+            code, the first test's not-adopted entry superseded by the reversal, and the two entries whose words set
+            a family aside written again without them, each old text moved to Previously decided.
+Checked:    the literature for every rule of the brief, each source and how much of it was read in section 23, and
+            the data, every figure in the plan's section: a night over the three indices at about 29 to 35 minutes
+            to the close; about 25 megabytes of rows a night; the four funds served from 2018-01-02; the provider's
+            400 and 600 lists 9 and 33 tickers apart from the funds' own holdings; 6 of 30 sampled members at a loss
+            over four quarters; the estimators read from daily bars at 0.35 to 0.88 per cent against a measured 0.03;
+            and the rule for membership as it stood failing by ISIN alone, 92.5 and 95.3 per cent on 2019-09-30, the
+            company's name as a second key reaching 98.7 to 99.5.
+Captured:   13 answers into `fixtures/membership-2026-09-05/` under the prefix `phase15-`, each declared in its
+            manifest with what was cut from it; the provider's answers cost 306 of the day's 100,000 weighted calls,
+            the SEC's and iShares' none.
+Built:      the report half of the operator's ruling that no family is set aside by a test result: a sweep no
+            setting of which meets the floors proposes nothing, and the family's and the heavyweights' reports state
+            the five strongest settings with the floors each falls short of and by how much, and what could be tried
+            next, each dial the strongest reads at an end of its grid, the floors they miss and the ideas' run's
+            tests that fit the family, saying a sweep cannot tell which of those have run; the runners' line says
+            none passed; the proposal's `SetAside` reads `NonePassed`.
+Tests:      1839, from 1838: one added, the no-pass section over a constructed grid, and three tests' assertions on
+            the old words reading the new section.
+Claims:     973, unchanged: section 17's family sweep floors and section 18's family sweep with no setting meeting
+            its floors are reworded and no row is added; the plan, the decisions and the evidence sit in no table the
+            harness reads.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights' own,
+            the swing filter's and the rule versions' lists; no file this tree edits is in any of them, the
+            citations it moves among them.
+Mutated:    the rule, stated before the run: each property the no-pass section adds broken alone, made by hand over
+            the working tree before its commit, filtered to the family's and the heavyweights' report tests and
+            reverted.
+            M1 the strongest settings ordered from the lowest edge: red in the family's test alone.
+            M2 the trades' shortfall not held at nothing for a setting past the floor: red in the family's test
+            alone, after the test was given a setting 100 trades past the floor that misses its years, which the
+            first draft's setting at the floor itself could not tell apart.
+            M3 a dial at the top of its grid read as its lowest level: red in the family's test alone.
+            M4 the ideas' run's tests left off the family's report: red in the family's test alone.
+            M5 the section's words back to the family set aside: red in both tests.
+            M6 the heavyweights' report stating no strongest setting: red in the heavyweights' test alone.
+            Results: M1 to M6 each red where stated, each reverted, and both tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a3bdcd3, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1839 of 1839 tests ran with none
+            failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 973 claims, 973 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 984
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    15.1, the nightly 1,500 with provisional rules and a choice of index; phase 14's sign-off, owed by a
+            session that committed none of its code; the night of 2026-10-05 read, the books' first rebalance in it.

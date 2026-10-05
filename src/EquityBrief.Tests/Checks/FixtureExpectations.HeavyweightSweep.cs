@@ -460,14 +460,18 @@ public partial class FixtureExpectations
         Assert.Equal((double)(dropAt - first), provisional.HeldMedian!.Value);
         Assert.Null(provisional.Index);
 
-        // One trade meets no floor, so the family is set aside; the page states the provisional row, what luck alone
-        // would pass and that the book has stored nothing to compare.
+        // One trade meets no floor, so nothing is proposed; the page states the provisional row, the strongest settings
+        // with what could be tried next, what luck alone would pass and that the book has stored nothing to compare,
+        // and never that the family is set aside.
         var proposal = HeavyweightSweep.Propose(read);
         var run = new HeavyweightSweepRun(calendar[first], calendar[^1], 2, calendar.Length - first, months.Count, weeks.Count, 2, 2, read.Count, read.Count(one => one.Figures.MeetsFloors), DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch);
         var page = HeavyweightSweepReport.Build(run, read, proposal, HeavyweightSweep.Compare([], _ => null));
 
-        Assert.True(proposal.SetAside);
-        Assert.Contains("<p class=\"set-aside\">", page, StringComparison.Ordinal);
+        Assert.True(proposal.NonePassed);
+        Assert.Contains("<p class=\"none-passed\" data-shown=\"5\">", page, StringComparison.Ordinal);
+        Assert.Contains("<table class=\"strongest\">", page, StringComparison.Ordinal);
+        Assert.Contains("The ideas&#39; run reads the swing families alone, so none of its tests fits this family.", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("set aside", page, StringComparison.OrdinalIgnoreCase);
         Assert.Contains($"<tr data-key=\"{System.Net.WebUtility.HtmlEncode(HeavyweightSweep.Provisional.Key)}\" data-trades=\"1\" data-edge=\"{HeavyweightSweepReport.Percent(result / 2)}\"><td>The provisional setting</td>", page, StringComparison.Ordinal);
         Assert.Equal("-29.47%", HeavyweightSweepReport.Percent(result / 2));
         Assert.Contains("<p class=\"luck\" data-meeting=\"0\" data-luck=\"62\">", page, StringComparison.Ordinal);

@@ -10896,3 +10896,45 @@ Was:
 Now:
 > the row goes on with what 14.8's tests assert: the probe answers' members read and an empty answer refused, the members pull, a wider index's pull naming a name not served, the sweep history read both ways, and the run's answer with its survivors' words
 Why: the roster states what each check asserts.
+### 2026-10-05 - ARCHITECTURE.html - a family sweep no setting of which passes brings its strongest settings, in sections 13.9, 17 and 18
+Authorised by: No family on any index is set aside or hidden by a test result without the operator's word
+Was:
+> section 13.9's "the proposal and its variants are held to section 17's floors, and a family no setting of which meets them is set aside with its figures."; section 17's "Family sweep floors" row's "a family none of whose settings meets the floors set aside with its figures" and its check "a tie and a family set aside among them"; section 18's "A family sweep with no setting meeting its floors" row's "the report proposes nothing, says the family is set aside, and states the provisional setting's record and every setting's figures; nothing is registered", "the sweep's page names the family set aside above its provisional record" and "so the family keeps its provisional settings until the operator rules"
+Now:
+> section 13.9's "... and a family no setting of which meets them proposes nothing and keeps its provisional settings and its picks, its report bringing the operator the five strongest settings and what could be tried next"; section 17's row "proposing nothing and keeping its provisional settings, its report stating the five strongest settings with the floors each falls short of and by how much, and what could be tried next", its check reading the strongest settings back off a constructed report; section 18's row stating the five strongest, what could be tried next and every setting's figures, the family keeping its provisional settings and listing, the page "never" saying it is set aside
+Why: the operator's ruling of 2026-10-05 reviewing phase 15's plan, that no family on any index is set aside, retired or hidden because of a test result without their word.
+### 2026-10-05 - ARCHITECTURE.html - the two renamed decisions cited by their new names
+Authorised by: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does; and A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+Was:
+> eight citations of "A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors", in section 13.9 and section 17's and 18's rows, and four of "A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint", in sections 11.4, 15.7, 15.10 and 15.17
+Now:
+> each cites the decision by its new name, the first ending "..., or brings the strongest where none does" and the second reading "A family lists on provisional settings until its freeze, ..."
+Why: both decisions were written again at 15.0 without their words setting a family aside, and a spec cites no superseded decision.
+### 2026-10-05 - ARCHITECTURE.html - the S&P 400 and 600 with rules of their own, in sections 11.4, 13.9, 20 and 23
+Authorised by: The S&P 400 and 600 join the universe with rules of their own, since the first test showed only that the 500's settings do not carry to them
+Was:
+> section 11.4 ending at the sector leaders' paragraph; section 13.9 ending at the first test's paragraph, "... Where no family's edge improves even so the widening is dropped, and where one improves nothing is adopted until the result holds on membership as it stood."; section 20's table ending at phase 14's row; section 23's sources ending at Linnainmaa (2010)
+Now:
+> section 11.4 gains "The S&P 400 and 600, each with rules of its own", every finding with its source and what is judgement; section 13.9 gains the paragraph after the first test, each family swept on each index after costs and labelled as read on membership as it stood or survivors only; section 20 gains phase 15's row; section 23 gains fifteen sources, from Martineau (2022) to S&P Dow Jones Indices (2020)
+Why: the operator's brief of 2026-10-04 asked for the evidence why each index needs its own rules to be recorded in the architecture.
+### 2026-10-05 - BUILD_PLAN.md - phase 15's section, its two carried obligations, and the provisional decision cited by its new name
+Authorised by: The S&P 400 and 600 join the universe with rules of their own, since the first test showed only that the 500's settings do not carry to them
+Was:
+> the plan ending at phase 14's 14.8 before the carried obligations; the obligations table ending at "The share of the labeller's answers refused for a digit read after twenty nights"; phase 13's section citing "(see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint)"
+Now:
+> "## Phase 15: the S&P 1500, each index with rules of its own" with 15.0 to 15.6 and their done conditions; the table gains "The night's time and growth over the three indices read on its first five nights" and "Analyst coverage tested as a dial once dated counts exist", both operating; phase 13's section cites "A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint"
+Why: 15.0, the planning pass of the operator's brief of 2026-10-04, approved with their review of 2026-10-05.
+### 2026-10-05 - RUNBOOK.md - the family sweep's decision cited by its new name
+Authorised by: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
+Was:
+> "Each setup family's rule is replayed over the stored history across its own grid, one family a run (see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors):"
+Now:
+> the same sentence citing the decision by its new name, ending "..., or brings the strongest where none does"
+Why: the decision was written again at 15.0 without its words setting a family aside, and a spec cites no superseded decision.
+### 2026-10-05 - .claude/rules/checks.md - fixture-expectations reads a sweep with no setting passing
+Authorised by: No family on any index is set aside or hidden by a test result without the operator's word
+Was:
+> `fixture-expectations`'s "and a constructed history's report states its known answer, the family set aside;"
+Now:
+> "and a constructed history's report states its known answer, no setting passing and the five strongest stated with what could be tried next;"
+Why: 15.0's tests assert the report's no-pass section, and the roster states what each check asserts.

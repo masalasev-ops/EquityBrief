@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // The sector leaders' sweep: the sectors ranked and the members placed by the night's own rule, a name with no
 // sector left out and counted, the standings read back against the rows the night stored over the fixture,
 // and constructed candidates whose report states a known answer.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public partial class FixtureExpectations
 {
     // The claims the sector leaders' sweep makes, which this check reaches: section 17's row for its grid and

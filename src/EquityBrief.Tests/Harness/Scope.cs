@@ -1962,7 +1962,7 @@ internal static class Scope
             ByExpectations),
 
         // 13.6, the breakouts' sweep: section 17's rows for its grid and every family sweep's floors and test,
-        // and section 18's row for a family set aside.
+        // and section 18's row for a family sweep no setting of which meets its floors.
         [CheckReach.Key(LimitsTable, "Breakout sweep grid")] = new Scoped(
             Verdict.Pass,
             "the grid's levels are the breakout's own values with a step either side, the year's high, the volume over its average, the newer ranges over the older and the typical move read back against the rows the night's own rule stored over the fixture, and a constructed history's breakout, its trailing trade and its benchmark worked by hand and read back off its report",
@@ -1981,7 +1981,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Family sweep floors")] = new Scoped(
             Verdict.Pass,
-            "the proposal worked by hand over constructed records: the best edge with too few trades passed over, one short of its years passed over, a tie on the edge going to the setting one dial from the provisional, its neighbours as the variants the higher edge first, and every setting short of the floors setting the family aside",
+            "the proposal worked by hand over constructed records: the best edge with too few trades passed over, one short of its years passed over, a tie on the edge going to the setting one dial from the provisional, its neighbours as the variants the higher edge first, and every setting short of the floors proposing nothing, the five strongest stated with their shortfalls and what could be tried next",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Family sweep test")] = new Scoped(
             Verdict.Pass,
@@ -1989,7 +1989,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "A family sweep with no setting meeting its floors")] = new Scoped(
             Verdict.Pass,
-            "over a constructed history no setting of which holds the floors, the proposal is none, the report says the family is set aside and draws the provisional setting's record as the walk read it",
+            "over a constructed history no setting of which holds the floors, the proposal is none, the report draws the provisional setting's record as the walk read it, the five strongest settings with the floors each falls short of and by how much and what could be tried next, and never says the family is set aside",
             ByExpectations),
 
         // 13.5, the pages around the setup families, each read off the rendered page over a constructed night.
@@ -3141,7 +3141,7 @@ internal static class Scope
         // 14.5, the heavyweights' sweep: section 17's row and section 18's two.
         [CheckReach.Key(LimitsTable, "Heavyweights' sweep grid")] = new Scoped(
             Verdict.Pass,
-            "every combination of the dials read once with the provisional setting among them, each setting's neighbours one dial a step away, the rebalances of each period, a beta by hand and a fund's return in the members' mean's place, the walk by hand under each exit and a constructed history's report read back set aside; the levels read off the document against the constants",
+            "every combination of the dials read once with the provisional setting among them, each setting's neighbours one dial a step away, the rebalances of each period, a beta by hand and a fund's return in the members' mean's place, the walk by hand under each exit and a constructed history's report read back with no setting passing, its strongest settings and what could be tried next; the levels read off the document against the constants",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A rebalance the night's book stored that the heavyweights' replay reads differently")] = new Scoped(
             Verdict.Pass,

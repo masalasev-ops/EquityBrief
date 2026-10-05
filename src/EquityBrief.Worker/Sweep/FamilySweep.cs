@@ -115,18 +115,19 @@ public sealed record FamilyFigures(
 }
 
 // What a family's sweep proposes: the setting with the best edge among those meeting the floors, ties to the
-// one nearest the provisional and then its key, with its neighbours as the variants, or the family set aside
-// where no setting meets them.
+// one nearest the provisional and then its key, with its neighbours as the variants, or nothing where no setting
+// meets them, the family keeping its provisional settings and listing until the operator rules.
+// see: No family on any index is set aside or hidden by a test result without the operator's word
 public sealed record FamilyProposal(FamilyFigures? Proposed, IReadOnlyList<FamilyFigures> Variants)
 {
-    public bool SetAside => Proposed is null;
+    public bool NonePassed => Proposed is null;
 }
 
 // A setup family's sweep: the family's own rule replayed over the stored history under each setting of its
 // grid, night by night, the market check at the live filter's floor closing every list, five a night in the
 // family's own order and one open trade a stock, each trade scored against the same plan entered on every
 // member that night.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public static class FamilySweep
 {
     public const int PerNight = SetupFamilies.ListedANight;

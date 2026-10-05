@@ -18,8 +18,8 @@ public sealed record FamilySweepRun(
     string? Note = null);
 
 // A setup family's sweep report: the history read, the provisional setting's record beside the proposal, the
-// proposal or the family set aside, its variants, the test its checkpoints read from the freeze, and every
-// setting of the grid with its figures.
+// proposal and its variants, or where no setting meets the floors the strongest settings and what could be tried
+// next, the test its checkpoints read from the freeze, and every setting of the grid with its figures.
 public static class FamilySweepReport
 {
     // The test a family's checkpoints read from its freeze, stated in the report before anything is frozen.
@@ -53,8 +53,18 @@ public static class FamilySweepReport
         }
         else
         {
-            page.Append(Invariant($"<p class=\"set-aside\">No setting has at least {FamilySweep.TradeFloor} trades and an edge above nothing in at least {FamilySweep.YearsBeating} of the 8 years, so nothing is steady enough to propose and the family is set aside with its figures.</p>"));
-            page.Append(Table([("The provisional setting", provisional)]));
+            var strongest = SweepNonePassed.StrongestOf(read.Select(one => new Strongest(one.Figures.Key, one.Figures.Trades, one.Figures.YearsBeating, one.Figures.Edge)));
+            var next = new List<string>(SweepNonePassed.FloorsMissed(strongest));
+
+            if (strongest.Count > 0)
+            {
+                var top = read.First(one => one.Figures.Key == strongest[0].Key).Setting;
+
+                next.AddRange(SweepNonePassed.GridEnds([.. grid.Dials.Select(dial => (dial.Dial, (IReadOnlyList<string>)[.. dial.Levels.Select(FamilyGrid.Number)]))], top));
+            }
+
+            next.Add(SweepNonePassed.Ideas([.. FamilyIdeas.For(run.Family).Select(idea => idea.Rule)]));
+            page.Append(SweepNonePassed.Section(strongest, next, Table([("The provisional setting", provisional)]), Number));
         }
 
         page.Append("<h2>The test its checkpoints read</h2>");

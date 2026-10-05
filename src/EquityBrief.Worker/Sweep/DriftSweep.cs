@@ -24,7 +24,7 @@ public readonly record struct DriftReading(
 // The earnings drift's sweep: its rule's readings over the stored history and the pulled surprises, the
 // listings each setting makes of them, its trade to the stop or the target, and the benchmark of the same
 // plan entered on every member that night.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 public sealed class DriftSweep
 {
     // The grid around the provisional setting the sweep proposed its freeze from.

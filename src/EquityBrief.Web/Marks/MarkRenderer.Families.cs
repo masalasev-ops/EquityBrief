@@ -22,7 +22,7 @@ public sealed record FamilyPickCell(
 // rule went live or nothing while it runs on provisional settings, how many variants are scored beside
 // it, its picks in the page's order, the notes beneath them, and why it lists nothing where it lists none.
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-// see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+// see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
 public sealed record FamilyCardView(
     string Family,
     string Label,

@@ -344,7 +344,7 @@ static async Task<int> QuartersRun(string[] args)
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
 // A setup family's sweep, by hand: the family's rule replayed over the stored history across its grid, read-only,
 // its report written into a run folder of its own. The work is in `FamilySweepRunner`.
-// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors, or brings the strongest where none does
 static async Task<int> SweepFamilyRun(string[] args)
 {
     var configuration = Configuration();
