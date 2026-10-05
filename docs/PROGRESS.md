@@ -38080,3 +38080,51 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 28f40c5
             the checks that read the record, run filtered over the tree carrying it, 139 of 139 passing.
 Carried:    each family's sweep on each index on membership as it stood, its figures in 15.4's run entries; the fix
             for a name match put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.
+
+### 15.1 - correction: a member missing a session the exchange traded has its year asked for again whole, once for the newest session missing   2026-10-05
+
+Built:      the corporate action check asks for the year of a member holding stored bars that misses a session the
+            exchange traded between its first stored bar within the year the night keeps and its newest, tonight's
+            included, and replaces it whole as it does an action's, once for the newest session missing: a name it
+            has asked for on or after that session is not asked again, so what the provider cannot serve stands as a
+            gap and only a session going missing later asks once more. Sessions after the newest stored bar are a
+            shorter history and ask nothing. A refetch failing for a missing session marks the name suspect with its
+            count starting that night, and a name an action, a retry or a return asks for that night is left to that
+            reason. And a year that does not reach the newest session the night stored replaces nothing, whatever it
+            was asked for, and marks the name suspect with why. The stage's row names the members asked for this way.
+            A decision; CLAUDE.md's first hard rule; sections 7 and 17; the checks roster's corporate-actions row;
+            the runbook.
+Ruled:      by the operator on 2026-10-05: "P's missing days: refetch the same way."
+Found:      P, the S&P 500's member Everpure, holds no bar for 2026-09-18, 09-21 or 09-22, which the price file did
+            not carry around its ticker change, and has shown no figure since 2026-09-23. Read on the store that
+            morning, it is the one member of the 1,506 missing a session before its newest stored bar. The guard was
+            found by the first run of the night's tests over this change: a night after a caught-up file short of a
+            member asked for its year over the fixture, whose recorded years end on 2026-09-04, replaced the year the
+            night held to 2026-09-10 with one ending there, and the listings stopped the night on the facts stored
+            over the sessions dropped.
+Tests:      1867, from 1863: four added, a member missing three sessions refetched whole and not again, a session
+            the provider cannot serve asked for once and again only when a later one goes missing, the names not
+            asked for with a failed ask's count, and a year ending before the night's session refused and taken on
+            the retry; the interrupted refetch's constructed year moved to reach its night's session, and the
+            returning member's test asserting it is not named as missing.
+Claims:     981, unchanged: cells of existing rows carry the new clauses.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; the checker is in none of them.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree, filtered to the corporate-actions tests and reverted.
+            M1 the missing names left out of the names refetched: red in the four tests added.
+            M2 a name asked for on or after its newest missing session asked for again: red in the session the
+            provider cannot serve, and in the returning member's stretch the provider cannot serve, which the
+            missing names then asked for again.
+            M3 the sessions after the newest stored bar read as missing: red in nine, the four added and five whose
+            nights pass the sessions their stores hold.
+            M4 a name's first stored bar not read, the year read from its start: red in 23 of the 26.
+            M5 a missing name's failed refetch counted on from its count before: red in the test of the names not
+            asked for and the failed ask.
+            M6 the year ending before the night's session taken: red in the test of that year.
+            Results: M1 to M6 each red where stated, each reverted, and the 26 corporate-actions tests green over
+            the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    the night of 2026-10-05 asks for P's year, read the next morning on its actions row beside BLDR's,
+            TAP's and TTD's; 15.2's second half; 15.1's second half; phase 14's sign-off.
