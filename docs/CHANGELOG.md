@@ -11137,3 +11137,35 @@ Was:
 Now:
 > the clause opening on the N-Q's and the annual report's captured pages read for each fund's complete schedule, a summary passed over and a summary alone refused, and the name rule: a match kept only where its code traded, none where which traded is not known, a renamed company read by its fund's own filings' name, and the non-voting mark and a place after a slash no part of a name; the pull storing the N-Q's and the annual report's snapshots with no other fund's holdings, a name's code confirmed off a pulled bar or the provider's prices once a code a quarter, and a stored quarter's holdings matched again under their first pull
 Why: the roster states what each check asserts, and the correction's three tests assert these.
+
+### 2026-10-05 - CLAUDE.md - the corporate action refetch's carve-out names a member missing a session the exchange traded
+Authorised by: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+Was:
+> "the corporate action refetch, which asks for a year again for a name an action landed on or a member returning after sessions in no index the night reads, once on its first night back, and on each of the five nights after a failed check ...", with the citations running "(see: A member that returns after sessions in no index the night reads has its year asked for again whole) (see: A suspect name ..."
+Now:
+> "the corporate action refetch, which asks for a year again for a name an action landed on, a member returning after sessions in no index the night reads, once on its first night back, or a member missing a session the exchange traded, once for the newest session missing, and on each of the five nights after a failed check ...", with the new decision cited after the returning member's
+Why: P held no bar for three sessions the price file did not carry around its ticker change and nothing asked for it again, and the refetch that replaces such a year is a per-name request the rule names rather than leaves to be discovered.
+
+### 2026-10-05 - ARCHITECTURE.html - the corporate action checker replaces the year of a member missing a session, in section 7's catalogue and section 17's per-name row
+Authorised by: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+Was:
+> the catalogue row ending "... since an action may have landed on it unseen (see: A member that returns after sessions in no index the night reads has its year asked for again whole)", and the per-name row's reason running "... bounded by the names returning rather than by the universe (see: ...). A name whose retries are spent stays suspect, ..."
+Now:
+> the catalogue row going on "; and a member whose stored year misses a session the exchange traded before its newest stored bar has its year replaced the same way, once for the newest session missing, what the provider cannot serve then standing as a gap, and a year that does not reach the newest session the night stored replaces nothing and marks the name suspect, whatever it was asked for", with the decision cited, and the per-name row's reason carrying "A member whose stored year misses a session the exchange traded before its newest stored bar is asked for once for the newest session missing, which is bounded by the sessions the price file did not carry rather than by the universe, one member of the 1,506 on the morning of 2026-10-05" before the spent name's sentence
+Why: a session the price file did not carry withheld every computation over the name for a year with nothing asking for it again.
+
+### 2026-10-05 - .claude/rules/checks.md - corporate-actions reads a member missing a session the price file did not carry
+Authorised by: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+Was:
+> `corporate-actions`'s row ending "... and a refetch failing on its return marks the name suspect with its count starting that night |"
+Now:
+> the row going on to a member missing a session the price file did not carry refetched whole and not again, a session the provider cannot serve standing as a gap until a later one goes missing, the names not asked for, a failed refetch for a missing session marked suspect with its count starting that night, and a year ending before the newest session the night stored replacing nothing
+Why: the roster states what each check asserts, and the correction's four tests assert these.
+
+### 2026-10-05 - RUNBOOK.md - a member's gap at a session the price file did not carry
+Authorised by: A member missing a session the exchange traded has its year asked for again whole, once for the newest session missing
+Was:
+> the symptoms table's row for a name back in an index after sessions in none, followed by the next row
+Now:
+> a row after it for a member showing a gap at a session the price file did not carry after the night that asked for its year: the provider served none either, nothing to do, and a later session going missing asks once more
+Why: the check asks once and leaves what the provider did not serve as a gap, which the operator reads on the name page and should not chase.

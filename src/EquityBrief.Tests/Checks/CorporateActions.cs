@@ -332,11 +332,13 @@ public class CorporateActions
 
         Assert.True(before.Count > 2, $"AAPL holds {before.Count} bars, and the interruption needs a year to replace.");
 
+        // Its year reaches the night's own session, as a year the guard against a shorter
+        // one lets through to the delete has to.
         const string RepeatsASession = """
             [
-             {"date":"2026-08-05","open":10,"high":11,"low":9,"close":10.5,"adjusted_close":10.5,"volume":100},
-             {"date":"2026-08-06","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110},
-             {"date":"2026-08-06","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110}
+             {"date":"2026-08-07","open":10,"high":11,"low":9,"close":10.5,"adjusted_close":10.5,"volume":100},
+             {"date":"2026-08-10","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110},
+             {"date":"2026-08-10","open":10.5,"high":12,"low":10,"close":11,"adjusted_close":11,"volume":110}
             ]
             """;
 
@@ -357,8 +359,8 @@ public class CorporateActions
         // sessions are dates the real series also holds, so an assertion on the
         // date would have passed over a half-replaced year; what it cannot hold
         // is those sessions at the refetch's own prices.
-        Assert.DoesNotContain("2026-08-05|10.5", Series(store, "AAPL"));
-        Assert.DoesNotContain("2026-08-06|11", Series(store, "AAPL"));
+        Assert.DoesNotContain("2026-08-07|10.5", Series(store, "AAPL"));
+        Assert.DoesNotContain("2026-08-10|11", Series(store, "AAPL"));
 
         var state = StateOf(store, "AAPL");
 
@@ -1233,6 +1235,7 @@ public class CorporateActions
         var outcome = await ThreeIndicesOn(store, Joined, history);
 
         Assert.Equal(["MSFT"], outcome.Returning ?? []);
+        Assert.Empty(outcome.Missing ?? []);
         Assert.Equal(1, outcome.Refetched);
         Assert.Equal(1, outcome.RefetchRequests);
         Assert.Empty(outcome.Suspect);
@@ -1350,5 +1353,185 @@ public class CorporateActions
         Assert.Equal(["MSFT"], next.Retried ?? []);
         Assert.Equal(1, next.RefetchRequests);
         Assert.Equal(("suspect", 1), (CountOf(store, "MSFT").State, CountOf(store, "MSFT").Retries));
+    }
+
+    // A member of the index the whole time whose stored year lacks the sessions given, which
+    // is the price file not carrying it on them, with every bar after the night of the test
+    // taken out of the store.
+    static void Lacks(TemporaryStore store, string ticker, IReadOnlyList<DateOnly> sessions, DateOnly night)
+    {
+        foreach (var session in sessions)
+        {
+            store.Execute($"DELETE FROM bar WHERE ticker = '{ticker}' AND session_date = '{Day(session)}';");
+        }
+
+        store.Execute($"DELETE FROM bar WHERE session_date > '{Day(night)}';");
+    }
+
+    [Fact]
+    public async Task AMemberMissingASessionThePriceFileDidNotCarryHasItsYearAskedForAgainWhole()
+    {
+        // P, the S&P 500's member since its ticker changed, held no bar for 2026-09-18, 09-21 or
+        // 09-22 because the day's price file did not carry it around the change, so every
+        // computation over it was withheld from 2026-09-23 on and nothing asked for it again.
+        using var store = await Stored();
+
+        var gone = SessionsFrom(Left, 3);
+
+        Lacks(store, "MSFT", gone, Joined);
+
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var outcome = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Equal(["MSFT"], outcome.Missing ?? []);
+        Assert.Empty(outcome.Returning ?? []);
+        Assert.Equal(1, outcome.Refetched);
+        Assert.Equal(1, outcome.RefetchRequests);
+        Assert.Empty(outcome.Suspect);
+
+        var year = await RecordedHistoricalBarFeed.FromFolder(FixtureFolder()).BarsAsync("MSFT", Joined.AddYears(-1), Joined);
+
+        Assert.Equal([.. year.Select(bar => bar.SessionDate)], SessionsHeld(store, "MSFT"));
+        Assert.All(gone, session => Assert.Contains(session, SessionsHeld(store, "MSFT")));
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
+
+        var stage = StageOf(store, RunIdOf(Joined));
+
+        Assert.Equal("ok", stage.Outcome);
+        Assert.Contains("1 missing a session the exchange traded: MSFT", stage.Detail, StringComparison.Ordinal);
+
+        // Once: the night after asks nothing for it.
+        var after = await ThreeIndicesOn(store, SessionsFrom(Joined.AddDays(1), 1)[0], history);
+
+        Assert.Empty(after.Missing ?? []);
+        Assert.Equal(0, after.RefetchRequests);
+    }
+
+    [Fact]
+    public async Task AMissingSessionTheProviderCannotServeIsAskedForOnceAndAgainOnlyWhenALaterOneGoesMissing()
+    {
+        // The bound. A session the provider does not serve stays missing after the refetch, so a
+        // check asking whenever a session is missing would make a per-name request every night
+        // for a year. It is asked for once and stands as a gap, and a session going missing after
+        // the night it was asked for asks once more.
+        using var store = await Stored();
+
+        var gone = SessionsFrom(Left, 3);
+
+        Lacks(store, "MSFT", gone, Joined);
+
+        var history = new AwayUnserved(RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), gone);
+        var first = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Equal(["MSFT"], first.Missing ?? []);
+        Assert.Equal(1, first.RefetchRequests);
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
+        Assert.Equal(gone[0], EquityBrief.Core.Bars.TradingCalendar.Check(SessionsHeld(store, "MSFT")).Earliest);
+
+        var nights = SessionsFrom(Joined.AddDays(1), 3);
+
+        // Each night stores its own session before the check reads, as the fetch does, and the
+        // second night's file carries nothing for MSFT. Neither night asks for it, since the
+        // check reads the sessions before tonight's and the one asked for still stands.
+        void Fetched(DateOnly night, bool carriesMsft) =>
+            store.Execute(
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+                $"SELECT ticker, '{Day(night)}', open, high, low, close, volume, source, observed_at, raw_close FROM bar " +
+                $"WHERE session_date = '{Day(Joined)}'" + (carriesMsft ? ";" : " AND ticker <> 'MSFT';"));
+
+        foreach (var (night, carriesMsft) in new[] { (nights[0], true), (nights[1], false) })
+        {
+            Fetched(night, carriesMsft);
+
+            var quiet = await ThreeIndicesOn(store, night, history);
+
+            Assert.Empty(quiet.Missing ?? []);
+            Assert.Equal(0, quiet.RefetchRequests);
+        }
+
+        // The third night reads the second's session missing, later than the night it was last
+        // asked for, and asks for it once more: that session filled, the three it cannot serve not.
+        Fetched(nights[2], true);
+
+        var later = await ThreeIndicesOn(store, nights[2], history);
+
+        Assert.Equal(["MSFT"], later.Missing ?? []);
+        Assert.Equal(1, later.RefetchRequests);
+        Assert.Contains(nights[1], SessionsHeld(store, "MSFT"));
+        Assert.All(gone, session => Assert.DoesNotContain(session, SessionsHeld(store, "MSFT")));
+    }
+
+    [Fact]
+    public async Task AMemberHoldingEverySessionFromItsFirstBarOrHoldingNoBarIsNotAskedForAndAFailedAskStartsItsCount()
+    {
+        // The populations beside the one asked for. A member whose first stored bar is later than
+        // the year the night keeps holds a shorter history and misses nothing, and a member
+        // holding no bar is the backfill's. And a refetch failing for a missing session marks the
+        // name suspect with its count starting that night, as one after an action does.
+        using var store = await Stored();
+
+        store.Execute($"DELETE FROM bar WHERE ticker = 'NFLX' AND session_date < '{Day(Left)}';");
+        store.Execute("DELETE FROM bar WHERE ticker = 'KEYS';");
+        store.Execute($"DELETE FROM bar WHERE session_date > '{Day(Joined)}';");
+
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var quiet = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Empty(quiet.Missing ?? []);
+        Assert.Equal(0, quiet.RefetchRequests);
+        Assert.Equal(0, history.Requests);
+        Assert.Equal("absent", StateOf(store, "NFLX").State);
+        Assert.Equal("absent", StateOf(store, "KEYS").State);
+
+        Lacks(store, "MSFT", SessionsFrom(Left, 3), Joined);
+
+        var night = SessionsFrom(Joined.AddDays(1), 1)[0];
+        var failed = await ThreeIndicesOn(store, night, Refusing());
+
+        Assert.Equal(["MSFT"], failed.Missing ?? []);
+        Assert.Equal(["MSFT"], failed.Suspect);
+        Assert.Equal(("suspect", 0), (CountOf(store, "MSFT").State, CountOf(store, "MSFT").Retries));
+    }
+
+    // The recorded year with every session from a day on taken out, which is a provider whose
+    // year has not yet reached the sessions the night stored.
+    sealed class EndingBefore(IHistoricalBarFeed inner, DateOnly day) : IHistoricalBarFeed
+    {
+        public int Requests => inner.Requests;
+
+        public async Task<IReadOnlyList<ProviderBar>> BarsAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
+            [.. (await inner.BarsAsync(ticker, from, to, cancellationToken)).Where(bar => bar.SessionDate < day)];
+    }
+
+    [Fact]
+    public async Task AYearEndingBeforeTheNewestSessionTheNightStoredReplacesNothing()
+    {
+        // A year the provider has not yet brought up to the night's own session would drop the
+        // session the fetch stored, leaving the name stale and the figures already stored over
+        // it ahead of its bars. It is refused as an empty year is, the stored year left whole and
+        // the name suspect with why, and a year reaching the session is taken.
+        using var store = await Stored();
+
+        var gone = SessionsFrom(Left, 3);
+
+        Lacks(store, "MSFT", gone, Joined);
+
+        var before = Series(store, "MSFT");
+        var refused = await ThreeIndicesOn(store, Joined, new EndingBefore(RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), Joined));
+
+        Assert.Equal(["MSFT"], refused.Missing ?? []);
+        Assert.Equal(["MSFT"], refused.Suspect);
+        Assert.Equal(0, refused.Refetched);
+        Assert.Equal(before, Series(store, "MSFT"));
+        Assert.Contains($"before {Day(Joined)}, the newest session the night stored", StateOf(store, "MSFT").Reason!, StringComparison.Ordinal);
+
+        // The year to the session itself is taken on the night after, the suspect's first retry.
+        var night = SessionsFrom(Joined.AddDays(1), 1)[0];
+        var taken = await ThreeIndicesOn(store, night, new EndingBefore(RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), night));
+
+        Assert.Equal(["MSFT"], taken.Retried ?? []);
+        Assert.Equal(1, taken.Refetched);
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
+        Assert.All(gone, session => Assert.Contains(session, SessionsHeld(store, "MSFT")));
     }
 }
