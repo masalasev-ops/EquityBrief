@@ -37894,8 +37894,12 @@ Mutated:    the rule, stated before the run: each property the first half's done
             R8 a statement with no filing date stored as filed on its quarter's end: red in the income pull test.
             Results: R1 to R8 each red where stated once R1's and R4's tests were extended, each reverted, and the
             four tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a4f516e, main
+            merged over cb3ae24, the entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1854 of
+            1854 tests ran with none failed, migrations 0 to 62 with none pending, schema version 62, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 979 claims, 979 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 990 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43
+            checks on the roster, 43 carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-15.2-the-income.txt` from main's
             Release build; then the sweeps per index and family on today's members, survivors only, at the
             provisional floors and gate with the published table's costs, each reported as it finishes; 15.2's
