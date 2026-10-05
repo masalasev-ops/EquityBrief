@@ -41,7 +41,7 @@ public static class FundSchedules
     static readonly Regex Space = new(@"\s+", RegexOptions.Compiled);
     static readonly Regex Fund = new(@"iShares\W*(.+?ETF)", RegexOptions.Compiled);
     static readonly Regex Count = new(@"^\(?[\d,]+\)?$", RegexOptions.Compiled);
-    static readonly Regex Notes = new(@"(\s*\([a-z]{1,2}\))+$", RegexOptions.Compiled);
+    static readonly Regex Notes = new(@"(\s*\([a-z]{1,2}\))+[\s.]*$", RegexOptions.Compiled);
 
     // A fund's holdings of common stock as one filing's complete schedule names them, each with its name alone and the
     // footnote marks after it taken off. A document carrying no complete schedule for the fund as of the filing's quarter
@@ -141,15 +141,21 @@ public static class FundSchedules
             }
 
             var name = Notes.Replace(cells[0], string.Empty).Trim();
+            var amounts = cells.Where(cell => Count.IsMatch(cell)).ToArray();
 
-            if (cells.Count(cell => Count.IsMatch(cell)) >= 2 && name.Any(char.IsLetter) && !name.EndsWith('%'))
+            // A row's first count is the shares held and its last their value in dollars.
+            if (amounts.Length >= 2 && name.Any(char.IsLetter) && !name.EndsWith('%'))
             {
-                holdings.Add(new FiledHolding(name, null, null, FundSnapshots.CommonEquity));
+                holdings.Add(new FiledHolding(name, null, null, FundSnapshots.CommonEquity, Amount(amounts[0]), Amount(amounts[^1])));
             }
         }
 
         return null;
     }
+
+    // A count as the schedule prints it, its thousands marked by commas, none where it cannot be read.
+    static decimal? Amount(string printed) =>
+        decimal.TryParse(printed.Trim('(', ')'), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var amount) ? amount : null;
 
     // A piece of the document as its reader sees it: the tags taken out, the entities read and the spaces closed up.
     static string Text(string html) =>

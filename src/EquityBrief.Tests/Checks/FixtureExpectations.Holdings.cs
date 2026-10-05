@@ -33,7 +33,7 @@ public partial class FixtureExpectations
 
         Assert.Equal((FundSnapshots.Series["SML"], new DateOnly(2019, 9, 30)), (snapshot.Series, snapshot.Period));
         Assert.Equal(3, snapshot.Holdings.Count);
-        Assert.Equal(new FiledHolding("Aegion Corp", "00770F104", "US00770F1049", FundSnapshots.CommonEquity), snapshot.Holdings[0]);
+        Assert.Equal(new FiledHolding("Aegion Corp", "00770F104", "US00770F1049", FundSnapshots.CommonEquity, 1853154m, 39620432.52m), snapshot.Holdings[0]);
         Assert.All(snapshot.Holdings, holding => Assert.Equal(FundSnapshots.CommonEquity, holding.Category));
 
         // The ISIN the CUSIP makes, worked by ISO 6166's check digit, is the one the fund filed beside it: the country's
@@ -89,6 +89,10 @@ public partial class FixtureExpectations
         Assert.Equal((FundSnapshots.Series["MID"], new DateOnly(2018, 12, 31), "0001193125-19-059323"), (mid.Series, mid.Period, mid.Accession));
         Assert.Equal(["Curtiss-Wright Corp.", "Esterline Technologies Corp.", "Teledyne Technologies Inc."], mid.Holdings.Select(holding => holding.Name));
         Assert.All(mid.Holdings, holding => Assert.Equal<(string?, string?, string?)>((null, null, FundSnapshots.CommonEquity), (holding.Cusip, holding.Isin, holding.Category)));
+
+        // Each row's shares and their value in dollars, which give the price the fund valued a share at.
+        Assert.Equal<(decimal?, decimal?)>((1_233_306m, 125_945_209m), (mid.Holdings[0].Shares, mid.Holdings[0].Value));
+        Assert.Equal(125_945_209m / 1_233_306m, mid.Holdings[0].ValuePerShare);
         Assert.Equal(["AAR Corp.", "Aerojet Rocketdyne Holdings Inc."], Read(quarter, "SML", FundSchedules.Filings[0]).Holdings.Select(holding => holding.Name));
 
         // The annual report's summary of the mid-cap fund's schedule, Teledyne and the rest as other securities, is passed
@@ -111,6 +115,13 @@ public partial class FixtureExpectations
 
         Assert.Throws<FormatException>(() => Read(unclosed, "MID", FundSchedules.Filings[0]));
         Assert.Equal(["Aegion Corp."], Read(unclosed, "SML", FundSchedules.Filings[0]).Holdings.Select(holding => holding.Name));
+
+        // The footnote marks are taken off with a stop the schedule printed after them, as the N-Q prints American Axle's.
+        const string axle = "<p>Schedule&nbsp;of&nbsp;Investments</p><p>December 31, 2018</p><p><b>iShares</b><sup>&reg;</sup><b> Core S&amp;P Small-Cap ETF</b></p>"
+            + "<table><tr><td><b>Common Stocks</b></td></tr><tr><td>American Axle &amp; Manufacturing Holdings Inc.<sup>(a)(b)(c) </sup>.</td><td>4,054,701</td><td>$</td><td>50,000,000</td></tr>"
+            + "<tr><td><b>Total Common Stocks &#151; 99.8%</b></td><td>1,000,000</td></tr></table>";
+
+        Assert.Equal("American Axle & Manufacturing Holdings Inc.", Assert.Single(Read(axle, "SML", FundSchedules.Filings[0]).Holdings).Name);
     }
 
     [Fact]
@@ -132,23 +143,25 @@ public partial class FixtureExpectations
 
         (string?, string?) Read(HoldingMatch match) => (match.Ticker, match.By);
 
-        Assert.Equal(("MDR", HoldingMatcher.ByName), Read(matcher.Match(mcdermott, code => code == "MDR")));
+        Func<string, QuarterEndClose?> Traded(params string[] codes) => code => codes.Contains(code) ? new QuarterEndClose(10m) : null;
+
+        Assert.Equal(("MDR", HoldingMatcher.ByName), Read(matcher.Match(mcdermott, Traded("MDR"))));
         Assert.Equal(["MCDIF", "MDR"], matcher.NameCandidates(mcdermott));
 
         // Neither traded at the quarter's end, and which traded not known: no match by name either way.
-        Assert.Equal((null, null), Read(matcher.Match(mcdermott, _ => false)));
+        Assert.Equal((null, null), Read(matcher.Match(mcdermott, Traded())));
         Assert.Equal((null, null), Read(matcher.Match(mcdermott)));
 
         // A company renamed since, whose old name the provider no longer carries, is read by the name its fund's own
         // filings carried beside an ISIN, and only where that code traded.
         var aqua = new FiledHolding("Aqua America Inc.", null, null, FundSnapshots.CommonEquity);
 
-        Assert.Equal(("WTRG", HoldingMatcher.ByName), Read(matcher.Match(aqua, _ => true)));
-        Assert.Equal((null, null), Read(matcher.Match(aqua, code => code != "WTRG")));
+        Assert.Equal(("WTRG", HoldingMatcher.ByName), Read(matcher.Match(aqua, Traded("WTRG"))));
+        Assert.Equal((null, null), Read(matcher.Match(aqua, Traded("SAM"))));
 
         // A non-voting class's mark and a place after a slash are no part of a company's name.
-        Assert.Equal("SAM", matcher.Match(new FiledHolding("Boston Beer Co. Inc. (The), Class A, NVS", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
-        Assert.Equal("SCI", matcher.Match(new FiledHolding("Service Corp. International/U.S", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
+        Assert.Equal("SAM", matcher.Match(new FiledHolding("Boston Beer Co. Inc. (The), Class A, NVS", null, null, FundSnapshots.CommonEquity), Traded("SAM")).Ticker);
+        Assert.Equal("SCI", matcher.Match(new FiledHolding("Service Corp. International/U.S", null, null, FundSnapshots.CommonEquity), Traded("SCI")).Ticker);
 
         // Noble Corp plc, which the S&P 600's fund held in 2019 and which the provider carries as a delisted listing on the
         // NYSE, shares its name's key with Noble Group's lines over the counter, still listed and trading then: the index
@@ -160,8 +173,72 @@ public partial class FixtureExpectations
             new ListedSymbol("NOBGY", "Noble Group Holdings Ltd", "PINK", ProviderSymbols.CommonStock, null, Delisted: false),
         ]);
 
-        Assert.Equal("NE_old", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), _ => true).Ticker);
-        Assert.Equal("NOBGF", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), code => code != "NE_old").Ticker);
+        Assert.Equal("NE_old", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), Traded("NE_old", "NOBGF", "NOBGY")).Ticker);
+        Assert.Equal("NOBGF", noble.Match(new FiledHolding("Noble Corp plc", null, null, FundSnapshots.CommonEquity), Traded("NOBGF", "NOBGY")).Ticker);
+    }
+
+    [Fact]
+    public void AMatchByNameStandsOnlyWhereTheFundsValueAShareIsWithinTheToleranceOfTheCodesClose()
+    {
+        // Aqua America, which the S&P 400's fund valued at $44.83 a share on 2019-09-30, shares its name with the provider's
+        // WTRU, its tangible equity units, which closed at $60.60; its own shares trade as WTRG since its rename.
+        var matcher = new HoldingMatcher(
+            [
+                new ListedSymbol("WTRU", "Aqua America Inc", "NYSE", ProviderSymbols.CommonStock, null, Delisted: true),
+                new ListedSymbol("WTRG", "Essential Utilities Inc", "NYSE", ProviderSymbols.CommonStock, null, Delisted: false),
+                new ListedSymbol("PEI", "Pennsylvania Real Estate Trust", "NYSE", ProviderSymbols.CommonStock, null, Delisted: true),
+                new ListedSymbol("COKE", "Coca-Cola Consolidated Inc", "NASDAQ", ProviderSymbols.CommonStock, null, Delisted: false),
+                new ListedSymbol("SLMNP", "Schulman A Inc", "NASDAQ", ProviderSymbols.CommonStock, null, Delisted: false),
+            ],
+            [("AQUA AMERICA INC", "WTRG")]);
+
+        var aqua = new FiledHolding("Aqua America Inc", "03836W103", null, FundSnapshots.CommonEquity, 1_000m, 44_830m);
+        var closes = new Dictionary<string, QuarterEndClose>(StringComparer.Ordinal)
+        {
+            ["WTRU"] = new(60.60m),
+            ["WTRG"] = new(44.83m),
+            ["PEI"] = new(85.80m, 5.72m),
+            ["COKE"] = new(250.00m),
+            ["SLMNP"] = new(1_000.00m),
+        };
+
+        QuarterEndClose? CloseOn(string code) => closes.GetValueOrDefault(code);
+
+        // The tolerance the decision states is the one the matcher holds.
+        Assert.Contains(
+            FormattableString.Invariant($"is within {HoldingMatcher.ValueTolerance * 100:0} per cent of the value per share the fund filed"),
+            Corpus.Read("docs/DECISIONS.md"),
+            StringComparison.Ordinal);
+
+        // The units trade at a price 35 per cent from the fund's, so the name is read past them to the company's shares.
+        Assert.Equal(("WTRG", HoldingMatcher.ByName), (matcher.Match(aqua, CloseOn).Ticker, matcher.Match(aqua, CloseOn).By));
+
+        // At the tolerance's edge and a cent past it on either side of the close.
+        Assert.Equal("WTRG", matcher.Match(aqua with { Value = 44_830m * 1.05m }, CloseOn).Ticker);
+        Assert.Null(matcher.Match(aqua with { Value = (44_830m * 1.05m) + 10m }, code => code == "WTRG" ? new QuarterEndClose(44.83m) : null).Ticker);
+        Assert.Equal("WTRG", matcher.Match(aqua with { Value = 44_830m * 0.95m }, CloseOn).Ticker);
+
+        // A filing stating no value is not held to the price.
+        Assert.Equal("WTRU", matcher.Match(aqua with { Value = null }, CloseOn).Ticker);
+
+        // A code whose close the provider sends already divided by a later reverse split stands where the split undone
+        // agrees, as PREIT's $85.80 is $5.72 with its one-for-fifteen undone.
+        Assert.Equal("PEI", matcher.Match(new FiledHolding("Pennsylvania Real Estate Trust", null, null, FundSnapshots.CommonEquity, 100m, 572m), CloseOn).Ticker);
+
+        // A name whose every code traded at another price is matched to none and said to be so: A. Schulman, which the
+        // S&P 600's fund held as rights worth 88 cents a share, and its preferred line at $1,000.
+        var schulman = matcher.Match(new FiledHolding("Schulman A Inc", null, null, FundSnapshots.CommonEquity, 1_000m, 880m), CloseOn);
+
+        Assert.Equal((null, true), (schulman.Ticker, schulman.PricedOut));
+        Assert.False(matcher.Match(new FiledHolding("Schulman A Inc", null, null, FundSnapshots.CommonEquity, 1_000m, 880m), _ => null).PricedOut);
+
+        // A name no symbol carries word for word is read more widely only where that is asked for: Coca-Cola Bottling Co.
+        // Consolidated shares three of its four words with Coca-Cola Consolidated.
+        var bottling = new FiledHolding("Coca-Cola Bottling Co. Consolidated", null, null, FundSnapshots.CommonEquity, 100m, 25_000m);
+
+        Assert.Null(matcher.Match(bottling, CloseOn).Ticker);
+        Assert.Equal(["COKE"], matcher.NameCandidates(bottling, wider: true));
+        Assert.Equal(("COKE", true), (matcher.Match(bottling, CloseOn, wider: true).Ticker, matcher.Match(bottling, CloseOn, wider: true).Wider));
     }
 
     // A filing's document as the archive serves one, each fund's schedule a page headed by its date and the fund's name,
@@ -187,16 +264,16 @@ public partial class FixtureExpectations
             Asked.Add(FormattableString.Invariant($"{ticker} {to:yyyy-MM-dd}"));
 
             return Task.FromResult<IReadOnlyList<ProviderBar>>(
-                [.. (sessions.GetValueOrDefault(ticker) ?? []).Where(day => day >= from && day <= to).Select(day => new ProviderBar(day, 10m, 11m, 9m, 10m, 10m, 1_000))]);
+                [.. (sessions.GetValueOrDefault(ticker) ?? []).Where(day => day >= from && day <= to).Select(day => new ProviderBar(day, 50m, 51m, 49m, 50m, 50m, 1_000))]);
         }
     }
 
-    // A pulled bar of a code on a day, which says the code traded then.
-    static void PulledOn(TemporaryStore store, string ticker, string day) =>
-        store.Execute($"INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('{ticker}', '{day}', '10', '11', '9', '10', '10', 1000, 'history-pull-bars-1');");
+    // A pulled bar of a code on a day, which says the code traded then and at what close.
+    static void PulledOn(TemporaryStore store, string ticker, string day, string close = "50") =>
+        store.Execute($"INSERT INTO pulled_bar (ticker, session_date, open, high, low, close, raw_close, volume, pull) VALUES ('{ticker}', '{day}', '{close}', '{close}', '{close}', '{close}', '{close}', 1000, 'history-pull-bars-1');");
 
     // A fund's holdings document as the archive serves it, its series and quarter end with each holding's name, CUSIP,
-    // ISIN where one is given and category.
+    // ISIN where one is given and category, and a thousand shares worth fifty thousand dollars, fifty dollars a share.
     static string Snapshot(string series, string period, params (string Name, string? Cusip, string? Isin, string Category)[] holdings)
     {
         var document = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\"?><edgarSubmission xmlns=\"http://www.sec.gov/edgar/nport\"><formData><genInfo><seriesId>{series}</seriesId><repPdDate>{period}</repPdDate></genInfo><invstOrSecs>");
@@ -205,6 +282,7 @@ public partial class FixtureExpectations
         {
             document.Append($"<invstOrSec><name>{System.Security.SecurityElement.Escape(name)}</name><cusip>{cusip ?? "000000000"}</cusip>");
             document.Append(isin is null ? "<identifiers/>" : $"<identifiers><isin value=\"{isin}\"/></identifiers>");
+            document.Append($"<balance>1000.00000000</balance><units>{FundSnapshots.SharesHeld}</units><curCd>USD</curCd><valUSD>50000.00000000</valUSD>");
             document.Append($"<assetCat>{category}</assetCat></invstOrSec>");
         }
 
@@ -260,10 +338,10 @@ public partial class FixtureExpectations
                 [$"{FundSchedules.Filings[0].Accession}/{FundSchedules.Filings[0].Document}"] = Schedules(
                     "December 31, 2018",
                     (FundSchedules.Titles["MID"], ["Hotel Inc."]),
-                    (FundSchedules.Titles["SML"], ["Aegion Corp.", "Kilo Inc., Class A, NVS", "Lima Bancorp/Rockland MA", "Romeo Inc.", "Sierra Co."])),
+                    (FundSchedules.Titles["SML"], ["Aegion Corp.", "Hotel Inc.", "Kilo Inc., Class A, NVS", "Lima Bancorp/Rockland MA", "November Inc.", "Oscar Bottling Co. Consolidated", "Romeo Inc.", "Sierra Co."])),
                 [$"{FundSchedules.Filings[1].Accession}/{FundSchedules.Filings[1].Document}"] = Schedules(
                     "March 31, 2019",
-                    (FundSchedules.Titles["SML"], ["Aegion Corp.", "Kilo Inc., Class A, NVS", "Mike Corp."])),
+                    (FundSchedules.Titles["SML"], ["Aegion Corp.", "Kilo Inc., Class A, NVS", "Mike Corp.", "Papa Corp."])),
             }),
         new RecordedSymbolListFeed(
             """
@@ -277,6 +355,9 @@ public partial class FixtureExpectations
               { "Code": "KILO", "Name": "Kilo Inc", "Exchange": "NYSE", "Type": "Common Stock", "Isin": null },
               { "Code": "LIMA", "Name": "Lima Bancorp", "Exchange": "NASDAQ", "Type": "Common Stock", "Isin": null },
               { "Code": "MIKE", "Name": "Mike Corp", "Exchange": "NYSE", "Type": "Common Stock", "Isin": null },
+              { "Code": "NOVU", "Name": "November Inc", "Exchange": "NYSE", "Type": "Common Stock", "Isin": null },
+              { "Code": "OSCR", "Name": "Oscar Consolidated Inc", "Exchange": "NASDAQ", "Type": "Common Stock", "Isin": null },
+              { "Code": "PAPA", "Name": "Papa Corp", "Exchange": "NYSE", "Type": "Common Stock", "Isin": null },
               { "Code": "SIER", "Name": "Sierra Co", "Exchange": "NYSE", "Type": "Common Stock", "Isin": null }
             ]
             """,
@@ -289,18 +370,29 @@ public partial class FixtureExpectations
             """)
     );
 
-    // The bars the history pull holds near each quarter's end, and the sessions the provider answers for the codes it
-    // holds none of: LIMA trading on 2018-12-27, MIKEQ and not MIKE on 2019-03-28, and SIER on none.
+    // The bars the history pull holds near each quarter's end, each closing at fifty dollars, the price the fund valued
+    // every holding at, but NOVU's at seventy-five; and the sessions the provider answers for the codes it holds none of:
+    // LIMA trading on 2018-12-27, MIKEQ and not MIKE on 2019-03-28, and SIER on none.
     static void PulledNearTheQuarterEnds(TemporaryStore store)
     {
         foreach (var (ticker, day) in new[]
         {
             ("AEGN", "2018-12-31"), ("AEGN", "2019-03-29"), ("KILO", "2018-12-28"), ("KILO", "2019-03-29"), ("JULT", "2018-12-31"),
-            ("BRVO", "2019-09-27"), ("BRVO", "2019-12-31"), ("FXFP", "2019-09-30"),
+            ("OSCR", "2018-12-31"), ("HOTL", "2018-12-31"), ("BRVO", "2019-09-27"), ("BRVO", "2019-12-31"), ("FXFP", "2019-09-30"),
         })
         {
             PulledOn(store, ticker, day);
         }
+
+        PulledOn(store, "NOVU", "2018-12-31", "75");
+
+        // PAPA's close sent already divided by a one-for-fifteen split it made after, $750 for the $50 it traded at.
+        PulledOn(store, "PAPA", "2019-03-29", "750");
+        store.Execute("INSERT INTO pulled_split (ticker, ex_date, new_shares, old_shares, pull) VALUES ('PAPA', '2022-06-16', '1', '15', 'history-pull-splits-1');");
+
+        // And the S&P 400's fund's holding of Hotel, which an earlier pull matched by its ISIN to HOTL, a code the
+        // provider's lists no longer carry.
+        store.Execute("INSERT INTO pulled_holding (index_code, period, holding, name, cusip, isin, ticker, matched_by, pull) VALUES ('MID', '2019-09-30', 'US7777777779', 'Hotel Inc', '777777777', 'US7777777779', 'HOTL', 'isin', 'history-pull-holdings-0');");
     }
 
     static SessionsOn ProviderSessions() => new(new Dictionary<string, DateOnly[]>(StringComparer.Ordinal)
@@ -326,18 +418,24 @@ public partial class FixtureExpectations
         // cut at its width; Charlie by neither; and the bond not at all. Before the first N-PORT, each of the S&P 600's
         // fund's holdings by its name alone and no other fund's: Kilo past its class's non-voting mark, Lima past the place
         // after its slash, Romeo by the name the fund's own N-PORT carries beside its ISIN, Lima and Mike traded as the
-        // provider answered, Mike by the delisted code that traded and not the listed one, and Sierra by none, its code
-        // trading on no day the provider answers in the days to the quarter's end.
+        // provider answered, Mike by the delisted code that traded and not the listed one, Oscar by the wider reading of
+        // its name, Hotel by the name the other fund's filing carried beside its ISIN, November by none, its code closing
+        // at $75 where the fund valued it at $50, and Sierra by none, its code trading on no day the provider answers in
+        // the days to the quarter's end.
         Assert.Equal(
             [
                 "SML|2018-12-31|Aegion Corp.|null|null|AEGN|name",
+                "SML|2018-12-31|Hotel Inc.|null|null|HOTL|name",
                 "SML|2018-12-31|Kilo Inc., Class A, NVS|null|null|KILO|name",
                 "SML|2018-12-31|Lima Bancorp/Rockland MA|null|null|LIMA|name",
+                "SML|2018-12-31|November Inc.|null|null|null|null",
+                "SML|2018-12-31|Oscar Bottling Co. Consolidated|null|null|OSCR|name",
                 "SML|2018-12-31|Romeo Inc.|null|null|JULT|name",
                 "SML|2018-12-31|Sierra Co.|null|null|null|null",
                 "SML|2019-03-31|Aegion Corp.|null|null|AEGN|name",
                 "SML|2019-03-31|Kilo Inc., Class A, NVS|null|null|KILO|name",
                 "SML|2019-03-31|Mike Corp.|null|null|MIKEQ|name",
+                "SML|2019-03-31|Papa Corp.|null|null|PAPA|name",
                 "SML|2019-09-30|Aegion Corp|00770F104|US00770F1049|AEGN|isin",
                 "SML|2019-09-30|Bravo Holdings Inc|111111111|US1111111116|BRVO|name",
                 "SML|2019-09-30|Charlie Co|222222222|US2222222224|null|null",
@@ -349,11 +447,11 @@ public partial class FixtureExpectations
                 "SML|2019-12-31|Echo Industries Inc|444444444|US4444444440|ECHO|isin",
                 "SML|2019-12-31|Golf Inc|666666666|US6666666663|GOLF|isin",
             ],
-            FamilyRows(store, "SELECT index_code, period, name, cusip, isin, ticker, matched_by FROM pulled_holding ORDER BY period, name;"));
+            FamilyRows(store, "SELECT index_code, period, name, cusip, isin, ticker, matched_by FROM pulled_holding WHERE index_code = 'SML' ORDER BY period, name;"));
         Assert.Equal(
             [
-                $"SML|2018-12-31|{FundSchedules.Filings[0].Accession}|2019-03-01|5|5|history-pull-holdings-1",
-                $"SML|2019-03-31|{FundSchedules.Filings[1].Accession}|2019-06-07|3|3|history-pull-holdings-1",
+                $"SML|2018-12-31|{FundSchedules.Filings[0].Accession}|2019-03-01|8|8|history-pull-holdings-1",
+                $"SML|2019-03-31|{FundSchedules.Filings[1].Accession}|2019-06-07|4|4|history-pull-holdings-1",
                 "SML|2019-09-30|0000000001-19-000001|2019-11-25|7|6|history-pull-holdings-1",
                 "SML|2019-12-31|0000000001-20-000002|2020-02-27|4|4|history-pull-holdings-1",
             ],
@@ -361,13 +459,15 @@ public partial class FixtureExpectations
 
         // The provider asked about each code holding no pulled bar near its quarter's end, once a code a quarter.
         Assert.Equal(["LIMA 2018-12-31", "SIER 2018-12-31", "MIKE 2019-03-31", "MIKEQ 2019-03-31"], prices.Asked);
-        Assert.Equal((6, 4, 4, 18, 6, 10, 2, 2, 0, 4, 13), (outcome.Filings, outcome.Snapshots, outcome.Stored, outcome.Equity, outcome.ByIsin, outcome.ByName, outcome.Unmatched, outcome.Between, outcome.Again, outcome.Asked, outcome.Requests));
+        Assert.Equal((6, 4, 4, 22, 6, 13, 3, 2, 0, 4, 13), (outcome.Filings, outcome.Snapshots, outcome.Stored, outcome.Equity, outcome.ByIsin, outcome.ByName, outcome.Unmatched, outcome.Between, outcome.Again, outcome.Asked, outcome.Requests));
+        Assert.Equal((1, 1), (outcome.Widely, outcome.PricedOut!.Count));
 
         var detail = HistoryPull.Detail(outcome);
 
-        Assert.Contains("SML: 4 snapshot(s) of 6 filing(s), 4 new, from 2018-12-31 to 2019-12-31, 18 holding(s) of common stock, 6 matched by ISIN, 10 by name alone and 2 by neither, 2 standing between codes, 0 holding(s) of quarters an earlier pull stored matched again to another code or to none, 4 code(s) asked of the provider whether they traded at a quarter's end; 13 request(s)", detail, StringComparison.Ordinal);
+        Assert.Contains("SML: 4 snapshot(s) of 6 filing(s), 4 new, from 2018-12-31 to 2019-12-31, 22 holding(s) of common stock, 6 matched by ISIN, 13 by name alone, 1 of them by its wider reading, and 3 by neither, 1 of them because each code its name reads traded at a close more than 5% from the fund's value a share, 2 standing between codes, 0 holding(s) of quarters an earlier pull stored matched again to another code or to none, 4 code(s) asked of the provider whether they traded at a quarter's end; 13 request(s)", detail, StringComparison.Ordinal);
         Assert.Contains($"not read: 0000000001-20-000003: the filing is for {FundSnapshots.Series["MID"]} and not {Small}; 0000000001-20-000004: No recorded holdings document for the filing 0000000001-20-000004.", detail, StringComparison.Ordinal);
-        Assert.Contains("matched by neither: Sierra Co. on 2018-12-31; Charlie Co on 2019-09-30", detail, StringComparison.Ordinal);
+        Assert.Contains("; at another price: November Inc. on 2018-12-31;", detail, StringComparison.Ordinal);
+        Assert.Contains("matched by neither: November Inc. on 2018-12-31; Sierra Co. on 2018-12-31; Charlie Co on 2019-09-30", detail, StringComparison.Ordinal);
         Assert.Equal(
             "history-pull-holdings|partial",
             Assert.Single(FamilyRows(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'history-pull-holdings-1';")));
@@ -375,7 +475,7 @@ public partial class FixtureExpectations
         // The names every other pull of the index asks for are its members today and every code its snapshots matched.
         store.Execute("INSERT INTO pulled_member (index_code, ticker, exchange, name, sector, industry, pull) VALUES ('SML', 'ECHO', 'US', 'Echo Industries', NULL, NULL, 'history-pull-members-1'), ('SML', 'ZULU', 'US', 'Zulu Inc', NULL, NULL, 'history-pull-members-1');");
 
-        string[] named = ["AEGN", "BRVO", "ECHO", "FXFP", "GOLF", "JULT", "KILO", "LIMA", "MIKEQ", "ZULU"];
+        string[] named = ["AEGN", "BRVO", "ECHO", "FXFP", "GOLF", "HOTL", "JULT", "KILO", "LIMA", "MIKEQ", "OSCR", "PAPA", "ZULU"];
 
         var companies = new ConstructedCompanyFeed(
             named.ToDictionary(ticker => ticker, ticker => (Func<CompanyAnswer>)(() => new(ticker, null, null, null, null, null, null, [], 0))));
@@ -394,7 +494,7 @@ public partial class FixtureExpectations
         Assert.Equal(
             [
                 "AEGN||2020-01-01", "BRVO|2019-09-30|2020-01-01", "ECHO|2019-09-30|", "FXFP|2019-09-30|2019-10-01", "GOLF|2019-12-31|2020-01-01",
-                "JULT||2019-10-01", "KILO||2019-04-01", "LIMA||2019-01-01", "MIKEQ|2019-03-31|2019-04-01", "ZULU|2020-01-01|",
+                "HOTL||2019-01-01", "JULT||2019-10-01", "KILO||2019-04-01", "LIMA||2019-01-01", "MIKEQ|2019-03-31|2019-04-01", "OSCR||2019-01-01", "PAPA|2019-03-31|2019-04-01", "ZULU|2020-01-01|",
             ],
             spans.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => FormattableString.Invariant($"{pair.Key}|{pair.Value.Joined:yyyy-MM-dd}|{pair.Value.Left:yyyy-MM-dd}")));
 
@@ -410,13 +510,13 @@ public partial class FixtureExpectations
         Assert.Equal(
             "SML|2019-03-31|Kilo Inc., Class A, NVS|null|null|history-pull-holdings-1",
             Assert.Single(FamilyRows(store, "SELECT index_code, period, name, ticker, matched_by, pull FROM pulled_holding WHERE name LIKE 'Kilo%' AND period = '2019-03-31';")));
-        Assert.Equal(18, FamilyRows(store, "SELECT * FROM pulled_holding WHERE pull = 'history-pull-holdings-1';").Count);
+        Assert.Equal(22, FamilyRows(store, "SELECT * FROM pulled_holding WHERE pull = 'history-pull-holdings-1';").Count);
 
         var purged = await HistoryPull.PurgeAsync(PullClock(), store.DatabaseFile, "history-pull-holdings-1", "history-purge-holdings-1");
 
-        Assert.Equal((4, 18), (purged.Snapshots, purged.Holdings));
+        Assert.Equal((4, 22), (purged.Snapshots, purged.Holdings));
         Assert.Empty(FamilyRows(store, "SELECT * FROM pulled_snapshot;"));
-        Assert.Empty(FamilyRows(store, "SELECT * FROM pulled_holding;"));
+        Assert.Equal(["history-pull-holdings-0"], FamilyRows(store, "SELECT pull FROM pulled_holding;"));
     }
 
     [Fact]

@@ -233,9 +233,19 @@ public sealed class HistoryPull(
         WHERE index_code = $index_code AND period = $period AND holding = $holding;
     ";
 
-    // Whether a code holds a pulled bar in the days to a snapshot's quarter end, which settles a holding standing between
-    // two codes.
-    const string PulledBarNear = "SELECT EXISTS (SELECT 1 FROM pulled_bar WHERE ticker = $ticker AND session_date BETWEEN $from AND $to);";
+    // A code's close on its newest pulled session in the days to a snapshot's quarter end, as the provider sent it, and
+    // the splits the provider files after that session, which a close sent already divided by them has undone.
+    const string PulledCloseNear = @"
+        SELECT raw_close, session_date FROM pulled_bar
+        WHERE ticker = $ticker AND session_date BETWEEN $from AND $to
+        ORDER BY session_date DESC LIMIT 1;
+    ";
+
+    const string PulledSplitsAfter = "SELECT new_shares, old_shares FROM pulled_split WHERE ticker = $ticker AND ex_date > $session;";
+
+    // The names every holdings pull stored with the code their ISIN matched, both funds' alike, which read a holding named
+    // with no identifier by the name a filing carried beside one.
+    const string FiledByIsin = "SELECT DISTINCT name, ticker FROM pulled_holding WHERE matched_by = 'isin' AND ticker IS NOT NULL;";
 
     // The filers the revenue pull asks for: every CIK the pulled companies carry, and the tickers carrying none.
     const string PulledFilers = "SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY cik;";
@@ -1168,6 +1178,7 @@ public sealed class HistoryPull(
         var snapshots = new List<(FundFiling Filing, FundSnapshot Snapshot)>();
         var unread = new List<string>();
         IReadOnlyList<FundFiling> filings = [];
+        IReadOnlyList<ListedSymbol> listed = [];
         HoldingMatcher? matcher = null;
         string? refused = null;
 
@@ -1222,19 +1233,7 @@ public sealed class HistoryPull(
                 await Task.Delay(TimeSpan.FromSeconds(1.0 / ArchiveRequestsASecond), cancellation);
             }
 
-            IReadOnlyList<ListedSymbol> listed = [.. await symbols.SymbolsAsync(false, cancellation), .. await symbols.SymbolsAsync(true, cancellation)];
-
-            // The names the fund's own filings carry beside an ISIN a symbol carries, each with the code it matched, which
-            // read a holding named with no identifier, or renamed since, by the name it was held under.
-            var byIsinAlone = new HoldingMatcher(listed);
-            var filed = snapshots
-                .SelectMany(one => one.Snapshot.Equity)
-                .Select(holding => (holding.Name, Match: byIsinAlone.Match(holding)))
-                .Where(pair => pair.Match.By == HoldingMatcher.ByIsin && pair.Match.Ticker is not null)
-                .Select(pair => (pair.Name, pair.Match.Ticker!))
-                .ToArray();
-
-            matcher = new HoldingMatcher(listed, filed);
+            listed = [.. await symbols.SymbolsAsync(false, cancellation), .. await symbols.SymbolsAsync(true, cancellation)];
         }
         catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
         {
@@ -1244,9 +1243,38 @@ public sealed class HistoryPull(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var (stored, equity, byIsin, byName, between, again, asked) = (0, 0, 0, 0, 0, 0, 0);
+        if (refused is null)
+        {
+            // The names the fund's own filings carry beside an ISIN a symbol carries, each with the code it matched, and
+            // the ones every holdings pull stored so, both funds' alike, which read a holding named with no identifier, or
+            // renamed since, by the name it was held under.
+            var byIsinAlone = new HoldingMatcher(listed);
+            var filed = snapshots
+                .SelectMany(one => one.Snapshot.Equity)
+                .Select(holding => (holding.Name, Match: byIsinAlone.Match(holding)))
+                .Where(pair => pair.Match.By == HoldingMatcher.ByIsin && pair.Match.Ticker is not null)
+                .Select(pair => (pair.Name, pair.Match.Ticker!))
+                .ToList();
+
+            await using (var named = connection.CreateCommand())
+            {
+                named.CommandText = FiledByIsin;
+
+                await using var rows = await named.ExecuteReaderAsync(cancellation);
+
+                while (await rows.ReadAsync(cancellation))
+                {
+                    filed.Add((rows.GetString(0), rows.GetString(1)));
+                }
+            }
+
+            matcher = new HoldingMatcher(listed, filed);
+        }
+
+        var (stored, equity, byIsin, byName, between, again, asked, widely) = (0, 0, 0, 0, 0, 0, 0, 0);
         var unmatched = new List<string>();
         var unanswered = new List<string>();
+        var pricedOut = new List<string>();
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
@@ -1258,39 +1286,86 @@ public sealed class HistoryPull(
                     .GroupBy(holding => FundSnapshots.IsinOf(holding) ?? holding.Cusip ?? holding.Name, StringComparer.Ordinal)
                     .Select(group => (Key: group.Key, Holding: group.First()))
                     .ToArray();
-                var traded = new Dictionary<string, bool>(StringComparer.Ordinal);
+                var closes = new Dictionary<string, QuarterEndClose?>(StringComparer.Ordinal);
                 var askedOf = new HashSet<string>(StringComparer.Ordinal);
                 var period = snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-                bool TradedOn(string code)
+                // A code's close on its newest pulled session in the days to the quarter's end, with the splits filed
+                // after that session undone beside it, and none where it holds no pulled bar in those days.
+                QuarterEndClose? CloseOn(string code)
                 {
-                    if (!traded.TryGetValue(code, out var answer))
+                    if (closes.TryGetValue(code, out var known))
                     {
-                        using var command = connection.CreateCommand();
-                        command.CommandText = PulledBarNear;
+                        return known;
+                    }
+
+                    QuarterEndClose? close = null;
+
+                    using (var command = connection.CreateCommand())
+                    {
+                        command.CommandText = PulledCloseNear;
                         command.Parameters.AddWithValue("$ticker", code);
                         command.Parameters.AddWithValue("$from", snapshot.Period.AddDays(-SnapshotSessionDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                         command.Parameters.AddWithValue("$to", period);
-                        traded[code] = answer = Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+
+                        using var row = command.ExecuteReader();
+
+                        if (row.Read())
+                        {
+                            var sent = decimal.Parse(row.GetString(0), CultureInfo.InvariantCulture);
+                            var session = row.GetString(1);
+                            var factor = 1m;
+
+                            using var splits = connection.CreateCommand();
+                            splits.CommandText = PulledSplitsAfter;
+                            splits.Parameters.AddWithValue("$ticker", code);
+                            splits.Parameters.AddWithValue("$session", session);
+
+                            using var split = splits.ExecuteReader();
+
+                            while (split.Read())
+                            {
+                                factor *= decimal.Parse(split.GetString(0), CultureInfo.InvariantCulture) / decimal.Parse(split.GetString(1), CultureInfo.InvariantCulture);
+                            }
+
+                            close = new QuarterEndClose(sent, factor == 1m ? null : sent * factor);
+                        }
                     }
 
-                    return answer;
+                    closes[code] = close;
+
+                    return close;
                 }
 
                 // A code a holding's name could be read as that holds no pulled bar in the days to the quarter's end, asked
-                // of the provider once a quarter: whether it sent a session in those days.
+                // of the provider once a quarter: its close on the newest session it sent in those days, none where it sent
+                // none.
                 async Task AskAsync(string code)
                 {
                     asked++;
 
                     try
                     {
-                        traded[code] = (await prices!.BarsAsync(code, snapshot.Period.AddDays(-SnapshotSessionDays), snapshot.Period, cancellation)).Count > 0;
+                        var answered = await prices!.BarsAsync(code, snapshot.Period.AddDays(-SnapshotSessionDays), snapshot.Period, cancellation);
+
+                        closes[code] = answered.Count == 0 ? null : new QuarterEndClose(answered.MaxBy(bar => bar.SessionDate)!.RawClose);
                     }
                     catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
                     {
-                        traded[code] = false;
+                        closes[code] = null;
                         unanswered.Add($"{code} on {period}: {failure.Message}");
+                    }
+                }
+
+                // Every code a holding's name could be read as that holds no pulled bar near the quarter's end, asked once.
+                async Task AskAboutAsync(IReadOnlyList<string> codes)
+                {
+                    foreach (var code in codes)
+                    {
+                        if (prices is not null && CloseOn(code) is null && askedOf.Add(code))
+                        {
+                            await AskAsync(code);
+                        }
                     }
                 }
 
@@ -1326,27 +1401,32 @@ public sealed class HistoryPull(
 
                 foreach (var (key, holding) in held)
                 {
-                    if (prices is not null)
-                    {
-                        foreach (var code in matcher.NameCandidates(holding))
-                        {
-                            if (!TradedOn(code) && askedOf.Add(code))
-                            {
-                                await AskAsync(code);
-                            }
-                        }
-                    }
+                    await AskAboutAsync(matcher.NameCandidates(holding));
 
-                    var match = matcher.Match(holding, TradedOn);
+                    var match = matcher.Match(holding, CloseOn);
+
+                    // A name nothing matched is read again more widely before it is left matched to none.
+                    if (match.Ticker is null && match.By is null)
+                    {
+                        await AskAboutAsync(matcher.NameCandidates(holding, wider: true));
+
+                        match = matcher.Match(holding, CloseOn, wider: true);
+                    }
 
                     equity++;
                     byIsin += match.By == HoldingMatcher.ByIsin ? 1 : 0;
                     byName += match.By == HoldingMatcher.ByName ? 1 : 0;
                     between += match.Between.Count > 1 ? 1 : 0;
+                    widely += match.Wider ? 1 : 0;
 
                     if (match.Ticker is null)
                     {
                         unmatched.Add(FormattableString.Invariant($"{holding.Name} on {snapshot.Period:yyyy-MM-dd}"));
+
+                        if (match.PricedOut)
+                        {
+                            pricedOut.Add(FormattableString.Invariant($"{holding.Name} on {snapshot.Period:yyyy-MM-dd}"));
+                        }
                     }
 
                     if (earlier.TryGetValue(key, out var was))
@@ -1405,7 +1485,9 @@ public sealed class HistoryPull(
             feed.Requests + symbols.Requests - requestsBefore + asked,
             again,
             asked,
-            unanswered);
+            unanswered,
+            widely,
+            pricedOut);
 
         await AppendAsync(
             connection,
@@ -1425,14 +1507,16 @@ public sealed class HistoryPull(
     }
 
     // A holdings pull in words, as its row and the command state it: the snapshots read and their span, the holdings of
-    // common stock and the keys they matched by, the holdings an earlier pull stored matched again to another code or to
-    // none, the codes asked of the provider whether they traded at a quarter's end, the holdings matched by neither and
-    // the filings not read, each named.
+    // common stock and the keys they matched by, those by the wider reading of their names, the holdings an earlier pull
+    // stored matched again to another code or to none, the codes asked of the provider whether they traded at a
+    // quarter's end, the holdings whose codes traded only at another price, the holdings matched by neither and the
+    // filings not read, each named.
     public static string Detail(HistoryHoldingOutcome outcome) =>
         outcome.Refused is { } why
             ? FormattableString.Invariant($"{outcome.Index}: nothing was stored, {why}; {outcome.Requests} request(s)")
-            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone and {outcome.Unmatched} by neither, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
+            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone, {outcome.Widely} of them by its wider reading, and {outcome.Unmatched} by neither, {(outcome.PricedOut ?? []).Count} of them because each code its name reads traded at a close more than {HoldingMatcher.ValueTolerance * 100:0}% from the fund's value a share, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
               + (outcome.Unread.Count == 0 ? string.Empty : "; not read: " + string.Join("; ", outcome.Unread))
+              + ((outcome.PricedOut ?? []).Count == 0 ? string.Empty : "; at another price: " + string.Join("; ", outcome.PricedOut!.Take(HoldingsNamed)) + (outcome.PricedOut!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.PricedOut.Count - HoldingsNamed} more") : string.Empty))
               + ((outcome.Unanswered ?? []).Count == 0 ? string.Empty : "; not answered: " + string.Join("; ", outcome.Unanswered!.Take(HoldingsNamed)) + (outcome.Unanswered!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.Unanswered.Count - HoldingsNamed} more") : string.Empty))
               + (outcome.UnmatchedNames.Count == 0 ? string.Empty : "; matched by neither: " + string.Join("; ", outcome.UnmatchedNames.Take(HoldingsNamed)) + (outcome.UnmatchedNames.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.UnmatchedNames.Count - HoldingsNamed} more") : string.Empty));
 
@@ -2490,7 +2574,11 @@ public sealed record HistoryHoldingOutcome(
     // asked the provider whether they traded at a quarter's end, and the asks the provider did not answer.
     int Again = 0,
     int Asked = 0,
-    IReadOnlyList<string>? Unanswered = null);
+    IReadOnlyList<string>? Unanswered = null,
+    // The holdings matched by the wider reading of their names, and those left matched to none because every code their
+    // names read traded at the quarter's end at a close away from the price the fund valued them at.
+    int Widely = 0,
+    IReadOnlyList<string>? PricedOut = null);
 
 // What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
 // those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.

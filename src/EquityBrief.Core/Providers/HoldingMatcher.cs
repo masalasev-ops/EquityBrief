@@ -3,24 +3,41 @@ using System.Text;
 namespace EquityBrief.Core.Providers;
 
 // A holding matched to the provider's symbols: the code it is read under, none where nothing matched, the key it was
-// matched by, and every code it stood between, so an ambiguity is stated rather than settled in silence.
-public sealed record HoldingMatch(string? Ticker, string? By, IReadOnlyList<string> Between);
+// matched by, every code it stood between, so an ambiguity is stated rather than settled in silence, whether it was
+// found by the wider reading of its name, and whether a code its name reads traded at the quarter's end at a price
+// other than the one the fund valued the holding at, which leaves it matched to none.
+public sealed record HoldingMatch(string? Ticker, string? By, IReadOnlyList<string> Between, bool Wider = false, bool PricedOut = false);
+
+// A code's close on a snapshot's quarter end: as the provider sends it, and with the splits the provider files after
+// that day undone, since the provider sends some codes' history already divided by a later split and others as traded.
+public sealed record QuarterEndClose(decimal AsSent, decimal? SplitsUndone = null);
 
 // Matches a fund's holdings to the provider's symbols, its common stock alone: by the holding's ISIN first, filed or made
 // from its CUSIP, which names one security however its ticker was later reused, so the Bed Bath & Beyond a fund held in
 // 2019 reads as the provider's BBBYQ and not as the company trading as BBBY today; and where no common stock carries that
 // ISIN, by its name's key, the words that tell one company from another with the corporate suffixes and the punctuation
 // taken out: the provider's names first, then the names the funds' own filings carry beside an ISIN, which read a company
-// renamed since under the name it was held by. A name names a company and not a security, so a match by it is kept only
-// where its code traded at the snapshot's quarter end, and none is made where which codes traded is not known. Two codes
-// for one ISIN are settled by which traded on that date where exactly one did; codes left standing, by a main exchange
-// before another, a code still listed before a delisted one, and the code itself.
+// renamed since under the name it was held by, and, where neither finds one, the names sharing its first word and most of
+// its words. A name names a company and not a security, so a match by it stands only where its code traded at the
+// snapshot's quarter end at a close within a tolerance of the price the fund valued each share at, which tells common
+// stock from a company's units or preferred lines and a company from another that took its code, and none is made where
+// which codes traded is not known. Two codes for one ISIN are settled by which traded on that date where exactly one did;
+// codes left standing, by a main exchange before another, a code still listed before a delisted one, and the code itself.
 // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
 // see: A holding matched by name is kept only where its code traded at the quarter's end
 public sealed class HoldingMatcher
 {
     public const string ByIsin = "isin";
     public const string ByName = "name";
+
+    // How far the price the fund valued a share at may sit from a code's close on the quarter's end, as a share of the
+    // close, for a match by name to stand.
+    public const decimal ValueTolerance = 0.05m;
+
+    // The share of a name's words, counted over both names, the wider reading needs in common with a symbol's, and how
+    // many of the closest symbols it reads.
+    public const double WiderOverlap = 0.5;
+    public const int WiderRead = 5;
 
     // The words a company's name carries that say what kind of company it is and not which, a non-voting class's mark
     // among them.
@@ -35,6 +52,7 @@ public sealed class HoldingMatcher
 
     readonly ILookup<string, ListedSymbol> byIsin;
     readonly ILookup<string, ListedSymbol> byName;
+    readonly ILookup<string, (string[] Words, ListedSymbol Symbol)> byFirstWord;
     readonly ILookup<string, string> byFiled;
 
     // The provider's symbols, and the names the funds' own filings carry beside an ISIN, each with the code its ISIN
@@ -42,9 +60,11 @@ public sealed class HoldingMatcher
     public HoldingMatcher(IEnumerable<ListedSymbol> symbols, IEnumerable<(string Name, string Code)>? filed = null)
     {
         var stocks = symbols.Where(symbol => symbol.Type == ProviderSymbols.CommonStock).ToArray();
+        var keyed = stocks.Select(symbol => (Key: NameKey(symbol.Name), Symbol: symbol)).Where(pair => pair.Key.Length > 0).ToArray();
 
         byIsin = stocks.Where(symbol => symbol.Isin is not null).ToLookup(symbol => symbol.Isin!, StringComparer.Ordinal);
-        byName = stocks.Select(symbol => (Key: NameKey(symbol.Name), Symbol: symbol)).Where(pair => pair.Key.Length > 0).ToLookup(pair => pair.Key, pair => pair.Symbol, StringComparer.Ordinal);
+        byName = keyed.ToLookup(pair => pair.Key, pair => pair.Symbol, StringComparer.Ordinal);
+        byFirstWord = keyed.ToLookup(pair => pair.Key.Split(' ')[0], pair => (pair.Key.Split(' '), pair.Symbol), StringComparer.Ordinal);
         byFiled = (filed ?? [])
             .Select(pair => (Key: NameKey(pair.Name), pair.Code))
             .Where(pair => pair.Key.Length > 0)
@@ -52,43 +72,51 @@ public sealed class HoldingMatcher
             .ToLookup(pair => pair.Key, pair => pair.Code, StringComparer.Ordinal);
     }
 
-    // A holding's match, given which codes traded on the snapshot's quarter end. A name match is made only where that is
-    // known and only to a code that traded.
-    public HoldingMatch Match(FiledHolding holding, Func<string, bool>? tradedOn = null)
+    // A holding's match, given each code's close on the snapshot's quarter end, none for a code that did not trade then.
+    // A name match is made only where the closes are known, only to a code that traded at a close the holding's value
+    // per share stands within the tolerance of, and by the wider reading of the name only where it is asked for.
+    public HoldingMatch Match(FiledHolding holding, Func<string, QuarterEndClose?>? closeOn = null, bool wider = false)
     {
         if (FundSnapshots.IsinOf(holding) is { } isin && byIsin[isin].ToArray() is { Length: > 0 } onIsin)
         {
-            return new(Choose(onIsin, tradedOn), ByIsin, Codes(onIsin));
+            return new(Choose(onIsin, closeOn is null ? null : code => closeOn(code) is not null), ByIsin, Codes(onIsin));
         }
 
-        if (tradedOn is null)
+        if (closeOn is null)
         {
             return new(null, null, []);
         }
 
+        bool Stands(string code) => closeOn(code) is { } close && Priced(holding, close);
+
         var key = NameKey(holding.Name);
 
-        if (key.Length > 0 && byName[key].Where(symbol => tradedOn(symbol.Code)).ToArray() is { Length: > 0 } onName)
+        if (key.Length > 0 && byName[key].Where(symbol => Stands(symbol.Code)).ToArray() is { Length: > 0 } onName)
         {
-            return new(Choose(onName, tradedOn), ByName, Codes(onName));
+            return new(Choose(onName), ByName, Codes(onName));
         }
 
-        if (key.Length > 0 && byFiled[key].Where(tradedOn).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() is { Length: > 0 } onFiled)
+        if (key.Length > 0 && byFiled[key].Where(Stands).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() is { Length: > 0 } onFiled)
         {
             return new(onFiled[0], ByName, onFiled);
         }
 
-        if (Cut(holding) is { } cut && cut.Where(symbol => tradedOn(symbol.Code)).ToArray() is { Length: > 0 } onCut)
+        if (Cut(holding) is { } cut && cut.Where(symbol => Stands(symbol.Code)).ToArray() is { Length: > 0 } onCut)
         {
-            return new(Choose(onCut, tradedOn), ByName, Codes(onCut));
+            return new(Choose(onCut), ByName, Codes(onCut));
         }
 
-        return new(null, null, []);
+        if (wider && Wider(holding).Where(symbol => Stands(symbol.Code)).ToArray() is { Length: > 0 } onWider)
+        {
+            return new(Choose(onWider), ByName, Codes(onWider), Wider: true);
+        }
+
+        return new(null, null, [], PricedOut: NameCandidates(holding, wider).Any(code => closeOn(code) is not null));
     }
 
     // Every code a holding's name could be read as, whether or not it traded, which is what is asked about where the
-    // store holds no bar of a code near the quarter's end.
-    public IReadOnlyList<string> NameCandidates(FiledHolding holding)
+    // store holds no bar of a code near the quarter's end; with the wider reading's where it is asked for.
+    public IReadOnlyList<string> NameCandidates(FiledHolding holding, bool wider = false)
     {
         if (FundSnapshots.IsinOf(holding) is { } isin && byIsin[isin].Any())
         {
@@ -102,10 +130,20 @@ public sealed class HoldingMatcher
             .. (key.Length > 0 ? byName[key].Select(symbol => symbol.Code) : [])
                 .Concat(key.Length > 0 ? byFiled[key] : [])
                 .Concat((Cut(holding) ?? []).Select(symbol => symbol.Code))
+                .Concat(wider ? Wider(holding).Select(symbol => symbol.Code) : [])
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal),
         ];
     }
+
+    // Whether the price the fund valued a share at stands within the tolerance of a code's close, as sent or with the
+    // later splits undone; a filing stating no shares or no value is not held to it.
+    static bool Priced(FiledHolding holding, QuarterEndClose close) =>
+        holding.ValuePerShare is not { } price
+        || Within(price, close.AsSent)
+        || (close.SplitsUndone is { } undone && Within(price, undone));
+
+    static bool Within(decimal price, decimal close) => close > 0m && Math.Abs((price / close) - 1m) <= ValueTolerance;
 
     // A name the fund filed at the form's full width may have been cut inside its last word, so its words but that one
     // are read as the start of a name, where they start exactly one company's.
@@ -117,6 +155,38 @@ public sealed class HoldingMatcher
         && byName.Where(group => group.Key == start || group.Key.StartsWith(start + " ", StringComparison.Ordinal)).ToArray() is { Length: 1 } cut
             ? [.. cut[0]]
             : null;
+
+    // The wider reading of a name no symbol carries word for word: the symbols, listed and delisted, whose names share its
+    // first word and at least half the words the two names hold between them, the closest first and no more than a few.
+    IReadOnlyList<ListedSymbol> Wider(FiledHolding holding)
+    {
+        var words = NameKey(holding.Name).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (words.Length == 0 || byName[string.Join(' ', words)].Any())
+        {
+            return [];
+        }
+
+        return
+        [
+            .. byFirstWord[words[0]]
+                .Select(pair => (pair.Symbol, Shared: Shared(words, pair.Words)))
+                .Where(pair => pair.Shared >= WiderOverlap)
+                .OrderByDescending(pair => pair.Shared)
+                .ThenBy(pair => pair.Symbol.Code, StringComparer.Ordinal)
+                .Take(WiderRead)
+                .Select(pair => pair.Symbol),
+        ];
+    }
+
+    // The words two names hold in common as a share of the words either holds.
+    static double Shared(string[] one, string[] other)
+    {
+        var both = one.Intersect(other, StringComparer.Ordinal).Count();
+        var either = one.Union(other, StringComparer.Ordinal).Count();
+
+        return either == 0 ? 0.0 : 1.0 * both / either;
+    }
 
     // The width the form files a holding's name at, past which it cuts the name.
     public const int FiledNameWidth = 30;
@@ -137,7 +207,7 @@ public sealed class HoldingMatcher
         return string.Join(' ', text.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(word => !Suffixes.Contains(word)));
     }
 
-    static string Choose(IReadOnlyList<ListedSymbol> found, Func<string, bool>? tradedOn)
+    static string Choose(IReadOnlyList<ListedSymbol> found, Func<string, bool>? tradedOn = null)
     {
         if (found.Count > 1 && tradedOn is not null && found.Where(symbol => tradedOn(symbol.Code)).ToArray() is { Length: 1 } traded)
         {

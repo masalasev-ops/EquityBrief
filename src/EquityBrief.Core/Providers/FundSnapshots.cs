@@ -6,9 +6,14 @@ namespace EquityBrief.Core.Providers;
 // One filing of a fund's quarter-end holdings: its accession, the day it was filed and its form.
 public sealed record FundFiling(string Accession, DateOnly Filed, string Form);
 
-// One holding a snapshot lists, as the fund filed it: its name, its CUSIP and its ISIN where it carries them, and the
-// asset category it filed, common equity being the one a member of the index is.
-public sealed record FiledHolding(string Name, string? Cusip, string? Isin, string? Category);
+// One holding a snapshot lists, as the fund filed it: its name, its CUSIP and its ISIN where it carries them, the asset
+// category it filed, common equity being the one a member of the index is, and the shares it held and their value in
+// dollars where it states them, which give the price the fund valued each share at on the quarter's end.
+public sealed record FiledHolding(string Name, string? Cusip, string? Isin, string? Category, decimal? Shares = null, decimal? Value = null)
+{
+    // The price a share was valued at, none where the filing states no shares or no value.
+    public decimal? ValuePerShare => Shares is > 0m && Value is { } value ? value / Shares.Value : null;
+}
 
 // A fund's holdings as of a quarter's end, read off one filing.
 public sealed record FundSnapshot(string Series, DateOnly Period, string Accession, IReadOnlyList<FiledHolding> Holdings)
@@ -118,7 +123,9 @@ public static class FundSnapshots
                 Text(holding, "name") ?? Text(holding, "title") ?? string.Empty,
                 Cusip(Text(holding, "cusip")),
                 holding.Descendants().FirstOrDefault(element => element.Name.LocalName == "isin")?.Attribute("value")?.Value is { Length: 12 } isin ? isin.ToUpperInvariant() : null,
-                Text(holding, "assetCat")))
+                Text(holding, "assetCat"),
+                Text(holding, "units") == SharesHeld ? Amount(Text(holding, "balance")) : null,
+                Amount(Text(holding, "valUSD"))))
             .ToArray();
 
         return new FundSnapshot(series, reported, accession, holdings);
@@ -151,6 +158,13 @@ public static class FundSnapshots
 
         return body + ((10 - (total % 10)) % 10).ToString(CultureInfo.InvariantCulture);
     }
+
+    // The units a holding's balance counts when it counts shares.
+    public const string SharesHeld = "NS";
+
+    // An amount as filed, a number of shares or of dollars, none where none is filed or it cannot be read.
+    static decimal? Amount(string? filed) =>
+        decimal.TryParse(filed, NumberStyles.Number, CultureInfo.InvariantCulture, out var amount) ? amount : null;
 
     // A CUSIP as filed, none where the fund filed none or a placeholder of noughts.
     static string? Cusip(string? filed) =>
