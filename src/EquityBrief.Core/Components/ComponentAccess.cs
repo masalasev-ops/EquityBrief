@@ -36,6 +36,7 @@ public enum Store
     PulledSplit,
     PulledRevenue,
     PulledMember,
+    PulledIncome,
     Indicator,
     Swing,
     VolumeProfile,

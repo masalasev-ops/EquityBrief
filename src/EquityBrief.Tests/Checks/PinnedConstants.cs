@@ -456,6 +456,11 @@ public class PinnedConstants
             new("Family sweep floors", "8", Worker.Sweep.FamilySweep.Variants, "FamilySweep.Variants"),
             new("Family sweep test", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
             new("Family sweep test", "0.05", (decimal)Core.Returns.ReasonVerdict.Significance, "ReasonVerdict.Significance"),
+            // The readings the S&P 400's and 600's rules read, 15.2, the figures in the row's order.
+            new("Liquidity floors of the 400's and 600's rules", "5", Core.Readings.MemberReadings.LowestPrice, "MemberReadings.LowestPrice"),
+            new("Liquidity floors of the 400's and 600's rules", "50", Core.Readings.MemberReadings.DollarVolumeSessions, "MemberReadings.DollarVolumeSessions"),
+            new("Liquidity floors of the 400's and 600's rules", "10,000,000", Core.Readings.MemberReadings.MidCapDollarVolume, "MemberReadings.MidCapDollarVolume"),
+            new("Liquidity floors of the 400's and 600's rules", "5,000,000", Core.Readings.MemberReadings.SmallCapDollarVolume, "MemberReadings.SmallCapDollarVolume"),
             // The pulls' readings, 14.2, the figures in each row's order.
             new("Company value", "10", Core.Families.FiledSplit.PlainMost, "FiledSplit.PlainMost"),
             new("Sector on a session", "2018", Core.Families.GicsSectors.First.Year, "GicsSectors.First's year"),

@@ -57,7 +57,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding]),
@@ -112,7 +112,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history and the market series"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.MarketBar])],
+        ["every store but the pulled history and the market series"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.MarketBar])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -205,6 +205,7 @@ internal static class ComponentVocabulary
         ["pulled splits"] = DataStore.PulledSplit,
         ["pulled revenue"] = DataStore.PulledRevenue,
         ["pulled members"] = DataStore.PulledMember,
+        ["pulled income"] = DataStore.PulledIncome,
         ["market series"] = DataStore.MarketBar,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,

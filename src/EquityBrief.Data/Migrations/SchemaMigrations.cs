@@ -682,7 +682,25 @@ public static class SchemaMigrations
         new Migration(59, "add reported_quarter.shares, create company, heavyweight_night and heavyweight_holding", CreateHeavyweights),
         new Migration(60, "add heavyweight_night.beta, create heavyweight_rule_night, heavyweight_rule_holding and estimate_reading", CreateRuleBooks),
         new Migration(61, "create pulled_member", CreatePulledMembers),
+        new Migration(62, "create pulled_income", CreatePulledIncome),
     ];
+
+    // Each pulled company's quarterly income as its filer filed it, one row a quarter, marked by the companies pull that
+    // wrote it, removed whole by that pull and read by no night: the net income the S&P 400's and 600's profit gate sums
+    // and the operating income and interest expense their coverage reads, each as it stood on the day it was filed.
+    // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+    const string CreatePulledIncome = @"
+        CREATE TABLE pulled_income (
+            ticker            TEXT NOT NULL,
+            period_end        TEXT NOT NULL,
+            filing_date       TEXT NOT NULL,
+            net_income        TEXT,
+            operating_income  TEXT,
+            interest_expense  TEXT,
+            pull              TEXT NOT NULL,
+            PRIMARY KEY (ticker, period_end)
+        ) STRICT;
+    ";
 
     // Today's members of the S&P 400 and the S&P 600 as the indices' fundamentals answers list them, one row a member,
     // marked by the pull that wrote it, removed whole by that pull and read by no night: the names the wider universe's

@@ -86,6 +86,9 @@ public partial class FixtureExpectations
             .. FamilyReplayClaims,
             // 14.2, the pulls and the readings over them: section 17's five rows and section 18's four.
             .. CompanyPullClaims,
+            // 15.2, the readings the S&P 400's and 600's rules and their sweeps read: section 17's three rows and
+            // section 18's.
+            .. ReadingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.
             .. HeavyweightClaims,
             // 14.4, the context checks over the history: section 17's three rows and section 18's two.

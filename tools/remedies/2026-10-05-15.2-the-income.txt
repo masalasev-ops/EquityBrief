@@ -1,0 +1,8 @@
+# The remedy of 15.2's first half (the readings the sweeps read), as its PROGRESS entry prints it: run tools/migrate.ps1
+# first, which creates migration 62's pulled income. The companies pull is run again for the S&P 400 and the S&P 600,
+# one request a name at the fundamentals endpoint's weight of ten, about a thousand names and ten thousand weighted calls
+# of the day's hundred thousand, and stores each quarter's net income, operating income and interest expense as filed
+# beside the companies and counts an earlier pull holds, which it keeps. Everything goes into the pulled history's
+# tables, read by no night. No model call and nothing bought. Run after the merge, when no night is running.
+history-pull --companies --from 2018-01-01 --index MID --live
+history-pull --companies --from 2018-01-01 --index SML --live

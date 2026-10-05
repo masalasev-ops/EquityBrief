@@ -57,6 +57,7 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledSplit, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledRevenue, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledMember, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledIncome, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.IndexMembership, Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
@@ -159,6 +160,15 @@ public sealed class HistoryPull(
         ON CONFLICT (ticker, period_end) DO NOTHING;
     ";
 
+    // A quarter's income as its filer filed it, from 15.2, insert only, so a quarter an earlier pull holds keeps that
+    // pull's row.
+    // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+    const string InsertIncome = @"
+        INSERT INTO pulled_income (ticker, period_end, filing_date, net_income, operating_income, interest_expense, pull)
+        VALUES ($ticker, $period_end, $filing_date, $net_income, $operating_income, $interest_expense, $pull)
+        ON CONFLICT (ticker, period_end) DO NOTHING;
+    ";
+
     const string InsertSplit = @"
         INSERT INTO pulled_split (ticker, ex_date, new_shares, old_shares, pull)
         VALUES ($ticker, $ex_date, $new_shares, $old_shares, $pull)
@@ -193,6 +203,7 @@ public sealed class HistoryPull(
     const string MarketBarCount = "SELECT COUNT(*) FROM pulled_market_bar;";
     const string CompanyCount = "SELECT COUNT(*) FROM pulled_company;";
     const string SharesCount = "SELECT COUNT(*) FROM pulled_shares;";
+    const string IncomeCount = "SELECT COUNT(*) FROM pulled_income;";
     const string SplitCount = "SELECT COUNT(*) FROM pulled_split;";
     const string RevenueCount = "SELECT COUNT(*) FROM pulled_revenue;";
     const string MemberCount = "SELECT COUNT(*) FROM pulled_member WHERE index_code = $index;";
@@ -206,6 +217,7 @@ public sealed class HistoryPull(
     const string SplitsOfPull = "SELECT COUNT(*) FROM pulled_split WHERE pull = $pull;";
     const string RevenueOfPull = "SELECT COUNT(*) FROM pulled_revenue WHERE pull = $pull;";
     const string MembersOfPull = "SELECT COUNT(*) FROM pulled_member WHERE pull = $pull;";
+    const string IncomeOfPull = "SELECT COUNT(*) FROM pulled_income WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
@@ -217,6 +229,7 @@ public sealed class HistoryPull(
     const string DeleteSplitsOfPull = "DELETE FROM pulled_split WHERE pull = $pull;";
     const string DeleteRevenueOfPull = "DELETE FROM pulled_revenue WHERE pull = $pull;";
     const string DeleteMembersOfPull = "DELETE FROM pulled_member WHERE pull = $pull;";
+    const string DeleteIncomeOfPull = "DELETE FROM pulled_income WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -255,7 +268,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s), {purged.Revenue} revenue figure(s) and {purged.Members} member(s)"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s), {purged.Revenue} revenue figure(s), {purged.Members} member(s) and {purged.Income} quarter(s) of income"));
 
                 return 0;
             }
@@ -1114,6 +1127,7 @@ public sealed class HistoryPull(
 
         var companiesBefore = await CountAsync(connection, CompanyCount, null, cancellation);
         var sharesBefore = await CountAsync(connection, SharesCount, null, cancellation);
+        var incomeBefore = await CountAsync(connection, IncomeCount, null, cancellation);
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
@@ -1147,10 +1161,26 @@ public sealed class HistoryPull(
 
                 await insert.ExecuteNonQueryAsync(cancellation);
             }
+
+            foreach (var quarter in company.Income)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertIncome;
+                insert.Parameters.AddWithValue("$ticker", company.Ticker);
+                insert.Parameters.AddWithValue("$period_end", Text(quarter.PeriodEnd));
+                insert.Parameters.AddWithValue("$filing_date", Text(quarter.FilingDate));
+                BindMoney(insert, "$net_income", quarter.NetIncome);
+                BindMoney(insert, "$operating_income", quarter.OperatingIncome);
+                BindMoney(insert, "$interest_expense", quarter.InterestExpense);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
         }
 
         var companiesWritten = await CountAsync(connection, CompanyCount, null, cancellation) - companiesBefore;
         var sharesWritten = await CountAsync(connection, SharesCount, null, cancellation) - sharesBefore;
+        var incomeWritten = await CountAsync(connection, IncomeCount, null, cancellation) - incomeBefore;
         var requests = companies.Requests - requestsBefore;
         var (movesFiled, movesNot) = MovesAgainst(answered);
         var outcome = new HistoryCompanyOutcome(
@@ -1167,7 +1197,10 @@ public sealed class HistoryPull(
             answered.Sum(company => company.SheetsUncounted),
             movesFiled,
             movesNot,
-            requests);
+            requests,
+            incomeWritten,
+            answered.Sum(company => company.StatementsUndated),
+            [.. answered.Where(company => company.Income.Count == 0).Select(company => company.Ticker)]);
 
         await AppendAsync(
             connection,
@@ -1176,7 +1209,7 @@ public sealed class HistoryPull(
             startedAt,
             clock.UtcNow,
             unanswered.Count == 0 ? "ok" : Partial,
-            companiesWritten + sharesWritten,
+            companiesWritten + sharesWritten + incomeWritten,
             requests,
             JsonSerializer.Serialize(new
             {
@@ -1186,6 +1219,9 @@ public sealed class HistoryPull(
                 answered = answered.Count,
                 companies = companiesWritten,
                 counts = sharesWritten,
+                income = incomeWritten,
+                statementsUndated = outcome.StatementsUndated,
+                noIncome = outcome.NoIncome,
                 unanswered,
                 noSector = outcome.NoSector,
                 noCount = outcome.NoCount,
@@ -1199,6 +1235,19 @@ public sealed class HistoryPull(
         await transaction.CommitAsync(cancellation);
 
         return outcome;
+    }
+
+    // A money figure a filing may state none of, bound as none where it does.
+    static void BindMoney(SqliteCommand command, string name, decimal? value)
+    {
+        if (value is { } money)
+        {
+            Money.Bind(command, name, money);
+        }
+        else
+        {
+            command.Parameters.AddWithValue(name, DBNull.Value);
+        }
     }
 
     // The fourteen moves of 2023-03-17 read against the answers: how many are filed in the sector they moved to under
@@ -1596,7 +1645,7 @@ public sealed class HistoryPull(
             ? percent
             : null;
 
-    // Removes one pull's rows from the nine tables and says so on the run log. A pull no row carries is
+    // Removes one pull's rows from the ten tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -1619,8 +1668,9 @@ public sealed class HistoryPull(
         var splitsHeld = await CountAsync(connection, SplitsOfPull, pull, cancellation);
         var revenueHeld = await CountAsync(connection, RevenueOfPull, pull, cancellation);
         var membersHeld = await CountAsync(connection, MembersOfPull, pull, cancellation);
+        var incomeHeld = await CountAsync(connection, IncomeOfPull, pull, cancellation);
 
-        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld + membersHeld == 0)
+        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld + membersHeld + incomeHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
@@ -1631,6 +1681,7 @@ public sealed class HistoryPull(
         {
             DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull,
             DeleteCompaniesOfPull, DeleteSharesOfPull, DeleteSplitsOfPull, DeleteRevenueOfPull, DeleteMembersOfPull,
+            DeleteIncomeOfPull,
         })
         {
             await using var delete = connection.CreateCommand();
@@ -1661,12 +1712,13 @@ public sealed class HistoryPull(
                 splits = splitsHeld,
                 revenue = revenueHeld,
                 members = membersHeld,
+                income = incomeHeld,
             }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld, membersHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld, membersHeld, incomeHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -1762,11 +1814,12 @@ public sealed class HistoryPull(
         FormattableString.Invariant($"{series.Series}: {series.Sessions} session(s), {series.First:yyyy-MM-dd} to {series.Last:yyyy-MM-dd}");
 
     public static string Detail(HistoryCompanyOutcome outcome) =>
-        FormattableString.Invariant($"pulled the companies {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.CompaniesWritten} compan(ies) and {outcome.CountsWritten} share count(s) stored, {outcome.NoSector.Count} filing no sector, {outcome.NoCount.Count} filing no count with its date, {outcome.NoCik.Count} filing no CIK, {outcome.SheetsUncounted} balance sheet(s) carrying no count or no filing date, the moves of 2023-03-17: {outcome.MovesFiled} of {GicsSectors.Moves.Count} filed in the sector they moved to, {outcome.Requests} request(s)")
+        FormattableString.Invariant($"pulled the companies {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.CompaniesWritten} compan(ies) and {outcome.CountsWritten} share count(s) stored, {outcome.NoSector.Count} filing no sector, {outcome.NoCount.Count} filing no count with its date, {outcome.NoCik.Count} filing no CIK, {outcome.SheetsUncounted} balance sheet(s) carrying no count or no filing date, {outcome.IncomeWritten} quarter(s) of income stored, {outcome.StatementsUndated} income statement(s) carrying no filing date, {outcome.NoIncome.Count} filing no income statement with its date, the moves of 2023-03-17: {outcome.MovesFiled} of {GicsSectors.Moves.Count} filed in the sector they moved to, {outcome.Requests} request(s)")
         + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line))
         + Listed("no sector", outcome.NoSector)
         + Listed("no count", outcome.NoCount)
         + Listed("no CIK", outcome.NoCik)
+        + Listed("no income", outcome.NoIncome)
         + string.Concat(outcome.MovesNot.Select(line => Environment.NewLine + "  move not filed: " + line));
 
     public static string Detail(HistorySplitOutcome outcome) =>
@@ -1947,7 +2000,14 @@ public sealed record HistoryCompanyOutcome(
     int SheetsUncounted,
     int MovesFiled,
     IReadOnlyList<string> MovesNot,
-    int Requests);
+    int Requests,
+    int IncomeWritten = 0,
+    int StatementsUndated = 0,
+    IReadOnlyList<string>? NoIncomeFiled = null)
+{
+    // The names whose answer filed no income statement with its date, which the profit gate reads as no quarter filed.
+    public IReadOnlyList<string> NoIncome => NoIncomeFiled ?? [];
+}
 
 // What one splits pull did: the span, the names held over it and how many answered, each name not served and why,
 // the names with a split in the span, the splits stored, the requests made, and how many of the splits answered are
@@ -1999,7 +2059,8 @@ public sealed record HistoryPurgeOutcome(
     int Shares = 0,
     int Splits = 0,
     int Revenue = 0,
-    int Members = 0);
+    int Members = 0,
+    int Income = 0);
 
 // What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
 // those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.
