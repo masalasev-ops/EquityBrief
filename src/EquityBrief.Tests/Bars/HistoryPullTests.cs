@@ -189,7 +189,10 @@ public class HistoryPullTests
     [Fact]
     public async Task ANameTheProviderDoesNotAnswerAndASessionOneNameMissesAreNamedAndEverythingElseIsStoredAsSent()
     {
-        using var store = Seeded("EEE");
+        // And FFF, a departed name whose year the provider sends with a session closing at nothing, which the reader
+        // refuses whole: it is named as a refusal is, and stops nothing, where until 15.3's correction it stopped the
+        // pull of the S&P 400's history at PACW and the S&P 600's at AEL.
+        using var store = Seeded("EEE", "FFF");
 
         var missing = new DateOnly(2026, 8, 12);
         var bars = new ConstructedBars(
@@ -198,13 +201,21 @@ public class HistoryPullTests
                 ["AAA"] = Sessions(From, Tonight),
                 ["CCC"] = [.. Sessions(From, Tonight).Where(session => session != missing)],
                 ["EEE"] = [],
+                ["FFF"] = Sessions(From, Tonight),
             },
-            refused: ["BBB"]);
+            refused: ["BBB"],
+            unreadable: ["FFF"]);
 
         var outcome = await new HistoryPull(bars, new ConstructedPrints([]), Clock(), store.DatabaseFile).PullAsync(Index, From, "history-pull-two");
 
-        Assert.Equal(["BBB: the provider answered 404", "EEE: the provider sent no session"], outcome.Unanswered);
-        Assert.Equal((4, 2), (outcome.Names, outcome.Stored));
+        Assert.Equal(
+            [
+                "BBB: the provider answered 404",
+                "EEE: the provider sent no session",
+                "FFF: FFF carries a close of 0, and the adjustment factor divides by it. A session with no positive close is not a session.",
+            ],
+            outcome.Unanswered);
+        Assert.Equal((5, 2), (outcome.Names, outcome.Stored));
 
         // CCC's hole is a session AAA holds, stored as sent rather than refused or filled: one of the two
         // names spanning it holds it, which is half.
@@ -219,11 +230,12 @@ public class HistoryPullTests
         Assert.StartsWith(HistoryPull.Partial + "|", logged, StringComparison.Ordinal);
         Assert.Contains("BBB: the provider answered 404", logged, StringComparison.Ordinal);
         Assert.Contains("EEE: the provider sent no session", logged, StringComparison.Ordinal);
+        Assert.Contains("FFF: FFF carries a close of 0", logged, StringComparison.Ordinal);
         Assert.Contains("CCC is missing 1 session(s), the first 2026-08-12", logged, StringComparison.Ordinal);
 
         var said = HistoryPull.Detail(outcome);
 
-        Assert.Contains("2 of 4 name(s) answered", said, StringComparison.Ordinal);
+        Assert.Contains("2 of 5 name(s) answered", said, StringComparison.Ordinal);
         Assert.Contains("1 name(s) with a missing session, 0 day(s) held by fewer than half the names spanning them", said, StringComparison.Ordinal);
         Assert.Contains("unanswered: BBB: the provider answered 404", said, StringComparison.Ordinal);
     }
@@ -848,7 +860,7 @@ public class HistoryPullTests
 
     // A historical feed answering from constructed sessions, refusing the names it is told to, and
     // recording what it was asked for in the order asked.
-    sealed class ConstructedBars(IReadOnlyDictionary<string, IReadOnlyList<DateOnly>> series, IReadOnlyList<string>? refused = null) : IHistoricalBarFeed
+    sealed class ConstructedBars(IReadOnlyDictionary<string, IReadOnlyList<DateOnly>> series, IReadOnlyList<string>? refused = null, IReadOnlyList<string>? unreadable = null) : IHistoricalBarFeed
     {
         public int Requests { get; private set; }
 
@@ -862,6 +874,12 @@ public class HistoryPullTests
             if (refused?.Contains(ticker) == true)
             {
                 throw new ProviderRefusal("the provider answered 404", transient: false);
+            }
+
+            // A year the provider sends with a session closing at nothing, which its reader refuses whole.
+            if (unreadable?.Contains(ticker) == true)
+            {
+                throw new FormatException($"{ticker} carries a close of 0, and the adjustment factor divides by it. A session with no positive close is not a session.");
             }
 
             return Task.FromResult<IReadOnlyList<ProviderBar>>(
