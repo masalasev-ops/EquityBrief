@@ -11205,3 +11205,11 @@ Was:
 Now:
 > "with every family running on the 400 and 600 as provisional rules of their own, read on the night by each family's sweep's own code into tables of their own, and a choice of index under Universe on Tonight, Past picks, Run, Universe and Researched;"
 Why: the row states what the phase builds, and the operator ruled both on 2026-10-05.
+
+### 2026-10-05 - ARCHITECTURE.html - the family lister and the request drain read the S&P 400's and 600's lists and trades
+Authorised by: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+Was:
+> the family lister's Reads cell "bar store, gate results, filter versions, fundamental readings, list rules, forward returns, family results, family nights, family picks"; the request drain's "family nights, family picks, gate results, fundamental readings, heavyweight holdings, research requests, run log"
+Now:
+> the family lister's Reads cell ending "..., family picks, index family trades"; the request drain's carrying "..., heavyweight holdings, index family picks, index heavyweight holdings, research requests, run log"; and a catalogue row and a matrix row for the index families beside the heavyweight book's
+Why: the S&P 500's list holds back a stock whose S&P 400 or 600 trade is still open, the night's six reports are taken in turn across the three indices' lists, and the index families read and write each index's own tables.
