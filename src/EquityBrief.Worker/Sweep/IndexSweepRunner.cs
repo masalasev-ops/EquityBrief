@@ -38,12 +38,18 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     public static IReadOnlyDictionary<string, string> Families { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         [Pullback] = "pullback's base",
+        [PullbackSearch] = "pullback's nine dials",
         [BreakoutRule.Name] = "breakouts'",
         [DriftRule.Name] = "earnings drift's",
         [Heavyweights] = "sector heavyweights'",
     };
 
     public const string Pullback = "pullback";
+
+    public const string PullbackSearch = "pullback-search";
+
+    // The longest the pullback's search samples its grid for, the pullback sweep's own budget a design.
+    public static readonly TimeSpan SearchBudget = SweepSearch.SampleBudget;
 
     public const string Heavyweights = "heavyweights";
 
@@ -108,6 +114,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         if (family == Pullback)
         {
             return await PullbackAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
+        }
+
+        if (family == PullbackSearch)
+        {
+            return PullbackSearchRun(indexCode, named, words, inputs, companies, income, folder, started);
         }
 
         if (family == Heavyweights)
@@ -263,6 +274,256 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         return 0;
     }
 
+    // The pullback's nine dials on the index alone, searched by the pullback sweep's own second stage for the live design:
+    // every member's candidates as the history stood, its strength, market check and benchmark read among the index's
+    // own members, a candidate kept only where it clears the floors and the gate on its session, and every trade's
+    // result after its cost at the table's value, its benchmark paying none; the provisional base's setting read beside
+    // the search's proposal, each before costs and at double the cost as well. A search proposing nothing, or a
+    // proposal short of the floors after costs, brings the strongest settings and what could be tried next.
+    // see: A trade's cost comes off the trade and not its benchmark
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    int PullbackSearchRun(string indexCode, string named, string words, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, DateTimeOffset started)
+    {
+        var calendar = inputs.Sessions;
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+        var nights = calendar.Length - firstScored;
+        var parallelism = Environment.ProcessorCount;
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        var sessions = SweepColumns.Sessions(series, calendar);
+        var members = SweepBenchmark.On(series, calendar.Length);
+        var found = new List<SweepCandidate>[series.Length];
+
+        output.WriteLine(FormattableString.Invariant($"reading the candidates of {series.Length:N0} name(s) over {nights:N0} session(s)"));
+        Parallel.For(0, series.Length, name => found[name] = SweepCandidates.For(series[name], name, sessions, calendar, firstScored, firstScored, calendar.Length));
+
+        int BarOf(SweepCandidate candidate) => Array.BinarySearch(series[candidate.Name].SessionAt, candidate.Session);
+
+        var all = found.SelectMany(list => list).ToArray();
+        var candidates = all
+            .Where(candidate => BarOf(candidate) is var bar && bar >= 0 && Clears(indexCode, series[candidate.Name], bar, income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? []))
+            .OrderBy(candidate => candidate.Session)
+            .ThenBy(candidate => candidate.Name)
+            .ToArray();
+
+        SweepBenchmark.Fill(candidates, series, members, parallelism);
+
+        // Each trade's cost in multiples of its risk, a candidate's plans and exits apiece, taken off its result and put
+        // back to read the edge before costs or at double.
+        var exits = SweepAxes.Exits;
+        var costs = new float[candidates.Length][];
+
+        Parallel.For(0, candidates.Length, at =>
+        {
+            var candidate = candidates[at];
+            var one = series[candidate.Name];
+            var bar = BarOf(candidate);
+            var entry = Statistic.FromPrice(one.Bars[bar].Close);
+            var row = new float[candidate.Plans.Length * exits];
+
+            for (var plan = 0; plan < candidate.Plans.Length; plan++)
+            {
+                if (candidate.Plans[plan] is not { } outcomes)
+                {
+                    continue;
+                }
+
+                var stop = entry - (outcomes.StopMoves * one.Atr[bar]);
+
+                for (var exit = 0; exit < exits; exit++)
+                {
+                    if (!float.IsNaN(outcomes.Multiple[exit]) && entry > stop)
+                    {
+                        row[(plan * exits) + exit] = (float)CostInRisk(one, bar, entry, stop, outcomes.Multiple[exit], companies, 1);
+                    }
+                }
+            }
+
+            costs[at] = row;
+        });
+
+        void Charge(int multiple)
+        {
+            for (var at = 0; at < candidates.Length; at++)
+            {
+                for (var plan = 0; plan < candidates[at].Plans.Length; plan++)
+                {
+                    if (candidates[at].Plans[plan] is not { } outcomes)
+                    {
+                        continue;
+                    }
+
+                    for (var exit = 0; exit < exits; exit++)
+                    {
+                        outcomes.Multiple[exit] -= multiple * costs[at][(plan * exits) + exit];
+                    }
+                }
+            }
+        }
+
+        var design = SweepDesign.Live;
+        var space = SweepSpace.For(ConditionSetting.Off.On);
+        var baseSetting = SweepGrid.Extended.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+
+        Charge(1);
+
+        var live = SweepStages.Direct(candidates, design, baseSetting, ConditionSetting.Off, nights);
+        var picks = SweepStages.Picks(candidates, design);
+        var search = new SweepDesignSearch(design, picks, nights, space);
+
+        output.WriteLine(FormattableString.Invariant($"{candidates.Length:N0} of {all.Length:N0} candidates clear the floors and the gate; searching the live design's grid for up to {SearchBudget.TotalHours:0} hours"));
+        search.EvaluateCoarse(ConditionSetting.Off, parallelism);
+
+        var (sampleSize, gridSize, perPoint) = search.EvaluateSample(SearchBudget, SweepSearch.Seed, parallelism);
+
+        search.FixTheLine(SweepSearch.PlateauMargin);
+
+        var leaders = search.LeadersOf(SweepSearch.Leaders);
+        var (proposal, trailing) = search.Propose(leaders, live);
+        var refinement = new List<string>();
+        var extensions = new List<string>();
+        var limits = new List<string>();
+
+        if (proposal is not null)
+        {
+            proposal = search.Refine(proposal, live, refinement);
+            proposal = search.Extend(proposal, live, refinement, extensions, limits);
+        }
+
+        var strongest = search.Strongest(StrongestRead);
+        var shown = new List<(string Label, int[] Point)> { ("the provisional base", space.LivePoint()) };
+
+        if (proposal is not null)
+        {
+            shown.Add(("the proposal", proposal.Point));
+        }
+
+        shown.AddRange(strongest.Select((point, at) => (FormattableString.Invariant($"the strongest setting read, {at + 1}"), point)));
+
+        SweepMeasures MeasuresOf(int[] point) => SweepStages.Direct(candidates, design, space.Setting(point), space.Conditions(point), nights);
+
+        var after = shown.Select(one => MeasuresOf(one.Point)).ToArray();
+
+        Charge(-1);
+
+        var before = shown.Select(one => MeasuresOf(one.Point)).ToArray();
+
+        Charge(2);
+
+        var doubled = shown.Select(one => MeasuresOf(one.Point)).ToArray();
+
+        Charge(-1);
+
+        static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
+
+        bool Meets(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
+
+        var proposed = proposal is not null && Meets(after[1]);
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} A candidate is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {candidates.Length:N0} of the {all.Length:N0} candidates the members made. Every edge is after each trade's cost at the published table's value, its benchmark the same plan on every member of the index paying none, and the table sets the edge before costs and at double beside it.");
+        var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback search</title><style>" + SweepReport.Style + "</style></head><body><main>");
+
+        page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)}, searched on its own members</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p>"));
+        page.Append(FormattableString.Invariant($"<p>The pullback sweep's second stage over the live design: {sampleSize:N0} settings sampled of {gridSize:N0} on its grid at {perPoint * 1000:0.00} ms each, {search.Evaluations:N0} read in all; the best edge {FamilySweepReport.Number(search.BestEdge)}, the plateau's line {FamilySweepReport.Number(search.Line)}, {leaders.Count} leader(s) meeting the sweep's own floors, {trailing} trailing the provisional base in a recent year.</p>"));
+        page.Append(FormattableString.Invariant($"<p class=\"floors\">{(proposed ? "The proposal meets the floors after costs" : proposal is null ? "The search proposes nothing" : "The search's proposal falls short of the floors after costs")}: at least {FamilySweep.TradeFloor} trades and an edge above nothing in at least {FamilySweep.YearsBeating} of the 8 years.</p>"));
+        page.Append("<div class=\"table\"><table><thead><tr><th>Read</th><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Before costs</th><th>At double the cost</th><th>Without the five largest</th></tr></thead><tbody>");
+
+        for (var at = 0; at < shown.Count; at++)
+        {
+            var trimmed = SweepStages.WithoutTheLargest(SweepStages.Picks(candidates, design), design, space.Setting(shown[at].Point), space.Conditions(shown[at].Point));
+
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td><td>{WebUtility.HtmlEncode(space.Describe(shown[at].Point))}</td><td class=\"num\">{after[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(after[at].Edge)}</td><td class=\"num\">{YearsAbove(after[at])} of 8</td><td class=\"num\">{FamilySweepReport.Number(before[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(doubled[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(trimmed.Edge)}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div>");
+        page.Append("<h3>Each year after costs</h3><div class=\"table\"><table><thead><tr><th>Read</th>");
+
+        for (var year = 0; year < 8; year++)
+        {
+            page.Append(FormattableString.Invariant($"<th>{SweepColumns.FirstScored.Year + year}</th>"));
+        }
+
+        page.Append("</tr></thead><tbody>");
+
+        for (var at = 0; at < shown.Count; at++)
+        {
+            page.Append($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td>");
+
+            for (var year = 0; year < 8; year++)
+            {
+                page.Append(FormattableString.Invariant($"<td class=\"num\">{FamilySweepReport.Number(year < after[at].YearEdge.Length ? after[at].YearEdge[year] : null)} ({(year < after[at].YearScored.Length ? after[at].YearScored[year] : 0):N0})</td>"));
+            }
+
+            page.Append("</tr>");
+        }
+
+        page.Append("</tbody></table></div>");
+
+        if (refinement.Count + extensions.Count + limits.Count > 0)
+        {
+            page.Append("<h3>The proposal's refinement</h3><ul>");
+
+            foreach (var line in refinement.Concat(extensions).Concat(limits))
+            {
+                page.Append($"<li>{WebUtility.HtmlEncode(line)}</li>");
+            }
+
+            page.Append("</ul>");
+        }
+
+        if (!proposed)
+        {
+            var rows = shown.Skip(proposal is null ? 1 : 2).Select((one, at) => new Strongest(one.Label + ": " + space.Describe(one.Point), after[at + (proposal is null ? 1 : 2)].Scored, YearsAbove(after[at + (proposal is null ? 1 : 2)]), after[at + (proposal is null ? 1 : 2)].Edge));
+            var five = SweepNonePassed.StrongestOf(rows);
+            var next = new List<string>(SweepNonePassed.FloorsMissed(five));
+
+            if (strongest.Count > 0)
+            {
+                next.AddRange(SweepNonePassed.GridEnds([.. space.Dials.Select(dial => (dial.Name, dial.Labels))], strongest[0]));
+            }
+
+            next.Add(SweepNonePassed.Ideas(["its exits, its market switches and its count a night, which the ideas' run reads on the pullback's base"]));
+            page.Append(SweepNonePassed.Section(five, next, string.Empty, FamilySweepReport.Number));
+        }
+
+        page.Append("</main></body></html>");
+
+        var report = Path.Combine(folder, SweepFolder.ReportFile);
+
+        File.WriteAllText(report, page.ToString());
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(
+            new
+            {
+                index = indexCode,
+                family = PullbackSearch,
+                note,
+                candidates = all.Length,
+                kept = candidates.Length,
+                sampleSize,
+                gridSize,
+                evaluations = search.Evaluations,
+                bestEdge = search.BestEdge,
+                line = search.Line,
+                leaders = leaders.Count,
+                proposed,
+                started,
+                read = shown.Select((one, at) => new { one.Label, setting = space.Describe(one.Point), after = after[at], before = before[at], doubled = doubled[at] }),
+            },
+            SweepRunner.Json));
+
+        output.WriteLine(proposed
+            ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}")
+            : FormattableString.Invariant($"none passed: the provisional base reads {FamilySweepReport.Number(after[0].Edge)} after costs over {after[0].Scored:N0} trades; the report states the strongest settings and what could be tried next"));
+        output.WriteLine("report " + report);
+
+        return 0;
+    }
+
+    // How many of the search's strongest settings a report reads in full.
+    const int StrongestRead = 5;
+
     // The sector heavyweights' design (a) on the index alone: each sector's return its members' mean, a leader's beta
     // read against the index's fund, the members each rebalance reads those clearing the floors and the gate on its
     // session, and each holding's result in per cent after its round trip, its size cut's return paying none.
@@ -388,7 +649,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     public static string Membership(string named, SweepHistoryInputs inputs) =>
         inputs.Survivors > 0
             ? FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone.")
-            : FormattableString.Invariant($"As it stood: the {inputs.Names.Count:N0} names the {named}'s fund held at a quarter end it filed with the SEC from 2019-09-30, each a member from the first snapshot holding it to the last and read among the members of each session, the sessions before the first read on its holdings and a holding matched to no code left out.");
+            : FormattableString.Invariant($"As it stood: the {inputs.Names.Count:N0} names the {named}'s fund held at a quarter end it filed with the SEC from 2018-12-31, its N-Q, its annual report of 2019-03-31 and its N-PORT filings from 2019-09-30, each a member from the first snapshot holding it to the last and read among the members of each session, a name the N-Q holds read from the history's start, a name held on 2019-03-31 and 2019-09-30 read as a member between them, and a holding matched to no code left out.");
 
     // Whether a listing clears the index's floors and the profit gate on its session: the close as it traded, the mean
     // dollar volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume, and the quarters

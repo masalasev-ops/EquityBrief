@@ -601,6 +601,31 @@ public sealed class SweepDesignSearch
         return [.. leaders.OrderByDescending(pair => pair.Edge).ThenBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => SweepSpace.Parse(pair.Key))];
     }
 
+    // The settings read with the highest edges whatever floors they meet, a tie settled by the setting, which a search
+    // proposing nothing brings the operator.
+    public IReadOnlyList<int[]> Strongest(int count)
+    {
+        var read = new Dictionary<string, float>(StringComparer.Ordinal);
+
+        foreach (var (key, summary) in evaluated)
+        {
+            if (summary.HasEdge)
+            {
+                read[key] = summary.Edge;
+            }
+        }
+
+        for (var at = 0; at < sampleSummaries.Count; at++)
+        {
+            if (sampleSummaries[at].HasEdge)
+            {
+                read[SweepSpace.Key(SamplePoint(at))] = sampleSummaries[at].Edge;
+            }
+        }
+
+        return [.. read.OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key, StringComparer.Ordinal).Take(count).Select(pair => SweepSpace.Parse(pair.Key))];
+    }
+
     // Depth along one dial is the single steps that dial can move in one direction, the others held, before the
     // setting leaves the plateau; a setting's depth is the smallest over every dial and both directions. Beyond
     // off and at either end of a two-value dial the grid does not limit depth, and a move that changes no
