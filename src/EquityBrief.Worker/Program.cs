@@ -44,6 +44,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
+    "sweep-index" => await SweepIndexRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -443,6 +444,22 @@ static async Task<int> SweepFamilyRun(string[] args)
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
         Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// A setup family's sweep on the S&P 400 or 600 alone, by hand: the index's members today, survivors only, at the
+// provisional floors and profit gate, every edge after each trade's cost. The work is in `IndexSweepRunner`.
+// see: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
+static async Task<int> SweepIndexRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.IndexSweepRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync(VerbArguments.Value(args, "--index") ?? string.Empty, VerbArguments.Value(args, "--family") ?? string.Empty);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule

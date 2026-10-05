@@ -156,27 +156,46 @@ public sealed class SweepHistory : IComponent
     // 400 and 600 as a members pull stored them beside it, each read as a member on every session, a name the S&P 500
     // held at some point read over its spans and every session besides, and one it never held marked a survivor.
     // see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
-    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default, bool wider = false)
+    //
+    // Given one wider index alone, the history is that index's members today as a members pull stored them, each a
+    // survivor read as a member on every session, and none of the S&P 500's: the sweeps of each index's own rules read it.
+    // see: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
+    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default, bool wider = false, string? index = null)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));
         await connection.OpenAsync(cancellation);
 
         var spans = new Dictionary<string, List<(DateOnly?, DateOnly?)>>(StringComparer.Ordinal);
 
-        await foreach (var row in RowsAsync(connection, "SELECT ticker, joined, \"left\" FROM membership WHERE index_code = $index ORDER BY ticker;", [("$index", Index)], cancellation))
+        if (index is null)
         {
-            var ticker = row.GetString(0);
-
-            if (!spans.TryGetValue(ticker, out var held))
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, joined, \"left\" FROM membership WHERE index_code = $index ORDER BY ticker;", [("$index", Index)], cancellation))
             {
-                spans[ticker] = held = [];
-            }
+                var ticker = row.GetString(0);
 
-            held.Add((row.IsDBNull(1) ? null : Date(row.GetString(1)), row.IsDBNull(2) ? null : Date(row.GetString(2))));
+                if (!spans.TryGetValue(ticker, out var held))
+                {
+                    spans[ticker] = held = [];
+                }
+
+                held.Add((row.IsDBNull(1) ? null : Date(row.GetString(1)), row.IsDBNull(2) ? null : Date(row.GetString(2))));
+            }
         }
 
         var survivors = new HashSet<string>(StringComparer.Ordinal);
         var widerMembers = 0;
+
+        if (index is not null && await TableHeldAsync(connection, "pulled_member", cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT DISTINCT ticker FROM pulled_member WHERE index_code = $index ORDER BY ticker;", [("$index", index)], cancellation))
+            {
+                var ticker = row.GetString(0);
+
+                widerMembers++;
+                spans[ticker] = [(null, null)];
+                survivors.Add(ticker);
+            }
+        }
 
         if (wider && await TableHeldAsync(connection, "pulled_member", cancellation))
         {
@@ -318,6 +337,39 @@ public sealed class SweepHistory : IComponent
         }
 
         return HoldingSpans.From(periods, held, today);
+    }
+
+    // Each pulled company's quarters of income filed by the history's end, none where the store holds no table for them.
+    // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>> IncomeAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var income = new Dictionary<string, List<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+
+        if (!await TableHeldAsync(connection, "pulled_income", cancellation))
+        {
+            return new Dictionary<string, IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>>(StringComparer.Ordinal);
+        }
+
+        static decimal? Figure(SqliteDataReader row, int at) => row.IsDBNull(at) ? null : Money.FromStorage(row.GetString(at));
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT ticker, period_end, filing_date, net_income, operating_income, interest_expense FROM pulled_income WHERE filing_date <= $through;",
+            [("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
+            cancellation))
+        {
+            if (!income.TryGetValue(row.GetString(0), out var held))
+            {
+                income[row.GetString(0)] = held = [];
+            }
+
+            held.Add(new EquityBrief.Core.Readings.FiledIncome(Date(row.GetString(1)), Date(row.GetString(2)), Figure(row, 3), Figure(row, 4), Figure(row, 5)));
+        }
+
+        return income.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<EquityBrief.Core.Readings.FiledIncome>)pair.Value, StringComparer.Ordinal);
     }
 
     // Whether the store holds a table, so a store migrated before it read none rather than failing.
