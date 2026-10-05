@@ -11,6 +11,15 @@ using EquityBrief.Core.Time;
 
 namespace EquityBrief.Worker.Sweep;
 
+// The quality a 400 or 600 rule may hold a member to: none, the profit gate, or the profit gate and the interest cover.
+// The fourth level, the state as well, reads quarters the pulled history does not hold as they stood, and is not swept.
+public enum IndexQuality
+{
+    Off,
+    Profit,
+    Cover,
+}
+
 // A setup family's sweep on the S&P 400 or the S&P 600 alone, by hand: the history read once from the live store,
 // read-only, over the index's members today, each read as a member on every session, so every figure holds survivors
 // only; the index's own strength, market check and benchmark; a listing kept where its close clears $5, its mean dollar
@@ -548,15 +557,28 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         int BarOf(int name, int session) => Array.BinarySearch(series[name].SessionAt, session);
 
         var (members, clearing) = (0L, 0L);
-        var filtered = new Dictionary<int, HeavyweightSession>();
+        var filtered = new Dictionary<(IndexQuality Quality, decimal Floors), Dictionary<int, HeavyweightSession>>();
 
-        foreach (var (session, one) in sessions)
+        string? SectorOf(int name) => companies.Companies.GetValueOrDefault(series[name].Name.Ticker).Sector;
+
+        foreach (var variant in HeavyweightVariants)
         {
-            var kept = one.Members.Where(candidate => BarOf(candidate.Name, session) is var bar && bar >= 0 && Clears(indexCode, series[candidate.Name], bar, income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? [])).ToArray();
+            var bySession = new Dictionary<int, HeavyweightSession>();
 
-            members += one.Members.Count;
-            clearing += kept.Length;
-            filtered[session] = one with { Members = kept };
+            foreach (var (session, one) in sessions)
+            {
+                var kept = one.Members.Where(candidate => BarOf(candidate.Name, session) is var bar && bar >= 0 && Clears(indexCode, series[candidate.Name], bar, income.GetValueOrDefault(series[candidate.Name].Name.Ticker) ?? [], variant.Quality, variant.Floors, SectorOf(candidate.Name))).ToArray();
+
+                if (variant == (IndexQuality.Profit, 1m))
+                {
+                    members += one.Members.Count;
+                    clearing += kept.Length;
+                }
+
+                bySession[session] = one with { Members = kept };
+            }
+
+            filtered[variant] = bySession;
         }
 
         HeavyweightTrade Costed(HeavyweightTrade trade, int multiple)
@@ -578,36 +600,46 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         }
 
         var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
-        var settings = HeavyweightSweep.Settings.Where(setting => setting.Sector == HeavyweightSectorReturn.Members).ToArray();
+        // Design (a)'s grid rebalances monthly, each setting walked at each quality and each floor.
+        var settings = HeavyweightSweep.Settings.Where(setting => setting.Sector == HeavyweightSectorReturn.Members && setting.Period == HeavyweightPeriod.Month).ToArray();
         var every = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();
         var figures = new System.Collections.Concurrent.ConcurrentDictionary<string, (HeavyweightFigures Before, HeavyweightFigures After, HeavyweightFigures Doubled)>(StringComparer.Ordinal);
 
         double? EveryOnce(int from, int to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To));
 
-        output.WriteLine(FormattableString.Invariant($"walking {settings.Length} setting(s) over {clearing:N0} of {members:N0} member-sessions clearing the floors and the gate"));
+        output.WriteLine(FormattableString.Invariant($"walking {settings.Length} setting(s) at each of {HeavyweightVariants.Count} qualities and floors, {settings.Length * HeavyweightVariants.Count} in all, {clearing:N0} of {members:N0} member-sessions clearing the provisional floors and the gate"));
 
         Parallel.ForEach(
-            settings.GroupBy(setting => (setting.Largest, setting.LookBack, setting.Leaders, setting.HighBeta)),
-            group =>
+            from variant in HeavyweightVariants
+            from grouped in settings.GroupBy(setting => (setting.Largest, setting.LookBack, setting.Leaders, setting.HighBeta))
+            select (Variant: variant, Group: grouped),
+            pair =>
             {
-                var rebalances = read.ToDictionary(session => session, session => HeavyweightSweep.Read(filtered[session], group.First(), names));
+                var prefix = VariantKey(pair.Variant.Quality, pair.Variant.Floors);
+                var rebalances = months.ToDictionary(session => session, session => HeavyweightSweep.Read(filtered[pair.Variant][session], pair.Group.First(), names));
 
-                foreach (var setting in group)
+                foreach (var setting in pair.Group)
                 {
-                    var period = setting.Period == HeavyweightPeriod.Month ? months : weeks;
-                    var trades = HeavyweightSweep.Walk(tape, period.ToDictionary(session => session, session => rebalances[session]), setting.Exit, EveryOnce);
+                    var trades = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, EveryOnce);
+                    var key = prefix + setting.Key;
 
-                    figures[setting.Key] = (
-                        HeavyweightSweep.Figures(setting.Key, trades),
-                        HeavyweightSweep.Figures(setting.Key, [.. trades.Select(trade => Costed(trade, 1))]),
-                        HeavyweightSweep.Figures(setting.Key, [.. trades.Select(trade => Costed(trade, TradeCost.Doubled))]));
+                    figures[key] = (
+                        HeavyweightSweep.Figures(key, trades),
+                        HeavyweightSweep.Figures(key, [.. trades.Select(trade => Costed(trade, 1))]),
+                        HeavyweightSweep.Figures(key, [.. trades.Select(trade => Costed(trade, TradeCost.Doubled))]));
                 }
             });
 
-        var after = settings.Select(setting => (setting, figures[setting.Key].After)).ToArray();
-        var proposal = HeavyweightSweep.Propose(after);
-        var provisional = (HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members }).Key;
-        var note = FormattableString.Invariant($"{Membership(named, inputs)} Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. A member is read by a rebalance only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {clearing:N0} of {members:N0} member-sessions. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
+        // Each variant's own proposal, its neighbours read within it, and the stronger of them after costs kept.
+        var after = HeavyweightVariants
+            .SelectMany(variant => settings.Select(setting => (setting, figures[VariantKey(variant.Quality, variant.Floors) + setting.Key].After)))
+            .ToArray();
+        var proposals = HeavyweightVariants
+            .Select(variant => HeavyweightSweep.Propose([.. settings.Select(setting => (setting, figures[VariantKey(variant.Quality, variant.Floors) + setting.Key].After))]))
+            .ToArray();
+        var proposal = proposals.Where(one => one.Proposed is not null).OrderByDescending(one => one.Proposed!.Edge).FirstOrDefault() ?? proposals[0];
+        var provisional = VariantKey(IndexQuality.Profit, 1m) + (HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members }).Key;
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. Every setting rebalances monthly and is read at three qualities, none, the profit gate, and the profit gate with the interest cover, the state the fourth level adds not read since the history holds no quarters as they stood for it, and at the index's dollar volume floor once and twice, a member read by a rebalance only where its close was at least $5: at the provisional floors and gate {clearing:N0} of {members:N0} member-sessions clear. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
 
         static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
 
@@ -617,10 +649,13 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         page.Append(proposal.Proposed is { } proposed
             ? $"<p>Proposed: {WebUtility.HtmlEncode(proposed.Key)}.</p>"
             : "<p>No setting meets the floors after costs.</p>");
-        page.Append(FormattableString.Invariant($"<p>{after.Count(one => one.After.MeetsFloors)} of {settings.Length} settings meet the floors, where luck alone passes about {HeavyweightSweep.Luck(settings.Length):0} with no effect at all.</p>"));
+        page.Append(FormattableString.Invariant($"<p>{after.Count(one => one.After.MeetsFloors)} of {after.Length} settings meet the floors, where luck alone passes about {HeavyweightSweep.Luck(after.Length):0} with no effect at all. Each quality and floor's own proposal: {string.Join("; ", HeavyweightVariants.Select((variant, at) => VariantKey(variant.Quality, variant.Floors).TrimEnd('|') + " " + (proposals[at].Proposed is { } own ? Points(own.Edge) + " points" : "none")))}.</p>"));
         page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Holdings</th><th>Edge before costs, points</th><th>After</th><th>At double</th><th>Years above nothing after</th><th>Without the five largest</th><th>Error</th></tr></thead><tbody>");
 
-        foreach (var key in new[] { provisional }.Concat(after.OrderByDescending(one => one.After.Edge ?? double.MinValue).Take(10).Select(one => one.setting.Key)).Distinct(StringComparer.Ordinal))
+        foreach (var key in new[] { provisional }
+            .Concat(proposals.Where(one => one.Proposed is not null).Select(one => one.Proposed!.Key))
+            .Concat(after.OrderByDescending(one => one.After.Edge ?? double.MinValue).Take(10).Select(one => one.After.Key))
+            .Distinct(StringComparer.Ordinal))
         {
             var (shownBefore, shownAfter, shownDoubled) = figures[key];
 
@@ -632,7 +667,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var report = Path.Combine(folder, SweepFolder.ReportFile);
 
         File.WriteAllText(report, page.ToString());
-        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = settings.Select(setting => new { setting.Key, figures[setting.Key].Before, figures[setting.Key].After, figures[setting.Key].Doubled }) }, SweepRunner.Json));
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) }, SweepRunner.Json));
 
         var (firstBefore, firstAfter, firstDoubled) = figures[provisional];
 
@@ -651,19 +686,36 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
             ? FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone.")
             : FormattableString.Invariant($"As it stood: the {inputs.Names.Count:N0} names the {named}'s fund held at a quarter end it filed with the SEC from 2018-12-31, its N-Q, its annual report of 2019-03-31 and its N-PORT filings from 2019-09-30, each a member from the first snapshot holding it to the last and read among the members of each session, a name the N-Q holds read from the history's start, a name held on 2019-03-31 and 2019-09-30 read as a member between them, and a holding matched to no code left out.");
 
-    // Whether a listing clears the index's floors and the profit gate on its session: the close as it traded, the mean
-    // dollar volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume, and the quarters
-    // filed before it.
-    public static bool Clears(string indexCode, SweepSeries series, int bar, IReadOnlyList<FiledIncome> income)
+    // Whether a listing clears the index's floors and the quality on its session: the close as it traded, the mean dollar
+    // volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume against the index's
+    // floor at a multiple of it, and the quarters filed before it, the profit gate at the provisional quality.
+    public static bool Clears(string indexCode, SweepSeries series, int bar, IReadOnlyList<FiledIncome> income, IndexQuality quality = IndexQuality.Profit, decimal floors = 1m, string? sector = null)
     {
         var bars = series.Bars;
         var held = bars[bar];
         var traded = held.RawClose > 0m ? held.RawClose : held.Close;
         var window = bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(one => (one.Close, one.Volume)).ToArray();
 
-        return MemberReadings.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window))
-            && MemberReadings.Profit(income, held.Session);
+        return MemberReadings.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window) / floors)
+            && quality switch
+            {
+                IndexQuality.Off => true,
+                IndexQuality.Profit => MemberReadings.Profit(income, held.Session),
+                _ => MemberReadings.Profit(income, held.Session) && MemberReadings.Coverage(income, held.Session, sector),
+            };
     }
+
+    // The quality levels and the multiples of the index's dollar volume floor the heavyweights' design (a) is swept over.
+    public static IReadOnlyList<(IndexQuality Quality, decimal Floors)> HeavyweightVariants { get; } =
+    [
+        .. from quality in new[] { IndexQuality.Off, IndexQuality.Profit, IndexQuality.Cover }
+           from floors in new[] { 1m, 2m }
+           select (quality, floors),
+    ];
+
+    public static string VariantKey(IndexQuality quality, decimal floors) =>
+        "quality=" + quality switch { IndexQuality.Off => "off", IndexQuality.Profit => "profit", _ => "profit and cover" }
+        + FormattableString.Invariant($"|floors={floors:0}x|");
 
     // A kept trade's round trip in multiples of its risk at a multiple of the table, its company valued on the listing's
     // session and its prices read as they traded for their bands, the sale at the price its result puts it.
