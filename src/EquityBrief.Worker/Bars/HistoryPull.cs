@@ -1146,16 +1146,21 @@ public sealed class HistoryPull(
     // holdings as the archive lists them and the two filings before the first public one, the N-Q for the quarter to
     // 2018-12-31 and the annual report for the year to 2019-03-31, each read at the archive's pace, and the provider's
     // listed and delisted symbols, one request a list; each holding of common stock is stored with the provider's code it
-    // matched by ISIN, by name or by neither, and each snapshot with its quarter's end and how many holdings it filed. A
-    // match by name is kept only where its code traded at the quarter's end, read off a pulled bar in the days to it or,
-    // where the store holds none and the provider's prices are handed in, off the provider's own daily prices for those
-    // days, asked once a code a quarter. A quarter an earlier pull stored is matched again, each holding kept as first
-    // stored and its code and key changed where the rule as it stands reads another. A filing that cannot be read or is
-    // for another series is named and the others stored; a filing list or a symbol list that cannot be read stores
-    // nothing and says why.
+    // matched by ISIN, by name, by a code its fund held by ISIN within a year or by none, and each snapshot with its
+    // quarter's end and how many holdings it filed. A match by name is kept only where its code traded at the quarter's
+    // end, read off a pulled bar in the days to it or, where the store holds none and the provider's prices are handed in,
+    // off the provider's own daily prices for those days, asked once a code a quarter. Every code a holding matched is
+    // then read over the quarters it matched and kept only where its closes move in step with the fund's values a share,
+    // the holding's codes by name read in place of one that does not; and a holding still matched to none at two quarters
+    // or more is read against the codes its fund held by ISIN within a year. A quarter an earlier pull stored is matched
+    // again, each holding kept as first stored and its code and key changed where the rule as it stands reads another. A
+    // filing that cannot be read or is for another series is named and the others stored; a filing list or a symbol list
+    // that cannot be read stores nothing and says why.
     // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
     // see: A holding matched by name is kept only where its code traded at the quarter's end
     // see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31
+    // see: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+    // see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
     public static async Task<HistoryHoldingOutcome> PullHoldingsAsync(
         IFundSnapshotFeed feed,
         ISymbolListFeed symbols,
@@ -1271,104 +1276,261 @@ public sealed class HistoryPull(
             matcher = new HoldingMatcher(listed, filed);
         }
 
-        var (stored, equity, byIsin, byName, between, again, asked, widely) = (0, 0, 0, 0, 0, 0, 0, 0);
+        var (stored, equity, byIsin, byName, between, again, asked, widely, byHeld) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
         var unmatched = new List<string>();
         var unanswered = new List<string>();
         var pricedOut = new List<string>();
+        var notInStep = new List<string>();
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
         if (refused is null && matcher is not null)
         {
-            foreach (var (filing, snapshot) in snapshots.OrderBy(one => one.Snapshot.Period))
+            var closes = new Dictionary<(string Code, DateOnly Quarter), QuarterEndClose?>();
+            var askedOf = new HashSet<(string Code, DateOnly Quarter)>();
+
+            // A code's close on its newest pulled session in the days to a quarter's end, with the splits filed after that
+            // session undone beside it, or the provider's own where it was asked; none where neither holds one.
+            QuarterEndClose? CloseOn(string code, DateOnly quarter)
             {
-                var held = snapshot.Equity
-                    .GroupBy(holding => FundSnapshots.IsinOf(holding) ?? holding.Cusip ?? holding.Name, StringComparer.Ordinal)
-                    .Select(group => (Key: group.Key, Holding: group.First()))
-                    .ToArray();
-                var closes = new Dictionary<string, QuarterEndClose?>(StringComparer.Ordinal);
-                var askedOf = new HashSet<string>(StringComparer.Ordinal);
-                var period = snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-                // A code's close on its newest pulled session in the days to the quarter's end, with the splits filed
-                // after that session undone beside it, and none where it holds no pulled bar in those days.
-                QuarterEndClose? CloseOn(string code)
+                if (closes.TryGetValue((code, quarter), out var known))
                 {
-                    if (closes.TryGetValue(code, out var known))
-                    {
-                        return known;
-                    }
-
-                    QuarterEndClose? close = null;
-
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.CommandText = PulledCloseNear;
-                        command.Parameters.AddWithValue("$ticker", code);
-                        command.Parameters.AddWithValue("$from", snapshot.Period.AddDays(-SnapshotSessionDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                        command.Parameters.AddWithValue("$to", period);
-
-                        using var row = command.ExecuteReader();
-
-                        if (row.Read())
-                        {
-                            var sent = decimal.Parse(row.GetString(0), CultureInfo.InvariantCulture);
-                            var session = row.GetString(1);
-                            var factor = 1m;
-
-                            using var splits = connection.CreateCommand();
-                            splits.CommandText = PulledSplitsAfter;
-                            splits.Parameters.AddWithValue("$ticker", code);
-                            splits.Parameters.AddWithValue("$session", session);
-
-                            using var split = splits.ExecuteReader();
-
-                            while (split.Read())
-                            {
-                                factor *= decimal.Parse(split.GetString(0), CultureInfo.InvariantCulture) / decimal.Parse(split.GetString(1), CultureInfo.InvariantCulture);
-                            }
-
-                            close = new QuarterEndClose(sent, factor == 1m ? null : sent * factor);
-                        }
-                    }
-
-                    closes[code] = close;
-
-                    return close;
+                    return known;
                 }
 
-                // A code a holding's name could be read as that holds no pulled bar in the days to the quarter's end, asked
-                // of the provider once a quarter: its close on the newest session it sent in those days, none where it sent
-                // none.
-                async Task AskAsync(string code)
+                QuarterEndClose? close = null;
+
+                using (var command = connection.CreateCommand())
                 {
+                    command.CommandText = PulledCloseNear;
+                    command.Parameters.AddWithValue("$ticker", code);
+                    command.Parameters.AddWithValue("$from", quarter.AddDays(-SnapshotSessionDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    command.Parameters.AddWithValue("$to", quarter.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                    using var row = command.ExecuteReader();
+
+                    if (row.Read())
+                    {
+                        var sent = decimal.Parse(row.GetString(0), CultureInfo.InvariantCulture);
+                        var session = row.GetString(1);
+                        var factor = 1m;
+
+                        using var splits = connection.CreateCommand();
+                        splits.CommandText = PulledSplitsAfter;
+                        splits.Parameters.AddWithValue("$ticker", code);
+                        splits.Parameters.AddWithValue("$session", session);
+
+                        using var split = splits.ExecuteReader();
+
+                        while (split.Read())
+                        {
+                            factor *= decimal.Parse(split.GetString(0), CultureInfo.InvariantCulture) / decimal.Parse(split.GetString(1), CultureInfo.InvariantCulture);
+                        }
+
+                        close = new QuarterEndClose(sent, factor == 1m ? null : sent * factor);
+                    }
+                }
+
+                closes[(code, quarter)] = close;
+
+                return close;
+            }
+
+            // Every code a holding's name could be read as that holds no pulled bar in the days to a quarter's end, asked of
+            // the provider once a quarter: its close on the newest session it sent in those days, none where it sent none.
+            async Task AskAboutAsync(IEnumerable<string> codes, DateOnly quarter)
+            {
+                foreach (var code in codes)
+                {
+                    if (prices is null || CloseOn(code, quarter) is not null || !askedOf.Add((code, quarter)))
+                    {
+                        continue;
+                    }
+
                     asked++;
 
                     try
                     {
-                        var answered = await prices!.BarsAsync(code, snapshot.Period.AddDays(-SnapshotSessionDays), snapshot.Period, cancellation);
+                        var answered = await prices.BarsAsync(code, quarter.AddDays(-SnapshotSessionDays), quarter, cancellation);
 
-                        closes[code] = answered.Count == 0 ? null : new QuarterEndClose(answered.MaxBy(bar => bar.SessionDate)!.RawClose);
+                        closes[(code, quarter)] = answered.Count == 0 ? null : new QuarterEndClose(answered.MaxBy(bar => bar.SessionDate)!.RawClose);
                     }
                     catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
                     {
-                        closes[code] = null;
-                        unanswered.Add($"{code} on {period}: {failure.Message}");
+                        closes[(code, quarter)] = null;
+                        unanswered.Add(FormattableString.Invariant($"{code} on {quarter:yyyy-MM-dd}: {failure.Message}"));
                     }
                 }
+            }
 
-                // Every code a holding's name could be read as that holds no pulled bar near the quarter's end, asked once.
-                async Task AskAboutAsync(IReadOnlyList<string> codes)
+            // First each quarter's holdings, by its ISIN and then by its name at that quarter's end, as the matcher reads it.
+            var quarters = new List<HeldQuarter>();
+
+            foreach (var (filing, snapshot) in snapshots.OrderBy(one => one.Snapshot.Period))
+            {
+                var holdings = snapshot.Equity
+                    .GroupBy(holding => FundSnapshots.IsinOf(holding) ?? holding.Cusip ?? holding.Name, StringComparer.Ordinal)
+                    .Select(group => (Key: group.Key, Holding: group.First()))
+                    .ToArray();
+
+                await using (var insert = connection.CreateCommand())
                 {
-                    foreach (var code in codes)
+                    insert.CommandText = InsertSnapshot;
+                    insert.Parameters.AddWithValue("$index_code", indexCode);
+                    insert.Parameters.AddWithValue("$period", snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    insert.Parameters.AddWithValue("$accession", snapshot.Accession);
+                    insert.Parameters.AddWithValue("$filed", filing.Filed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    insert.Parameters.AddWithValue("$holdings", snapshot.Holdings.Count);
+                    insert.Parameters.AddWithValue("$equity", holdings.Length);
+                    insert.Parameters.AddWithValue("$pull", runId);
+
+                    stored += await insert.ExecuteNonQueryAsync(cancellation);
+                }
+
+                foreach (var (key, holding) in holdings)
+                {
+                    await AskAboutAsync(matcher.NameCandidates(holding), snapshot.Period);
+
+                    var match = matcher.Match(holding, code => CloseOn(code, snapshot.Period));
+
+                    // A name nothing matched is read again more widely before it is left matched to none.
+                    if (match.Ticker is null && match.By is null)
                     {
-                        if (prices is not null && CloseOn(code) is null && askedOf.Add(code))
+                        await AskAboutAsync(matcher.NameCandidates(holding, wider: true), snapshot.Period);
+
+                        match = matcher.Match(holding, code => CloseOn(code, snapshot.Period), wider: true);
+                    }
+
+                    quarters.Add(new HeldQuarter(snapshot.Period, key, holding) { Match = match });
+                }
+            }
+
+            // Whether a code's closes move in step with a holding's values a share over the quarters given.
+            bool? InStep(string code, IEnumerable<HeldQuarter> over) =>
+                HoldingMatcher.Tracks(
+                [
+                    .. over
+                        .Select(one => (Price: one.Holding.ValuePerShare, Close: CloseOn(code, one.Period)))
+                        .Where(pair => pair.Price is not null && pair.Close is not null)
+                        .Select(pair => (pair.Price!.Value, pair.Close!)),
+                ]);
+
+            // Then each holding over every quarter it was held: each code it matched kept only where its closes move in step
+            // with the fund's values a share over the quarters it matched, and matched to none at them where they do not.
+            // see: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+            var byHolding = quarters
+                .GroupBy(one => one.Key, StringComparer.Ordinal)
+                .Select(group => group.OrderBy(one => one.Period).ToArray())
+                .ToArray();
+            var setAside = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+            foreach (var holding in byHolding)
+            {
+                foreach (var code in holding.Select(one => one.Match.Ticker).OfType<string>().Distinct(StringComparer.Ordinal).ToArray())
+                {
+                    var matched = holding.Where(one => one.Match.Ticker == code).ToArray();
+
+                    if (InStep(code, matched) is not false)
+                    {
+                        continue;
+                    }
+
+                    if (!setAside.TryGetValue(holding[0].Key, out var aside))
+                    {
+                        setAside[holding[0].Key] = aside = new HashSet<string>(StringComparer.Ordinal);
+                    }
+
+                    aside.Add(code);
+                    notInStep.Add(FormattableString.Invariant($"{code} for {matched[0].Holding.Name}, {matched.Length} quarter(s)"));
+
+                    foreach (var one in matched)
+                    {
+                        one.Match = new HoldingMatch(null, null, []);
+                    }
+                }
+            }
+
+            // The codes the fund held by ISIN at each quarter end, those not in step set aside.
+            var heldByIsin = quarters
+                .Where(one => one.Match.By == HoldingMatcher.ByIsin && one.Match.Ticker is not null)
+                .GroupBy(one => one.Period)
+                .Select(group => (Quarter: group.Key, Codes: group.Select(one => one.Match.Ticker!).Distinct(StringComparer.Ordinal).ToArray()))
+                .ToArray();
+
+            foreach (var holding in byHolding)
+            {
+                var none = holding.Where(one => one.Match.Ticker is null).ToList();
+                var aside = setAside.GetValueOrDefault(holding[0].Key) ?? [];
+
+                // The quarters it was matched to none at read against its codes by name, a code its ISIN matched that was
+                // not in step set aside, each kept at the quarters it holds a close at where it moves in step over them; a
+                // delisted listing the pulled history holds no close of asked of the provider.
+                foreach (var code in none
+                    .SelectMany(one => matcher.NameCandidates(one.Holding, wider: true, despiteIsin: true))
+                    .Distinct(StringComparer.Ordinal)
+                    .Where(code => !aside.Contains(code))
+                    .Order(StringComparer.Ordinal)
+                    .ToArray())
+                {
+                    if (none.Count == 0)
+                    {
+                        break;
+                    }
+
+                    foreach (var one in none)
+                    {
+                        await AskAboutAsync([code], one.Period);
+                    }
+
+                    var priced = none.Where(one => CloseOn(code, one.Period) is not null).ToArray();
+
+                    if (priced.Length > 0 && InStep(code, priced) is true)
+                    {
+                        foreach (var one in priced)
                         {
-                            await AskAsync(code);
+                            one.Match = new HoldingMatch(code, HoldingMatcher.ByName, [code]);
                         }
+
+                        none.RemoveAll(one => one.Match.Ticker is not null);
                     }
                 }
 
+                // Then a company renamed since: a code the fund held by ISIN within a year of a quarter still matched to none,
+                // read off the pulled history alone, kept where its close equals the value a share to the cent at two of
+                // those quarter ends or more and it moves in step over every one it holds a close at.
+                // see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
+                if (none.Count < HoldingMatcher.CentQuarters)
+                {
+                    continue;
+                }
+
+                foreach (var code in heldByIsin
+                    .Where(pair => none.Any(one => Math.Abs(pair.Quarter.DayNumber - one.Period.DayNumber) <= HoldingMatcher.HeldWithinDays))
+                    .SelectMany(pair => pair.Codes)
+                    .Distinct(StringComparer.Ordinal)
+                    .Where(code => !aside.Contains(code))
+                    .Order(StringComparer.Ordinal)
+                    .ToArray())
+                {
+                    var priced = none.Where(one => CloseOn(code, one.Period) is not null).ToArray();
+
+                    if (priced.Count(one => one.Holding.ValuePerShare is { } price && HoldingMatcher.ToTheCent(price, CloseOn(code, one.Period)!)) >= HoldingMatcher.CentQuarters
+                        && InStep(code, priced) is true)
+                    {
+                        foreach (var one in priced)
+                        {
+                            one.Match = new HoldingMatch(code, HoldingMatcher.ByHeld, [code]);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // Each holding then stored, or matched again where an earlier pull stored its quarter.
+            foreach (var group in quarters.GroupBy(one => one.Period))
+            {
+                var period = group.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 var earlier = new Dictionary<string, (string? Ticker, string? By)>(StringComparer.Ordinal);
 
                 await using (var read = connection.CreateCommand())
@@ -1385,47 +1547,22 @@ public sealed class HistoryPull(
                     }
                 }
 
-                await using (var insert = connection.CreateCommand())
+                foreach (var (key, holding, match) in group.Select(one => (one.Key, one.Holding, one.Match)))
                 {
-                    insert.CommandText = InsertSnapshot;
-                    insert.Parameters.AddWithValue("$index_code", indexCode);
-                    insert.Parameters.AddWithValue("$period", snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    insert.Parameters.AddWithValue("$accession", snapshot.Accession);
-                    insert.Parameters.AddWithValue("$filed", filing.Filed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-                    insert.Parameters.AddWithValue("$holdings", snapshot.Holdings.Count);
-                    insert.Parameters.AddWithValue("$equity", held.Length);
-                    insert.Parameters.AddWithValue("$pull", runId);
-
-                    stored += await insert.ExecuteNonQueryAsync(cancellation);
-                }
-
-                foreach (var (key, holding) in held)
-                {
-                    await AskAboutAsync(matcher.NameCandidates(holding));
-
-                    var match = matcher.Match(holding, CloseOn);
-
-                    // A name nothing matched is read again more widely before it is left matched to none.
-                    if (match.Ticker is null && match.By is null)
-                    {
-                        await AskAboutAsync(matcher.NameCandidates(holding, wider: true));
-
-                        match = matcher.Match(holding, CloseOn, wider: true);
-                    }
-
                     equity++;
                     byIsin += match.By == HoldingMatcher.ByIsin ? 1 : 0;
                     byName += match.By == HoldingMatcher.ByName ? 1 : 0;
+                    byHeld += match.By == HoldingMatcher.ByHeld ? 1 : 0;
                     between += match.Between.Count > 1 ? 1 : 0;
                     widely += match.Wider ? 1 : 0;
 
                     if (match.Ticker is null)
                     {
-                        unmatched.Add(FormattableString.Invariant($"{holding.Name} on {snapshot.Period:yyyy-MM-dd}"));
+                        unmatched.Add(FormattableString.Invariant($"{holding.Name} on {group.Key:yyyy-MM-dd}"));
 
                         if (match.PricedOut)
                         {
-                            pricedOut.Add(FormattableString.Invariant($"{holding.Name} on {snapshot.Period:yyyy-MM-dd}"));
+                            pricedOut.Add(FormattableString.Invariant($"{holding.Name} on {group.Key:yyyy-MM-dd}"));
                         }
                     }
 
@@ -1477,7 +1614,7 @@ public sealed class HistoryPull(
             equity,
             byIsin,
             byName,
-            equity - byIsin - byName,
+            equity - byIsin - byName - byHeld,
             between,
             unmatched,
             unread,
@@ -1487,7 +1624,9 @@ public sealed class HistoryPull(
             asked,
             unanswered,
             widely,
-            pricedOut);
+            pricedOut,
+            byHeld,
+            notInStep);
 
         await AppendAsync(
             connection,
@@ -1509,18 +1648,27 @@ public sealed class HistoryPull(
     // A holdings pull in words, as its row and the command state it: the snapshots read and their span, the holdings of
     // common stock and the keys they matched by, those by the wider reading of their names, the holdings an earlier pull
     // stored matched again to another code or to none, the codes asked of the provider whether they traded at a
-    // quarter's end, the holdings whose codes traded only at another price, the holdings matched by neither and the
-    // filings not read, each named.
+    // quarter's end, the holdings whose codes traded only at another price, the codes matched to none where their closes
+    // did not move in step with the fund's values a share, the holdings matched by none and the filings not read, each
+    // named.
     public static string Detail(HistoryHoldingOutcome outcome) =>
         outcome.Refused is { } why
             ? FormattableString.Invariant($"{outcome.Index}: nothing was stored, {why}; {outcome.Requests} request(s)")
-            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone, {outcome.Widely} of them by its wider reading, and {outcome.Unmatched} by neither, {(outcome.PricedOut ?? []).Count} of them because each code its name reads traded at a close more than {HoldingMatcher.ValueTolerance * 100:0}% from the fund's value a share, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
+            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone, {outcome.Widely} of them by its wider reading, {outcome.Held} by a code its fund held by ISIN within a year, and {outcome.Unmatched} by none, {(outcome.PricedOut ?? []).Count} of them because each code its name reads traded at a close the fund's value a share stood more than {HoldingMatcher.ValueTolerance * 100:0}% from, {(outcome.NotInStep ?? []).Count} code(s) matched to none at a holding's quarters because their closes did not move in step with the fund's values a share, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
               + (outcome.Unread.Count == 0 ? string.Empty : "; not read: " + string.Join("; ", outcome.Unread))
+              + ((outcome.NotInStep ?? []).Count == 0 ? string.Empty : "; not in step: " + string.Join("; ", outcome.NotInStep!.Take(HoldingsNamed)) + (outcome.NotInStep!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.NotInStep.Count - HoldingsNamed} more") : string.Empty))
               + ((outcome.PricedOut ?? []).Count == 0 ? string.Empty : "; at another price: " + string.Join("; ", outcome.PricedOut!.Take(HoldingsNamed)) + (outcome.PricedOut!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.PricedOut.Count - HoldingsNamed} more") : string.Empty))
               + ((outcome.Unanswered ?? []).Count == 0 ? string.Empty : "; not answered: " + string.Join("; ", outcome.Unanswered!.Take(HoldingsNamed)) + (outcome.Unanswered!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.Unanswered.Count - HoldingsNamed} more") : string.Empty))
-              + (outcome.UnmatchedNames.Count == 0 ? string.Empty : "; matched by neither: " + string.Join("; ", outcome.UnmatchedNames.Take(HoldingsNamed)) + (outcome.UnmatchedNames.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.UnmatchedNames.Count - HoldingsNamed} more") : string.Empty));
+              + (outcome.UnmatchedNames.Count == 0 ? string.Empty : "; matched by none: " + string.Join("; ", outcome.UnmatchedNames.Take(HoldingsNamed)) + (outcome.UnmatchedNames.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.UnmatchedNames.Count - HoldingsNamed} more") : string.Empty));
 
-    // How many of the holdings matched by neither a pull's row names, the rest counted.
+    // A holding of a quarter and the code the pull matched it to, which its reading across every quarter it was held may
+    // change.
+    sealed record HeldQuarter(DateOnly Period, string Key, FiledHolding Holding)
+    {
+        public required HoldingMatch Match { get; set; }
+    }
+
+    // How many of the holdings matched by none a pull's row names, the rest counted.
     public const int HoldingsNamed = 40;
 
     // How many days before a snapshot's quarter end a code's pulled bar still says it traded then, a quarter's end
@@ -2578,7 +2726,11 @@ public sealed record HistoryHoldingOutcome(
     // The holdings matched by the wider reading of their names, and those left matched to none because every code their
     // names read traded at the quarter's end at a close away from the price the fund valued them at.
     int Widely = 0,
-    IReadOnlyList<string>? PricedOut = null);
+    IReadOnlyList<string>? PricedOut = null,
+    // The holdings matched to a code their fund held by ISIN within a year, and each code matched to none at a holding's
+    // quarters because its closes did not move in step with the fund's values a share, with the holding and its count.
+    int Held = 0,
+    IReadOnlyList<string>? NotInStep = null);
 
 // What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
 // those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.

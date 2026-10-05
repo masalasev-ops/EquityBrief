@@ -38462,3 +38462,45 @@ Verified:   `tools/ci.ps1` green over b1b26cb, the tree main holds at 15bce99 bu
             carrying it, 66 of 66 passing.
 Carried:    the night of 2026-10-05 read the morning after, its index step's rows and time among it; 15.1's third
             pull request; phase 14's sign-off.
+
+### 15.3 - correction: a holding's code kept only where its closes move in step with the fund's values a share, a renamed company matched to the code its fund held by ISIN, and the 5 per cent stated against the close   2026-10-05
+
+Built:      on the operator's rulings (A) and (B) of 2026-10-05, the holdings pull reads each holding across every
+            quarter it was held: every code it matched, by ISIN or by name, kept only where the value a share over
+            the code's close holds within 5 per cent from one quarter end to the next or steps to a level it holds at
+            the next as well, read at one quarter end within 5 per cent there; a code failing it matched to none at
+            those quarters and named on the pull's row, and the holding's codes by name, its ISIN set aside, read in
+            its place under the same test, a delisted listing the pulled history holds no close of asked of the
+            provider once a quarter; and a holding still matched to none at two quarters or more read against the
+            codes its fund held by ISIN within 366 days, off the pulled history alone, matched under the key `held`
+            where one's close equals the value a share to the cent at two of them and it moves in step. The row
+            counts the held matches and names the codes not in step. On the operator's ruling the same day, the name
+            decision's sentence states the 5 per cent against the code's close, as the code reads it, and the
+            corpus's other statements of it with it. Two decisions; sections 7, 13.9 and 18; SCHEMA; the runbook; the
+            roster's row; a remedy file.
+Measured:   over the stored holdings before this rule, read-only by a scratch script outside the repository, the
+            tracking check over each code's quarters as the N-PORT filings value them: of the codes read at two
+            quarter ends or more, the eight wrong-price codes fail it, BBBY_old in both funds; XPO, VGR, ZD, BERY,
+            ENSG and SITC step at a spin-off to a level they hold and pass; every other holds within 1 per cent at
+            every step. What the rule matches over the live store is read when the remedy runs.
+Tests:      FILLED FROM THE RUN: two added, the pull over four constructed quarters of a fund and the tracking check
+            worked by hand, and the holdings pull's own test reading the row's new words.
+Claims:     FILLED FROM THE RUN.
+Pins:       none moved; neither source is among the 45 files the pin lists hold.
+Mutated:    the rule, stated before the run: each property the rulings name, broken alone by hand, filtered to the
+            tests holding it and reverted.
+            M1 every code read as in step: red in the pull's test and the check worked by hand.
+            M2 a step to a level not required to hold after it: red in the check worked by hand, at a wander whose
+            last step happens to hold, which the check gained for this mutation.
+            M3 the codes by name not read in place of one not in step: red in the pull's test, Wander left unmatched.
+            M4 one quarter end equal to the cent enough for a renamed company: red in the pull's test, once Lone's
+            second value was set in step with SPUN's close and a cent from it, the tracking check having refused its
+            first value's code before that and so masked this rule; and red in the holdings pull's own test, whose
+            holdings held one quarter each then match a code at the same price.
+            Results: M1 to M4 each red where stated, each reverted, the tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    `tools/remedies/2026-10-05-15.3-the-holdings-in-step.txt` from main's build after the night of 2026-10-05
+            has finished and on the next day's allowance, its figures, the delisted listings recovered among them, in
+            the remedy's entry; then the four families' searches on both indices again, from the sweeps' build, read
+            family by family and index by index; the freeze of the S&P 600's pullback where it still meets every
+            floor, and anything newly passing brought to the operator.
