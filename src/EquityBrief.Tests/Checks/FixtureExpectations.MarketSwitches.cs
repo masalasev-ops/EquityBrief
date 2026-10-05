@@ -228,9 +228,9 @@ public partial class FixtureExpectations
         var first = await new MarketSeriesFetcher(feed, clock, store.DatabaseFile).RunAsync("night-one");
 
         // Each series asked once, over the 400 days before the session the bars hold: the index first, the VIX, then
-        // the eleven sector funds in their sectors' order.
+        // the eleven sector funds in their sectors' order, and from 15.1 the four index and credit funds.
         Assert.Equal(
-            [MarketCloses.Index, MarketCloses.Vix, "XLC", "XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLK", "XLB", "XLRE", "XLU"],
+            [MarketCloses.Index, MarketCloses.Vix, "XLC", "XLY", "XLP", "XLE", "XLF", "XLV", "XLI", "XLK", "XLB", "XLRE", "XLU", "SPY", "IJH", "IJR", "HYG"],
             MarketSeriesFetcher.Series);
         Assert.Equal([.. MarketSeriesFetcher.Series.Select(name => $"{name} 2025-08-28 2026-10-02")], feed.Asked);
         Assert.Equal(MarketSeriesFetcher.WindowDays, night.DayNumber - new DateOnly(2025, 8, 28).DayNumber);
@@ -240,12 +240,12 @@ public partial class FixtureExpectations
         var funds = MarketSeriesFetcher.Series.Skip(2).ToArray();
         var fundsSentNothing = string.Concat(funds.Select(fund => $"; {fund}: the provider sent no session, so nothing was stored for it"));
 
-        Assert.Equal((3, 13, 12), (first.RowsWritten, first.Requests, first.Refused.Count));
+        Assert.Equal((3, 17, 16), (first.RowsWritten, first.Requests, first.Refused.Count));
         Assert.Equal(
             ["GSPC|2026-09-30|6700|6701|6699|6700|night-one", "GSPC|2026-10-01|6710|6711|6709|6710|night-one", "GSPC|2026-10-02|6720|6721|6719|6720|night-one"],
             FamilyRows(store, "SELECT series, session_date, open, high, low, close, run_id FROM market_bar ORDER BY series, session_date;"));
         Assert.Equal(
-            [$"market-series|ok|3|0|13|through 2026-10-02: GSPC: 3 new of the 3 session(s) sent, 3 held; VIX: nothing was stored for it, the provider answered 404{fundsSentNothing}; 3 session(s) stored, 13 request(s)"],
+            [$"market-series|ok|3|0|17|through 2026-10-02: GSPC: 3 new of the 3 session(s) sent, 3 held; VIX: nothing was stored for it, the provider answered 404{fundsSentNothing}; 3 session(s) stored, 17 request(s)"],
             FamilyRows(store, "SELECT stage, outcome, rows_written, model_calls, network_requests, detail FROM run_log WHERE run_id = 'night-one';"));
 
         // The night after, the provider revises a close it sent and serves the VIX and a fund: the index's sessions keep
@@ -256,7 +256,7 @@ public partial class FixtureExpectations
         var fund = new Dictionary<DateOnly, decimal> { [night.AddDays(-1)] = 200m, [night] = 202m };
         var second = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index, [MarketCloses.Vix] = vix, ["XLK"] = fund }, []), clock, store.DatabaseFile).RunAsync("night-two");
 
-        Assert.Equal((4, 10), (second.RowsWritten, second.Refused.Count));
+        Assert.Equal((4, 14), (second.RowsWritten, second.Refused.Count));
         Assert.Equal(["6710|night-one"], FamilyRows(store, "SELECT close, run_id FROM market_bar WHERE series = 'GSPC' AND session_date = '2026-10-01';"));
         Assert.Equal(["VIX|2|night-two"], FamilyRows(store, "SELECT series, COUNT(*), MIN(run_id) FROM market_bar WHERE series = 'VIX' GROUP BY series;"));
         Assert.StartsWith("through 2026-10-02: GSPC: 0 new of the 3 session(s) sent, 3 held; VIX: 2 new of the 2 session(s) sent, 2 held; XLK: 2 new of the 2 session(s) sent, 2 held", second.Detail, StringComparison.Ordinal);
@@ -287,14 +287,14 @@ public partial class FixtureExpectations
         // writes its row and returns, so the night goes on.
         var slow = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index }, [], [MarketCloses.Vix]), clock, store.DatabaseFile).RunAsync("night-four");
 
-        Assert.Equal((12, 13), (slow.Refused.Count, slow.Requests));
+        Assert.Equal((16, 17), (slow.Refused.Count, slow.Requests));
         Assert.Contains("VIX: the provider did not answer in time on any try, so nothing was stored for it", slow.Detail, StringComparison.Ordinal);
         Assert.Equal(["market-series|ok"], FamilyRows(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'night-four';"));
 
         // And one it answers with no session stores nothing and is named as sending none.
         var sentNone = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index }, []), clock, store.DatabaseFile).RunAsync("night-five");
 
-        Assert.Equal(12, sentNone.Refused.Count);
+        Assert.Equal(16, sentNone.Refused.Count);
         Assert.Contains("VIX: the provider sent no session, so nothing was stored for it", sentNone.Detail, StringComparison.Ordinal);
 
         // The night's session is the newest the bars hold and not the clock's: a run on Wednesday 2026-10-07 over bars
@@ -334,11 +334,11 @@ public partial class FixtureExpectations
 
             var outcome = await new MarketSeriesFetcher(feed, clock, store.DatabaseFile).RunAsync(run);
 
-            // Every series but the VIX served three sessions, the index and the eleven funds each asked as a listing
-            // or under the index exchange as it is filed.
-            Assert.Equal((36, 13), (outcome.RowsWritten, outcome.Requests));
+            // Every series but the VIX served three sessions, the index, the eleven sector funds and the four index and
+            // credit funds each asked as a listing or under the index exchange as it is filed.
+            Assert.Equal((48, 17), (outcome.RowsWritten, outcome.Requests));
             Assert.StartsWith("VIX: nothing was stored for it, its answer could not be read: ", Assert.Single(outcome.Refused), StringComparison.Ordinal);
-            Assert.Equal([$"market-series|ok|36|13"], FamilyRows(store, $"SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = '{run}';"));
+            Assert.Equal([$"market-series|ok|48|17"], FamilyRows(store, $"SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = '{run}';"));
             Assert.Contains("VIX: nothing was stored for it, its answer could not be read: ", FamilyRows(store, $"SELECT detail FROM run_log WHERE run_id = '{run}';").Single(), StringComparison.Ordinal);
             Assert.Equal(
                 [.. MarketSeriesFetcher.Series.Where(series => series != MarketCloses.Vix).Order(StringComparer.Ordinal).Select(series => $"{series}|3")],

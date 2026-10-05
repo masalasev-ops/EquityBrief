@@ -60,8 +60,8 @@ public sealed class Backfill(
     // the index had no bar at all.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
-        SELECT ticker FROM membership
-        WHERE index_code = $index_code AND (""left"" IS NULL OR ""left"" > $session)
+        SELECT DISTINCT ticker FROM membership
+        WHERE " + IndexScope.Condition + @" AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
     ";
 
@@ -103,10 +103,13 @@ public sealed class Backfill(
     // not rest on the instant happening to be unique.
     const string BarCount = "SELECT COUNT(*) FROM bar;";
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members are owed a year as the
+    // index's own are.
     public async Task<BackfillOutcome> RunAsync(
         string indexCode,
         string runId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
         var observedAt = startedAt.ToString("O");
@@ -116,7 +119,7 @@ public sealed class Backfill(
         await using var connection = new SqliteConnection(ConnectionString);
         await connection.OpenAsync(cancellationToken);
 
-        var members = await Read(connection, CurrentMembers, indexCode, cancellationToken, to);
+        var members = await Read(connection, CurrentMembers, indexCode, cancellationToken, to, wider);
         var holding = await Read(connection, TickersHoldingBars, null, cancellationToken);
 
         var owed = members.Except(holding, StringComparer.OrdinalIgnoreCase).ToArray();
@@ -315,14 +318,15 @@ public sealed class Backfill(
         string sql,
         string? indexCode,
         CancellationToken cancellationToken,
-        DateOnly? session = null)
+        DateOnly? session = null,
+        IReadOnlyList<string>? wider = null)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
 
         if (indexCode is not null)
         {
-            command.Parameters.AddWithValue("$index_code", indexCode);
+            IndexScope.Bind(command, indexCode, wider);
         }
 
         if (session is { } on)

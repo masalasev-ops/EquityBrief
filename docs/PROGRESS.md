@@ -37785,3 +37785,68 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    15.1, the nightly 1,500 with provisional rules and a choice of index; phase 14's sign-off, owed by a
             session that committed none of its code; the night of 2026-10-05 read, the books' first rebalance in it.
+
+### 15.1 - the night over the S&P 500, 400 and 600: the 400's and 600's members read from their funds' files, every stage storing what a member needs reading the three, the four funds' series, a wall clock of forty minutes and a deadline of two hours   2026-10-05
+
+Amended:    This checkpoint amends its own done condition: on the operator's order of 2026-10-05 that 15.1 merge
+            that day with the first night over the three indices that night, it lands in two pull requests, the
+            night first and each index's provisional rules and cards second, each with its own entry and its half
+            of the done condition, both halves written into the plan by this commit. This entry is the first.
+Built:      the night reads the S&P 400's and 600's members from IJH's and IJR's holdings files on iShares' own
+            site, one request a fund at no weight on the allowance, beside the S&P 500's from the provider, every
+            row tagged by its index: a fund's stock joins on the night's session, a stock it stops listing leaves
+            on it, more than 8 of the 400's or 12 of the 600's unlisted at once close none, a name the S&P 500
+            holds is read as its member alone, a file that cannot be read keeps its index's members and ends the
+            step partial with why, and a fund's row stores no sector, since the files name GICS's sectors where the
+            S&P 500's rows carry the provider's own and the swing filter reads a ticker's sector off any of its
+            rows. The backfill, the fetch, the corporate actions, the calendar, the quarters and their readings,
+            the news pulse and the close read the three indices' members; the indicators, swings, profiles,
+            levels, moves, facts and rule versions read every name holding bars, as they did; a name's group is
+            read within its own index; the listings, the swing readings, the filter, the families, the books and
+            the ladder read the S&P 500's alone. SPY, IJH, IJR and HYG join the night's series, seventeen, and
+            `history-pull --index-funds` pulls them from 2018. The wall clock is 40 minutes and the deadline two
+            hours: the last four scheduled nights over 503 names reached the close in 580, 616, 640 and 701
+            seconds, about 29 to 35 minutes over three times the names. The close counts each index's members and
+            the Run page draws them beside the time to the close. `members` runs the night's membership and
+            backfill steps alone on a named session, for the remedy. Two decisions superseding two, their
+            citations moved; CLAUDE.md's first hard rule; sections 1, 5, 13, 14, 15.10, 16, 17 and 18, the checks
+            roster's nightly-run row, SCHEMA, the runbook, the guide, and the remedy file.
+Tests:      1850, from 1839: eleven added, the night over the three indices, a night reading one index, a fund's
+            file unread, a name moving between indices, each fund's guard at its figure and one past it on both
+            funds, a fund's file read for its stocks alone, the `members` verb and the four funds' pull.
+Claims:     975, from 973: section 18's row for a fund's file the night cannot read and the Run page's part for
+            each index's members, named beside phase 14's pair after its report.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; the one listed file this tree's code reaches,
+            the store's connection, is unedited, and the ladder builder, in the rule versions' list, is left as it
+            was, so the ladder reads the S&P 500's alone until the cards' half widens it with the remedy its pin
+            owes.
+Mutated:    the rule, stated before the run: each property the night's half of the done condition names broken
+            alone, made by hand over the working tree, filtered to the eleven tests and reverted.
+            N1 no wider index read, the loader's wider list empty: red in eight of the eleven.
+            N2 a file that cannot be read closing every span its index holds: red in the unread file test.
+            N3 a name the S&P 500 holds written under the fund's index: red in the three-index night and the move
+            between indices.
+            N4 every fund's guard read at the S&P 500's 10: red in three of the four guard cases, the 400's held
+            case, the 600's at its figure and the 600's held case.
+            N5 the fetch reading its own index's members alone: red in the three-index night.
+            N6 the close counting no index's members: red in the three-index night.
+            N7 a name's group read across the three indices: red in the three-index night.
+            N8 a swap read as a stock: survived first, a missing property, the test's swap standing on a stock the
+            fund also held so reading swaps changed nothing; IJR's file of 2026-10-01 holds a swap on FG and no FG
+            stock, so the test gained a swap on a name held no other way, then red in the fund's file test.
+            Results: N1 to N8 each red where stated once N8's test was extended, each reverted, and the eleven tests
+            green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: db7f755, over
+            02c21e4, the entry's commit, whose full suite read three tests that still stated thirteen series and the
+            hour's deadline, corrected in db7f755. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1850 of 1850
+            tests ran with none failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and
+            never `data`. `tools/verify-phase.ps1`: 44 tables, 975 claims, 975 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 986 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the
+            roster, 43 carried and 43 passed.
+Carried:    after the merge, `tools/remedies/2026-10-05-15.1-the-three-indices.txt` from main's Release build
+            before the night and 5152 restarted from it; the night of 2026-10-05 read the next morning, its time to
+            the close against 40 minutes and two hours, its rows per index, its requests and weighted calls and the
+            store's growth, in the remedy's entry; 15.1's second half, the cards; the session of 2026-10-02's
+            stored evaluations and the two trades its registered family rules kept, which a night run again for it
+            at 02:51 UTC replaced under code that had moved, put to the operator; phase 14's sign-off.

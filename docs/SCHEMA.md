@@ -131,12 +131,12 @@ Grain: one row per index, ticker and membership span.
 
 | Column | Type | Notes |
 |---|---|---|
-| `index_code` | TEXT | the index this membership is in |
+| `index_code` | TEXT | the index this membership is in: `GSPC`, the S&P 500, whose spans the provider answers, and from 15.1 `MID` and `SML`, the S&P 400 and 600, read from their funds' holdings files |
 | `ticker` | TEXT | |
-| `joined` | TEXT | date, null when the provider carries none |
+| `joined` | TEXT | date, null when the provider carries none; a 400 or 600 span's is the session of the night its fund first listed the name |
 | `left` | TEXT | the date the name stops being a member, null until a leave is announced or the feed stops listing the span. The provider carries a leave before it takes effect, so a name with a date here is still a member on every session before it. A span the feed no longer lists carries the session of the night that found it unlisted |
 | `observed_at` | TEXT | UTC instant of the fetch that recorded this |
-| `sector` | TEXT | the sector the provider last named for this ticker, null where it has named none. After `observed_at` because it was added by an `ALTER TABLE` at 5.1 and SQLite appends, and this file states the order the store has rather than the order that reads best |
+| `sector` | TEXT | the sector the provider last named for this ticker, null where it has named none, and null on every 400 and 600 row, whose fund's file names GICS's sectors where the provider names its own. After `observed_at` because it was added by an `ALTER TABLE` at 5.1 and SQLite appends, and this file states the order the store has rather than the order that reads best |
 | `industry` | TEXT | the industry the provider last named for this ticker, null where it has named none. After `sector` because it was added by an `ALTER TABLE` at 6.9 |
 | `name` | TEXT | the company's name as the provider's span for this ticker states it, null where the span states none. Last because it was added by an `ALTER TABLE` at the 5.1 correction of 2026-09-18 |
 
@@ -145,6 +145,8 @@ Unique on `index_code`, `ticker` and `joined` with the unknown folded to a value
 Kept forever. Without the spans, a name added last month would appear in a sixty-evening window it was never part of.
 
 **A span the feed no longer lists leaves on the session of the night that finds it unlisted, and a screen draws one span a ticker.** The upsert is keyed on the join date, so a span whose start the provider corrects is written as a second row, and the night that writes it closes the first on its session, as it closes the span of a ticker the provider renamed and lists no longer. A span the feed lists again is reopened by the upsert, which writes the feed's leave date over the one the night wrote. A night whose feed stops listing more tickers than the loader closes in one night closes none (see: A ticker the index feed stops listing leaves the index on the night it goes unlisted). The sessions before a re-dated span was closed are covered by both of its rows, so the read surface draws each ticker once, from its current span with the newest `observed_at`, and the nightly stages read every current span and write one row a ticker.
+
+**The S&P 400's and 600's rows are read from their funds' holdings files, which carry today's holdings and no dates** (see: The S&P 400's and 600's members are read each night from their funds' own holdings files). The loader writes them in the same run and under the same instant as the S&P 500's, one request a fund: a stock a file lists for the first time opens a span on the night's session, a stock it lists again keeps the span it opened on, and a span it stops listing closes on the night's session, unless more than 8 of the 400's or 12 of the 600's went unlisted at once, which closes none. A name the S&P 500 holds on the session is not written under a fund's index, since the three indices hold no company in common, so its span there closes as if the file had dropped it. A file that cannot be read changes no row of its index. Each row carries the file's name for the company and no sector (see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched).
 
 **`joined` admits an unknown, and that was forced by the provider rather than chosen.** The live payload carries 822 spans and 145 have no start date, two of them current members: IR and WAB are in tonight's snapshot of 503 and the provider will not say since when. Dropping such a name takes a real member out of the index and out of everything computed from it, and writing a date nobody has is the guess this file refuses elsewhere. The unknown cannot sit in a primary key, because SQLite treats nulls as distinct and a second night would insert a second row rather than conflicting with the first, so the uniqueness moved to an index that folds it. That is the one place a sentinel belongs: inside the index that enforces uniqueness, never in the column a query reads.
 
@@ -184,14 +186,14 @@ Grain: one row per series per session a night stored.
 
 | Column | Type | Notes |
 |---|---|---|
-| `series` | TEXT | `GSPC`, the index itself, `VIX`, or one of the eleven sector funds, `XLB` to `XLY` |
+| `series` | TEXT | `GSPC`, the index itself, `VIX`, one of the eleven sector funds, `XLB` to `XLY`, or from 15.1 one of the index and credit funds, `SPY`, `IJH`, `IJR` and `HYG` |
 | `session_date` | TEXT | date |
 | `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that wrote the row |
 | `run_id` | TEXT | the run id of the night that wrote the row |
 
 Primary key: `series`, `session_date`.
 
-**The index's, the VIX's and the sector funds' daily series as the night fetches them, read by the family evaluator and the heavyweight book** (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, the index and the VIX under its index exchange and each fund as a listing, and inserts each session no night has stored. A session held keeps its first row, but a fund's: the provider adjusts a fund's closes for each dividend it pays, so the fetcher writes a fund's held session again from an answer stating it at another close, the one update this table takes, and a fund's return over a year is read over closes on one basis. The table is kept whole, thirteen rows a session. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads the index's and the VIX's closes on the store's own sessions to the night for the registered rules whose market switch reads them, and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; nothing else reads the table: it is apart from `bar` because no series is a member's, and apart from `pulled_market_bar` because a night reads it.
+**The index's, the VIX's and the sector funds' daily series as the night fetches them, read by the family evaluator and the heavyweight book** (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, the index and the VIX under its index exchange and each fund as a listing, and inserts each session no night has stored. A session held keeps its first row, but a fund's: the provider adjusts a fund's closes for each dividend it pays, so the fetcher writes a fund's held session again from an answer stating it at another close, the one update this table takes, and a fund's return over a year is read over closes on one basis. The table is kept whole, seventeen rows a session from 15.1, when the index and credit funds joined, each a fund whose held session is written again the same way. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads the index's and the VIX's closes on the store's own sessions to the night for the registered rules whose market switch reads them, and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; nothing else reads the table: it is apart from `bar` because no series is a member's, and apart from `pulled_market_bar` because a night reads it.
 
 ### calendar
 Grain: one row per ticker, event date and kind.
@@ -275,7 +277,7 @@ Grain: one row per series per session a market pull or a sector funds pull reach
 
 | Column | Type | Notes |
 |---|---|---|
-| `series` | TEXT | `GSPC`, the index itself, `VIX`, or the ticker of one of the eleven sector funds |
+| `series` | TEXT | `GSPC`, the index itself, `VIX`, the ticker of one of the eleven sector funds, or from 15.1 of one of the index and credit funds |
 | `session_date` | TEXT | date |
 | `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the pull's day |
 | `pull` | TEXT | the run id of the pull that wrote the row |
@@ -284,7 +286,7 @@ Primary key: `series`, `session_date`.
 
 **The index's and the VIX's daily series, read by no night** (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night). The operator's `history-pull --market` asks the provider once a series for the whole span, under its index exchange rather than a listing, and stores every session it sends. Kept apart from `bar` and `pulled_bar` because neither series is a member's, and removed whole with its pull as they are; a second pull inserts only the sessions no earlier pull holds. A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there. The ideas' run reads both series through the sweep history, by hand and never on a night.
 
-**The eleven sector funds' series sit in the same table, from `history-pull --sector-etfs`** (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night). The pull asks the historical endpoint once a fund, under the stock exchange the funds list on, and stores every session sent in the adjusted form a member's bars take, so a fund's return over a span is read as a member's is; a fund refused stores nothing, the others are stored and the pull fails. A fund's series is read by measurements alone, as the index's and the VIX's are.
+**The eleven sector funds' series sit in the same table, from `history-pull --sector-etfs`** (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night). The pull asks the historical endpoint once a fund, under the stock exchange the funds list on, and stores every session sent in the adjusted form a member's bars take, so a fund's return over a span is read as a member's is; a fund refused stores nothing, the others are stored and the pull fails. A fund's series is read by measurements alone, as the index's and the VIX's are. From 15.1 `history-pull --index-funds` pulls SPY's, IJH's, IJR's and HYG's series the same way under a stage of its own, for the readings and the sweeps of each index.
 
 ### pulled_company
 Grain: one row per ticker a companies pull answered.

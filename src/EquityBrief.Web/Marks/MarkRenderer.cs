@@ -435,9 +435,24 @@ public sealed record NightView(
     IReadOnlyList<StepGroupView> Groups,
     IReadOnlyList<NightTry>? Tries = null,
     DateTimeOffset? NextTry = null,
-    string? BuiltFrom = null)
+    string? BuiltFrom = null,
+    IReadOnlyList<IndexMembers>? Members = null)
 {
     public IReadOnlyList<NightTry> TriesMade => Tries ?? [];
+}
+
+// One index's members on a night's session as the night's close counted them, drawn beside the time to the close on a
+// night that read more than one index.
+public sealed record IndexMembers(string Index, int Members)
+{
+    // The name a reader knows each index by.
+    public string Named => Index switch
+    {
+        "GSPC" => "S&P 500",
+        "MID" => "S&P 400",
+        "SML" => "S&P 600",
+        _ => Index,
+    };
 }
 
 // One evening of the list as the Run page's freshness bars draw it: the names it listed and how many of them
@@ -6859,6 +6874,17 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Tile("research spend", SpendVerdict.Money(night.ResearchSpend), "spent on research"));
         region.Append(Tile("steps retried", night.StepsRetried.ToString(Invariant), "steps run again"));
         region.Append("</div>");
+
+        // Each index's members beside the time to the close, on a night that read more than one index, which the
+        // first five nights over the three indices are read on.
+        // owes: The night's time and growth over the three indices read on its first five nights
+        if (night.Members is { Count: > 1 } members)
+        {
+            var named = members.Select(index => Formatted($"{index.Members:N0} of the {index.Named}")).ToArray();
+            var time = night.Seconds is { } seconds ? Formatted($" in {seconds:0} seconds to the close") : string.Empty;
+
+            region.Append(Formatted($"<p class=\"ns-members\" data-members=\"{Escaped(string.Join(", ", members.Select(index => Formatted($"{index.Index} {index.Members}"))))}\">Members read{time}: {Escaped(string.Join(", ", named[..^1]) + " and " + named[^1])}.</p>"));
+        }
 
         region.Append(StepBar(night));
         region.Append("</div>");

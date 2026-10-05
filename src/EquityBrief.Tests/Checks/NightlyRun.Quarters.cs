@@ -65,7 +65,7 @@ public partial class NightlyRun
         step = step[..step.IndexOf("}),", StringComparison.Ordinal)];
 
         Assert.DoesNotContain("night.Token", step, StringComparison.Ordinal);
-        Assert.Contains(".RunAsync(indexCode, runId)", step, StringComparison.Ordinal);
+        Assert.Contains(".RunAsync(indexCode, runId, wider: wider)", step, StringComparison.Ordinal);
     }
 
     [Fact]

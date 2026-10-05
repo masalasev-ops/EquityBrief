@@ -1,0 +1,16 @@
+# The remedy of 15.1 (the night over the S&P 500, 400 and 600), as its PROGRESS entry prints it: the merge adds no
+# migration. The members verb runs the night's membership and backfill steps alone on the session of 2026-10-02, the
+# newest the store holds, reading the S&P 400's and 600's members from their funds' holdings files, one request a fund,
+# and asking each new member for its year, about a thousand requests at a weight of one; it writes no evaluation, no
+# list and no book, so no session's stored results are written again. The quarters fill asks each 400 and 600 member
+# no fetch has stored a company for, about a thousand asks at eleven weighted calls each, each line kept to its quarter
+# of an hour and asking none an earlier line asked, so a line with none owed asks nothing. The index and credit funds'
+# pull asks for SPY's, IJH's, IJR's and HYG's series from 2018, four requests, into the pulled history no night reads.
+# No model call and nothing bought. Run after the merge and before the night, when no night is running.
+members --session 2026-10-02 --live
+quarters --companies --index MID --live
+quarters --companies --index MID --live
+quarters --companies --index SML --live
+quarters --companies --index SML --live
+quarters --companies --index SML --live
+history-pull --index-funds --from 2018-01-01 --live

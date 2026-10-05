@@ -12,14 +12,22 @@ namespace EquityBrief.Worker.Membership;
 // Records tonight's index constituents with join and leave dates, so a name
 // added last month is not shown as present in an older window, and answers which
 // names were members on a past date
-// (see: The universe is the S&P 500, and membership is fetched, not maintained).
+// (see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched).
 //
 // One feed call for the whole index rather than one per name, which is what the
 // nightly path requires (see: The nightly run is arithmetic only).
+//
+// The S&P 400's and 600's members are read beside the night's own index from their funds' holdings files, one file a
+// fund, which carry today's holdings and no dates: a span opens on the first night its fund lists the name, that
+// night's session its join date, and closes on the night the fund stops listing it, so a name moving between indices
+// closes one span and opens another the same night. A file that cannot be read keeps the index's members of the night
+// before and says so on the stage's row.
+// see: The S&P 400's and 600's members are read each night from their funds' own holdings files
 public sealed class MembershipLoader(
     IIndexMembershipFeed feed,
     IClock clock,
-    string databaseFile) : IComponent
+    string databaseFile,
+    IFundHoldingsFeed? funds = null) : IComponent
 {
     // The catalogue row and the matrix row for this component, in its own words.
     // component-access reconciles this against both rows, against SCHEMA's
@@ -101,9 +109,10 @@ public sealed class MembershipLoader(
 
     // Measured from the store rather than counted as the writes went by, which
     // is what SCHEMA requires of this column: a stage's own count of what it
-    // wrote is the stage's opinion.
+    // wrote is the stage's opinion. Every index the run loaded writes under the
+    // one instant.
     const string RowsObservedAt = @"
-        SELECT COUNT(*) FROM membership WHERE index_code = $index_code AND observed_at = $observed_at;
+        SELECT COUNT(*) FROM membership WHERE observed_at = $observed_at;
     ";
 
     // Every span still open on tonight's session, an announced joiner's included,
@@ -116,6 +125,16 @@ public sealed class MembershipLoader(
 
     const string CloseSpan = @"
         UPDATE membership SET ""left"" = $session WHERE rowid = $rowid;
+    ";
+
+    // The night's own index's members on tonight's session, read after its rows are written. The three indices hold
+    // no company in common, so a name a fund's file still lists after it joined the night's own index is read as a
+    // member of that index alone, and its span in the fund's index closes as it would on a night the file dropped it.
+    const string OwnMembers = @"
+        SELECT DISTINCT ticker FROM membership
+        WHERE index_code = $index_code
+          AND (joined IS NULL OR joined <= $session)
+          AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     public const string Stage = "membership";
@@ -132,6 +151,24 @@ public sealed class MembershipLoader(
     // see: A ticker the index feed stops listing leaves the index on the night it goes unlisted
     public const int MostUnlistedInANight = 10;
 
+    // The same guard for the indices read from their funds' files, 2 per cent of each index's members, proposed and
+    // settled by their first year's nights: 8 of the S&P 400's and 12 of the S&P 600's.
+    public const int MostUnlistedFromTheMidCapFile = 8;
+
+    public const int MostUnlistedFromTheSmallCapFile = 12;
+
+    public static int MostUnlistedFor(string indexCode) => indexCode switch
+    {
+        FundHoldings.MidCapIndex => MostUnlistedFromTheMidCapFile,
+        FundHoldings.SmallCapIndex => MostUnlistedFromTheSmallCapFile,
+        _ => MostUnlistedInANight,
+    };
+
+    // The indices a load reads beside the night's own, the funds' feed's, read by every stage computing what each
+    // member needs.
+    public static IReadOnlyList<string> WiderOf(IFundHoldingsFeed? funds, string indexCode) =>
+        [.. (funds?.Indices ?? []).Where(index => !string.Equals(index, indexCode, StringComparison.Ordinal))];
+
     public async Task<int> LoadAsync(
         string indexCode,
         string runId,
@@ -139,66 +176,87 @@ public sealed class MembershipLoader(
     {
         var startedAt = clock.UtcNow;
         var before = feed.Requests;
+        var fundsBefore = funds?.Requests ?? 0;
         var constituents = await feed.ConstituentsAsync(indexCode, cancellationToken);
-        var requests = feed.Requests - before;
         var observedAt = startedAt.ToString("O");
+        var session = Text(clock.SessionDateAt(startedAt));
+
+        // Each wider index's file, or the refusal that kept its members of the night before, asked before the
+        // transaction opens so no write waits on a request.
+        var files = new List<(string Index, FundHoldingsFile? File, string? Refusal)>();
+
+        foreach (var index in WiderOf(funds, indexCode))
+        {
+            try
+            {
+                files.Add((index, await funds!.HoldingsAsync(index, cancellationToken), null));
+            }
+            catch (ProviderRefusal refusal)
+            {
+                files.Add((index, null, refusal.Message));
+            }
+        }
+
+        var requests = feed.Requests - before + ((funds?.Requests ?? 0) - fundsBefore);
 
         await using var connection = new SqliteConnection(ConnectionString);
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
 
-        foreach (var constituent in constituents)
-        {
-            await using var command = connection.CreateCommand();
-            command.CommandText = Upsert;
-            command.Parameters.AddWithValue("$index_code", indexCode);
-            command.Parameters.AddWithValue("$ticker", constituent.Ticker);
-            command.Parameters.AddWithValue("$joined", Text(constituent.Joined) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("$left", Text(constituent.Left) ?? (object)DBNull.Value);
-            command.Parameters.AddWithValue("$sector", (object?)constituent.Sector ?? DBNull.Value);
-            command.Parameters.AddWithValue("$industry", (object?)constituent.Industry ?? DBNull.Value);
-            command.Parameters.AddWithValue("$name", (object?)constituent.Name ?? DBNull.Value);
-            command.Parameters.AddWithValue("$observed_at", observedAt);
+        var (closed, detail, held) = await WriteAsync(connection, indexCode, constituents, session, observedAt, cancellationToken);
+        var own = files.Count == 0 ? [] : await OwnMembersAsync(connection, indexCode, session, cancellationToken);
+        var details = new List<string>();
 
-            await command.ExecuteNonQueryAsync(cancellationToken);
+        if (detail is not null)
+        {
+            details.Add(detail);
         }
 
-        var session = Text(clock.SessionDateAt(startedAt));
-        var listed = constituents.Select(constituent => (constituent.Ticker, Text(constituent.Joined))).ToHashSet();
-        var tickers = constituents.Select(constituent => constituent.Ticker).ToHashSet(StringComparer.Ordinal);
-
-        var unlisted = (await OpenSpansAsync(connection, indexCode, session, cancellationToken))
-            .Where(span => !listed.Contains((span.Ticker, span.Joined)))
-            .OrderBy(span => span.Ticker, StringComparer.Ordinal)
-            .ThenBy(span => span.Joined, StringComparer.Ordinal)
-            .ToArray();
-
-        var gone = unlisted
-            .Select(span => span.Ticker)
-            .Where(ticker => !tickers.Contains(ticker))
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-
-        var redated = unlisted.Where(span => tickers.Contains(span.Ticker)).ToArray();
-        var held = gone.Length > MostUnlistedInANight;
-        var closed = 0;
-
-        if (!held)
+        foreach (var (index, file, refusal) in files)
         {
-            foreach (var span in unlisted)
+            if (file is null)
             {
-                await using var close = connection.CreateCommand();
-                close.CommandText = CloseSpan;
-                close.Parameters.AddWithValue("$session", session);
-                close.Parameters.AddWithValue("$rowid", span.RowId);
+                held = true;
+                details.Add($"{index}: its fund's holdings file could not be read, so its members of the night before are kept: {refusal}");
 
-                closed += await close.ExecuteNonQueryAsync(cancellationToken);
+                continue;
             }
+
+            // A name the fund already lists keeps the span it opened on; a name it lists for the first time opens one
+            // on tonight's session. The file's sector is GICS's, where the S&P 500's rows carry the provider's own
+            // labels, and a reader taking a ticker's sector off any of its rows would mix the two, so a fund's row
+            // stores none and a 400 or 600 member's sector is read from its company.
+            var open = (await OpenSpansAsync(connection, index, session, cancellationToken))
+                .GroupBy(span => span.Ticker, StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(span => span.Joined).OfType<string>().Order(StringComparer.Ordinal).FirstOrDefault(),
+                    StringComparer.Ordinal);
+
+            var shared = file.Holdings.Count(holding => own.Contains(holding.Ticker));
+            var dated = file.Holdings
+                .Where(holding => !own.Contains(holding.Ticker))
+                .Select(holding => new IndexConstituent(
+                    holding.Ticker,
+                    Parse(open.GetValueOrDefault(holding.Ticker) ?? session),
+                    null,
+                    null,
+                    null,
+                    holding.Name))
+                .ToArray();
+
+            var joined = dated.Count(constituent => !open.ContainsKey(constituent.Ticker));
+            var (indexClosed, indexDetail, indexHeld) = await WriteAsync(connection, index, dated, session, observedAt, cancellationToken);
+
+            closed += indexClosed;
+            held |= indexHeld;
+            details.Add(FormattableString.Invariant($"{index}: {dated.Length} member(s) from {file.Fund}'s holdings as of {file.AsOf:yyyy-MM-dd}, {joined} joining on {session}") +
+                (shared == 0 ? string.Empty : FormattableString.Invariant($", {shared} the {indexCode} holds read as its member alone")) +
+                (indexDetail is null ? string.Empty : "; " + indexDetail));
         }
 
         await using var measure = connection.CreateCommand();
         measure.CommandText = RowsObservedAt;
-        measure.Parameters.AddWithValue("$index_code", indexCode);
         measure.Parameters.AddWithValue("$observed_at", observedAt);
 
         var written = Convert.ToInt32(await measure.ExecuteScalarAsync(cancellationToken)) + closed;
@@ -218,13 +276,75 @@ public sealed class MembershipLoader(
         // asserted against. A literal here cannot go wrong today and cannot go
         // right on the night a feed starts paging.
         log.Parameters.AddWithValue("$network_requests", requests);
-        log.Parameters.AddWithValue("$detail", Detail(session, gone, redated, held) ?? (object)DBNull.Value);
+        log.Parameters.AddWithValue("$detail", details.Count == 0 ? DBNull.Value : string.Join("; ", details));
 
         await log.ExecuteNonQueryAsync(cancellationToken);
 
         await transaction.CommitAsync(cancellationToken);
 
         return written;
+    }
+
+    // One index's constituents written and its unlisted spans closed, or none closed where more went unlisted than
+    // a night closes for that index.
+    async Task<(int Closed, string? Detail, bool Held)> WriteAsync(
+        SqliteConnection connection,
+        string indexCode,
+        IReadOnlyList<IndexConstituent> constituents,
+        string session,
+        string observedAt,
+        CancellationToken cancellationToken)
+    {
+        foreach (var constituent in constituents)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = Upsert;
+            command.Parameters.AddWithValue("$index_code", indexCode);
+            command.Parameters.AddWithValue("$ticker", constituent.Ticker);
+            command.Parameters.AddWithValue("$joined", Text(constituent.Joined) ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$left", Text(constituent.Left) ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("$sector", (object?)constituent.Sector ?? DBNull.Value);
+            command.Parameters.AddWithValue("$industry", (object?)constituent.Industry ?? DBNull.Value);
+            command.Parameters.AddWithValue("$name", (object?)constituent.Name ?? DBNull.Value);
+            command.Parameters.AddWithValue("$observed_at", observedAt);
+
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        var listed = constituents.Select(constituent => (constituent.Ticker, Text(constituent.Joined))).ToHashSet();
+        var tickers = constituents.Select(constituent => constituent.Ticker).ToHashSet(StringComparer.Ordinal);
+
+        var unlisted = (await OpenSpansAsync(connection, indexCode, session, cancellationToken))
+            .Where(span => !listed.Contains((span.Ticker, span.Joined)))
+            .OrderBy(span => span.Ticker, StringComparer.Ordinal)
+            .ThenBy(span => span.Joined, StringComparer.Ordinal)
+            .ToArray();
+
+        var gone = unlisted
+            .Select(span => span.Ticker)
+            .Where(ticker => !tickers.Contains(ticker))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var redated = unlisted.Where(span => tickers.Contains(span.Ticker)).ToArray();
+        var most = MostUnlistedFor(indexCode);
+        var held = gone.Length > most;
+        var closed = 0;
+
+        if (!held)
+        {
+            foreach (var span in unlisted)
+            {
+                await using var close = connection.CreateCommand();
+                close.CommandText = CloseSpan;
+                close.Parameters.AddWithValue("$session", session);
+                close.Parameters.AddWithValue("$rowid", span.RowId);
+
+                closed += await close.ExecuteNonQueryAsync(cancellationToken);
+            }
+        }
+
+        return (closed, Detail(session, gone, redated, held, most), held);
     }
 
     public async Task<IReadOnlyList<string>> MembersOnAsync(
@@ -253,6 +373,28 @@ public sealed class MembershipLoader(
 
     sealed record Span(long RowId, string Ticker, string? Joined);
 
+    static async Task<HashSet<string>> OwnMembersAsync(
+        SqliteConnection connection,
+        string indexCode,
+        string session,
+        CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = OwnMembers;
+        command.Parameters.AddWithValue("$index_code", indexCode);
+        command.Parameters.AddWithValue("$session", session);
+
+        var members = new HashSet<string>(StringComparer.Ordinal);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            members.Add(reader.GetString(0));
+        }
+
+        return members;
+    }
+
     static async Task<IReadOnlyList<Span>> OpenSpansAsync(
         SqliteConnection connection,
         string indexCode,
@@ -275,11 +417,11 @@ public sealed class MembershipLoader(
         return spans;
     }
 
-    static string? Detail(string session, IReadOnlyList<string> gone, IReadOnlyList<Span> redated, bool held)
+    static string? Detail(string session, IReadOnlyList<string> gone, IReadOnlyList<Span> redated, bool held, int most)
     {
         if (held)
         {
-            return $"{gone.Count} ticker(s) the feed no longer lists, more than the {MostUnlistedInANight} a night closes, " +
+            return $"{gone.Count} ticker(s) the feed no longer lists, more than the {most} a night closes, " +
                 $"so none was closed: {string.Join(", ", gone)}";
         }
 
@@ -307,4 +449,6 @@ public sealed class MembershipLoader(
     static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static string? Text(DateOnly? date) => date is { } value ? Text(value) : null;
+
+    static DateOnly Parse(string date) => DateOnly.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 }

@@ -153,7 +153,7 @@ public static class Nightly
         // a request's: a per-request timeout bounds one attempt, and three
         // attempts on nine steps is a bound nobody would recognise as an
         // evening.
-        // see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+        // see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
         var limit = deadline ?? RetryPolicy.Standard.Deadline;
 
         // Each try's deadline is its own, so a try again is not started with the minutes an earlier try
@@ -190,6 +190,12 @@ public static class Nightly
 
         var (membership, historical, bulkFeed, corporate, calendar, _, companies, market) = feeds;
 
+        // The indices read beside the night's own, the S&P 400 and 600 from their funds' files: every stage that stores
+        // or computes what each member needs reads their members too, and every stage that ranks, lists or records a
+        // family reads the night's own index alone.
+        // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+        var wider = MembershipLoader.WiderOf(feeds.Funds, indexCode);
+
         // The local model calls the overnight queue made, which the night's last line states apart
         // from the arithmetic's, whose model calls are none.
         var queueCalls = 0;
@@ -219,7 +225,7 @@ public static class Nightly
             }),
             new("membership", async () =>
             {
-                var rows = await new MembershipLoader(membership, clock, store.DatabaseFile)
+                var rows = await new MembershipLoader(membership, clock, store.DatabaseFile, feeds.Funds)
                     .LoadAsync(indexCode, runId, night.Token);
 
                 return $"{rows} rows written";
@@ -227,7 +233,7 @@ public static class Nightly
             new("backfill", async () =>
             {
                 var outcome = await new Backfill(historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, night.Token, wider);
 
                 return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s), " +
                     $"{(outcome.Unserved ?? []).Count} member(s) holding no year after it";
@@ -238,7 +244,7 @@ public static class Nightly
             new("fetch", async () =>
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, night.Token, wider);
                 var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
 
@@ -255,7 +261,7 @@ public static class Nightly
             new("actions", async () =>
             {
                 var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, night.Token, wider);
 
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {(outcome.Spent ?? []).Count} left suspect with retries spent, " +
@@ -269,7 +275,7 @@ public static class Nightly
             new("calendar", async () =>
             {
                 var outcome = await new CalendarFetcher(calendar, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token);
+                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token, wider);
 
                 return FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to ") +
                     FormattableString.Invariant($"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, ") +
@@ -366,7 +372,7 @@ public static class Nightly
             new("fundamental-readings", async () =>
             {
                 var outcome = await new FundamentalReader(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, night.Token, wider);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), " +
                     string.Join(", ", outcome.States.Select(state => $"{state.Value} {state.Key}"));
@@ -465,7 +471,7 @@ public static class Nightly
             new("news-pulse", async () =>
             {
                 var outcome = await new NewsPulseCounter(feeds.News, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token);
+                    .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token, wider);
 
                 return $"{outcome.Articles} article(s) over {outcome.Requests} page(s), " +
                     $"{outcome.RowsWritten} row(s), {outcome.NamesCounted} name(s) with news, " +
@@ -497,7 +503,7 @@ public static class Nightly
             new("close", async () =>
             {
                 var outcome = await new NightClose(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, night.Token, wider);
 
                 return $"{outcome.NamesComputed} name(s) computed, {outcome.NamesOnTheList} on the list, " +
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
@@ -519,7 +525,7 @@ public static class Nightly
                 }
 
                 var outcome = await new QuarterFetcher(companies, historical, () => feeds.WeightedCalls, clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId);
+                    .RunAsync(indexCode, runId, wider: wider);
 
                 return QuarterFetcher.Detail(outcome);
             }),

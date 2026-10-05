@@ -44,9 +44,15 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
 
     public const string Stage = "market-series";
 
-    // The series it asks for, in this order: the index itself, the VIX, and each sector's fund by its sector's name.
+    // The funds each index's readings compare, from 15.1: the S&P 500's, 400's and 600's own funds, read against each
+    // other for small companies beating large, and the high-yield bond fund, read for credit.
+    // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+    public static IReadOnlyList<string> IndexAndCreditFunds { get; } = ["SPY", "IJH", "IJR", "HYG"];
+
+    // The series it asks for, in this order: the index itself, the VIX, each sector's fund by its sector's name, and
+    // the index and credit funds.
     public static IReadOnlyList<string> Series { get; } =
-        [MarketCloses.Index, MarketCloses.Vix, .. GicsSectors.Eleven.Select(sector => GicsSectors.Funds[sector])];
+        [MarketCloses.Index, MarketCloses.Vix, .. GicsSectors.Eleven.Select(sector => GicsSectors.Funds[sector]), .. IndexAndCreditFunds];
 
     // The calendar days before the night's session it asks for: more than a year, so the 200 sessions the
     // index's average reads, the ten the VIX is read back over and the 252 a fund's year and a beta read are held with
@@ -70,8 +76,9 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
 
     const string HeldCloses = "SELECT session_date, close FROM market_bar WHERE series = $series;";
 
-    // Whether a series is a sector's fund, whose held sessions the answer may state again.
-    public static bool IsFund(string series) => GicsSectors.Funds.Values.Contains(series, StringComparer.Ordinal);
+    // Whether a series is a fund, a sector's or an index and credit fund, whose held sessions the answer may state again.
+    public static bool IsFund(string series) =>
+        GicsSectors.Funds.Values.Contains(series, StringComparer.Ordinal) || IndexAndCreditFunds.Contains(series, StringComparer.Ordinal);
 
     const string HeldOf = "SELECT COUNT(*) FROM market_bar WHERE series = $series;";
 

@@ -93,7 +93,7 @@ public sealed class QuarterFetcher : IComponent
     const string MembersOn = @"
         SELECT DISTINCT ticker, joined
         FROM membership
-        WHERE index_code = $index
+        WHERE " + IndexScope.Condition + @"
           AND (joined IS NULL OR joined <= $session)
           AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY ticker;
@@ -228,7 +228,9 @@ public sealed class QuarterFetcher : IComponent
         return 0;
     }
 
-    public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, bool companies = false)
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' quarters it asks for on
+    // the schedule the index's own are.
+    public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, bool companies = false, IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
         var session = clock.SessionDateAt(startedAt);
@@ -236,7 +238,7 @@ public sealed class QuarterFetcher : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, session, cancellation);
+        var members = await MembersAsync(connection, indexCode, session, wider, cancellation);
         var held = await HeldAsync(connection, cancellation);
         var asks = await AsksAsync(connection, session, cancellation);
         var reports = await ReportsAsync(connection, session, cancellation);
@@ -556,12 +558,12 @@ public sealed class QuarterFetcher : IComponent
         return tickers;
     }
 
-    static async Task<IReadOnlyList<(string Ticker, DateOnly? Joined)>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session, CancellationToken cancellation)
+    static async Task<IReadOnlyList<(string Ticker, DateOnly? Joined)>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = MembersOn;
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", Stamp(session));
 
         var members = new Dictionary<string, DateOnly?>(StringComparer.Ordinal);

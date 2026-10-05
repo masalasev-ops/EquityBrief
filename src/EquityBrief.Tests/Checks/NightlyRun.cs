@@ -82,7 +82,7 @@ public partial class NightlyRun
 
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
-            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's and the eleven sector funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
@@ -118,6 +118,9 @@ public partial class NightlyRun
             CheckReach.Key(Scope.FailureTable, "An index change announced before it takes effect"),
             CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
             CheckReach.Key(Scope.FailureTable, "The provider serves no year for a name the backfill asks for"),
+
+            // 15.1, the S&P 400's and 600's funds' files.
+            .. ThreeIndicesRows,
 
             // The stale-and-failed region's stopped stage, which only a night
             // can put there, decomposed from the region at the phase 5 sign-off.
@@ -238,16 +241,18 @@ public partial class NightlyRun
         Assert.Contains("three times", wallClock, StringComparison.Ordinal);
         Assert.Equal(RetryPolicy.WallClock * 3, policy.Deadline);
 
-        // The row says who settled the figure and from what, the operator's
-        // ruling over nights that ran on the schedule, which is what keeps a
-        // settled limit from being read as a proposed one and says the ten
-        // nights it rests on.
-        Assert.Contains("settled by the operator from ten nights that ran on the schedule", wallClock, StringComparison.Ordinal);
+        // The row says who ruled the figure and from what, the operator's
+        // ruling over the last four scheduled nights scaled to the three
+        // indices, which is what keeps a ruled limit from being read as a
+        // proposed one, and from 15.1 it says the nights over the three indices
+        // settle it.
+        Assert.Contains("ruled by the operator when the night widened to them, from the last four scheduled nights", wallClock, StringComparison.Ordinal);
+        Assert.Contains("the first five nights over the three indices settle the figure", wallClock, StringComparison.Ordinal);
         Assert.DoesNotContain("proposed", wallClock, StringComparison.Ordinal);
 
-        // And the population is the index the fetch returned rather than the
-        // literal 500, which is the other half of the row's own claim.
-        Assert.Contains("rather than as the literal 500", wallClock, StringComparison.Ordinal);
+        // And the population is the members the membership step loaded rather
+        // than a literal, which is the other half of the row's own claim.
+        Assert.Contains("rather than as a literal: the night runs over what it loaded", wallClock, StringComparison.Ordinal);
     }
 
     // Section 17's row on waiting for another writer, read rather than repeated. A connection
@@ -1259,9 +1264,10 @@ public partial class NightlyRun
 
         Assert.True(servedCode == 0, servedError);
 
-        // Every series once, the index, the VIX and the eleven sector funds, the funds this capture does not serve named
-        // and storing nothing.
-        Assert.Equal(13, MarketSeriesFetcher.Series.Count);
+        // Every series once, the index, the VIX, the eleven sector funds and from 15.1 the four index and credit funds,
+        // the funds this capture does not serve named and storing nothing.
+        Assert.Equal(17, MarketSeriesFetcher.Series.Count);
+        Assert.Equal(["SPY", "IJH", "IJR", "HYG"], MarketSeriesFetcher.Series.TakeLast(4));
         Assert.Equal(MarketSeriesFetcher.Series.Count, series.Requests);
         Assert.Contains("XLK: nothing was stored for it, No captured response for the XLK series.", RunLog(served, "night-market-served").Single(row => row.Stage == MarketSeriesFetcher.Stage).Detail, StringComparison.Ordinal);
         Assert.Equal(6L, Count(served, "SELECT COUNT(*) FROM market_bar WHERE run_id = 'night-market-served';"));
@@ -2240,8 +2246,11 @@ public partial class NightlyRun
         // readings and the quarters step each read the night's members once, and
         // from 13.9 the family recorder reads them for each registered rule's list,
         // and from 14.3 the heavyweight book for its rebalance and its holdings.
+        // From 15.1 the loader reads the night's own index's members on the session,
+        // which a fund's file listing the same name does not make a member of its
+        // index, and the close reads each index's members to count them.
         Assert.Equal(
-            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
+            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "LadderBuilder", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

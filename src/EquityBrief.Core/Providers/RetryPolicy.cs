@@ -5,7 +5,7 @@ namespace EquityBrief.Core.Providers;
 // The distinction is the whole of the retry policy. A refused connection and a
 // rejected rate are worth asking again; a rejected key is wrong three times and
 // the retry only delays the message that says so.
-// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
 //
 // `Unusable` marks a model's answer that arrived and could not be stored, empty or cut short,
 // which a caller may ask for once more where it would not ask again after a refusal.
@@ -22,25 +22,26 @@ public sealed class ProviderRefusal(string message, bool transient, bool unusabl
 // the test that reads that row against this record is what keeps the two from
 // drifting. Written as a record rather than as constants so a test can hand in
 // a policy of its own without the production one moving.
-// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
 public sealed record RetryPolicy(int Attempts, TimeSpan FirstWait, TimeSpan Timeout, TimeSpan Deadline)
 {
-    // The wall clock section 17 states for a night at index size, and the
+    // The wall clock section 17 states for a night at universe size, and the
     // multiple the deadline follows it by.
     //
-    // Settled by the operator on 2026-09-28 at twenty minutes, from ten nights
-    // that ran on the schedule over the whole index, which took 363 to 665
-    // seconds to the close, so the deadline is an hour. A night runs on the
-    // operator's own machine, where a slow night costs nobody anything, and the
-    // deadline stops a night that has hung rather than one the store's disk has
-    // slowed.
+    // Ruled by the operator on 2026-10-04 at forty minutes for a night over the
+    // S&P 500's, 400's and 600's members, from the last four scheduled nights
+    // over the 500, which reached the close in 580 to 701 seconds and scale to
+    // about 29 to 35 minutes over three times the names, so the deadline is two
+    // hours. A night runs on the operator's own machine, where a slow night costs
+    // nobody anything, and the deadline stops a night that has hung rather than
+    // one the store's disk has slowed.
     //
     // The deadline is derived from it rather than stated beside it, which is
     // what "the deadline follows at three times the limit, in the document and
     // in the retry policy together" has to mean if it is to survive the limit
     // moving. Written as two numbers the relationship was a coincidence held by
     // a comment, and the comment was the only thing that would have noticed.
-    public static TimeSpan WallClock { get; } = TimeSpan.FromMinutes(20);
+    public static TimeSpan WallClock { get; } = TimeSpan.FromMinutes(40);
 
     public const int DeadlineMultiple = 3;
 

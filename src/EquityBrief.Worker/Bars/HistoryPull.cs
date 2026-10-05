@@ -83,6 +83,10 @@ public sealed class HistoryPull(
     // The funds a sector funds pull asks for, in the order of their tickers.
     public static IReadOnlyList<string> SectorFunds { get; } = [.. GicsSectors.Funds.Values.Order(StringComparer.Ordinal)];
 
+    // The index and credit funds' pull, from 15.1: the funds the night asks for beside the sector funds, pulled whole
+    // from 2018 for the readings and the sweeps of each index.
+    public const string IndexFundsStage = "history-pull-index-funds";
+
     // The members pull's own stage, since it asks one index's components and stores one table.
     public const string MembersStage = "history-pull-members";
 
@@ -311,14 +315,17 @@ public sealed class HistoryPull(
 
         var runId = RunIdAt(RunPrefix, clock.UtcNow);
 
-        if (VerbArguments.Has(args, "--sector-etfs"))
+        if (VerbArguments.Has(args, "--sector-etfs") || VerbArguments.Has(args, "--index-funds"))
         {
             try
             {
-                var funds = await PullSectorFundsAsync(resolved.Historical, clock, databaseFile, from, runId);
+                var indexFunds = VerbArguments.Has(args, "--index-funds");
+                var funds = indexFunds
+                    ? await PullSectorFundsAsync(resolved.Historical, clock, databaseFile, from, runId, funds: MarketSeriesFetcher.IndexAndCreditFunds, stage: IndexFundsStage)
+                    : await PullSectorFundsAsync(resolved.Historical, clock, databaseFile, from, runId);
 
                 output.WriteLine("pull " + runId);
-                output.WriteLine(Detail(funds));
+                output.WriteLine(indexFunds ? Detail(funds, "index and credit funds", MarketSeriesFetcher.IndexAndCreditFunds.Count) : Detail(funds));
 
                 return funds.Refused.Count == 0 ? 0 : 1;
             }
@@ -1335,7 +1342,8 @@ public sealed class HistoryPull(
 
     // Pulls the eleven sector funds' daily series from a date to tonight, one request a fund, into the pulled market
     // series beside the index's and the VIX's, each in the adjusted form a member's bars take. A fund not served stores
-    // nothing and is named, the others are stored, and the pull's row says partial.
+    // nothing and is named, the others are stored, and the pull's row says partial. Handed the index and credit funds,
+    // it pulls those under a stage of their own.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
     public static async Task<HistorySectorFundOutcome> PullSectorFundsAsync(
         IHistoricalBarFeed bars,
@@ -1343,7 +1351,9 @@ public sealed class HistoryPull(
         string databaseFile,
         DateOnly from,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyList<string>? funds = null,
+        string stage = SectorFundsStage)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -1354,7 +1364,7 @@ public sealed class HistoryPull(
         var answered = new List<(string Fund, IReadOnlyList<ProviderBar> Bars)>();
         var refused = new List<string>();
 
-        foreach (var fund in SectorFunds)
+        foreach (var fund in funds ?? SectorFunds)
         {
             try
             {
@@ -1415,7 +1425,7 @@ public sealed class HistoryPull(
         await AppendAsync(
             connection,
             runId,
-            SectorFundsStage,
+            stage,
             startedAt,
             clock.UtcNow,
             refused.Count == 0 ? "ok" : Partial,
@@ -1763,8 +1773,10 @@ public sealed class HistoryPull(
         FormattableString.Invariant($"pulled the splits {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.WithASplit} with a split, {outcome.Written} split(s) stored, {outcome.Plain} of the splits answered plain and the rest a spin-off's or a merger's adjustment, {outcome.Requests} request(s)")
         + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line));
 
-    public static string Detail(HistorySectorFundOutcome outcome) =>
-        FormattableString.Invariant($"pulled the sector funds {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored.Count} of {SectorFunds.Count} fund(s) answered, {outcome.Written} session(s) stored, {outcome.Requests} request(s)")
+    public static string Detail(HistorySectorFundOutcome outcome) => Detail(outcome, "sector funds", SectorFunds.Count);
+
+    public static string Detail(HistorySectorFundOutcome outcome, string funds, int asked) =>
+        FormattableString.Invariant($"pulled the {funds} {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored.Count} of {asked} fund(s) answered, {outcome.Written} session(s) stored, {outcome.Requests} request(s)")
         + string.Concat(outcome.Stored.Select(series => Environment.NewLine + "  " + Described(series)))
         + string.Concat(outcome.Refused.Select(line => Environment.NewLine + "  refused: " + line));
 

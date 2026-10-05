@@ -99,7 +99,7 @@ public sealed class BarFetcher : IComponent
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
     const string CurrentMembers = @"
         SELECT ticker FROM membership
-        WHERE index_code = $index AND (""left"" IS NULL OR ""left"" > $session);
+        WHERE " + IndexScope.Condition + @" AND (""left"" IS NULL OR ""left"" > $session);
     ";
 
     const string StoreBar = @"
@@ -137,10 +137,13 @@ public sealed class BarFetcher : IComponent
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' bars the same file
+    // carries, so their prices cost no request of their own.
     public async Task<FetchOutcome> RunAsync(
         string indexCode,
         string runId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IReadOnlyList<string>? wider = null)
     {
         var started = clock.UtcNow;
 
@@ -156,7 +159,7 @@ public sealed class BarFetcher : IComponent
         // (see: The night runs at a fixed UTC instant, moved only when a night finds the day's file not yet posted).
         var session = clock.SessionDateAt(started);
 
-        var members = await MembersAsync(connection, indexCode, session);
+        var members = await MembersAsync(connection, indexCode, session, wider);
         var before = await CountAsync(connection);
 
         // Any session the store is missing since the last night that ran,
@@ -406,12 +409,12 @@ public sealed class BarFetcher : IComponent
             : null;
     }
 
-    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session)
+    static async Task<HashSet<string>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session, IReadOnlyList<string>? wider)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

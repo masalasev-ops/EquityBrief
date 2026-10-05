@@ -1716,6 +1716,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "How last night went, the commit the night was built from")] = new Scoped(
             Verdict.Pass, "the line read off the Run page over a build row the night writes, and absent over a night that recorded none", ByReadSurface),
 
+        // 15.1, each index's members on the night line, which the first five nights over the three indices are read on.
+        [CheckReach.Key("15.10 Run", "How last night went, each index's members beside the time to the close on a night that read more than one index")] = new Scoped(
+            Verdict.Pass, "over a constructed night reading the three indices, the close's count of each index's members read off the Run page beside the seconds to the close, and no line over a night reading one index", ByNight),
+
         // 12.7's correction, close to a buy point, on the operator's specification of 2026-09-29.
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = new Scoped(
             Verdict.Pass, "a constructed night's members one gate short drawn and none missing two, excluded or on the list, read off the page against the store's gate rows in both directions", ByReadSurface),
@@ -3721,6 +3725,10 @@ internal static class Scope
             Verdict.Pass,
             "over the fixture's second night, a member the feed drops, a second span of a member it lists under another join date and an announced joiner it stopped listing are each closed on the night's session, the dropped member keeps the night before's listing and has none that night, is out of the universe and is named on the run page's membership line, and a second run whose feed lists it again reopens it and lists it; a feed dropping one ticker more than the figure the row states closes none and ends partial on the stale-and-failed region with the tickers named, and one dropping that many closes every one",
             ByNight),
+        [CheckReach.Key(FailureTable, "A fund's holdings file the night cannot read")] = new Scoped(
+            Verdict.Pass,
+            "over constructed nights, the S&P 400's fund answering a page that is no holdings file keeps the 400's members of the night before while the 600's file is read and a new member joins, the step ends partial and the run page's stale-and-failed region names the index, the fund and why; a fund's file is read for its stocks alone, a swap, a warrant, a future and cash left out, and a page stating no date, no columns, no type or no stock is refused naming what it lacks",
+            ByNight),
         [CheckReach.Key(FailureTable, "The provider serves no year for a name the backfill asks for")] = new Scoped(
             Verdict.Pass,
             "over the fixture's night and the backfill's own nights after it, a member the feed lists and neither price file serves holds no bar, is asked for on each of the five nights after the first, not again until the seventh day after the session last asked for and then on it, each row naming it with its nights and its next ask, and the stage ends partial on every night so the run page's stale-and-failed region names it; its page opens with the line stating the nights it was asked for and the first night it is asked again",
@@ -3753,7 +3761,7 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after membership, and a second night backfills nothing",
             ByNight),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's and the eleven sector funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars).")] = new Scoped(
             Verdict.Pass,
             "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both; then asks for the two market series once each over the stated days, storing only the sessions no night holds, and a series the provider refuses stores nothing and stops no step",
             ByNight),
@@ -4342,6 +4350,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = "12.3",
         [CheckReach.Key("15.7 Tonight", "The night's state, a refusal before its first step with its reason")] = "12.3",
         [CheckReach.Key("15.10 Run", "How last night went, the commit the night was built from")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How last night went, each index's members beside the time to the close on a night that read more than one index")] = "15.1",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, nearest to qualifying first with a tie in the list's own order")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, drawing the places the list leaves of the twenty")] = "12.7",
@@ -4913,7 +4922,7 @@ internal static class Scope
         // The 12.3 correction that opens the Run page on its pictures, each of its first three regions read as
         // the parts its row states.
         [CheckReach.Key("15.10 Run", "How last night went")] =
-            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "the commit the night was built from"],
+            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "the commit the night was built from", "each index's members beside the time to the close on a night that read more than one index"],
         [CheckReach.Key("15.7 Tonight", "The night's state")] =
             ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished", "a refusal before its first step with its reason"],
         // 12.7's correction: the nine parts close to a buy point enumerates, and the line a closed market draws

@@ -131,11 +131,16 @@ public sealed class MoveAnnotator : IComponent
     // and not left by it, with the sector and the industry each one's row names, which is
     // what a name's group is read from.
     // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
+    //
+    // A name's group is read among the members of its own index, so the S&P 500's groups hold the 500's members alone
+    // and a 400 or 600 member's group is its own index's.
+    // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
     const string MembersOnTheSession = @"
-        SELECT m.ticker, m.sector, m.industry
+        SELECT m.ticker, m.sector, m.industry, m.index_code
         FROM membership m
         WHERE (m.joined IS NULL OR m.joined <= $session)
-          AND (m.""left"" IS NULL OR m.""left"" > $session);
+          AND (m.""left"" IS NULL OR m.""left"" > $session)
+        ORDER BY m.index_code, m.ticker;
     ";
 
     // Insert or update on the primary key. A move is recomputed from the same
@@ -210,7 +215,11 @@ public sealed class MoveAnnotator : IComponent
             pair => pair.Key,
             pair => (IReadOnlyDictionary<DateOnly, decimal>)pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close),
             StringComparer.Ordinal);
-        var members = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
+        var byIndex = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
+        var indexOf = byIndex
+            .SelectMany(index => index.Value.Select(member => (member.Ticker, Index: index.Key)))
+            .GroupBy(member => member.Ticker, StringComparer.Ordinal)
+            .ToDictionary(member => member.Key, member => member.First().Index, StringComparer.Ordinal);
         var prints = await PastPrintsAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var written = 0;
         var readings = 0;
@@ -236,6 +245,7 @@ public sealed class MoveAnnotator : IComponent
             }
 
             var moves = MoveSeries.For(bars);
+            var members = indexOf.TryGetValue(ticker, out var index) ? byIndex[index] : [];
             var group = Groups.Of(ticker, members);
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -485,7 +495,8 @@ public sealed class MoveAnnotator : IComponent
         _ => "unstated",
     };
 
-    static async Task<IReadOnlyList<GroupMember>> MembersAsync(
+    // Each index's members on the session, keyed by the index.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<GroupMember>>> MembersAsync(
         SqliteConnection connection,
         DateOnly session,
         CancellationToken cancellation)
@@ -495,19 +506,26 @@ public sealed class MoveAnnotator : IComponent
         command.CommandText = MembersOnTheSession;
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        var members = new List<GroupMember>();
+        var members = new Dictionary<string, List<GroupMember>>(StringComparer.Ordinal);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
-            members.Add(new GroupMember(
+            var index = reader.GetString(3);
+
+            if (!members.TryGetValue(index, out var held))
+            {
+                members[index] = held = [];
+            }
+
+            held.Add(new GroupMember(
                 reader.GetString(0),
                 reader.IsDBNull(1) ? null : reader.GetString(1),
                 reader.IsDBNull(2) ? null : reader.GetString(2)));
         }
 
-        return members;
+        return members.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<GroupMember>)pair.Value, StringComparer.Ordinal);
     }
 
     // A name's close on a session, or none where the name holds no bar for it.

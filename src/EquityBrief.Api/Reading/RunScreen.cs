@@ -1338,7 +1338,8 @@ public static class RunScreen
             ],
             madeTries,
             nightState == NightStates.Waiting ? nextTry : null,
-            merged.FirstOrDefault(row => row.Stage == EquityBrief.Core.Configuration.NightBuild.Stage)?.Detail);
+            merged.FirstOrDefault(row => row.Stage == EquityBrief.Core.Configuration.NightBuild.Stage)?.Detail,
+            close is null ? null : MembersOf(close.Detail));
 
         static string FirstTry(string runId)
         {
@@ -1346,6 +1347,12 @@ public static class RunScreen
 
             return at < 0 ? runId : runId[..at];
         }
+
+        // Each index's members as the night's close counted them, on a night that read more than one index.
+        static IReadOnlyList<IndexMembers>? MembersOf(string detail) =>
+            Regex.Match(detail, @"; members on the session: (?<members>[A-Z]+ \d+(?:, [A-Z]+ \d+)*)") is { Success: true } counted
+                ? [.. counted.Groups["members"].Value.Split(", ").Select(index => index.Split(' ')).Select(parts => new IndexMembers(parts[0], int.Parse(parts[1], CultureInfo.InvariantCulture)))]
+                : null;
 
         static int TryNumber(string runId)
         {

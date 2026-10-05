@@ -148,8 +148,9 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document gains after phase 14's report, named beside the pair and never counted in it: 14.8's,
-    // section 17's row for the wider universe's test and section 18's two.
-    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims];
+    // section 17's row for the wider universe's test and section 18's two, and from 15.1 section 18's row for a fund's
+    // file the night cannot read.
+    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows];
 
     [Fact]
     public void ThePhaseFourteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
@@ -264,9 +265,10 @@ public partial class ArchitectureConformance
             (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
-        // Stated, so a claim added or lost without being named here moves this rather than the sum.
+        // Stated, so a claim added or lost without being named here moves this rather than the sum. 975 from 15.1, its
+        // fund's file row and the Run page's members.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 973),
+            (789, 853, 6, 4, 855, 876, 975),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

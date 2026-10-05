@@ -41,7 +41,7 @@ public sealed class RecordedIndexMembershipFeed(string capturedResponse) : IInde
     // row at all for a name that has left. The spans are in
     // HistoricalTickerComponents, and the spans are the whole reason membership
     // is fetched rather than maintained
-    // (see: The universe is the S&P 500, and membership is fetched, not maintained).
+    // (see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched).
     //
     // The fixture was written by hand at 1.1 with StartDate and EndDate inside
     // Components, so this parsed it and nothing said otherwise. Against the real

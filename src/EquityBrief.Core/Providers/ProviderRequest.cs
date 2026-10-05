@@ -15,7 +15,7 @@ namespace EquityBrief.Core.Providers;
 //
 // The wait is injected so a test can prove the schedule without spending it. A
 // backoff asserted by waiting six seconds is a backoff nobody runs twice.
-// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
 public sealed class ProviderRequest(RetryPolicy policy, Func<TimeSpan, CancellationToken, Task>? wait = null)
 {
     readonly Func<TimeSpan, CancellationToken, Task> wait = wait ?? Task.Delay;

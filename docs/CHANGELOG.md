@@ -10938,3 +10938,73 @@ Was:
 Now:
 > "and a constructed history's report states its known answer, no setting passing and the five strongest stated with what could be tried next;"
 Why: 15.0's tests assert the report's no-pass section, and the roster states what each check asserts.
+
+### 2026-10-05 - CLAUDE.md - the first hard rule counts the four index and credit funds' series and the two funds' files, over fifteen hundred names
+Authorised by: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+Was:
+> "Bars arrive in one bulk request, news in one feed request and the index's, the VIX's and the eleven sector funds' daily closes in one request a series, read by the market switches of two registered variants and by the sector heavyweights on the operator's rulings of 2026-10-03 and 2026-10-04, so a night costs the same whether the universe is fifty names or five hundred."
+Now:
+> "Bars arrive in one bulk request, news in one feed request, the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily closes in one request a series, read by the market switches of two registered variants and by the sector heavyweights on the operator's rulings of 2026-10-03 and 2026-10-04, and the S&P 400's and 600's members in one request a fund from their funds' holdings files on the operator's ruling of 2026-10-05, so a night costs the same whether the universe is fifty names or the fifteen hundred of the S&P 500, 400 and 600."
+Why: from 15.1 the night reads the three indices' members, two files and four series more, and its cost still does not grow with the names.
+
+### 2026-10-05 - ARCHITECTURE.html - the universe is the S&P 500, 400 and 600, in sections 1, 5, 14, 15.10, 16, 17 and 18
+Authorised by: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+Was:
+> section 1: "The universe is the S&amp;P 500, and its membership is fetched from the provider rather than maintained by hand. (see: The universe is the S&amp;P 500, and membership is fetched, not maintained)"
+> section 5: "Index membership comes from the index constituents endpoint, which carries join and leave dates, so membership is fetched rather than maintained by hand (see: The universe is the S&amp;P 500, and membership is fetched, not maintained)."
+> the membership loader's catalogue row: "records tonight's index constituents with join and leave dates, so a name added last month is not shown as present in an older window, and answers which names were members on a past date"
+> the market series fetcher's catalogue row: "asks the provider for the index's, the VIX's and the eleven sector funds' daily series over the days before the night's session section 17 states, one request a series whatever the index's size,"
+> section 14's fetch step: "Then ask for the index's, the VIX's and the eleven sector funds' daily series over the days before the session that section 17 states, one request a series,"
+> section 15.10's first region: "a press running the rest of a night left unfinished; the commit the night was built from (see: ..."
+> section 16's market series row: "one row per series holding the index's, the VIX's or a sector fund's open, high, low and close as the provider sent them, and the run that wrote it", "kept whole, thirteen rows a session,"
+> the matrix's note: "The bars column holds the index's, the VIX's and the sector funds' daily series beside the members' bars,"
+> section 18's unlisted row ended: "a night whose feed stops listing more than 10 tickers in one night closes none of them, and its membership step ends partial (see: A ticker the index feed stops listing leaves the index on the night it goes unlisted)"
+Now:
+> each states the S&amp;P 400's and 600's members read from their funds' holdings files beside the S&amp;P 500's, the four index and credit funds beside the series, seventeen rows a session, each index's members beside the time to the close on the Run page's first region, and the funds' guard at 8 and 12; section 18 gains the row for a fund's holdings file the night cannot read
+Why: 15.1 builds the night over the three indices.
+
+### 2026-10-05 - ARCHITECTURE.html - the night's wall clock at forty minutes and its deadline at two hours, in sections 13 and 17
+Authorised by: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+Was:
+> section 17's wall clock: "a night's arithmetic, every step up to the close, bounded by 20 minutes, settled by the operator from ten nights that ran on the schedule over the whole index, which took 363 to 665 seconds to the close (see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move). The night's deadline follows at three times it, derived from it in the retry policy rather than stated beside it. Read as the index the membership fetch returned rather than as the literal 500: the first live night carried 503 current members, and the night runs over what it loaded"
+> section 17's deadline: "the arithmetic as a whole, every step up to the close, bounded by 60 minutes, ... (see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move)", "60 minutes because it is three times the wall clock stated above"
+> section 13's version bound: "which puts the night at 703 seconds against a deadline of 3600."
+Now:
+> "bounded by 40 minutes over the three indices' members, ruled by the operator when the night widened to them, from the last four scheduled nights over the index's 503 names, which reached the close in 580 to 701 seconds and scale to about 29 to 35 minutes over three times the names ...", "bounded by 120 minutes", "120 minutes because", "against a deadline of 7200"
+Why: the operator ruled the night over the three indices a wall clock of forty minutes and a deadline of two hours on 2026-10-04.
+
+### 2026-10-05 - SCHEMA.md - membership's three indices, the market series' four funds
+Authorised by: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+Was:
+> membership: "| `index_code` | TEXT | the index this membership is in |", "| `joined` | TEXT | date, null when the provider carries none |", "| `sector` | TEXT | the sector the provider last named for this ticker, null where it has named none. ..."
+> market_bar: "`GSPC`, the index itself, `VIX`, or one of the eleven sector funds, `XLB` to `XLY`", "The table is kept whole, thirteen rows a session."
+> pulled_market_bar: "`GSPC`, the index itself, `VIX`, or the ticker of one of the eleven sector funds"
+Now:
+> each names `MID` and `SML` read from their funds' files, a 400 or 600 span's join date the night its fund first listed it, no sector on their rows, the four index and credit funds, seventeen rows a session, and `history-pull --index-funds`; membership gains the paragraph on the funds' files
+Why: 15.1 writes the 400's and 600's members and the four funds' series.
+
+### 2026-10-05 - RUNBOOK.md - the night over three indices, the remedy loading them, and the task's limit at twelve hours
+Authorised by: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+Was:
+> the night's row: "the arithmetic: membership, bars, ... news pulse | one bulk bar request, one news feed request, one request each for the index's, the VIX's and the eleven sector funds' daily series, ..."
+> "-ExecutionTimeLimit (New-TimeSpan -Hours 8)", "Eight hours because a night that stops is tried again ..., so a limit of two would stop the process in the middle of a try (...). A task registered with the earlier limit of two hours takes the new one from an elevated PowerShell:", "$t.Settings.ExecutionTimeLimit = 'PT8H'", "shows `PT8H`."
+Now:
+> the night's row names the three indices, the two funds' files and the four funds' series; a paragraph gives the remedy's `members`, `quarters --companies --index` and `history-pull --index-funds`; the task's limit is twelve hours, `PT12H`, since each try's deadline is two hours
+Why: four tries under deadlines of two hours each outrun a limit of eight.
+
+### 2026-10-05 - BUILD_PLAN.md - the deadline's decision cited by its new name, the version bound against 7200, and 15.1 landing in two pull requests
+Authorised by: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+Was:
+> "(see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move)", "against the deadline of 3600", "against a deadline of 3600"
+> 15.1's done condition: "**Done when** a constructed night stores three indices' members from a provider answer and two funds' files, keeps the night before's members where a file cannot be read, and moves a name between indices with its open trade kept; strength and breadth are worked by hand within each index; each floor and the profit gate are worked by hand on both sides, a member with three quarters filed failing it; each index's cards are read back off the rendered page against the store in both directions; the six reports are taken in turn over constructed nights, two an index where each has picks, an index with none passing its turns and one with a single pick passing its second; the remedy's entry records the first night's time to the close against 40 minutes and two hours, the rows written per index and the requests and weighted calls; and the entry states the pin lists read and that no pin moved."
+Now:
+> the new name, "against the deadline of 7200", "against a deadline of 7200", and 15.1 landing in two pull requests, the night over the three indices first and each index's provisional cards second, each with its half of the done condition
+Why: the deadline moved to two hours, and the night's half runs tonight while the cards' half follows on its own branch.
+
+### 2026-10-05 - .claude/rules/checks.md - nightly-run reads the night over three indices
+Authorised by: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
+Was:
+> `nightly-run`'s "and the fetch step asks for the index's, the VIX's and the eleven sector funds' daily series once each after the day's bars," and its row ending "... and on none they carried from an earlier month |"
+Now:
+> "the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series", and the row ending on what 15.1's tests assert of the three indices' membership, the stages reading them, the Run page's members, a fund's file, the `members` verb and the four funds' pull
+Why: the roster states what each check asserts, and 15.1's tests assert these.

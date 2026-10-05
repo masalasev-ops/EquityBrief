@@ -75,7 +75,7 @@ public sealed class CalendarFetcher : IComponent
     const string CurrentMembers = @"
         SELECT ticker
         FROM membership
-        WHERE index_code = $index
+        WHERE " + IndexScope.Condition + @"
           AND (joined IS NULL OR joined <= $session)
           AND (""left"" IS NULL OR ""left"" > $session);
     ";
@@ -131,11 +131,14 @@ public sealed class CalendarFetcher : IComponent
         this.databaseFile = databaseFile;
     }
 
+    // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' events the one window
+    // request already carries.
     public async Task<CalendarOutcome> RunAsync(
         string indexCode,
         DateOnly session,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
         var from = session.AddDays(-HistoryDays);
@@ -146,7 +149,7 @@ public sealed class CalendarFetcher : IComponent
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var members = await MembersAsync(connection, indexCode, session, cancellation);
+        var members = await MembersAsync(connection, indexCode, session, wider, cancellation);
 
         var written = 0;
         var notMembers = 0;
@@ -238,12 +241,13 @@ public sealed class CalendarFetcher : IComponent
         SqliteConnection connection,
         string indexCode,
         DateOnly session,
+        IReadOnlyList<string>? wider,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = CurrentMembers;
-        command.Parameters.AddWithValue("$index", indexCode);
+        IndexScope.Bind(command, indexCode, wider);
         command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var members = new HashSet<string>(StringComparer.Ordinal);
