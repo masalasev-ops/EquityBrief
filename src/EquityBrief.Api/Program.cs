@@ -848,7 +848,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     await read.IndexHoldingsAsync(reading.Code, dated),
                     await read.IndexLastRebalanceAsync(reading.Code, dated),
                     await read.IndexHoldingClosesAsync(reading.Code, dated),
-                    members)),
+                    members),
+                indexNight.Fault is null ? null : TonightScreen.NotComputed(reading)),
             "text/html; charset=utf-8");
     }
 

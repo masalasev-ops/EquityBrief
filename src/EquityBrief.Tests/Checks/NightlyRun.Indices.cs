@@ -51,6 +51,48 @@ public partial class NightlyRun
         Assert.StartsWith("MID: 0 member(s) read, breadth not read, the market check closed", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single(), StringComparison.Ordinal);
     }
 
+    // An S&P 400 book that throws: a holding whose buy close is not a price, which the book reads first. The S&P 400's
+    // writes of the night are undone and its night row names the failure, the S&P 600 is read, the stage's row names
+    // the failure under a word the run page draws, and the S&P 500's list, the rest of the night and its report step are
+    // built regardless.
+    // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+    [Fact]
+    public async Task AnSAndP400BookThatThrowsLeavesTheSAndP500sListAndTheNightBuilt()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through) VALUES " +
+            "('MID', 'BROKEN', '2000-01-03', 'Energy', 'not a price', 1.0, '[]', '2000-01-03');");
+
+        var (code, _, error) = await NightAsync(store, launcher: new NightLauncherForTheSuite());
+
+        Assert.True(code == 0, error);
+
+        const string Night = "run_id LIKE 'night-%' AND instr(run_id, '-queue-') = 0";
+        var stage = EquityBrief.Worker.Indices.IndexFamilies.Stage;
+
+        // The S&P 500's list drawn, its row ok, and the night closed and its report step run.
+        Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM family_night;"));
+        Assert.Equal(["ok"], Texts(store, $"SELECT outcome FROM run_log WHERE {Night} AND stage = '{EquityBrief.Worker.Families.FamilyLister.Stage}';"));
+        Assert.Equal(["ok"], Texts(store, $"SELECT outcome FROM run_log WHERE {Night} AND stage = '{EquityBrief.Worker.Nights.NightClose.Stage}';"));
+        Assert.Equal(1, Scalar(store, $"SELECT COUNT(*) FROM run_log WHERE {Night} AND stage = '{RequestDrain.NightStage}';"));
+
+        // The S&P 400 not computed and named with its cause; the S&P 600 read.
+        Assert.Equal([EquityBrief.Worker.Indices.IndexFamilies.NotComputed], Texts(store, $"SELECT outcome FROM run_log WHERE {Night} AND stage = '{stage}';"));
+
+        var detail = Texts(store, $"SELECT detail FROM run_log WHERE {Night} AND stage = '{stage}';").Single();
+
+        Assert.StartsWith("MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
+        Assert.Contains("; SML: 0 member(s) read, breadth not read", detail, StringComparison.Ordinal);
+        Assert.Equal(
+            ["MID|0|FormatException", "SML|0|"],
+            Texts(store, "SELECT index_code || '|' || members || '|' || COALESCE(substr(fault, 1, instr(fault, ':') - 1), '') FROM index_family_night ORDER BY index_code;"));
+
+        // The book's holding left as it was, carried by nothing.
+        Assert.Equal(["2000-01-03"], Texts(store, "SELECT through FROM index_heavyweight_holding WHERE ticker = 'BROKEN';"));
+    }
+
     [Fact]
     public async Task TheNightAsksForItsSixReportsInTurnAcrossTheThreeIndicesPagesAndNamesEachIndexsList()
     {

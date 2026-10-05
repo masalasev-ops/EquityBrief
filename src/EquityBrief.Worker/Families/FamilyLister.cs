@@ -18,7 +18,8 @@ public sealed record FamilyListOutcome(
     int OpenTrade,
     int UnderAnother,
     int PastFive,
-    IReadOnlyList<(string Family, int Qualified, int Listed)> Families);
+    IReadOnlyList<(string Family, int Qualified, int Listed)> Families,
+    string? IndexTradesFault = null);
 
 // The family lister. Draws the page's list for the night from what each setup family passed, and stores it.
 //
@@ -170,8 +171,23 @@ public sealed class FamilyLister : IComponent
         var open = new Dictionary<string, HeldTrade>(await OpenTradesAsync(connection, session, tickers, cancellation), StringComparer.Ordinal);
 
         // A stock whose trade on an S&P 400 or 600 list is still open is held back as well, its row naming that index.
+        // Their trades the store cannot read hold nothing back, and the row says so, so the list is drawn whatever became
+        // of theirs.
         // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
-        var (elsewhere, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, session, tickers, cancellation);
+        // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+        IReadOnlyDictionary<string, HeldTrade> elsewhere = new Dictionary<string, HeldTrade>(StringComparer.Ordinal);
+        IReadOnlyDictionary<string, string> heldIn = new Dictionary<string, string>(StringComparer.Ordinal);
+        string? indexTradesFault = null;
+
+        try
+        {
+            (elsewhere, heldIn) = await IndexFamilies.OpenIndexTradesAsync(connection, session, tickers, cancellation);
+        }
+        catch (Exception failure) when (!cancellation.IsCancellationRequested)
+        {
+            indexTradesFault = IndexFamilies.Cause(failure);
+        }
+
         var otherIndex = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var (ticker, held) in elsewhere)
@@ -233,7 +249,8 @@ public sealed class FamilyLister : IComponent
             picks.Count(pick => pick.State == FamilyList.OpenTrade),
             picks.Count(pick => pick.State == FamilyList.UnderAnother),
             picks.Count(pick => pick.State == FamilyList.PastFive),
-            families);
+            families,
+            indexTradesFault);
 
         await AppendAsync(connection, transaction, runId, startedAt, picks.Count, Detail(outcome), cancellation);
         await transaction.CommitAsync(cancellation);
@@ -245,7 +262,8 @@ public sealed class FamilyLister : IComponent
     public static string Detail(FamilyListOutcome outcome) =>
         FormattableString.Invariant($"{outcome.Listed} listed for {outcome.Night:yyyy-MM-dd}: ")
         + string.Join(", ", outcome.Families.Select(family => FormattableString.Invariant($"{family.Listed} of the {family.Qualified} the {family.Family} family passed")))
-        + FormattableString.Invariant($"; {outcome.OpenTrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.PastFive} past a family's {SetupFamilies.ListedANight}");
+        + FormattableString.Invariant($"; {outcome.OpenTrade} held back by a trade still open, {outcome.UnderAnother} listed under another family, {outcome.PastFive} past a family's {SetupFamilies.ListedANight}")
+        + (outcome.IndexTradesFault is { } fault ? $"; the S&P 400's and 600's trades could not be read, so none held a stock back: {fault}" : string.Empty);
 
     // The names a family passed on the night, in its own order.
     static async Task<IReadOnlyList<string>> QualifiersAsync(SqliteConnection connection, SetupFamily family, DateOnly night, CancellationToken cancellation)

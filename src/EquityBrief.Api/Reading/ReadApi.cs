@@ -474,7 +474,7 @@ public sealed record FamilyPickRow(
 // One S&P 400 or 600 night as the index families stored it: the members read, the index's own breadth, whether its
 // market check left its swing lists open, the settings its rules ran on and whether its sector heavyweights rebalanced.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
-public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced);
+public sealed record IndexNightRow(string Index, DateOnly Session, int Members, double? Breadth, bool MarketOpen, string Settings, bool Rebalanced, string? Fault = null);
 
 // One member's answer under one of an index's families on a night: whether the family's provisional rule passed it,
 // its place among those it passed and its trade, or the first part of the rule it failed.
@@ -3127,7 +3127,7 @@ public sealed class ReadApi : IComponent
     }
 
     const string IndexNightOn = @"
-        SELECT index_code, session_date, members, breadth, market_open, settings, rebalanced FROM index_family_night
+        SELECT index_code, session_date, members, breadth, market_open, settings, rebalanced, fault FROM index_family_night
         WHERE index_code = $index AND session_date = $on;
     ";
 
@@ -3135,7 +3135,8 @@ public sealed class ReadApi : IComponent
         SELECT MAX(session_date) FROM index_family_night WHERE index_code = $index AND rebalanced = 1 AND session_date <= $on;
     ";
 
-    // An index's night as its families stored it, and none for a night they did not read.
+    // An index's night as its families stored it, with the failure that stopped it where its part of the night failed,
+    // and none for a night they did not read.
     public async Task<IndexNightRow?> IndexNightAsync(string index, DateOnly on)
     {
         await using var connection = Open();
@@ -3155,7 +3156,8 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
                 reader.GetInt64(4) == 1,
                 reader.GetString(5),
-                reader.GetInt64(6) == 1)
+                reader.GetInt64(6) == 1,
+                reader.IsDBNull(7) ? null : reader.GetString(7))
             : null;
     }
 

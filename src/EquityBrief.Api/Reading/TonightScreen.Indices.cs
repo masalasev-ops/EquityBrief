@@ -111,10 +111,21 @@ public static partial class TonightScreen
             _ => $"Its report beat its estimate and the reaction held, every gate of the drift passing on the {index}'s provisional settings.",
         };
 
-    // Why an index's family lists nothing on a night it lists none: the index's own market check closed every list, every
-    // stock it passed is held back, or none passed, with how many of the index's members stopped at each part of the rule.
+    // What an index's cards and its line say on a night its part of the night failed, whose rows hold no answer of it.
+    // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+    public static string NotComputed(UniverseChoice universe) =>
+        $"Not computed tonight: the {universe.Possessive} part of the night failed, and the Run page names its cause.";
+
+    // Why an index's family lists nothing on a night it lists none: its part of the night failed, the index's own market
+    // check closed every list, every stock it passed is held back, or none passed, with how many of the index's members
+    // stopped at each part of the rule.
     static string IndexEmpty(UniverseChoice universe, IndexNightRow night, IndexRuleSettings settings, IReadOnlyList<FamilyPickRow> own, IReadOnlyList<IndexResultRow> results)
     {
+        if (night.Fault is not null)
+        {
+            return NotComputed(universe);
+        }
+
         if (own.Count > 0)
         {
             return "Every stock this setup passed tonight is held back, as the notes beneath say.";
@@ -160,10 +171,13 @@ public static partial class TonightScreen
         var fund = FundHoldings.Funds.TryGetValue(universe.Code, out var held) ? held.Fund : "the index's fund";
         var lookBack = int.TryParse(settings.Heavyweights.GetValueOrDefault("look-back"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var sessions) ? sessions : HeavyweightRule.LookBack;
 
+        // A night whose part failed carried nothing, so the card lists none of the book's holdings for it.
+        var computed = night.Fault is null;
+
         HeavyweightHoldingCell[] cells =
         [
             .. holdings
-                .Where(holding => holding.EndedOn is null)
+                .Where(holding => computed && holding.EndedOn is null)
                 .OrderBy(holding => holding.Sector, StringComparer.Ordinal)
                 .ThenBy(holding => holding.Ticker, StringComparer.Ordinal)
                 .Select(holding =>
@@ -183,11 +197,11 @@ public static partial class TonightScreen
                 }),
         ];
 
-        string[] entered = last is { } on
+        string[] entered = computed && last is { } on
             ? [.. holdings.Where(holding => holding.EnteredOn == on).OrderBy(holding => holding.Sector, StringComparer.Ordinal).ThenBy(holding => holding.Ticker, StringComparer.Ordinal).Select(holding => holding.Ticker)]
             : [];
 
-        HeavyweightEndedCell[] ended = last is { } since
+        HeavyweightEndedCell[] ended = computed && last is { } since
             ? [.. holdings
                 .Where(holding => holding.EndedOn is { } end && end >= since)
                 .OrderBy(holding => holding.EndedOn)
@@ -197,6 +211,8 @@ public static partial class TonightScreen
 
         var empty = cells.Length > 0
             ? null
+            : !computed
+                ? NotComputed(universe)
             : last is not { } rebalance
                 ? $"No rebalance has been read yet. The {universe.Possessive} book reads its first on the first night of a month the night reads the {universe.Possessive} members."
                 : entered.Length == 0
@@ -229,7 +245,8 @@ public static partial class TonightScreen
             trades.Count(trade => trade.Listed == night.Session),
             trades.Count(trade => trade.EndedOn == night.Session),
             night.Rebalanced,
-            holdings.Count(holding => holding.EndedOn is null));
+            holdings.Count(holding => holding.EndedOn is null),
+            night.Fault);
 
     // An index's setups on its Run page: each swing family with what it listed on the night and every trade its list has
     // kept, and the sector heavyweights with their holdings, each provisional with its record waiting for its freeze.

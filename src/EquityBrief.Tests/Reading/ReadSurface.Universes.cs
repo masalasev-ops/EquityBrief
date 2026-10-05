@@ -232,4 +232,49 @@ public partial class ReadSurface
         Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 500\">", page, StringComparison.Ordinal);
         Assert.Contains("<option value=\"500\" data-members=\"", page, StringComparison.Ordinal);
     }
+
+    // An S&P 600 night whose part failed: the night row names the failure and holds no answer, and the book holds S1 from
+    // a month before. Tonight opens on the words in place of the market line, every swing card and the heavyweights' card
+    // say the same and list nothing, and the Run page names the cause.
+    // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+    [Fact]
+    public async Task AnSAndP600NightThatFailedSaysNotComputedTonightOnEveryCardAndItsRunPageNamesTheCause()
+    {
+        using var store = UniversesStore();
+
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced, fault) VALUES " +
+            $"('SML', '{IndexNight}', 0, NULL, 0, '{IndexFamilies.Settings("SML")}', 0, 'FormatException: The input string was not in a correct format.');");
+        store.Execute(
+            "INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through) VALUES " +
+            "('SML', 'S1', '2026-09-01', 'Energy', '50', 1.0, '[]', '2026-10-01');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
+        const string Words = "Not computed tonight: the S&P 600's part of the night failed, and the Run page names its cause.";
+
+        Assert.Contains($"<p class=\"degraded\" data-index-night=\"not-computed\">{Words}</p>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("breadth", page[..page.IndexOf(Words, StringComparison.Ordinal)], StringComparison.Ordinal);
+
+        foreach (var family in new[] { "pullback", "breakout", "drift" })
+        {
+            Assert.Contains(Words, FamilyCardOf(page, family), StringComparison.Ordinal);
+        }
+
+        // The paragraph, the three swing cards and the heavyweights' card, which lists none of the book's holdings.
+        Assert.Equal(5, Regex.Matches(page, Regex.Escape(Words)).Count);
+        Assert.DoesNotContain("data-ticker=\"S1\"", page, StringComparison.Ordinal);
+
+        var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=600"));
+
+        Assert.Contains(
+            $"<p class=\"degraded\" data-index-night=\"not-computed\">Not computed tonight: the S&P 600's part of the night of {IndexNight} failed on FormatException: The input string was not in a correct format., and the S&P 500's night was built regardless.</p>",
+            run,
+            StringComparison.Ordinal);
+
+        // The S&P 400's night, computed, reads as before.
+        Assert.DoesNotContain("not-computed", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")), StringComparison.Ordinal);
+    }
 }

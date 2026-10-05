@@ -103,7 +103,7 @@ public sealed record IndexTradeCell(
 // How an S&P 400's or 600's night went, as its Run page states it: the members read, the index's own breadth against
 // the floor and whether its swing lists were open, the members a setup passed, those listed and held back, the trades
 // kept and ended, and its sector heavyweights' rebalance and holdings.
-public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings);
+public sealed record IndexRunView(int Members, double? Breadth, double Floor, bool MarketOpen, int Passed, int Listed, int HeldBack, int Kept, int Ended, bool Rebalanced, int Holdings, string? Fault = null);
 
 public sealed partial class MarkRenderer
 {

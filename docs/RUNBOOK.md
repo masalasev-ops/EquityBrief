@@ -61,6 +61,8 @@ dotnet run --project src/EquityBrief.Worker -- index-families
 
 `index-families` writes under a run id the run page reads as run by hand, and a night run after it over the same session writes that session again. Each page then reads one index at a time chosen under Universe at its top, the S&P 500 where its link names none, and a link carries the choice, as `#/?universe=400` opens tonight's page for the S&P 400 (see: Every page reads one index at a time chosen under Universe, and every figure names its index).
 
+**An index whose part of the night failed says "Not computed tonight".** The night goes on past it, and its stage, `index-families`, is drawn on the run page among the stages to look at, under the outcome "not computed" with the failure's type and message (see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless). Once the cause is repaired, the line above reads that index's night again over the same session, replacing the row that named the failure.
+
 ### Registering the schedule
 
 Until 5.7 this section said to register the schedule with the platform's scheduler, which is an instruction and not a command, and nothing was ever registered. A night that nobody scheduled produces no evening of observation however long anyone waits for one, so the two figures that were waiting on a week of nights waited on this instead.

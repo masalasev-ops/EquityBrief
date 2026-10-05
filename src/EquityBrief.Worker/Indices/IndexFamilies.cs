@@ -16,8 +16,12 @@ namespace EquityBrief.Worker.Indices;
 
 // What the index families did for one index on the night: the members read, the breadth and the market check, how many
 // each family passed, how many of the index's list were listed and how many held back by a trade still open, and the
-// trades kept tonight and ended tonight.
-public sealed record IndexNightOutcome(string Index, int Members, double? Breadth, bool MarketOpen, IReadOnlyDictionary<string, int> Passed, int Listed, int HeldByATrade, int TradesKept, int TradesEnded, IndexHeavyweightsOutcome Heavyweights);
+// trades kept tonight and ended tonight; or, for an index whose part of the night failed, the failure.
+public sealed record IndexNightOutcome(string Index, int Members, double? Breadth, bool MarketOpen, IReadOnlyDictionary<string, int> Passed, int Listed, int HeldByATrade, int TradesKept, int TradesEnded, IndexHeavyweightsOutcome Heavyweights, string? Fault = null)
+{
+    public static IndexNightOutcome NotComputed(string index, string fault) =>
+        new(index, 0, null, false, new Dictionary<string, int>(StringComparer.Ordinal), 0, 0, 0, 0, new IndexHeavyweightsOutcome(false, 0, 0, 0), fault);
+}
 
 // The night the index families read, none where the store holds no bar, and each index's outcome.
 public sealed record IndexFamiliesOutcome(DateOnly? Session, IReadOnlyList<IndexNightOutcome> Nights);
@@ -28,8 +32,12 @@ public sealed record IndexFamiliesOutcome(DateOnly? Session, IReadOnlyList<Index
 // families in the page's order, five a family, a stock listed once, and a stock whose trade on any card of any index is
 // still open listed by none. They walk each index's open trades over the closes since and keep tonight's listed rows as
 // trades. A night run again replaces its own rows; they evaluate no rule of the S&P 500's, make no request and call
-// no model.
+// no model. A failure in one index's part undoes that index's writes of the night, writes a night row naming it and
+// reads the next index; one outside any index's part ends the step with every index not yet read named the same way,
+// so the S&P 500's night goes on to its facts and its reports whatever became of theirs. The night's own cancellation
+// is the one failure passed on.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+// see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
 // see: The nightly run is arithmetic only
 // see: Every computed table's writer is its own deleter
 public sealed class IndexFamilies : IComponent
@@ -133,14 +141,27 @@ public sealed class IndexFamilies : IComponent
         WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session;
     ";
 
+    // An index's night that failed, where no earlier try of the night computed one.
+    const string InsertNotComputed = @"
+        INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced, fault)
+        VALUES ($index, $night, 0, NULL, 0, $settings, 0, $fault)
+        ON CONFLICT (index_code, session_date) DO NOTHING;
+    ";
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
             rows_written, model_calls, network_requests, spend, detail)
         VALUES (
-            $run_id, $stage, $started_at, $ended_at, 'ok',
+            $run_id, $stage, $started_at, $ended_at, $outcome,
             $rows_written, 0, 0, '0', $detail);
     ";
+
+    // The stage row's outcome where every index was read, and where one or more was not: a word the run page draws
+    // among the stages a person has to look at, and one no resume reads as a stop.
+    public const string Ok = "ok";
+
+    public const string NotComputed = "not computed";
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -154,104 +175,184 @@ public sealed class IndexFamilies : IComponent
     public async Task<IndexFamiliesOutcome> RunAsync(string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
-
-        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
-        await connection.OpenAsync(cancellation);
-
-        var night = await ScalarAsync(connection, NewestSession, [], cancellation) is string newest ? Date(newest) : (DateOnly?)null;
-
-        if (night is not { } session)
-        {
-            await AppendAsync(connection, runId, startedAt, 0, "no session: the store holds no bar", cancellation);
-
-            return new IndexFamiliesOutcome(null, []);
-        }
-
         var outcomes = new List<IndexNightOutcome>();
+        DateOnly? read = null;
         var rows = 0;
 
-        foreach (var index in Indices)
+        try
         {
-            var (names, income) = await InputsAsync(connection, index, session, cancellation);
-            var read = IndexNightRead.Read(index, session, names, income);
-            var qualifying = IndexNightRead.Families
-                .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
-                .ToArray();
-            var passing = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
-            var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation);
-            var picks = FamilyList.Draw(qualifying, open);
+            await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+            await connection.OpenAsync(cancellation);
 
-            await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+            var night = await ScalarAsync(connection, NewestSession, [], cancellation) is string newest ? Date(newest) : (DateOnly?)null;
 
-            await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(session))], cancellation);
-
-            var ended = await WalkAsync(connection, transaction, index, session, cancellation);
-            var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
-
-            await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
-
-            foreach (var answer in read.Answers)
+            if (night is not { } session)
             {
-                await ExecuteAsync(connection, transaction, InsertResult,
-                [
-                    ("$index", index), ("$night", Stamp(session)), ("$ticker", answer.Ticker), ("$family", answer.Family), ("$passed", answer.Passed ? 1 : 0),
-                    ("$place", (object?)answer.Place ?? DBNull.Value), ("$entry", Stored(answer.Entry)), ("$stop", Stored(answer.Stop)), ("$target", Stored(answer.Target)), ("$trail", Stored(answer.Trail)),
-                    ("$cap", (object?)answer.Cap ?? DBNull.Value), ("$order_by", (object?)answer.OrderBy ?? DBNull.Value), ("$reason", (object?)answer.Reason ?? DBNull.Value),
-                ], cancellation);
+                await AppendAsync(connection, runId, startedAt, 0, Ok, "no session: the store holds no bar", cancellation);
+
+                return new IndexFamiliesOutcome(null, []);
             }
 
-            var answers = read.Answers.Where(answer => answer.Passed).ToDictionary(answer => (answer.Ticker, answer.Family));
-            var kept = 0;
+            read = session;
 
-            foreach (var pick in picks)
+            foreach (var index in Indices)
             {
-                await ExecuteAsync(connection, transaction, InsertPick,
-                [
-                    ("$index", index), ("$night", Stamp(session)), ("$ticker", pick.Ticker), ("$family", pick.Family), ("$state", pick.State),
-                    ("$place", (object?)pick.Place ?? DBNull.Value), ("$also", JsonSerializer.Serialize(pick.Also)),
-                    ("$held_index", pick.HeldBy is not null && heldIn.TryGetValue(pick.Ticker, out var heldIndex) ? heldIndex : DBNull.Value),
-                    ("$held_family", (object?)pick.HeldBy?.Family ?? DBNull.Value),
-                    ("$held_night", pick.HeldBy is { } held ? Stamp(held.Listed) : DBNull.Value),
-                ], cancellation);
-
-                if (pick.State == FamilyList.Listed && answers.TryGetValue((pick.Ticker, pick.Family), out var trade))
+                try
                 {
-                    kept++;
-                    await ExecuteAsync(connection, transaction, InsertTrade,
-                    [
-                        ("$index", index), ("$family", pick.Family), ("$ticker", pick.Ticker), ("$night", Stamp(session)), ("$place", pick.Place!.Value),
-                        ("$entry", Stored(trade.Entry)), ("$stop", Stored(trade.Stop)), ("$target", Stored(trade.Target)), ("$trail", Stored(trade.Trail)), ("$cap", trade.Cap!.Value),
-                    ], cancellation);
+                    var (outcome, written) = await IndexNightAsync(connection, index, session, cancellation);
+
+                    outcomes.Add(outcome);
+                    rows += written;
+                }
+                catch (Exception failure) when (!cancellation.IsCancellationRequested)
+                {
+                    var fault = Cause(failure);
+
+                    rows += await NotComputedAsync(connection, index, session, fault, cancellation);
+                    outcomes.Add(IndexNightOutcome.NotComputed(index, fault));
                 }
             }
 
-            await transaction.CommitAsync(cancellation);
+            await AppendAsync(connection, runId, startedAt, rows, outcomes.Any(outcome => outcome.Fault is not null) ? NotComputed : Ok, Detail(outcomes), cancellation);
 
-            var outcome = new IndexNightOutcome(
-                index,
-                read.Members,
-                read.Breadth,
-                read.MarketOpen,
-                IndexNightRead.Families.ToDictionary(family => family, family => read.Answers.Count(answer => answer.Family == family && answer.Passed), StringComparer.Ordinal),
-                picks.Count(pick => pick.State == FamilyList.Listed),
-                picks.Count(pick => pick.State == FamilyList.OpenTrade),
-                kept,
-                ended,
-                heavyweights);
-
-            outcomes.Add(outcome);
-            rows += 1 + read.Answers.Count + picks.Count + kept;
+            return new IndexFamiliesOutcome(session, outcomes);
         }
+        catch (Exception failure) when (!cancellation.IsCancellationRequested)
+        {
+            var fault = Cause(failure);
+            IndexNightOutcome[] all =
+            [
+                .. outcomes,
+                .. Indices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
+            ];
 
-        await AppendAsync(connection, runId, startedAt, rows, Detail(outcomes), cancellation);
+            await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
 
-        return new IndexFamiliesOutcome(session, outcomes);
+            return new IndexFamiliesOutcome(read, all);
+        }
     }
 
-    // What the stage's row says for each index.
+    // The failure an index's part of the night stopped on, as its row and the stage's name it.
+    public static string Cause(Exception failure) => $"{failure.GetType().Name}: {failure.Message}";
+
+    // An index whose part of the night failed: its writes of the night undone with its transaction, and a night row
+    // naming the failure where no earlier try of the night computed one. A row that cannot be written either leaves the
+    // failure on the stage's row alone.
+    async Task<int> NotComputedAsync(SqliteConnection connection, string index, DateOnly night, string fault, CancellationToken cancellation)
+    {
+        try
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = InsertNotComputed;
+            command.Parameters.AddWithValue("$index", index);
+            command.Parameters.AddWithValue("$night", Stamp(night));
+            command.Parameters.AddWithValue("$settings", Settings(index));
+            command.Parameters.AddWithValue("$fault", fault);
+
+            return await command.ExecuteNonQueryAsync(cancellation);
+        }
+        catch (Exception) when (!cancellation.IsCancellationRequested)
+        {
+            return 0;
+        }
+    }
+
+    // The stage's row after a failure outside any index's part, on a connection of its own, and none where the store
+    // will not take it: recording the failure is never what stops the night.
+    async Task AppendAfterAFailureAsync(string runId, DateTimeOffset startedAt, int rows, string detail, CancellationToken cancellation)
+    {
+        try
+        {
+            await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+            await connection.OpenAsync(cancellation);
+            await AppendAsync(connection, runId, startedAt, rows, NotComputed, detail, cancellation);
+        }
+        catch (Exception) when (!cancellation.IsCancellationRequested)
+        {
+        }
+    }
+
+    // One index's part of the night: its members' answers under each family, its list, its trades walked and kept and
+    // its sector heavyweights, written in one transaction, so a failure anywhere in it leaves none of its writes.
+    async Task<(IndexNightOutcome Outcome, int Rows)> IndexNightAsync(SqliteConnection connection, string index, DateOnly session, CancellationToken cancellation)
+    {
+        var (names, income) = await InputsAsync(connection, index, session, cancellation);
+        var read = IndexNightRead.Read(index, session, names, income);
+        var qualifying = IndexNightRead.Families
+            .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
+            .ToArray();
+        var passing = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
+        var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation);
+        var picks = FamilyList.Draw(qualifying, open);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(session))], cancellation);
+
+        var ended = await WalkAsync(connection, transaction, index, session, cancellation);
+        var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
+
+        await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
+
+        foreach (var answer in read.Answers)
+        {
+            await ExecuteAsync(connection, transaction, InsertResult,
+            [
+                ("$index", index), ("$night", Stamp(session)), ("$ticker", answer.Ticker), ("$family", answer.Family), ("$passed", answer.Passed ? 1 : 0),
+                ("$place", (object?)answer.Place ?? DBNull.Value), ("$entry", Stored(answer.Entry)), ("$stop", Stored(answer.Stop)), ("$target", Stored(answer.Target)), ("$trail", Stored(answer.Trail)),
+                ("$cap", (object?)answer.Cap ?? DBNull.Value), ("$order_by", (object?)answer.OrderBy ?? DBNull.Value), ("$reason", (object?)answer.Reason ?? DBNull.Value),
+            ], cancellation);
+        }
+
+        var answers = read.Answers.Where(answer => answer.Passed).ToDictionary(answer => (answer.Ticker, answer.Family));
+        var kept = 0;
+
+        foreach (var pick in picks)
+        {
+            await ExecuteAsync(connection, transaction, InsertPick,
+            [
+                ("$index", index), ("$night", Stamp(session)), ("$ticker", pick.Ticker), ("$family", pick.Family), ("$state", pick.State),
+                ("$place", (object?)pick.Place ?? DBNull.Value), ("$also", JsonSerializer.Serialize(pick.Also)),
+                ("$held_index", pick.HeldBy is not null && heldIn.TryGetValue(pick.Ticker, out var heldIndex) ? heldIndex : DBNull.Value),
+                ("$held_family", (object?)pick.HeldBy?.Family ?? DBNull.Value),
+                ("$held_night", pick.HeldBy is { } held ? Stamp(held.Listed) : DBNull.Value),
+            ], cancellation);
+
+            if (pick.State == FamilyList.Listed && answers.TryGetValue((pick.Ticker, pick.Family), out var trade))
+            {
+                kept++;
+                await ExecuteAsync(connection, transaction, InsertTrade,
+                [
+                    ("$index", index), ("$family", pick.Family), ("$ticker", pick.Ticker), ("$night", Stamp(session)), ("$place", pick.Place!.Value),
+                    ("$entry", Stored(trade.Entry)), ("$stop", Stored(trade.Stop)), ("$target", Stored(trade.Target)), ("$trail", Stored(trade.Trail)), ("$cap", trade.Cap!.Value),
+                ], cancellation);
+            }
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        var outcome = new IndexNightOutcome(
+            index,
+            read.Members,
+            read.Breadth,
+            read.MarketOpen,
+            IndexNightRead.Families.ToDictionary(family => family, family => read.Answers.Count(answer => answer.Family == family && answer.Passed), StringComparer.Ordinal),
+            picks.Count(pick => pick.State == FamilyList.Listed),
+            picks.Count(pick => pick.State == FamilyList.OpenTrade),
+            kept,
+            ended,
+            heavyweights);
+
+        return (outcome, 1 + read.Answers.Count + picks.Count + kept);
+    }
+
+    // What the stage's row says for each index: what it read, or the failure that stopped it.
     public static string Detail(IReadOnlyList<IndexNightOutcome> outcomes) =>
-        string.Join("; ", outcomes.Select(outcome => FormattableString.Invariant(
-            $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")));
+        string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
+            ? $"{outcome.Index}: not computed tonight, {fault}"
+            : FormattableString.Invariant(
+                $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")));
 
     // The rule each family runs on in the index, the words a card's description is written from: its settings, its
     // floors, its gate and the cost its trades pay.
@@ -541,13 +642,14 @@ public sealed class IndexFamilies : IComponent
         }
     }
 
-    async Task AppendAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, int rows, string detail, CancellationToken cancellation)
+    async Task AppendAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, int rows, string outcome, string detail, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
+        command.Parameters.AddWithValue("$outcome", outcome);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$rows_written", rows);

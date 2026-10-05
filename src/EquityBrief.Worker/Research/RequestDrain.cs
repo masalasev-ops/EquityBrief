@@ -272,48 +272,62 @@ public sealed class RequestDrain : IComponent
             }
         }
 
-        // The S&P 400's and 600's lists beside the S&P 500's, the six taken in turn across them.
+        // The S&P 400's and 600's lists beside the S&P 500's, the six taken in turn across them. An index's list the
+        // store cannot read passes every turn, and the line says so.
+        // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
         var lists = new List<IReadOnlyList<string>> { passed };
         var named = new List<string> { "S&P 500" };
+        var unread = new List<string>();
 
         foreach (var index in IndexFamilies.Indices)
         {
             var listed = new List<string>();
+            var name = index == FundHoldings.MidCapIndex ? "S&P 400's" : "S&P 600's";
 
-            foreach (var query in new[] { IndexListedOnTheNight, IndexBoughtOnTheNight })
+            try
             {
-                await using var reading = connection.CreateCommand();
-
-                reading.CommandText = query;
-                reading.Parameters.AddWithValue("$index", index);
-                reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-
-                await using var reader = await reading.ExecuteReaderAsync(cancellation);
-
-                while (await reader.ReadAsync(cancellation))
+                foreach (var query in new[] { IndexListedOnTheNight, IndexBoughtOnTheNight })
                 {
-                    if (!listed.Contains(reader.GetString(0), StringComparer.Ordinal))
+                    await using var reading = connection.CreateCommand();
+
+                    reading.CommandText = query;
+                    reading.Parameters.AddWithValue("$index", index);
+                    reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                    await using var reader = await reading.ExecuteReaderAsync(cancellation);
+
+                    while (await reader.ReadAsync(cancellation))
                     {
-                        listed.Add(reader.GetString(0));
+                        if (!listed.Contains(reader.GetString(0), StringComparer.Ordinal))
+                        {
+                            listed.Add(reader.GetString(0));
+                        }
                     }
                 }
             }
+            catch (Exception failure) when (!cancellation.IsCancellationRequested)
+            {
+                listed.Clear();
+                unread.Add($"the {name} list could not be read, so it passed every turn: {IndexFamilies.Cause(failure)}");
+            }
 
             lists.Add(listed);
-            named.Add(index == FundHoldings.MidCapIndex ? "S&P 400's" : "S&P 600's");
+            named.Add(name);
         }
 
         var first = TakenInTurn(lists, NightAsksFor);
 
         if (first.Count == 0)
         {
-            return new NightAsk([], drawnByFamilies
-                ? FormattableString.Invariant($"no stock is on the page's list for {night:yyyy-MM-dd}, so no report was asked for")
-                : FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"));
+            return new NightAsk([], string.Join("; ", [
+                drawnByFamilies
+                    ? FormattableString.Invariant($"no stock is on the page's list for {night:yyyy-MM-dd}, so no report was asked for")
+                    : FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"),
+                .. unread]));
         }
 
         var asked = new List<string>();
-        var said = new List<string>();
+        var said = new List<string>(unread);
 
         foreach (var (ticker, list) in first)
         {

@@ -1752,7 +1752,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly> held,
         MarketLineView? line,
         IReadOnlyList<FamilyCardView> families,
-        HeavyweightCardView? heavyweights)
+        HeavyweightCardView? heavyweights,
+        string? notComputed = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Name;
@@ -1775,7 +1776,10 @@ public sealed class SinglePageApp : IComponent
             return region.ToString();
         }
 
-        region.Append(marks.MarketLine(line));
+        // A night whose part failed opens on the words its cards carry in place of a market line it did not read.
+        region.Append(notComputed is { } said
+            ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
+            : marks.MarketLine(line));
 
         foreach (var card in families)
         {
@@ -2445,6 +2449,10 @@ public sealed class SinglePageApp : IComponent
         if (view is null)
         {
             body.Append(Invariant($"<p class=\"degraded\" data-index-night=\"none\">The {Escaped(universe.Possessive)} families read nothing for {night:yyyy-MM-dd}: no night of theirs is stored for it.</p>"));
+        }
+        else if (view.Fault is { } fault)
+        {
+            body.Append(Invariant($"<p class=\"degraded\" data-index-night=\"not-computed\">Not computed tonight: the {Escaped(universe.Possessive)} part of the night of {night:yyyy-MM-dd} failed on {Escaped(fault)}, and the S&amp;P 500's night was built regardless.</p>"));
         }
         else
         {

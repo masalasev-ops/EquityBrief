@@ -11302,3 +11302,35 @@ Now:
 > **15.1 lands in three pull requests, each with its own entry and its part of the done condition.** ... the second ... the six reports in turn and the labeller, ...; and the third, after it, is the overnight queue's order across the three indices, which lands once the first night shows what each new member's facts file holds ... Until the second lands the S&P 400's and 600's members are stored and computed and listed by nothing, and until the third the queue reads the S&P 500's members alone.
 > and the done condition gains: "And for the queue, the third: over a constructed night the overnight queue takes the S&P 500's list, then the S&P 400's and then the S&P 600's, each in its page's order, before every other member, the S&P 500's first among those; and a pass over an S&P 400 member's facts file as the night stores it writes its sections."
 Why: the queue's order waits on evidence the first night over the three indices produces, and the cards and the selector do not.
+
+### 2026-10-05 - ARCHITECTURE.html - the index families' catalogue row states what a failure in one index's part does
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> ... replaces its own night where the night is run again, evaluates no S&amp;P 500 rule, makes no request and calls no model (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing)</td></tr>
+Now:
+> the same, then "; a failure in one index's part undoes that index's writes of the night, writes its night row naming the failure and reads the next index, the stage's row then written "not computed" with the failure, so the step and the night go on" with the new decision cited
+Why: the operator ruled on 2026-10-05, before the cards merged, that a failure in the S&P 400's or 600's part of the night is caught and named and the S&P 500's night built regardless.
+
+### 2026-10-05 - ARCHITECTURE.html - section 15.7's Universe paragraph says what an index's page shows on a night its part failed
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> ... A note under a card naming a stock held back for a trade still open names the index whose list holds that trade, since one trade a stock holds across every card of every index (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order).</p>
+Now:
+> the same, then "On a night whose S&amp;P 400 or 600 part failed, that index's page opens on "Not computed tonight" in place of its market line, every card of it says the same and lists nothing, and its Run page names the failure" with the new decision cited
+Why: the same ruling; the operator asked that the index's cards say "not computed tonight".
+
+### 2026-10-05 - SCHEMA.md - index_family_night gains fault, and its writer's paragraph says what a failed index writes
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> **The index families write it in their step, after the S&P 500's families, and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). A night run again replaces its own rows.
+Now:
+> the same, then "An index whose part of the night failed has its writes of the night undone and a row naming the failure written in their place, where no earlier try of the night computed one" with the new decision cited; and a `fault` column, null where the index's night was computed and otherwise the failure's type and message
+Why: the same ruling; the night row is where the page reads that an index's part failed, and the migration creating the table has not yet run on the operator's store, so the column is added in it.
+
+### 2026-10-05 - .claude/rules/checks.md - the nightly-run and read-surface rows carry a failure in an index's part of the night
+Authorised by: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
+Was:
+> nightly-run's row ending "... over constructed lists and a constructed night whose rows name each list |"; read-surface's ending "... and an S&P 500 card names the index whose open trade holds a stock back |"
+Now:
+> nightly-run's adding "; and an S&P 400 book that throws on a holding it cannot read leaves the S&P 500's list, the night's close and its report step built, the S&P 400's night row and the stage's row naming the failure under "not computed" and the S&P 600 read"; read-surface's adding "; and an S&P 600 night whose part failed opens on "Not computed tonight" in place of its market line, every card of it saying the same and listing nothing, and its Run page names the failure"
+Why: the roster is where a check states what it asserts, and the ruling added a test under each.

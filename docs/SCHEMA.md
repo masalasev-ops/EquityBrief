@@ -914,10 +914,11 @@ Grain: one row per session and index the S&P 400's and 600's provisional rules w
 | `market_open` | INTEGER | 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night |
 | `settings` | TEXT | JSON: each family's rule as the night read it, its settings, its floors and its gate, the words each card's description is written from |
 | `rebalanced` | INTEGER | 1 where the index's sector heavyweights read a rebalance that night, the first night of a month the book reads, 0 otherwise |
+| `fault` | TEXT | null where the index's night was computed; otherwise the failure that stopped it, its type and message, the row then holding no breadth, 0 members and 0 in `market_open` and `rebalanced` |
 
 Primary key: `index_code`, `session_date`.
 
-**The index families write it in their step, after the S&P 500's families, and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). A night run again replaces its own rows.
+**The index families write it in their step, after the S&P 500's families, and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). A night run again replaces its own rows. An index whose part of the night failed has its writes of the night undone and a row naming the failure written in their place, where no earlier try of the night computed one (see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless).
 
 ### index_family_result
 Grain: one row per session, index, member and family.

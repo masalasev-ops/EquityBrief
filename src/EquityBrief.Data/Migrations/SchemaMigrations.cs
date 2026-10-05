@@ -704,6 +704,7 @@ public static class SchemaMigrations
             market_open   INTEGER NOT NULL,
             settings      TEXT NOT NULL,
             rebalanced    INTEGER NOT NULL,
+            fault         TEXT,
             PRIMARY KEY (index_code, session_date)
         ) STRICT;
 

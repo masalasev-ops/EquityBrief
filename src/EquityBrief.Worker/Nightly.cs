@@ -419,8 +419,10 @@ public static class Nightly
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
-                // holds back a stock whose S&P 500 trade is still open.
+                // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on
+                // their own row, and the step goes on.
                 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+                // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
                 var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
@@ -431,7 +433,7 @@ public static class Nightly
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
-                    $"; {string.Join(", ", indices.Nights.Select(one => $"{one.Listed} on the {one.Index} list"))}";
+                    $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}";
             }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
