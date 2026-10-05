@@ -38483,9 +38483,10 @@ Measured:   over the stored holdings before this rule, read-only by a scratch sc
             quarter ends or more, the eight wrong-price codes fail it, BBBY_old in both funds; XPO, VGR, ZD, BERY,
             ENSG and SITC step at a spin-off to a level they hold and pass; every other holds within 1 per cent at
             every step. What the rule matches over the live store is read when the remedy runs.
-Tests:      FILLED FROM THE RUN: two added, the pull over four constructed quarters of a fund and the tracking check
-            worked by hand, and the holdings pull's own test reading the row's new words.
-Claims:     FILLED FROM THE RUN.
+Tests:      1884, from 1882: two added, the pull over four constructed quarters of a fund and the tracking check
+            worked by hand; the holdings pull's own test reads the row's new words, and the value check's test the
+            decision's sentence as it now states the 5 per cent.
+Claims:     983, unchanged: the rows the rulings touch already stood.
 Pins:       none moved; neither source is among the 45 files the pin lists hold.
 Mutated:    the rule, stated before the run: each property the rulings name, broken alone by hand, filtered to the
             tests holding it and reverted.
@@ -38498,9 +38499,15 @@ Mutated:    the rule, stated before the run: each property the rulings name, bro
             first value's code before that and so masked this rule; and red in the holdings pull's own test, whose
             holdings held one quarter each then match a code at the same price.
             Results: M1 to M4 each red where stated, each reverted, the tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
-Carried:    `tools/remedies/2026-10-05-15.3-the-holdings-in-step.txt` from main's build after the night of 2026-10-05
-            has finished and on the next day's allowance, its figures, the delisted listings recovered among them, in
-            the remedy's entry; then the four families' searches on both indices again, from the sweeps' build, read
-            family by family and index by index; the freeze of the S&P 600's pullback where it still meets every
-            floor, and anything newly passing brought to the operator.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c6e4aa3, over
+            aa0cd9f, the change's commit, whose first run was stopped once its suite found the value check's test
+            reading the decision's sentence as it stood before. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors,
+            1884 of 1884 tests ran with none failed, migrations 0 to 64 with none pending, schema version 64, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 983 claims, 983 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 994 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43
+            checks on the roster, 43 carried and 43 passed, 1884 of 1884 tests ran.
+Carried:    `tools/remedies/2026-10-05-15.3-the-holdings-in-step.txt` from main's build once this merges, when no night
+            is running, its figures, the delisted listings recovered among them, in the remedy's entry; then the four
+            families' searches on both indices again, from the sweeps' build, read family by family and index by
+            index; the freeze of the S&P 600's pullback where it still meets every floor, and anything newly passing
+            brought to the operator.
