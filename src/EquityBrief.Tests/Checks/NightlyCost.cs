@@ -123,7 +123,9 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNameNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
+        "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
@@ -295,11 +297,13 @@ public partial class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does,
-        // and sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night.
+        // sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night, and eighteen
+        // from 15.3, the funds' quarter-end filings at the archive and the provider's symbol lists, which the history
+        // pull asks by hand and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 16,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are sixteen feed " +
-            "implementations. A seventeenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 18,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eighteen feed " +
+            "implementations. A nineteenth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

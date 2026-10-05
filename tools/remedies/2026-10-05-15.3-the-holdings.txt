@@ -1,0 +1,19 @@
+# The remedy of 15.3 (the history for the sweeps), as its PROGRESS entry prints it: run tools/migrate.ps1 first, which
+# creates migration 63's pulled snapshots and holdings. The holdings pull reads each fund's 28 public quarter-end filings
+# at the SEC, free and a tenth of a second apart, and the provider's two symbol lists, one weighted call each, and stores
+# every holding of common stock with the code it matched. The bars, surprises, companies and splits pulls are then run
+# again for each index, asking every code a snapshot matched beside the members today, about eighteen hundred names: one
+# weighted call a name for the bars and the splits, ten for the companies and the calendar once a month for the
+# surprises, about twenty-two thousand weighted calls of the day's hundred thousand; a name an earlier pull holds keeps
+# its rows. Everything goes into the pulled history's tables, read by no night. No model call and nothing bought. Run
+# after the merge, when no night is running.
+history-pull --holdings --index MID --live
+history-pull --holdings --index SML --live
+history-pull --from 2018-01-01 --index MID --live
+history-pull --from 2018-01-01 --index SML --live
+history-pull --surprises --from 2018-01-01 --index MID --live
+history-pull --surprises --from 2018-01-01 --index SML --live
+history-pull --companies --from 2018-01-01 --index MID --live
+history-pull --companies --from 2018-01-01 --index SML --live
+history-pull --splits --from 2018-01-01 --index MID --live
+history-pull --splits --from 2018-01-01 --index SML --live

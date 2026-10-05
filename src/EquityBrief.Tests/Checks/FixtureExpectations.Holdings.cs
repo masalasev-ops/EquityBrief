@@ -14,6 +14,13 @@ namespace EquityBrief.Tests.Checks;
 // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
 public partial class FixtureExpectations
 {
+    // The rows the history for the sweeps adds that this check reaches: section 18's two.
+    internal static readonly string[] HoldingsClaims =
+    [
+        CheckReach.Key(Scope.FailureTable, "A fund's holdings filing the history pull cannot read"),
+        CheckReach.Key(Scope.FailureTable, "A fund's holding matched to no provider code"),
+    ];
+
     [Fact]
     public void AFundsCapturedFilingIsReadWithEachHoldingsCusipIsinAndCategoryAndTheCapturedSymbolsAsSent()
     {
@@ -195,7 +202,7 @@ public partial class FixtureExpectations
             [
                 "AEGN||2020-01-01", "BRVO||2020-01-01", "ECHO||", "FXFP||2019-10-01", "GOLF|2019-12-31|2020-01-01", "ZULU|2020-01-01|",
             ],
-            spans.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{pair.Key}|{pair.Value.Joined:yyyy-MM-dd}|{pair.Value.Left:yyyy-MM-dd}"));
+            spans.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => FormattableString.Invariant($"{pair.Key}|{pair.Value.Joined:yyyy-MM-dd}|{pair.Value.Left:yyyy-MM-dd}")));
 
         // A second pull stores no snapshot again, and the purge takes the first's rows whole.
         var (again, againSymbols) = HoldingAnswers();

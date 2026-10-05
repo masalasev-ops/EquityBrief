@@ -543,13 +543,22 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --splits --from 2018
 
 A members pull asks the index's fundamentals once, at a weight of ten, and stores each member its answer lists today in `pulled_member`; the answer carries no span of membership, so these are survivors alone, and an answer it cannot read stores nothing and fails the command with its row saying why. The bars pull then asks each member once at a weight of one, about a thousand requests for the two, and the calendar once a calendar month of the span, as it does for the S&P 500's names, the surprises pull asks the calendar the same way and the splits pull each member once, so the eight lines cost about two thousand five hundred weighted calls of the day's hundred thousand. A name already pulled for the S&P 500's history keeps the rows that pull wrote. A name not served is named and the rest stored. Run them when no night is running.
 
+**Membership as it stood, from 15.3.** The holdings pull reads each fund's public quarter-end filings at the SEC, the 28 IJH and the 28 IJR filed from the quarter to 2019-09-30, and the provider's listed and delisted US symbols, and stores every holding of common stock with the code it matched by its ISIN, by its name or by neither, into `pulled_snapshot` and `pulled_holding` (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). The archive's requests cost nothing against the allowance, a tenth of a second apart, and the two symbol lists one weighted call each; a trial over a migrated store holding nothing else read the 56 filings in twenty seconds on 2026-10-05. Its line counts the holdings matched by each key and names those matched by neither and every filing it could not read. Every other pull given that index then asks for each code a snapshot matched beside the members today, so the remedy of 15.3, `tools/remedies/2026-10-05-15.3-the-holdings.txt`, runs the two holdings pulls and then the bars, surprises, companies and splits pulls for each index again, about eighteen hundred names, a second pull keeping every row an earlier one holds:
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --holdings --index MID --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --holdings --index SML --live
+```
+
+The sweeps read a name as a member from the first snapshot holding it to the last; the sessions before the first are read on its holdings, which every figure read that way says.
+
 Remove a pull whole by its run id:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
 ```
 
-A purge removes every row that pull wrote from the nine tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue`, `history-pull-members` and `history-purge`, and the run page draws each as run by hand.
+A purge removes every row that pull wrote from the twelve tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue`, `history-pull-members`, `history-pull-holdings` and `history-purge`, and the run page draws each as run by hand.
 
 ### Sweeping the swing filter over the stored history
 

@@ -11041,3 +11041,35 @@ Was:
 Now:
 > the row ending on what 15.2's tests assert of a trade's cost, the floors, the profit gate and the coverage, and the companies pull's income
 Why: the roster states what each check asserts, and 15.2's tests assert these.
+
+### 2026-10-05 - ARCHITECTURE.html - the funds' holdings and membership as it stood, in sections 7, 13.9, 16 and 18
+Authorised by: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+Was:
+> the history pull's catalogue row reading "... pulled members, pulled income" in its reads and its writes and ending "... every other pull asked for that index reads its names from them, survivors alone, since the answer carries no span of membership (see: ...)"; the sweep history's reading "... pulled members, pulled income, calendar, gate results, heavyweight nights" and "... which the wider universe's first test reads; the sweep computes over what it read outside the store"; section 13.9's "Membership as it stood is rebuilt from the quarter-end holdings the S&amp;P 400's and 600's funds file with the SEC (see: ...)."; section 16's pulled history row ending "... as that index's answer lists them today, each row carrying the run id of the pull that wrote it" and "no night reads any of the nine tables"
+Now:
+> each catalogue row naming the pulled snapshots and holdings, the history pull's survivors alone where no holdings pull has stored its fund's snapshots, then the holdings pull, its matching by ISIN and then by name and every other pull of the index reading the codes its snapshots matched; the sweep history reading a wider index's membership as it stood off the snapshots; section 13.9 naming the public filings from the quarter to 2019-09-30, the two keys, a name a member from the first snapshot holding it to the last and the sessions before the first read on its holdings; section 16 naming the two tables and "any of the twelve tables"; and section 18 gaining "A fund's holdings filing the history pull cannot read" and "A fund's holding matched to no provider code"
+Why: 15.3 builds the funds' holdings pull and the membership the sweeps read off it, and the nine tables were ten before it.
+
+### 2026-10-05 - BUILD_PLAN.md - 15.3 reads the funds' N-PORT filings and the sessions before the first on its holdings
+Authorised by: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+Was:
+> "each fund's quarter-end holdings from its N-PORT filings, its N-Q for 2018-12-31 and its annual report for 2019-03-31, each holding matched to the provider's symbols by ISIN and then by name, an ambiguous name settled by which symbol has bars on the snapshot's date, and a holding matched by neither listed;"
+Now:
+> "each fund's quarter-end holdings from its N-PORT filings, the 28 from the quarter to 2019-09-30, each holding matched ... and a holding matched by neither listed, the sessions before the first snapshot read on its holdings, since the N-Q for 2018-12-31 and the annual report for 2019-03-31 are pages naming each holding with no identifier, shared by dozens of the trust's funds;"
+Why: the two schedules before 2019-09-30 carry no CUSIP and no ISIN, the 2019 annual report being one HTML document for every fund the trust files under, so neither can be matched by the key that names one security; reading them is put to the operator.
+
+### 2026-10-05 - RUNBOOK.md - the holdings pull, 15.3's remedy, and the purge over twelve tables
+Authorised by: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+Was:
+> "A purge removes every row that pull wrote from the nine tables and nothing else, ... under `history-pull`, ..., `history-pull-members` and `history-purge`, and the run page draws each as run by hand."
+Now:
+> a paragraph on membership as it stood, the holdings pull's two commands, its cost and its line, and 15.3's remedy; the purge "from the twelve tables", its stages naming `history-pull-holdings`
+Why: 15.3 adds the holdings pull and its two tables.
+
+### 2026-10-05 - .claude/rules/checks.md - fixture-expectations reads the funds' holdings and membership as it stood
+Authorised by: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+Was:
+> `fixture-expectations`'s "a purge removing a pull's rows from each of the eight tables" and its row ending "... and the companies pull storing each quarter's income as filed, naming a company filing none and its purge taking the quarters whole |"
+Now:
+> "from each of the twelve tables", and the row ending on what 15.3's tests assert of a captured filing and symbol list, the holdings pull over constructed answers, a reused ticker matched by ISIN, the codes every other pull asks for, and a name read as a member on both sides of a quarter end
+Why: the roster states what each check asserts, 15.3's tests assert these, and the pulled tables were ten before it.
