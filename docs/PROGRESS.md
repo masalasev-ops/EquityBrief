@@ -38000,8 +38000,13 @@ Mutated:    the rule, stated before the run: each property the done condition na
             H7 no reading of a cut name: red in the pull.
             H8 the purge leaving the two tables: red in the pull.
             Results: H1 to H8 each red where stated, each reverted, and the five tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2b91507, over
+            d60ce39, the entry's commit, whose suite failed one test, the provider tests' count of the files that
+            may hold a client still reading sixteen, corrected in 2b91507. `tools/ci.ps1`: all six steps, 0
+            warnings, 0 errors, 1863 of 1863 tests ran with none failed, migrations 0 to 63 with none pending,
+            schema version 63, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 981 claims,
+            981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992 placements and verdicts reconciled against a floor
+            of 34, fixture PRESENT, 43 checks on the roster, 43 carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-15.3-the-holdings.txt` from main's
             Release build; the remedy's entry records the snapshots read, the holdings matched by each key and by
             neither, and 30 name matches checked by hand; then each family's sweep on each index again on membership
