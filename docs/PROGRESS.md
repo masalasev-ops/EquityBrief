@@ -38429,3 +38429,36 @@ Carried:    the merge before the night of 2026-10-05, on the operator's order of
             each of the three choices and read back over the live store, in the remedy's entry; the night of
             2026-10-05 read the morning after, the first over the three indices, whose time the operating row reads;
             15.1's third pull request, the overnight queue's order; phase 14's sign-off.
+
+### 15.1 - the cards' half's remedy: migration 64, each index's provisional picks read over 2026-10-02, and every page read back under each choice   2026-10-05
+
+Ran:        `tools/remedies/2026-10-05-15.1-the-index-families.txt` from main's build at 15bce99, the merge of PR
+            365, 20:30:24 to 20:30:28 UTC, with 5152 stopped, no night, queue, report pass, labeller or store copy
+            running and no night lock.
+Migrated:   migration 64, 63 to 64: the index families' five tables and the column on the page's list naming the
+            index whose trade holds a stock back.
+Read:       2026-10-02 under index-families-by-hand-20261005T203025.4102592Z, the rows the rehearsal over the same
+            session stored in its temporary tables, figure for figure. The S&P 400: 400 members, breadth 0.43, the
+            market check closed, nothing passed or listed, its book rebalancing and buying 7. The S&P 600: 599
+            members, breadth 0.51, the market check open, WABC passed by the pullback, listed and kept as a trade,
+            its book rebalancing and buying 8. Each book's first rebalance falls on 2026-10-02, its fund's closes
+            stored by the fetch of 19:17 UTC.
+Restarted:  5152 from main's Release build at 15bce99, listening at 20:31 UTC.
+Read back:  Tonight, Past picks, Run, Universe and Researched under each of the three choices, fifteen pages, each
+            screenshotted and its markup read: every heading names its index, as "Tonight: S&P 400"; the selector
+            states 504, 400 and 602 members with the page's own index chosen; no page names another index's member
+            count among its figures. The S&P 400's Tonight opens on its lists closed at 42.5 per cent against the
+            floor of 45, 0 of 400 members passing a setup, its three swing cards each saying so on its own breadth,
+            the drift's carrying its line of evidence, and the heavyweights' card its 7 holdings, last rebalance
+            2026-10-02 and next 2026-11-02. The S&P 600's opens on its lists open at 51.3 per cent, 1 of 599 passing,
+            WABC on the pullback's card at 59.60, stop 58.27, target 63.10, reward to risk 2.63, the breakout's card
+            saying 598 members read no setup and 1 failed the profit check, and 8 holdings. Each card's status reads
+            "Provisional: not yet frozen", and the S&P 500's swing cards "Live rule since 2026-10-02". Each index
+            holding's lead over its sector and its close against its 200-day average read "not read" and "no close
+            or average stored tonight" on 2026-10-02, a night that computed averages for the S&P 500's members
+            alone; the night of 2026-10-05 computes them for all three indices.
+Verified:   `tools/ci.ps1` green over b1b26cb, the tree main holds at 15bce99 but for the cards' half's own figures,
+            1882 of 1882 tests; this entry read by the checks that read the record, run filtered over the tree
+            carrying it, 66 of 66 passing.
+Carried:    the night of 2026-10-05 read the morning after, its index step's rows and time among it; 15.1's third
+            pull request; phase 14's sign-off.
