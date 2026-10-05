@@ -38032,8 +38032,12 @@ Mutated:    the rule, stated before the run: the property the correction adds br
             escaping it.
             Results: U1 red where stated, reverted, and the history pull's fourteen tests green over the reverted
             tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 28f40c5, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1863 of 1863 tests ran with none
+            failed, migrations 0 to 63 with none pending, schema version 63, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 981 claims, 981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    after the merge, the remedy's two bars pulls run again from main's Release build, and the rest of the
             remedy if it has not finished; the remedy's entry; the sweeps on membership as it stood; 15.2's second
             half; 15.1's second half; phase 14's sign-off.
