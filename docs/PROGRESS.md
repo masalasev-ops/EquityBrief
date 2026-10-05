@@ -37925,7 +37925,8 @@ Found:      reading the store after 15.1's remedy on 2026-10-05: BLDR, TAP and T
             correction does not reach, put to the operator.
 Tests:      1858, from 1854: four added, a member back after ten sessions in no index refetched whole and not
             again, the names not asked for, a stretch the provider cannot serve asked for once and standing as a
-            gap, and a refetch failing on the return.
+            gap, and a refetch failing on the return; the scan of the night's membership reads holds the action
+            check's third read of the stored form.
 Claims:     979, unchanged: two cells of existing rows carry the new clause.
 Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
             own, the swing filter's and the rule versions' lists; the checker is in none of them, and the
@@ -37943,6 +37944,7 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             M5 a returning name's failed refetch counted from one: red in the refetch failing on the return.
             Results: M1 to M5 each red where stated once M3's test was extended, each reverted, and the four tests
             green over the reverted tree.
-Verified:   FILLED FROM THE RUN
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN
 Carried:    the night of 2026-10-05 asks for BLDR's, TAP's and TTD's years, read the next morning on its actions
             row; P's gap put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.

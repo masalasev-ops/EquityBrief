@@ -2233,11 +2233,12 @@ public partial class NightlyRun
         // past-date query, which asks its join date with `joined <= $on`
         // rather than admitting an unknown one and is the one form here that
         // answers about a date other than tonight.
-        // The action check reads the form twice: for the names it checks and,
-        // from the phase 5 sign-off, for the suspect names it retries. The
+        // The action check reads the form three times: for the names it checks,
+        // from the phase 5 sign-off for the suspect names it retries, and from
+        // 15.1's correction for the members it asks for on their return. The
         // loader reads it for the spans it closes when the feed stops listing them.
         Assert.Equal(
-            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader"],
+            ["Backfill", "BarFetcher", "CorporateActionChecker", "CorporateActionChecker", "CorporateActionChecker", "MembershipLoader", "MembershipLoader"],
             stored.Order(StringComparer.Ordinal));
 
         // Every other read asks the join date as well. Stated as a set, and a
