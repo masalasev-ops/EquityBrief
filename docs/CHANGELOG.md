@@ -11383,3 +11383,27 @@ Was:
 Now:
 > the same, then "; and over four constructed quarters of a fund, a holding's code by ISIN whose closes wander is matched to none and its delisted listing by name, asked of the provider, kept in its place, a code stepping to a level it holds kept, a name's code at a constant distance from the value a share kept where the price alone refused it, and a renamed company matched to the code its fund held by ISIN at two quarter ends equal to the cent and not at one, with the tracking check worked by hand"
 Why: the roster is where a check states what it asserts, and the rulings added the two tests the clause names (see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends).
+
+### 2026-10-06 - .claude/rules/checks.md - the fixture-expectations row carries the S&P 400's and 600's sweeps and their answers
+Authorised by: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
+Was:
+> fixture-expectations' row ending "... and a renamed company matched to the code its fund held by ISIN at two quarter ends equal to the cent and not at one, with the tracking check worked by hand |"
+Now:
+> the same, then "; and from 15.4 an S&P 400 or 600 listing clears on its close as traded, the fifty sessions to it at its index's floor and at a multiple of it, and its quarters as filed before its own session at each quality, each worked by hand on both sides; a trade's cost is read in risks at its prices as traded and its company's value on the buy, worked by hand across bands and at double; a constructed history run through the sweep's own command on both indices keeps on the S&P 600 what the S&P 400's floor refuses, its edge before costs, after each trade's cost and at double worked by hand, its report naming its index and its members as survivors only, and the answer its run states read back; the strongest settings a search brings where none passes are the highest edges holding the trade floor and then the most trades, and a dial's level is kept on a setting where it is higher in six of the eight years with two of the last three and survives on six of the ten; and the answer a run states is recorded by the command run after it, a run stating none, an index no page reads and a family no card draws each refused with nothing written, and a card's line is drawn where every design's newest answer says none passed and no freeze came after it, worked by hand over designs, newer runs and a freeze at the answer's instant and a second before it"
+Why: 15.4 adds the tests the clause names, and its answers (see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does).
+
+### 2026-10-06 - .claude/rules/checks.md - the read-surface row carries a card's line saying its sweep found none
+Authorised by: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does
+Was:
+> read-surface's row ending "... and an S&P 600 night whose part failed opens on "Not computed tonight" in place of its market line, every card of it saying the same and listing nothing, and its Run page names the failure |"
+Now:
+> the same, then "; and from 15.4 a family's card on the S&P 400 says its sweep found no setting that passed the floors once that answer is recorded and not before, read off the rendered page, the line gone with a newer sweep of it that passes and never drawn for another index's answer, an answer recorded after the night or where one of the heavyweights' two designs passed, and an S&P 500 card's line goes with a freeze registered after its answer and is drawn for an answer recorded after the freeze, the card's picks drawn either way"
+Why: 15.4 draws the line the operator's ruling of 2026-10-05 put on the card, and the two tests the clause names read it off the page (see: No family on any index is set aside or hidden by a test result without the operator's word).
+
+### 2026-10-06 - BUILD_PLAN.md - 15.5's done condition takes the S&P 400's and 600's card line away at a freeze, and states a checkpoint given no go
+Authorised by: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does
+Was:
+> **Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; and the entry names every pinned file it edited and the remedy it issued.
+Now:
+> **Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; a freeze of a family on the S&P 400 or 600 takes its card's line saying its sweep found no setting that passed away from that night on and not before, read off the rendered page; and the entry names every pinned file it edited and the remedy it issued, or that the operator gave no go and none was issued.
+Why: 15.4's line reads a freeze on the S&P 500 alone, since no S&P 400 or 600 rule can be frozen before 15.5 builds the command, so the checkpoint that builds it owes the line's going; and the operator ruled on 2026-10-06 that no S&P 400 or 600 result is frozen yet.

@@ -8,6 +8,7 @@ namespace EquityBrief.Core.Sweep;
 // setting its second stage crossed. The sweep's own code decides it, at the point its report says whether one passed, and
 // a command records it afterwards; nothing reads the floors a second time.
 // see: No family on any index is set aside or hidden by a test result without the operator's word
+// see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does
 public sealed record SweepAnswer(
     [property: JsonPropertyName("index")] string Index,
     [property: JsonPropertyName("family")] string Family,
@@ -39,6 +40,7 @@ public sealed record RecordedAnswer(string Run, string Index, string Family, str
 // was registered: drawn where every design's newest answer says none passed, and gone with the family's next sweep that
 // passes or its next freeze, a live rule registered after the newest of those answers.
 // see: No family on any index is set aside or hidden by a test result without the operator's word
+// see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does
 public static class SweepLine
 {
     public static bool Drawn(IReadOnlyList<RecordedAnswer> answers, DateTimeOffset? frozenAt)

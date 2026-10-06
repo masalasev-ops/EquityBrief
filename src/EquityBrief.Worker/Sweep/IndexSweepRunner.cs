@@ -842,6 +842,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // A setting's trades after costs meeting the family sweeps' floors: at least 300 scored and an edge above nothing in
     // at least 6 of the 8 years, the one reading of the floors every table, line and answer of a run takes.
+    // see: A sweep passes where a setting it read meets the floors, and a card says none passed only where every design's newest answer does
     static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
 
     internal static bool MeetsTheFloors(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
