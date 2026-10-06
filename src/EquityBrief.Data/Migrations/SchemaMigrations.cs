@@ -685,7 +685,24 @@ public static class SchemaMigrations
         new Migration(62, "create pulled_income", CreatePulledIncome),
         new Migration(63, "create pulled_snapshot and pulled_holding", CreatePulledHoldings),
         new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding, and add family_pick.held_index", CreateIndexFamilies),
+        new Migration(65, "create sweep_answer", CreateSweepAnswer),
     ];
+
+    // The answer each sweep run states, recorded by the command run after it: the run, the index and the family as the
+    // cards name it, the design where a family sweeps more than one, and whether a setting it read met the floors, read by
+    // the cards to say a sweep found none.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    const string CreateSweepAnswer = @"
+        CREATE TABLE sweep_answer (
+            run           TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            design        TEXT,
+            answer        TEXT NOT NULL,
+            recorded_at   TEXT NOT NULL,
+            PRIMARY KEY (run)
+        ) STRICT;
+    ";
 
     // The S&P 400's and 600's provisional rules as the night reads them with the sweep's own code over its year of
     // bars, each index's rows apart from the S&P 500's: what each night read for an index, every member's answer under

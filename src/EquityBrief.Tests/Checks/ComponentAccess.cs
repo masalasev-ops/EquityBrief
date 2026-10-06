@@ -133,6 +133,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Index families"),
             CheckReach.Key(Scope.MatrixTable, "Index families"),
 
+            // 15.4, the sweep answers.
+            CheckReach.Key(Scope.CatalogueTable, "Sweep answers"),
+            CheckReach.Key(Scope.MatrixTable, "Sweep answers"),
+
             // 14.6, the estimates fetcher.
             CheckReach.Key(Scope.CatalogueTable, "Estimates fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Estimates fetcher"),
