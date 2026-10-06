@@ -39215,3 +39215,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1933 of 1933 tests ran.
 Carried:    nothing to run after the merge. Then the 12.3 correction the review found, then 16.2.
+
+### 12.3 - correction: a drain or the rest of a night a press starts is handed the checkout's secrets file, where it started from a copy of the night's clean build with no secrets at all   2026-10-06
+
+Corrects:   the 12.3 build of each night from a clean copy, which started the drain and the rest of a night a press
+            asks for from a copy of the night's own build, as its ruling asks, and handed that worker the data root
+            alone. The copy holds no secrets file, and the read surface's own environment names none,
+            so a worker a press started read no key: a report a press asked for would be refused for want of the
+            paid model's key, and the rest of a night for want of the provider's. A worker the night starts itself
+            reads the file, since it inherits the path the night's script names. No press has asked for a report
+            since the night first built from a clean copy, the last on 2026-09-30, so nothing has been refused yet.
+Found:      by the review of the local lane on 2026-10-06, three readers with two skeptics a finding, whose second
+            lens traced every path that reads the settings.
+Built:      the launcher hands every worker it starts the checkout's secrets file by the path the night's script
+            names, keeping one the surface's own environment names (see: Each night is built from a clean copy of the
+            main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead
+            of the remote's main). The runbook's paragraph on the night's build and the roster's read-surface clause;
+            the prior text in `CHANGELOG.md`.
+Tests:      FILLED FROM THE RUN, from 1933: one added, a worker started from a copy of a clean build reading the
+            checkout's secret over the copy's shipped setting through the path the launcher handed it; the launcher's
+            start info test reads the path.
+Claims:     FILLED FROM THE RUN, from 1016, none added.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; neither file this edits is among them.
+Mutated:    the rule, stated before the run: the one property the correction adds broken, made by hand over the
+            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            P1 the launcher handing no secrets file: predicted red at both tests.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, the surface's Release build again, since the launcher runs in the surface. Then 16.2.

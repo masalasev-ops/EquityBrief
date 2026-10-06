@@ -197,6 +197,15 @@ public sealed class WorkerDrainLauncher(
 
         info.Environment[DataRootVariable] = dataRoot;
 
+        // A copy of the night's clean build holds no secrets file, so the worker is handed the checkout's by path,
+        // as the night's script hands its own; a path the surface's own environment names is kept.
+        // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+        if (checkout is not null
+            && !(info.Environment.TryGetValue(NightBuild.SecretsFileVariable, out var named) && !string.IsNullOrEmpty(named)))
+        {
+            info.Environment[NightBuild.SecretsFileVariable] = NightBuild.SecretsFileIn(checkout);
+        }
+
         return info;
     }
 

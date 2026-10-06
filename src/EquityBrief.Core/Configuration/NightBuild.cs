@@ -29,6 +29,11 @@ public static class NightBuild
     // from a clean copy, which holds none, reads the main checkout's without a copy of it.
     public const string SecretsFileVariable = "EquityBrief__SecretsFile";
 
+    // The checkout's secrets file, where the night's script names it and where a press names it for the worker
+    // it starts from a copy of the night's build.
+    public static string SecretsFileIn(string checkout) =>
+        Path.Combine(checkout, "src", "EquityBrief.Worker", "appsettings.Secrets.json");
+
     // The argument the script hands the worker the commit with, and the one with the line it records.
     public const string BuiltFromArgument = "--built-from";
     public const string BuildNoteArgument = "--build-note";
