@@ -38840,3 +38840,52 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, `tools/remedies/2026-10-06-15.2-the-member-readings.txt` (migration 66) and the
             surface's Release build again; the night of 2026-10-06 fills every member's readings and prices the trades
             ended before it, read off the night's member readings row on the run page; then 15.5.
+
+### 15.5 - the swing families' freezes on the S&P 400 and 600: the command registering a family's live rule and its variants on its index, each rule read on the night at its settings with its own list and trades, a frozen family drawn by its live rule and each rule's record on the index's Run page   2026-10-06
+
+Built:      15.5's first pull request. `register --index-family <family> --index <MID|SML> --parameters ...
+            [--variants ...]` freezes a swing family on the S&P 400 or 600: its live rule at the parameters given and
+            up to eight variants, each the live rule with the parameters it names moved, at one instant or none, every
+            value one its index's sweep read, the family's dials on its grid and the levels its second stage read
+            beside them (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index
+            and evaluated by their step alone). Six evaluators, a family on an index each, are family rules' that fire
+            on no S&P 500 member, so no S&P 500 stage, source or version moves; each pins its family's sweep files, the
+            index night's files and every family rule's shared files. The index families' step reads each rule
+            standing registered when the night started at its settings through the night reader's own functions, its
+            levels off the member readings, the switches and the S&P 500's market reading; each keeps its own list,
+            five a night with one open trade a stock of its own, and its trades with their result, their round trip
+            and, once their cap has passed, their benchmark (migration 67, `index_rule_trade`). A family's live rule
+            draws its list and its card, the sweep's line going from the night of the freeze; a rule whose evaluator
+            moved or whose settings left its grid is read by none, its family drawn by the provisional rule, and named
+            on the stage's row. The index's Run page draws each rule's record after each trade's own round trip. The
+            decision, sections 7, 14, 15.7, 15.10, 16 and 18, `SCHEMA.md`, the runbook, the guide and the roster's
+            three clauses; the prior text in `CHANGELOG.md`. This checkpoint amends its own done condition: 15.5 lands
+            in two pull requests, this one the swing families' freezes and the second the sector heavyweights', each
+            with its half of the done condition, the plan's prior text in `CHANGELOG.md`.
+No go:      the operator gave no go, ruling on 2026-10-06 that no family on the S&P 400 or 600 is frozen, so no remedy
+            was issued.
+Tests:      1908, from 1902: six added, the command's refusals and its rows at one instant, each variant worked by
+            hand on both sides of the setting it moves, each rule's own list and trades with a trade through its stop,
+            a rule the night cannot read, the frozen card and its line, and each rule's record on the Run page.
+Claims:     997, from 995: section 16's index rule trades and section 18's row on a rule the night does not read.
+Pins:       none of the S&P 500's moved. Read: the rule versions' code version, the swing filter's, each candidate
+            evaluator's and the sector heavyweights' evaluator's lists. The pinned files it edited are the six new
+            evaluators' own sources and no other's: `IndexRules.cs`, `IndexNightRead.cs` and `IndexFamilies.cs`, the
+            new `IndexRuleCandidate.cs` and its three families' files, and `BreakoutSweep.cs` and `DriftSweep.cs`, each
+            of which gained the benchmark's member count; each evaluator's version is the pin of its sources.
+Mutated:    the rule, stated before the run: each property the first pull request's done condition names broken
+            alone, made by hand over the working tree at 3a1a335, filtered to the tests that read it and reverted.
+            M1 a variant stating a rule given before it accepted: predicted red at the command's refusals.
+            M2 the fund against SPY read open at exactly one: predicted red at the fund variant closed at one.
+            M3 the card's line kept after a freeze: predicted red at the card frozen on the night.
+            M4 a rule's list keeping six a night: predicted red at each rule's own list.
+            M5 a rule's record read before each trade's round trip: predicted red at the Run page's records.
+            M6 a rule whose evaluator moved read all the same: predicted red at the rule the night cannot read.
+            Results: M1 to M6 each red where stated: M1 registered the repeated variant, exit 0 where 1 was expected,
+            M2 fired IE, MV, PN, IA, IC, ID and IB at one, M3 drew the line on the frozen card, M4 kept ID sixth, M5
+            drew the live rule's edge before costs, M6 kept a trade for the moved rule; each reverted, and the six
+            tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, migration 67 applied to the store by `tools/migrate.ps1` and the surface's Release build
+            again; then 15.5's second pull request, the sector heavyweights' freeze on each index.
