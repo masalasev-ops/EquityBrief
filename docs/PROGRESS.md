@@ -39067,15 +39067,15 @@ Fixture:    the fixture's own night lists nothing, so its replay writes no card 
             covering its interest 3.00 times, its sector tenth of eleven on the S&P 400 where the S&P 500's ranks
             would put it first, and its report on the fifth session inside the fifteen by which three in four of the
             rule's twenty trades had ended.
-Tests:      FILLED FROM THE RUN, from 1913: eleven added, each line on both sides of its value, each value moved, the
+Tests:      1924, from 1913: eleven added, each line on both sides of its value, each value moved, the
             earnings line's three verdicts, the cover at its floor, the S&P 400's night, the record against the sweep,
             a failed index and a refused step, the cards on each index's pages and the phone's column.
-Claims:     FILLED FROM THE RUN, from 1000: the two catalogue and matrix rows, the two stores, the night step, section
+Claims:     1014, from 1000: the two catalogue and matrix rows, the two stores, the night step, section
             17's four values and section 18's four failures.
 Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
             sector heavyweights' evaluator's lists, 60 files named; no file 16.1 edits or adds is among them.
 Mutated:    the rule, stated before the run: each property the done condition names broken alone, made by hand over
-            the working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            the working tree at d36d768, filtered to the tests that read it and reverted.
             M1 a card's readings read from the newest stored on or after the night: predicted red at the S&P 400's
             night, whose later reading is a million dollars a session and deteriorating.
             M2 an S&P 400 card reading the S&P 600's night row: predicted red at the same, its breadth 30% under 45%.
@@ -39086,9 +39086,18 @@ Mutated:    the rule, stated before the run: each property the done condition na
             written before its second fails.
             M7 the record's heading naming the stock in place of the rule: predicted red at the S&P 400's and 600's
             cards on their pages.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+            Results: M1 to M7 each red where stated: M1 read PICK's business off the later reading and warned on its
+            deteriorating state where the night's ticks, M2 lost the S&P 400's 60.0% against 45% from PICK's market
+            line, M3 warned on a report a session past the held time where it notes, M4 ticked the eighth of eleven
+            sectors where four bottom places warn, M5 read the record's average as -1.2459 against the sweep's -1.3028
+            after costs, M6 kept MP's card beside SP's, M7 headed M1's record "The record of M1"; each reverted, and
+            the seven tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: d36d768.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1924 of 1924 tests ran with none failed, migrations 0
+            to 69 with none pending, schema version 69, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1014 claims, 1014 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1025
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1924 of 1924 tests ran.
 Carried:    after the merge, `tools/remedies/2026-10-06-16.1-the-decision-card.txt`, migration 69 and then
             `rule-record`, no request and no model call, run outside the night's window, and the surface's Release
             build again; the night of 2026-10-06 writes the first cards, read off the run page's decision cards row.
