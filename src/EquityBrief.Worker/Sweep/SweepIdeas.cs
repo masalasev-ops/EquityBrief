@@ -765,6 +765,8 @@ public sealed class IdeaReplay
 
     public int Picks => picks.Count;
 
+    public IReadOnlyList<SweepSeries> Series => series;
+
     // One rule's figures, each rule read once whatever name it is asked under.
     public IdeaFigures Evaluate(string key, IdeaRule rule)
     {
@@ -777,7 +779,9 @@ public sealed class IdeaReplay
         return figures with { Key = key };
     }
 
-    public List<IdeaTrade> Trades(IdeaRule rule)
+    // A listing the filter refuses, by its stock and its bar, is left off before the walk, so the next in the list's
+    // order takes its place.
+    public List<IdeaTrade> Trades(IdeaRule rule, Func<int, int, bool>? keep = null)
     {
         var listings = new List<IdeaListing>();
 
@@ -790,6 +794,11 @@ public sealed class IdeaReplay
 
             var candidate = candidates[pick.Index];
             var bar = Array.BinarySearch(series[pick.Name].SessionAt, pick.Session);
+
+            if (keep is not null && !keep(pick.Name, bar))
+            {
+                continue;
+            }
 
             listings.Add(new IdeaListing(
                 pick.Index,

@@ -545,6 +545,7 @@ public sealed class SweepRunner
         var report = SweepReport.Build(inputs, candidates, rows, trials, verdicts, crossRows, carried, results, pointInTime, state, nights, calendar, firstScored);
 
         File.WriteAllText(Of(SweepFolder.ReportFile), report);
+        File.WriteAllText(Of(SweepAnswer.File), new SweepAnswer(Indices.IndexFamilies.LargeIndex, Core.Families.SetupFamilies.Pullback, null, results.Any(result => result.Proposal is not null)).Json());
         Say("the report is written: " + Of(SweepFolder.ReportFile));
 
         return 0;

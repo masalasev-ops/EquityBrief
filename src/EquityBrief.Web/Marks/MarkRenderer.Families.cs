@@ -35,7 +35,8 @@ public sealed record FamilyCardView(
     int Variants,
     IReadOnlyList<FamilyPickCell> Picks,
     IReadOnlyList<string> Notes,
-    string? Empty);
+    string? Empty,
+    bool SweepFoundNone = false);
 
 // The line tonight's page opens on, on a night the families drew its list: the index it is over, whether the
 // market check left the lists open, the breadth it read against its floor, how many of the index's members a
@@ -364,6 +365,12 @@ public sealed partial class MarkRenderer
         ("News, 30 days", NewsSays),
     ];
 
+    // The one line a card draws under its standing while its family's recorded sweep found no setting that passed the
+    // floors, and nothing otherwise; the card still lists its picks.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    internal static string SweepFoundNoneLine(bool drawn) =>
+        drawn ? $"<p class=\"family-sweep\" data-sweep=\"none passed\">{Escaped(EquityBrief.Core.Sweep.SweepAnswer.Line)}</p>" : string.Empty;
+
     // One family's card: its state and counts in a line, its picks as rows numbered by their place down
     // the page, or why it lists nothing, and the notes beneath.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
@@ -381,6 +388,7 @@ public sealed partial class MarkRenderer
             ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
             : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}</b>");
         body.Append(Invariant, $" · {Count(card.Picks.Count, "pick")} tonight · {Count(card.Variants, "variant")} scoring in the background</p>");
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone));
 
         if (card.Picks.Count == 0)
         {

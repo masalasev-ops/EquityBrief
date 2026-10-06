@@ -75,6 +75,7 @@ public sealed class HeavyweightSweepRunner(IClock clock, string databaseFile, Te
 
         File.WriteAllText(report, HeavyweightSweepReport.Build(run, settings, proposal, comparison));
         File.WriteAllText(figures, JsonSerializer.Serialize(new { run, proposal = proposal.Proposed?.Key, comparison, settings = settings.Select(one => one.Figures) }, SweepRunner.Json));
+        File.WriteAllText(Path.Combine(folder, Core.Sweep.SweepAnswer.File), new Core.Sweep.SweepAnswer(Indices.IndexFamilies.LargeIndex, HeavyweightRule.Name, null, proposal.Proposed is not null).Json());
 
         output.WriteLine(proposal.Proposed is { } proposed
             ? "proposed " + proposed.Key + ", edge " + FamilySweepReport.Number(proposed.Edge) + " over " + proposed.Trades.ToString(CultureInfo.InvariantCulture) + " trades"

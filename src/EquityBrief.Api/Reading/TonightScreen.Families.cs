@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -322,7 +323,34 @@ public static partial class TonightScreen
     // the variants standing beside it.
     static (DateOnly? LiveSince, int Variants) Standing(string name, IReadOnlyList<CandidateRow> register, DateOnly night)
     {
-        var at = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var (live, variants) = StandingRows(name, register, night);
+
+        return (live is null ? null : DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime), variants);
+    }
+
+    // The instant a family's live rule standing on the night was registered, read as its standing is, and none where no
+    // freeze has registered one; what a recorded sweep answer is read against.
+    public static DateTimeOffset? FrozenAt(string name, IReadOnlyList<CandidateRow> register, DateOnly night) =>
+        StandingRows(name, register, night).Live?.RegisteredAt;
+
+    // The instant past a night from which nothing recorded counts on its page: a freeze or an answer written after the
+    // night is read on no night before it.
+    public static DateTimeOffset PastTheNight(DateOnly night) => new(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+
+    // Each card with the line its family's recorded sweep answers draw on the night, the answers recorded before the
+    // night was past and its freeze read off the register as of the night.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    public static IReadOnlyList<FamilyCardView> WithSweepLines(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<RecordedAnswer> answers, Func<string, DateTimeOffset?> frozenAt) =>
+    [
+        .. cards.Select(card => card with
+        {
+            SweepFoundNone = SweepLine.Drawn([.. answers.Where(answer => answer.Family == card.Family)], frozenAt(card.Family)),
+        }),
+    ];
+
+    static (RegisterRow? Live, int Variants) StandingRows(string name, IReadOnlyList<CandidateRow> register, DateOnly night)
+    {
+        var at = PastTheNight(night);
         var standing = CandidateFamily.In(
                 CandidateFamily.Standing(
                     [
@@ -337,11 +365,7 @@ public static partial class TonightScreen
 
         bool IsLive(string candidate) => name == SetupFamilies.Pullback ? SwingFamily.IsLive(candidate) : FamilyRecords.IsLive(candidate);
 
-        var live = standing.LastOrDefault(row => IsLive(row.Candidate));
-
-        return (
-            live is null ? null : DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
-            standing.Count(row => !IsLive(row.Candidate)));
+        return (standing.LastOrDefault(row => IsLive(row.Candidate)), standing.Count(row => !IsLive(row.Candidate)));
     }
 
     // The notes beneath a family's picks: each stock it passed that a trade still open holds back, each one

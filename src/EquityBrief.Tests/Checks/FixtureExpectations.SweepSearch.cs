@@ -213,6 +213,95 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheStrongestSettingsASearchBringsWhereNonePassesAreTheHighestEdgesHoldingTheTradeFloorAndThenTheMostTrades()
+    {
+        var space = SweepSpace.For([]);
+        var live = space.LivePoint();
+
+        int[] Moved(DialKind dial, int by)
+        {
+            var point = (int[])live.Clone();
+
+            point[(int)dial] += by;
+
+            return point;
+        }
+
+        // Five settings read, one reading no edge: the live point at 0.5 over 400 trades, a step up the reward to
+        // risk at 0.8 over 400, a step down at 0.6 over exactly the floor of 300, a step up the strength at 2.0
+        // over 299 and a step down at 3.5 over 2.
+        var (up, down, stronger, weaker, unread) = (Moved(DialKind.RewardToRisk, 1), Moved(DialKind.RewardToRisk, -1), Moved(DialKind.Strength, 1), Moved(DialKind.Strength, -1), Moved(DialKind.DepthLow, 1));
+        var read = new Dictionary<string, (int Scored, double Edge)>(StringComparer.Ordinal)
+        {
+            [SweepSpace.Key(live)] = (400, 0.5),
+            [SweepSpace.Key(up)] = (400, 0.8),
+            [SweepSpace.Key(down)] = (300, 0.6),
+            [SweepSpace.Key(stronger)] = (299, 2.0),
+            [SweepSpace.Key(weaker)] = (2, 3.5),
+            [SweepSpace.Key(unread)] = (400, double.NaN),
+        };
+        var search = new SweepDesignSearch(SweepDesign.Live, 300, 300, space, (point, _) => read[SweepSpace.Key(point)] is var (scored, edge) ? new SweepSummary(scored, 40, 35, 35, (float)edge, (float)edge, 4, 4, false, 10, 0.3f, 0) : default, point => SweepMeasuresAt(0));
+
+        foreach (var point in new[] { live, up, down, stronger, weaker, unread })
+        {
+            search.Evaluate(point);
+        }
+
+        // The three holding the floor by their edges, 300 among them; then 299 and 2 by their trades, though
+        // their edges are the highest read; and the setting reading no edge nowhere.
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live), SweepSpace.Key(stronger), SweepSpace.Key(weaker)], search.Strongest(10).Select(point => SweepSpace.Key(point)));
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(down), SweepSpace.Key(live)], search.Strongest(3).Select(point => SweepSpace.Key(point)));
+
+        // Given a higher count, as the second stage asks for, the settings holding it come first by their edges and the
+        // one at 300 falls among the rest by its trades.
+        Assert.Equal([SweepSpace.Key(up), SweepSpace.Key(live), SweepSpace.Key(down), SweepSpace.Key(stronger), SweepSpace.Key(weaker)], search.Strongest(10, 400).Select(point => SweepSpace.Key(point)));
+    }
+
+    [Fact]
+    public void ADialLevelIsKeptWhereItIsHigherInSixYearsWithTwoOfTheLastThreeAndSurvivesOnSixOfTheTenSettings()
+    {
+        static double?[] Edges(params double[] values) => [.. values.Select(value => (double?)value)];
+
+        // A setting at 0.1 every year over 40 trades a year.
+        var without = YearMeasures(SweepForty, Edges(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1));
+
+        // Higher in six years, two of them among the last three: kept. Higher in six with one of the last three, or in
+        // five: not kept.
+        Assert.True(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.0, 0.0, 0.2, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.2, 0.2)), onTotals: false));
+
+        // Higher every year with 300 trades left: kept; with 299: not.
+        Assert.True(SweepDials.Kept(without, YearMeasures([38, 38, 38, 38, 37, 37, 37, 37], Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)), onTotals: false));
+        Assert.False(SweepDials.Kept(without, YearMeasures([38, 38, 38, 37, 37, 37, 37, 37], Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2)), onTotals: false));
+
+        // A switch is read on the year's total: 38 trades a year at 0.105 is a higher edge every year and a lower total,
+        // 3.99 against 4, so a switch is not kept where a dial would be; 40 a year at 0.15 totals 6 and is kept.
+        var thinner = YearMeasures([38, 38, 38, 38, 38, 38, 38, 38], Edges(0.105, 0.105, 0.105, 0.105, 0.105, 0.105, 0.105, 0.105));
+
+        Assert.True(SweepDials.Kept(without, thinner, onTotals: false));
+        Assert.False(SweepDials.Kept(without, thinner, onTotals: true));
+        Assert.True(SweepDials.Kept(without, YearMeasures(SweepForty, Edges(0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15)), onTotals: true));
+
+        // A level kept on six of the ten settings survives and one kept on five does not, each with the median change
+        // its tries made to the edge: six at +0.1 and four at nothing is a median of +0.1, five and five +0.05.
+        var higher = YearMeasures(SweepForty, Edges(0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2));
+        var tries = Enumerable.Range(0, SweepDials.Settings)
+            .SelectMany(setting => new[]
+            {
+                new DialTry("quality", "off", false, setting, without, setting < 6 ? higher : without),
+                new DialTry("hold", "20 sessions", false, setting, without, setting < 5 ? higher : without),
+            })
+            .ToArray();
+        var read = SweepDials.Read(tries);
+
+        Assert.Equal([("quality", "off", 6), ("hold", "20 sessions", 5)], read.Select(one => (one.Dial, one.Level, one.KeptOn)));
+        Assert.Equal(0.1, read[0].MedianChange!.Value, 6);
+        Assert.Equal(0.05, read[1].MedianChange!.Value, 6);
+        Assert.Equal(["quality"], read.Where(one => one.KeptOn >= SweepDials.KeptOn).Select(one => one.Dial));
+    }
+
+    [Fact]
     public void TheRefinementTakesTheDeepestMoveAndStopsWhenNoMoveIsDeeper()
     {
         var space = SweepSpace.For([]);

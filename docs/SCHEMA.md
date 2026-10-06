@@ -76,6 +76,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_family_pick` | IndexFamilies | none | IndexFamilies |
 | `index_family_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_heavyweight_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -1011,6 +1012,22 @@ Grain: one row per index, stock and the session the index's sector heavyweights 
 Primary key: `index_code`, `ticker`, `entered_on`.
 
 **The index families write it for each index's book and are its own deleter** (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). Each night they carry each holding and its size cut by tonight's closes, end a holding whose stock left the index and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, as the S&P 500's book is kept. A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. The rows are never deleted otherwise.
+
+### sweep_answer
+Grain: one row per sweep run recorded.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run` | TEXT | the run's folder name under the sweep's folder, the instant it started |
+| `index_code` | TEXT | the index the run read, `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the family as the cards name it, by the word it is stored under |
+| `design` | TEXT | the design where the family sweeps more than one, `a` or `b` for an index's sector heavyweights; null otherwise |
+| `answer` | TEXT | `passed` where a setting the run read met the floors, its proposal or a setting its second stage crossed, and `none passed` otherwise |
+| `recorded_at` | TEXT | UTC instant of the command that recorded it |
+
+Primary key: `run`.
+
+**The sweep answers command writes it, by hand after a sweep run, and nothing deletes it** (see: No family on any index is set aside or hidden by a test result without the operator's word). The command reads the answer the run states in its own folder, written by the sweep's own code where its report says whether a setting passed, and decides nothing itself: a run stating no answer, being one made before runs stated one or the pullback's base, which searches nothing, is refused with nothing written. Recording a run again writes its row again, which is the update. A family's card draws its one line, "Its sweep found no setting that passed the floors", where the newest answer recorded for each of the family's designs on its index says none passed and no live rule of the family was registered after the newest of them. The rows are kept: each is what the operator was told of a sweep, and a row recorded for a run whose folder was later removed still says what that run found.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.

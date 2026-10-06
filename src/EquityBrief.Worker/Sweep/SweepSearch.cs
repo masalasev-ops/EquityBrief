@@ -601,6 +601,41 @@ public sealed class SweepDesignSearch
         return [.. leaders.OrderByDescending(pair => pair.Edge).ThenBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => SweepSpace.Parse(pair.Key))];
     }
 
+    // The settings read with the highest edges among those holding the trade floor, or a higher count given, whatever
+    // other floors they meet, and after them the rest by the most trades, a tie settled by the setting, which a search
+    // proposing nothing brings the operator: across a grid of millions the highest edges otherwise fall to settings
+    // of a few trades.
+    public IReadOnlyList<int[]> Strongest(int count, int floor = SweepMeasures.TradeFloor)
+    {
+        var read = new Dictionary<string, (float Edge, int Scored)>(StringComparer.Ordinal);
+
+        foreach (var (key, summary) in evaluated)
+        {
+            if (summary.HasEdge)
+            {
+                read[key] = (summary.Edge, summary.Scored);
+            }
+        }
+
+        for (var at = 0; at < sampleSummaries.Count; at++)
+        {
+            if (sampleSummaries[at].HasEdge)
+            {
+                read[SweepSpace.Key(SamplePoint(at))] = (sampleSummaries[at].Edge, sampleSummaries[at].Scored);
+            }
+        }
+
+        return
+        [
+            .. read
+                .OrderBy(pair => pair.Value.Scored >= floor ? 0 : 1)
+                .ThenByDescending(pair => pair.Value.Scored >= floor ? pair.Value.Edge : pair.Value.Scored)
+                .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+                .Take(count)
+                .Select(pair => SweepSpace.Parse(pair.Key)),
+        ];
+    }
+
     // Depth along one dial is the single steps that dial can move in one direction, the others held, before the
     // setting leaves the plateau; a setting's depth is the smallest over every dial and both directions. Beyond
     // off and at either end of a two-value dial the grid does not limit depth, and a move that changes no

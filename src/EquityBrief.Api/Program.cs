@@ -823,14 +823,21 @@ app.MapGet("/screens/tonight/{night?}", async (
         var members = await read.IndexMembersAsync(reading.Code, dated);
         var indexResults = await read.IndexResultsAsync(reading.Code, dated);
         var (indexQueued, indexTimes, _) = await QueueRead(read, clock);
-        var indexCards = TonightScreen.IndexCards(
-            reading,
-            indexNight,
-            await read.IndexPicksAsync(reading.Code, dated),
-            indexResults,
-            members,
-            await read.ResearchedAsync(),
-            QueueTimes.States(indexQueued, indexTimes, clock.SessionZone));
+        // Each card with its family's recorded sweep answers on the index; no freeze has registered an S&P 400 or 600
+        // rule, so each line goes with the family's next passing sweep alone.
+        // see: No family on any index is set aside or hidden by a test result without the operator's word
+        var indexAnswers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
+        var indexCards = TonightScreen.WithSweepLines(
+            TonightScreen.IndexCards(
+                reading,
+                indexNight,
+                await read.IndexPicksAsync(reading.Code, dated),
+                indexResults,
+                members,
+                await read.ResearchedAsync(),
+                QueueTimes.States(indexQueued, indexTimes, clock.SessionZone)),
+            indexAnswers,
+            _ => null);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         return Results.Content(
@@ -848,7 +855,10 @@ app.MapGet("/screens/tonight/{night?}", async (
                     await read.IndexHoldingsAsync(reading.Code, dated),
                     await read.IndexLastRebalanceAsync(reading.Code, dated),
                     await read.IndexHoldingClosesAsync(reading.Code, dated),
-                    members),
+                    members) with
+                {
+                    SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn([.. indexAnswers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)], null),
+                },
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading)),
             "text/html; charset=utf-8");
     }
@@ -1023,9 +1033,17 @@ app.MapGet("/screens/tonight/{night?}", async (
     var ruleView = TonightScreen.RuleView(rule, gates, market);
     var familyResults = onThePage is null ? [] : await read.FamilyResultsAsync(dated);
     var pullbackSettings = gates?.FirstOrDefault() is { } stored ? await FilterSettingsOf(read, stored.Version) : null;
+    // Each card with the line its family's recorded sweep answers draw, read against the instant its live rule was
+    // registered as of the night.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    var register = await read.RegisteredCandidatesAsync();
+    var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
     var cards = onThePage is null || gates is null
         ? null
-        : TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, await read.RegisteredCandidatesAsync(), ruleView, familyResults, pullbackSettings);
+        : TonightScreen.WithSweepLines(
+            TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings),
+            answers,
+            family => TonightScreen.FrozenAt(family, register, dated));
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -1033,7 +1051,12 @@ app.MapGet("/screens/tonight/{night?}", async (
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
     var heavyweights = cards is null
         ? null
-        : TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells, await read.RegisteredCandidatesAsync());
+        : TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells, register) with
+        {
+            SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
+                [.. answers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
+                TonightScreen.FrozenAt(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)),
+        };
     var line = cards is null
         ? null
         : TonightScreen.Line(

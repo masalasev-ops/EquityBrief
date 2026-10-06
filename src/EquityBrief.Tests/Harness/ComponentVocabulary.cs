@@ -55,6 +55,8 @@ internal static class ComponentVocabulary
     // computed tables column holds each S&P 400 and 600 member's answers under its
     // index's families, the listings column each index's nights and lists, and
     // the forward returns column each index's trades and heavyweight holdings.
+    // From 15.4 the listings column holds the answer each recorded sweep states,
+    // which a family's card reads beside its picks.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -62,7 +64,7 @@ internal static class ComponentVocabulary
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult]),
-        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick]),
+        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.SweepAnswer]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading]),
@@ -200,6 +202,7 @@ internal static class ComponentVocabulary
         ["index family picks"] = DataStore.IndexFamilyPick,
         ["index family trades"] = DataStore.IndexFamilyTrade,
         ["index heavyweight holdings"] = DataStore.IndexHeavyweightHolding,
+        ["sweep answers"] = DataStore.SweepAnswer,
         ["estimate readings"] = DataStore.EstimateReading,
         ["fundamental readings"] = DataStore.FundamentalReading,
         ["membership"] = DataStore.Membership,

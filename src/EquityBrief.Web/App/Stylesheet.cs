@@ -362,6 +362,7 @@ span[data-last-asked-at]::before{content:none}
 .list-table .nn{color:var(--res)}
 .family-state{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
 .family-state .provisional{font-weight:600;color:var(--ink)}
+.family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
 .family-empty{margin:0 0 8px}
 .family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
 .family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}

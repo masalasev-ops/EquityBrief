@@ -1297,7 +1297,7 @@ Each swing family is swept on the S&P 400 and on the S&P 600, its strength, mark
 ### 15.5 Freezes and registrations
 On the operator's go for each index and family: its rule and up to eight variants registered at one instant, each with its own record and checkpoints counted among that family's own rules on that index, at most nine, and the remedy that registers them. One remedy for each go.
 
-**Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; and the entry names every pinned file it edited and the remedy it issued.
+**Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; a freeze of a family on the S&P 400 or 600 takes its card's line saying its sweep found no setting that passed away from that night on and not before, read off the rendered page; and the entry names every pinned file it edited and the remedy it issued, or that the operator gave no go and none was issued.
 
 ### 15.6 Phase 15 report
 `tools/verify-phase` reaches every claim this phase added, and the pair predicted above is checked against the actual with every claim that moved named.

@@ -38625,3 +38625,91 @@ Carried:    the operator's ruling on the S&P 600's pullback, which misses the pl
             settings meeting the floors on the S&P 400, the pullback's crossed with profit and cover and the drift;
             15.4's landing; 15.1's third pull request, after the first night over the three indices; 15.2's second;
             phase 14's sign-off.
+
+### 15.4 ruling - the queue to the end of phase 16 merged without a go, no S&P 400 or 600 result frozen, the card's values as planned, the sign-offs left to a session the operator starts, and the news labeller waiting for the off-peak hours after 16.4   2026-10-06
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-06, after the night of 2026-10-05 ran at 02:00 UTC and its labeller stopped at a
+            peak window with nothing labelled: "i do not want to  give a go on each merge. I want you to finish
+            everything one after another unless something needs my decision." Then: "yep  labeller can wait for cheap
+            hours. The nightly has ran for tonight. So, revert it's timing to what it was previoously and then finish
+            the steps which you had going on and at the end do this labeller wait task as addendum." And, asked before
+            the night, on the results the searches read again brought to them: freeze none, every family on the S&P
+            400 and 600 keeping its provisional settings and its picks; where phase 16's dividend check finds the
+            calendar dating fewer than half the payers, the estimated dates their approval of phase 16's plan named,
+            taken without waiting; phase 16's card at the values its plan proposed; and the sign-offs of phases 14, 15
+            and 16 by a session the operator starts. The words are kept in `prompts/`.
+Queue:      15.4; 15.1's third pull request; 15.2's second; 15.5, its command built and no remedy issued, since no go
+            was given; 15.6; 16.0, the plan the operator approved on 2026-10-05, with phase 14's and 15's sign-offs
+            owed after it beside phase 16; 16.1 to 16.4; then the news labeller waiting for the end of a peak window
+            as the drain does, where it stops at one now. Each is merged once its conditions hold, with no go asked.
+Night:      the scheduled task holds its one weekday trigger at 23:30 UTC from 2026-09-11 again, the trigger of its own
+            that ran the night of 2026-10-05 at 02:00 UTC taken off, and its time limit is raised from the 8 hours of
+            2026-09-29 to the 12 the runbook has stated since 15.1, read back as `PT12H` with the next run at
+            2026-10-06 23:30 UTC.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 15.4's entry below: 96da1f1,
+            all six steps, 0 warnings, 0 errors, 1895 of 1895 tests ran with none failed, migrations 0 to 65 with none
+            pending, schema version 65, against `data-ci` and never `data`.
+Carried:    the queue above.
+
+### 15.4 - the sweeps per index and family: every setup family swept on the S&P 400 and the S&P 600 as a rule of its own after each trade's cost, each run stating its answer, a command recording it and a card saying its sweep found none   2026-10-06
+
+Built:      the worker's `sweep-index --index MID|SML --family`, reading one index's members as it stood from its
+            fund's quarter-end holdings or today's members alone with `--survivors`, every figure saying which, and
+            each family as a rule of its own there: its strength ranked, its market check read and its benchmark the
+            same plan on every member of that index alone. A listing is kept where its close as traded is at least
+            $5, its mean dollar volume over the 50 sessions to it clears the index's floor, and its four newest
+            quarters filed before its session sum above nothing; every trade pays the published spread's round trip
+            for its company's value and its prices as traded, the edge before costs and at double stated beside the
+            edge after. The breakout's 54 settings and the drift's 81 are walked, the drift's stop held a floor under
+            the buy with `--stop-floor`; the pullback's base is read alone and its nine dials searched by the pullback
+            sweep's own second stage; the heavyweights' design (a) over 648 settings and design (b), followers of the
+            S&P 500's industry leaders, over 72. Each run's second stage tries each new dial's levels and each market
+            switch alone on the ten strongest settings holding twice the trade floor, keeps a level higher in 6 of the
+            8 years with 2 of the last 3 on 6 of the ten, and crosses the survivors. Runs started in one second each
+            claim a folder of their own. Every sweep, the S&P 500's three runners among them, states its answer in its
+            folder, passed where its proposal or a crossed setting meets the floors, and `sweep-answer --run` records
+            it in `sweep_answer`, migration 65, with a run log row, refusing with nothing written a run stating no
+            answer, an index no page reads, a family no card draws and a name no run has. Every family's card on every
+            index, both heavyweights' cards among them, draws "Its sweep found no setting that passed the floors"
+            where the newest answer of each design recorded before the night's end says none passed and no freeze came
+            after it. A new decision, "A sweep passes where a setting it read meets the floors, and a card says none
+            passed only where every design's newest answer does"; sections 13.9 and 15.7 a paragraph each; the
+            catalogue's and the matrix's row; SCHEMA's table; the runbook's two commands; the roster's two clauses;
+            15.5's done condition owing the line's going at an S&P 400 or 600 freeze, which no rule could have before
+            that command; the prior text of each edit in `CHANGELOG.md`; and the remedy file.
+Tests:      1895, from 1885: ten added, the floors and the quality on a listing's own session, a trade's cost in
+            risks at its prices as traded, a constructed history through the sweep's own command on both indices with
+            its edge before costs, after and at double worked by hand, the strongest settings and a dial level's
+            survival, a run's answer stated and read back, the command's recordings and refusals, the rule a card
+            draws its line by, and the line read off the S&P 400's and the S&P 500's rendered pages.
+Claims:     985, from 983: the sweep answers' catalogue and matrix rows, named beside phase 13's and phase 14's pairs
+            after their reports.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights' own,
+            the swing filter's and the rule versions' lists; none of the 21 shipped files this tree edits is in any.
+Mutated:    the rule, stated before the run: each property the done condition names broken alone, made by hand over
+            the working tree at 0f6cf46, filtered to the tests that hold it and reverted.
+            M1 the line drawn on a passed answer: red in the rule's test and both pages' tests.
+            M2 each trade's cost not taken off its result: red in the constructed history's test, the edge after
+            costs off by the cost worked by hand.
+            M3 the heavyweights' line read from the newest answer of either design: survived first, a missing
+            property, every case with two designs having the newest answer of all also the one deciding; the rule's
+            test gained design (a) passing before design (b) found none, then red there.
+            M4 a listing's price floor read on the stored close: red in the floors test, $4.99 as traded passing.
+            M5 a trade's cost read at its stored prices: red in the cost test, 0.02709 read as 0.01869.
+            M6 the line read from an answer recorded after the page's night: red in the S&P 400's page test.
+            M7 a freeze at the answer's own instant leaving the line: red in the rule's test.
+            Results: M1 to M7 each red where stated once M3's test was extended, each reverted, and the nine tests
+            green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 96da1f1. A first
+            run over 9fcbcaa failed 23 tests on two causes, the sweep answers' catalogue row placed for no verdict and
+            the runbook's sweep commands in a form the verb check does not read, both corrected in 96da1f1.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1895 of 1895 tests ran with none failed, migrations 0
+            to 65 with none pending, schema version 65, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 985 claims, 985 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 996
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1895 of 1895 tests ran.
+Carried:    after the merge, `tools/remedies/2026-10-06-15.4-the-sweep-answers.txt` from main's Release build, the
+            read surface built and started again from it, and the ten searches run again from it on membership as it
+            stood and on survivors only, each as-it-stood run's answer recorded, in a run entry of their own with each
+            family's figures on each index and what luck passes; then the queue the ruling above sets.

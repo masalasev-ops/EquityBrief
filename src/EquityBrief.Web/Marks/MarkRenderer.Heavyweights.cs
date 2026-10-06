@@ -36,7 +36,8 @@ public sealed record HeavyweightCardView(
     IReadOnlyList<HeavyweightEndedCell> Ended,
     string? Empty,
     DateOnly? LiveSince = null,
-    int Variants = 0);
+    int Variants = 0,
+    bool SweepFoundNone = false);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -88,6 +89,7 @@ public sealed partial class MarkRenderer
         body.Append(card.LastRebalance is { } read ? Formatted($" · last rebalance {DayOf(read)}") : " · no rebalance read yet");
         body.Append(card.NextRebalance is { } coming ? Formatted($" · next rebalance <b class=\"next-rebalance\">{DayOf(coming)}</b>") : " · next rebalance past the exchange calendar's table");
         body.Append("</p>");
+        body.Append(SweepFoundNoneLine(card.SweepFoundNone));
 
         if (card.Holdings.Count == 0)
         {

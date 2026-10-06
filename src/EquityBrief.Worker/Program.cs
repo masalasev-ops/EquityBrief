@@ -44,6 +44,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
+    "sweep-index" => await SweepIndexRun(args),
+    "sweep-answer" => await SweepAnswerRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -57,7 +59,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 24 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 26 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -114,6 +116,12 @@ static int NoVerb()
         "'sweep-wider' replays each swing family at its frozen settings on the S&P 1500, today's 400 and 600 members " +
         "beside the S&P 500's history, against the 500 alone, every 1,500 figure saying it holds survivors only, reading " +
         "the store and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-index --index <MID or SML> --family <name>' sweeps a setup family on the S&P 400 or 600 alone, its " +
+        "strength, market check and benchmark read on that index and every result after costs, on membership as it " +
+        "stood or with '--survivors' on survivors only, reading the store and writing nothing to it, and writes its " +
+        "report and figures in a run folder of its own, " +
+        "'sweep-answer --run <name>' records the answer a sweep run states, whether a setting it read met the floors, " +
+        "which a family's card reads to say its sweep found none, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -443,6 +451,41 @@ static async Task<int> SweepFamilyRun(string[] args)
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
         Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// A setup family's sweep on the S&P 400 or 600 alone, by hand: the index's members today, survivors only, at the
+// provisional floors and profit gate, every edge after each trade's cost. The work is in `IndexSweepRunner`.
+// see: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
+static async Task<int> SweepIndexRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.IndexSweepRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync(
+            VerbArguments.Value(args, "--index") ?? string.Empty,
+            VerbArguments.Value(args, "--family") ?? string.Empty,
+            stopFloor: double.TryParse(VerbArguments.Value(args, "--stop-floor"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floor) ? floor : 0,
+            survivorsOnly: VerbArguments.Has(args, "--survivors"));
+}
+
+// The answer a sweep run states, recorded by hand after the run, which a card reads to say the family's sweep found no
+// setting that passed the floors. The work is in `SweepAnswers`.
+// see: No family on any index is set aside or hidden by a test result without the operator's word
+static async Task<int> SweepAnswerRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.SweepAnswers(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
+        Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule
