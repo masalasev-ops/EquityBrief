@@ -38982,3 +38982,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    16.0, phase 16's planning pass with its data check D1; phase 14's and phase 15's sign-offs, each owed on
             the phase as a whole by a session the operator starts, their handoff prompts left after 16.0; the night of
             2026-10-06 read.
+
+### 16.0 planning - phase 16 planned: the decision card beside every pick, its checklist, the rule's record, the plan in the operator's money and what could hit the trade, with the dividend calendar checked   2026-10-06
+
+Not a checkpoint entry. It lands 16.0, the pass that plans phase 16, and builds none of the phase's card.
+Queue:      done, phase 15, its report merged as PR 377; in progress, this pass; next, 16.1 to 16.4 in order, each
+            merged once green and reported after it merges, then the news labeller waiting for the off-peak hours as
+            the drain does; beside them, in fresh sessions the operator starts, the sign-offs of phases 14 and 15, and
+            of phase 16 after 16.4.
+Ruled:      by the operator: the brief of 2026-10-05, the plan approved the same day with R1 to R10 as recommended and
+            two changes, and four answers on 2026-10-06, each word for word in `prompts/`. Phase 14's and phase 15's
+            sign-offs are owed after this plan, each by a fresh session beside phase 16, and no checkpoint of phase 16
+            discharges either.
+Planned:    `BUILD_PLAN.md`'s phase 16 section, its checkpoints 16.0 to 16.4 and its operating row, "The card and the
+            follower read within their time on the first five nights"; section 20's row; eight decisions the phase
+            rests on that describe no running code. The records drawn beside a pick, the screen's one computation, the
+            concentration line across the indices and the night's ex-dividend ask are written where they are built,
+            at 16.1, 16.2 and 16.3, and section 23's three sources with the paragraphs citing them, since
+            `research-marked` refuses a source no rule cites.
+Checked:    the dividend calendar, one request for each of the 21 sessions from 2026-10-07 to 2026-11-04, 21 of the
+            day's 100,000 weighted calls, the provider's count reading 2,723 before and 2,744 after: every answer on one
+            page, 917 US rows over 847 listings, each a symbol and a date. Of the S&P 500's 397 payers by their newest
+            snapshots, 44 name a declared ex-date after the night and 29 fall inside the window; the calendar carries
+            all 29 on the date declared, 29 of 44 counting the 15 beyond the window as missed, so it stands as the
+            line's source. It dates 42 of the 397 inside the window, and a quarter on from each payer's last ex-date
+            puts about 30 more inside it undeclared, so the line draws the estimate the operator ruled where the
+            calendar carries no date. The S&P 400's and 600's members hold two snapshots between them, neither a
+            payer's.
+Kept:       the 21 answers in the main checkout's `prompts/2026-10-06-16.0-d1-dividend-calendar/`; 16.3 captures one
+            into the fixture before its reader is written.
+Tests:      1913, unchanged.
+Claims:     1000, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
+            plan and the decisions sit in no table the harness reads.
+Pins:       none moved: the pass edits no source.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    16.1; the sign-offs of phases 14 and 15, owed to fresh sessions; the night of 2026-10-06 read the morning
+            after it, each index's Tonight, the queue's order across the indices, the member readings and the edge
+            after costs.
