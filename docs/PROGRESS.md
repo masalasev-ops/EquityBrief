@@ -38625,3 +38625,28 @@ Carried:    the operator's ruling on the S&P 600's pullback, which misses the pl
             settings meeting the floors on the S&P 400, the pullback's crossed with profit and cover and the drift;
             15.4's landing; 15.1's third pull request, after the first night over the three indices; 15.2's second;
             phase 14's sign-off.
+
+### 15.4 ruling - the queue to the end of phase 16 merged without a go, no S&P 400 or 600 result frozen, the card's values as planned, the sign-offs left to a session the operator starts, and the news labeller waiting for the off-peak hours after 16.4   2026-10-06
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-06, after the night of 2026-10-05 ran at 02:00 UTC and its labeller stopped at a
+            peak window with nothing labelled: "i do not want to  give a go on each merge. I want you to finish
+            everything one after another unless something needs my decision." Then: "yep  labeller can wait for cheap
+            hours. The nightly has ran for tonight. So, revert it's timing to what it was previoously and then finish
+            the steps which you had going on and at the end do this labeller wait task as addendum." And, asked before
+            the night, on the results the searches read again brought to them: freeze none, every family on the S&P
+            400 and 600 keeping its provisional settings and its picks; where phase 16's dividend check finds the
+            calendar dating fewer than half the payers, the estimated dates their approval of phase 16's plan named,
+            taken without waiting; phase 16's card at the values its plan proposed; and the sign-offs of phases 14, 15
+            and 16 by a session the operator starts. The words are kept in `prompts/`.
+Queue:      15.4; 15.1's third pull request; 15.2's second; 15.5, its command built and no remedy issued, since no go
+            was given; 15.6; 16.0, the plan the operator approved on 2026-10-05, with phase 14's and 15's sign-offs
+            owed after it beside phase 16; 16.1 to 16.4; then the news labeller waiting for the end of a peak window
+            as the drain does, where it stops at one now. Each is merged once its conditions hold, with no go asked.
+Night:      the scheduled task holds its one weekday trigger at 23:30 UTC from 2026-09-11 again, the trigger of its own
+            that ran the night of 2026-10-05 at 02:00 UTC taken off, and its time limit is raised from the 8 hours of
+            2026-09-29 to the 12 the runbook has stated since 15.1, read back as `PT12H` with the next run at
+            2026-10-06 23:30 UTC.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 15.4's entry below: FILLED
+            FROM THE RUN.
+Carried:    the queue above.
