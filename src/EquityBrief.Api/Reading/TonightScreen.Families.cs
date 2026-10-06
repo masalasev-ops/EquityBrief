@@ -599,6 +599,7 @@ public static partial class TonightScreen
             ? FormattableString.Invariant($"no trade kept yet; its first look reads {view.NextLook} whole blocks of {EquityBrief.Core.Returns.Blocks.Sessions} sessions")
             : FormattableString.Invariant($"{view.Decided} of {view.Trades} trades decided")
                 + (view.Edge is { } edge ? FormattableString.Invariant($", an edge of {edge:0.000}") : string.Empty)
+                + (view.EdgeAfterCosts is { } after ? FormattableString.Invariant($" and {after:0.000} after each trade's own round trip over the {view.Priced} priced") : string.Empty)
                 + (view.LooksTaken == 0
                     ? FormattableString.Invariant($"; {view.Blocks} whole blocks of the {view.NextLook} its first look reads")
                     : FormattableString.Invariant($"; its last look read {view.PValue:0.0000} against {view.Level:0.0000}{(view.Crossed ? ", crossed" : ", not crossed")}"));

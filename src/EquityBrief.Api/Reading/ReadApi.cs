@@ -369,7 +369,7 @@ public sealed record ShapeProposalRow(
     string? Reason,
     string? Opened);
 
-public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion);
+public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion, int WiderMembers = 0, int RatedFourTimes = 0);
 
 // A stored article of a name with the newest label written for it under any profile, or none.
 public sealed record NewsArticleRow(
@@ -695,6 +695,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
+            new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
@@ -2907,8 +2908,34 @@ public sealed class ReadApi : IComponent
             confirmationNights = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
         }
 
-        return new TriggerReads(confirmationNights, confirmation?.Version);
+        // The S&P 400's and 600's members the newest night read, and how many of them hold four storing fetches that filed
+        // the analysts' rating counts, each dated by its fetch.
+        var (wider, rated) = (0, 0);
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = RatedFourTimes;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                (wider, rated) = (reader.GetInt32(0), reader.IsDBNull(1) ? 0 : reader.GetInt32(1));
+            }
+        }
+
+        return new TriggerReads(confirmationNights, confirmation?.Version, wider, rated);
     }
+
+    const string RatedFourTimes = @"
+        SELECT COUNT(*),
+               SUM(CASE WHEN (SELECT COUNT(*) FROM company c
+                              WHERE c.ticker = r.ticker
+                                AND (c.strong_buy IS NOT NULL OR c.buy IS NOT NULL OR c.hold IS NOT NULL OR c.sell IS NOT NULL OR c.strong_sell IS NOT NULL)) >= 4
+                        THEN 1 ELSE 0 END)
+        FROM member_reading r
+        WHERE r.index_code IN ('MID', 'SML') AND r.session_date = (SELECT MAX(session_date) FROM member_reading);
+    ";
 
     // The swing filter's columns, in the order every read of them takes them.
     const string GateColumns = @"
@@ -3428,7 +3455,8 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN ended_on END,
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN benchmark END,
-               cap
+               cap,
+               CASE WHEN ended_on <= $on THEN cost END
         FROM family_trade
         WHERE session_date <= $on
         UNION ALL
@@ -3436,7 +3464,8 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN ended_on END,
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
-               0
+               0,
+               NULL
         FROM heavyweight_rule_holding
         WHERE entered_on <= $on
         ORDER BY 1, 2;
@@ -3469,7 +3498,8 @@ public sealed class ReadApi : IComponent
                 listed,
                 reader.IsDBNull(2) ? null : DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4)));
+                reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6)));
         }
 
         return rows;
