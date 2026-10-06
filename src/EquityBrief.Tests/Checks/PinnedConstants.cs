@@ -461,6 +461,15 @@ public class PinnedConstants
             new("Liquidity floors of the 400's and 600's rules", "50", Core.Readings.MemberReadings.DollarVolumeSessions, "MemberReadings.DollarVolumeSessions"),
             new("Liquidity floors of the 400's and 600's rules", "10,000,000", Core.Readings.MemberReadings.MidCapDollarVolume, "MemberReadings.MidCapDollarVolume"),
             new("Liquidity floors of the 400's and 600's rules", "5,000,000", Core.Readings.MemberReadings.SmallCapDollarVolume, "MemberReadings.SmallCapDollarVolume"),
+            // The rest of the readings, 15.2's second pull request, the figures in the row's order.
+            new("Readings of the 400's and 600's rules", "251", Core.Readings.MemberReadings.YearSessions, "MemberReadings.YearSessions"),
+            new("Readings of the 400's and 600's rules", "21", Core.Readings.MemberReadings.IndustryWindows[0], "MemberReadings.IndustryWindows' first"),
+            new("Readings of the 400's and 600's rules", "63", Core.Readings.MemberReadings.IndustryWindows[1], "MemberReadings.IndustryWindows' second"),
+            new("Readings of the 400's and 600's rules", "20", Core.Readings.MemberReadings.PeerSessions, "MemberReadings.PeerSessions"),
+            new("Readings of the 400's and 600's rules", "126", Core.Readings.IndexSwitches.SmallWindows[0], "IndexSwitches.SmallWindows' first"),
+            new("Readings of the 400's and 600's rules", "252", Core.Readings.IndexSwitches.SmallWindows[1], "IndexSwitches.SmallWindows' second"),
+            new("Readings of the 400's and 600's rules", "50", Core.Readings.IndexSwitches.CreditAverageSessions, "IndexSwitches.CreditAverageSessions"),
+            new("Readings of the 400's and 600's rules", "63", Core.Readings.IndexSwitches.CreditChangeSessions, "IndexSwitches.CreditChangeSessions"),
             // The pulls' readings, 14.2, the figures in each row's order.
             new("Company value", "10", Core.Families.FiledSplit.PlainMost, "FiledSplit.PlainMost"),
             new("Sector on a session", "2018", Core.Families.GicsSectors.First.Year, "GicsSectors.First's year"),

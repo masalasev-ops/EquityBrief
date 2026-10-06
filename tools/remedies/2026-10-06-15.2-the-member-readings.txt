@@ -1,0 +1,6 @@
+# The remedy of 15.2's second pull request (every member's readings stored every night), as its PROGRESS entry prints it:
+# the merge adds migration 66, the member readings' and the switches' tables, the companies' five rating counts, each
+# quarter's interest expense with whether its fetch read one, and each family trade's round trip. The migration runs
+# alone; the next night fills the readings for every member of the three indices and prices the trades already ended.
+# No provider request, no model call and nothing bought. Run after the merge, when no night is running.
+migrate

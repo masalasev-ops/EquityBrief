@@ -50,6 +50,10 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Heavyweight rule holdings"),
             CheckReach.Key(Scope.StoresTable, "Estimate readings"),
 
+            // 15.2's second pull request, every member's readings and the switches beside them.
+            CheckReach.Key(Scope.StoresTable, "Member readings"),
+            CheckReach.Key(Scope.StoresTable, "Switch readings"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

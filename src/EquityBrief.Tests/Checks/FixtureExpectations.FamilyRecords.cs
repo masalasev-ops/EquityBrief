@@ -565,6 +565,9 @@ public partial class FixtureExpectations
         Verdicts(store, 0, BreakoutRule.Name, "W", new RuleVerdict(breakout.Candidate, true, "100", "97", null, 1, "none"));
         Verdicts(store, 0, DriftRule.Name, "U", new RuleVerdict(drift.Candidate, true, "100", "98", "104", 5, "1"));
 
+        // U's company valued at $3 billion on its night by the member readings; the others valued at none.
+        store.Execute($"INSERT INTO member_reading (index_code, session_date, ticker, close, company_value, profit) VALUES ('GSPC', '{On(0)}', 'U', '100', '3000000000', 1);");
+
         Assert.Equal(4, (await RecordAsync(store, "trades-first", standing)).Kept);
         Assert.Equal(
             ["T|1.5|null|63", "U|2|2|60", "V|1.5|null|63", "W|null|null|63"],
@@ -613,6 +616,18 @@ public partial class FixtureExpectations
             FamilyRows(store, "SELECT ticker || '|' || ended_on || '|' || " + Shown("result", "%.4f") + " || '|' || " + Shown("benchmark", "%.4f") + " || '|' || members FROM family_trade ORDER BY ticker;"));
         Assert.Contains("for " + On(63) + ": 0 trade(s) kept by 2 registered family rule(s), 4 ended and 4 benchmarked", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'trades-later';").Single(), StringComparison.Ordinal);
 
+        // Each trade holding a result priced at the published table beside it, its result untouched. T, bought at 100 and
+        // sold at 100.9, its company holding no value and read in the $1 to 2 billion band, at $40 and over the table's
+        // 0.129 per cent halved at each end: (0.129 / 200 x 100 + 0.129 / 200 x 100.9) / 3 = 0.0431935 risks. U, valued at
+        // $3 billion on its night and read in the $2 billion and over band, 0.072: bought at 100 and sold at 104.5,
+        // (0.072 / 200 x 100 + 0.072 / 200 x 104.5) / 2 = 0.03681. V and W, holding no result, priced at nothing.
+        var t = (0.129 / 200 * 100 + 0.129 / 200 * 100.9) / 3;
+        var u = (0.072 / 200 * 100 + 0.072 / 200 * 104.5) / 2;
+
+        Assert.Equal(
+            [$"T|{t.ToString("F5", CultureInfo.InvariantCulture)}", $"U|{u.ToString("F5", CultureInfo.InvariantCulture)}", "V|null", "W|null"],
+            FamilyRows(store, "SELECT ticker || '|' || " + Shown("cost", "%.5f") + " FROM family_trade ORDER BY ticker;"));
+
         // A trade's end and benchmark are written once: run again, nothing moves.
         var again = await RecordAsync(store, "trades-again", standing);
 
@@ -620,18 +635,28 @@ public partial class FixtureExpectations
 
         // The record reads the trades ended with a result and a benchmark as decided, and the trades whose closes
         // ran out or that hold no benchmark as kept and undecided.
-        var trades = FamilyRows(store, "SELECT candidate || '|' || session_date || '|' || IFNULL(ended_on, '') || '|' || IFNULL(result, '') || '|' || IFNULL(benchmark, '') FROM family_trade ORDER BY ticker;")
+        var trades = FamilyRows(store, "SELECT candidate || '|' || session_date || '|' || IFNULL(ended_on, '') || '|' || IFNULL(result, '') || '|' || IFNULL(benchmark, '') || '|' || IFNULL(cost, '') FROM family_trade ORDER BY ticker;")
             .Select(row => row.Split('|'))
             .Select(cells => new FamilyTradeRow(
                 cells[0],
                 DateOnly.Parse(cells[1], CultureInfo.InvariantCulture),
                 cells[2].Length > 0 ? DateOnly.Parse(cells[2], CultureInfo.InvariantCulture) : null,
                 cells[3].Length > 0 ? double.Parse(cells[3], CultureInfo.InvariantCulture) : null,
-                cells[4].Length > 0 ? double.Parse(cells[4], CultureInfo.InvariantCulture) : null))
+                cells[4].Length > 0 ? double.Parse(cells[4], CultureInfo.InvariantCulture) : null,
+                cells[5].Length > 0 ? double.Parse(cells[5], CultureInfo.InvariantCulture) : null))
             .ToArray();
         var views = FamilyRecords.Family([breakout], trades, RecordSessions[63], BreakoutRule.CapSessions, 1);
 
+        // The S&P 500's record read back unchanged, its edge the result less the benchmark; and the edge after costs beside
+        // it, the edge less each decided trade's own round trip, over the trades priced.
         Assert.Equal((3, 1), (Assert.Single(views).Trades, views[0].Decided));
         Assert.Equal(0.3 - (0.1 / 3), views[0].Edge!.Value, 9);
+        Assert.Equal((0.3 - t) - (0.1 / 3), views[0].EdgeAfterCosts!.Value, 6);
+        Assert.Equal(1, views[0].Priced);
+
+        var drifts = FamilyRecords.Family([drift], trades, RecordSessions[63], DriftRule.CapSessions, 1);
+
+        Assert.Equal(2.25 - 1.125, Assert.Single(drifts).Edge!.Value, 9);
+        Assert.Equal(2.25 - u - 1.125, drifts[0].EdgeAfterCosts!.Value, 6);
     }
 }

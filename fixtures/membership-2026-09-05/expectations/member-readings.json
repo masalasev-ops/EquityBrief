@@ -1,0 +1,52 @@
+{
+ "stage": "member-readings",
+ "derivation": "derived",
+ "derivedFrom": "the captured bars and the bulk row read through the rules the replay applies, not from a run, worked in Python with its own decimal arithmetic outside this repository. As the swing readings' expectation states it, KEYS, MSFT and NFLX each hold 252 bars on the night of 2026-09-08, the backfill's year from 2025-09-08 and the bulk row, every price scaled by the adjusted close over the close and rounded to four places, half to even, and AAPL holds no bar on the night, its year ending on 2026-08-10. The close is the bulk row's close as it traded; the dollar volume the mean of the scaled close times the volume over the 50 bars to the night, given to the cent; the year's high the highest scaled high of the 251 bars before the night, the newer of two equal, with the sessions from it to the night; the nearness the night's scaled close over that high; and the volume ratio the night's volume over the mean of the 50 volumes to it, which the swing readings' expectation states as each name's volumeAverage50. No quarter, company or count was fetched before the night, since the quarters step runs after the close, so every name's company value is none, its cost is read in the band the published table gives a company with no count, $1 to 2 billion, at a price of $40 or more, 0.129 per cent a round trip in Collver's Table 4 and 0.258 at double, its profit gate and coverage fail with no quarter filed, its state is the one the fundamental reader writes with no quarter, and it files no industry, so its industry's figures are none. The fixture captures no fund's series, so the switches' row holds none of its six readings. The five rating counts each company row stores and each quarter's interest expense are read off the captured fundamentals answers by the test itself.",
+ "tables": [
+  "member_reading",
+  "switch_reading"
+ ],
+ "night": "2026-09-08",
+ "indexCode": "GSPC",
+ "windows": {
+  "dollarVolume": 50,
+  "yearHigh": 251
+ },
+ "cost": {
+  "percent": 0.129,
+  "doubled": 0.258
+ },
+ "state": "no fundamentals yet",
+ "readings": {
+  "KEYS": {
+   "close": "333.42",
+   "dollarVolume": "435692043.06",
+   "yearHigh": "374.963",
+   "yearHighSession": "2026-06-22",
+   "sinceHigh": 54,
+   "nearness": 0.8892077351632027,
+   "volumeRatio": 0.7628839933906405
+  },
+  "MSFT": {
+   "close": "493.95",
+   "dollarVolume": "14152336654.21",
+   "yearHigh": "549.2013",
+   "yearHighSession": "2025-10-28",
+   "sinceHigh": 215,
+   "nearness": 0.8993969970573631,
+   "volumeRatio": 0.5878692735987016
+  },
+  "NFLX": {
+   "close": "76.77",
+   "dollarVolume": "2869177798.30",
+   "yearHigh": "126.7",
+   "yearHighSession": "2025-09-10",
+   "sinceHigh": 249,
+   "nearness": 0.6059194948697711,
+   "volumeRatio": 0.8789340007831329
+  }
+ },
+ "noBar": [
+  "AAPL"
+ ]
+}

@@ -346,6 +346,36 @@ public sealed record SwingReadingRow(
     double? Tightness,
     string? Note);
 
+// One member's readings on a night as the member reader stored them: its index, its close as traded, its dollar
+// volume, its company's value, a round trip at its close in percent at the published table and at double, the profit
+// gate, the coverage, none where a quarter it reads was fetched without its interest expense, its quarters' state, its
+// year's high with the sessions since it and the close's nearness to it, its volume over its average, and its industry
+// with that industry's S&P 500 members' return over a month and a quarter and their mean surprise before the night.
+public sealed record MemberReadingRow(
+    string IndexCode,
+    string Ticker,
+    DateOnly SessionDate,
+    decimal? Close,
+    decimal? DollarVolume,
+    decimal? CompanyValue,
+    double? Cost,
+    double? CostDouble,
+    bool Profit,
+    bool? Coverage,
+    string? State,
+    decimal? YearHigh,
+    double? Nearness,
+    int? SinceHigh,
+    double? VolumeRatio,
+    string? Industry,
+    double? IndustryMonth,
+    double? IndustryQuarter,
+    double? PeerSurprise);
+
+// A company's analysts' rating counts as one fetch filed them: the day of the fetch, the five counts and their total,
+// each none where the fetch filed none or was made before the counts were stored.
+public sealed record RatingsRow(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total);
+
 // One night's swing filter results counted: the version it ran under, the members, how many passed
 // each gate after the market and every one before it, the market held open, and how many of those no
 // exclusion removed.
@@ -2726,6 +2756,108 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // The member readings' columns, in the order every read of them takes them.
+    const string MemberColumns = @"
+        index_code, ticker, session_date, close, dollar_volume, company_value, cost, cost_double, profit, coverage, state,
+        year_high, nearness, since_high, volume_ratio, industry, industry_month, industry_quarter, peer_surprise";
+
+    // A member's readings for the night a page is drawn for, or its newest where the page is tonight's. A member holds
+    // one index on a session, so the index orders nothing but a row the store should not hold.
+    const string MemberReadingOn = "SELECT " + MemberColumns + " FROM member_reading WHERE ticker = $ticker AND session_date = $on ORDER BY index_code LIMIT 1;";
+
+    const string NewestMemberReading = "SELECT " + MemberColumns + " FROM member_reading WHERE ticker = $ticker ORDER BY session_date DESC, index_code LIMIT 1;";
+
+    // A member's readings for a night, or its newest where no night is named, and none where the member reader stored
+    // none for it.
+    public async Task<MemberReadingRow?> MemberReadingAsync(string ticker, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = on is null ? NewestMemberReading : MemberReadingOn;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        if (on is { } night)
+        {
+            command.Parameters.AddWithValue("$on", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        decimal? Price(int column) => reader.IsDBNull(column) ? null : Money.FromStorage(reader.GetString(column));
+
+        double? Figure(int column) => reader.IsDBNull(column) ? null : reader.GetDouble(column);
+
+        return new MemberReadingRow(
+            reader.GetString(0),
+            reader.GetString(1),
+            DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Price(3),
+            Price(4),
+            Price(5),
+            Figure(6),
+            Figure(7),
+            !reader.IsDBNull(8) && reader.GetInt64(8) == 1,
+            reader.IsDBNull(9) ? null : reader.GetInt64(9) == 1,
+            reader.IsDBNull(10) ? null : reader.GetString(10),
+            Price(11),
+            Figure(12),
+            reader.IsDBNull(13) ? null : reader.GetInt32(13),
+            Figure(14),
+            reader.IsDBNull(15) ? null : reader.GetString(15),
+            Figure(16),
+            Figure(17),
+            Figure(18));
+    }
+
+    // A company's newest fetch made on or before a night, with its five rating counts and their total, none where the
+    // fetch filed none.
+    // see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it
+    const string RatingsOn = @"
+        SELECT fetched_at, strong_buy, buy, hold, sell, strong_sell,
+               CASE WHEN COALESCE(strong_buy, buy, hold, sell, strong_sell) IS NULL THEN NULL
+                    ELSE IFNULL(strong_buy, 0) + IFNULL(buy, 0) + IFNULL(hold, 0) + IFNULL(sell, 0) + IFNULL(strong_sell, 0) END
+        FROM company
+        WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on
+        ORDER BY fetched_at DESC
+        LIMIT 1;
+    ";
+
+    // A company's rating counts as its newest fetch on or before a night filed them, or its newest fetch's where no
+    // night is named, and none where no fetch is stored.
+    public async Task<RatingsRow?> RatingsAsync(string ticker, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RatingsOn;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        int? Count(int column) => reader.IsDBNull(column) ? null : reader.GetInt32(column);
+
+        return new RatingsRow(
+            DateOnly.ParseExact(reader.GetString(0)[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            Count(1),
+            Count(2),
+            Count(3),
+            Count(4),
+            Count(5),
+            Count(6));
     }
 
     static SwingReadingRow SwingRow(Microsoft.Data.Sqlite.SqliteDataReader reader) =>

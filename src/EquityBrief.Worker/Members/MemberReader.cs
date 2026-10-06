@@ -249,6 +249,8 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
             var income = fetch?.Income ?? [];
             var four = MemberReadings.FiledBefore(income, night);
             var company = companies.GetValueOrDefault(ticker);
+
+            // see: A member's coverage is read on the night only over quarters whose fetch read their interest expense
             bool? coverage = four.All(quarter => fetch!.InterestRead.Contains(quarter.PeriodEnd))
                 ? MemberReadings.Coverage(income, night, company.Sector)
                 : null;
