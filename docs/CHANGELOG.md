@@ -11435,3 +11435,11 @@ Was:
 Now:
 > the same, then "; and from 15.1's third pull request the overnight queue, handed the indices the night reads, drafts the S&P 500's list, then the S&P 400's in its page's order and then the S&P 600's before every other member, the S&P 500's first among those in their own order and then the 400's, the night handing its queue those indices, and a pass over an S&P 400 member's facts file as the night stores it writes its sections, each accepted, written by the local model and handed no document"
 Why: the roster is where a check states what it asserts, and the test the clause names reads the queue's order and an S&P 400 member's pass.
+
+### 2026-10-06 - ARCHITECTURE.html - the family recorder's catalogue row reads the member readings and prices each ended trade
+Authorised by: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+Was:
+> reads "membership, bar store, indicators, family results, family trades", and "or with no result where the stock's closes ran out before its cap, and once its cap's sessions have passed given the benchmark"
+Now:
+> reads "membership, bar store, indicators, family results, member readings, family trades", and "or with no result where the stock's closes ran out before its cap, from 15.2 every ended trade holding a result given its round trip at the published table beside it and never in it, its company valued as the member readings read it on the trade's night and one they read none for in the $1 to 2 billion band, and once its cap's sessions have passed given the benchmark"
+Why: the S&P 500's rules state the edge after costs beside their frozen figures, their records unchanged, and the recorder prices each trade from its company's value as the member readings read it on its night.
