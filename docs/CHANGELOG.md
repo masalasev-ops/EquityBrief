@@ -11499,3 +11499,11 @@ Was:
 Now:
 > each the same, then a clause from 15.5's second pull request: the heavyweights' freeze in either design with its refusals, design (a)'s variants on both sides of each dial, each rule's book over constructed nights with its sales and its waits; the frozen heavyweights' card drawn from the live rule's book with its sweeps' line gone from the freeze's night and not before, and each heavyweights rule's record in points; and the heavyweights rule's pins
 Why: the roster is where a check states what it asserts, and the tests the clauses name read the command, the books, the pages and the pins.
+
+### 2026-10-06 - .claude/rules/checks.md - architecture-conformance reads phase 15's pair against the actual
+Corrects: the row named the pairs of phases 12 to 14 and not phase 15's, which 15.6 checks against the actual.
+Was:
+> and phase 13's and phase 14's are each read and checked the same way, each row the phase added reached once and passing and the rows after its report named beside it; and no sentence
+Now:
+> the same, then phase 15's read the same way, its actual falling under the range the plan stated by exactly the claims each checkpoint's count held that landed as words in rows that stood or as paragraphs, each checkpoint's named with where they went
+Why: the roster is where a check states what it asserts, and the pair test reads phase 15's figures off the plan and the rows each checkpoint landed.
