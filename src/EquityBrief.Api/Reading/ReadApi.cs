@@ -724,6 +724,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3632,6 +3633,52 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
                 reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4),
                 reader.IsDBNull(6) ? null : reader.GetDouble(6)));
+        }
+
+        return rows;
+    }
+
+    const string IndexRuleTradesUpTo = @"
+        SELECT candidate, session_date,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN benchmark END,
+               cap,
+               CASE WHEN ended_on <= $on THEN cost END
+        FROM index_rule_trade
+        WHERE index_code = $index AND session_date <= $on
+        ORDER BY 1, 2;
+    ";
+
+    // The trades every registered rule of an index's swing families kept up to a night, each one's result read after its
+    // own round trip, the one figure such a rule's record is read by, and a trade that ended after the night read as
+    // still open on it; a benchmark read only once the trade's cap's sessions have passed by the night, when the index
+    // families write it.
+    // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+    public async Task<IReadOnlyList<EquityBrief.Core.Candidates.FamilyTradeRow>> IndexRuleTradesAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexRuleTradesUpTo;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<EquityBrief.Core.Candidates.FamilyTradeRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var listed = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            double? result = reader.IsDBNull(3) ? null : reader.GetDouble(3) - (reader.IsDBNull(6) ? 0 : reader.GetDouble(6));
+
+            rows.Add(new EquityBrief.Core.Candidates.FamilyTradeRow(
+                reader.GetString(0),
+                listed,
+                reader.IsDBNull(2) ? null : DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                result,
+                reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4)));
         }
 
         return rows;

@@ -132,7 +132,11 @@ public sealed class BreakoutSweep
         return value;
     }
 
-    public static double BenchmarkOn(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double moves, int cap)
+    public static double BenchmarkOn(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double moves, int cap) =>
+        BenchmarkCounted(series, closes, members, session, moves, cap).Average;
+
+    // The same, with how many members' results it averaged, which a registered rule's stored trade carries.
+    public static (double Average, int Members) BenchmarkCounted(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double moves, int cap)
     {
         var names = members.Names[session];
         var bars = members.Bars[session];
@@ -159,7 +163,7 @@ public sealed class BreakoutSweep
             }
         }
 
-        return count > 0 ? sum / count : double.NaN;
+        return (count > 0 ? sum / count : double.NaN, count);
     }
 
     // The highest high of the given count of sessions before each bar, none where fewer stand before it.

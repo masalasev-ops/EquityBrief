@@ -115,7 +115,8 @@ public sealed class FamilyReplay : IComponent
         var register = await RegisterAsync(connection, cancellation);
         var replays = await ReplaysAsync(connection, cancellation);
         var standing = CandidateFamily.Standing(register, startedAt).Where(which).ToArray();
-        var rules = standing.Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator).ToArray();
+        // The S&P 500's family rules alone: an S&P 400's or 600's rule is read over its own index by the index families.
+        var rules = standing.Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator and not IndexRuleCandidate).ToArray();
         var found = new List<FamilyReplayed>();
 
         foreach (var family in rules.GroupBy(FamilyOf))

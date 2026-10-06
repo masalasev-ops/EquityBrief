@@ -556,7 +556,7 @@ public class RegisterAppendOnly
         // that hands it each member and the stage that reads each member's inputs, and a change to one family's
         // rule moves that family's version and no other evaluator's.
         // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-        var families = evaluators.OfType<FamilyRuleEvaluator>().ToArray();
+        var families = evaluators.OfType<FamilyRuleEvaluator>().Where(family => family is not IndexRuleCandidate).ToArray();
         var books = evaluators.OfType<BookEvaluator>().ToArray();
 
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
@@ -604,6 +604,47 @@ public class RegisterAppendOnly
             {
                 Assert.Equal(other.Version, CandidateEvaluator.Pin([SourceOf(other), .. OwnOf(other), .. SharedOf(other)]));
             }
+        }
+
+        // From 15.5 each swing family's rule on the S&P 400 and on the S&P 600 pins its family's own sweep files first, then
+        // the files every index rule's evaluation on the night runs through, which no other evaluator pins, then the files
+        // every family rule shares: the 400's and the 600's of a family pin the same sources and carry one version, a
+        // change to one family's sweep file moves that family's index rules alone, and no S&P 500 evaluator pins a sweep
+        // file or an index file, so freezing or changing an index rule moves no S&P 500 version.
+        // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+        var indexRules = evaluators.OfType<IndexRuleCandidate>().ToArray();
+        string[] indexFiles =
+        [
+            "src/EquityBrief.Core/Candidates/IndexRuleCandidate.cs",
+            "src/EquityBrief.Worker/Indices/IndexRules.cs",
+            "src/EquityBrief.Worker/Indices/IndexNightRead.cs",
+            "src/EquityBrief.Worker/Indices/IndexFamilies.cs",
+        ];
+
+        Assert.Equal(
+            ["breakout on the S&P 400", "breakout on the S&P 600", "drift on the S&P 400", "drift on the S&P 600", "pullback on the S&P 400", "pullback on the S&P 600"],
+            indexRules.Select(rule => rule.Family).Order(StringComparer.Ordinal));
+        Assert.Equal(
+            ["breakout:src/EquityBrief.Worker/Sweep/BreakoutSweep.cs", "drift:src/EquityBrief.Worker/Sweep/DriftSweep.cs", "pullback:src/EquityBrief.Worker/Sweep/SweepCandidates.cs"],
+            indexRules.Select(rule => rule.SetupFamily + ":" + rule.OwnSources[0]).Distinct().Order(StringComparer.Ordinal));
+
+        foreach (var family in indexRules.GroupBy(rule => rule.SetupFamily))
+        {
+            Assert.Single(family.Select(rule => string.Join("|", rule.OwnSources)).Distinct());
+            Assert.Single(family.Select(rule => rule.Version).Distinct());
+        }
+
+        Assert.All(indexRules, rule => Assert.Superset(indexFiles.Concat(families[0].OwnSources.Skip(1)).ToHashSet(StringComparer.Ordinal), rule.OwnSources.ToHashSet(StringComparer.Ordinal)));
+        Assert.All(evaluators.Where(evaluator => evaluator is not IndexRuleCandidate), evaluator => Assert.DoesNotContain(evaluator.OwnSources, path => indexFiles.Contains(path) || path.StartsWith("src/EquityBrief.Worker/Sweep/", StringComparison.Ordinal)));
+
+        foreach (var rule in indexRules)
+        {
+            var moved = OwnOf(rule);
+
+            moved[0] += "\ninternal static class ChangesWhatThisSweepDoes { }\n";
+
+            Assert.NotEqual(rule.Version, CandidateEvaluator.Pin([SourceOf(rule), .. moved, .. SharedOf(rule)]));
+            Assert.All(indexRules.Where(other => other.SetupFamily != rule.SetupFamily), other => Assert.DoesNotContain(rule.OwnSources[0], other.OwnSources));
         }
 
         // And the catalogue is no source any evaluator pins: a family added to it moves no other family's version.

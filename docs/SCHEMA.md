@@ -76,6 +76,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_family_pick` | IndexFamilies | none | IndexFamilies |
 | `index_family_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_heavyweight_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `index_rule_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -1015,6 +1016,34 @@ Grain: one row per index, stock and the session the index's sector heavyweights 
 Primary key: `index_code`, `ticker`, `entered_on`.
 
 **The index families write it for each index's book and are its own deleter** (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). Each night they carry each holding and its size cut by tonight's closes, end a holding whose stock left the index and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, as the S&P 500's book is kept. A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. The rows are never deleted otherwise.
+
+### index_rule_trade
+Grain: one row per registered rule of an S&P 400's or 600's swing family, stock and session the rule's own list kept a trade on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule, by the name its registration carries |
+| `index_code` | TEXT | the index the rule reads |
+| `family` | TEXT | the swing family it is a rule of |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session it was kept on, bought at that close |
+| `place` | INTEGER | its place on the rule's own list that night, counted from one |
+| `entry` | TEXT | the night's close it was bought at |
+| `stop` | TEXT | its stop as the night placed it, the first level of a stop that trails |
+| `target` | TEXT | its target, null for a trade whose stop trails |
+| `trail` | TEXT | the distance its stop trails under the highest close since the buy, null for a trade with a target |
+| `cap` | INTEGER | the sessions it is given, the rule's hold where it states one and its family's own cap otherwise |
+| `risk_moves` | REAL | the stop's distance under the buy in the night's typical moves, which its benchmark's plan is placed at |
+| `reward_to_risk` | REAL | its target's distance over its stop's, null for a trade whose stop trails |
+| `ended_on` | TEXT | the session it ended on, null while it is open |
+| `result` | REAL | what it came to in multiples of its risk before its cost, null while open |
+| `cost` | REAL | its round trip in multiples of its risk at the published table, its company valued as the member readings read it on its night, which the result after costs subtracts, null while open |
+| `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until the trade's cap has passed |
+| `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+
+Primary key: `candidate`, `ticker`, `session_date`.
+
+**The index families write it for each registered rule and are its own deleter** (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone). Each night, for each index, they first walk every trade not yet ended over its stock's closes since and write where it ended, its result and its cost, and once its cap's sessions have passed its benchmark; then each rule standing registered when the night started keeps its members passing tonight in its family's order, five at most, none whose stock it holds a trade on. A night run again replaces the trades it kept that night and no other night's. The rows are never deleted otherwise: a rule's record on the index's Run page is its trades.
 
 ### sweep_answer
 Grain: one row per sweep run recorded.

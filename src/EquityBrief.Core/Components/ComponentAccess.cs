@@ -67,6 +67,7 @@ public enum Store
     IndexFamilyPick,
     IndexFamilyTrade,
     IndexHeavyweightHolding,
+    IndexRuleTrade,
     SweepAnswer,
     EstimateReading,
     ForwardReturn,

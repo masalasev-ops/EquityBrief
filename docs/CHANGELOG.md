@@ -11459,3 +11459,27 @@ Was:
 Now:
 > each the same, then a clause from 15.2's second pull request: the remaining readings worked by hand at a constructed session, the switches and the fixture's night with the rating counts and the interest expense, and each large cap family trade's round trip; the name page's member readings, the run page's edge after costs and the Calibration region's count of dated rating counts; and the fundamental readings' step storing every member's readings and the switches
 Why: the roster is where a check states what it asserts, and the tests the clauses name read the readings, the pages and the night's step.
+
+### 2026-10-06 - BUILD_PLAN.md - 15.5 lands in two pull requests, the swing families' freezes and then the heavyweights'
+Authorised by: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+Was:
+> **Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; a freeze of a family on the S&P 400 or 600 takes its card's line saying its sweep found no setting that passed away from that night on and not before, read off the rendered page; and the entry names every pinned file it edited and the remedy it issued, or that the operator gave no go and none was issued.
+Now:
+> a paragraph saying 15.5 lands in two pull requests, the three swing families' freezes on each index first and the sector heavyweights' freeze on each index, each rule keeping a book of its own, second; and the done condition in two halves, the first the same with each rule keeping its own list and trades over a constructed night and a rule the night cannot read named, and the second the heavyweights' command at one instant or none, each variant beside the live rule on both sides of the setting it moves, each rule's book its own and the heavyweights' card's line going at the freeze
+Why: the swing families' rules are read on the night through the night reader's own functions and keep trades of their own, while a heavyweights rule keeps a book of its own, a second store and a second walk, so each lands with its own entry as 15.1 and 15.2 did. This checkpoint amends its own done condition, and its entry says so.
+
+### 2026-10-06 - ARCHITECTURE.html - the index families read and keep each registered rule of the S&P 400's and 600's swing families
+Authorised by: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+Was:
+> the index families' catalogue row reading "membership, bar store, market series, calendar, companies, reported quarters, gate results, filter versions, list rules, forward returns, family picks, index family nights, index family results, index family picks, index family trades, index heavyweight holdings" and writing "index family nights, index family results, index family picks, index family trades, index heavyweight holdings", its words going on from "(see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing);" to "a failure in one index's part"; and section 14's swing filter step ending "and carrying and rebalancing its sector heavyweights (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: Each index's market check closes its own swing lists together on its own breadth)."
+Now:
+> the row reading the market readings, the member readings, the switch readings and the index rule trades and writing the index rule trades, with a clause from 15.5 reading each registered rule at its settings with its levels off the readings, keeping its own list and trades, a family's live rule drawing its list and a rule whose evaluator moved or whose settings left its grid read by none and named; section 14's step reading each rule registered on an index the same way; and, added, section 15.7's paragraph on a frozen family's card, section 15.10's on the index's Run page, section 16's index rule trades and section 18's row on a rule the night does not read
+Why: 15.5 builds the freeze command for the S&P 400's and 600's swing families and what the night, the pages and the store do with a rule it registers, with no freeze given.
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations, read-surface and register-append-only read the freezes on the S&P 400 and 600
+Authorised by: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+Was:
+> fixture-expectations' row ending "its edge after costs the edge less each priced trade's own round trip |", read-surface's ending "holding four dated rating counts against nine in ten of them |" and register-append-only's ending "a change to the swing filter moving every other evaluator's version and not its |"
+Now:
+> each the same, then a clause from 15.5: the freeze at one instant or none with its refusals, each variant on both sides of the setting it moves, each rule's own list and trades and a rule the night cannot read; a frozen family's card and its sweep's line read off the rendered page and each rule's record on the index's Run page; and each index rule's pins, its family's sweep files, the index night's files and every family rule's shared files
+Why: the roster is where a check states what it asserts, and the tests the clauses name read the command, the night, the pages and the pins.
