@@ -38713,3 +38713,44 @@ Carried:    after the merge, `tools/remedies/2026-10-06-15.4-the-sweep-answers.t
             read surface built and started again from it, and the ten searches run again from it on membership as it
             stood and on survivors only, each as-it-stood run's answer recorded, in a run entry of their own with each
             family's figures on each index and what luck passes; then the queue the ruling above sets.
+
+### 15.4 - the searches run again from main's build after the merge, on membership as it stood and on survivors only, and the ten as-it-stood answers recorded   2026-10-06
+
+Ran:        `tools/remedies/2026-10-06-15.4-the-sweep-answers.txt` from main at 7f231c9, the merge of PR 371, at 05:52
+            UTC, migration 64 to 65, with no night, queue, report pass, labeller or store copy running and no night
+            lock; the read surface built in Release from 7f231c9 and started again at 05:53, each index's Tonight page
+            answering with its four cards. The ten searches from that build, read only and ten at a time: on membership
+            as it stood 05:54:24 to 06:09:31 UTC, on survivors only 06:10:35 to 06:26:00. No provider request and no
+            model call.
+As stood:   after costs, against the floors of 300 trades and an edge above nothing in 6 of 8 years. The S&P 400: the
+            breakout passes none of its 54 settings, its strongest holding 300 trades 0.028 over 1,116 in 5 of 8; the
+            drift one, window 3, reaction 0.5, volume 1.5 and target 2, at 0.038 over 2,031, 0.055 before costs and
+            0.021 at double; the pullback's base reads 0.052 over 1,770 and the search's proposal 0.064 over 2,453,
+            short of the floors, one of its ten settings crossed with profit and cover meeting them at 0.218 over 554
+            in 6 of 8. The S&P 600: the breakout none, its strongest 0.040 over 673 in 5 of 8; the drift none, its
+            strongest -0.064 over 2,026 in 1 of 8; the pullback's search proposes strength 0.5 at 0.081 over 2,510 in
+            6 of 8, 0.112 before costs, 0.050 at double and 0.062 without the five largest, its depth 0 again, the
+            whole grid of 2,016,000 settings read, where the run of 00:40 UTC over a history a session shorter proposed
+            strength 0.4 at 0.079 over 2,762. The heavyweights' design (a) has 47 of 648 settings meeting the floors on
+            the S&P 400 and 80 on the S&P 600, and design (b) 7 and 3 of 72.
+Survivors:  the S&P 400: the breakout none, its strongest -0.027 over 1,106 in 3 of 8; the drift none, -0.030 over
+            1,334 in 3 of 8; the pullback's base -0.014 over 1,837 and nothing proposed. The S&P 600: the breakout none,
+            0.154 over 594 in 3 of 8; the drift none, -0.129 over 2,642 in 1 of 8; the pullback's base -0.077 over
+            1,959 and nothing proposed, its ten settings crossed with profit and cover at best 0.113 and none meeting
+            the floors. The heavyweights' design (a) has 30 of 648 settings meeting the floors on the S&P 400 and 163 on
+            the S&P 600, and design (b) 2 and 1 of 72.
+Luck:       of settings with no effect at all, luck alone passes about 8 of the breakout's 54, 12 of the drift's 81, 94
+            of the heavyweights' 648 and 10 of their 72, 37 of the 256 patterns of eight years holding six above
+            nothing; only the S&P 600's design (a) on survivors only passes more than luck would. The pullback searches
+            propose by depth on a plateau rather than by a count of settings passing.
+Answers:    the ten as-it-stood runs, 20261006T055425Z to 20261006T055435Z, recorded with `sweep-answer` from 06:10:39
+            to 06:10:50 UTC: none passed for both breakouts and the S&P 600's drift; passed for the S&P 400's drift,
+            both pullbacks, the S&P 400's through its crossed setting, and both heavyweights' designs on both indices.
+            The survivors-only runs are not recorded, a card reading the answer on membership as it stood. Recorded
+            after the night of 2026-10-05 ended, so its pages draw no line, and the three cards draw it from the night
+            of 2026-10-06 on.
+Verified:   `tools/ci.ps1` green over 96da1f1, the tree main holds at 7f231c9 but for the entries' own figures, 1895
+            of 1895 tests; this entry read by the checks that read the record, run filtered over the tree carrying it,
+            53 of 53 passing.
+Carried:    each index's Tonight page read back after the night of 2026-10-06, the line on both breakouts' cards and
+            the S&P 600's drift's and on no other; then 15.1's third pull request and the queue the 15.4 ruling sets.
