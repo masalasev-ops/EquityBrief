@@ -22,10 +22,13 @@ public sealed record IndexNightOutcome(string Index, int Members, double? Breadt
     public static IndexNightOutcome NotComputed(string index, string fault) =>
         new(index, 0, null, false, new Dictionary<string, int>(StringComparer.Ordinal), 0, 0, 0, 0, new IndexHeavyweightsOutcome(false, 0, 0, 0), fault);
 
-    // The index's registered rules read on the night and what their own lists did.
+    // The index's registered rules read on the night and what their own lists did, and what the registered heavyweights
+    // rules' own books did.
     public int Rules { get; init; }
 
     public IndexRuleTrades.Kept RuleTrades { get; init; } = new(0, 0, 0);
+
+    public IndexHeavyweightsOutcome HeavyweightRules { get; init; } = new(false, 0, 0, 0);
 }
 
 // The night the index families read, none where the store holds no bar, and each index's outcome.
@@ -70,6 +73,8 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.SwitchReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -305,7 +310,7 @@ public sealed class IndexFamilies : IComponent
             : new IndexNight(index, session, inputs.Held.Length, inputs.Breadth, inputs.Open, [.. IndexNightRead.Families.SelectMany(family => IndexNightRead.Answers(inputs, family, ReadOf(inputs, family)))]);
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> ruleAnswers = inputs is null
             ? []
-            : [.. rules.Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, IndexRules.Read(inputs, rule, levels))))];
+            : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, IndexRules.Read(inputs, rule, levels))))];
         var qualifying = IndexNightRead.Families
             .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
             .ToArray();
@@ -319,6 +324,7 @@ public sealed class IndexFamilies : IComponent
 
         var ended = await WalkAsync(connection, transaction, index, session, cancellation);
         var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
+        var heavyweightRules = await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
         var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation);
 
         await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
@@ -374,6 +380,7 @@ public sealed class IndexFamilies : IComponent
         {
             Rules = rules.Count,
             RuleTrades = ruleTrades,
+            HeavyweightRules = heavyweightRules,
         };
 
         return (outcome, 1 + read.Answers.Count + picks.Count + kept + ruleTrades.Trades);
@@ -385,7 +392,8 @@ public sealed class IndexFamilies : IComponent
             ? $"{outcome.Index}: not computed tonight, {fault}"
             : FormattableString.Invariant(
                 $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
-                + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)));
+                + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
+                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held") : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
     static string Skipped(IReadOnlyList<string> skipped) =>
@@ -818,6 +826,10 @@ public sealed class IndexFamilies : IComponent
 // and held at the close.
 public sealed record IndexHeavyweightsOutcome(bool Rebalanced, int Entered, int Ended, int Held);
 
+// One member of the index as the heavyweights' design (b) reads it on a rebalance: its ticker, its industry and its
+// sector as filed, its return over the rule's window, and whether it clears the floors and the quality.
+public sealed record IndexFollower(string Ticker, string? Industry, string? Sector, double? Return, bool Clears);
+
 // The S&P 400's and 600's sector heavyweights on their provisional settings, design (a) read within each index with the
 // sweep's own code, kept by the index families in their step: on the first night of a month the book reads, each
 // sector's ten largest members of the index by value as it stood, its return its members' mean and a leader's beta at
@@ -941,7 +953,7 @@ public static class IndexHeavyweights
 
         // The rebalance: the sweep's own reading of the night's session within the index, the members clearing the floors
         // and the gate.
-        var rebalance = await ReadAsync(connection, transaction, index, night, names, income, cancellation);
+        var rebalance = await ReadAsync(connection, transaction, index, night, names, Provisional, name => Clears(index, name, night, income.GetValueOrDefault(name.Ticker) ?? []), cancellation);
         var leaders = rebalance.Leaders.ToDictionary(one => one.Ticker, StringComparer.Ordinal);
 
         foreach (var (ticker, holding) in held.ToArray())
@@ -971,16 +983,17 @@ public static class IndexHeavyweights
         return new IndexHeavyweightsOutcome(true, entered, ended, held.Count);
     }
 
-    // The leaders a rebalance on the night buys within the index, each with its sector and the size cut it was chosen
-    // from: the sweep's tape laid over the members' year with each company's value from the newest count filed before
-    // the session, a beta against the index's fund, and the members failing the floors or the profit gate read by none.
+    // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
+    // was chosen from: the sweep's tape laid over the members' year with each company's value from the newest count filed
+    // before the session, a beta against the index's fund, and the members failing the floors or the quality read by none.
     static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, int Read)> ReadAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         string index,
         DateOnly night,
         IReadOnlyList<SweepName> names,
-        IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
+        HeavyweightSetting setting,
+        Func<SweepName, bool> clears,
         CancellationToken cancellation)
     {
         var companies = new Dictionary<string, (string? Cik, string? Sector)>(StringComparer.Ordinal);
@@ -1030,10 +1043,10 @@ public static class IndexHeavyweights
         }
 
         var kept = session.Members
-            .Where(candidate => Clears(index, names[candidate.Name], night, income.GetValueOrDefault(names[candidate.Name].Ticker) ?? []))
+            .Where(candidate => clears(names[candidate.Name]))
             .ToArray();
         var lookup = tape.Tickers.Select((ticker, place) => (ticker, place)).ToDictionary(pair => pair.ticker, pair => pair.place, StringComparer.Ordinal);
-        var rebalance = HeavyweightSweep.Read(session with { Members = kept }, Provisional, lookup);
+        var rebalance = HeavyweightSweep.Read(session with { Members = kept }, setting, lookup);
 
         return ([.. rebalance.Sectors.SelectMany(sector => sector.Leaders.Select(leader => (tape.Tickers[leader], sector.Sector, (IReadOnlyList<string>)[.. sector.Cut.Select(cut => tape.Tickers[cut])])))], kept.Length);
     }
@@ -1060,6 +1073,373 @@ public static class IndexHeavyweights
 
         return MemberReadings.ClearsTheFloors(index, close.RawClose > 0m ? close.RawClose : close.Close, MemberReadings.DollarVolume(window))
             && MemberReadings.Profit(income, night);
+    }
+
+    // The words a registered rule's holding ends on beside the book's own.
+    public const string UnderTheAverage = "a close under its 200-day average";
+
+    public const string NoLongerBought = "no longer among those it buys";
+
+    const string UndoTheRuleNight = @"
+        DELETE FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on = $night;
+        UPDATE index_heavyweight_rule_holding SET ended_on = NULL, exit_close = NULL, reason = NULL, result = NULL, cut_return = NULL, cost = NULL
+        WHERE candidate = $candidate AND ended_on = $night;
+        DELETE FROM index_heavyweight_rule_night WHERE candidate = $candidate AND session_date = $night;
+    ";
+
+    const string RuleOpenHoldings = @"
+        SELECT ticker, entered_on, sector, entry_close, growth, cut, through FROM index_heavyweight_rule_holding
+        WHERE candidate = $candidate AND ended_on IS NULL AND entered_on < $night;
+    ";
+
+    const string RuleLastRebalance = "SELECT MAX(session_date) FROM index_heavyweight_rule_night WHERE candidate = $candidate AND session_date < $night;";
+
+    const string RuleCarry = @"
+        UPDATE index_heavyweight_rule_holding SET growth = $growth, cut = $cut, through = $through
+        WHERE candidate = $candidate AND ticker = $ticker AND entered_on = $entered_on;
+    ";
+
+    const string RuleEnd = @"
+        UPDATE index_heavyweight_rule_holding
+        SET ended_on = $ended_on, exit_close = $exit_close, reason = $reason, result = $result, cut_return = $cut_return, cost = $cost
+        WHERE candidate = $candidate AND ticker = $ticker AND entered_on = $entered_on;
+    ";
+
+    const string RuleBuy = @"
+        INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through)
+        VALUES ($candidate, $index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night);
+    ";
+
+    const string RuleNight = @"
+        INSERT INTO index_heavyweight_rule_night (candidate, index_code, session_date, bought, sold)
+        VALUES ($candidate, $index, $night, $bought, $sold);
+    ";
+
+    // Every industry's S&P 500 members' return over a month and a quarter as the member readings stored them on the night,
+    // read off every index's rows since each row of an industry carries the same.
+    const string IndustryReturns = @"
+        SELECT industry, MAX(industry_month), MAX(industry_quarter) FROM member_reading
+        WHERE session_date = $night AND industry IS NOT NULL
+        GROUP BY industry;
+    ";
+
+    // Each member's industry as the member readings stored it on the night under its index.
+    const string MemberIndustries = "SELECT ticker, industry FROM member_reading WHERE index_code = $index AND session_date = $night;";
+
+    const string SpyCloses = "SELECT session_date, close FROM market_bar WHERE series = 'SPY' AND session_date IN ($from, $night);";
+
+    // A company's value on a holding's own night as the member readings read it, none where they read none.
+    const string RuleValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
+
+    // The index's fund's close on the night, which a beta is read against.
+    const string FundCloseOn = "SELECT close FROM market_bar WHERE series = $series AND session_date = $night;";
+
+    // Each registered heavyweights rule of the index keeping a book of its own on the night, as the index's own book is
+    // kept: every open holding carried by tonight's closes, one whose stock left the index sold at its last close as a
+    // member, one closing under its 200-day average sold there where its rule reads that exit, and on a night its rule
+    // rebalances, its first or the first of a month, each holding the rule would no longer buy sold where its rule sells
+    // on that, and each stock it buys and does not hold bought at tonight's close: design (a)'s leaders read by the
+    // sweep's own code at the rule's setting with its size cut, and design (b)'s followers with their sector's members in
+    // the index as theirs. A night run again deletes what each rule bought that night, opens again what each sold that
+    // night and writes its rebalance again.
+    // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+    public static async Task<IndexHeavyweightsOutcome> RulesAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string index,
+        DateOnly night,
+        IReadOnlyList<SweepName> names,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
+        IndexLevels levels,
+        IReadOnlyList<IndexRule> rules,
+        CancellationToken cancellation)
+    {
+        var (entered, ended, held, rebalanced) = (0, 0, 0, false);
+        var bars = names.ToDictionary(name => name.Ticker, name => name.Bars.ToDictionary(bar => bar.Session), StringComparer.Ordinal);
+        var byTicker = names.ToDictionary(name => name.Ticker, StringComparer.Ordinal);
+        var members = names.Where(name => name.MemberOn(night)).Select(name => name.Ticker).ToHashSet(StringComparer.Ordinal);
+
+        decimal? CloseOn(string ticker, DateOnly session) => bars.TryGetValue(ticker, out var own) && own.TryGetValue(session, out var bar) ? bar.Close : null;
+
+        foreach (var rule in rules)
+        {
+            var p = rule.Parameters;
+            var designA = p[Core.Candidates.IndexHeavyweightCandidate.DesignParameter] == Core.Candidates.IndexHeavyweightCandidate.DesignA;
+            var soldOnLeading = !designA || p[Core.Candidates.IndexHeavyweightCandidate.LeadingExitParameter] == 1;
+            var soldUnderAverage = designA && p[Core.Candidates.IndexHeavyweightCandidate.AverageExitParameter] == 1;
+            var quality = (IndexQuality)(int)p[Core.Candidates.IndexRuleCandidate.QualityParameter];
+            var multiple = p[Core.Candidates.IndexRuleCandidate.FloorsParameter] == 2 ? 2m : 1m;
+            var key = new (string, object)[] { ("$candidate", rule.Candidate), ("$night", Stamp(night)) };
+
+            bool Clears(SweepName name) => ClearsAt(index, name, night, income.GetValueOrDefault(name.Ticker) ?? [], quality, multiple, levels.Coverage.GetValueOrDefault(name.Ticker));
+
+            await ExecuteAsync(connection, transaction, UndoTheRuleNight, key, cancellation);
+
+            var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through)>();
+
+            await foreach (var row in RowsAsync(connection, transaction, RuleOpenHoldings, key, cancellation))
+            {
+                open.Add((row.GetString(0), Date(row.GetString(1)), row.GetString(2), Money.FromStorage(row.GetString(3)), row.GetDouble(4), JsonSerializer.Deserialize<List<CutMember>>(row.GetString(5)) ?? [], Date(row.GetString(6))));
+            }
+
+            var holding = new Dictionary<string, (DateOnly Entered, decimal Entry, double Growth, List<CutMember> Cut)>(StringComparer.Ordinal);
+
+            foreach (var one in open)
+            {
+                if (!members.Contains(one.Ticker))
+                {
+                    await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, one.Through, CloseOn(one.Ticker, one.Through) ?? one.Entry, LeftTheIndex, one.Growth, one.Cut, one.Entry, cancellation);
+                    ended++;
+
+                    continue;
+                }
+
+                var growth = CloseOn(one.Ticker, one.Through) is { } then && then > 0m && CloseOn(one.Ticker, night) is { } now
+                    ? one.Growth * Statistic.FromRatio(now / then)
+                    : one.Growth;
+                var cut = one.Cut
+                    .Select(member => CloseOn(member.Ticker, Date(member.Through)) is { } then && then > 0m && CloseOn(member.Ticker, night) is { } now
+                        ? member with { Growth = member.Growth * Statistic.FromRatio(now / then), Through = Stamp(night) }
+                        : member)
+                    .ToList();
+
+                await ExecuteAsync(connection, transaction, RuleCarry, [.. key, ("$ticker", one.Ticker), ("$entered_on", Stamp(one.Entered)), ("$growth", growth), ("$cut", JsonSerializer.Serialize(cut)), ("$through", Stamp(night))], cancellation);
+
+                if (soldUnderAverage && CloseOn(one.Ticker, night) is { } close && HeavyweightRule.Broken(Statistic.FromPrice(close), Average200(byTicker[one.Ticker], night)))
+                {
+                    await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, night, close, UnderTheAverage, growth, cut, one.Entry, cancellation);
+                    ended++;
+
+                    continue;
+                }
+
+                holding[one.Ticker] = (one.Entered, one.Entry, growth, cut);
+            }
+
+            var last = await ScalarAsync(connection, transaction, RuleLastRebalance, key, cancellation) is string stored ? Date(stored) : (DateOnly?)null;
+
+            // A rebalance waits for a night holding what its design reads, so a series or a reading the night could not
+            // store moves no holding: the index's fund's close where design (a) reads a beta, and SPY's closes and the
+            // industries' returns design (b) reads.
+            var setting = designA ? IndexRules.HeavyweightSettingOf(p) : null;
+            IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)>? buys = !HeavyweightRule.Rebalances(night, last)
+                ? null
+                : setting is not null
+                    ? setting.HighBeta && await ScalarAsync(connection, transaction, FundCloseOn, [("$series", IndexSweepFunds[index]), ("$night", Stamp(night))], cancellation) is null
+                        ? null
+                        : (await ReadAsync(connection, transaction, index, night, names, setting, Clears, cancellation)).Leaders
+                    : await FollowersAsync(connection, transaction, index, night, names, p, Clears, cancellation);
+
+            if (buys is not null)
+            {
+                rebalanced = true;
+
+                var buying = buys.Select(buy => buy.Ticker).ToHashSet(StringComparer.Ordinal);
+                var (bought, sold) = (0, 0);
+
+                foreach (var (ticker, one) in holding.ToArray())
+                {
+                    if (soldOnLeading && !buying.Contains(ticker))
+                    {
+                        await RuleEndAsync(connection, transaction, index, rule.Candidate, ticker, one.Entered, night, CloseOn(ticker, night) ?? one.Entry, designA ? NoLongerTheLeader : NoLongerBought, one.Growth, one.Cut, one.Entry, cancellation);
+                        holding.Remove(ticker);
+                        sold++;
+                    }
+                }
+
+                foreach (var buy in buys.Where(buy => !holding.ContainsKey(buy.Ticker)))
+                {
+                    if (CloseOn(buy.Ticker, night) is not { } close)
+                    {
+                        continue;
+                    }
+
+                    var cut = buy.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
+
+                    await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut))], cancellation);
+                    holding[buy.Ticker] = (night, close, 1.0, cut);
+                    bought++;
+                }
+
+                await ExecuteAsync(connection, transaction, RuleNight, [.. key, ("$index", index), ("$bought", bought), ("$sold", sold)], cancellation);
+                (entered, ended) = (entered + bought, ended + sold);
+            }
+
+            held += holding.Count;
+        }
+
+        return new IndexHeavyweightsOutcome(rebalanced, entered, ended, held);
+    }
+
+    // Whether a member clears the price floor and the dollar volume floor at a multiple of it, and the quality on the
+    // night: none, the profit gate, or the gate and the interest cover as the member readings stored it.
+    static bool ClearsAt(string index, SweepName name, DateOnly night, IReadOnlyList<FiledIncome> income, IndexQuality quality, decimal multiple, bool? coverage)
+    {
+        var upTo = name.Bars.Where(bar => bar.Session <= night).ToArray();
+
+        if (upTo.Length == 0 || upTo[^1].Session != night)
+        {
+            return false;
+        }
+
+        var close = upTo[^1];
+        var window = upTo[Math.Max(0, upTo.Length - MemberReadings.DollarVolumeSessions)..].Select(bar => (bar.Close, bar.Volume)).ToArray();
+
+        return MemberReadings.ClearsTheFloors(index, close.RawClose > 0m ? close.RawClose : close.Close, MemberReadings.DollarVolume(window) / multiple)
+            && quality switch
+            {
+                IndexQuality.Off => true,
+                IndexQuality.Profit => MemberReadings.Profit(income, night),
+                _ => MemberReadings.Profit(income, night) && coverage == true,
+            };
+    }
+
+    // A member's 200-session average on the night over its own bars, none where it holds too few.
+    static double? Average200(SweepName name, DateOnly night)
+    {
+        var series = name.Bars.Where(bar => bar.Session <= night).ToArray();
+
+        if (series.Length == 0 || series[^1].Session != night)
+        {
+            return null;
+        }
+
+        var (_, twoHundred) = SweepColumns.Averages(series);
+
+        return double.IsNaN(twoHundred[^1]) ? null : twoHundred[^1];
+    }
+
+    // Design (b)'s buys on the night: the industries leading SPY over the rule's window as the member readings and the
+    // fund's closes read it, and in each the members the rule buys, read by the followers' own reading; none where the
+    // night holds too few sessions, SPY's close on it or the window's sessions before, or no industry's return.
+    static async Task<IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)>?> FollowersAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string index,
+        DateOnly night,
+        IReadOnlyList<SweepName> names,
+        IReadOnlyDictionary<string, double> p,
+        Func<SweepName, bool> clears,
+        CancellationToken cancellation)
+    {
+        var window = (int)p[Core.Candidates.IndexHeavyweightCandidate.WindowParameter];
+        var calendar = names.SelectMany(name => name.Bars.Select(bar => bar.Session)).Where(session => session <= night).Distinct().Order().ToArray();
+        var at = Array.IndexOf(calendar, night);
+
+        if (at < window)
+        {
+            return null;
+        }
+
+        var from = calendar[at - window];
+        var returns = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, transaction, IndustryReturns, [("$night", Stamp(night))], cancellation))
+        {
+            var column = window == MemberReadings.IndustryWindows[0] ? 1 : 2;
+
+            if (!row.IsDBNull(column))
+            {
+                returns[row.GetString(0)] = row.GetDouble(column);
+            }
+        }
+
+        var spy = new Dictionary<DateOnly, decimal>();
+
+        await foreach (var row in RowsAsync(connection, transaction, SpyCloses, [("$from", Stamp(from)), ("$night", Stamp(night))], cancellation))
+        {
+            spy[Date(row.GetString(0))] = Money.FromStorage(row.GetString(1));
+        }
+
+        var industries = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, transaction, MemberIndustries, [("$index", index), ("$night", Stamp(night))], cancellation))
+        {
+            industries[row.GetString(0)] = row.IsDBNull(1) ? null : row.GetString(1);
+        }
+
+        var sectors = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, transaction, Companies, [], cancellation))
+        {
+            sectors[row.GetString(0)] = row.IsDBNull(2) ? null : row.GetString(2);
+        }
+
+        double? spyReturn = spy.TryGetValue(night, out var now) && spy.TryGetValue(from, out var then) && then > 0m ? Statistic.FromRatio(now / then) - 1.0 : null;
+
+        if (spyReturn is null || returns.Count == 0)
+        {
+            return null;
+        }
+
+        IndexFollower Follower(SweepName name)
+        {
+            var own = name.Bars.ToDictionary(bar => bar.Session);
+            double? gained = own.TryGetValue(night, out var last) && own.TryGetValue(from, out var first) && first.Close > 0m ? Statistic.FromRatio(last.Close / first.Close) - 1.0 : null;
+
+            return new IndexFollower(name.Ticker, industries.GetValueOrDefault(name.Ticker), sectors.GetValueOrDefault(name.Ticker), gained, clears(name));
+        }
+
+        return Followers(
+            returns,
+            spyReturn,
+            [.. names.Where(name => name.MemberOn(night)).Select(Follower)],
+            (int)p[Core.Candidates.IndexHeavyweightCandidate.IndustriesParameter],
+            (int)p[Core.Candidates.IndexHeavyweightCandidate.MembersParameter]);
+    }
+
+    // Design (b)'s reading as its sweep reads it: the industries whose S&P 500 members' return over the window leads
+    // SPY's over the same sessions, the strongest lead first and the industry's name settling a tie, at most the count
+    // stated, nought reading every one leading; in each, the members clearing the floors and the quality with a return over
+    // the window, the strongest first and the ticker settling a tie, at most the count stated; each bought with its
+    // sector, none filed reading as none, and the sector's members in the index as its size cut. No industry leads where
+    // SPY's return cannot be read.
+    // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
+    public static IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Followers(
+        IReadOnlyDictionary<string, double> industryReturns,
+        double? spyReturn,
+        IReadOnlyList<IndexFollower> members,
+        int industries,
+        int perIndustry)
+    {
+        if (spyReturn is not { } market)
+        {
+            return [];
+        }
+
+        var kept = industryReturns
+            .Select(pair => (Industry: pair.Key, Lead: pair.Value - market))
+            .Where(pair => pair.Lead > 0)
+            .OrderByDescending(pair => pair.Lead)
+            .ThenBy(pair => pair.Industry, StringComparer.Ordinal)
+            .Take(industries == 0 ? int.MaxValue : industries)
+            .Select(pair => pair.Industry)
+            .ToArray();
+
+        static string SectorOf(IndexFollower member) => member.Sector ?? "none";
+
+        return
+        [
+            .. kept.SelectMany(industry => members
+                .Where(member => member.Industry == industry && member.Return is not null && member.Clears)
+                .OrderByDescending(member => member.Return)
+                .ThenBy(member => member.Ticker, StringComparer.Ordinal)
+                .Take(perIndustry))
+                .Select(member => (member.Ticker, SectorOf(member), (IReadOnlyList<string>)[.. members.Where(other => SectorOf(other) == SectorOf(member)).Select(other => other.Ticker)])),
+        ];
+    }
+
+    static async Task RuleEndAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string candidate, string ticker, DateOnly entered, DateOnly on, decimal exit, string reason, double growth, List<CutMember> cut, decimal entry, CancellationToken cancellation)
+    {
+        double? cutReturn = cut.Count > 0 ? cut.Average(one => one.Growth) - 1.0 : null;
+        decimal? value = await ScalarAsync(connection, transaction, RuleValueOn, [("$index", index), ("$session", Stamp(entered)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+        var cost = TradeCost.InPercent(value, entry, exit) / 100.0;
+
+        await ExecuteAsync(connection, transaction, RuleEnd,
+        [
+            ("$candidate", candidate), ("$ticker", ticker), ("$entered_on", Stamp(entered)), ("$ended_on", Stamp(on)), ("$exit_close", Money.ToStorage(exit)),
+            ("$reason", reason), ("$result", growth - 1.0), ("$cut_return", (object?)cutReturn ?? DBNull.Value), ("$cost", double.IsFinite(cost) ? cost : DBNull.Value),
+        ], cancellation);
     }
 
     static async Task EndAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string ticker, DateOnly entered, DateOnly on, decimal exit, string reason, double growth, List<CutMember> cut, decimal entry, CancellationToken cancellation)

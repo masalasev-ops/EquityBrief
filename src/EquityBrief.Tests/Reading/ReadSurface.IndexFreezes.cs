@@ -50,9 +50,9 @@ public partial class ReadSurface
     [Fact]
     public async Task AnSAndP400FamilyFrozenIsDrawnByItsLiveRuleFromTheNightOfItsFreezeAndItsSweepLineGoesThenAndNotBefore()
     {
-        // The S&P 400 breakout's sweep found none, recorded the day before the night of 2026-10-02, and the family frozen
-        // at the instant given with two variants, the cover and four times the volume, the night reading its list by the
-        // live rule where it did; an answer recorded later where given. The page, and the breakout's card on it.
+        // The S&P 400 breakout's sweep found none, recorded the day before the night, and the family frozen at the instant
+        // given with two variants, the cover and four times the volume, the night reading its list by the live rule where
+        // it did; an answer recorded later where given. The page, and the breakout's card on it.
         async Task<(string Page, string Card)> CardFrozenAt(string at, bool readByIt, string? answeredAgainAt = null)
         {
             using var store = UniversesStore();
@@ -113,7 +113,8 @@ public partial class ReadSurface
     [Fact]
     public async Task AnSAndP400RunPageDrawsEachFrozenRuleOverItsOwnTradesEachAfterItsOwnRoundTrip()
     {
-        // The S&P 400 breakout frozen on 2026-01-02 with one variant, the cover, the night reading its list by the live rule.
+        // The S&P 400 breakout frozen nine months before the night with one variant, the cover, the night reading its list
+        // by the live rule.
         using var store = UniversesStore();
         var live = FreezeTheBreakout(store, "2026-01-02T12:00:00Z", TheCover);
         var variant = Strings(store, "SELECT candidate FROM candidate_register WHERE id = 201;").Single();
@@ -160,5 +161,103 @@ public partial class ReadSurface
         using var plain = new Host(unfrozen.Root);
 
         Assert.DoesNotContain("family-records", await plain.CreateClient().GetStringAsync($"/screens/run/{IndexNight}?universe=400"), StringComparison.Ordinal);
+    }
+
+    // The S&P 400's heavyweights frozen at the index's own book's settings with one variant, one leader a sector, and the
+    // live rule's own book: its rebalance on the night bought M1 and sold M3, bought a month before, at no longer leading,
+    // M3 making 5 per cent less a round trip of 0.2 against its size cut's 1, an edge of 3.8 points; the night reading the
+    // family by its live rule where it did. The live rule's name returned.
+    static string FreezeTheHeavyweights(TemporaryStore store, bool readByIt, string at = "2026-10-02T12:00:00Z")
+    {
+        var heavyweights = (IndexRuleCandidate)CandidateEvaluators.Find("heavyweight-400")!;
+        var (registrations, refusal) = IndexRules.Freeze("heavyweight", "MID", IndexRules.Provisional(heavyweights), [new Dictionary<string, double> { [IndexHeavyweightCandidate.LeadersParameter] = 1 }], [], new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero));
+
+        Assert.Null(refusal);
+
+        foreach (var (registration, place) in registrations!.Select((one, place) => (one, place)))
+        {
+            RegisteredRule(store, 300 + place, registration, at);
+        }
+
+        var live = registrations![0].Candidate;
+
+        store.Execute(
+            "INSERT INTO index_heavyweight_rule_night (candidate, index_code, session_date, bought, sold) VALUES " +
+            $"('{Doubled(live)}', 'MID', '{IndexNight}', 1, 1);");
+        store.Execute(
+            "INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, ended_on, exit_close, reason, result, cut_return, cost) VALUES " +
+            $"('{Doubled(live)}', 'MID', 'M1', '{IndexNight}', 'Energy', '50', 1.0, '[]', '{IndexNight}', NULL, NULL, NULL, NULL, NULL, NULL), " +
+            $"('{Doubled(live)}', 'MID', 'M3', '2026-09-01', 'Energy', '40', 1.05, '[]', '{IndexNight}', '{IndexNight}', '42', '{IndexHeavyweights.NoLongerTheLeader}', 0.05, 0.01, 0.002);");
+
+        if (readByIt)
+        {
+            store.Execute($"UPDATE index_family_night SET settings = json_set(settings, '$.live', json_array(json_object('family', 'heavyweight', 'candidate', '{Doubled(live)}'))) WHERE index_code = 'MID';");
+        }
+
+        return live;
+    }
+
+    [Fact]
+    public async Task AnSAndP400HeavyweightsFreezeDrawsItsCardFromItsLiveRulesOwnBookAndItsRecordInPoints()
+    {
+        // Both heavyweights designs' sweeps on the S&P 400 found none, recorded the day before the night, and the family
+        // frozen at the instant given.
+        async Task<(string Page, string Card, string Run)> Pages(bool readByIt, string at = "2026-10-02T12:00:00Z")
+        {
+            using var store = UniversesStore();
+
+            RecordAnswer(store, "20261001T120000Z", "MID", "heavyweight", "a", "none passed", "2026-10-01T12:00:00Z");
+            RecordAnswer(store, "20261001T120100Z", "MID", "heavyweight", "b", "none passed", "2026-10-01T12:01:00Z");
+            FreezeTheHeavyweights(store, readByIt, at);
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+            return (page, HeavyweightCardOf(page), WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400")));
+        }
+
+        // Read by the night: the card is the live rule's book, live since the day of the freeze with its variant, holding
+        // M1 and not the index's own book's M2, its rebalance buying M1 and selling M3, under its rule's words.
+        var (page, card, run) = await Pages(readByIt: true);
+
+        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\"", card, StringComparison.Ordinal);
+        Assert.DoesNotContain(SweepLineDrawn, card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 holding tonight · held while leading · 1 variant kept in books of their own · last rebalance 2026-10-02", card, StringComparison.Ordinal);
+        Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-ticker=\"M2\"", card, StringComparison.Ordinal);
+        Assert.Contains("The rebalance of 2026-10-02 bought M1.", card, StringComparison.Ordinal);
+        Assert.Contains($"M3 was sold at the close of 2026-10-02: {IndexHeavyweights.NoLongerTheLeader}.", card, StringComparison.Ordinal);
+        Assert.Contains(
+            "The S&P 400 heavyweights rule of each sector's 10 largest members leading it over 251 sessions, 2 leader(s) a sector with a beta of at least 1, sold on no longer leading, the profit gate, each holding paying the published spread, half at each end.",
+            page,
+            StringComparison.Ordinal);
+
+        // The Run page: the heavyweights' live rule's record over its own book, M3 decided at 0.05 less 0.002 less 0.01,
+        // drawn in points, and the variant's over none; the setup row live beside it.
+        var records = Assert.Single(Blocks(run, "<table class=\"list-table family-records\".*?</table>"));
+        var rows = Regex.Matches(records, "<tr data-family=\"heavyweight\" data-rule=.*?</tr>", RegexOptions.Singleline).Select(match => match.Value).ToArray();
+
+        Assert.Equal(2, rows.Length);
+        Assert.Contains("data-live=\"true\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.038\"", rows[0], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">+3.8 points</td>", rows[0], StringComparison.Ordinal);
+        Assert.Contains("data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\"", rows[1], StringComparison.Ordinal);
+        Assert.Contains("<tr data-family=\"heavyweight\" data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
+
+        // A freeze the night did not read: the card is the index's own book, provisional, holding M2, its sweeps' line
+        // drawn.
+        var (_, unread, _) = await Pages(readByIt: false);
+
+        Assert.Contains("data-state=\"provisional\"", unread, StringComparison.Ordinal);
+        Assert.Contains("data-ticker=\"M2\"", unread, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-ticker=\"M1\"", unread, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, unread, StringComparison.Ordinal);
+
+        // Frozen the day after the night: the night's card is the index's own book with its sweeps' line, and not before.
+        var (_, later, _) = await Pages(readByIt: false, at: "2026-10-03T12:00:00Z");
+
+        Assert.Contains("data-state=\"provisional\"", later, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, later, StringComparison.Ordinal);
     }
 }

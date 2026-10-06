@@ -38893,3 +38893,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1908 of 1908 tests ran.
 Carried:    after the merge, migration 67 applied to the store by `tools/migrate.ps1` and the surface's Release build
             again; then 15.5's second pull request, the sector heavyweights' freeze on each index.
+
+### 15.5 - the sector heavyweights' freezes on the S&P 400 and 600: either design registered as rules of their own, each keeping a book of its own on the night, the card drawn from the live rule's book and each rule's record on the index's Run page   2026-10-06
+
+Built:      15.5's second pull request. `register --index-family heavyweight --index <MID|SML>` freezes the sector
+            heavyweights on either index, its live rule and up to eight variants at one instant or none, each in
+            either design its sweeps read: design (a) at its size cut, look-back, leaders, beta and exits, design (b)
+            at its window, industries and members an industry, each at its quality and its floor, a design's own dials
+            nought on the other's (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in
+            either design, read by the index families' step). Two evaluators, the heavyweights on each index. The index
+            families keep each rule's book in tables of their own (migration 68, `index_heavyweight_rule_night` and
+            `index_heavyweight_rule_holding`): carried every night, sold on leaving the index and, where the rule reads
+            it, under the 200-day average, and rebalanced on its own first night and each month's first by the sweep's
+            own reading, design (b)'s leads off the member readings' industry returns against SPY's; a rebalance waits
+            for a night holding the fund's close where design (a) reads a beta and SPY's closes and the industries'
+            returns for design (b). A frozen heavyweights rule the night kept draws the card from its own book, and
+            each rule's record stands on the index's Run page in points. The decision, sections 7, 14, 15.7, 15.10, 16
+            and 18, `SCHEMA.md`, the runbook, the guide and the roster's three clauses; the prior text in
+            `CHANGELOG.md`. This entry discharges the second half of the done condition 15.5 amended for itself.
+No go:      the operator gave no go, so no remedy was issued.
+Tests:      1912, from 1908: four added, the command's refusals and its rows at one instant in either design, each
+            design (a) variant on both sides of its dial over one sector, each rule's book over constructed nights with
+            its sales, a sale's result, size cut and round trip and its waits, and the card, its sweeps' line and the
+            records on the pages.
+Claims:     1000, from 997: section 16's two stores and section 18's row on a rebalance waiting for what its design
+            reads.
+Pins:       none of the S&P 500's moved. Read: the rule versions' code version, the swing filter's, each candidate
+            evaluator's and the sector heavyweights' evaluator's lists. The pinned files it edited are `IndexRules.cs`
+            and `IndexFamilies.cs`, which the six swing rules' evaluators on the S&P 400 and 600 pin, so their versions
+            moved with them, none of them registered; and the new `IndexHeavyweightCandidate.cs`, whose version is the
+            pin of its sources.
+Mutated:    the rule, stated before the run: each property the second pull request's done condition names broken
+            alone, made by hand over the working tree at b562bcb, filtered to the tests that read it and reverted.
+            M1 a variant stating the other design's dial accepted: predicted red at the command's refusals.
+            M2 a design (a) rule read at the book's look-back whatever it states: predicted red at the variants' leaders.
+            M3 design (b) reading the quarter's returns at a month's window: predicted red at the books' first night.
+            M4 design (b)'s rebalance not waiting for SPY's closes: predicted red at the first night's rebalances.
+            M5 the card drawn from the index's own book whatever the freeze: predicted red at the live card.
+            M6 a heavyweights rule's record read before its round trips: predicted red at the Run page's records.
+            Results: M1 to M6 each red where stated: M1 registered the other design's dial, exit 0 where 1 was expected,
+            M2 read the 63-session rule's leaders as A and D, M3 bought L3 at a month's window, M4 wrote rebalances 6
+            to 9 with no close of SPY, M5 drew the provisional card, M6 drew the live rule's edge before costs; each
+            reverted, and the four tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 28d626d.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1912 of 1912 tests ran with none failed, migrations 0
+            to 68 with none pending, schema version 68, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1000 claims, 1000 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1011
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1912 of 1912 tests ran.
+Carried:    after the merge, migration 68 applied to the store by `tools/migrate.ps1` and the surface's Release build
+            again; then 15.6, the phase report.

@@ -146,9 +146,31 @@ public static partial class TonightScreen
     static bool ReadByLiveRule(IndexNightRow night, string family) =>
         IndexRuleSettings.Read(night.Settings).ReadByLiveRule?.Contains(family, StringComparer.Ordinal) == true;
 
+    // The registration of a family's live rule on the index that the night read the family by, none where no freeze
+    // stands as of the night or the night did not read it.
+    public static string? IndexLiveRule(string index, string family, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
+        ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, night.Session).Live?.Candidate : null;
+
+    // The heavyweights' card of an index whose live rule stands and kept the book the card draws that night: live since
+    // the day it was registered, the variants beside it in books of their own, and its rule in the words its registration
+    // carries.
+    // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
+        ReadByLiveRule(night, HeavyweightRule.Name) && StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, night.Session) is { Live: { } live } standing
+            ? card with
+            {
+                LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
+                Variants = standing.Variants,
+                Rule = "The " + live.Candidate[FamilyRecords.LivePrefix.Length..] + ", each holding paying the published spread, half at each end.",
+            }
+            : card;
+
     // Each registered rule of the index's swing families standing at the night's end, read over its own trades after each
-    // one's round trip, its correction its family's own on the index, each family's live rule first.
+    // one's round trip, its correction its family's own on the index, each family's live rule first; the sector
+    // heavyweights' after them, each holding's result less its round trip read against its size cut's in the block of
+    // the session it ended on, as the S&P 500's heavyweights rules are read.
     // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+    // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
     public static IReadOnlyList<FamilyRecordRow> IndexRecordRows(UniverseChoice universe, IReadOnlyList<CandidateRow> register, IReadOnlyList<FamilyTradeRow> trades, DateOnly night)
     {
         RegisterRow[] rows =
@@ -161,13 +183,16 @@ public static partial class TonightScreen
 
         return
         [
-            .. SetupFamilies.InPageOrder.SelectMany(family =>
+            .. SetupFamilies.InPageOrder
+                .Select(family => (family.Name, family.Heading, Cap: family.CapSessions))
+                .Append((HeavyweightRule.Name, SetupFamilies.SectorHeavyweights.Heading, Cap: 0))
+                .SelectMany(family =>
             {
                 var name = IndexRuleCandidate.FamilyOn(family.Name, universe.Code);
                 var rules = CandidateFamily.In(standing, name);
                 var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), rules.Select(rule => rule.Candidate));
 
-                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials)
+                return FamilyRecords.Family(rules, trades, night, family.Cap, trials)
                     .OrderBy(view => view.Live ? 0 : 1)
                     .ThenBy(view => view.Candidate, StringComparer.Ordinal)
                     .Select(view => new FamilyRecordRow(

@@ -77,6 +77,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_family_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_heavyweight_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_rule_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `index_heavyweight_rule_night` | IndexFamilies | none | IndexFamilies |
+| `index_heavyweight_rule_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -1044,6 +1046,46 @@ Grain: one row per registered rule of an S&P 400's or 600's swing family, stock 
 Primary key: `candidate`, `ticker`, `session_date`.
 
 **The index families write it for each registered rule and are its own deleter** (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone). Each night, for each index, they first walk every trade not yet ended over its stock's closes since and write where it ended, its result and its cost, and once its cap's sessions have passed its benchmark; then each rule standing registered when the night started keeps its members passing tonight in its family's order, five at most, none whose stock it holds a trade on. A night run again replaces the trades it kept that night and no other night's. The rows are never deleted otherwise: a rule's record on the index's Run page is its trades.
+
+### index_heavyweight_rule_night
+Grain: one row per registered sector heavyweights rule of the S&P 400 or 600 and each session its own book rebalanced on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule, by the name its registration carries |
+| `index_code` | TEXT | the index the rule reads |
+| `session_date` | TEXT | the session the book rebalanced on |
+| `bought` | INTEGER | the stocks it bought at the session's close |
+| `sold` | INTEGER | the holdings it sold at the rebalance for no longer being bought |
+
+Primary key: `candidate`, `session_date`.
+
+**The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). A rule's last row is its last rebalance, and a rule holding none rebalances on its first night; a rebalance waiting for what its design reads writes none. A night run again deletes its own row and writes it again.
+
+### index_heavyweight_rule_holding
+Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, stock and the session its own book bought it on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule, by the name its registration carries |
+| `index_code` | TEXT | the index the rule reads |
+| `ticker` | TEXT | |
+| `entered_on` | TEXT | the rebalance session it was bought on, at that close |
+| `sector` | TEXT | the sector it was bought in, `none` for a design (b) follower filing none |
+| `entry_close` | TEXT | the close it was bought at |
+| `growth` | REAL | its close carried over its buy's, the product of each night's close over the close of the session it was last carried to |
+| `cut` | TEXT | JSON: each of the size cut it was chosen from, design (a)'s sector's largest companies and design (b)'s sector's members in the index, its ticker, its growth carried the same way and the session it was carried to |
+| `through` | TEXT | the session its growth was last carried to |
+| `ended_on` | TEXT | the session it was sold on, null while held |
+| `exit_close` | TEXT | the close it was sold at, null while held |
+| `reason` | TEXT | `no longer the leader`, `no longer among those it buys`, `a close under its 200-day average` or `left the index`, null while held |
+| `result` | REAL | its growth less one at the sale, null while held |
+| `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+| `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it on its buy, null while held |
+
+Primary key: `candidate`, `ticker`, `entered_on`.
+
+**The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). Each night they carry each rule's holdings and their size cuts by tonight's closes, sell one whose stock left the index at its last close as a member and one closing under its 200-day average where the rule reads that exit, and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold. A night run again deletes what each rule bought that night and opens again what each sold that night. The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
 
 ### sweep_answer
 Grain: one row per sweep run recorded.

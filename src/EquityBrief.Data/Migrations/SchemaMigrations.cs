@@ -688,7 +688,43 @@ public static class SchemaMigrations
         new Migration(65, "create sweep_answer", CreateSweepAnswer),
         new Migration(66, "create member_reading and switch_reading, and add company's rating counts, reported_quarter's interest expense and family_trade.cost", CreateMemberReadings),
         new Migration(67, "create index_rule_trade", CreateIndexRuleTrades),
+        new Migration(68, "create index_heavyweight_rule_night and index_heavyweight_rule_holding", CreateIndexHeavyweightRules),
     ];
+
+    // Each registered sector heavyweights rule of the S&P 400 and 600 keeping a book of its own: one row a rule and each
+    // night it rebalanced on, with what it bought and sold there; and one row a holding, carried every night as the
+    // index's own book carries its holdings, and once sold, its sale, why, its result, its size cut's return and its round
+    // trip at the published table.
+    // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+    const string CreateIndexHeavyweightRules = @"
+        CREATE TABLE index_heavyweight_rule_night (
+            candidate     TEXT NOT NULL,
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            bought        INTEGER NOT NULL,
+            sold          INTEGER NOT NULL,
+            PRIMARY KEY (candidate, session_date)
+        ) STRICT;
+
+        CREATE TABLE index_heavyweight_rule_holding (
+            candidate    TEXT NOT NULL,
+            index_code   TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            entered_on   TEXT NOT NULL,
+            sector       TEXT NOT NULL,
+            entry_close  TEXT NOT NULL,
+            growth       REAL NOT NULL,
+            cut          TEXT NOT NULL,
+            through      TEXT NOT NULL,
+            ended_on     TEXT,
+            exit_close   TEXT,
+            reason       TEXT,
+            result       REAL,
+            cut_return   REAL,
+            cost         REAL,
+            PRIMARY KEY (candidate, ticker, entered_on)
+        ) STRICT;
+    ";
 
     // Each registered rule of the S&P 400's and 600's swing families keeping its own list: one row a trade, its plan as
     // the night placed it with the stop's distance in typical moves and the reward to risk its benchmark reads, and once

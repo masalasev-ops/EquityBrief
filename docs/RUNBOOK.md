@@ -734,6 +734,14 @@ dotnet run --project src/EquityBrief.Worker -- register --index-family breakout 
 
 It is refused whole where a value is one its sweep did not read, naming it, where more than eight variants are given, where a variant states a rule given before it, where the family already stands on the index, and for a family or an index no rule is carried for. From the night after, the index families' step reads each rule at its settings, keeps its own list and trades, and draws the family's list and card by its live rule, and the index's Run page draws each rule's record. A rule whose evaluator a later change moves is read by none, the stage's row naming it, until the command below registers it again; no replay of an index rule is built, so its record counts from that registration.
 
+The sector heavyweights' freeze on either index is the same command with the family `heavyweight`, each rule in either design its index's sweeps read (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step): design (a) as `design=0` with the size cut `largest`, 0 for every company, `lookBack`, `leaders`, `highBeta` and the two exits `soldOnLeading` and `soldUnderAverage`, and design (b) as `design=1` with `window`, `industries`, 0 for every leading one, and `members`, each with `quality` and `floors`, a design's own dials stated as 0 on the other's rule:
+
+```
+dotnet run --project src/EquityBrief.Worker -- register --index-family heavyweight --index SML --parameters design=0,largest=10,lookBack=251,leaders=2,highBeta=1,soldOnLeading=1,soldUnderAverage=0,window=0,industries=0,members=0,quality=1,floors=1 --variants "leaders=1;design=1,largest=0,lookBack=0,leaders=0,highBeta=0,soldOnLeading=0,soldUnderAverage=0,window=21,industries=5,members=1"
+```
+
+From the night after, each rule keeps a book of its own, rebalancing on its own first night and the first night of each month and waiting where the night lacks what its design reads, and the index's heavyweights' card draws the live rule's book.
+
 **Candidates whose evaluator moved** are registered again by one command, after the merge that moved them and before the night, since from that merge the listings stage names each as a failure until it is registered again (see: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant):
 
 ```

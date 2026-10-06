@@ -725,6 +725,8 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3479,13 +3481,50 @@ public sealed class ReadApi : IComponent
         ORDER BY entered_on, sector, ticker;
     ";
 
-    public async Task<IReadOnlyList<IndexHoldingRow>> IndexHoldingsAsync(string index, DateOnly on)
+    public Task<IReadOnlyList<IndexHoldingRow>> IndexHoldingsAsync(string index, DateOnly on) =>
+        HoldingRowsAsync(IndexHoldingsUpTo, ("$index", index), on);
+
+    // Every holding a registered heavyweights rule of an index bought on or before a night, in its own book, its end read
+    // only where it ended by the night.
+    // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+    const string IndexRuleHoldingsUpTo = @"
+        SELECT index_code, ticker, entered_on, sector, entry_close,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN exit_close END,
+               CASE WHEN ended_on <= $on THEN reason END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               CASE WHEN ended_on <= $on THEN cost END
+        FROM index_heavyweight_rule_holding
+        WHERE candidate = $candidate AND entered_on <= $on
+        ORDER BY entered_on, sector, ticker;
+    ";
+
+    public Task<IReadOnlyList<IndexHoldingRow>> IndexRuleHoldingsAsync(string candidate, DateOnly on) =>
+        HoldingRowsAsync(IndexRuleHoldingsUpTo, ("$candidate", candidate), on);
+
+    // The last session a registered heavyweights rule's own book rebalanced on, on or before a night.
+    const string IndexRuleLastRebalanceOn = "SELECT MAX(session_date) FROM index_heavyweight_rule_night WHERE candidate = $candidate AND session_date <= $on;";
+
+    public async Task<DateOnly?> IndexRuleLastRebalanceAsync(string candidate, DateOnly on)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = IndexHoldingsUpTo;
-        command.Parameters.AddWithValue("$index", index);
+        command.CommandText = IndexRuleLastRebalanceOn;
+        command.Parameters.AddWithValue("$candidate", candidate);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
+    async Task<IReadOnlyList<IndexHoldingRow>> HoldingRowsAsync(string sql, (string Name, string Value) owner, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+        command.Parameters.AddWithValue(owner.Name, owner.Value);
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<IndexHoldingRow>();
@@ -3520,13 +3559,29 @@ public sealed class ReadApi : IComponent
         ORDER BY h.ticker;
     ";
 
-    public async Task<IReadOnlyList<HeavyweightCloseRow>> IndexHoldingClosesAsync(string index, DateOnly on)
+    public Task<IReadOnlyList<HeavyweightCloseRow>> IndexHoldingClosesAsync(string index, DateOnly on) =>
+        HoldingClosesAsync(IndexHoldingClosesOn, ("$index", index), on);
+
+    // Each of a registered heavyweights rule's holdings open on a night in its own book, its close there and its
+    // 200-session average there.
+    const string IndexRuleHoldingClosesOn = @"
+        SELECT h.ticker, b.close, i.value
+        FROM (SELECT DISTINCT ticker FROM index_heavyweight_rule_holding WHERE candidate = $candidate AND entered_on <= $on AND (ended_on IS NULL OR ended_on > $on)) h
+        LEFT JOIN bar b ON b.ticker = h.ticker AND b.session_date = $on
+        LEFT JOIN indicator i ON i.ticker = h.ticker AND i.session_date = $on AND i.name = $average
+        ORDER BY h.ticker;
+    ";
+
+    public Task<IReadOnlyList<HeavyweightCloseRow>> IndexRuleHoldingClosesAsync(string candidate, DateOnly on) =>
+        HoldingClosesAsync(IndexRuleHoldingClosesOn, ("$candidate", candidate), on);
+
+    async Task<IReadOnlyList<HeavyweightCloseRow>> HoldingClosesAsync(string sql, (string Name, string Value) owner, DateOnly on)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = IndexHoldingClosesOn;
-        command.Parameters.AddWithValue("$index", index);
+        command.CommandText = sql;
+        command.Parameters.AddWithValue(owner.Name, owner.Value);
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$average", EquityBrief.Core.Indicators.IndicatorSeries.Sma200);
 
@@ -3638,6 +3693,8 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
+    // Each registered heavyweights rule's holdings beside them, read as the S&P 500's are: by the session a holding ended
+    // on, or bought on while open, its size cut's return its benchmark and no cap.
     const string IndexRuleTradesUpTo = @"
         SELECT candidate, session_date,
                CASE WHEN ended_on <= $on THEN ended_on END,
@@ -3647,6 +3704,15 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN cost END
         FROM index_rule_trade
         WHERE index_code = $index AND session_date <= $on
+        UNION ALL
+        SELECT candidate, CASE WHEN ended_on <= $on THEN ended_on ELSE entered_on END,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               0,
+               CASE WHEN ended_on <= $on THEN cost END
+        FROM index_heavyweight_rule_holding
+        WHERE index_code = $index AND entered_on <= $on
         ORDER BY 1, 2;
     ";
 
