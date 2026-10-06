@@ -38789,3 +38789,50 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1896 of 1896 tests ran.
 Carried:    the queue's row on the night of 2026-10-06 read for the S&P 400's and 600's lists after the S&P 500's;
             15.2's second pull request; then the queue the 15.4 ruling sets.
+
+### 15.2 - every member's readings stored every night: the rest of the readings, the switches, the S&P 500's edge after costs beside its records, the name page's readings and the run page's count of dated ratings   2026-10-06
+
+Built:      15.2's second pull request. The member reader, in the fundamental readings' step after the readings,
+            stores for every member of the three indices under its index the close as traded, the dollar volume, the
+            company's value, a round trip at its close at the published table and at double, the profit gate, the
+            coverage, the state, the year's high with the sessions since and the close against it, the volume over
+            its average, and its industry with that industry's S&P 500 members' value-weighted return over 21 and 63
+            sessions and their mean surprise over the 20 sessions before; and the switches: IJH's and IJR's closes
+            against SPY's over 126 and 252 sessions, HYG's against its 50-session average and its close 63 back.
+            Each reading is one function the sweeps now read too. A member whose series holds a hole keeps its row
+            with none of its bars' readings. Migration 66: `member_reading`, `switch_reading`, the companies' five
+            rating counts, each quarter's interest expense with whether its fetch read one, and `family_trade.cost`;
+            the quarters step stores the counts and the expense from the answer it already asks for. The coverage
+            reads none on the night where a quarter was fetched before the expense was stored (see: A member's
+            coverage is read on the night only over quarters whose fetch read their interest expense). The family
+            recorder prices each S&P 500 trade holding a result beside it and never in it; the run page states each
+            rule's edge after costs beside its edge, and counts the S&P 400's and 600's members holding four dated
+            rating counts. The name page draws the member readings with the analysts' counts. The fixture replays the
+            reader, its expectation derived from the captures outside the repository. Sections 4, 11.4, 14, 15.9,
+            15.10, 16, 17, 18 and 19.1, the catalogue and matrix rows, `SCHEMA.md`, the guide, the roster's three
+            clauses and the decision; the prior text in `CHANGELOG.md`. The commit pricing the trades was replayed
+            with its own changelog entry before the push, its tree unchanged.
+Tests:      FILLED FROM THE RUN, from 1896: six added, each reading worked by hand at a constructed session, the
+            switches, the shared readings at their edges, the fixture's night from its captures, the name page's
+            readings and the run page's edge after costs.
+Claims:     995, from 985: the member reader's catalogue and matrix rows, its two stores, section 17's and section
+            18's rows, the fixture's row, the name page's member readings and the run page's two parts.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this pull request edits is in any of them.
+Mutated:    the rule, stated before the run: each property the second pull request's done condition names broken
+            alone, made by hand over the working tree at 2cf905b, filtered to the tests that read it and reverted.
+            M1 the year's high read over 250 bars rather than 251: predicted red at the shared readings' edges.
+            M2 the coverage read whatever its quarters' fetch read: predicted red at A2's coverage.
+            M3 an industry's return read over every index's members: predicted red at the industry's two figures.
+            M4 the peers' surprise read through the night itself: predicted red at the surprise, A2's on the night.
+            M5 the edge after costs adding the round trip: predicted red at the recorder's and the run page's tests.
+            M6 the round trip taken off the stored result: predicted red at the record read back unchanged.
+            M7 an earlier night's page reading the newest member readings: predicted red at BB's earlier page.
+            Results: M1 to M7 each red where stated: M2 read A2's coverage as 1, M3 the industry's month as 0.563 and
+            its quarter as 0.618, M4 the surprise as 22.05, M6 T's result as 0.2568; each reverted, and the seven
+            tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, `tools/remedies/2026-10-06-15.2-the-member-readings.txt` (migration 66) and the
+            surface's Release build again; the night of 2026-10-06 fills every member's readings and prices the trades
+            ended before it, read off the night's member readings row on the run page; then 15.5.
