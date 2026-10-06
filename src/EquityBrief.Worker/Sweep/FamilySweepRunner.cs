@@ -166,6 +166,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
 
         File.WriteAllText(report, FamilySweepReport.Build(run, adapter.Grid, read, proposal));
         File.WriteAllText(figures, JsonSerializer.Serialize(new { run, proposal = proposal.Proposed?.Key, settings = read.Select(one => one.Figures) }, SweepRunner.Json));
+        File.WriteAllText(Path.Combine(folder, SweepAnswer.File), new SweepAnswer(Indices.IndexFamilies.LargeIndex, family, null, proposal.Proposed is not null).Json());
 
         output.WriteLine(proposal.Proposed is { } proposed
             ? "proposed " + proposed.Key + ", edge " + FamilySweepReport.Number(proposed.Edge) + " over " + proposed.Trades.ToString(CultureInfo.InvariantCulture) + " trades"

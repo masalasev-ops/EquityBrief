@@ -71,7 +71,8 @@ public class StoreNeverDeleted
         // finished copy into place and removes a partial or an old one, under the data root's own folder
         // of builds. FamilySweepRunner, FamilyIdeasRunner, SweepIdeasRunner, ContextIdeasRunner, HeavyweightSweepRunner and
         // WiderUniverseRunner each write a run's report and its figures into the run folder they made for them under the
-        // sweep's folder, and IndexSweepRunner into the run folder it claimed there.
+        // sweep's folder, and IndexSweepRunner into the run folder it claimed there; FamilySweepRunner, HeavyweightSweepRunner
+        // and IndexSweepRunner write the answer a search states beside them, as SweepRunner writes its own through `Of`.
         // NightLock writes and removes the night's lock file.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
@@ -90,11 +91,14 @@ public class StoreNeverDeleted
                 "DrainLauncher.cs: File.Copy(file)",
                 "FamilyIdeasRunner.cs: File.WriteAllText(figures)",
                 "FamilyIdeasRunner.cs: File.WriteAllText(report)",
+                "FamilySweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "FamilySweepRunner.cs: File.WriteAllText(figures)",
                 "FamilySweepRunner.cs: File.WriteAllText(report)",
+                "HeavyweightSweepRunner.cs: File.WriteAllText(Path.Combine(folder, Core.Sweep.SweepAnswer.File))",
                 "HeavyweightSweepRunner.cs: File.WriteAllText(figures)",
                 "HeavyweightSweepRunner.cs: File.WriteAllText(report)",
                 "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, FiguresFile))",
+                "IndexSweepRunner.cs: File.WriteAllText(Path.Combine(folder, SweepAnswer.File))",
                 "IndexSweepRunner.cs: File.WriteAllText(report)",
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
@@ -116,7 +120,7 @@ public class StoreNeverDeleted
         var runner = sites.Where(site => site.StartsWith("SweepRunner.cs: ", StringComparison.Ordinal)).ToArray();
 
         Assert.All(runner, site => Assert.Matches(@"^SweepRunner\.cs: File\.(?:WriteAllText\((?:Of\(|next\)|saved\))|Move\(next\)|Delete\(file\)|Create\(Of\()", site));
-        Assert.Equal(13, runner.Length);
+        Assert.Equal(14, runner.Length);
 
         // No removal anywhere in the shipped source is handed the store's own path.
         Assert.Empty(shipped.SelectMany(file => NamingTheStore(File.ReadAllText(file), file)));

@@ -65,6 +65,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     public const string Followers = "heavyweights-b";
 
+    // The heavyweights' two designs as an answer names them, (a) the index's own leaders and (b) the S&P 500's followers.
+    public const string DesignA = "a";
+
+    public const string DesignB = "b";
+
     // Design (b)'s dials: the sessions an industry's lead is read over, how many leading industries are read, and how many
     // of the index's members in each are bought.
     public static IReadOnlyList<int> LeadWindows { get; } = [21, 63];
@@ -401,7 +406,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
                 crossed = crossed.Select((measures, at) => new { setting = adapter.Grid.Key(ten[at]), after = measures }),
-            });
+            },
+            new SweepAnswer(indexCode, family, null, proposal.Proposed is not null || crossed.Any(MeetsTheFloors)));
 
         output.WriteLine(proposal.Proposed is { } shownProposal
             ? FormattableString.Invariant($"proposed {shownProposal.Key}, edge after costs {FamilySweepReport.Number(shownProposal.Edge)} over {shownProposal.Trades} trades, before costs {FamilySweepReport.Number(before[shownProposal.Key].Edge)}, at double {FamilySweepReport.Number(doubled[shownProposal.Key].Edge)}")
@@ -469,7 +475,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Pullback, note, listed, kept, all, before, after, doubled });
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Pullback, note, listed, kept, all, before, after, doubled }, null);
 
         output.WriteLine(FormattableString.Invariant($"the base: edge after costs {SweepIdeasReport.Number(after.Edge)} over {after.Trades} trades, before costs {SweepIdeasReport.Number(before.Edge)}, at double {SweepIdeasReport.Number(doubled.Edge)}, with no floors or gate {SweepIdeasReport.Number(all.Edge)} over {all.Trades}"));
         output.WriteLine("report " + report);
@@ -636,10 +642,6 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         Charge(-1);
 
-        static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
-
-        bool Meets(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
-
         // The second stage, every level read after costs: each new dial's levels and each market switch alone on the ten
         // strongest settings, and then the levels that survive crossed.
         var ten = search.Strongest(SweepDials.Settings, SweepDials.TradesHeld);
@@ -718,7 +720,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
             .Select(best => levels.First(level => level.Dial == best.Dial && level.Name == best.Level))
             .ToArray();
         var crossed = crossedLevels.Length > 0 ? ReadUnder(crossedLevels) : [];
-        var proposed = proposal is not null && Meets(after[1]);
+        var proposed = proposal is not null && MeetsTheFloors(after[1]);
         var note = FormattableString.Invariant($"{Membership(named, inputs)} A candidate is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {candidates.Length:N0} of the {all.Length:N0} candidates the members made. Every edge is after each trade's cost at the published table's value, its benchmark the same plan on every member of the index paying none, and the table sets the edge before costs and at double beside it.");
         var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback search</title><style>" + SweepReport.Style + "</style></head><body><main>");
 
@@ -817,15 +819,16 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 dials = dialsRead,
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
-                crossed = crossed.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = Meets(measures) }),
-            });
+                crossed = crossed.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = MeetsTheFloors(measures) }),
+            },
+            new SweepAnswer(indexCode, SetupFamilies.Pullback, null, proposed || crossed.Any(MeetsTheFloors)));
 
         output.WriteLine(proposed
             ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}")
             : FormattableString.Invariant($"none passed: the provisional base reads {FamilySweepReport.Number(after[0].Edge)} after costs over {after[0].Scored:N0} trades; the report states the strongest settings and what could be tried next"));
         output.WriteLine(crossedLevels.Length == 0
             ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Count} strongest settings")
-            : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, the strongest of the ten reads {FamilySweepReport.Number(crossed.Max(one => one.Edge))} after costs, {crossed.Count(Meets)} of {ten.Count} meeting the floors"));
+            : FormattableString.Invariant($"second stage: {string.Join("; ", crossedLevels.Select(level => level.Dial + ", " + level.Name))} survive; crossed, the strongest of the ten reads {FamilySweepReport.Number(crossed.Max(one => one.Edge))} after costs, {crossed.Count(MeetsTheFloors)} of {ten.Count} meeting the floors"));
         output.WriteLine("report " + report);
 
         return 0;
@@ -837,13 +840,26 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     // The file a run creates in its folder to hold it, created only where none is.
     public const string ClaimFile = "run.claim";
 
-    // A run's report and its figures, written into the run folder it claimed; the report's path.
-    static string WriteRun(string folder, string page, object figures)
+    // A setting's trades after costs meeting the family sweeps' floors: at least 300 scored and an edge above nothing in
+    // at least 6 of the 8 years, the one reading of the floors every table, line and answer of a run takes.
+    static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
+
+    internal static bool MeetsTheFloors(SweepMeasures measures) => measures.Scored >= FamilySweep.TradeFloor && YearsAbove(measures) >= FamilySweep.YearsBeating;
+
+    // A run's report and its figures, written into the run folder it claimed, with the answer a search states beside them,
+    // none for the pullback's base, which reads one setting and searches none; the report's path.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    static string WriteRun(string folder, string page, object figures, SweepAnswer? answer)
     {
         var report = Path.Combine(folder, SweepFolder.ReportFile);
 
         File.WriteAllText(report, page);
         File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(figures, SweepRunner.Json));
+
+        if (answer is not null)
+        {
+            File.WriteAllText(Path.Combine(folder, SweepAnswer.File), answer.Json());
+        }
 
         return report;
     }
@@ -886,8 +902,6 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     // made, and the survivors crossed on each of the strongest settings with whether it meets the floors.
     static string StageSection(IReadOnlyList<DialSurvivor> read, IReadOnlyList<string> settings, IReadOnlyList<string> crossedLevels, IReadOnlyList<SweepMeasures> crossed, string reading)
     {
-        static int YearsAbove(SweepMeasures measures) => measures.YearEdge.Count(edge => edge is > 0);
-
         var page = new StringBuilder("<h3>The second stage: each new dial and switch alone on the ten strongest settings</h3>");
 
         page.Append(FormattableString.Invariant($"<p>Each level is read on each of the {settings.Count} strongest settings the first stage read, the highest edges after costs among those holding {SweepDials.TradesHeld} trades, twice the floor, so a level keeping half a setting's trades off can still be kept. It is kept on a setting where it is higher in at least {SweepIdeas.YearsBetter} of the 8 years with {SweepIdeas.RecentYearsBetter} of the last {SweepIdeas.RecentYears} and leaves at least {SweepMeasures.TradeFloor} trades: on the edge after costs, or for a market switch on the year's total result with its result a trade higher as well. A level survives where at least {SweepDials.KeptOn} of the {SweepDials.Settings} keep it. {WebUtility.HtmlEncode(reading)}</p>"));
@@ -910,7 +924,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         for (var at = 0; at < settings.Count; at++)
         {
-            var meets = crossed[at].Scored >= FamilySweep.TradeFloor && YearsAbove(crossed[at]) >= FamilySweep.YearsBeating;
+            var meets = MeetsTheFloors(crossed[at]);
 
             page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(settings[at])}</td><td class=\"num\">{crossed[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(crossed[at].Edge)}</td><td class=\"num\">{YearsAbove(crossed[at])} of 8</td><td>{(meets ? "yes" : "no")}</td></tr>"));
         }
@@ -1075,7 +1089,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) });
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignA, proposal.Proposed is not null));
 
         var (firstBefore, firstAfter, firstDoubled) = figures[provisional];
 
@@ -1240,7 +1254,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) });
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) }, new SweepAnswer(indexCode, HeavyweightRule.Name, DesignB, proposed is not null));
 
         var best = after.OrderByDescending(one => one.Edge ?? double.MinValue).First();
 
