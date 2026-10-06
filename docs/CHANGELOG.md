@@ -11407,3 +11407,15 @@ Was:
 Now:
 > **Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; a freeze of a family on the S&P 400 or 600 takes its card's line saying its sweep found no setting that passed away from that night on and not before, read off the rendered page; and the entry names every pinned file it edited and the remedy it issued, or that the operator gave no go and none was issued.
 Why: 15.4's line reads a freeze on the S&P 500 alone, since no S&P 400 or 600 rule can be frozen before 15.5 builds the command, so the checkpoint that builds it owes the line's going; and the operator ruled on 2026-10-06 that no S&P 400 or 600 result is frozen yet.
+
+### 2026-10-06 - RUNBOOK.md - the S&P 400's and 600's sweep commands shown in the form every other worker command takes
+Corrects: the runbook showed `sweep-index` and `sweep-answer` as `dotnet run --project src/EquityBrief.Worker -c Release -- ...`, a form `component-access` does not read as showing a verb, so `sweep-answer`, which section 13.9 names, read as a verb the runbook does not show. Found by `tools/ci.ps1` over 9fcbcaa, 15.4's tree, before its merge.
+Was:
+> dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index SML --family pullback-search
+> dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index MID --family drift --stop-floor 1
+> dotnet run --project src/EquityBrief.Worker -c Release -- sweep-answer --run 20261006T004046Z
+Now:
+> dotnet run --project src/EquityBrief.Worker -- sweep-index --index SML --family pullback-search
+> dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family drift --stop-floor 1
+> dotnet run --project src/EquityBrief.Worker -- sweep-answer --run 20261006T004046Z
+Why: the runbook's other 68 worker commands take the form the check reads, and a verb the specs name is one a person can find the command line for.

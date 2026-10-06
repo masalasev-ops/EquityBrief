@@ -645,8 +645,8 @@ It reads the history twice from the live store, read-only, the S&P 500's alone a
 From 15.4 each setup family is swept on one index at a time, its strength, market check and benchmark read on that index's own members and every result after the published spread's cost, on membership as it stood where the store holds the index's fund's snapshots and on survivors only with `--survivors`, each figure saying which (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). The families are `pullback-search`, `breakout`, `drift` and the sector heavyweights' two designs, `heavyweights` and `heavyweights-b`; the drift takes `--stop-floor <typical moves>`:
 
 ```
-dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index SML --family pullback-search
-dotnet run --project src/EquityBrief.Worker -c Release -- sweep-index --index MID --family drift --stop-floor 1
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index SML --family pullback-search
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family drift --stop-floor 1
 ```
 
 Each run reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep folder, claimed by a file only one run can create, so runs started in the same second do not share one. A run where no setting meets the floors says so and its report states the five strongest settings with the floor each misses and what could be tried next, and nothing is set aside (see: No family on any index is set aside or hidden by a test result without the operator's word).
@@ -654,7 +654,7 @@ Each run reads the live store read-only, writes nothing to it, and writes its re
 Every search, on any index, also states its answer in `answer.json` beside its report: passed where its proposal or a setting its second stage crossed meets the floors, and none passed otherwise; the pullback's base reads one setting, searches nothing and states none. Once the operator has the report, record the answer by the run's folder name:
 
 ```
-dotnet run --project src/EquityBrief.Worker -c Release -- sweep-answer --run 20261006T004046Z
+dotnet run --project src/EquityBrief.Worker -- sweep-answer --run 20261006T004046Z
 ```
 
 The family's card then reads "Its sweep found no setting that passed the floors" while the newest answer recorded for each of its designs on that index says none passed, and the line goes with the family's next sweep that passes, recorded the same way, or its next freeze. The command writes the answer's row and a run log row and asks for nothing; a run stating no answer, one made before runs stated one among them, is refused with nothing written, and is run again from this build to be recorded.
