@@ -38647,8 +38647,9 @@ Night:      the scheduled task holds its one weekday trigger at 23:30 UTC from 2
             that ran the night of 2026-10-05 at 02:00 UTC taken off, and its time limit is raised from the 8 hours of
             2026-09-29 to the 12 the runbook has stated since 15.1, read back as `PT12H` with the next run at
             2026-10-06 23:30 UTC.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 15.4's entry below: FILLED
-            FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 15.4's entry below: 96da1f1,
+            all six steps, 0 warnings, 0 errors, 1895 of 1895 tests ran with none failed, migrations 0 to 65 with none
+            pending, schema version 65, against `data-ci` and never `data`.
 Carried:    the queue above.
 
 ### 15.4 - the sweeps per index and family: every setup family swept on the S&P 400 and the S&P 600 as a rule of its own after each trade's cost, each run stating its answer, a command recording it and a card saying its sweep found none   2026-10-06
@@ -38677,12 +38678,13 @@ Built:      the worker's `sweep-index --index MID|SML --family`, reading one ind
             catalogue's and the matrix's row; SCHEMA's table; the runbook's two commands; the roster's two clauses;
             15.5's done condition owing the line's going at an S&P 400 or 600 freeze, which no rule could have before
             that command; the prior text of each edit in `CHANGELOG.md`; and the remedy file.
-Tests:      FILLED FROM THE RUN: ten added, the floors and the quality on a listing's own session, a trade's cost in
+Tests:      1895, from 1885: ten added, the floors and the quality on a listing's own session, a trade's cost in
             risks at its prices as traded, a constructed history through the sweep's own command on both indices with
             its edge before costs, after and at double worked by hand, the strongest settings and a dial level's
             survival, a run's answer stated and read back, the command's recordings and refusals, the rule a card
             draws its line by, and the line read off the S&P 400's and the S&P 500's rendered pages.
-Claims:     FILLED FROM THE RUN.
+Claims:     985, from 983: the sweep answers' catalogue and matrix rows, named beside phase 13's and phase 14's pairs
+            after their reports.
 Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights' own,
             the swing filter's and the rule versions' lists; none of the 21 shipped files this tree edits is in any.
 Mutated:    the rule, stated before the run: each property the done condition names broken alone, made by hand over
@@ -38699,8 +38701,14 @@ Mutated:    the rule, stated before the run: each property the done condition na
             M7 a freeze at the answer's own instant leaving the line: red in the rule's test.
             Results: M1 to M7 each red where stated once M3's test was extended, each reverted, and the nine tests
             green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM
-            THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 96da1f1. A first
+            run over 9fcbcaa failed 23 tests on two causes, the sweep answers' catalogue row placed for no verdict and
+            the runbook's sweep commands in a form the verb check does not read, both corrected in 96da1f1.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1895 of 1895 tests ran with none failed, migrations 0
+            to 65 with none pending, schema version 65, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 985 claims, 985 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 996
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1895 of 1895 tests ran.
 Carried:    after the merge, `tools/remedies/2026-10-06-15.4-the-sweep-answers.txt` from main's Release build, the
             read surface built and started again from it, and the ten searches run again from it on membership as it
             stood and on survivors only, each as-it-stood run's answer recorded, in a run entry of their own with each
