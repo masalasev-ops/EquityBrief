@@ -167,7 +167,7 @@ public partial class ReadSurface
     // live rule's own book: its rebalance on the night bought M1 and sold M3, bought a month before, at no longer leading,
     // M3 making 5 per cent less a round trip of 0.2 against its size cut's 1, an edge of 3.8 points; the night reading the
     // family by its live rule where it did. The live rule's name returned.
-    static string FreezeTheHeavyweights(TemporaryStore store, bool readByIt)
+    static string FreezeTheHeavyweights(TemporaryStore store, bool readByIt, string at = "2026-10-02T12:00:00Z")
     {
         var heavyweights = (IndexRuleCandidate)CandidateEvaluators.Find("heavyweight-400")!;
         var (registrations, refusal) = IndexRules.Freeze("heavyweight", "MID", IndexRules.Provisional(heavyweights), [new Dictionary<string, double> { [IndexHeavyweightCandidate.LeadersParameter] = 1 }], [], new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero));
@@ -176,7 +176,7 @@ public partial class ReadSurface
 
         foreach (var (registration, place) in registrations!.Select((one, place) => (one, place)))
         {
-            RegisteredRule(store, 300 + place, registration, "2026-10-02T12:00:00Z");
+            RegisteredRule(store, 300 + place, registration, at);
         }
 
         var live = registrations![0].Candidate;
@@ -200,11 +200,15 @@ public partial class ReadSurface
     [Fact]
     public async Task AnSAndP400HeavyweightsFreezeDrawsItsCardFromItsLiveRulesOwnBookAndItsRecordInPoints()
     {
-        async Task<(string Page, string Card, string Run)> Pages(bool readByIt)
+        // Both heavyweights designs' sweeps on the S&P 400 found none, recorded the day before the night, and the family
+        // frozen at the instant given.
+        async Task<(string Page, string Card, string Run)> Pages(bool readByIt, string at = "2026-10-02T12:00:00Z")
         {
             using var store = UniversesStore();
 
-            FreezeTheHeavyweights(store, readByIt);
+            RecordAnswer(store, "20261001T120000Z", "MID", "heavyweight", "a", "none passed", "2026-10-01T12:00:00Z");
+            RecordAnswer(store, "20261001T120100Z", "MID", "heavyweight", "b", "none passed", "2026-10-01T12:01:00Z");
+            FreezeTheHeavyweights(store, readByIt, at);
 
             using var host = new Host(store.Root);
             using var client = host.CreateClient();
@@ -219,6 +223,7 @@ public partial class ReadSurface
         var (page, card, run) = await Pages(readByIt: true);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\"", card, StringComparison.Ordinal);
+        Assert.DoesNotContain(SweepLineDrawn, card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 holding tonight · held while leading · 1 variant kept in books of their own · last rebalance 2026-10-02", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"M2\"", card, StringComparison.Ordinal);
@@ -240,11 +245,19 @@ public partial class ReadSurface
         Assert.Contains("data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\"", rows[1], StringComparison.Ordinal);
         Assert.Contains("<tr data-family=\"heavyweight\" data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
 
-        // A freeze the night did not read: the card is the index's own book, provisional, holding M2.
+        // A freeze the night did not read: the card is the index's own book, provisional, holding M2, its sweeps' line
+        // drawn.
         var (_, unread, _) = await Pages(readByIt: false);
 
         Assert.Contains("data-state=\"provisional\"", unread, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M2\"", unread, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"M1\"", unread, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, unread, StringComparison.Ordinal);
+
+        // Frozen the day after the night: the night's card is the index's own book with its sweeps' line, and not before.
+        var (_, later, _) = await Pages(readByIt: false, at: "2026-10-03T12:00:00Z");
+
+        Assert.Contains("data-state=\"provisional\"", later, StringComparison.Ordinal);
+        Assert.Contains(SweepLineDrawn, later, StringComparison.Ordinal);
     }
 }

@@ -11497,5 +11497,5 @@ Authorised by: A rule of the S&P 400's or 600's sector heavyweights keeps a book
 Was:
 > fixture-expectations' row ending "the stage's row naming each with why |", read-surface's ending "and an index no freeze stands on draws no records |" and register-append-only's ending "and no S&P 500 evaluator pinning a sweep or an index file |"
 Now:
-> each the same, then a clause from 15.5's second pull request: the heavyweights' freeze in either design with its refusals, design (a)'s variants on both sides of each dial, each rule's book over constructed nights with its sales and its waits; the frozen heavyweights' card drawn from the live rule's book and each heavyweights rule's record in points; and the heavyweights rule's pins
+> each the same, then a clause from 15.5's second pull request: the heavyweights' freeze in either design with its refusals, design (a)'s variants on both sides of each dial, each rule's book over constructed nights with its sales and its waits; the frozen heavyweights' card drawn from the live rule's book with its sweeps' line gone from the freeze's night and not before, and each heavyweights rule's record in points; and the heavyweights rule's pins
 Why: the roster is where a check states what it asserts, and the tests the clauses name read the command, the books, the pages and the pins.
