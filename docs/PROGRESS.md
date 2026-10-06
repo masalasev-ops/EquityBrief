@@ -38589,3 +38589,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    `tools/remedies/2026-10-05-15.3-the-named-pulls.txt` from main's build after the merge, once the night of
             2026-10-05 has finished and on the next day's allowance; then the searches the profit gate reads the
             added codes in, read again.
+
+### 15.3 - the named pulls' remedy: the five codes' companies, splits and surprises pulled on the next day's allowance, and the ten searches read again   2026-10-06
+
+Ran:        `tools/remedies/2026-10-05-15.3-the-named-pulls.txt` from main's build at f58139f, the merge of PR 369,
+            00:34:36 to 00:39:18 UTC on 2026-10-06, with no night, queue, report pass, labeller or store copy running
+            and no night lock. The entry carrying it set it after the night of 2026-10-05, which was moved to 02:00 UTC
+            on 2026-10-06; it ran before that night instead, once the allowance had reset, since its pulls write only
+            the pulled history's tables, which no night reads, and its calls left the night the day's allowance less
+            268.
+Pulls:      the companies pulls answered the S&P 600's 4 codes and the S&P 400's 1: 3 companies, 94 share counts and
+            94 quarters of income stored, every quarter CIR_old's. ARCH, OPITQ and BBBYQ answered with no income
+            statement carrying its filing date, so the profit gate still reads none of the three; ARCH and OPITQ file
+            no sector and OPITQ no CIK. The splits pulls answered 4 and 1 with no split. The surprises pulls asked 106
+            calendar months each: 78 prints of the four codes, 77 carrying a surprise, 56 stored, and BBBYQ's 22 on
+            the S&P 400's pull, none new. A pull narrowed to named codes asks none of the fourteen companies the GICS
+            moves of 2023-03-17 name, so its report lists all fourteen as not answered; the line writes nothing.
+Allowance:  the provider's user endpoint read 100,000 of 100,000, dated 2026-10-05, at 00:32 UTC, its counter zeroed
+            by the first request after midnight UTC; 1 after a one-call probe and 268 after the remedy, so the
+            remedy spent 267 against the 270 stated. The operator capped the day's spend at 5,000 without their word.
+Searched:   all ten again from the sweeps' build at 124a054, read only, 00:40:41 to 00:55:49 UTC, against the ten of
+            2026-10-05 from 21:19 UTC; every figure is the same. The S&P 600's pullback proposes its setting at 0.079
+            after costs over 2,762 trades, 6 of 8 years, 0.061 without the five largest, its plateau depth 0. The S&P
+            400's pullback passes none, its base 0.051 over 1,769 trades; crossed with profit and cover, one of its ten
+            settings meets the floors, 0.219 after costs over 554 trades in 6 of 8 years, the strongest of the ten
+            0.227 over 569 in 5 of 8. The S&P 400's drift proposes window 3, reaction 0.5, volume 1.5 and target 2 at
+            0.038 after costs over 2,031 trades. The S&P 600's drift and both breakouts pass none. The heavyweights'
+            design (a) has 47 of 648 settings meeting the floors on the S&P 400 and 80 on the S&P 600, where luck
+            alone passes about 94, and design (b) 7 and 3 of 72, where luck alone passes about 10, its proposals 0.49
+            points over 687 holdings and 1.55 over 493.
+Verified:   `tools/ci.ps1` green over fb9cb26, the tree main holds at f58139f but for that correction's own figures,
+            1885 of 1885 tests; this entry read by the checks that read the record, run filtered over the tree
+            carrying it, 139 of 139 passing.
+Carried:    the operator's ruling on the S&P 600's pullback, which misses the plateau's one-step test, and on the two
+            settings meeting the floors on the S&P 400, the pullback's crossed with profit and cover and the drift;
+            15.4's landing; 15.1's third pull request, after the first night over the three indices; 15.2's second;
+            phase 14's sign-off.
