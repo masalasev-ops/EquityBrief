@@ -39188,22 +39188,30 @@ Built:      On a run, profiles the lane cannot read, none or two flagged, none n
             clause; the prior text in `CHANGELOG.md`. Left for the correction after this: a pass a press starts runs
             a copy of the night's clean build, which holds no secrets file, so it reads neither the paid keys nor a
             switch of the local flag, which the review found and no press has met since the night first built so.
-Tests:      FILLED FROM THE RUN, from 1931: two added, a fixture night whose queue was read from settings flagging
+Tests:      1933, from 1931: two added, a fixture night whose queue was read from settings flagging
             two closing with the queue's row naming them and no model call, and a pass with its lane unread writing
             the paid lane with every local section carrying the line; the settings test reading an unread lane, an
             address and a bound past a day, the load tests the kept reason, and the list's parse an embedding model.
-Claims:     FILLED FROM THE RUN, from 1016, none added: section 18's row on the settings says what now happens.
+Claims:     1016, unchanged, none added: section 18's two rows say what now happens.
 Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
             sector heavyweights' evaluator's lists; no file this edits is among them.
 Mutated:    the rule, stated before the run: each property the answer names broken alone, made by hand over the
-            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            working tree at 6951e97, filtered to the tests that read it and reverted.
             U1 settings the lane cannot read refusing the run again: predicted red at the night with two flagged.
             U2 a key read as an unread lane rather than refused: predicted red at the same, its key refused.
             U3 the writer calling an unread lane's model: predicted red at the same, its model calls.
             U4 a failed load tried again on the next call: predicted red at the refused load, its second load.
             U5 only language models unloaded: predicted red at the list with the embedding model loaded.
             U6 an address not over HTTP read as one: predicted red at the settings test's addresses.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-Carried:    nothing to run after the merge. Then 16.2.
+            Results: U1 to U6 each red where stated: U1 refused the night over the two flags, U2 left the key
+            unrefused, U3 counted one model call on the queue's row and left the pass's later sections without the
+            line, U4 read the list and loaded again on the second call, U5 left the embedding model off the list to
+            unload, U6 refused none of the three addresses; each reverted, and the six tests green over the
+            reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 6951e97.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1933 of 1933 tests ran with none failed, migrations 0
+            to 69 with none pending, schema version 69, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1016 claims, 1016 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1027
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1933 of 1933 tests ran.
+Carried:    nothing to run after the merge. Then the 12.3 correction the review found, then 16.2.
