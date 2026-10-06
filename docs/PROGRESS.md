@@ -38935,7 +38935,11 @@ Mutated:    the rule, stated before the run: each property the second pull reque
             M2 read the 63-session rule's leaders as A and D, M3 bought L3 at a month's window, M4 wrote rebalances 6
             to 9 with no close of SPY, M5 drew the provisional card, M6 drew the live rule's edge before costs; each
             reverted, and the four tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 28d626d.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1912 of 1912 tests ran with none failed, migrations 0
+            to 68 with none pending, schema version 68, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1000 claims, 1000 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1011
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1912 of 1912 tests ran.
 Carried:    after the merge, migration 68 applied to the store by `tools/migrate.ps1` and the surface's Release build
             again; then 15.6, the phase report.
