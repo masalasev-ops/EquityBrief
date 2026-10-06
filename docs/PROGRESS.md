@@ -38973,8 +38973,12 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds,
             Results: T1 failed on 15.4's count less its rows landing as none, three, against the two it landed; T2 on
             15.5's five against the four read; T3 on phase 15 stated at one against the two rows its table holds; the
             other test green each time, each reverted and both green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 5c450f2, the
+            commit restating the results. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1913 of 1913 tests ran
+            with none failed, migrations 0 to 68 with none pending, schema version 68, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 1000 claims, 1000 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            1011 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1913 of 1913 tests ran.
 Carried:    16.0, phase 16's planning pass with its data check D1; phase 14's and phase 15's sign-offs, each owed on
             the phase as a whole by a session the operator starts, their handoff prompts left after 16.0; the night of
             2026-10-06 read.
