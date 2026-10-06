@@ -39161,3 +39161,49 @@ Carried:    nothing to run after the merge: no migration and no remedy, and the 
             the night of 2026-10-06 calls Gemma 4, loading it at 50,176 tokens; its queue's row on the run page says
             how many passes it completed in the hour, which 6.10 measured on Qwen 3.5 9B and no run has measured on
             Gemma 4. Then 16.2.
+
+### 16.1 ruling - local profiles the lane cannot read leave it calling no model, the night running every step with its overnight queue's row saying why   2026-10-06
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code the operator's answer below calls for, word for word in `prompts/2026-10-06-16.1-signoff-order.md`; that
+code meets the done conditions a checkpoint's code meets.
+Ruled:      Asked whether settings flagging both local models or neither should refuse the whole night, as a key on
+            the lane does, or stop only its overnight queue, the operator answered "alternative", the second.
+Built:      On a run, profiles the lane cannot read, none or two flagged, none named, a flag neither true nor
+            false, a flagged profile missing a value or holding one that is not a number, or a key the lane read
+            before the profiles, leave the lane unread with the line naming what was read: its feed reaches no
+            runtime and answers every call as the local model unavailable, so the night runs every step and its
+            overnight queue's row says it could not run and why, and a pass on demand writes the paid lane's
+            sections and leaves the local lane's absent with the line. A key on the lane still refuses the night
+            and the pass before they start, and the capture's own models file is still read strictly. The writer
+            leaves every planned section of an unread lane with the line before any call, so no call is counted and
+            no row stored. And what a review of the whole local lane, three readers with two skeptics a finding,
+            kept of its eleven findings: an address not over HTTP and a bound past a day are settings the lane
+            cannot read rather than a crash of the night; a failed load's reason is kept for the rest of the pass or
+            the night rather than the load tried again each round; every other model loaded is unloaded whatever its
+            kind; the messages name no section, since they repeat across sections; the rehearsal's closed port
+            covers both profiles; and the runbook's troubleshooting row, the queue's outcome in the runbook and in
+            `SCHEMA.md` name every cause. Two decisions superseding the two this afternoon's track wrote, their
+            citations moved; section 18's two rows, the runbook's switch and load paragraphs and the roster's
+            clause; the prior text in `CHANGELOG.md`. Left for the correction after this: a pass a press starts runs
+            a copy of the night's clean build, which holds no secrets file, so it reads neither the paid keys nor a
+            switch of the local flag, which the review found and no press has met since the night first built so.
+Tests:      FILLED FROM THE RUN, from 1931: two added, a fixture night whose queue was read from settings flagging
+            two closing with the queue's row naming them and no model call, and a pass with its lane unread writing
+            the paid lane with every local section carrying the line; the settings test reading an unread lane, an
+            address and a bound past a day, the load tests the kept reason, and the list's parse an embedding model.
+Claims:     FILLED FROM THE RUN, from 1016, none added: section 18's row on the settings says what now happens.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this edits is among them.
+Mutated:    the rule, stated before the run: each property the answer names broken alone, made by hand over the
+            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            U1 settings the lane cannot read refusing the run again: predicted red at the night with two flagged.
+            U2 a key read as an unread lane rather than refused: predicted red at the same, its key refused.
+            U3 the writer calling an unread lane's model: predicted red at the same, its model calls.
+            U4 a failed load tried again on the next call: predicted red at the refused load, its second load.
+            U5 only language models unloaded: predicted red at the list with the embedding model loaded.
+            U6 an address not over HTTP read as one: predicted red at the settings test's addresses.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    nothing to run after the merge. Then 16.2.

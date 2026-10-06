@@ -13,8 +13,8 @@ namespace EquityBrief.Core.Providers;
 // is the operator's choice. What this was written against is two responses
 // captured from LM Studio serving qwen/qwen3.5-9b before a line of it existed, and
 // both of them are why it is shaped the way it is.
-// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
-// see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time
+// see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+// see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
 public sealed class OpenAiCompatibleModelFeed(
     HttpClient client,
     LocalModelSettings settings,
@@ -41,11 +41,14 @@ public sealed class OpenAiCompatibleModelFeed(
     // The word LM Studio's load answers with once the model is ready.
     public const string LoadedStatus = "loaded";
 
-    // Whether the runtime has been read for this feed's model, and whether the next call may still be waiting
-    // on its load.
+    // Whether the runtime has been read for this feed's model, whether the next call may still be waiting on its
+    // load, and why the model is unavailable where reading it found so, which every later call answers with
+    // rather than reading and loading again.
     bool read;
 
     bool loading;
+
+    string? failed;
 
     // The answer budget of one section call. A section is a paragraph or a sentence
     // per business unit, and a thousand tokens holds several of either.
@@ -54,21 +57,45 @@ public sealed class OpenAiCompatibleModelFeed(
     public int Requests { get; private set; }
 
     public static OpenAiCompatibleModelFeed Live(LocalModelSettings settings) =>
-        new(
-            new HttpClient
-            {
-                BaseAddress = new Uri(settings.BaseAddress.EndsWith('/') ? settings.BaseAddress : settings.BaseAddress + "/"),
-                Timeout = settings.Load + settings.Timeout + settings.Timeout,
-            },
-            settings);
+        settings.Unreadable is not null
+            ? new(new HttpClient(), settings)
+            : new(
+                new HttpClient
+                {
+                    BaseAddress = new Uri(settings.BaseAddress.EndsWith('/') ? settings.BaseAddress : settings.BaseAddress + "/"),
+                    Timeout = settings.Load + settings.Timeout + settings.Timeout,
+                },
+                settings);
 
     public async Task<ModelAnswer> CompleteAsync(ModelRequest wanted, CancellationToken cancellation = default)
     {
         Requests++;
 
+        // Settings naming no model the lane can call reach no runtime: the call is the local model unavailable
+        // with why, so the pass and the overnight queue leave the lane's sections with it and the night goes on.
+        if (settings.Unreadable is { } unread)
+        {
+            throw new LocalModelUnavailable($"The local model is not called: {unread}");
+        }
+
+        if (failed is { } why)
+        {
+            throw new LocalModelUnavailable(why);
+        }
+
         if (!read)
         {
-            loading = !await ReadyAsync(wanted.Section, cancellation).ConfigureAwait(false);
+            try
+            {
+                loading = !await ReadyAsync(wanted.Section, cancellation).ConfigureAwait(false);
+            }
+            catch (LocalModelUnavailable gone)
+            {
+                failed = gone.Message;
+
+                throw;
+            }
+
             read = true;
         }
 
@@ -119,11 +146,12 @@ public sealed class OpenAiCompatibleModelFeed(
     // Whether the model is ready before the first call, read off LM Studio's own interface. A model the
     // runtime holds and has not loaded is loaded at the context the profile names, any other model loaded
     // first unloaded so the runtime holds one at a time, and the load is waited for within the profile's
-    // allowance, so a pass never calls a model mid-load. True once the load answers that the model is loaded.
-    // False where the model is already listed, which it is from the moment a load starts, or where the
-    // runtime states no load state, being another runtime or not answering the list in time: its first call
-    // then carries the allowance. A model the runtime does not hold, a load it refuses and one past the
-    // allowance are the local model unavailable, so every section of the pass is left unwritten with why.
+    // allowance, so a pass never calls a model mid-load. Read once a feed, before the first call of a pass or
+    // of a night's overnight queue. True once the load answers that the model is loaded. False where the model
+    // is already listed, which it is from the moment a load starts, or where the runtime states no load state,
+    // being another runtime or not answering the list in time: its first call then carries the allowance. A
+    // model the runtime does not hold, a load it refuses and one past the allowance are the local model
+    // unavailable, so every section is left unwritten with why and no later call reads or loads again.
     async Task<bool> ReadyAsync(string section, CancellationToken cancellation)
     {
         var listed = await AskAsync(HttpMethod.Get, ModelsPath, null, settings.Timeout, section, cancellation).ConfigureAwait(false);
@@ -136,7 +164,7 @@ public sealed class OpenAiCompatibleModelFeed(
         if (!held.Listed)
         {
             throw new LocalModelUnavailable(
-                $"The runtime holds no model named {settings.Model}, which the local profile {settings.Profile} names, so {section} and the lane's other sections are not written.");
+                $"The runtime holds no model named {settings.Model}, which the local profile {settings.Profile} names, so the lane's sections are not written.");
         }
 
         if (held.Loaded)
@@ -151,7 +179,7 @@ public sealed class OpenAiCompatibleModelFeed(
             if (unloaded is not { Succeeded: true })
             {
                 throw new LocalModelUnavailable(
-                    $"The runtime would not unload {other} to load {settings.Model} for {section}: {(unloaded is { } said ? Said(said.Text) : "it did not answer in time.")}");
+                    $"The runtime would not unload {other} to load {settings.Model}: {(unloaded is { } said ? Said(said.Text) : "it did not answer in time.")}");
             }
         }
 
@@ -166,9 +194,9 @@ public sealed class OpenAiCompatibleModelFeed(
         return loaded switch
         {
             null => throw new LocalModelUnavailable(
-                $"The local model {settings.Model} did not finish loading within {settings.Load.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds, so {section} and the lane's other sections are not written."),
+                $"The local model {settings.Model} did not finish loading within {settings.Load.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds, so the lane's sections are not written."),
             { Succeeded: false } refused => throw new LocalModelUnavailable(
-                $"The runtime refused to load {settings.Model} for {section}: {Said(refused.Text)}"),
+                $"The runtime refused to load {settings.Model}: {Said(refused.Text)}"),
             { } done => LoadedFrom(done.Text),
         };
     }
@@ -205,8 +233,8 @@ public sealed class OpenAiCompatibleModelFeed(
     }
 
     // A model as the runtime's list holds it: whether it is listed, whether an instance of it is loaded or
-    // loading, and every other language model's loaded instance. None where the answer is not LM Studio's
-    // list, which is a runtime stating no load state.
+    // loading, and every other model's loaded instance, so the runtime is left holding one. None where the
+    // answer is not LM Studio's list, which is a runtime stating no load state.
     public sealed record RuntimeModels(bool Listed, bool Loaded, IReadOnlyList<string> Others);
 
     public static RuntimeModels? Held(string json, string model)
@@ -229,7 +257,6 @@ public sealed class OpenAiCompatibleModelFeed(
             foreach (var entry in models.EnumerateArray())
             {
                 var key = entry.TryGetProperty("key", out var named) && named.ValueKind == JsonValueKind.String ? named.GetString() : null;
-                var language = !entry.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String || type.GetString() == "llm";
                 string[] instances = entry.TryGetProperty("loaded_instances", out var held) && held.ValueKind == JsonValueKind.Array
                     ? [.. held.EnumerateArray().Select(instance => instance.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String ? id.GetString()! : string.Empty).Where(id => id.Length > 0)]
                     : [];
@@ -239,7 +266,7 @@ public sealed class OpenAiCompatibleModelFeed(
                     listed = true;
                     loaded = instances.Length > 0;
                 }
-                else if (language)
+                else
                 {
                     others.AddRange(instances);
                 }

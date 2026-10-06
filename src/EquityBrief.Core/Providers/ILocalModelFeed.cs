@@ -55,7 +55,7 @@ public sealed class LocalModelUnavailable(string message) : Exception(message);
 // Behind an interface for the reason every feed here is: the live client and the
 // recorded double are one shape, so a pass replays from a recording with no
 // network and the same parser reads both.
-// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+// see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
 public interface ILocalModelFeed
 {
     int Requests { get; }
@@ -67,8 +67,8 @@ public interface ILocalModelFeed
 // where its model answers, which model, how long a call may take, how much context
 // the model is loaded with, how long its load may take, and never a key. Every
 // value is the settings' own and none has a default here, so a file naming no model
-// refuses rather than calling one nobody chose.
-// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+// calls none rather than one nobody chose.
+// see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
 public sealed record LocalModelSettings
 {
     public const string Section = "EquityBrief:Models:Local";
@@ -83,13 +83,17 @@ public sealed record LocalModelSettings
     public const string LoadName = "LoadSeconds";
     public const string IsDefaultName = "IsDefault";
 
+    // The longest a call or a load may be given, a day: a bound past it is a slip in the file rather than a wait,
+    // and three of it still fit the transport's own limit.
+    public const int MostSeconds = 86400;
+
     public LocalModelSettings(string profile, string baseAddress, string model, int timeoutSeconds, int contextTokens, int loadSeconds)
     {
-        BaseAddress = Stated(profile, BaseAddressName, baseAddress);
+        BaseAddress = Address(profile, Stated(profile, BaseAddressName, baseAddress));
         Model = Stated(profile, ModelName, model);
-        Timeout = TimeSpan.FromSeconds(Whole(profile, TimeoutName, timeoutSeconds));
+        Timeout = TimeSpan.FromSeconds(Seconds(profile, TimeoutName, timeoutSeconds));
         ContextTokens = Whole(profile, ContextTokensName, contextTokens);
-        Load = TimeSpan.FromSeconds(Whole(profile, LoadName, loadSeconds));
+        Load = TimeSpan.FromSeconds(Seconds(profile, LoadName, loadSeconds));
         Profile = profile;
     }
 
@@ -107,6 +111,25 @@ public sealed record LocalModelSettings
     // How long the runtime may take to load the model before a pass calls it.
     public TimeSpan Load { get; }
 
+    // Why the settings name no model the lane can call, where they do not: then every call is the local model
+    // unavailable with this reason, and no other value is one the lane reads.
+    public string? Unreadable { get; }
+
+    // A lane whose profiles could not be read. It names no address or model, its context holds any section so
+    // each is left for this reason rather than for its size, and its feed answers every call as unavailable.
+    public static LocalModelSettings Unread(string reason) => new(reason);
+
+    LocalModelSettings(string reason)
+    {
+        Profile = string.Empty;
+        BaseAddress = string.Empty;
+        Model = string.Empty;
+        Timeout = TimeSpan.FromSeconds(1);
+        ContextTokens = int.MaxValue;
+        Load = TimeSpan.FromSeconds(1);
+        Unreadable = reason;
+    }
+
     // A profile's key as the settings file spells it.
     public static string KeyOf(string profile, string name) => $"{ProfilesKey}:{profile}:{name}";
 
@@ -121,4 +144,17 @@ public sealed record LocalModelSettings
             ? value
             : throw new InvalidOperationException(
                 $"'{KeyOf(profile, name)}' is {value}, which is not a whole number above zero.");
+
+    static int Seconds(string profile, string name, int value) =>
+        Whole(profile, name, value) <= MostSeconds
+            ? value
+            : throw new InvalidOperationException(
+                $"'{KeyOf(profile, name)}' is {value} seconds, more than a day, the longest the lane waits.");
+
+    // An address the runtime can be asked at: absolute, over HTTP.
+    static string Address(string profile, string value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var address) && (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps)
+            ? value
+            : throw new InvalidOperationException(
+                $"'{KeyOf(profile, BaseAddressName)}' is '{value}', which is not an address over HTTP such as http://127.0.0.1:1234/v1/.");
 }

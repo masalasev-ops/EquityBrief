@@ -3106,11 +3106,11 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "The local model is not loaded or still loading when a pass reaches it")] = new Scoped(
             Verdict.Pass,
-            "over the runtime's captured answers, a model not loaded is loaded at its profile's context and its load answered before the first call, another model loaded is unloaded first, a model listed is not loaded again and its first call alone carries the load's allowance, and a refused load, a load past its allowance and a model the runtime does not hold are the local model unavailable, a refused load leaving every section of the lane unwritten",
+            "over the runtime's captured answers, a model not loaded is loaded at its profile's context and its load answered before the first call, another model loaded, of any kind, is unloaded first, a model listed is not loaded again and its first call alone carries the load's allowance, and a refused load, a load past its allowance and a model the runtime does not hold are the local model unavailable, a refused load's reason answered to the next call with nothing more asked and leaving every section of the lane unwritten",
             ByExpectations),
         [CheckReach.Key(FailureTable, "The local lane's settings flag no model as the default or more than one")] = new Scoped(
             Verdict.Pass,
-            "the shipped settings flag Gemma 4, moving the flag moves the model, and settings flagging none or two, naming no profile, a flag neither true nor false, a flagged profile missing each value, a key the lane read before the profiles and a key in a profile are each refused in a line naming what it read",
+            "the shipped settings flag Gemma 4, moving the flag moves the model, settings flagging none or two, naming no profile, a flag neither true nor false, a flagged profile missing each value and a key the lane read before the profiles each read as naming what was read, which on a run leaves the lane calling no model: a fixture night whose queue was read from settings flagging two closes with the queue's row unavailable and naming the profiles, and a pass writes the paid lane's sections and leaves the local lane's absent with the line, while a key in a profile or at the lane still refuses the night",
             ByExpectations),
         [CheckReach.Key(FixtureTable, "member readings")] = new Scoped(
             Verdict.Pass,

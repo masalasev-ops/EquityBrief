@@ -299,6 +299,16 @@ public sealed class ProseWriter(
 
         var unavailable = false;
 
+        // A lane whose settings name no model it can call is unavailable before any call: every section planned
+        // is left with the line saying why, and no call is made or row stored.
+        // see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+        if (settings.Unreadable is { } unread)
+        {
+            notWritten.AddRange(planned.Select(plan => new UnwrittenSection(plan.Section, $"{Unavailable}: {unread}")));
+            planned.Clear();
+            unavailable = true;
+        }
+
         // What the model sent where an answer came back unusable, for the run log's row.
         var unusableFirst = new List<(string Section, string Said)>();
 

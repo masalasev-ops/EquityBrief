@@ -15,8 +15,8 @@ namespace EquityBrief.Tests.Checks;
 // answers captured from the operator's runtime: a model not loaded loaded and its load waited for, another model
 // unloaded first, one already listed called with the load's allowance, and a load refused or past its allowance and
 // a model the runtime does not hold each the local model unavailable.
-// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
-// see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time
+// see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+// see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
 public partial class FixtureExpectations
 {
     // The rows the lane's profiles and its load add that this check reaches.
@@ -44,7 +44,7 @@ public partial class FixtureExpectations
     ];
 
     [Fact]
-    public void TheLaneCallsTheOneProfileItsSettingsFlagAndRefusesSettingsFlaggingNoneOrTwo()
+    public void TheLaneCallsTheOneProfileItsSettingsFlagAndReadsNoModelFromSettingsFlaggingNoneOrTwo()
     {
         // The shipped settings flag Gemma 4, with Qwen 3.5 beside it, every value of the profile read from the file.
         var shipped = new ConfigurationBuilder()
@@ -84,11 +84,36 @@ public partial class FixtureExpectations
             Assert.Contains($"'{LocalModelSettings.KeyOf("gemma-4", name)}' is blank", Refused(Configured(missing)), StringComparison.Ordinal);
         }
 
+        // An address the runtime cannot be asked at and a bound past a day are refused as a missing value is.
+        foreach (var address in new[] { "127.0.0.1:1234/v1/", "http//127.0.0.1:1234/v1/", "ftp://127.0.0.1/v1/" })
+        {
+            Assert.Contains(
+                $"'{LocalModelSettings.KeyOf("gemma-4", LocalModelSettings.BaseAddressName)}' is '{address}', which is not an address over HTTP",
+                Refused(Configured([.. LocalProfile("gemma-4", Gemma, "true").Where(pair => pair.Key != LocalModelSettings.KeyOf("gemma-4", LocalModelSettings.BaseAddressName)), (LocalModelSettings.KeyOf("gemma-4", LocalModelSettings.BaseAddressName), address)])),
+                StringComparison.Ordinal);
+        }
+
+        foreach (var name in new[] { LocalModelSettings.TimeoutName, LocalModelSettings.LoadName })
+        {
+            var profile = LocalProfile("gemma-4", Gemma, "true").Where(pair => pair.Key != LocalModelSettings.KeyOf("gemma-4", name)).ToArray();
+
+            Assert.Contains("86401 seconds, more than a day", Refused(Configured([.. profile, (LocalModelSettings.KeyOf("gemma-4", name), "86401")])), StringComparison.Ordinal);
+            Assert.Null(LocalLane.Settings(Configured([.. profile, (LocalModelSettings.KeyOf("gemma-4", name), "86400")])).Unreadable);
+        }
+
         // A key the lane read before the profiles is refused with where it now goes, never passed over.
         Assert.Contains(
             $"'{LocalModelSettings.Section}:Model' is set, and the lane no longer reads it",
             Refused(Configured([.. LocalProfile("gemma-4", Gemma, "true"), ($"{LocalModelSettings.Section}:Model", Qwen)])),
             StringComparison.Ordinal);
+
+        // On a run, settings the strict reader refuses leave the lane unread with the same line, calling no model.
+        var two = Configured([.. LocalProfile("gemma-4", Gemma, "true"), .. LocalProfile("qwen-3.5", Qwen, "true")]);
+        var unread = LocalLane.For(two, FeedSource.Live, null);
+
+        Assert.Equal(Refused(two), unread.Unreadable);
+        Assert.Equal(string.Empty, unread.Model);
+        Assert.Equal(Refused(Configured()), LocalLane.For(Configured(), FeedSource.Live, null).Unreadable);
 
         // A key in a profile is refused as one at the lane is, on a run over the capture too, and never echoed.
         foreach (var run in new[] { FeedSource.Live, FeedSource.Fixture })
@@ -251,10 +276,14 @@ public partial class FixtureExpectations
             ? Answered(HttpStatusCode.OK, Runtime("local-runtime-models-none-loaded.json"))
             : Answered(HttpStatusCode.NotFound, Runtime("local-runtime-load-refused.json"))));
 
-        Assert.Equal(
-            $"The runtime refused to load {Gemma} for The key under each figure: Model no-such/model not found in downloaded models",
-            (await Assert.ThrowsAsync<LocalModelUnavailable>(() => FeedOver(refusing, settings).CompleteAsync(KeyRequest(settings)))).Message);
-        Assert.DoesNotContain("POST /v1/chat/completions", refusing.Asked);
+        var refused = FeedOver(refusing, settings);
+        var said = $"The runtime refused to load {Gemma}: Model no-such/model not found in downloaded models";
+
+        Assert.Equal(said, (await Assert.ThrowsAsync<LocalModelUnavailable>(() => refused.CompleteAsync(KeyRequest(settings)))).Message);
+
+        // A later call of the same pass answers with the same reason and asks the runtime nothing more.
+        Assert.Equal(said, (await Assert.ThrowsAsync<LocalModelUnavailable>(() => refused.CompleteAsync(KeyRequest(settings)))).Message);
+        Assert.Equal(["GET /api/v1/models", $$"""POST /api/v1/models/load {"model":"{{Gemma}}","context_length":50176}"""], refusing.Asked);
 
         // A load still going when its allowance of a second has passed.
         var slow = LoadingProfile(Gemma, loadSeconds: 1);
@@ -271,7 +300,7 @@ public partial class FixtureExpectations
         });
 
         Assert.Equal(
-            $"The local model {Gemma} did not finish loading within 1 seconds, so The key under each figure and the lane's other sections are not written.",
+            $"The local model {Gemma} did not finish loading within 1 seconds, so the lane's sections are not written.",
             (await Assert.ThrowsAsync<LocalModelUnavailable>(() => FeedOver(loading, slow).CompleteAsync(KeyRequest(slow)))).Message);
         Assert.DoesNotContain("POST /v1/chat/completions", loading.Asked);
 
@@ -280,7 +309,7 @@ public partial class FixtureExpectations
         var listing = new ScriptedRuntime((_, _) => Task.FromResult(Answered(HttpStatusCode.OK, Runtime("local-runtime-models-none-loaded.json"))));
 
         Assert.Equal(
-            "The runtime holds no model named no-such/model, which the local profile test names, so The key under each figure and the lane's other sections are not written.",
+            "The runtime holds no model named no-such/model, which the local profile test names, so the lane's sections are not written.",
             (await Assert.ThrowsAsync<LocalModelUnavailable>(() => FeedOver(listing, unheld).CompleteAsync(KeyRequest(unheld)))).Message);
         Assert.Equal(["GET /api/v1/models"], listing.Asked);
     }
@@ -309,6 +338,70 @@ public partial class FixtureExpectations
         }
     }
 
+    // ---- settings naming no model the lane can call ----
+
+    [Fact]
+    public async Task SettingsFlaggingTwoModelsLeaveTheNightRunningEveryStepWithItsQueueRowSayingWhy()
+    {
+        // A live night's queue as its settings give it, the fixture's arithmetic around it: its lane unread, so its
+        // feed reaches no runtime, and the night closes with the queue's row naming the profiles.
+        var two = Configured([.. LocalProfile("gemma-4", Gemma, "true"), .. LocalProfile("qwen-3.5", Qwen, "true")]);
+        var queue = NightQueue.From(two, FeedSource.Live, null, new RecordingAwake());
+        const string line = "2 local model profiles are flagged IsDefault true, gemma-4 and qwen-3.5: the lane calls one, so flag one.";
+
+        Assert.Equal(line, queue.Settings.Unreadable);
+
+        var night = await FixtureReplay.NightAsync(queue);
+
+        using var store = night.Store;
+
+        Assert.True(night.Code == 0, night.Error);
+
+        var row = QueueRow(store);
+
+        Assert.Equal(OvernightQueue.Unavailable, row.GetProperty("outcome").GetString());
+        Assert.StartsWith(ProseWriter.Unavailable, row.GetProperty("reason").GetString()!, StringComparison.Ordinal);
+        Assert.EndsWith(line, row.GetProperty("reason").GetString()!, StringComparison.Ordinal);
+        Assert.Empty(row.GetProperty("completed").EnumerateArray());
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM research_section;"));
+
+        // No model is called: the lane's sections are left before any call.
+        Assert.Equal(["0"], Query(store, $"SELECT model_calls FROM run_log WHERE run_id = '{FixtureReplay.NightRunId}' AND stage = '{OvernightQueue.Stage}';"));
+
+        // A key on the lane is still refused before the night starts.
+        Assert.Throws<InvalidOperationException>(() =>
+            NightQueue.From(Configured([.. LocalProfile("gemma-4", Gemma, "true"), (LocalModelSettings.ApiKeyKey, "a-key")]), FeedSource.Live, null, new RecordingAwake()));
+    }
+
+    [Fact]
+    public async Task APassWhoseLaneIsUnreadWritesThePaidLaneAndLeavesTheLocalLaneAbsentWithTheLine()
+    {
+        using var fresh = await FixtureReplay.ReplayedForResearchAsync();
+
+        var unread = LocalLane.For(Configured(), FeedSource.Live, null);
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
+        var outcome = await FixtureReplay.Researcher(
+                fresh,
+                ResearchClock,
+                lane: [.. ProseWriter.DefaultLane, "The short version"],
+                paid: paid,
+                localModel: OpenAiCompatibleModelFeed.Live(unread),
+                localSettings: unread)
+            .RunAsync("KEYS", "research-local-unread");
+
+        Assert.Equal(ResearchRunner.Written, outcome.Outcome);
+        Assert.Equal(
+            [.. ProseWriter.DefaultLane, "The short version"],
+            outcome.NotWritten.Where(section => section.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(section => section.Section).ToArray());
+        Assert.All(
+            outcome.NotWritten.Where(section => section.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)),
+            section => Assert.Contains(unread.Unreadable!, section.Reason, StringComparison.Ordinal));
+        Assert.Equal(
+            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            outcome.Written.Select(section => section.Section).ToArray());
+        Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
+    }
+
     [Fact]
     public void GemmasCapturedAnswerIsReadAsTheLaneReadsEveryAnswerWithItsReasoningOff()
     {
@@ -328,5 +421,14 @@ public partial class FixtureExpectations
         Assert.Equal((true, false), (none.Listed, none.Loaded));
         Assert.Empty(none.Others);
         Assert.Null(OpenAiCompatibleModelFeed.Held(Runtime("local-gemma-answered.json"), Gemma));
+
+        // A model of another kind loaded, the captured list with the embedding model's instance added, is among those
+        // unloaded, so the runtime is left holding one model.
+        var list = System.Text.Json.Nodes.JsonNode.Parse(Runtime("local-runtime-models-none-loaded.json"))!;
+        var embedding = list["models"]!.AsArray().Single(model => (string?)model!["type"] == "embedding")!;
+
+        embedding["loaded_instances"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["id"] = "text-embedding-nomic-embed-text-v1.5" });
+
+        Assert.Equal(["text-embedding-nomic-embed-text-v1.5"], OpenAiCompatibleModelFeed.Held(list.ToJsonString(), Gemma)!.Others);
     }
 }
