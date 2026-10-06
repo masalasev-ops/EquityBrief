@@ -39130,15 +39130,15 @@ Choice:     a bad local profile refuses the night before its first step, as a ke
             than leaving the night to run without its queue; the runbook gives the two blocks to paste into the secrets
             file, both flags in each, since the night reads its settings from the clean copy's shipped file and the
             checkout's secrets file and an edit to the shipped file alone does not reach it.
-Tests:      FILLED FROM THE RUN, from 1924: seven added, the profile the settings flag with each refused shape, the
+Tests:      1931, from 1924: seven added, the profile the settings flag with each refused shape, the
             load at its profile's context waited for, another model unloaded first, a listed model's first call alone
             carrying the allowance, the three ways the model is unavailable, a refused load leaving the lane unwritten,
             and the captured answers read; the feed's key and runbook tests rewritten for the profiles.
-Claims:     FILLED FROM THE RUN, from 1014: section 18's rows on the local model's load and on its settings.
+Claims:     1016, from 1014: section 18's rows on the local model's load and on its settings.
 Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
             sector heavyweights' evaluator's lists; no file this edits or adds is among them.
 Mutated:    the rule, stated before the run: each property the two rulings name broken alone, made by hand over the
-            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            working tree at f8936d4, filtered to the tests that read it and reverted.
             L1 the reader taking the first of two flagged profiles: predicted red at the refused shapes.
             L2 a blank model read as Qwen 3.5 9B, a default in the code again: predicted red at the refused shapes.
             L3 the first call made without loading the model: predicted red at the load waited for.
@@ -39146,9 +39146,17 @@ Mutated:    the rule, stated before the run: each property the two rulings name 
             L5 another model left loaded beside it: predicted red at the unload first.
             L6 a listed model's first call given its own timeout alone: predicted red at the listed model's call.
             L7 a run over the capture calling the flagged profile: predicted red at the profile the settings flag.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+            Results: L1 to L7 each red where stated: L1 and L2 refused nothing where two flagged profiles and a blank
+            model must be refused, L3 asked for the section with no load before it, L4 sent the load without its
+            context, L5 asked for no unload, L6 timed the listed model's first call out on its own second, L7 called
+            Gemma 4 over the capture where its recordings' Qwen 3.5 9B is called; each reverted, and the seven tests
+            green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f8936d4.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1931 of 1931 tests ran with none failed, migrations 0
+            to 69 with none pending, schema version 69, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1016 claims, 1016 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1027
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1931 of 1931 tests ran.
 Carried:    nothing to run after the merge: no migration and no remedy, and the secrets file names no local key, so
             the night of 2026-10-06 calls Gemma 4, loading it at 50,176 tokens; its queue's row on the run page says
             how many passes it completed in the hour, which 6.10 measured on Qwen 3.5 9B and no run has measured on
