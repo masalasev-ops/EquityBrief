@@ -38970,8 +38970,9 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds,
             T1 15.4's claims landing as no row stated as nine: red in the pair test alone.
             T2 a row 15.5 landed left out of the rows the pair reads: red in the pair test alone.
             T3 phase 15 stated as opening one operating row: red in the operating rows test alone.
-            Results: T1 to T3 each red where stated, the other test green each time, each reverted and the two tests
-            green over the reverted tree.
+            Results: T1 failed on 15.4's count less its rows landing as none, three, against the two it landed; T2 on
+            15.5's five against the four read; T3 on phase 15 stated at one against the two rows its table holds; the
+            other test green each time, each reverted and both green over the reverted tree.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
             RUN.
 Carried:    16.0, phase 16's planning pass with its data check D1; phase 14's and phase 15's sign-offs, each owed on
