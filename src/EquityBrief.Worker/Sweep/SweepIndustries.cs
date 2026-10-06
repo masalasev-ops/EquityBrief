@@ -19,7 +19,7 @@ public sealed class SweepIndustries(SweepHistoryInputs large, HeavyweightHistory
 
     public IReadOnlyDictionary<string, double> Between(DateOnly start, DateOnly day) => read.GetOrAdd((start, day), key =>
     {
-        var members = new Dictionary<string, List<(decimal Value, double Figure)>>(StringComparer.Ordinal);
+        var members = new Dictionary<string, List<(double Value, double Figure)>>(StringComparer.Ordinal);
 
         foreach (var name in large.Names)
         {
@@ -36,7 +36,7 @@ public sealed class SweepIndustries(SweepHistoryInputs large, HeavyweightHistory
                 members[industry] = held = [];
             }
 
-            held.Add((value, Statistic.FromRatio(now.Close / then.Close) - 1.0));
+            held.Add((Statistic.FromPrice(value), Statistic.FromRatio(now.Close / then.Close) - 1.0));
         }
 
         // Each industry's return through the one function the night reads it with.

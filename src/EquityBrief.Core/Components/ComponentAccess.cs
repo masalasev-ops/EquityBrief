@@ -77,6 +77,8 @@ public enum Store
     Company,
     QuarterAsk,
     FundamentalReading,
+    MemberReading,
+    SwitchReading,
     NewsPulse,
     NewsArticle,
     NewsLabel,

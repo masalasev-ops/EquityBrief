@@ -254,7 +254,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
             var reaction = listing.Session - back;
             var (from, to) = (calendar[reaction - PeerSessions], calendar[reaction - 1]);
-            var peers = new List<(decimal Value, double Figure)>();
+            var peers = new List<(double Value, double Figure)>();
 
             foreach (var (name, surprise) in reported)
             {
@@ -266,7 +266,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                     continue;
                 }
 
-                peers.Add((value, surprise.Percent));
+                peers.Add((Statistic.FromPrice(value), surprise.Percent));
             }
 
             // The peers' mean surprise through the one function the night reads it with.

@@ -103,24 +103,22 @@ public static class MemberReadings
     public static double? VolumeRatio(long volume, double? average) =>
         average is { } mean && mean > 0 ? volume / mean : null;
 
-    // The value-weighted mean of a group's figures: each member's figure weighted by its company's value, a member with no
-    // value above nothing left out, and a group left with none reading none. An industry's return and its peers' mean
-    // surprise are both read through it.
-    public static double? ValueWeighted(IEnumerable<(decimal Value, double Figure)> members)
+    // The value-weighted mean of a group's figures: each member's figure weighted by its company's value as a statistic, a
+    // member with no value above nothing left out, and a group left with none reading none. An industry's return and its
+    // peers' mean surprise are both read through it.
+    public static double? ValueWeighted(IEnumerable<(double Value, double Figure)> members)
     {
         var (weighted, weight) = (0.0, 0.0);
 
         foreach (var (value, figure) in members)
         {
-            if (value <= 0m || double.IsNaN(figure))
+            if (!(value > 0) || double.IsNaN(figure))
             {
                 continue;
             }
 
-            var held = Prices.Statistic.FromPrice(value);
-
-            weighted += held * figure;
-            weight += held;
+            weighted += value * figure;
+            weight += value;
         }
 
         return weight > 0 ? weighted / weight : null;
