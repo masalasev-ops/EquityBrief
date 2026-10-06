@@ -11507,3 +11507,10 @@ Was:
 Now:
 > the same, then phase 15's read the same way, its actual falling under the range the plan stated by exactly the claims each checkpoint's count held that landed as words in rows that stood or as paragraphs, each checkpoint's named with where they went
 Why: the roster is where a check states what it asserts, and the pair test reads phase 15's figures off the plan and the rows each checkpoint landed.
+
+### 2026-10-06 - BUILD_PLAN.md - the sign-offs of phases 14, 15 and 16 owed after 16.4, one session at a time
+Was:
+> Phase 14's and phase 15's sign-offs are owed after this plan, each done by a fresh session the operator starts beside phase 16 with a handoff left for it, and no checkpoint of phase 16 discharges either; phase 16's own is owed the same way after 16.4.
+Now:
+> Phase 14's, phase 15's and phase 16's sign-offs are owed after 16.4, each done by a fresh session the operator starts, one at a time and none beside the build, since a review's branch and its mutations would share the one checkout the build runs in; no checkpoint of phase 16 discharges any of them, and each is handed its prompt after 16.4 with the figures as they stand then.
+Why: the operator's question of 2026-10-06, whether to run the two sign-offs now or all three after phase 16, answered after phase 16; the 16.1 ruling records it.

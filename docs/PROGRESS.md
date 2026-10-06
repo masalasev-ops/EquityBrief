@@ -39022,3 +39022,25 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: 4fd6e6f, the
 Carried:    16.1; the sign-offs of phases 14 and 15, owed to fresh sessions; the night of 2026-10-06 read the morning
             after it, each index's Tonight, the queue's order across the indices, the member readings and the edge
             after costs.
+
+### 16.1 ruling - the sign-offs of phases 14, 15 and 16 after 16.4 one session at a time, and the local model chosen by a flag in its settings with Gemma 4 the default, built after 16.1   2026-10-06
+
+Not a checkpoint entry. It lands nothing: 16.1 is in progress on its branch, and this records two rulings given
+            while it ran, each word for word in `prompts/2026-10-06-16.1-signoff-order.md`.
+Ruled:      1. Asked whether to run the phase 14 and 15 sign-offs now or all three after phase 16, the operator
+            took the second: each of phases 14, 15 and 16 is signed by a fresh session they start after 16.4, one at
+            a time and none beside the build, since a review's branch and its mutations would share the one checkout
+            the build runs in. The handoffs given after 16.0 are reissued after 16.4 with the figures as they stand
+            then, and no checkpoint of phase 16 discharges any sign-off.
+            2. "I want us to be able to use gemma4 in LM studio from now on", answered on three questions: built
+            after 16.1; "i will manually switch the models when i want to compare each day", so no command compares
+            them; and every setting of the local lane read from the settings, its address and its model among them,
+            each model a provision of its own, "a flag maybe like isDefaultModel" naming the one the lane calls,
+            "for now default it to gemma4". Gemma 4 is `google/gemma-4-26b-a4b-qat` as LM Studio lists it.
+Queue:      done, 16.0, PR 378; in progress, 16.1; next, the local model chosen by a flag in its settings, then
+            16.2 to 16.4 in order, then the news labeller waiting for the off-peak hours as the drain does, then the
+            sign-offs of phases 14, 15 and 16, one session at a time.
+Changes:    `BUILD_PLAN.md`'s phase 16 rulings paragraph says the three sign-offs follow 16.4, its prior text in
+            `CHANGELOG.md`.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and 16.1's, with
+            the figures 16.1's entry states.
