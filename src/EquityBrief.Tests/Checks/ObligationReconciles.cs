@@ -499,6 +499,9 @@ public class ObligationReconciles
         ["13"] = 0,
         // None: phase 14 opened no carried obligation of either form.
         ["14"] = 0,
+        // Two, both opened by the 15.0 planning pass: the night's time and growth over the three indices, read on its
+        // first five nights, and analyst coverage as a dial once dated counts exist.
+        ["15"] = 2,
     };
 
     // The first phase whose report is read for the operating rows it opened.

@@ -38943,3 +38943,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1912 of 1912 tests ran.
 Carried:    after the merge, migration 68 applied to the store by `tools/migrate.ps1` and the surface's Release build
             again; then 15.6, the phase report.
+
+### 15.6 - the phase 15 report: every claim the phase added reached and passing, and the pair checked against the actual with every claim that moved named   2026-10-06
+
+Built:      a test under `architecture-conformance` reading phase 15's pair off the plan: 973 before it, 1,049 after
+            15.5 within 1,020 to 1,080, counted as 30, 18, 8, 12 and 8 at 15.1 to 15.5. Those checkpoints landed 4, 14,
+            2, 2 and 5, so 1000: under the range by 20 and short of the pair by 49, each claim the counts held that
+            landed as no row named in `ArchitectureConformance.PhaseFifteenShort` with where it went. At 15.1, 26: the
+            three indices' membership, the funds' files, each index's strength, breadth and market check, the six
+            reports in turn and the night's limits as words in rows that stood, the choice of index on five screens as
+            section 15's paragraphs, and the floors and gate landing at 15.2. At 15.2, 4: the readings in four of section
+            17's rows and not a row each. At 15.3, 6: the pulls' rows as words in the history pull's rows and membership
+            as it stood as section 13.9's paragraph. At 15.4, 10: each index's sweep rows as section 13.9's paragraphs
+            and the sweep history's words, the card's line as section 15.7's paragraph and its failure row the one 15.0
+            reworded. At 15.5, 3: the records' parts as section 15.10's paragraph. Each of the 27 rows the phase added is
+            reached once and passes, and the rows after this report are named beside the pair, none yet. The roster's
+            `architecture-conformance` row says so, with its prior text in `CHANGELOG.md`.
+Operating:  phase 15 opened two operating rows, both at 15.0: "The night's time and growth over the three indices
+            read on its first five nights" and "Analyst coverage tested as a dial once dated counts exist";
+            `obligation-reconciles` states phase 15 at two.
+Tests:      1913, from 1912: one added.
+Claims:     1000, unchanged, with 1000 PASS; the pair is 1000 and 1000.
+Pins:       none moves. The branch edits two tests, a rules file and the records, none of them in a pin list.
+Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the branch in
+            this checkout, filtered to the two tests and reverted.
+            T1 15.4's claims landing as no row stated as nine: red in the pair test alone.
+            T2 a row 15.5 landed left out of the rows the pair reads: red in the pair test alone.
+            T3 phase 15 stated as opening one operating row: red in the operating rows test alone.
+            Results: T1 failed on 15.4's count less its rows landing as none, three, against the two it landed; T2 on
+            15.5's five against the four read; T3 on phase 15 stated at one against the two rows its table holds; the
+            other test green each time, each reverted and both green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 5c450f2, the
+            commit restating the results. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1913 of 1913 tests ran
+            with none failed, migrations 0 to 68 with none pending, schema version 68, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 1000 claims, 1000 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            1011 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1913 of 1913 tests ran.
+Carried:    16.0, phase 16's planning pass with its data check D1; phase 14's and phase 15's sign-offs, each owed on
+            the phase as a whole by a session the operator starts, their handoff prompts left after 16.0; the night of
+            2026-10-06 read.
