@@ -1,5 +1,5 @@
 {
-  "constructed": "Settings rather than a captured response: the model profiles and each paid job's Use this fixture's recordings were made under, written here by hand from the shipped configuration as it stood when they were recorded, and read over the shipped settings so a switch the operator makes there moves no recorded test.",
+  "constructed": "Settings rather than a captured response: the model profiles and each paid job's Use this fixture's recordings were made under, and the local model's profile its local recordings were made under, written here by hand from the shipped configuration as it stood when they were recorded, and read over the shipped settings so a switch the operator makes there moves no recorded test.",
   "EquityBrief": {
     "Models": {
       "Profiles": {
@@ -40,6 +40,18 @@
         "Use": "deepseek",
         "TimeoutSeconds": "600",
         "AnswerTokens": "32768"
+      },
+      "Local": {
+        "Profiles": {
+          "qwen-3.5": {
+            "BaseAddress": "http://127.0.0.1:1234/v1/",
+            "Model": "qwen/qwen3.5-9b",
+            "TimeoutSeconds": "300",
+            "ContextTokens": "50176",
+            "LoadSeconds": "600",
+            "IsDefault": "true"
+          }
+        }
       },
       "News": {
         "Use": "claude-sonnet",

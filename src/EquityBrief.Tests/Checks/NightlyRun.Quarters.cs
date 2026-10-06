@@ -118,7 +118,7 @@ public partial class NightlyRun
 
         var queue = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(new FixtureExpectations.NothingAnsweringLocal(), new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(new FixtureExpectations.NothingAnsweringLocal(), FixtureExpectations.LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),

@@ -39102,3 +39102,54 @@ Carried:    after the merge, `tools/remedies/2026-10-06-16.1-the-decision-card.t
             `rule-record`, no request and no model call, run outside the night's window, and the surface's Release
             build again; the night of 2026-10-06 writes the first cards, read off the run page's decision cards row.
             Then the local model chosen by a flag in its settings, then 16.2.
+
+### 16.1 ruling - the local model chosen by a flag in its settings, Gemma 4 the default, every value read from the settings, and the lane waiting for its model to load   2026-10-06
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code the 16.1 ruling's second item calls for, and the operator's word given while it was built, word for word
+in `prompts/2026-10-06-16.1-signoff-order.md`; that code meets the done conditions a checkpoint's code meets.
+Ruled:      "Dont forget for it to wait for the model to load and not just fail while it's loading."
+Built:      Each local model is a profile under `EquityBrief:Models:Local:Profiles` with its address, model,
+            timeout, context and load allowance, and the lane calls the one flagged `IsDefault`; none of them has a
+            value in the code. The shipped settings carry `gemma-4`, `google/gemma-4-26b-a4b-qat`, flagged, and
+            `qwen-3.5` beside it. Settings flagging none or two, naming none, a flag neither true nor false, a flagged
+            profile missing a value, a key read before the profiles and a key in a profile are refused naming what
+            was read. A run over the capture calls the profile its recordings were made under, from the capture's own
+            `models.json`. Before a pass's first call the feed reads LM Studio's list of its models: a model not loaded
+            is loaded at its profile's context, any other model unloaded first, and the load waited for within the
+            allowance; a model already listed has its first call carry the allowance beside its own timeout, as does a
+            runtime that states no load state; a refused load, one past its allowance and a model the runtime does not
+            hold are the local model unavailable. Six answers captured from the operator's runtime, with LM Studio
+            left as found, none loaded: the models list with Gemma 4 loaded and with none, a load answered after 15.3
+            seconds, a load refused, an unload, and Gemma 4's answer with its reasoning off. A call naming Gemma 4 while
+            it was not loaded loaded it on demand in 19.8 seconds at the runtime's own context of 32,000 tokens. Two
+            decisions, the first superseding the one that named Qwen 3.5 9B with code defaults; section 18's two rows,
+            the prose writer's catalogue row, section 17's queue row naming the model 6.10 measured; the runbook, the
+            guide, the build plan's citation and the roster's clause; the prior text in `CHANGELOG.md`.
+Choice:     a bad local profile refuses the night before its first step, as a key on the lane already does, rather
+            than leaving the night to run without its queue; the runbook gives the two blocks to paste into the secrets
+            file, both flags in each, since the night reads its settings from the clean copy's shipped file and the
+            checkout's secrets file and an edit to the shipped file alone does not reach it.
+Tests:      FILLED FROM THE RUN, from 1924: seven added, the profile the settings flag with each refused shape, the
+            load at its profile's context waited for, another model unloaded first, a listed model's first call alone
+            carrying the allowance, the three ways the model is unavailable, a refused load leaving the lane unwritten,
+            and the captured answers read; the feed's key and runbook tests rewritten for the profiles.
+Claims:     FILLED FROM THE RUN, from 1014: section 18's rows on the local model's load and on its settings.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this edits or adds is among them.
+Mutated:    the rule, stated before the run: each property the two rulings name broken alone, made by hand over the
+            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            L1 the reader taking the first of two flagged profiles: predicted red at the refused shapes.
+            L2 a blank model read as Qwen 3.5 9B, a default in the code again: predicted red at the refused shapes.
+            L3 the first call made without loading the model: predicted red at the load waited for.
+            L4 the load asked for at the runtime's own context, no context sent: predicted red at the same.
+            L5 another model left loaded beside it: predicted red at the unload first.
+            L6 a listed model's first call given its own timeout alone: predicted red at the listed model's call.
+            L7 a run over the capture calling the flagged profile: predicted red at the profile the settings flag.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    nothing to run after the merge: no migration and no remedy, and the secrets file names no local key, so
+            the night of 2026-10-06 calls Gemma 4, loading it at 50,176 tokens; its queue's row on the run page says
+            how many passes it completed in the hour, which 6.10 measured on Qwen 3.5 9B and no run has measured on
+            Gemma 4. Then 16.2.

@@ -661,16 +661,19 @@ static async Task<int> FundamentalsFetch(string[] args)
 
     try
     {
+        var source = wantsLive ? FeedSource.Live
+            : wantsFixture ? FeedSource.Fixture
+            : configuration[FeedSource.SourceKey];
+        var fixture = Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey];
+
         feeds = OnDemandFeeds.Resolve(
-            wantsLive ? FeedSource.Live
-                : wantsFixture ? FeedSource.Fixture
-                : configuration[FeedSource.SourceKey],
-            Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
+            source,
+            fixture,
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName],
             configuration[TavilySearchFeed.ApiKeyName],
-            LocalLane.Settings(configuration),
+            LocalLane.For(configuration, source, fixture),
             ResearchLane.Settings(configuration));
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
@@ -781,15 +784,18 @@ static async Task<int> ResearchPass(string[] args)
 
     try
     {
-        local = LocalLane.Settings(configuration);
+        var source = wantsLive ? FeedSource.Live
+            : wantsFixture ? FeedSource.Fixture
+            : configuration[FeedSource.SourceKey];
+        var fixture = Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey];
+
+        local = LocalLane.For(configuration, source, fixture);
         lane = LocalLane.Sections(configuration);
         caps = ResearchLane.Caps(configuration);
         lists = SourceLists.Read(Path.Combine(AppContext.BaseDirectory, SourceLists.FileName));
         feeds = OnDemandFeeds.Resolve(
-            wantsLive ? FeedSource.Live
-                : wantsFixture ? FeedSource.Fixture
-                : configuration[FeedSource.SourceKey],
-            Argument(args, "--fixture") ?? configuration[FeedSource.FixtureKey],
+            source,
+            fixture,
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName],

@@ -55,7 +55,7 @@ public sealed class LocalModelUnavailable(string message) : Exception(message);
 // Behind an interface for the reason every feed here is: the live client and the
 // recorded double are one shape, so a pass replays from a recording with no
 // network and the same parser reads both.
-// see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration
+// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
 public interface ILocalModelFeed
 {
     int Requests { get; }
@@ -63,47 +63,38 @@ public interface ILocalModelFeed
     Task<ModelAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default);
 }
 
-// The local lane's configuration: where the model answers, which model, how long
-// a call may take, how much context the machine holds, and never a key.
+// The local lane's configuration: the profile the settings flag as the default,
+// where its model answers, which model, how long a call may take, how much context
+// the model is loaded with, how long its load may take, and never a key. Every
+// value is the settings' own and none has a default here, so a file naming no model
+// refuses rather than calling one nobody chose.
+// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
 public sealed record LocalModelSettings
 {
     public const string Section = "EquityBrief:Models:Local";
-    public const string BaseAddressKey = Section + ":BaseAddress";
-    public const string ModelKey = Section + ":Model";
-    public const string TimeoutKey = Section + ":TimeoutSeconds";
-    public const string ContextTokensKey = Section + ":ContextTokens";
+    public const string ProfilesKey = Section + ":Profiles";
     public const string ApiKeyKey = Section + ":ApiKey";
 
-    // What this machine was measured with. LM Studio's own report of the loaded
-    // model on 2026-09-13 gave a context of 50,176 tokens for qwen/qwen3.5-9b, and
-    // the runtime's refusal of a longer prompt named the same figure. The seven
-    // section calls recorded that day each answered in under four seconds, over
-    // prompts of one to eight and a half thousand tokens, so the timeout is a bound
-    // on a runtime that has hung rather than on one working through a section.
-    public const string DefaultBaseAddress = "http://127.0.0.1:1234/v1/";
-    public const string DefaultModel = "qwen/qwen3.5-9b";
-    public const int DefaultTimeoutSeconds = 300;
-    public const int DefaultContextTokens = 50176;
+    // A profile's own keys, each under its word beneath the profiles.
+    public const string BaseAddressName = "BaseAddress";
+    public const string ModelName = "Model";
+    public const string TimeoutName = "TimeoutSeconds";
+    public const string ContextTokensName = "ContextTokens";
+    public const string LoadName = "LoadSeconds";
+    public const string IsDefaultName = "IsDefault";
 
-    public LocalModelSettings(string? baseAddress, string? model, int? timeoutSeconds, int? contextTokens, string? apiKey)
+    public LocalModelSettings(string profile, string baseAddress, string model, int timeoutSeconds, int contextTokens, int loadSeconds)
     {
-        // A key for this lane is refused rather than sent. A local endpoint that
-        // authenticates is an endpoint on somebody else's machine, and the queue's
-        // zero-cost property rests on this lane being free.
-        if (!string.IsNullOrWhiteSpace(apiKey))
-        {
-            throw new InvalidOperationException(
-                $"A key is configured at '{ApiKeyKey}', and the local lane takes none. A local model that " +
-                "asks for a key is a model on somebody else's machine, which would put a cost on the one lane " +
-                "the overnight queue is allowed to call. Remove the key, or point this lane at the operator's " +
-                "own runtime.");
-        }
-
-        BaseAddress = string.IsNullOrWhiteSpace(baseAddress) ? DefaultBaseAddress : baseAddress;
-        Model = string.IsNullOrWhiteSpace(model) ? DefaultModel : model;
-        Timeout = TimeSpan.FromSeconds(timeoutSeconds is > 0 ? timeoutSeconds.Value : DefaultTimeoutSeconds);
-        ContextTokens = contextTokens is > 0 ? contextTokens.Value : DefaultContextTokens;
+        BaseAddress = Stated(profile, BaseAddressName, baseAddress);
+        Model = Stated(profile, ModelName, model);
+        Timeout = TimeSpan.FromSeconds(Whole(profile, TimeoutName, timeoutSeconds));
+        ContextTokens = Whole(profile, ContextTokensName, contextTokens);
+        Load = TimeSpan.FromSeconds(Whole(profile, LoadName, loadSeconds));
+        Profile = profile;
     }
+
+    // The profile's word, as the settings name it.
+    public string Profile { get; }
 
     public string BaseAddress { get; }
 
@@ -112,4 +103,22 @@ public sealed record LocalModelSettings
     public TimeSpan Timeout { get; }
 
     public int ContextTokens { get; }
+
+    // How long the runtime may take to load the model before a pass calls it.
+    public TimeSpan Load { get; }
+
+    // A profile's key as the settings file spells it.
+    public static string KeyOf(string profile, string name) => $"{ProfilesKey}:{profile}:{name}";
+
+    static string Stated(string profile, string name, string value) =>
+        string.IsNullOrWhiteSpace(value)
+            ? throw new InvalidOperationException(
+                $"'{KeyOf(profile, name)}' is blank, and the local lane reads it from the settings alone. Set it in the profile.")
+            : value;
+
+    static int Whole(string profile, string name, int value) =>
+        value > 0
+            ? value
+            : throw new InvalidOperationException(
+                $"'{KeyOf(profile, name)}' is {value}, which is not a whole number above zero.");
 }

@@ -211,19 +211,35 @@ The same path works as an environment variable, with a double underscore for eac
 
 ### The local model's settings
 
-The local model takes settings and never a key. Each has a default measured on the machine this was first built for, so a blank file runs; set one where the machine or the runtime differs. They are configuration rather than secrets and may sit in either file.
+The local model takes settings and never a key. Each model you run is a profile of its own under `EquityBrief:Models:Local:Profiles`, named by a word, and the lane calls the one profile flagged `IsDefault` true. No value has a default in the code, so a file naming no profile, flagging none or flagging two refuses at startup in a line naming the profiles, and so does a flagged profile missing a value (see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default). They are configuration rather than secrets and may sit in either file. The shipped settings carry two profiles, each value as follows:
+
+| Setting | Key under the profile | `gemma-4` | `qwen-3.5` |
+|---|---|---|---|
+| where the runtime answers | `BaseAddress` | `http://127.0.0.1:1234/v1/` | `http://127.0.0.1:1234/v1/` |
+| which model answers | `Model` | `google/gemma-4-26b-a4b-qat` | `qwen/qwen3.5-9b` |
+| how long one section call may take, in seconds | `TimeoutSeconds` | `300` | `300` |
+| the context the lane loads the model with, in tokens | `ContextTokens` | `50176` | `50176` |
+| how long the model may take to load, in seconds | `LoadSeconds` | `600` | `600` |
+| whether the lane calls this profile | `IsDefault` | `true` | `false` |
+
+**To switch models, move the flag in `src/EquityBrief.Worker/appsettings.Secrets.json`**, which the night reads from the checkout; an edit to the shipped `appsettings.json` reaches the night only once it is committed and merged. Paste one of these two blocks under `EquityBrief` in the secrets file, merged into any `Models` section it already holds, and the next pass or night calls that model:
+
+```
+"Models": { "Local": { "Profiles": { "gemma-4": { "IsDefault": "true" }, "qwen-3.5": { "IsDefault": "false" } } } }
+"Models": { "Local": { "Profiles": { "gemma-4": { "IsDefault": "false" }, "qwen-3.5": { "IsDefault": "true" } } } }
+```
+
+Set both flags each time: two profiles flagged true, or none, refuses the night before its first step in a line naming the profiles, and the night can be run again by hand once the file is fixed. Every section a model writes stores its identifier, so comparing two models a day at a time is a reading of the sections they wrote. Add a profile for another model the same way, with all five values and its flag.
+
+**The lane waits for its model to load.** Before a pass's first call it reads the runtime's list of its models; a model listed and not loaded is loaded at the profile's context, any other model loaded first unloaded so the runtime holds one model at a time, and the pass waits until the runtime says the load is done, for at most `LoadSeconds` (see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time). A model already loading is not loaded again; its first call is given its load time on top of its own. A model the runtime does not hold, a load it refuses and one still going after `LoadSeconds` leave the pass's local sections unwritten with the reason, as the local model unavailable does. Gemma 4 loaded on this machine in 15.3 seconds. A run over the fixture calls the profile its recordings were made under, from the fixture's own `models.json`, whichever profile is flagged here.
 
 | Setting | Key | Default |
 |---|---|---|
-| where the runtime answers | `EquityBrief:Models:Local:BaseAddress` | `http://127.0.0.1:1234/v1/` |
-| which model answers | `EquityBrief:Models:Local:Model` | `qwen/qwen3.5-9b` |
-| how long one section call may take, in seconds | `EquityBrief:Models:Local:TimeoutSeconds` | `300` |
-| the context the model is loaded with, in tokens | `EquityBrief:Models:Local:ContextTokens` | `50176` |
 | the sections the local lane holds | `EquityBrief:Models:LocalLane`, one entry per section in figure 12.2's own names | what the company sells, the segment commentary, the key under each figure |
 
-**Set the context to what the runtime reports for the loaded model**, not to what the model could hold. A section whose prompt and answer would not fit is refused before any call and left for the paid path, and the run log names it with the estimate it was refused on; a context set above what is loaded lets the call go out, and the runtime refuses it with a 400 naming its own count instead. A value that is not a whole number is refused rather than read as the default.
+**Set the context to what the machine can hold for the model**, not to what the model could hold. The lane loads the model at it; a section whose prompt and answer would not fit is refused before any call and left for the paid path, and the run log names it with the estimate it was refused on. A model you loaded yourself at a smaller context lets the call go out, and the runtime refuses it with a 400 naming its own count instead. A value that is not a whole number is refused rather than read as another.
 
-**A key at `EquityBrief:Models:Local:ApiKey` is refused, in either file and on a fixture run as well as a live one.** A local model that asks for a key is a model on somebody else's machine, and the overnight queue is allowed to call this lane because it costs nothing (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration).
+**A key at `EquityBrief:Models:Local:ApiKey` is refused, in either file and on a fixture run as well as a live one, and so is one in a profile.** A local model that asks for a key is a model on somebody else's machine, and the overnight queue is allowed to call this lane because it costs nothing. The keys the lane read before the profiles, `EquityBrief:Models:Local:Model` and its three neighbours, are refused where set, with where each now goes.
 
 A lane naming a section figure 12.2 does not name is refused when the lane is read, and so is one naming a section twice.
 
@@ -235,7 +251,7 @@ The queue runs in the same invocation after the arithmetic has closed and record
 |---|---|---|
 | the hours after which the queue starts no pass | `EquityBrief:Queue:Hours`, a whole number above zero | `1` |
 
-**An hour covers the whole index at the rate measured on this machine.** 6.10 measured 12 passes on the local model the settings name, over the fixture's four listed names on three nights: 3.35 seconds a pass on average and 5.13 at the slowest, so 503 members at the slowest come to 43 minutes. The queue starts no pass once the hours have passed and finishes the one it is in, so it runs past them by at most one pass; the night's fifteen-minute deadline bounds the arithmetic and not the queue (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). Measure again after a change of model or machine, and set the hours from what a pass takes there.
+**An hour covers the whole index at the rate measured on this machine.** 6.10 measured 12 passes on Qwen 3.5 9B, the local model the settings named then, over the fixture's four listed names on three nights: 3.35 seconds a pass on average and 5.13 at the slowest, so 503 members at the slowest come to 43 minutes. The queue starts no pass once the hours have passed and finishes the one it is in, so it runs past them by at most one pass; the night's fifteen-minute deadline bounds the arithmetic and not the queue (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). Measure again after a change of model or machine, and set the hours from what a pass takes there.
 
 **Where to read what it did.** The queue's own row on the run log, under the night's run with the stage `overnight queue`, says what it came to: `ok` where it ran through every name it queued, `limit` where it stopped at its hours with names left, and `unavailable` where the local model did not answer, which stops the queue at that name. Its detail names the names listed and queued, every pass it ran under a run of its own with what each wrote, the names it left, and whether the machine was held awake. Each name's pass writes the judge's, the writer's and the checker's rows under that pass's run.
 

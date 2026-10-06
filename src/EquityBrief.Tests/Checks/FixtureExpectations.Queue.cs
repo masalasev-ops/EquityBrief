@@ -106,7 +106,7 @@ public partial class FixtureExpectations
                 Listed(pass.GetProperty("versions")),
                 Query(store, $"SELECT status FROM research_section WHERE ticker = '{ticker}' AND section = '{asked[0]}' ORDER BY version;"));
             Assert.Equal(["[]"], Query(store, $"SELECT DISTINCT source_ids FROM research_section WHERE ticker = '{ticker}';"));
-            Assert.Equal([LocalModelSettings.DefaultModel], Query(store, $"SELECT DISTINCT model FROM research_section WHERE ticker = '{ticker}';"));
+            Assert.Equal([LocalSettings().Model], Query(store, $"SELECT DISTINCT model FROM research_section WHERE ticker = '{ticker}';"));
 
             // And the pass's own rows under its own run: the judge's, the writer's and the
             // checker's.
@@ -164,7 +164,7 @@ public partial class FixtureExpectations
 
         var reordered = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(local, LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
@@ -239,7 +239,7 @@ public partial class FixtureExpectations
 
         var queued = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(local, LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
@@ -295,14 +295,14 @@ public partial class FixtureExpectations
 
         store.Execute(
             "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) " +
-            $"VALUES ('ORCL', '{ClaimRules.ComputedSection}', 1, '2026-09-08', '{LocalModelSettings.DefaultModel}', 'pending', 'The close of 123.45 sits above the average.', '[]', NULL);");
+            $"VALUES ('ORCL', '{ClaimRules.ComputedSection}', 1, '2026-09-08', '{LocalSettings().Model}', 'pending', 'The close of 123.45 sits above the average.', '[]', NULL);");
 
         var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
         var local = new FirstDraftRefused(new RecordedLocalModelFeed(Folder()), "MSFT");
 
         var outcome = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(local, LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
@@ -340,7 +340,7 @@ public partial class FixtureExpectations
 
         var again = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(local, LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
@@ -378,7 +378,7 @@ public partial class FixtureExpectations
             var local = new NotedLocal(new FirstDraftRefused(new RecordedLocalModelFeed(Folder()), "MSFT"), [], () => clock.Advance(step));
 
             var night = await FixtureReplay.NightAsync(
-                new NightQueue(local, new LocalModelSettings(null, null, null, null, null), ProseWriter.DefaultLane, limit, new RecordingAwake()),
+                new NightQueue(local, LocalSettings(), ProseWriter.DefaultLane, limit, new RecordingAwake()),
                 clock);
 
             using (night.Store)
@@ -468,6 +468,17 @@ public partial class FixtureExpectations
         static IConfiguration Settings(params (string Key, string Value)[] pairs) =>
             new ConfigurationBuilder().AddInMemoryCollection(pairs.ToDictionary(pair => pair.Key, pair => (string?)pair.Value)).Build();
 
+        // A local model profile in full, flagged as given.
+        static (string Key, string Value)[] Profile(string word, string model, string flagged) =>
+        [
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.BaseAddressName), "http://127.0.0.1:1234/v1/"),
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.ModelName), model),
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.TimeoutName), "300"),
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.ContextTokensName), "50176"),
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.LoadName), "600"),
+            (LocalModelSettings.KeyOf(word, LocalModelSettings.IsDefaultName), flagged),
+        ];
+
         // A night over a capture reaches the recorded runtime, with the hours and the lane its
         // settings state.
         var stated = NightQueue.From(
@@ -485,10 +496,23 @@ public partial class FixtureExpectations
 
         Assert.Equal(TimeSpan.FromHours(OvernightQueue.DefaultHours), blank.Limit);
         Assert.Equal(ProseWriter.DefaultLane, blank.Lane);
-        Assert.Equal(LocalModelSettings.DefaultModel, blank.Settings.Model);
 
-        // A live night reaches the operator's runtime, and a night over a capture never does.
-        Assert.IsType<OpenAiCompatibleModelFeed>(NightQueue.From(Settings(), FeedSource.Live, null, new RecordingAwake()).LocalModel);
+        // Over a capture the local profile is the one its recordings were made under, whatever the settings flag.
+        Assert.Equal(LocalSettings().Model, blank.Settings.Model);
+        Assert.Equal(
+            LocalSettings().Model,
+            NightQueue.From(Settings(Profile("other", "another/model", "true")), FeedSource.Fixture, Folder(), new RecordingAwake()).Settings.Model);
+
+        // A live night reaches the operator's runtime under the profile the settings flag, and a live night whose
+        // settings name no model is refused naming where one goes.
+        var live = NightQueue.From(Settings(Profile("other", "another/model", "true")), FeedSource.Live, null, new RecordingAwake());
+
+        Assert.IsType<OpenAiCompatibleModelFeed>(live.LocalModel);
+        Assert.Equal(("other", "another/model"), (live.Settings.Profile, live.Settings.Model));
+        Assert.Contains(
+            LocalModelSettings.ProfilesKey,
+            Assert.Throws<InvalidOperationException>(() => NightQueue.From(Settings(), FeedSource.Live, null, new RecordingAwake())).Message,
+            StringComparison.Ordinal);
 
         // Refused before the night starts, each naming what it could not read: hours that
         // are not whole hours, a lane naming a section figure 12.2 does not, a fixture folder

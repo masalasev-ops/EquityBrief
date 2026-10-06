@@ -31,7 +31,16 @@ public partial class FixtureExpectations
 
     internal static IClock ProseClock => FixedClock.At(ProseNight, SessionZones.UnitedStates);
 
-    internal static LocalModelSettings LocalSettings(int? contextTokens = null) => new(null, null, null, contextTokens, null);
+    // The local model profile the fixture's recordings were made under, read off its models file, at a
+    // context of its own where one is given.
+    internal static LocalModelSettings LocalSettings(int? contextTokens = null)
+    {
+        var recorded = LocalLane.OfFixture(Folder());
+
+        return contextTokens is not { } tokens
+            ? recorded
+            : new LocalModelSettings(recorded.Profile, recorded.BaseAddress, recorded.Model, (int)recorded.Timeout.TotalSeconds, tokens, (int)recorded.Load.TotalSeconds);
+    }
 
     static string[] Listed(JsonElement array) => [.. array.EnumerateArray().Select(item => item.GetString()!)];
 
@@ -251,7 +260,7 @@ public partial class FixtureExpectations
         {
             Assert.Equal(
                 [.. Listed(replay.GetProperty("written")).Select(section =>
-                    $"{section}|1|{LocalModelSettings.DefaultModel}|{replay.GetProperty("verdicts").GetProperty(name).GetString()}")],
+                    $"{section}|1|{LocalSettings().Model}|{replay.GetProperty("verdicts").GetProperty(name).GetString()}")],
                 Query(store, $"SELECT section, version, model, status FROM research_section WHERE ticker = '{name}' ORDER BY section, version;"));
 
             var detail = JsonDocument.Parse(Query(store, $"SELECT detail FROM run_log WHERE stage = 'prose' AND run_id = 'replay-prose-{name}';").Single()).RootElement;
@@ -425,7 +434,7 @@ public partial class FixtureExpectations
 
             var feed = new RecordedLocalModelFeed(Folder());
 
-            await new ProseWriter(feed, LocalLane.Settings(configured), LocalLane.Sections(configured), ProseClock, whole.DatabaseFile)
+            await new ProseWriter(feed, LocalLane.For(configured, FeedSource.Fixture, Folder()), LocalLane.Sections(configured), ProseClock, whole.DatabaseFile)
                 .WriteAsync("KEYS", Handed(release), "prose-lane-whole");
 
             Assert.Equal(lane, feed.Asked.Select(request => request.Section).ToArray());
@@ -514,7 +523,7 @@ public partial class FixtureExpectations
         {
             var handler = new NothingListening();
 
-            using var client = new HttpClient(handler) { BaseAddress = new Uri(LocalModelSettings.DefaultBaseAddress) };
+            using var client = new HttpClient(handler) { BaseAddress = new Uri(LocalSettings().BaseAddress) };
 
             var outcome = await new ProseWriter(
                     new OpenAiCompatibleModelFeed(client, LocalSettings()),

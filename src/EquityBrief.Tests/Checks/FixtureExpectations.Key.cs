@@ -114,7 +114,7 @@ public partial class FixtureExpectations
         var nothing = new Dictionary<string, IReadOnlyList<StoredDocument>>(StringComparer.Ordinal);
 
         ProseWriter Writer(DateTimeOffset at) =>
-            new(local, new LocalModelSettings(null, null, null, null, null), [ClaimRules.ComputedSection], FixedClock.At(at, SessionZones.UnitedStates), store.DatabaseFile);
+            new(local, LocalSettings(), [ClaimRules.ComputedSection], FixedClock.At(at, SessionZones.UnitedStates), store.DatabaseFile);
 
         var twoDaysOn = new DateTimeOffset(2026, 9, 10, 16, 0, 0, TimeSpan.Zero);
         var written = await Writer(twoDaysOn).WriteAsync("KEYS", nothing, "key-two-days-on");

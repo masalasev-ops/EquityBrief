@@ -168,7 +168,7 @@ public class FixtureReplay
         {
             await new ProseWriter(
                 model ?? new RecordedLocalModelFeed(Folder()),
-                new LocalModelSettings(null, null, null, null, null),
+                FixtureExpectations.LocalSettings(),
                 ProseWriter.DefaultLane,
                 night,
                 store.DatabaseFile).WriteAsync(ticker, new Dictionary<string, IReadOnlyList<StoredDocument>>(), "replay-prose-" + ticker);
@@ -330,7 +330,7 @@ public class FixtureReplay
 
         return new(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? FixtureExpectations.LocalSettings(), sections, clock, store.DatabaseFile),
             cap,
             checker,
             Themer(store, clock, models.For(ClaimRules.CycleSection), checker, search),

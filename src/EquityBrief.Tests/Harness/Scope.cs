@@ -3104,6 +3104,14 @@ internal static class Scope
             Verdict.Pass,
             "a sector heavyweights' buy reads its round trip in per cent of the buy and is not warned on it, over a constructed night",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "The local model is not loaded or still loading when a pass reaches it")] = new Scoped(
+            Verdict.Pass,
+            "over the runtime's captured answers, a model not loaded is loaded at its profile's context and its load answered before the first call, another model loaded is unloaded first, a model listed is not loaded again and its first call alone carries the load's allowance, and a refused load, a load past its allowance and a model the runtime does not hold are the local model unavailable, a refused load leaving every section of the lane unwritten",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The local lane's settings flag no model as the default or more than one")] = new Scoped(
+            Verdict.Pass,
+            "the shipped settings flag Gemma 4, moving the flag moves the model, and settings flagging none or two, naming no profile, a flag neither true nor false, a flagged profile missing each value, a key the lane read before the profiles and a key in a profile are each refused in a line naming what it read",
+            ByExpectations),
         [CheckReach.Key(FixtureTable, "member readings")] = new Scoped(
             Verdict.Pass,
             "the fixture's replay stores one row for each of its four names on its night under the index, the three holding a bar read against figures worked from the captured bars outside the repository and the one holding none read over nothing, and the switches' row holding none of its readings",
@@ -5531,6 +5539,9 @@ internal static class Scope
         ["No report date on file for a pick"] = "16.1",
         ["A pick the night read nothing for"] = "16.1",
         ["A rule that sets no stop"] = "16.1",
+        // The 16.1 ruling's local model chosen by a flag in its settings, and its load waited for.
+        ["The local model is not loaded or still loading when a pass reaches it"] = "16.1",
+        ["The local lane's settings flag no model as the default or more than one"] = "16.1",
         // The market switches, the operator's ruling of 2026-10-03.
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // The 9.2 correction of 2026-10-03, a drain that stops on an error.

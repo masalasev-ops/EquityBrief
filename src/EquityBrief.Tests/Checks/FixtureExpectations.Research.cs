@@ -42,7 +42,7 @@ public partial class FixtureExpectations
         Assert.Equal(
             [.. expected.GetProperty("versions").EnumerateArray().Select(version =>
                 $"{version.GetProperty("section").GetString()}|{version.GetProperty("version").GetInt32()}|{version.GetProperty("lane").GetString()}|{version.GetProperty("status").GetString()}")],
-            Query(store, $"SELECT section, version, CASE model WHEN '{LocalModelSettings.DefaultModel}' THEN 'local' ELSE 'paid' END, status FROM research_section WHERE ticker = '{ticker}' ORDER BY section, version;"));
+            Query(store, $"SELECT section, version, CASE model WHEN '{LocalSettings().Model}' THEN 'local' ELSE 'paid' END, status FROM research_section WHERE ticker = '{ticker}' ORDER BY section, version;"));
 
         // Byte for byte: each stored draft is the text of the recording its request is
         // keyed on, in the order each lane asked, and nothing reached a network.
@@ -838,7 +838,7 @@ public partial class FixtureExpectations
             ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
-        Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
+        Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalSettings().Model}';").Single());
     }
 
     [Fact]
@@ -858,7 +858,7 @@ public partial class FixtureExpectations
         var local = new RecordedLocalModelFeed(Folder());
         var context = Expected("prose").GetProperty("cannotHold").GetProperty("contextTokens").GetInt32();
 
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, local: local, paid: paid, localSettings: new LocalModelSettings(null, null, null, context, null))
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, local: local, paid: paid, localSettings: LocalSettings(context))
             .RunAsync("KEYS", "research-cannot-hold");
 
         Assert.Equal(["What the company sells", "The segment commentary"], outcome.LeftForThePaidPath);

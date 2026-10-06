@@ -13,7 +13,8 @@ namespace EquityBrief.Core.Providers;
 // is the operator's choice. What this was written against is two responses
 // captured from LM Studio serving qwen/qwen3.5-9b before a line of it existed, and
 // both of them are why it is shaped the way it is.
-// see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration
+// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+// see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time
 public sealed class OpenAiCompatibleModelFeed(
     HttpClient client,
     LocalModelSettings settings,
@@ -24,7 +25,27 @@ public sealed class OpenAiCompatibleModelFeed(
     readonly ProviderRequest request = request
         ?? new ProviderRequest(new RetryPolicy(1, TimeSpan.Zero, settings.Timeout, settings.Timeout + settings.Timeout));
 
+    // The first call to a model that may still be loading, bounded by the load's allowance as well as its own.
+    readonly ProviderRequest whileLoading = request
+        ?? new ProviderRequest(new RetryPolicy(1, TimeSpan.Zero, settings.Timeout + settings.Load, settings.Timeout + settings.Load + settings.Timeout));
+
     public const string Path = "chat/completions";
+
+    // LM Studio's own interface to its models, beside the OpenAI-compatible one the lane's address names.
+    public const string ModelsPath = "../api/v1/models";
+
+    public const string LoadPath = "../api/v1/models/load";
+
+    public const string UnloadPath = "../api/v1/models/unload";
+
+    // The word LM Studio's load answers with once the model is ready.
+    public const string LoadedStatus = "loaded";
+
+    // Whether the runtime has been read for this feed's model, and whether the next call may still be waiting
+    // on its load.
+    bool read;
+
+    bool loading;
 
     // The answer budget of one section call. A section is a paragraph or a sentence
     // per business unit, and a thousand tokens holds several of either.
@@ -37,7 +58,7 @@ public sealed class OpenAiCompatibleModelFeed(
             new HttpClient
             {
                 BaseAddress = new Uri(settings.BaseAddress.EndsWith('/') ? settings.BaseAddress : settings.BaseAddress + "/"),
-                Timeout = settings.Timeout + settings.Timeout,
+                Timeout = settings.Load + settings.Timeout + settings.Timeout,
             },
             settings);
 
@@ -45,7 +66,18 @@ public sealed class OpenAiCompatibleModelFeed(
     {
         Requests++;
 
-        var body = await request.SendAsync(
+        if (!read)
+        {
+            loading = !await ReadyAsync(wanted.Section, cancellation).ConfigureAwait(false);
+            read = true;
+        }
+
+        var waiting = loading;
+        var bound = waiting ? settings.Timeout + settings.Load : settings.Timeout;
+
+        loading = false;
+
+        var body = await (waiting ? whileLoading : request).SendAsync(
             async token =>
             {
                 try
@@ -73,13 +105,198 @@ public sealed class OpenAiCompatibleModelFeed(
                     // that took longer than the timeout over one section may answer the
                     // next, so this is a refusal of the section and not of the runtime.
                     throw new ProviderRefusal(
-                        $"The local model did not answer {wanted.Section} within {settings.Timeout.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds.",
+                        waiting
+                            ? $"The local model did not answer {wanted.Section} within {bound.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds, its load included."
+                            : $"The local model did not answer {wanted.Section} within {bound.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds.",
                         transient: false);
                 }
             },
             cancellation).ConfigureAwait(false);
 
         return Parse(body, wanted.Section);
+    }
+
+    // Whether the model is ready before the first call, read off LM Studio's own interface. A model the
+    // runtime holds and has not loaded is loaded at the context the profile names, any other model loaded
+    // first unloaded so the runtime holds one at a time, and the load is waited for within the profile's
+    // allowance, so a pass never calls a model mid-load. True once the load answers that the model is loaded.
+    // False where the model is already listed, which it is from the moment a load starts, or where the
+    // runtime states no load state, being another runtime or not answering the list in time: its first call
+    // then carries the allowance. A model the runtime does not hold, a load it refuses and one past the
+    // allowance are the local model unavailable, so every section of the pass is left unwritten with why.
+    async Task<bool> ReadyAsync(string section, CancellationToken cancellation)
+    {
+        var listed = await AskAsync(HttpMethod.Get, ModelsPath, null, settings.Timeout, section, cancellation).ConfigureAwait(false);
+
+        if (listed is not { Succeeded: true } answered || Held(answered.Text, settings.Model) is not { } held)
+        {
+            return false;
+        }
+
+        if (!held.Listed)
+        {
+            throw new LocalModelUnavailable(
+                $"The runtime holds no model named {settings.Model}, which the local profile {settings.Profile} names, so {section} and the lane's other sections are not written.");
+        }
+
+        if (held.Loaded)
+        {
+            return false;
+        }
+
+        foreach (var other in held.Others)
+        {
+            var unloaded = await AskAsync(HttpMethod.Post, UnloadPath, JsonSerializer.Serialize(new { instance_id = other }), settings.Timeout, section, cancellation).ConfigureAwait(false);
+
+            if (unloaded is not { Succeeded: true })
+            {
+                throw new LocalModelUnavailable(
+                    $"The runtime would not unload {other} to load {settings.Model} for {section}: {(unloaded is { } said ? Said(said.Text) : "it did not answer in time.")}");
+            }
+        }
+
+        var loaded = await AskAsync(
+            HttpMethod.Post,
+            LoadPath,
+            JsonSerializer.Serialize(new { model = settings.Model, context_length = settings.ContextTokens }),
+            settings.Load,
+            section,
+            cancellation).ConfigureAwait(false);
+
+        return loaded switch
+        {
+            null => throw new LocalModelUnavailable(
+                $"The local model {settings.Model} did not finish loading within {settings.Load.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds, so {section} and the lane's other sections are not written."),
+            { Succeeded: false } refused => throw new LocalModelUnavailable(
+                $"The runtime refused to load {settings.Model} for {section}: {Said(refused.Text)}"),
+            { } done => LoadedFrom(done.Text),
+        };
+    }
+
+    // One request to the runtime's own interface within its bound: whether it succeeded with what it said,
+    // or none where the bound passed first. Nothing listening is the local model unavailable.
+    async Task<(bool Succeeded, string Text)?> AskAsync(HttpMethod method, string path, string? json, TimeSpan bound, string section, CancellationToken cancellation)
+    {
+        using var limit = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+
+        limit.CancelAfter(bound);
+
+        try
+        {
+            using var message = new HttpRequestMessage(method, path);
+
+            if (json is not null)
+            {
+                message.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            }
+
+            using var response = await client.SendAsync(message, limit.Token).ConfigureAwait(false);
+
+            return (response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync(limit.Token).ConfigureAwait(false));
+        }
+        catch (HttpRequestException unreachable)
+        {
+            throw new LocalModelUnavailable($"The local model could not be reached for {section}: {unreachable.Message}");
+        }
+        catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+        {
+            return null;
+        }
+    }
+
+    // A model as the runtime's list holds it: whether it is listed, whether an instance of it is loaded or
+    // loading, and every other language model's loaded instance. None where the answer is not LM Studio's
+    // list, which is a runtime stating no load state.
+    public sealed record RuntimeModels(bool Listed, bool Loaded, IReadOnlyList<string> Others);
+
+    public static RuntimeModels? Held(string json, string model)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !document.RootElement.TryGetProperty("models", out var models)
+                || models.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            var listed = false;
+            var loaded = false;
+            var others = new List<string>();
+
+            foreach (var entry in models.EnumerateArray())
+            {
+                var key = entry.TryGetProperty("key", out var named) && named.ValueKind == JsonValueKind.String ? named.GetString() : null;
+                var language = !entry.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String || type.GetString() == "llm";
+                string[] instances = entry.TryGetProperty("loaded_instances", out var held) && held.ValueKind == JsonValueKind.Array
+                    ? [.. held.EnumerateArray().Select(instance => instance.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String ? id.GetString()! : string.Empty).Where(id => id.Length > 0)]
+                    : [];
+
+                if (string.Equals(key, model, StringComparison.Ordinal))
+                {
+                    listed = true;
+                    loaded = instances.Length > 0;
+                }
+                else if (language)
+                {
+                    others.AddRange(instances);
+                }
+            }
+
+            return new RuntimeModels(listed, loaded, others);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // Whether a load's answer says the model is loaded; any other answer leaves its first call the allowance.
+    static bool LoadedFrom(string answer)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(answer);
+
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("status", out var status)
+                && status.ValueKind == JsonValueKind.String
+                && string.Equals(status.GetString(), LoadedStatus, StringComparison.Ordinal);
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    // The runtime's own words on a refusal of its interface, cut to a line.
+    static string Said(string? body)
+    {
+        var said = string.Empty;
+
+        try
+        {
+            using var document = JsonDocument.Parse(body ?? string.Empty);
+
+            if (document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("error", out var error))
+            {
+                said = error.ValueKind switch
+                {
+                    JsonValueKind.String => error.GetString()!,
+                    JsonValueKind.Object when error.TryGetProperty("message", out var words) && words.ValueKind == JsonValueKind.String => words.GetString()!,
+                    _ => string.Empty,
+                };
+            }
+        }
+        catch (JsonException)
+        {
+        }
+
+        said = said.Trim();
+
+        return said.Length == 0 ? "it gave no reason." : (said.Length > RefusalExcerpt ? said[..RefusalExcerpt] : said);
     }
 
     // The request as it is sent.

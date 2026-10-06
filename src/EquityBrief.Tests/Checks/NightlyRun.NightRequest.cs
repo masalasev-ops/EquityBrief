@@ -346,7 +346,7 @@ public partial class NightlyRun
 
         var environment = store.WorkerEnvironment();
 
-        environment["EquityBrief__Models__Local__BaseAddress"] = "http://127.0.0.1:9/v1/";
+        environment["EquityBrief__Models__Local__Profiles__gemma-4__BaseAddress"] = "http://127.0.0.1:9/v1/";
         environment["EquityBrief__Models__Research__BaseAddress"] = "http://127.0.0.1:9/";
 
         var night = Shell.Run(dotnet!, [worker, "nightly", "--session", "2026-09-08", "--fixture", FixtureFolder()], store.Root, environment);

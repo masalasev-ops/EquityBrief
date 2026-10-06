@@ -22,10 +22,10 @@ public class LocalModelFeedTests
 
     static string Captured(string file) => File.ReadAllText(Path.Combine(Folder(), file));
 
-    static LocalModelSettings Settings() => new(null, null, null, null, null);
+    static LocalModelSettings Settings() => FixtureExpectations.LocalSettings();
 
     static ModelRequest Request(string prompt = "Keysight closed at 333.42.") =>
-        new(SectionPrompt.Lane, "The key under each figure", LocalModelSettings.DefaultModel, [], SectionPrompt.Instructions, prompt);
+        new(SectionPrompt.Lane, "The key under each figure", Settings().Model, [], SectionPrompt.Instructions, prompt);
 
     // ---- the parser, over the captures ----
 
@@ -100,7 +100,7 @@ public class LocalModelFeedTests
         var feed = new OpenAiCompatibleModelFeed(
             new HttpClient(new Answering(HttpStatusCode.BadRequest, Captured("model-probe-overflow.json")))
             {
-                BaseAddress = new Uri(LocalModelSettings.DefaultBaseAddress),
+                BaseAddress = new Uri(Settings().BaseAddress),
             },
             Settings());
 
@@ -127,7 +127,7 @@ public class LocalModelFeedTests
     public async Task NothingListeningIsItsOwnFailureRatherThanARefusalWithParticularWords()
     {
         var feed = new OpenAiCompatibleModelFeed(
-            new HttpClient(new Unreachable()) { BaseAddress = new Uri(LocalModelSettings.DefaultBaseAddress) },
+            new HttpClient(new Unreachable()) { BaseAddress = new Uri(Settings().BaseAddress) },
             Settings());
 
         var gone = await Assert.ThrowsAsync<LocalModelUnavailable>(() => feed.CompleteAsync(Request()));
@@ -192,65 +192,77 @@ public class LocalModelFeedTests
     [Fact]
     public void AKeyConfiguredForTheLocalLaneIsRefusedWhereverTheLaneIsRead()
     {
-        var direct = Assert.Throws<InvalidOperationException>(() => new LocalModelSettings(null, null, null, null, "sk-local"));
+        // The capture's own profile with a key at the lane: refused naming the key and never echoing it.
+        var configured = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(Folder(), LocalLane.FixtureModels))
+            .AddInMemoryCollection([new KeyValuePair<string, string?>(LocalModelSettings.ApiKeyKey, "sk-local")])
+            .Build();
+        var direct = Assert.Throws<InvalidOperationException>(() => LocalLane.Settings(configured));
 
         Assert.Contains(LocalModelSettings.ApiKeyKey, direct.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("sk-local", direct.Message, StringComparison.Ordinal);
 
-        var configured = new ConfigurationBuilder().AddInMemoryCollection(
-            [new KeyValuePair<string, string?>(LocalModelSettings.ApiKeyKey, "sk-local")]).Build();
-
-        Assert.Throws<InvalidOperationException>(() => LocalLane.Settings(configured));
-
         // A fixture run refuses it too, because the refusal is about the configuration.
-        Assert.Throws<InvalidOperationException>(() =>
-            OnDemandFeeds.Resolve("fixture", Folder(), null, null, null, null, LocalLane.Settings(configured), ResearchModelFeedTests.Pinned()));
+        Assert.Throws<InvalidOperationException>(() => LocalLane.For(configured, "fixture", Folder()));
 
-        // And a number that is not one is refused rather than read as the default.
-        var mistyped = new ConfigurationBuilder().AddInMemoryCollection(
-            [new KeyValuePair<string, string?>(LocalModelSettings.TimeoutKey, "5m")]).Build();
+        // And a number that is not one is refused rather than read as another.
+        var mistyped = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(Folder(), LocalLane.FixtureModels))
+            .AddInMemoryCollection([new KeyValuePair<string, string?>(LocalModelSettings.KeyOf(Settings().Profile, LocalModelSettings.TimeoutName), "5m")])
+            .Build();
 
         Assert.Contains("'5m'", Assert.Throws<InvalidOperationException>(() => LocalLane.Settings(mistyped)).Message, StringComparison.Ordinal);
-
-        // Blank, the defaults this machine was measured with.
-        var defaults = LocalLane.Settings(new ConfigurationBuilder().Build());
-
-        Assert.Equal(LocalModelSettings.DefaultBaseAddress, defaults.BaseAddress);
-        Assert.Equal(LocalModelSettings.DefaultModel, defaults.Model);
-        Assert.Equal(LocalModelSettings.DefaultContextTokens, defaults.ContextTokens);
     }
 
     [Fact]
-    public void TheRunbookStatesEachLocalSettingAndItsDefaultAsTheCodeHoldsThem()
+    public void TheRunbookStatesEachLocalProfileAsTheShippedSettingsHoldIt()
     {
-        // Pinned rather than restated: each row of RUNBOOK's table names the key the
-        // code reads and the default it falls back to, read off the document.
-        var rows = Corpus.Read("docs/RUNBOOK.md").Split('\n')
-            .Where(line => line.StartsWith("| ", StringComparison.Ordinal)
-                && (line.Contains("`EquityBrief:Models:Local:", StringComparison.Ordinal) || line.Contains("`EquityBrief:Models:LocalLane`", StringComparison.Ordinal)))
-            .Select(line => line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray())
+        // Pinned rather than restated: each row of the runbook's profile table names a key the profile reads and, under
+        // each profile's word, the value the shipped settings give it, read off the document against the file.
+        var runbook = Corpus.Read("docs/RUNBOOK.md");
+        string[] names =
+        [
+            LocalModelSettings.BaseAddressName, LocalModelSettings.ModelName, LocalModelSettings.TimeoutName,
+            LocalModelSettings.ContextTokensName, LocalModelSettings.LoadName, LocalModelSettings.IsDefaultName,
+        ];
+        static string[] Cells(string line) => [.. line.Trim().Trim('|').Split('|').Select(cell => cell.Trim())];
+        var lines = runbook.Split('\n');
+        var table = Array.FindIndex(lines, line => line.StartsWith("| Setting | Key under the profile |", StringComparison.Ordinal));
+
+        Assert.True(table >= 0, "The runbook states no table of the local model's profiles.");
+
+        var header = Cells(lines[table]);
+        var rows = lines
+            .Skip(table + 2)
+            .TakeWhile(line => line.StartsWith("| ", StringComparison.Ordinal))
+            .Select(Cells)
             .ToArray();
+        var shipped = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "appsettings.json"), optional: false)
+            .Build();
+        var profiles = shipped.GetSection(LocalModelSettings.ProfilesKey).GetChildren().Select(profile => profile.Key).ToArray();
 
-        string Default(string key) =>
-            Assert.Single(rows, row => row[1] == $"`{key}`")[2].Trim('`');
+        Assert.Equal(profiles.Select(profile => $"`{profile}`"), header[2..]);
+        Assert.Equal(names.Select(name => $"`{name}`"), rows.Select(row => row[1]));
 
-        Assert.Equal(LocalModelSettings.DefaultBaseAddress, Default(LocalModelSettings.BaseAddressKey));
-        Assert.Equal(LocalModelSettings.DefaultModel, Default(LocalModelSettings.ModelKey));
-        Assert.Equal(LocalModelSettings.DefaultTimeoutSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture), Default(LocalModelSettings.TimeoutKey));
-        Assert.Equal(LocalModelSettings.DefaultContextTokens.ToString(System.Globalization.CultureInfo.InvariantCulture), Default(LocalModelSettings.ContextTokensKey));
+        foreach (var row in rows)
+        {
+            foreach (var (profile, at) in profiles.Select((profile, at) => (profile, at)))
+            {
+                Assert.Equal(shipped[LocalModelSettings.KeyOf(profile, row[1].Trim('`'))], row[2 + at].Trim('`'));
+            }
+        }
 
         // The lane's row names its key first and the default sections in the order the
         // code holds them, in the figure's names with the first letter lowered.
-        var lane = Assert.Single(rows, row => row[1].StartsWith($"`{LocalLane.SectionsKey}`", StringComparison.Ordinal));
+        var lane = Cells(Assert.Single(lines, line => line.StartsWith("| ", StringComparison.Ordinal) && line.Contains($"`{LocalLane.SectionsKey}`", StringComparison.Ordinal)));
 
         Assert.Equal(
             string.Join(", ", ProseWriter.DefaultLane.Select(section => char.ToLowerInvariant(section[0]) + section[1..])),
             lane[2]);
 
         // And the refused key is the one the settings refuse.
-        Assert.Contains($"`{LocalModelSettings.ApiKeyKey}` is refused", Corpus.Read("docs/RUNBOOK.md"), StringComparison.Ordinal);
-
-        Assert.Equal(5, rows.Length);
+        Assert.Contains($"`{LocalModelSettings.ApiKeyKey}` is refused", runbook, StringComparison.Ordinal);
     }
 
     sealed class Answering(HttpStatusCode status, string body) : HttpMessageHandler

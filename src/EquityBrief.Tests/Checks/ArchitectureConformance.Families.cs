@@ -315,11 +315,12 @@ public partial class ArchitectureConformance
         // reader's catalogue and matrix rows, its two stores, section 17's and section 18's rows, the fixture's, the name
         // page's member readings and the run page's two parts, 997 from 15.5, the index rule trades' store and section
         // 18's row on a registered rule the night does not read, 1000 from its second pull request, the heavyweights
-        // rules' books' two stores and section 18's row on a rebalance waiting for what its design reads, and 1014 from
+        // rules' books' two stores and section 18's row on a rebalance waiting for what its design reads, 1014 from
         // 16.1, the decision cards' and the rule recorder's catalogue and matrix rows, their two stores, section 17's four
-        // values and section 18's four failures.
+        // values and section 18's four failures, and 1016 from the 16.1 ruling's local model, section 18's rows on its load
+        // and on its settings.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1014),
+            (789, 853, 6, 4, 855, 876, 1016),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

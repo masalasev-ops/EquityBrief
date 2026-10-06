@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-8oj9j39xjf376g0rkhyd5",
+  "object": "chat.completion",
+  "created": 1791303288,
+  "model": "google/gemma-4-26b-a4b-qat",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"answer\": \"A company that sells water heaters sells appliances designed to heat and store water for domestic or commercial use.\"\n}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 33,
+    "completion_tokens": 35,
+    "total_tokens": 68,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "google/gemma-4-26b-a4b-qat"
+}
