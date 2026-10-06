@@ -1,5 +1,6 @@
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Cards;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
@@ -8,6 +9,7 @@ using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Families;
@@ -96,7 +98,8 @@ public static class Nightly
         IDrainLauncher? launcher = null,
         bool askForTheFirstName = true,
         TryPlan? tries = null,
-        Build? build = null)
+        Build? build = null,
+        CardSettings? cards = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -123,7 +126,8 @@ public static class Nightly
             launcher,
             askForTheFirstName,
             tries,
-            build: build);
+            build: build,
+            cards: cards);
     }
 
     // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
@@ -144,7 +148,8 @@ public static class Nightly
         TryPlan? tries = null,
         int tryNumber = 1,
         bool resume = false,
-        Build? build = null)
+        Build? build = null,
+        CardSettings? cards = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -428,6 +433,11 @@ public static class Nightly
                 // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
                 var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token, register, nightStartedAt);
 
+                // A card for each stock every index's families listed and each its books bought, read from the rows the
+                // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.
+                // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+                var decisionCards = await new DecisionCards(clock, store.DatabaseFile, cards).RunAsync(runId, night.Token);
+
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
@@ -436,8 +446,10 @@ public static class Nightly
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
-                    $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}";
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage]),
+                    $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
+                    $"; {decisionCards.Cards} decision card(s)" +
+                    (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty);
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

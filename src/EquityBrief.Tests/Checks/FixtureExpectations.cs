@@ -95,6 +95,8 @@ public partial class FixtureExpectations
             // pull request's on a heavyweights rule's rebalance waiting for what its design reads.
             .. IndexFreezeClaims,
             .. IndexHeavyweightFreezeClaims,
+            // 16.1, the decision card: section 17's four values and section 18's four failures.
+            .. CardClaims,
             // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.

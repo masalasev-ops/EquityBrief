@@ -46,6 +46,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-family" => await SweepFamilyRun(args),
     "sweep-index" => await SweepIndexRun(args),
     "sweep-answer" => await SweepAnswerRun(args),
+    "rule-record" => await RuleRecordRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -59,7 +60,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 26 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 27 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -122,6 +123,8 @@ static int NoVerb()
         "report and figures in a run folder of its own, " +
         "'sweep-answer --run <name>' records the answer a sweep run states, whether a setting it read met the floors, " +
         "which a family's card reads to say its sweep found none, " +
+        "'rule-record' replays each rule a pick's card names on each index at its one setting over the pulled history, " +
+        "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -490,6 +493,22 @@ static async Task<int> SweepAnswerRun(string[] args)
         store.DatabaseFile,
         EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
         Console.Out).RecordAsync(VerbArguments.Value(args, "--run") ?? string.Empty);
+}
+
+// The record behind each pick's card, by hand: every rule a card names on each index replayed at its one setting over the
+// pulled history, each trade after its cost. The work is in `RuleRecorder`.
+// see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+static async Task<int> RuleRecordRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var named = VerbArguments.Value(args, "--index");
+
+    return await new EquityBrief.Worker.Cards.RuleRecorder(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        Console.Out).RunAsync(named is null ? [] : [.. named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule
@@ -1130,7 +1149,8 @@ static async Task<int> NightlyRun(string[] args)
         tries: rest is null ? Nightly.TryPlan.Standard : Nightly.TryPlan.Once,
         tryNumber: rest?.NextTry ?? 1,
         resume: rest is not null,
-        build: build);
+        build: build,
+        cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]));
 }
 
 // A night refused before its first step, on stderr and on the run log.

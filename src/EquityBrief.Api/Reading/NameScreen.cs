@@ -1116,7 +1116,9 @@ public static class NameScreen
         // The name's member readings for the page's night, under the index that held it, and its company's rating counts
         // as its newest fetch on or before the night filed them.
         MemberReadingRow? memberReading = null,
-        RatingsRow? ratings = null)
+        RatingsRow? ratings = null,
+        // The name's cards on the night, the family that listed it first in the page's order.
+        IReadOnlyList<DecisionCardRow>? decisionCards = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1253,7 +1255,11 @@ public static class NameScreen
             news,
             TonightScreen.ListedUnder(ticker, familyPicks ?? []),
             TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []),
-            memberReading is null ? null : Member(memberReading, ratings));
+            memberReading is null ? null : Member(memberReading, ratings),
+            (decisionCards ?? [])
+                .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
+                .Select(CardScreen.View)
+                .FirstOrDefault());
     }
 
     // A name's member readings as the page draws them, each as the member reader stored it, its index named as every

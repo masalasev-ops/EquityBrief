@@ -70,6 +70,8 @@ public enum Store
     IndexRuleTrade,
     IndexHeavyweightRuleNight,
     IndexHeavyweightRuleHolding,
+    DecisionCard,
+    RuleRecord,
     SweepAnswer,
     EstimateReading,
     ForwardReturn,

@@ -1,0 +1,7 @@
+# The remedy of 16.1 (the decision card's frame, its first five lines and the rule's record), as its PROGRESS entry
+# prints it: the merge adds migration 69, the decision cards' and the rule records' tables. The migration runs first; the
+# rule recorder then replays each rule a card names on each index over the pulled history, reading the store's pulled
+# history read-only and writing one row an index and family. No provider request, no model call and nothing bought. Run
+# after the merge, when no night is running and not inside the night's window.
+migrate
+rule-record

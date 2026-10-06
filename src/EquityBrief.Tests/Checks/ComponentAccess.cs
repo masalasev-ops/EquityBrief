@@ -143,6 +143,12 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Estimates fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Estimates fetcher"),
 
+            // 16.1, the decision cards and the rule recorder.
+            CheckReach.Key(Scope.CatalogueTable, "Decision cards"),
+            CheckReach.Key(Scope.MatrixTable, "Decision cards"),
+            CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
+            CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
+
             // The market switches' ruling of 2026-10-03, the market series fetcher.
             CheckReach.Key(Scope.CatalogueTable, "Market series fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Market series fetcher"),

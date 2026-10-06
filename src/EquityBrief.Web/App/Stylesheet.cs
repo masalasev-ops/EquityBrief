@@ -369,6 +369,25 @@ span[data-last-asked-at]::before{content:none}
 .family-table td.plan-stop{color:var(--sup-ink)}
 .family-table td.plan-target{color:var(--res-ink)}
 .also-family{display:inline-block;margin-left:6px;font:400 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--soft);vertical-align:middle}
+.card-toggle{display:inline-block;margin-left:6px;font:600 11.5px var(--sans);color:var(--ink-2);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;min-height:0;cursor:pointer;vertical-align:middle}
+.card-toggle[aria-expanded='true']{background:var(--plot);color:var(--ink)}
+.list-table tr.card-row>td{white-space:normal;background:var(--plot);padding:12px}
+.decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));font-size:13.5px;color:var(--ink)}
+.card-head{margin:0 0 8px;color:var(--ink-2)}
+.card-lines{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);gap:8px;align-items:baseline}
+.card-mark{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;text-align:center}
+.card-mark[data-verdict='tick']{color:var(--sup-ink);background:var(--sup-fill)}
+.card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);border:1px solid var(--hair-2)}
+.card-mark[data-verdict='warning']{color:var(--res-ink);background:var(--res-fill)}
+.card-record{border:1px solid var(--hair-2);border-radius:6px;padding:10px 12px}
+.card-record.outline{border-style:dashed}
+.card-record h5{margin:0 0 6px;font:600 13px var(--sans)}
+.card-figures{display:grid;grid-template-columns:130px minmax(0,1fr);gap:4px 10px;margin:8px 0}
+.card-figures dt{color:var(--soft)}
+.card-figures dd{margin:0;font-variant-numeric:tabular-nums}
+.card-caution{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
+.card-rule{margin:6px 0 0;font-size:12px;color:var(--soft)}
 .stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--sup) 0,var(--sup) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
 .stt .stt-mark{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:var(--ink)}
 .stt.trailing{width:auto;height:auto;background:none;font-size:12px;color:var(--soft);white-space:nowrap}
@@ -738,6 +757,8 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .m-right{flex-wrap:wrap;gap:4px 14px}
  .m-search{flex-basis:100%}
  .m-search input{width:100%}
+ .card-line,.card-figures{grid-template-columns:1fr}
+ .card-mark{justify-self:start}
 }
 @media print{ .mast,.export,form[method='post']{display:none} .card{box-shadow:none;break-inside:avoid} }
 """;

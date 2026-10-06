@@ -559,7 +559,9 @@ public class HistoryPullTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // The rule recorder declares the pulled tables its replay reads through the sweep's history, by hand and never on
+        // the night.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

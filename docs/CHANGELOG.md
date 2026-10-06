@@ -11507,3 +11507,46 @@ Was:
 Now:
 > the same, then phase 15's read the same way, its actual falling under the range the plan stated by exactly the claims each checkpoint's count held that landed as words in rows that stood or as paragraphs, each checkpoint's named with where they went
 Why: the roster is where a check states what it asserts, and the pair test reads phase 15's figures off the plan and the rows each checkpoint landed.
+
+### 2026-10-06 - BUILD_PLAN.md - the sign-offs of phases 14, 15 and 16 owed after 16.4, one session at a time
+Was:
+> Phase 14's and phase 15's sign-offs are owed after this plan, each done by a fresh session the operator starts beside phase 16 with a handoff left for it, and no checkpoint of phase 16 discharges either; phase 16's own is owed the same way after 16.4.
+Now:
+> Phase 14's, phase 15's and phase 16's sign-offs are owed after 16.4, each done by a fresh session the operator starts, one at a time and none beside the build, since a review's branch and its mutations would share the one checkout the build runs in; no checkpoint of phase 16 discharges any of them, and each is handed its prompt after 16.4 with the figures as they stand then.
+Why: the operator's question of 2026-10-06, whether to run the two sign-offs now or all three after phase 16, answered after phase 16; the 16.1 ruling records it.
+
+### 2026-10-06 - CLAUDE.md - the record hard rule shows a rule's record under the rule's own heading, on a pick's card among the places
+Authorised by: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
+Was:
+> **A reason's measured record is shown beside the reason and never beside the ticker.** Below the minimum, only the resolved count against the minimum is shown. (see: A reason's record is displayed, beside the reason and never beside the name)
+Now:
+> **A rule's measured record is shown under the rule's own heading and never as the stock's own.** Beside its reason, or on a pick's card naming the rule and its index and saying it is the rule's record over every stock it bought and not this stock's chance. Below the minimum, only the resolved count against the minimum is shown. (see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own)
+Why: ruling R1 of phase 16's plan, approved 2026-10-05: a pick's card draws the rule's record, and the hard rule as it stood forbade any record beside a ticker.
+
+### 2026-10-06 - ARCHITECTURE.html - section 13's paragraph and section 17's record display row name a pick's card
+Authorised by: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
+Was:
+> A reason's record is shown beside the reason and never beside the ticker. (see: A reason's record is displayed, beside the reason and never beside the name)
+
+> Reason record display: a reason's measured record is shown beside the reason and never beside the ticker; below the minimum only the count of resolved setups that set a bar against the minimum is shown; at or above it, the share, the denominator and the break-even are shown together or not at all (see: A reason's record is displayed, beside the reason and never beside the name); why: a bare number next to a stock is read as that stock's chance of going up, when it is a historical frequency of the reason across every name it fired for
+Now:
+> A rule's record is shown under the rule's own heading and never as the stock's own, beside its reason or on a pick's card. (see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own)
+
+> Reason record display: a reason's measured record is shown beside the reason, and a rule's on a pick's card under the rule's own heading naming the rule and its index, and neither as the stock's own; the rest of the cell as it was, citing the new decision; why: a bare number next to a stock is read as that stock's chance of going up, when it is a historical frequency of the rule across every name it picked
+Why: ruling R1 of phase 16's plan, approved 2026-10-05, which the hard rule's change carries into the two places the architecture stated the old one.
+
+### 2026-10-06 - ARCHITECTURE.html - section 14's swing filter step writes each index's cards after the index families
+Authorised by: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+Was:
+> ... (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step).
+Now:
+> the same, then: then write a card for each stock every index's families listed and each stock its books bought, the checklist's lines read from the rows the step stored with the rule's record and the card's values, a failure in an index's cards named on its own row while the night goes on (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it).
+Why: 16.1 builds the cards, which read every row the step stores and so are written at its end, before the close.
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface read the decision card
+Authorised by: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+Was:
+> fixture-expectations' row ending "taken once they are stored |", nightly-run's ending "and the switches' row after the fundamental readings and before the listings |" and read-surface's ending "and the Run page draws each heavyweights rule's record over its own book in points |"
+Now:
+> each the same, then a clause from 16.1: each of the card's first five lines worked by hand on both sides of its value with each value moved alone, the earnings line's warning, note and tick, the cover at the coverage's floor, the S&P 400's cards read from its own breadth and sectors, and a rule's record the sweep's own reading; the step writing each index's cards after the index families, a failed index's cards named on the stage's row while the others are written, and a refused step named while the night closes; and each card on each of the three indices drawn beneath its row and at the top of the stock's page, read back against the stored card, each index's page drawing its own, its record under the rule's own heading naming its index and no word of the stock, and the card in one column on a phone's screen
+Why: the roster is where a check states what it asserts, and the tests the clauses name read the cards' lines, the night's step and the pages.

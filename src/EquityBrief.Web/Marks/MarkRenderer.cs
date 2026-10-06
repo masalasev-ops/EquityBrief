@@ -3238,7 +3238,7 @@ public sealed partial class MarkRenderer : IComponent
 
         // Each reason's record once, at the foot of its own column: a property of the
         // reason across every name it has fired for, and never of a row's name.
-        // see: A reason's record is displayed, beside the reason and never beside the name
+        // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
         if (byReason is not null)
         {
             list.Append(Invariant, $"<tfoot><tr><td colspan=\"{(byFilter ? 9 : 8)}\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
@@ -3307,7 +3307,7 @@ public sealed partial class MarkRenderer : IComponent
     // for, and it is not a statement about the name in this row. That is why it
     // is drawn inside the reason's own span rather than in a column of its own,
     // where a reader would take it for a property of the row.
-    // see: A reason's record is displayed, beside the reason and never beside the name
+    // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
     static string ReasonsForRow(ListingCell row, IReadOnlyList<string> columns, IReadOnlyDictionary<string, ReasonRecord>? byReason)
     {
         var cells = new StringBuilder();
@@ -3491,7 +3491,7 @@ public sealed partial class MarkRenderer : IComponent
     // one, and a rate over a handful of cases reads as evidence and is not.
     // see: Not yet measured is drawn as a dashed outline, never as a pale value
     // see: The record column stays empty until it has earned a number
-    // see: A reason's record is displayed, beside the reason and never beside the name
+    // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
     //
     // The base rate is the pinned first row rather than a figure beside one of
     // them, which is what makes it impossible to read a forward-return figure on

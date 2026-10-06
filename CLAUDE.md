@@ -149,7 +149,7 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **An unresolved setup is never a win,** and an unexamined claim is never a pass. The same rule, one about trading outcomes and one about verification. (see: An unresolved setup is never a win)
 
-**A reason's measured record is shown beside the reason and never beside the ticker.** Below the minimum, only the resolved count against the minimum is shown. (see: A reason's record is displayed, beside the reason and never beside the name)
+**A rule's measured record is shown under the rule's own heading and never as the stock's own.** Beside its reason, or on a pick's card naming the rule and its index and saying it is the rule's record over every stock it bought and not this stock's chance. Below the minimum, only the resolved count against the minimum is shown. (see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own)
 
 ## Conventions
 

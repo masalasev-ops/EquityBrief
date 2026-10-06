@@ -500,6 +500,12 @@ public class PinnedConstants
             new("A print's revenue quarter", "7", Core.Families.RevenueGrowth.YearBeforeWithin, "RevenueGrowth.YearBeforeWithin"),
             new("RSI fall order", "14", Core.Indicators.IndicatorSeries.Wilder, "IndicatorSeries.Wilder"),
             new("RSI fall order", "3", Worker.Sweep.SweepIdeas.BestOf, "SweepIdeas.BestOf"),
+            // The decision card's values, 16.1, each the default its settings block reads where it names none.
+            new("Card sector place", "3", Core.Cards.CardSettings.DefaultSectorBottom, "CardSettings.DefaultSectorBottom"),
+            new("Card sector place", "63", Core.Cards.CardLines.SectorSessions, "CardLines.SectorSessions"),
+            new("Card cover floor", "2", Core.Cards.CardSettings.DefaultCoverFloor, "CardSettings.DefaultCoverFloor"),
+            new("Card held share", "0.75", (decimal)Core.Cards.CardSettings.DefaultHeldShare, "CardSettings.DefaultHeldShare"),
+            new("Card round trip", "0.10", (decimal)Core.Cards.CardSettings.DefaultRoundTripRisks, "CardSettings.DefaultRoundTripRisks"),
         ];
     }
 
