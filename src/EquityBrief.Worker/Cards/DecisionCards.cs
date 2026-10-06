@@ -162,8 +162,8 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings);
     ";
 
     const string AppendRun = @"
@@ -277,10 +277,15 @@ public sealed class DecisionCards : IComponent
                 ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, true, cancellation)
                 : new MarketReading(breadth, floor, true);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, cancellation);
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation);
         }
 
         var place = 0;
+
+        // The most holdings the index's book can hold, its leaders in each of the eleven sectors, over which a holding
+        // with no stop is sized.
+        // see: A holding with no stop is sized at an equal share of the account across the most holdings its book can hold
+        var holdings = GicsSectors.Eleven.Count * (large ? HeavyweightRule.Live.Leaders : EquityBrief.Worker.Indices.IndexHeavyweights.Provisional.Leaders);
 
         foreach (var buy in bought)
         {
@@ -289,21 +294,21 @@ public sealed class DecisionCards : IComponent
                 ? await LargeMarketAsync(connection, transaction, buy.Ticker, night, false, cancellation)
                 : new MarketReading(breadth, floor, false);
 
-            written += await WriteAsync(connection, transaction, index, night, Heavyweights, buy.Ticker, ++place, plan, market, sectors, ranks, cancellation);
+            written += await WriteAsync(connection, transaction, index, night, Heavyweights, buy.Ticker, ++place, plan, market, sectors, ranks, holdings, cancellation);
         }
 
         return written;
     }
 
-    // A card's plan: its buy, its stop and target where the rule sets them, the sessions it is held for at most where it
-    // caps them, and the gates its first line names.
-    sealed record Plan(decimal? Entry, decimal? Stop, decimal? Target, int? Cap, IReadOnlyList<string> Gates);
+    // A card's plan: its buy, its stop and target where the rule sets them, the trail a trailing rule raises its stop by,
+    // the sessions it is held for at most where it caps them, and the gates its first line names.
+    sealed record Plan(decimal? Entry, decimal? Stop, decimal? Target, int? Cap, IReadOnlyList<string> Gates, decimal? Trail = null);
 
     sealed record Pick(string Ticker, string Family, int Place);
 
     sealed record Bought(string Ticker, string Sector, decimal? Entry);
 
-    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, CancellationToken cancellation)
+    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation)
     {
         var named = NameOf(index);
         var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
@@ -343,6 +348,11 @@ public sealed class DecisionCards : IComponent
             ("$settings", settings.Json()),
             ("$lines", LinesJson(lines)),
             ("$record", record is null ? DBNull.Value : RecordJson(record, held)),
+            ("$sector", (object?)sector ?? DBNull.Value),
+            ("$trail", Price(plan.Trail)),
+            ("$cap", plan.Cap is { } cap ? (object)cap : DBNull.Value),
+            ("$round_trip", Price(RoundTrip(value, plan.Entry))),
+            ("$book_holdings", bookHoldings is { } most ? (object)most : DBNull.Value),
         ], cancellation);
 
         return 1;
@@ -434,12 +444,16 @@ public sealed class DecisionCards : IComponent
 
             if (await reader.ReadAsync(cancellation))
             {
+                // A trailing rule raises its stop by the plan's own distance, the buy less its first stop.
+                var (entry, stop) = (MoneyOrNone(reader, 0), MoneyOrNone(reader, 1));
+
                 return new Plan(
-                    MoneyOrNone(reader, 0),
-                    MoneyOrNone(reader, 1),
+                    entry,
+                    stop,
                     MoneyOrNone(reader, 2),
                     cap,
-                    [.. FamilyRule.GatesOf(reader.GetString(3)).Select(gate => $"{gate.Name}, {gate.Reason}")]);
+                    [.. FamilyRule.GatesOf(reader.GetString(3)).Select(gate => $"{gate.Name}, {gate.Reason}")],
+                    SetupFamilies.Named(pick.Family) is { Trails: true } && entry is { } buy && stop is { } floor ? buy - floor : null);
             }
         }
 
@@ -464,7 +478,8 @@ public sealed class DecisionCards : IComponent
             MoneyOrNone(reader, 1),
             MoneyOrNone(reader, 2),
             reader.IsDBNull(4) ? null : reader.GetInt32(4),
-            gates);
+            gates,
+            MoneyOrNone(reader, 3));
     }
 
     // The gates an S&P 400 or 600 rule reads, in the words its night's settings state them.
@@ -751,4 +766,15 @@ public sealed class DecisionCards : IComponent
     static decimal? MoneyOrNone(SqliteDataReader reader, int column) => reader.IsDBNull(column) ? null : Money(reader.GetString(column));
 
     static object Price(decimal? price) => price is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : DBNull.Value;
+
+    // The round trip a share at the published table, bought and sold at the plan's buy; none where the plan states none.
+    static decimal? RoundTrip(decimal? value, decimal? buy)
+    {
+        if (buy is not { } bought || bought <= 0m)
+        {
+            return null;
+        }
+
+        return TradeCost.RoundTrip(value, bought, bought);
+    }
 }

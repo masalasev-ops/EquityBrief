@@ -42,8 +42,16 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document gains after phase 15's report, named beside the pair and never counted in it: from 16.1 the
-    // decision card's rows, and the 16.1 ruling's section 18 rows on the local model's load and its settings.
-    internal static string[] AfterPhaseFifteen => [.. CardRows, .. FixtureExpectations.LocalModelClaims];
+    // decision card's rows, the 16.1 ruling's section 18 rows on the local model's load and its settings, and from 16.2
+    // the taken trades' rows.
+    internal static string[] AfterPhaseFifteen => [.. CardRows, .. FixtureExpectations.LocalModelClaims, .. TakenRows];
+
+    // 16.2's rows: the taken trades' store, section 17's two values and section 18's two rows.
+    internal static string[] TakenRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Taken trades"),
+        .. Reading.ReadSurface.TakenClaims,
+    ];
 
     // 16.1's rows: the decision cards' and the rule recorder's catalogue and matrix rows, their two stores, section 17's
     // four values and section 18's four failures.

@@ -39252,3 +39252,53 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1934 of 1934 tests ran.
 Carried:    after the merge, the surface's Release build again, since the launcher runs in the surface. Then 16.2.
+
+### 16.2 - the plan in the operator's money, the account page and the Taken control: a pick's card in shares, its management in the rule's own terms, and the trades the operator took   2026-10-06
+
+Queue:      done, 16.1, PR 379, its rulings, PRs 380 and 381, and the 12.3 correction, PR 382; in progress, 16.2; next,
+            16.3 and 16.4, then the news labeller waiting for the off-peak hours, then the sign-offs of phases 14, 15
+            and 16, one session at a time.
+Built:      The account page from the masthead, keeping the account's size, the risk a trade in per cent and the
+            position cap, a fifth proposed, in `account.json` under the data root, written beside itself and moved into
+            place. One function in the core sizes a pick's plan where its card is drawn: the risk over the stop's
+            distance rounded down, no more than the cap, and a holding with no stop an equal share across its book's
+            22 holdings, the whole at risk; an account not kept or not readable draws the plan in prices and risks with
+            a line linking the page. The management in each rule's own terms, each stop a close below it, the trail the
+            plan's distance, the target, the cap and the heavyweights' month's first close, and no other step. The
+            sixth line, worked out where the card is drawn, counting the operator's open trades in the sector across
+            the three indices and warning at 2. `taken_trade` (migration 70, with decision_card's sector, trail, cap,
+            round trip and book holdings), written by three presses on a card, each refused without the page's header:
+            Taken, at an entered fill or the plan's buy marked provisional for the session after the night, refused at
+            or under the stop, for a second open trade, or for a card not stored; Not taken before a night has followed;
+            and an exit, once. A stock's page for an earlier night and an export draw none of it. The superseding
+            screen decision cited in 19 sources and two specs, the concentration decision, the
+            stores, limits and failure rows, SCHEMA's table, the roster's read-surface clause, the runbook and the
+            guide, the prior text in `CHANGELOG.md`. Found writing the tests: the sixth line read "1 of your open trade
+            is", corrected before its run.
+Tests:      1940, from 1934: six added, the plan worked by hand rounded down and capped, the plan read
+            off each card on Tonight with no account and an unreadable one, each family's management on every index,
+            the sixth line on both sides of 2, every press and its refusals, and the settings in no byte of the store,
+            the run log, the captured log lines or an export.
+Claims:     1021, from 1016: the taken trades' store, section 17's two values and section 18's two rows.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file 16.2 edits or adds is among them.
+Mutated:    the rule, stated in phase 16's plan before the run: each of the three properties the plan names broken
+            alone, made by hand over the working tree on the branch before the commit carrying this entry, filtered to
+            the tests that read it and reverted.
+            T1 shares rounded up: predicted red at the 37-share case, at 38.
+            T2 a step moving the stop to the buy added to every rule with a target and no trail: predicted red at the
+            management test.
+            T3 the account's size written to a log line by the account page's press: predicted red at the log capture.
+            Results: T1 red where stated, 38 shares and 102.60 at risk against 37 and 99.90, and red too at the card
+            read back off Tonight; T2 red at the S&P 600's drift, whose card drew the added step between its target and
+            its cap; T3 red at the log capture, the size found in a line; each reverted, and the six tests green over
+            the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e387ec8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1940 of 1940 tests ran with none failed, migrations 0
+            to 70 with none pending, schema version 70, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1021 claims, 1021 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1032
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1940 of 1940 tests ran.
+Carried:    after the merge, `tools/remedies/2026-10-06-16.2-the-taken-trades.txt`, migration 70, no request and no
+            model call, run outside the night's window, and the surface's Release build again. The provisional fill is
+            replaced by the stored open from 16.3, which builds the follower. Then 16.3.

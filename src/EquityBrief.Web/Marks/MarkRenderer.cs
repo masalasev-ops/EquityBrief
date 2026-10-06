@@ -1323,7 +1323,7 @@ public sealed partial class MarkRenderer : IComponent
     // It draws nothing the ladder does not carry. Every row handed in is a
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
     {
         if (rows.Count == 0)
@@ -5280,7 +5280,7 @@ public sealed partial class MarkRenderer : IComponent
     // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
     // The median is the annotator's and is drawn as stored; nothing here works it out.
     // see: A large move is shown beside its group's median move over the same sessions
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     static string GroupCell(MoveGroup? group)
     {
         if (group is null)
@@ -5326,7 +5326,7 @@ public sealed partial class MarkRenderer : IComponent
     // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
     // sorts, filters or works a figure out.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
@@ -5507,7 +5507,7 @@ public sealed partial class MarkRenderer : IComponent
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
         var table = new StringBuilder();

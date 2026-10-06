@@ -19,7 +19,7 @@ namespace EquityBrief.Api.Reading;
 // whose claim is that it computes nothing and which `read-surface` asserts over
 // the shipped source. Not in the page, whose claim is the same. Code owns it and
 // the file that owns it is named for the screen it serves.
-// see: A screen reads and renders, and computes nothing
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 // see: Code owns every number
 // see: Distances are stated as typical days' moves
 public static class UniverseScreen

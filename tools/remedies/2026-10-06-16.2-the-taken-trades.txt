@@ -1,0 +1,6 @@
+# The remedy of 16.2 (the plan in the operator's money, the account page and the Taken control), as its PROGRESS entry
+# prints it: the merge adds migration 70, decision_card's sector, trail, cap, round trip and book holdings, and the taken
+# trades' table. No provider request, no model call and nothing bought. A card written before it holds none of the five,
+# so it draws no sector for its sixth line and no trail or cap in its management; the next night's cards hold them. Run
+# after the merge, when no night is running and not inside the night's window.
+migrate

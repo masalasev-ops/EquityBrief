@@ -690,7 +690,45 @@ public static class SchemaMigrations
         new Migration(67, "create index_rule_trade", CreateIndexRuleTrades),
         new Migration(68, "create index_heavyweight_rule_night and index_heavyweight_rule_holding", CreateIndexHeavyweightRules),
         new Migration(69, "create decision_card and rule_record", CreateDecisionCards),
+        new Migration(70, "add decision_card's sector, trail, cap, round trip and book holdings, and create taken_trade", CreateTakenTrades),
     ];
+
+    // What a pick's card sizes its plan and words its management from, stored by the night beside the lines: the
+    // stock's sector, the trail and the cap the rule manages the trade by, the round trip a share at the published
+    // table bought and sold at the buy, and, for a book holding with no stop, the most holdings its book can hold. And the operator's own
+    // trades, one row a trade taken from a card, written by the read surface's presses alone: what was taken, from which
+    // card, at what fill and whether that fill is still the plan's buy awaiting the next session's open, the plan it is
+    // managed by, and an exit the operator records. No row holds the account's size, its risk or its cap.
+    // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+    // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+    const string CreateTakenTrades = @"
+        ALTER TABLE decision_card ADD COLUMN sector TEXT;
+        ALTER TABLE decision_card ADD COLUMN trail TEXT;
+        ALTER TABLE decision_card ADD COLUMN cap INTEGER;
+        ALTER TABLE decision_card ADD COLUMN round_trip TEXT;
+        ALTER TABLE decision_card ADD COLUMN book_holdings INTEGER;
+
+        CREATE TABLE taken_trade (
+            ticker            TEXT NOT NULL,
+            taken_at          TEXT NOT NULL,
+            index_code        TEXT NOT NULL,
+            family            TEXT NOT NULL,
+            night             TEXT NOT NULL,
+            sector            TEXT,
+            fill              TEXT NOT NULL,
+            fill_date         TEXT NOT NULL,
+            provisional       INTEGER NOT NULL,
+            entered           INTEGER NOT NULL,
+            stop              TEXT,
+            target            TEXT,
+            trail             TEXT,
+            cap               INTEGER,
+            exit_price        TEXT,
+            exit_date         TEXT,
+            followed_through  TEXT,
+            PRIMARY KEY (ticker, taken_at)
+        ) STRICT;
+    ";
 
     // A pick's card on a night: one row an index, night, family and stock the family listed, with the plan's prices, the rule
     // the card names in words, the card's values it was read with, its lines and the rule's record as the card read it; and

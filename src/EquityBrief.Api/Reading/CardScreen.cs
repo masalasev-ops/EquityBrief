@@ -4,18 +4,28 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
 
-// The projection from the cards the night stored to the cards a page draws in place beneath each pick. It computes
-// nothing: the night wrote each line's verdict and words and the rule's record as the card read it, and this reads them
-// back and hands each card to the row it belongs to.
-// see: A screen reads and renders, and computes nothing
+// What a page hands its cards beyond what the night stored: the operator's account where it is set, their open taken
+// trades, the trades taken from the cards drawn, and whether the page draws the card's presses. An export hands none.
+public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable)
+{
+    public static CardContext None { get; } = new(null, [], [], false);
+}
+
+// The projection from the cards the night stored to the cards a page draws in place beneath each pick. It reads back
+// each line's verdict and words and the rule's record as the night wrote them, words the rule's management from the
+// stored plan, and works out two things alone where the card is drawn, since the store holds neither: the plan in the
+// operator's money from their account, and the sixth line from their open trades.
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 public static class CardScreen
 {
     // A stored card as the page draws it.
-    public static DecisionCardView View(DecisionCardRow row)
+    public static DecisionCardView View(DecisionCardRow row, CardContext? context = null)
     {
+        var given = context ?? CardContext.None;
+
         using var lines = JsonDocument.Parse(row.Lines);
-        CardLineView[] drawn =
+        List<CardLineView> drawn =
         [
             .. lines.RootElement.EnumerateArray().Select(line => new CardLineView(
                 line.GetProperty("line").GetInt32(),
@@ -24,7 +34,41 @@ public static class CardScreen
                 line.GetProperty("words").GetString() ?? string.Empty)),
         ];
 
-        return new DecisionCardView(row.Index, row.Night, row.Family, row.Ticker, row.Rule, row.Entry, row.Stop, row.Target, drawn, row.Record is { } stored ? Record(stored) : null);
+        // The sixth line reads the operator's own trades, so a page drawing no presses, an export among them, draws none.
+        if (given.Pressable)
+        {
+            var concentration = EquityBrief.Core.Cards.CardLines.Concentration(row.Ticker, row.Sector, [.. given.Open.Select(trade => (trade.Ticker, trade.Sector))]);
+
+            drawn.Add(new CardLineView(concentration.Number, concentration.Name, concentration.Mark, concentration.Words));
+        }
+
+        var heavyweights = string.Equals(row.Family, EquityBrief.Core.Families.HeavyweightRule.Name, StringComparison.Ordinal);
+        var money = given.Account is { } account
+            ? EquityBrief.Core.Cards.PositionSize.Of(account, row.Entry, row.Stop, heavyweights ? row.BookHoldings : null, row.RoundTrip)
+            : null;
+
+        return new DecisionCardView(
+            row.Index,
+            row.Night,
+            row.Family,
+            row.Ticker,
+            row.Rule,
+            row.Entry,
+            row.Stop,
+            row.Target,
+            drawn,
+            row.Record is { } stored ? Record(stored) : null,
+            EquityBrief.Core.Cards.Management.For(row.Stop, row.Target, row.Trail, row.Cap, heavyweights),
+            money is { } plan && given.Account is { } held
+                ? new CardMoneyView(plan.Shares, plan.AtRisk, plan.Value, plan.ShareOfAccount, plan.RoundTrip, plan.Capped, plan.WholeAtRisk, held.RiskPercent)
+                : null,
+            given.Pressable && given.Account is null,
+            [
+                .. given.Taken
+                    .Where(trade => trade.Ticker == row.Ticker && trade.Index == row.Index && trade.Family == row.Family && trade.Night == row.Night)
+                    .Select(trade => new CardTakenView(trade.TakenAt, trade.Fill, trade.FillDate, trade.Provisional, trade.ExitPrice, trade.ExitDate, trade.FollowedThrough is not null)),
+            ],
+            given.Pressable);
     }
 
     static CardRecordView Record(string stored)
@@ -53,11 +97,11 @@ public static class CardScreen
 
     // Each family's picks with the cards the night stored for them, matched by family and stock; a pick the night
     // stored no card for is drawn as it was.
-    public static IReadOnlyList<FamilyCardView> WithCards(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<DecisionCardRow> stored)
+    public static IReadOnlyList<FamilyCardView> WithCards(IReadOnlyList<FamilyCardView> cards, IReadOnlyList<DecisionCardRow> stored, CardContext? context = null)
     {
         var byPick = stored
             .GroupBy(row => (row.Family, row.Ticker))
-            .ToDictionary(group => group.Key, group => View(group.First()));
+            .ToDictionary(group => group.Key, group => View(group.First(), context));
 
         return
         [
@@ -69,11 +113,11 @@ public static class CardScreen
     }
 
     // The sector heavyweights' holdings, each with the card of the night its book bought it on.
-    public static HeavyweightCardView WithCards(HeavyweightCardView card, IReadOnlyList<DecisionCardRow> bought)
+    public static HeavyweightCardView WithCards(HeavyweightCardView card, IReadOnlyList<DecisionCardRow> bought, CardContext? context = null)
     {
         var byBuy = bought
             .GroupBy(row => (row.Ticker, row.Night))
-            .ToDictionary(group => group.Key, group => View(group.First()));
+            .ToDictionary(group => group.Key, group => View(group.First(), context));
 
         return card with
         {

@@ -490,7 +490,8 @@ public sealed record PickRow(
 
 // A pick's card as the night stored it: its index, night, family and stock, its place, the plan's prices, the rule it
 // names, the card's values it was read with, its lines and the rule's record as the card read it, none where the rule had
-// not been replayed.
+// not been replayed; and what its plan in money and its management are worked from, the stock's sector, the trail and
+// the cap, the round trip a share and the most holdings a book with no stop can hold.
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 public sealed record DecisionCardRow(
     string Index,
@@ -504,7 +505,35 @@ public sealed record DecisionCardRow(
     string Rule,
     string Settings,
     string Lines,
-    string? Record);
+    string? Record,
+    string? Sector = null,
+    decimal? Trail = null,
+    int? Cap = null,
+    decimal? RoundTrip = null,
+    int? BookHoldings = null);
+
+// A trade the operator took from a card, as the store holds it: the stock and when it was taken, the card it came from,
+// the stock's sector, its fill and the session it is for, whether that fill is still the plan's buy awaiting the next
+// session's open and whether the operator entered it, the plan it is managed by, and the exit the operator recorded.
+// see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+public sealed record TakenTradeRow(
+    string Ticker,
+    string TakenAt,
+    string Index,
+    string Family,
+    DateOnly Night,
+    string? Sector,
+    decimal Fill,
+    DateOnly FillDate,
+    bool Provisional,
+    bool Entered,
+    decimal? Stop,
+    decimal? Target,
+    decimal? Trail,
+    int? Cap,
+    decimal? ExitPrice,
+    DateOnly? ExitDate,
+    string? FollowedThrough);
 
 // One stock under one family on a night the families drew the page's list, as the store holds it: whether
 // the page lists it, its place down the page and the other families it qualified under, or why it is held
@@ -637,7 +666,7 @@ public sealed record ReactionRow(
 // subtraction is not here: this hands back the stored column and the projection
 // that draws the column works out the change, which is the seam
 // `UniverseScreen` already names for the distance.
-// see: A screen reads and renders, and computes nothing
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
 
 // One row of the universe screen, and every field is a stored column.
@@ -691,7 +720,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // place the arithmetic lives, and the day it disagrees with the nightly run
 // nothing says which one is the system.
 // see: Code owns every number
-// see: A screen reads and renders, and computes nothing
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 public sealed class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
@@ -769,6 +798,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.WatchList, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -3259,7 +3289,7 @@ public sealed class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -3319,7 +3349,205 @@ public sealed class ReadApi : IComponent
                 reader.GetString(8),
                 reader.GetString(9),
                 reader.GetString(10),
-                reader.IsDBNull(11) ? null : reader.GetString(11)));
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                reader.IsDBNull(12) ? null : reader.GetString(12),
+                Price(13),
+                reader.IsDBNull(14) ? null : reader.GetInt32(14),
+                Price(15),
+                reader.IsDBNull(16) ? null : reader.GetInt32(16)));
+        }
+
+        return rows;
+    }
+
+    // ---- the operator's taken trades, written by a card's presses alone ----
+
+    const string TakenColumns = "ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through";
+
+    const string OpenTaken = "SELECT " + TakenColumns + " FROM taken_trade WHERE exit_date IS NULL ORDER BY taken_at, ticker;";
+
+    const string TakenOfStock = "SELECT " + TakenColumns + " FROM taken_trade WHERE ticker = $ticker ORDER BY taken_at;";
+
+    const string EveryTaken = "SELECT " + TakenColumns + " FROM taken_trade ORDER BY taken_at, ticker;";
+
+    const string CardTaken = "SELECT " + CardColumns + @" FROM decision_card
+        WHERE index_code = $index AND session_date = $night AND family = $family AND ticker = $ticker;";
+
+    const string OpenOfStock = "SELECT COUNT(*) FROM taken_trade WHERE ticker = $ticker AND exit_date IS NULL;";
+
+    const string InsertTaken = @"
+        INSERT INTO taken_trade (ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through)
+        VALUES ($ticker, $taken_at, $index, $family, $night, $sector, $fill, $fill_date, $provisional, $entered, $stop, $target, $trail, $cap, NULL, NULL, NULL);
+    ";
+
+    const string DeleteUnfollowed = @"
+        DELETE FROM taken_trade
+        WHERE ticker = $ticker AND taken_at = $taken_at AND followed_through IS NULL AND exit_date IS NULL;
+    ";
+
+    const string RecordExit = @"
+        UPDATE taken_trade SET exit_price = $exit_price, exit_date = $exit_date
+        WHERE ticker = $ticker AND taken_at = $taken_at AND exit_date IS NULL;
+    ";
+
+    // Every trade the operator holds open, which a card's concentration line counts.
+    public Task<IReadOnlyList<TakenTradeRow>> OpenTakenTradesAsync() => TakenAsync(OpenTaken, []);
+
+    // A stock's taken trades, open and ended, which its cards draw.
+    public Task<IReadOnlyList<TakenTradeRow>> TakenTradesOfAsync(string ticker) => TakenAsync(TakenOfStock, [("$ticker", ticker)]);
+
+    // Every taken trade, which the cards a page draws read theirs from.
+    public Task<IReadOnlyList<TakenTradeRow>> TakenTradesAsync() => TakenAsync(EveryTaken, []);
+
+    // A trade taken from a card the night stored, read from the store and never from the press: its fill the price the
+    // operator entered or, where none was, the plan's buy marked provisional until the next session's open replaces it,
+    // dated the session after the pick's night unless the operator entered another. Refused for a card the store does
+    // not hold, a stock already holding an open taken trade, a fill at or under the stop and a card stating no buy.
+    // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+    public async Task<RequestWritten> TakeAsync(string index, DateOnly night, string family, string ticker, decimal? price, DateOnly? date)
+    {
+        var cards = await CardsAsync(CardTaken, [("$index", index), ("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)), ("$family", family), ("$ticker", ticker)]);
+
+        if (cards.Count == 0)
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: no card of the {family} on {index} for {night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is stored.");
+        }
+
+        var card = cards[0];
+
+        if ((price ?? card.Entry) is not { } fill || fill <= 0m)
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: its card states no buy, so enter the price you filled at.");
+        }
+
+        if (card.Stop is { } stop && fill <= stop)
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: a fill of {fill.ToString(CultureInfo.InvariantCulture)} is at or under the stop of {stop.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
+        await using var connection = Open();
+        await using var transaction = (Microsoft.Data.Sqlite.SqliteTransaction)await connection.BeginTransactionAsync();
+        await using var counting = connection.CreateCommand();
+
+        counting.Transaction = transaction;
+        counting.CommandText = OpenOfStock;
+        counting.Parameters.AddWithValue("$ticker", ticker);
+
+        if (Convert.ToInt32(await counting.ExecuteScalarAsync(), CultureInfo.InvariantCulture) > 0)
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: you already hold an open trade in it, so record its exit first.");
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = InsertTaken;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$taken_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$index", card.Index);
+        command.Parameters.AddWithValue("$family", card.Family);
+        command.Parameters.AddWithValue("$night", card.Night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$sector", (object?)card.Sector ?? DBNull.Value);
+        command.Parameters.AddWithValue("$fill", fill.ToString(CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$fill_date", (date ?? SessionAfter(card.Night)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$provisional", price is null ? 1 : 0);
+        command.Parameters.AddWithValue("$entered", price is null ? 0 : 1);
+        command.Parameters.AddWithValue("$stop", (object?)card.Stop?.ToString(CultureInfo.InvariantCulture) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$target", (object?)card.Target?.ToString(CultureInfo.InvariantCulture) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$trail", (object?)card.Trail?.ToString(CultureInfo.InvariantCulture) ?? DBNull.Value);
+        command.Parameters.AddWithValue("$cap", (object?)card.Cap ?? DBNull.Value);
+
+        await command.ExecuteNonQueryAsync();
+        await transaction.CommitAsync();
+
+        return new RequestWritten(true, price is null
+            ? $"{ticker} is taken at the plan's buy of {fill.ToString(CultureInfo.InvariantCulture)}, provisional until the next session's open is stored."
+            : $"{ticker} is taken at {fill.ToString(CultureInfo.InvariantCulture)}.");
+    }
+
+    // "Not taken": a taken trade removed, only before its first night has followed it and while it holds no exit.
+    public async Task<RequestWritten> NotTakenAsync(string ticker, string takenAt) =>
+        await ExecuteAsync(DeleteUnfollowed, [("$ticker", ticker), ("$taken_at", takenAt)]) == 1
+            ? new RequestWritten(true, $"{ticker} is no longer taken.")
+            : new RequestWritten(false, $"{ticker} was not removed: a night has followed it or its exit is recorded, so record its exit instead.");
+
+    // The operator's own exit of an open taken trade, its price and its date.
+    public async Task<RequestWritten> ExitAsync(string ticker, string takenAt, decimal price, DateOnly date) =>
+        price <= 0m
+            ? new RequestWritten(false, $"{ticker}'s exit was not recorded: an exit price must be above nothing.")
+            : await ExecuteAsync(RecordExit, [("$ticker", ticker), ("$taken_at", takenAt), ("$exit_price", price.ToString(CultureInfo.InvariantCulture)), ("$exit_date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))]) == 1
+                ? new RequestWritten(true, $"{ticker}'s exit at {price.ToString(CultureInfo.InvariantCulture)} on {date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is recorded.")
+                : new RequestWritten(false, $"{ticker}'s exit was not recorded: it holds no open taken trade of that time.");
+
+    // The session after a night on the exchange's calendar.
+    static DateOnly SessionAfter(DateOnly night)
+    {
+        var day = night.AddDays(1);
+
+        while (!EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+        {
+            day = day.AddDays(1);
+        }
+
+        return day;
+    }
+
+    async Task<int> ExecuteAsync(string sql, IReadOnlyList<(string Name, string Value)> parameters)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        return await command.ExecuteNonQueryAsync();
+    }
+
+    async Task<IReadOnlyList<TakenTradeRow>> TakenAsync(string sql, IReadOnlyList<(string Name, string Value)> parameters)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        var rows = new List<TakenTradeRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            decimal? Price(int column) =>
+                reader.IsDBNull(column) ? null : decimal.Parse(reader.GetString(column), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture);
+
+            DateOnly Day(int column) => DateOnly.ParseExact(reader.GetString(column), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            rows.Add(new TakenTradeRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                Day(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                Price(6)!.Value,
+                Day(7),
+                reader.GetInt64(8) == 1,
+                reader.GetInt64(9) == 1,
+                Price(10),
+                Price(11),
+                Price(12),
+                reader.IsDBNull(13) ? null : reader.GetInt32(13),
+                Price(14),
+                reader.IsDBNull(15) ? null : Day(15),
+                reader.IsDBNull(16) ? null : reader.GetString(16)));
         }
 
         return rows;

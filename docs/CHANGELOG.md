@@ -11676,3 +11676,87 @@ Was:
 Now:
 > the same, with: hands it the checkout's secrets file by path, which a worker started from a copy of the night's clean build reads over the copy's own settings
 Why: the roster is where a check states what it asserts, and the two tests the clause names read the start info and the worker's configuration over a copy.
+
+### 2026-10-06 - ARCHITECTURE.html - what the tool is not says it sizes a position only on a pick's card
+Authorised by: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none
+Was:
+> It does not trade, does not size positions, and produces no short or options ideas. (see: The plan places a position and never sizes one)</p>
+Now:
+> It does not trade, sizes a position only on a pick's card from the account the operator keeps on its own page, and produces no short or options ideas. (see: The plan places a position and never sizes one) (see: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none)</p>
+Why: 16.2 sizes a pick's plan on its card from the operator's own account, and the report still sizes none.
+
+### 2026-10-06 - ARCHITECTURE.html - section 15.2's screens compute the plan in the operator's money and the sixth line, and nothing else
+Authorised by: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+Was:
+> Every number on every screen is already in the facts file, the ladder, the listings, the research store or the run log. A screen that wants a number the store does not carry is not a screen change;
+> ... and two implementations of one rule disagree eventually. It also means a screen can be rebuilt or restyled at any time without a chance of moving a number. (see: A screen reads and renders, and computes nothing)</p>
+Now:
+> Every number on every screen is already in the facts file, the ladder, the listings, the research store or the run log, but for two a pick's card works out where it is drawn, each by one function in the core: its plan in the operator's money, from the account they keep in a file no store row may hold, and its sixth line, from their taken trades. A screen that wants any other number the store does not carry is not a screen change;
+> ... and two implementations of one rule disagree eventually; the card's two have one implementation each, and an export draws neither. It also means a screen can be rebuilt or restyled at any time without a chance of moving any other number. (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector)</p>
+Why: the account's settings may never be in the store, so the shares a card draws cannot be either; the superseding decision names the two exceptions.
+
+### 2026-10-06 - ARCHITECTURE.html - the citations of the screen decision move to the decision superseding it
+Authorised by: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+Was:
+> (see: A screen reads and renders, and computes nothing)
+Now:
+> (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector)
+Why: a superseded decision is cited nowhere in a spec; the guardrails list of section 15 and the Past picks paragraph each cited it.
+
+### 2026-10-06 - BUILD_PLAN.md - 11.6's done condition cites the decision superseding the screen decision
+Authorised by: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+Was:
+> the page computes nothing (see: A screen reads and renders, and computes nothing);
+Now:
+> the page computes nothing (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector);
+Why: the same; the condition's words stand, since the peers table computes neither exception.
+
+### 2026-10-06 - ARCHITECTURE.html - the read API's catalogue row writes the taken trades and computes the card's two figures
+Authorised by: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+Was:
+> <td>run log, research requests, watch list</td><td>read-only access for the app; performs no computation and no fetching, and starts one process, ... and a press on the watch list page or beside a name on its own page puts the name on the watch list or takes it off, the only other table it writes; the research the request leads to is the worker's
+Now:
+> <td>run log, research requests, watch list, taken trades</td><td>read-only access for the app; performs no fetching, and no computation but a pick's plan in the operator's money and its open trades in its sector, and starts one process, ... a press on the watch list page or beside a name on its own page puts the name on the watch list or takes it off, and a pick's card's presses record a trade taken from it, remove one no night has followed and record its exit; the research the request leads to is the worker's
+Why: 16.2's presses write `taken_trade` from the read surface, and the card's plan in money and sixth line are worked out where the card is drawn.
+
+### 2026-10-06 - ARCHITECTURE.html - section 15.18's checklist is six lines, the sixth counting the operator's open trades in the sector
+Authorised by: A pick's concentration line counts the operator's open trades in its sector across the three indices and names them
+Was:
+> <p>The checklist is five lines, each a tick, a note or a warning with its reason in words.
+> ... a rule with no stop reads it in per cent of the buy.</p>
+Now:
+> <p>The checklist is six lines, each a tick, a note or a warning with its reason in words.
+> ... a rule with no stop reads it in per cent of the buy. The concentration line counts the operator's open taken trades in the stock's sector on the S&amp;P 500, 400 and 600 together, ... so the night stores the first five lines and a page drawing the card's presses adds the sixth (see: A pick's concentration line counts the operator's open trades in its sector across the three indices and names them).</p>
+Why: 16.2 lands the sixth line with the table it reads.
+
+### 2026-10-06 - ARCHITECTURE.html - the read and write matrix's watch list column holds the taken trades
+Authorised by: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+Was:
+> The fundamentals column holds the estimates the night asked for, which the estimates fetcher alone writes (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night).</p>
+Now:
+> the same, then: The watch list column holds the operator's taken trades beside the watch list, each the operator's own record written by a press, which the read API alone writes and no component that picks a stock reads (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then).</p>
+Why: the matrix groups stores in columns, and the taken trades share the watch list's: the operator's own, written by a press.
+
+### 2026-10-06 - SCHEMA.md - three tables the read surface writes, the taken trades the third
+Authorised by: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+Was:
+> **`research_request` and `watch_list` are the two tables the read surface writes, and the split on the first is by operation.**
+Now:
+> **`research_request`, `watch_list` and `taken_trade` are the three tables the read surface writes, and the split on the first is by operation.** ... The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them.
+Why: 16.2 adds `taken_trade`, written by the read surface's presses alone.
+
+### 2026-10-06 - SCHEMA.md - decision_card's family names the word a book's buy is stored under
+Corrects: the `family` column's note named `heavyweights` for a book's buy, where the night stores `heavyweight`, the family's own word; found writing 16.2's read of the card's family.
+Was:
+> | `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweights` for a book's buy |
+Now:
+> | `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweight` for a book's buy |
+Why: a reader taking the note's word would match no stored row.
+
+### 2026-10-06 - .claude/rules/checks.md - read-surface sizes a pick's plan, words its management and reads the card's presses
+Authorised by: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none
+Was:
+> and on a phone's screen each line and each figure of a card in one column and the card no wider than the screen |
+Now:
+> the same, then: and from 16.2 a pick's plan in the operator's money is worked by hand, ... and settings with distinctive values are found in no byte of the store, no run log row, no captured log line and no exported report, the file under the data root the ignore list covers |
+Why: the roster is where a check states what it asserts, and 16.2's five tests are read-surface's.

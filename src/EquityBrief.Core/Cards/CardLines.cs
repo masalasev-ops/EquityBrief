@@ -53,9 +53,32 @@ public static class CardLines
     public const string MarketName = "Market and sector";
     public const string EarningsName = "Earnings in the hold";
     public const string CostName = "Liquidity and cost";
+    public const string ConcentrationName = "Concentration";
 
     // The window a sector's members' mean return is read over.
     public const int SectorSessions = 63;
+
+    // How many of the operator's open trades in a pick's sector warn.
+    public const int SectorOpenWarnAt = 2;
+
+    // Line 6, drawn where the card is: the operator's open taken trades in the stock's sector across the three indices,
+    // the stock's own excluded, since a position's sector risk does not stop at its index. The one figure on a card
+    // reading every index, and it names them.
+    // see: A pick's concentration line counts the operator's open trades in its sector across the three indices and names them
+    public static CardLine Concentration(string ticker, string? sector, IReadOnlyList<(string Ticker, string? Sector)> open)
+    {
+        if (sector is null)
+        {
+            return new CardLine(6, ConcentrationName, CardVerdict.Warn, "Not held: its sector is not filed, so its open trades in that sector cannot be counted.");
+        }
+
+        var others = open.Count(trade => string.Equals(trade.Sector, sector, StringComparison.Ordinal) && !string.Equals(trade.Ticker, ticker, StringComparison.Ordinal));
+        var words = FormattableString.Invariant($"{others} of your open trades {(others == 1 ? "is" : "are")} in {sector} across the S&P 500, 400 and 600");
+
+        return others >= SectorOpenWarnAt
+            ? new CardLine(6, ConcentrationName, CardVerdict.Warn, FormattableString.Invariant($"{words}, at or over {SectorOpenWarnAt}: another adds to one sector's risk."))
+            : new CardLine(6, ConcentrationName, CardVerdict.Tick, words + ".");
+    }
 
     // A pick passed every gate its family reads to be listed, so its first line is a tick on every card and says which.
     public static CardLine Trend(string family, string index, IReadOnlyList<string> gates) =>

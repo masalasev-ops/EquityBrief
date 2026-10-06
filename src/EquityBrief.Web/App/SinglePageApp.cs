@@ -54,7 +54,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // the route it is on. A page that assembled a mark from values would be the
 // second renderer the marks decision exists to prevent.
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and computes nothing
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 //
 // At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
 // for the name screen's chart region, which the server composes from the marks
@@ -100,6 +100,15 @@ public sealed class SinglePageApp : IComponent
     public const string WatchRoute = "#/watch";
     public const string WatchPostRoute = "/watch/";
     public const string UnwatchPostRoute = "/watch/remove/";
+
+    // The account's page, last in the masthead, and the presses a pick's card makes, each refused without the page's
+    // own header as every press is.
+    // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+    public const string AccountRoute = MarkRenderer.AccountRoute;
+    public const string AccountPostRoute = "/account";
+    public const string TakenPostRoute = "/taken/";
+    public const string NotTakenPostRoute = "/taken/remove/";
+    public const string ExitPostRoute = "/taken/exit/";
 
     // The three states a request is settled in, spelled here because the page draws a
     // region per state and the surface's own constants sit in a project the page does
@@ -202,7 +211,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{AccountRoute}}}" data-view="account">Account</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -259,6 +268,10 @@ public sealed class SinglePageApp : IComponent
             view = 'queue';
             const queued = await fetch('/screens/queue');
             screen.innerHTML = await queued.text();
+          } else if (path === '{{{AccountRoute}}}') {
+            view = 'account';
+            const account = await fetch('/screens/account');
+            screen.innerHTML = await account.text();
           } else {
             // An unknown route resolves to tonight with a line saying what was asked for,
             // rather than to a blank page.
@@ -343,6 +356,33 @@ public sealed class SinglePageApp : IComponent
           await show();
           scrollTo(0, kept);
           const place = screen.querySelector('.watch-said');
+          if (place) { place.innerHTML = said; }
+        });
+        // A pick's card's presses and the account page's: the form's fields sent with the page's own header, the screen
+        // drawn again with the card left open, and what the read surface said put in the card's or the page's line.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !(form.classList.contains('card-press') || form.classList.contains('account-control'))) { return; }
+          event.preventDefault();
+          const holder = form.closest('tr.card-row, section.name-card');
+          const open = holder ? holder.id || (holder.querySelector('.decision-card') ? 'name-card' : '') : '';
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body: new URLSearchParams(new FormData(form)),
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const again = open === 'name-card' ? screen.querySelector('section.name-card') : (open ? document.getElementById(open) : null);
+          if (again && again.matches('tr.card-row')) {
+            again.hidden = false;
+            const toggle = screen.querySelector('[aria-controls="' + again.id + '"]');
+            if (toggle) { toggle.setAttribute('aria-expanded', 'true'); }
+          }
+          const place = again ? again.querySelector('.card-said') : screen.querySelector('.account-said');
           if (place) { place.innerHTML = said; }
         });
         // The press running the rest of a night left unfinished: sent with the page's own header, and what the
@@ -607,7 +647,7 @@ public sealed class SinglePageApp : IComponent
     // against the chart's own price axis, and a second request would be a second
     // axis. It computes nothing: every value here arrives already stored, and
     // the only arithmetic is the axis the mark renderer itself derives.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     // see: Marks are defined once and every screen draws from that list
     public string NameRegion(
         MarkRenderer marks,
@@ -1201,7 +1241,7 @@ public sealed class SinglePageApp : IComponent
     // name was last on it, and the listing strip. Each is absent and says so
     // rather than being drawn as a zero, which would read as nothing having
     // fired.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public string UniverseRegion(
         MarkRenderer marks,
         IReadOnlyList<UniverseCell> rows,
@@ -2368,6 +2408,39 @@ public sealed class SinglePageApp : IComponent
             title: "Names you follow",
             lede: Invariant($"Drawn every evening whether or not the swing filter lists them, up to {limit} names of the index."),
             region: "watch-list"));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The account's page: the size of the operator's account, the risk a trade in per cent of it and the position cap,
+    // each kept in a file of their own under the data root and in no store, log or export, written whole by the press.
+    // A pick's card sizes its plan from them; where they are not set the card draws its plan in prices and risks.
+    // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+    public string AccountRegion(decimal? size, decimal? riskPercent, decimal? positionCap, decimal proposedCap)
+    {
+        var region = new StringBuilder();
+        var set = size is not null;
+
+        region.Append(Invariant($"<section class=\"account\" data-set=\"{(set ? "true" : "false")}\">"));
+        region.Append(Cards.Masthead("Account", "<span class=\"m-screen\">Account</span>", set ? "Your plan is sized from these" : "Not set"));
+
+        var body = new StringBuilder();
+
+        body.Append("<div class=\"account-said\" role=\"status\"></div>");
+        body.Append(Invariant($"<form class=\"account-control\" method=\"post\" action=\"{AccountPostRoute}\">"));
+        body.Append(Invariant($"<label>Account size <input name=\"size\" inputmode=\"decimal\" required value=\"{(size is { } held ? held.ToString(CultureInfo.InvariantCulture) : string.Empty)}\"></label> "));
+        body.Append(Invariant($"<label>Risk a trade, per cent <input name=\"risk\" inputmode=\"decimal\" required value=\"{(riskPercent is { } risk ? risk.ToString(CultureInfo.InvariantCulture) : string.Empty)}\"></label> "));
+        body.Append(Invariant($"<label>Position cap, share of the account <input name=\"cap\" inputmode=\"decimal\" required value=\"{(positionCap ?? proposedCap).ToString(CultureInfo.InvariantCulture)}\"></label> "));
+        body.Append("<button type=\"submit\" class=\"btn\">Save</button></form>");
+        body.Append("<p class=\"degraded\">Kept on this machine in a file of their own under the data folder, never in the store, a log or an exported report.</p>");
+
+        region.Append(Cards.Computed(
+            "Account",
+            body.ToString(),
+            title: "Your account",
+            lede: "A pick's card sizes its plan from these: the shares the risk a trade buys over the stop's distance, no more than the cap allows.",
+            region: "account"));
         region.Append("</section>");
 
         return region.ToString();

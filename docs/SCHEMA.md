@@ -81,6 +81,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_heavyweight_rule_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `decision_card` | DecisionCards | none | DecisionCards |
 | `rule_record` | RuleRecorder | RuleRecorder | none |
+| `taken_trade` | ReadApi | ReadApi | ReadApi |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -126,7 +127,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
-**`research_request` and `watch_list` are the two tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own).
+**`research_request`, `watch_list` and `taken_trade` are the three tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them.
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -1096,7 +1097,7 @@ Grain: one row per index, night, family and stock the family listed or the index
 |---|---|---|
 | `index_code` | TEXT | the index the pick was listed on, `GSPC`, `MID` or `SML` |
 | `session_date` | TEXT | the night |
-| `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweights` for a book's buy |
+| `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweight` for a book's buy |
 | `ticker` | TEXT | |
 | `place` | INTEGER | its place down the family's list, or among the book's buys of the night in the order of their sectors |
 | `entry` | TEXT | decimal in code, the plan's buy, null where the row the card reads stores none |
@@ -1106,6 +1107,11 @@ Grain: one row per index, night, family and stock the family listed or the index
 | `settings` | TEXT | JSON: the card's values the night read it with |
 | `lines` | TEXT | JSON: the checklist's lines in order, each its place, its name, its verdict, `tick`, `note` or `warning`, and its words |
 | `record` | TEXT | JSON: the rule's record as the card read it, its rule in words, trades, share won, mean result and its unit, median sessions held, the sessions by which the card's share of the trades had ended and that share, the median worst close, the history's first and last session and its membership; null where the rule has not been replayed |
+| `sector` | TEXT | the stock's sector as its company's newest fetch filed it, which the card's sixth line counts the operator's open trades in; null where none is filed |
+| `trail` | TEXT | decimal in code, the distance a trailing rule raises its stop by, the plan's buy less its first stop; null for a rule that does not trail |
+| `cap` | INTEGER | the most sessions the rule holds the trade, null for a rule that caps none |
+| `round_trip` | TEXT | decimal in code, the round trip a share at the published table, bought and sold at the buy; null where the plan states no buy |
+| `book_holdings` | INTEGER | for a book's buy, the most holdings the book can hold, its leaders in each of the eleven sectors, over which a holding with no stop is sized; null for a family's pick |
 
 Primary key: `index_code`, `session_date`, `family`, `ticker`.
 
@@ -1135,6 +1141,33 @@ Grain: one row per index and family a card names on it.
 Primary key: `index_code`, `family`.
 
 **The rule recorder writes it by hand, one row an index and family over what an earlier run wrote** (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). It replays each family's live rule on the S&P 500 and its provisional rule on the S&P 400 and 600 at its one setting, and a freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+
+### taken_trade
+Grain: one row per trade the operator took from a pick's card.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `taken_at` | TEXT | UTC instant of the Taken press |
+| `index_code` | TEXT | the index of the card it was taken from, `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the family of that card, by the word it is stored under |
+| `night` | TEXT | the night of that card |
+| `sector` | TEXT | the stock's sector as the card stored it, which a card's sixth line counts open trades in; null where none was filed |
+| `fill` | TEXT | decimal in code, the price the operator entered, or the plan's buy until the next session's open replaces it |
+| `fill_date` | TEXT | the session the fill is for, the session after the card's night unless the operator entered another |
+| `provisional` | INTEGER | 1 while the fill is the plan's buy awaiting the next session's open, 0 once it is an entered price or the open |
+| `entered` | INTEGER | 1 where the operator entered the price, which is never replaced |
+| `stop` | TEXT | decimal in code, the card's stop, null for a rule setting none |
+| `target` | TEXT | decimal in code, the card's target, null for a rule that trails or sets none |
+| `trail` | TEXT | decimal in code, the card's trail, null for a rule that does not trail |
+| `cap` | INTEGER | the card's cap in sessions, null for a rule that caps none |
+| `exit_price` | TEXT | decimal in code, the price of an exit the operator recorded, null while none is |
+| `exit_date` | TEXT | the session of that exit |
+| `followed_through` | TEXT | the newest night that followed the trade, null until one has; written by nothing before the follower |
+
+Primary key: `ticker`, `taken_at`.
+
+**The read surface writes it on the card's presses, and nothing else does** (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then). A Taken press inserts a row from the card the store holds, refused for a stock already holding an open trade, a fill at or under the stop and a card stating no buy; a Not taken press deletes a row only while no night has followed it and no exit is recorded; and an exit press records the exit on an open row. No row holds the account's size, its risk or its cap (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold).
 
 ### sweep_answer
 Grain: one row per sweep run recorded.

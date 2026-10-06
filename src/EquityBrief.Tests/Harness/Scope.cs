@@ -3104,6 +3104,26 @@ internal static class Scope
             Verdict.Pass,
             "a sector heavyweights' buy reads its round trip in per cent of the buy and is not warned on it, over a constructed night",
             ByExpectations),
+        [CheckReach.Key(StoresTable, "Taken trades")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Card position cap")] = new Scoped(
+            Verdict.Pass,
+            "37 shares and 99.90 at risk on 10,000 at 1 per cent over a stop 2.70 under a buy of 50.00, and 40 where the risk buys 200, worked by hand and read back off the card on the S&P 400's Tonight with the cap's line; the figure read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Card sector open trades")] = new Scoped(
+            Verdict.Pass,
+            "one open trade in Energy on the S&P 500 ticks and two warn on an S&P 400 card, the stock's own open trade, an ended one and one in another sector not counted, worked by hand and read back off Tonight; the figure read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "No account kept for a pick's card, or one that cannot be read")] = new Scoped(
+            Verdict.Pass,
+            "a card with no account file and with one that cannot be read draws its plan in prices and risks with the line linking the account page and no shares, and the account page draws empty with the cap it proposes, read off the pages",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A press on a pick's card the card refuses")] = new Scoped(
+            Verdict.Pass,
+            "each press without the page's own header, a fill at and under the stop, a card the store does not hold, a second open trade, Not taken after a night followed, a second exit and settings the page cannot keep each refused with the store's rows and the account file as they were",
+            ByReadSurface),
         [CheckReach.Key(FailureTable, "The local model is not loaded or still loading when a pass reaches it")] = new Scoped(
             Verdict.Pass,
             "over the runtime's captured answers, a model not loaded is loaded at its profile's context and its load answered before the first call, another model loaded, of any kind, is unloaded first, a model listed is not loaded again and its first call alone carries the load's allowance, and a refused load, a load past its allowance and a model the runtime does not hold are the local model unavailable, a refused load's reason answered to the next call with nothing more asked and leaving every section of the lane unwritten",
@@ -5539,6 +5559,9 @@ internal static class Scope
         ["No report date on file for a pick"] = "16.1",
         ["A pick the night read nothing for"] = "16.1",
         ["A rule that sets no stop"] = "16.1",
+        // The card's plan in money and its presses, 16.2.
+        ["No account kept for a pick's card, or one that cannot be read"] = "16.2",
+        ["A press on a pick's card the card refuses"] = "16.2",
         // The 16.1 ruling's local model chosen by a flag in its settings, and its load waited for.
         ["The local model is not loaded or still loading when a pass reaches it"] = "16.1",
         ["The local lane's settings flag no model as the default or more than one"] = "16.1",
@@ -5730,6 +5753,8 @@ internal static class Scope
         ["Card cover floor"] = "16.1",
         ["Card held share"] = "16.1",
         ["Card round trip"] = "16.1",
+        ["Card position cap"] = "16.2",
+        ["Card sector open trades"] = "16.2",
         // The heavyweights' sweep, 14.5.
         ["Heavyweights' sweep grid"] = "14.5",
         // The research template, 12.6 corrections.

@@ -686,6 +686,12 @@ dotnet run --project src/EquityBrief.Worker -- rule-record --index MID
 
 It reads the store's pulled history read-only, writes one row an index and family over what an earlier run wrote and a run log row, asks for nothing and calls no model. It refuses while the night holds the store or where a run started now would reach the night's window. A card drawn before its rule's record is stored shows a dashed outline saying so, and its earnings line reads the rule's cap alone.
 
+### The account and the trades taken from a card
+
+A pick's card sizes its plan from three settings kept on the Account page, reached from the masthead: the account's size, the risk a trade in per cent and the position cap as a share of the account, a fifth where none is entered (see: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none). The page writes them whole to `account.json` under the data root, beside the store and as untracked as it, by writing a file beside it and moving it into place, so a save that fails leaves the settings as they were (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold). Nothing else holds them: no store row, log line, run log row or exported report. Deleting the file unsets them, and every card then draws its plan in prices and risks with a line linking the page; a file that cannot be read is read the same way.
+
+Each card on Tonight carries a Taken press with an optional fill price and date. With no price the trade is stored at the plan's buy, marked provisional, for the session after the pick's night; an entered price is never replaced (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then). A fill at or under the stop and a second open trade in one stock are refused. Not taken removes a trade only before a night has followed it and while it holds no exit; after that, record its exit with its price and date. The trades are in `taken_trade`, written by the read surface's presses alone, and nothing that picks a stock reads them.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.
