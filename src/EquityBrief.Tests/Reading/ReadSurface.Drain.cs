@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
@@ -188,6 +189,11 @@ public partial class ReadSurface
         Assert.Equal(WorkerDrainLauncher.Executable, info.FileName);
         Assert.Equal(root.Path, info.WorkingDirectory);
         Assert.Equal(data, info.Environment[WorkerDrainLauncher.DataRootVariable]);
+
+        // Handed the checkout's secrets file by path, unless the surface's own environment names one.
+        Assert.Equal(
+            Environment.GetEnvironmentVariable(NightBuild.SecretsFileVariable) is { Length: > 0 } named ? named : NightBuild.SecretsFileIn(root.Path),
+            info.Environment[NightBuild.SecretsFileVariable]);
         Assert.False(info.UseShellExecute);
         Assert.True(info.CreateNoWindow);
 

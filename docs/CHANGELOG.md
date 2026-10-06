@@ -11660,3 +11660,19 @@ Was:
 Now:
 > and `unavailable` where the local model could not be called, by each cause; `model_calls` the same, with none where the settings name no model
 Why: the same review.
+
+### 2026-10-06 - RUNBOOK.md - a drain or the rest of a night a press starts is handed the checkout's secrets file
+Corrects: a press started its worker from a copy of the night's clean build, which holds no secrets file, handing it the data root alone, so the worker read no key.
+Was:
+> ... `EquityBrief__SecretsFile` at the checkout's `src/EquityBrief.Worker/appsettings.Secrets.json`, so the copy holds no secret and no store. A copy already built is run as it is,
+Now:
+> the same, then: a drain or the rest of a night a press starts from that build is handed the same secrets file by path.
+Why: the review of the local lane on 2026-10-06 found that no worker a press starts reads the checkout's secrets file.
+
+### 2026-10-06 - .claude/rules/checks.md - read-surface reads the secrets file a press hands its worker
+Corrects: the same.
+Was:
+> which starts the drain from a copy of the worker's build under the data root and never from the build itself, finds the worker's build only beside the surface's own
+Now:
+> the same, with: hands it the checkout's secrets file by path, which a worker started from a copy of the night's clean build reads over the copy's own settings
+Why: the roster is where a check states what it asserts, and the two tests the clause names read the start info and the worker's configuration over a copy.
