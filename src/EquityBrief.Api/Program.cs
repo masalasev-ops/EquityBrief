@@ -844,9 +844,9 @@ app.MapGet("/screens/tonight/{night?}", async (
                     QueueTimes.States(indexQueued, indexTimes, clock.SessionZone)),
                 reading,
                 indexRegister,
-                dated),
+                indexNight),
             indexAnswers,
-            family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, dated));
+            family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight));
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         return Results.Content(
@@ -1491,6 +1491,10 @@ app.MapGet("/screens/run/{night?}", async (
         var indexPicks = await read.IndexPicksAsync(reading.Code, dated);
         var indexTrades = await read.IndexTradesAsync(reading.Code, dated);
         var indexHoldings = await read.IndexHoldingsAsync(reading.Code, dated);
+        var indexRegister = await read.RegisteredCandidatesAsync();
+
+        // Each registered rule's record, from the index's first freeze on, and its family's setup row live beside it.
+        var indexRecords = TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated);
 
         return Results.Content(
             page.IndexRunRegion(
@@ -1500,9 +1504,8 @@ app.MapGet("/screens/run/{night?}", async (
                 selector,
                 await read.IndexNightsAsync(reading.Code),
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
-                TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings),
-                // Each registered rule's record, from the index's first freeze on.
-                TonightScreen.IndexRecordRows(reading, await read.RegisteredCandidatesAsync(), await read.IndexRuleTradesAsync(reading.Code, dated), dated)),
+                TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
+                indexRecords),
             "text/html; charset=utf-8");
     }
 

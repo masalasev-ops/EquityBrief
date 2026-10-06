@@ -151,8 +151,16 @@ public partial class ArchitectureConformance
     // section 17's row for the wider universe's test and section 18's two, from 15.1 section 18's row for a fund's file
     // the night cannot read, from 15.2 the readings' rows, from 15.3 section 18's two on the funds' holdings, and from
     // 15.1's second half the index families' catalogue and matrix rows, from 15.4 the sweep answers' catalogue and
-    // matrix rows, and from 15.2's second half the member reader's and the name page's member readings.
-    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows, .. MemberReadingRows];
+    // matrix rows, from 15.2's second half the member reader's and the name page's member readings, and from 15.5 the
+    // index rule trades' store and section 18's row on a registered rule the night does not read.
+    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows, .. MemberReadingRows, .. IndexRuleRows];
+
+    // 15.5's rows: the index rule trades' store and section 18's row on a registered rule the night does not read.
+    internal static string[] IndexRuleRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Index rule trades"),
+        .. FixtureExpectations.IndexFreezeClaims,
+    ];
 
     // The sweep answers' catalogue and matrix rows, 15.4.
     internal static string[] SweepAnswersRows =>
@@ -297,11 +305,12 @@ public partial class ArchitectureConformance
         // fund's file row and the Run page's members, 979 from 15.2's first half, section 17's three readings and
         // section 18's company filing no dated income, 981 from 15.3, section 18's filing the history pull cannot
         // read and holding matched to no code, 983 from 15.1's second half, the index families' catalogue and matrix
-        // rows, 985 from 15.4, the sweep answers' catalogue and matrix rows, and 995 from 15.2's second half, the member
+        // rows, 985 from 15.4, the sweep answers' catalogue and matrix rows, 995 from 15.2's second half, the member
         // reader's catalogue and matrix rows, its two stores, section 17's and section 18's rows, the fixture's, the name
-        // page's member readings and the run page's two parts.
+        // page's member readings and the run page's two parts, and 997 from 15.5, the index rule trades' store and
+        // section 18's row on a registered rule the night does not read.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 995),
+            (789, 853, 6, 4, 855, 876, 997),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

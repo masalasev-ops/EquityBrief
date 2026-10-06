@@ -6,7 +6,8 @@ using EquityBrief.Core.Filter;
 namespace EquityBrief.Api.Reading;
 
 // What an index's families ran on, read off the settings its night stored: the floors and the gate every rule of the
-// index shares, the cost its trades pay, the market check's floor, and each family's own settings.
+// index shares, the cost its trades pay, the market check's floor, each family's own settings, and from 15.5 the
+// families whose registered live rule the night read their list by.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
 public sealed record IndexRuleSettings(
     decimal LowestPrice,
@@ -19,7 +20,8 @@ public sealed record IndexRuleSettings(
     int PullbackCap,
     IReadOnlyDictionary<string, string> Breakout,
     IReadOnlyDictionary<string, string> Drift,
-    IReadOnlyDictionary<string, string> Heavyweights)
+    IReadOnlyDictionary<string, string> Heavyweights,
+    IReadOnlyList<string>? ReadByLiveRule = null)
 {
     // The settings as the night stored them, each family's dials read off its key.
     public static IndexRuleSettings Read(string stored)
@@ -45,7 +47,10 @@ public sealed record IndexRuleSettings(
             pullback.GetProperty("cap").GetInt32(),
             Dials(root, "breakout"),
             Dials(root, "drift"),
-            Dials(root, "heavyweights"));
+            Dials(root, "heavyweights"),
+            root.TryGetProperty("live", out var live) && live.ValueKind == JsonValueKind.Array
+                ? [.. live.EnumerateArray().Select(rule => rule.TryGetProperty("family", out var family) ? family.GetString() ?? string.Empty : string.Empty)]
+                : []);
     }
 }
 

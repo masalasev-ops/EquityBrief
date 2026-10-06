@@ -393,7 +393,7 @@ public sealed class IndexFamilies : IComponent
 
     // The rule each family runs on in the index, the words a card's description is written from: its settings, its
     // floors, its gate and the cost its trades pay; and for each family whose live rule stands, that rule with the day it
-    // was registered and its settings in words, which the card writes from in the provisional rule's place.
+    // was registered and its settings in words, the rule the night read the family's list by in the provisional rule's place.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     public static string Settings(string index, IReadOnlyList<IndexRule>? rules = null) => JsonSerializer.Serialize(new
     {
@@ -454,7 +454,7 @@ public sealed class IndexFamilies : IComponent
 
     // The readings a night's index rules read: each member's industry figures and coverage and its peers' surprise over
     // the sessions a drift's reaction can reach, the switches and the S&P 500's breadth, as the night stored them.
-    static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation)
+    public static async Task<IndexLevels> LevelsAsync(SqliteConnection connection, IndexNightInputs inputs, CancellationToken cancellation)
     {
         var industry = new Dictionary<string, (double?, double?)>(StringComparer.Ordinal);
         var coverage = new Dictionary<string, bool?>(StringComparer.Ordinal);
@@ -501,7 +501,7 @@ public sealed class IndexFamilies : IComponent
             }
         }
 
-        var large = await ScalarAsync(connection, LargeBreadth, [("$night", Stamp(inputs.Night))], cancellation) is double breadth ? breadth : (double?)null;
+        double? large = await ScalarAsync(connection, LargeBreadth, [("$night", Stamp(inputs.Night))], cancellation) is double breadth ? breadth : null;
 
         return new IndexLevels(industry, coverage, peers, switches[0], switches[1], switches[2], switches[3], large);
     }
@@ -526,7 +526,7 @@ public sealed class IndexFamilies : IComponent
 
     // Each member's year of bars, every span the index held it for, its prints and surprises off the calendar, and its
     // quarters as filed.
-    static async Task<(IReadOnlyList<SweepName> Names, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income)> InputsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
+    public static async Task<(IReadOnlyList<SweepName> Names, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income)> InputsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)
     {
         var tickers = new List<string>();
 
@@ -1270,8 +1270,9 @@ public static class IndexRuleTrades
                 ended++;
             }
 
-            // The benchmark once every member's trade of the same plan has had its cap's sessions, through the sweep's own
-            // benchmark of the family's plan.
+            // The benchmark once every member's trade of the same plan has had its cap's sessions, through the sweeps' own
+            // benchmark of the plan's shape: the breakout's for a stop that trails, and the drift's for a stop and a
+            // target, which a pullback's plan is and its trade is walked as.
             var session = Array.IndexOf(inputs.Calendar, trade.Session);
 
             if (session < 0 || inputs.At - session < trade.Cap || trade.RiskMoves is not { } moves)
@@ -1352,7 +1353,7 @@ public static class IndexRuleTrades
         }
 
         var sale = bars[sessions];
-        var value = await ScalarAsync(connection, transaction, ValueOn, [("$index", inputs.Index), ("$session", Stamp(listed)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : (decimal?)null;
+        decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", inputs.Index), ("$session", Stamp(listed)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
         var cost = TradeCost.InPercent(value, bars[0].Raw > 0m ? bars[0].Raw : bars[0].Close, sale.Raw > 0m ? sale.Raw : sale.Close) / 100.0 / ((entry - stop) / entry);
 
         await ExecuteAsync(connection, transaction, End,
