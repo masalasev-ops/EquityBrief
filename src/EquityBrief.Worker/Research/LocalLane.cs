@@ -10,7 +10,7 @@ namespace EquityBrief.Worker.Research;
 // Read in one place so the writer is handed values rather than a configuration it
 // could read something else out of, which is the seam the on-demand feeds resolve
 // through.
-// see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+// see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
 // see: The local lane is a configured list of section names, and the prose writer writes whatever the list holds
 public static class LocalLane
 {
@@ -19,16 +19,58 @@ public static class LocalLane
     // The file in a capture's folder that names the models its recordings were made under.
     public const string FixtureModels = "models.json";
 
-    // The keys the lane read before each model was a profile of its own, refused where set rather than
-    // passed over, since a model named at one of them would otherwise be silently not the one called.
+    // The keys the lane read before each model was a profile of its own, not read where set, since a model
+    // named at one of them would otherwise be silently not the one called.
     static readonly string[] Moved = ["BaseAddress", "Model", "TimeoutSeconds", "ContextTokens"];
 
-    // The profile flagged as the default, read whole: a key anywhere in the lane refused, as a key the lane
-    // no longer reads is, every value required, and a number that is not one refused rather than read as
-    // another, because a timeout typed as "5m" is a setting that says nothing the lane can do.
+    // The profile flagged as the default, read whole and refused where it cannot be: a key anywhere in the
+    // lane, a key the lane no longer reads, no profile or not one flagged, a value missing, and a number that
+    // is not one rather than read as another, because a timeout typed as "5m" says nothing the lane can do.
     public static LocalModelSettings Settings(IConfiguration configuration)
     {
-        Refuse(configuration);
+        RefuseKeys(configuration);
+
+        return Profile(configuration);
+    }
+
+    // The profile a run calls, resolved as its feeds are: on a live run the one the settings flag, and on a
+    // run over a capture the one the capture's recordings were made under. A key in the settings refuses the
+    // run either way, since the refusal is about the configuration whatever it is run against; profiles that
+    // cannot be read leave the lane unread with why, so the night goes on without its overnight queue and a
+    // pass writes its paid sections.
+    public static LocalModelSettings For(IConfiguration configuration, string? source, string? fixtureFolder)
+    {
+        RefuseKeys(configuration);
+
+        return FeedSource.Resolve(source, fixtureFolder, OfFixture, () => Read(configuration), "the local lane");
+    }
+
+    // The flagged profile, or the lane unread with the line saying why none could be read.
+    static LocalModelSettings Read(IConfiguration configuration)
+    {
+        try
+        {
+            return Profile(configuration);
+        }
+        catch (InvalidOperationException unread)
+        {
+            return LocalModelSettings.Unread(unread.Message);
+        }
+    }
+
+    static LocalModelSettings Profile(IConfiguration configuration)
+    {
+        foreach (var name in Moved)
+        {
+            var key = $"{LocalModelSettings.Section}:{name}";
+
+            if (!string.IsNullOrWhiteSpace(configuration[key]))
+            {
+                throw new InvalidOperationException(
+                    $"'{key}' is set, and the lane no longer reads it: each local model is a profile of its own under " +
+                    $"'{LocalModelSettings.ProfilesKey}', with {name} in the profile. Move it there.");
+            }
+        }
 
         var profiles = configuration.GetSection(LocalModelSettings.ProfilesKey).GetChildren().ToArray();
 
@@ -61,16 +103,6 @@ public static class LocalLane
             Required(configuration, LocalModelSettings.KeyOf(flagged[0], LocalModelSettings.LoadName)));
     }
 
-    // The profile a run calls, resolved as its feeds are: on a live run the one the settings flag, and on a
-    // run over a capture the one the capture's recordings were made under, a key in the settings refused
-    // either way, since the refusal is about the configuration whatever it is run against.
-    public static LocalModelSettings For(IConfiguration configuration, string? source, string? fixtureFolder)
-    {
-        Refuse(configuration);
-
-        return FeedSource.Resolve(source, fixtureFolder, OfFixture, () => Settings(configuration), "the local lane");
-    }
-
     // The profile a capture's recordings were made under, from the models file in its folder, so a switch
     // of the shipped default moves no recorded test.
     public static LocalModelSettings OfFixture(string folder) =>
@@ -78,8 +110,8 @@ public static class LocalLane
 
     // A key for this lane is refused rather than sent, at the lane or in any profile. A local endpoint that
     // authenticates is an endpoint on somebody else's machine, and the queue's zero-cost property rests on
-    // this lane being free. A key the lane read before the profiles is refused with where it now goes.
-    static void Refuse(IConfiguration configuration)
+    // this lane being free.
+    static void RefuseKeys(IConfiguration configuration)
     {
         var keys = new[] { LocalModelSettings.ApiKeyKey }
             .Concat(configuration.GetSection(LocalModelSettings.ProfilesKey).GetChildren()
@@ -93,18 +125,6 @@ public static class LocalLane
                     $"A key is configured at '{key}', and the local lane takes none. A local model that asks for a key " +
                     "is a model on somebody else's machine, which would put a cost on the one lane the overnight queue " +
                     "is allowed to call. Remove the key, or point this lane at the operator's own runtime.");
-            }
-        }
-
-        foreach (var name in Moved)
-        {
-            var key = $"{LocalModelSettings.Section}:{name}";
-
-            if (!string.IsNullOrWhiteSpace(configuration[key]))
-            {
-                throw new InvalidOperationException(
-                    $"'{key}' is set, and the lane no longer reads it: each local model is a profile of its own under " +
-                    $"'{LocalModelSettings.ProfilesKey}', with {name} in the profile. Move it there.");
             }
         }
     }

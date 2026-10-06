@@ -11596,3 +11596,67 @@ Was:
 Now:
 > the same, then a clause from the 16.1 ruling: the lane calling the one profile its settings flag with each refused shape, and over the runtime's captured answers the load at the profile's context waited for, another model unloaded first, a listed model's first call alone carrying the allowance and each failure the local model unavailable
 Why: the roster is where a check states what it asserts, and the tests the clause names read the settings and the captured answers.
+
+### 2026-10-06 - ARCHITECTURE.html - section 18's row on settings flagging no model or two leaves the night running without its queue
+Authorised by: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+Was:
+> The local lane's settings flag no model as the default or more than one: the night is refused before its first step and a pass before it starts, as a key on the lane is, in a line naming the profiles it read, and so for a flagged profile missing a value; no model is called | that line where the night's or the pass's refusal is drawn | the lane calls one model and the code names none, so settings flagging none or two name no model it could call, and calling one regardless would be the build choosing the model the operator chose (see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default)
+Now:
+> the lane calls no model and is the local model unavailable, in a line naming the profiles it read: the night runs every step and its overnight queue's row says it could not run and why, a pass on demand writes the paid lane's sections and leaves the local lane's absent, and a key on the lane still refuses; what the operator sees is the queue's line on the run page or the local-lane sections absent with that line; the why adds that a slip in flags edited by hand costing the night's arithmetic would cost far more than the drafts it is about, citing the superseding decision
+Why: the operator's answer of 2026-10-06, "alternative", to whether settings flagging both models or neither should refuse the night or stop only its overnight queue.
+
+### 2026-10-06 - BUILD_PLAN.md - the local lane's client cites the decision that superseded its own again
+Authorised by: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+Was:
+> ... (see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default).
+Now:
+> the same, citing the decision that superseded it.
+Why: no spec cites a decision under "Previously decided".
+
+### 2026-10-06 - RUNBOOK.md - settings flagging no model or two leave the lane calling none and the night running
+Authorised by: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+Was:
+> No value has a default in the code, so a file naming no profile, flagging none or flagging two refuses at startup in a line naming the profiles, and so does a flagged profile missing a value (see: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default).
+
+> Set both flags each time: two profiles flagged true, or none, refuses the night before its first step in a line naming the profiles, and the night can be run again by hand once the file is fixed.
+
+> The keys the lane read before the profiles, `EquityBrief:Models:Local:Model` and its three neighbours, are refused where set, with where each now goes.
+Now:
+> such a file calls no model and the lane is the local model unavailable, in a line naming the profiles, citing the superseding decision; set both flags each time, two or none leaving the night running every step with its queue's line saying why and a report's local sections absent with that line, the next night drafting what was missed; and the keys read before the profiles leave the lane calling no model, in a line saying where each now goes
+Why: the operator's answer of 2026-10-06, "alternative".
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations reads settings flagging no model or two as a lane calling none
+Authorised by: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+Was:
+> settings flagging none or two, naming none, a flag neither true nor false, a flagged profile missing each value, a key the lane read before the profiles and a key in a profile each refused naming what it read
+Now:
+> the same shapes each read as naming what was read, which on a run leaves the lane calling no model, a fixture night whose queue was read from settings flagging two closing with the queue's row unavailable and naming the profiles and a pass writing the paid lane's sections with the local lane's absent with the line, while a key in a profile still refuses
+Why: the roster is where a check states what it asserts, and the two tests the clause adds read the night and the pass.
+
+### 2026-10-06 - ARCHITECTURE.html - section 18's load row reads the list once for a night's queue and keeps a failed load's reason
+Authorised by: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
+Was:
+> before the pass's first call the lane reads the runtime's list of its models, ...; a model the runtime does not hold, a load it refuses and one past the allowance are the local model unavailable ... (see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time)
+Now:
+> before the first call of a pass, or of a night's overnight queue, ...; ... are the local model unavailable for the rest of the pass or the night, no later call loading again (see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass)
+Why: a review of the local lane on 2026-10-06 found the queue reads the list once a night, and a failed load tried again in every round of a pass.
+
+### 2026-10-06 - RUNBOOK.md - the load paragraph, the queue's unavailable outcome and its troubleshooting row name every way the local model cannot be called
+Authorised by: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
+Was:
+> **The lane waits for its model to load.** Before a pass's first call it reads the runtime's list of its models; ... and the pass waits until the runtime says the load is done, for at most `LoadSeconds` (see: The local lane loads its model at the context its settings name and waits for it to load, one model at a time). ... leave the pass's local sections unwritten with the reason, as the local model unavailable does.
+
+> and `unavailable` where the local model did not answer, which stops the queue at that name.
+
+> Where the page says the queue could not run, the local model was not answering: start the runtime and load the model the settings name
+Now:
+> the list read before the first call of a pass or of a night's queue, an embedding model among those unloaded, the reason kept for the rest of the pass or the night, and an address not over HTTP or a bound past a day leaving the lane calling no model; `unavailable` where the local model could not be called, by each cause; and the troubleshooting row giving what to do for each cause, loading by hand at a smaller context named as what makes the runtime refuse a long section
+Why: the same review found the troubleshooting row sent an operator whose flags were wrong to load the model by hand, which leaves it at the runtime's own context.
+
+### 2026-10-06 - SCHEMA.md - the overnight queue's unavailable outcome names every cause, and no call where the settings name no model
+Authorised by: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
+Was:
+> and `unavailable` where the local model did not answer, which stops it at that name. `model_calls` is every call its passes made, the one that found the local model not answering included,
+Now:
+> and `unavailable` where the local model could not be called, by each cause; `model_calls` the same, with none where the settings name no model
+Why: the same review.

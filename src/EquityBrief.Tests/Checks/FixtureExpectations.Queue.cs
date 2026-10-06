@@ -504,14 +504,15 @@ public partial class FixtureExpectations
             NightQueue.From(Settings(Profile("other", "another/model", "true")), FeedSource.Fixture, Folder(), new RecordingAwake()).Settings.Model);
 
         // A live night reaches the operator's runtime under the profile the settings flag, and a live night whose
-        // settings name no model is refused naming where one goes.
+        // settings name no model is not refused: its lane is unread, saying where one goes.
         var live = NightQueue.From(Settings(Profile("other", "another/model", "true")), FeedSource.Live, null, new RecordingAwake());
 
         Assert.IsType<OpenAiCompatibleModelFeed>(live.LocalModel);
         Assert.Equal(("other", "another/model"), (live.Settings.Profile, live.Settings.Model));
+        Assert.Null(live.Settings.Unreadable);
         Assert.Contains(
             LocalModelSettings.ProfilesKey,
-            Assert.Throws<InvalidOperationException>(() => NightQueue.From(Settings(), FeedSource.Live, null, new RecordingAwake())).Message,
+            NightQueue.From(Settings(), FeedSource.Live, null, new RecordingAwake()).Settings.Unreadable,
             StringComparison.Ordinal);
 
         // Refused before the night starts, each naming what it could not read: hours that
