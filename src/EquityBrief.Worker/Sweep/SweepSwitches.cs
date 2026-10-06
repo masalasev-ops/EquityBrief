@@ -7,9 +7,9 @@ namespace EquityBrief.Worker.Sweep;
 public sealed class SweepSwitches
 {
     // The sessions HYG's average and its change are read over.
-    public const int CreditAverageSessions = 50;
+    public const int CreditAverageSessions = Core.Readings.IndexSwitches.CreditAverageSessions;
 
-    public const int CreditChangeSessions = 63;
+    public const int CreditChangeSessions = Core.Readings.IndexSwitches.CreditChangeSessions;
 
     readonly double[] spy;
     readonly double[] fund;
@@ -39,22 +39,13 @@ public sealed class SweepSwitches
         (spy, fund, credit) = (Aligned("SPY"), Aligned(fundCode), Aligned("HYG"));
     }
 
+    // Each switch reads open where the reading the night stores for it is above one, through the one function both read.
     public bool SmallLeads(int session, int window) =>
-        session - window >= 0 && fund[session] / spy[session] / (fund[session - window] / spy[session - window]) > 1;
+        session - window >= 0 && Core.Readings.IndexSwitches.Relative(fund[session], spy[session], fund[session - window], spy[session - window]) is > 1;
 
-    public bool CreditAboveItsAverage(int session)
-    {
-        if (session < CreditAverageSessions - 1)
-        {
-            return false;
-        }
+    public bool CreditAboveItsAverage(int session) => Core.Readings.IndexSwitches.OverAverage(credit, session, CreditAverageSessions) is > 1;
 
-        var span = credit[(session - CreditAverageSessions + 1)..(session + 1)];
-
-        return !span.Any(double.IsNaN) && credit[session] > span.Average();
-    }
-
-    public bool CreditRising(int session) => session - CreditChangeSessions >= 0 && credit[session] / credit[session - CreditChangeSessions] > 1;
+    public bool CreditRising(int session) => Core.Readings.IndexSwitches.Change(credit, session, CreditChangeSessions) is > 1;
 
     // The S&P 500's breadth on each of the index's sessions, none where it reads none.
     public static double?[] LargeBreadth(SweepHistoryInputs large, IReadOnlyList<DateOnly> calendar)

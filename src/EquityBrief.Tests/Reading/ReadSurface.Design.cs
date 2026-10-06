@@ -461,14 +461,17 @@ public partial class ReadSurface
         ThemeDocument(store);
         ThemeCycle(store, 1, night, "accepted", "Orders across the industry are turning up from a low [D1].");
 
-        // And the name's swing readings and gates for the night, and the session before, on which the swing
-        // filter listed it, which its page draws as the nights the live list picked it before.
+        // And the name's swing readings, member readings and gates for the night, and the session before, on which
+        // the swing filter listed it, which its page draws as the nights the live list picked it before.
         var pageNight = DateOnly.ParseExact(night, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
         var earlier = EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(pageNight.AddDays(-7), pageNight)[^1].ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
         store.Execute(
             "INSERT INTO swing_reading (ticker, session_date, bars, return_short, return_long, place_short, place_long, strength, recent_high, high_session, pullback_sessions, depth, dry_up, tightness, note) " +
             $"VALUES ('KEYS', '{night}', 250, 4.5, 9.0, 0.6, 0.7, 0.65, '330', '{earlier}', 1, 1.5, 0.8, 0.6, NULL);");
+        store.Execute(
+            "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, cost, cost_double, profit) " +
+            $"VALUES ('GSPC', '{night}', 'KEYS', '333.42', '445000000', 0.125, 0.25, 1);");
         GateRow(store, night, new Member("KEYS", Trigger: false));
         store.Execute($"INSERT OR REPLACE INTO list_rule (session_date, rule) VALUES ('{earlier}', 'filter');");
         GateRow(store, earlier, new Member("KEYS", Passed: true, Rank: 1));

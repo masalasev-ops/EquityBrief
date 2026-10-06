@@ -368,12 +368,15 @@ public static class Nightly
             // Section 14's step 13. The four readings of every member's reported quarters and the state
             // they give it, from the quarters fetched on the nights before this one, before the listings
             // and the facts file that read them. It makes no request: the quarters it reads were asked
-            // for after an earlier night's close.
+            // for after an earlier night's close. From 15.2 every member's readings follow, under a row of their own,
+            // since the state the quarters give a member is one of them.
             // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
             new("fundamental-readings", async () =>
             {
                 var outcome = await new FundamentalReader(clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, night.Token, wider);
+
+                await new Members.MemberReader(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, wider);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), " +
                     string.Join(", ", outcome.States.Select(state => $"{state.Value} {state.Key}"));

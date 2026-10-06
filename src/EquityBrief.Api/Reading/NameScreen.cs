@@ -1112,7 +1112,11 @@ public static class NameScreen
         // The name's rows on the page's list for the night, on a night the setup families drew it.
         IReadOnlyList<FamilyPickRow>? familyPicks = null,
         // The sector heavyweights' holdings as of the night, which say whether they hold the name.
-        IReadOnlyList<HeavyweightHoldingRow>? heavyweights = null)
+        IReadOnlyList<HeavyweightHoldingRow>? heavyweights = null,
+        // The name's member readings for the page's night, under the index that held it, and its company's rating counts
+        // as its newest fetch on or before the night filed them.
+        MemberReadingRow? memberReading = null,
+        RatingsRow? ratings = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1248,8 +1252,17 @@ public static class NameScreen
             says,
             news,
             TonightScreen.ListedUnder(ticker, familyPicks ?? []),
-            TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []));
+            TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []),
+            memberReading is null ? null : Member(memberReading, ratings));
     }
+
+    // A name's member readings as the page draws them, each as the member reader stored it, its index named as every
+    // page names it, with its company's rating counts as the newest fetch filed them.
+    public static MemberReadingsView Member(MemberReadingRow row, RatingsRow? ratings = null) =>
+        new(EquityBrief.Web.App.Universes.ByCode(row.IndexCode)?.Name ?? row.IndexCode, row.SessionDate, row.Close, row.DollarVolume,
+            row.CompanyValue, row.Cost, row.CostDouble, row.Profit, row.Coverage, row.State, row.YearHigh, row.Nearness,
+            row.SinceHigh, row.VolumeRatio, row.Industry, row.IndustryMonth, row.IndustryQuarter, row.PeerSurprise,
+            ratings is null ? null : new RatingsView(ratings.Fetched, ratings.StrongBuy, ratings.Buy, ratings.Hold, ratings.Sell, ratings.StrongSell, ratings.Total));
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
     // one sentence per reading, and the quarters any reading read with the dates each was filed and

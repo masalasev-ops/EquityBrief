@@ -150,15 +150,27 @@ public partial class ArchitectureConformance
     // The rows the document gains after phase 14's report, named beside the pair and never counted in it: 14.8's,
     // section 17's row for the wider universe's test and section 18's two, from 15.1 section 18's row for a fund's file
     // the night cannot read, from 15.2 the readings' rows, from 15.3 section 18's two on the funds' holdings, and from
-    // 15.1's second half the index families' catalogue and matrix rows, and from 15.4 the sweep answers' catalogue and
-    // matrix rows.
-    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows];
+    // 15.1's second half the index families' catalogue and matrix rows, from 15.4 the sweep answers' catalogue and
+    // matrix rows, and from 15.2's second half the member reader's and the name page's member readings.
+    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows, .. MemberReadingRows];
 
     // The sweep answers' catalogue and matrix rows, 15.4.
     internal static string[] SweepAnswersRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Sweep answers"),
         CheckReach.Key(Scope.MatrixTable, "Sweep answers"),
+    ];
+
+    // 15.2's second half: the member reader's catalogue and matrix rows, the two stores, section 17's row, section 18's
+    // row, the fixture's row, the name page's member readings and the run page's two parts.
+    internal static string[] MemberReadingRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Member reader"),
+        CheckReach.Key(Scope.MatrixTable, "Member reader"),
+        CheckReach.Key(Scope.StoresTable, "Member readings"),
+        CheckReach.Key(Scope.StoresTable, "Switch readings"),
+        .. FixtureExpectations.MemberReadingExpectationClaims,
+        .. Reading.ReadSurface.MemberReadingClaims,
     ];
 
     // The index families' catalogue and matrix rows, 15.1's second half.
@@ -285,9 +297,11 @@ public partial class ArchitectureConformance
         // fund's file row and the Run page's members, 979 from 15.2's first half, section 17's three readings and
         // section 18's company filing no dated income, 981 from 15.3, section 18's filing the history pull cannot
         // read and holding matched to no code, 983 from 15.1's second half, the index families' catalogue and matrix
-        // rows, and 985 from 15.4, the sweep answers' catalogue and matrix rows.
+        // rows, 985 from 15.4, the sweep answers' catalogue and matrix rows, and 995 from 15.2's second half, the member
+        // reader's catalogue and matrix rows, its two stores, section 17's and section 18's rows, the fixture's, the name
+        // page's member readings and the run page's two parts.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 985),
+            (789, 853, 6, 4, 855, 876, 995),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

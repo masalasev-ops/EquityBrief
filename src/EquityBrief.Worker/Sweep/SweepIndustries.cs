@@ -19,7 +19,7 @@ public sealed class SweepIndustries(SweepHistoryInputs large, HeavyweightHistory
 
     public IReadOnlyDictionary<string, double> Between(DateOnly start, DateOnly day) => read.GetOrAdd((start, day), key =>
     {
-        var sums = new Dictionary<string, (double Weighted, double Weight)>(StringComparer.Ordinal);
+        var members = new Dictionary<string, List<(double Value, double Figure)>>(StringComparer.Ordinal);
 
         foreach (var name in large.Names)
         {
@@ -31,13 +31,19 @@ public sealed class SweepIndustries(SweepHistoryInputs large, HeavyweightHistory
                 continue;
             }
 
-            var weight = Statistic.FromPrice(value);
-            var held = sums.GetValueOrDefault(industry);
+            if (!members.TryGetValue(industry, out var held))
+            {
+                members[industry] = held = [];
+            }
 
-            sums[industry] = (held.Weighted + (weight * (Statistic.FromRatio(now.Close / then.Close) - 1.0)), held.Weight + weight);
+            held.Add((Statistic.FromPrice(value), Statistic.FromRatio(now.Close / then.Close) - 1.0));
         }
 
-        return sums.Where(pair => pair.Value.Weight > 0).ToDictionary(pair => pair.Key, pair => pair.Value.Weighted / pair.Value.Weight, StringComparer.Ordinal);
+        // Each industry's return through the one function the night reads it with.
+        return members
+            .Select(pair => (Industry: pair.Key, Return: Core.Readings.MemberReadings.ValueWeighted(pair.Value)))
+            .Where(pair => pair.Return is not null)
+            .ToDictionary(pair => pair.Industry, pair => pair.Return!.Value, StringComparer.Ordinal);
     });
 
     // Whether a name's industry's S&P 500 members fell over the window to a session of the calendar given; a name whose

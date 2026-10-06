@@ -142,7 +142,8 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                     Money(quarter.Value, "grossProfit"),
                     Money(quarter.Value, "netIncome"),
                     Money(quarter.Value, "operatingIncome"),
-                    Money(flow.Value, "totalCashFromOperatingActivities")),
+                    Money(flow.Value, "totalCashFromOperatingActivities"),
+                    Money(quarter.Value, "interestExpense")),
                 new BalanceSheet(
                     Money(balance.Value, "totalAssets"),
                     Money(balance.Value, "totalLiab"),

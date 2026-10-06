@@ -6,6 +6,7 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Readings;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -285,6 +286,32 @@ public sealed record SwingReadingsView(
     double? DryUp,
     double? Tightness,
     string? Note);
+
+// One member's readings on a night as the member reader stored them, its index named by the words every page names
+// it with.
+public sealed record MemberReadingsView(
+    string Index,
+    DateOnly Session,
+    decimal? Close,
+    decimal? DollarVolume,
+    decimal? CompanyValue,
+    double? Cost,
+    double? CostDouble,
+    bool Profit,
+    bool? Coverage,
+    string? State,
+    decimal? YearHigh,
+    double? Nearness,
+    int? SinceHigh,
+    double? VolumeRatio,
+    string? Industry,
+    double? IndustryMonth,
+    double? IndustryQuarter,
+    double? PeerSurprise,
+    RatingsView? Ratings = null);
+
+// A company's analysts' rating counts as its newest fetch filed them, with the day of the fetch and their total.
+public sealed record RatingsView(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total);
 
 // One operating obligation's count against its trigger, as the Calibration region states it.
 public sealed record TriggerLine(string Obligation, int Count, int Trigger, string Says);
@@ -6155,6 +6182,136 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<tr data-reading=\"tightness\"><td>True range of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}</td><td data-value=\"{Whole(view.Tightness)}\">");
         region.Append(view.Tightness is { } tight ? Formatted($"{tight:0.00}") : Formatted($"<span class=\"degraded\">not available, {view.Bars} bars</span>"));
         region.Append("</td></tr></table></div></div>");
+
+        return region.ToString();
+    }
+
+    // A member's readings, section 15.9's row: its close as traded, its dollar volume and its company's value, a round
+    // trip at its close at the published table and at double, the profit gate, the coverage and its quarters' state, its
+    // year's high with the sessions since it and the close's nearness to it, its volume over its average, and its
+    // industry with that industry's S&P 500 members' return over a month and a quarter and their mean surprise, each
+    // drawn whole on its element as the store holds it, and each the store holds none of saying why.
+    public string MemberReadingsTable(string ticker, MemberReadingsView view)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"member-readings\" data-ticker=\"{Escaped(ticker)}\" data-session=\"{view.Session:yyyy-MM-dd}\" data-index=\"{Escaped(view.Index)}\">");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"member-table\"><tr><th>Reading</th><th>On the night</th></tr>");
+
+        static string Stored(decimal? value) => value is { } held ? held.ToString(Invariant) : "none";
+
+        static string Short(string why) => "<span class=\"degraded\">" + why + "</span>";
+
+        void Row(string reading, string label, string stored, string said) =>
+            region.Append(Invariant, $"<tr data-reading=\"{reading}\"><td>{label}</td><td data-value=\"{Escaped(stored)}\">{said}</td></tr>");
+
+        // A name holding no bar on the night, or whose stored series holds a hole, is read over none of its bars.
+        var noBar = Short("not read: it holds no bar on the night, or its stored series holds a hole");
+        var barred = view.Close is not null;
+
+        Row("close", "Its close as traded", Stored(view.Close), view.Close is { } close ? Price(close) : noBar);
+        Row(
+            "dollar-volume",
+            Formatted($"Dollar volume, the mean of the close times the volume over the last {MemberReadings.DollarVolumeSessions} sessions"),
+            Stored(view.DollarVolume),
+            view.DollarVolume is { } dollars ? Figures.Money(dollars)
+                : barred ? Short(Formatted($"not available: fewer than {MemberReadings.DollarVolumeSessions} sessions held")) : noBar);
+        Row(
+            "company-value",
+            "Its company's value, the share count filed before the night times the close",
+            Stored(view.CompanyValue),
+            view.CompanyValue is { } value ? Figures.Money(value)
+                : barred ? Short("not available: no share count filed before the night") : noBar);
+        Row(
+            "cost",
+            "A round trip at its close, half the published spread each way",
+            Whole(view.Cost),
+            view.Cost is { } cost ? Formatted($"{cost:0.00}% of the price") : noBar);
+        Row(
+            "cost-double",
+            "The same round trip at double the published spread",
+            Whole(view.CostDouble),
+            view.CostDouble is { } doubled ? Formatted($"{doubled:0.00}% of the price") : noBar);
+        Row(
+            "profit",
+            Formatted($"Net income over its {MemberReadings.Quarters} newest quarters filed before the night"),
+            view.Profit ? "1" : "0",
+            view.Profit ? "above nothing: the profit gate passes" : Formatted($"at or under nothing, or fewer than {MemberReadings.Quarters} quarters filed with a net income: the profit gate fails"));
+        Row(
+            "coverage",
+            Formatted($"Operating income over the same quarters against {MemberReadings.CoverageFloor:0} times their interest expense"),
+            view.Coverage is { } covered ? (covered ? "1" : "0") : "none",
+            view.Coverage switch
+            {
+                true => "at or above it: the coverage passes",
+                false => Formatted($"under it, or fewer than {MemberReadings.Quarters} quarters filed with an operating income: the coverage fails"),
+                null => Short("not read: a quarter it reads was fetched before its interest expense was stored"),
+            });
+        Row(
+            "state",
+            "Its reported quarters' state",
+            view.State ?? "none",
+            view.State is { } state ? Escaped(state.Replace('_', ' ')) : Short("none stored for the night"));
+        Row(
+            "year-high",
+            Formatted($"Highest high of the {MemberReadings.YearSessions} sessions before the night"),
+            Stored(view.YearHigh),
+            view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {since} session(s) before the night")
+                : barred ? Short("not available: no session before the night held") : noBar);
+        Row(
+            "nearness",
+            "The close against that high",
+            Whole(view.Nearness),
+            view.Nearness is { } near ? Formatted($"{near * 100:0.0}% of it")
+                : barred ? Short("not available") : noBar);
+        Row(
+            "volume-ratio",
+            "Volume on the night against its fifty-day average",
+            Whole(view.VolumeRatio),
+            view.VolumeRatio is { } ratio ? Formatted($"{ratio:0.00}")
+                : barred ? Short("not available: no fifty-day average stored for the night") : noBar);
+        Row(
+            "industry",
+            "Its industry, as the newest fetch before the night filed it",
+            view.Industry ?? "none",
+            view.Industry is { } industry ? Escaped(industry) : Short("none filed before the night"));
+
+        string Industry(double? figure, string unread) =>
+            figure is { } read ? Formatted($"{read * 100:+0.00;-0.00;0.00}%")
+                : view.Industry is null ? Short("not read: no industry filed") : Short(unread);
+
+        Row(
+            "industry-month",
+            Formatted($"Its industry's S&amp;P 500 members' return over {MemberReadings.IndustryWindows[0]} sessions, each weighted by its company's value"),
+            Whole(view.IndustryMonth),
+            Industry(view.IndustryMonth, "not available: no S&amp;P 500 member of its industry read over the span"));
+        Row(
+            "industry-quarter",
+            Formatted($"The same over {MemberReadings.IndustryWindows[1]} sessions"),
+            Whole(view.IndustryQuarter),
+            Industry(view.IndustryQuarter, "not available: no S&amp;P 500 member of its industry read over the span"));
+        Row(
+            "peer-surprise",
+            Formatted($"Their mean earnings surprise over the {MemberReadings.PeerSessions} sessions before the night, each weighted by its company's value"),
+            Whole(view.PeerSurprise),
+            view.PeerSurprise is { } surprise ? Formatted($"{surprise:+0.0;-0.0;0.0}%")
+                : view.Industry is null ? Short("not read: no industry filed") : Short("none: no S&amp;P 500 member of its industry reported a surprise in them"));
+
+        // The analysts' rating counts as context, as the newest fetch filed them and dated by it; no rule reads them.
+        // see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it
+        static string Count(int? count) => count is { } held ? held.ToString(Invariant) : "none";
+
+        Row(
+            "ratings",
+            "The analysts' ratings, as the newest fetch filed them",
+            view.Ratings?.Total is { } total ? total.ToString(Invariant) : "none",
+            view.Ratings switch
+            {
+                { Total: { } all } ratings => FormattableString.Invariant($"{all} in all as the fetch of {ratings.Fetched:yyyy-MM-dd} filed them: {Count(ratings.StrongBuy)} strong buy, {Count(ratings.Buy)} buy, {Count(ratings.Hold)} hold, {Count(ratings.Sell)} sell and {Count(ratings.StrongSell)} strong sell"),
+                { } unfiled => Short(FormattableString.Invariant($"none filed: the newest fetch, of {unfiled.Fetched:yyyy-MM-dd}, stored no rating counts")),
+                null => Short("no fetch of its company stored"),
+            });
+        region.Append("</table></div></div>");
 
         return region.ToString();
     }

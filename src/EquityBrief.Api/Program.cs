@@ -413,7 +413,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The name's rows on the page's list for the night, where the setup families drew it.
         familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null,
         // The sector heavyweights' holdings as of the night, which say whether they hold the name.
-        heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null);
+        heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null,
+        // The name's member readings for the page's night, or its newest where the page is tonight's, and its company's
+        // rating counts as its newest fetch on or before that night filed them.
+        memberReading: await read.MemberReadingAsync(ticker, on),
+        ratings: await read.RatingsAsync(ticker, on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

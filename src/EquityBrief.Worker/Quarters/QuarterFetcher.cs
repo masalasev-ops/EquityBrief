@@ -127,19 +127,20 @@ public sealed class QuarterFetcher : IComponent
             ticker, fetched_at, session_date, period_end, filing_date, report_date,
             revenue, operating_income, net_income, operating_cash_flow, eps_actual, eps_estimate,
             eps_trailing, sales_growth, sales_growth_before, operating_margin, margin_year_earlier,
-            close_after, close_after_session, basis_session, basis_close, shares)
+            close_after, close_after_session, basis_session, basis_close, shares, interest_expense, interest_read)
         VALUES (
             $ticker, $fetched_at, $session_date, $period_end, $filing_date, $report_date,
             $revenue, $operating_income, $net_income, $operating_cash_flow, $eps_actual, $eps_estimate,
             $eps_trailing, $sales_growth, $sales_growth_before, $operating_margin, $margin_year_earlier,
-            $close_after, $close_after_session, $basis_session, $basis_close, $shares)
+            $close_after, $close_after_session, $basis_session, $basis_close, $shares, $interest_expense, 1)
         ON CONFLICT (ticker, fetched_at, period_end) DO NOTHING;
     ";
 
-    // The company one storing fetch answered for: its filer and its GICS classification, beside the quarters.
+    // The company one storing fetch answered for: its filer, its GICS classification and the analysts' five rating counts,
+    // beside the quarters.
     const string InsertCompany = @"
-        INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry)
-        VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry)
+        INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell)
+        VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry, $strong_buy, $buy, $hold, $sell, $strong_sell)
         ON CONFLICT (ticker, fetched_at) DO NOTHING;
     ";
 
@@ -505,6 +506,7 @@ public sealed class QuarterFetcher : IComponent
             command.Parameters.AddWithValue("$basis_session", Date(fetch.BasisSession));
             command.Parameters.AddWithValue("$basis_close", Figure(fetch.BasisClose));
             command.Parameters.AddWithValue("$shares", Figure(quarter.Shares));
+            command.Parameters.AddWithValue("$interest_expense", Figure(quarter.InterestExpense));
 
             written += await command.ExecuteNonQueryAsync(cancellation);
         }
@@ -520,6 +522,11 @@ public sealed class QuarterFetcher : IComponent
             company.Parameters.AddWithValue("$industry_group", (object?)fetched.Classification?.IndustryGroup ?? DBNull.Value);
             company.Parameters.AddWithValue("$industry", (object?)fetched.Classification?.Industry ?? DBNull.Value);
             company.Parameters.AddWithValue("$sub_industry", (object?)fetched.Classification?.SubIndustry ?? DBNull.Value);
+            company.Parameters.AddWithValue("$strong_buy", (object?)fetched.Ratings.StrongBuy ?? DBNull.Value);
+            company.Parameters.AddWithValue("$buy", (object?)fetched.Ratings.Buy ?? DBNull.Value);
+            company.Parameters.AddWithValue("$hold", (object?)fetched.Ratings.Hold ?? DBNull.Value);
+            company.Parameters.AddWithValue("$sell", (object?)fetched.Ratings.Sell ?? DBNull.Value);
+            company.Parameters.AddWithValue("$strong_sell", (object?)fetched.Ratings.StrongSell ?? DBNull.Value);
 
             await company.ExecuteNonQueryAsync(cancellation);
         }

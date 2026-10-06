@@ -2071,6 +2071,18 @@ internal static class Scope
             Verdict.Pass,
             "the region is drawn after the nights the list picked the name, its bar and tabs counting as the test's own arithmetic over the store gives them, the article labelled twice reading its newer label, an opinion piece under its tab alone and in no count, a refused and an unreadable row saying so, the model named once, a name holding no label for the night saying why by each cause the store is given, and a name with nothing stored saying so",
             ByReadSurface),
+        [CheckReach.Key("15.10 Run", "What else is waiting on a count, the mid and small cap indices' members holding four dated rating counts against nine in ten of them")] = new Scoped(
+            Verdict.Pass,
+            "the S&P 400's and 600's members holding four dated fetches of rating counts on the newest night, counted against nine in ten of them, read back off the Calibration region over a constructed store holding a member with four, one with three, an S&P 500 member and an older night",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, beside each rule's edge its edge after each trade's own round trip at the published table over the trades priced")] = new Scoped(
+            Verdict.Pass,
+            "a rule's record words state its edge and beside it the edge less each priced trade's own round trip over the trades priced, a decided trade priced at none counted in the edge and not after it and a rule pricing none stating none, read back off the run page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Member readings")] = new Scoped(
+            Verdict.Pass,
+            "each reading is drawn whole on its element as the store holds it under the index the row names, read back off an S&P 400 member's page and an S&P 500 member's against the rows a constructed store holds, a member holding no bar on the night saying so on every reading its bars give, a coverage not read and an industry not filed each saying why, and a name the night stored none for drawing no region",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -2989,6 +3001,29 @@ internal static class Scope
             "over constructed answers, a statement carrying no filing date stores nothing and is counted, a company filing none is named on the pull's line, and the purge takes the stored quarters whole",
             ByExpectations),
 
+        // The rest of the readings, 15.2's second pull request: section 17's row, section 18's row, the two stores and the
+        // fixture's row.
+        [CheckReach.Key(LimitsTable, "Readings of the 400's and 600's rules")] = new Scoped(
+            Verdict.Pass,
+            "each reading worked by hand at a constructed session at its window's edge: the year's high read 251 bars back and not 252, the newer of two equal, an industry's value-weighted return and its peers' surprise over members with and without a value, one whose series holds a hole, one holding no bar where the window starts, one joining after it reported and one of another index, and the switches with a fund's close missing; and the fixture's night worked from its captured bars",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member's quarters fetched before their interest expense was stored")] = new Scoped(
+            Verdict.Pass,
+            "a member one of whose four quarters was fetched without its interest expense stores its coverage as none while its profit gate and its other readings read, worked by hand over a constructed store, and its page says the coverage was not read and why",
+            ByExpectations),
+        [CheckReach.Key(StoresTable, "Member readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Switch readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(FixtureTable, "member readings")] = new Scoped(
+            Verdict.Pass,
+            "the fixture's replay stores one row for each of its four names on its night under the index, the three holding a bar read against figures worked from the captured bars outside the repository and the one holding none read over nothing, and the switches' row holding none of its readings",
+            ByExpectations),
+
         // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
         [CheckReach.Key(FailureTable, "A fund's holdings filing the history pull cannot read")] = new Scoped(
             Verdict.Pass,
@@ -3088,6 +3123,14 @@ internal static class Scope
             "the class declares the membership, bars, market series, calendar, companies, reported quarters, gate results, filter versions, list rules, forward returns and family picks it reads and the five index family stores it reads and writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Index families")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Member reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, market series, calendar, indicators, reported quarters, companies and fundamental readings it reads and the member readings and switch readings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Member reader")] = new Scoped(
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
@@ -4120,6 +4163,9 @@ internal static class Scope
         ["Heavyweight rule nights"] = "14.6",
         ["Heavyweight rule holdings"] = "14.6",
         ["Estimate readings"] = "14.6",
+        // 15.2's second pull request, every member's readings and the switches beside them.
+        ["Member readings"] = "15.2",
+        ["Switch readings"] = "15.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4494,6 +4540,9 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         // 12.6's correction drawing the news on the name page.
         [CheckReach.Key("15.9 Name", "News")] = "12.6",
+        [CheckReach.Key("15.9 Name", "Member readings")] = "15.2",
+        [CheckReach.Key("15.10 Run", "What else is waiting on a count, the mid and small cap indices' members holding four dated rating counts against nine in ten of them")] = "15.2",
+        [CheckReach.Key("15.10 Run", "The setup families, beside each rule's edge its edge after each trade's own round trip at the published table over the trades priced")] = "15.2",
         [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = "12.6",
         [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it")] = "12.6",
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit")] = "12.6",
@@ -4852,6 +4901,7 @@ internal static class Scope
             "the sector heavyweights' registered rules among them, each holding's edge its percent return less its size cut's and counted in the block of the session it ended on",
             "beside each rule the session its record counts from",
             "where a replay at its registration found a trade differing, that it restarted there and why",
+            "beside each rule's edge its edge after each trade's own round trip at the published table over the trades priced",
         ],
         [CheckReach.Key("15.17 Past picks", "The setup filter")] =
         [
@@ -4948,7 +4998,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The shape clock")] =
             ["the ordinary nights under the open filter version against the sixty the calibration waits on", "every event night with what made it one", "each gate's median count through it against its band", "the list's median size against its band", "drawn as not yet measured until the trigger", "said at the top of the page once the trigger is crossed", "each reason's share of the index as context"],
         [CheckReach.Key("15.10 Run", "What else is waiting on a count")] =
-            ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty", "the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit"],
+            ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty", "the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit", "the mid and small cap indices' members holding four dated rating counts against nine in ten of them"],
         // 12.4. The run page's shape proposal, read as the parts its row enumerates.
         // 12.7. The edge half and the near misses, read as the parts their rows enumerate.
         [CheckReach.Key("15.10 Run", "The edge clock")] =
@@ -5303,6 +5353,7 @@ internal static class Scope
         ["gate results"] = "12.2",
         ["reported quarters"] = "12.2",
         ["member companies"] = "14.3",
+        ["member readings"] = "15.2",
         ["reactions"] = "11.7",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
@@ -5548,6 +5599,7 @@ internal static class Scope
         ["Liquidity floors of the 400's and 600's rules"] = "15.2",
         ["Trade cost of the 400's and 600's rules"] = "15.2",
         ["Profit gate and coverage of the 400's and 600's rules"] = "15.2",
+        ["Readings of the 400's and 600's rules"] = "15.2",
         // The sector heavyweights' settings, 14.3, frozen at 14.6 with their registrations, and the analysts' revisions.
         ["Heavyweights' size cut"] = "14.3",
         ["Heavyweights' look-back"] = "14.3",

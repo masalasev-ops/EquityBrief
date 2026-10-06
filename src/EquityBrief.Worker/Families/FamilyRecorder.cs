@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -37,6 +38,7 @@ public sealed class FamilyRecorder : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -53,6 +55,17 @@ public sealed class FamilyRecorder : IComponent
         WHERE (ended_on IS NULL OR (benchmark IS NULL AND members IS NULL)) AND session_date < $night
         ORDER BY session_date, candidate, ticker;
     ";
+
+    // Every ended trade holding a result and no cost, with its company's value as the member readings read it on the
+    // trade's night, none where they read none.
+    const string Unpriced = @"
+        SELECT t.candidate, t.ticker, t.session_date, t.entry, t.stop, t.result,
+               (SELECT m.company_value FROM member_reading m WHERE m.index_code = $index AND m.session_date = t.session_date AND m.ticker = t.ticker)
+        FROM family_trade t
+        WHERE t.result IS NOT NULL AND t.cost IS NULL;
+    ";
+
+    const string Priced = "UPDATE family_trade SET cost = $cost WHERE candidate = $candidate AND ticker = $ticker AND session_date = $session;";
 
     // The sessions the store holds from a session on, which a trade's sessions are counted in.
     const string SessionsFrom = "SELECT DISTINCT session_date FROM bar WHERE session_date >= $from ORDER BY session_date;";
@@ -172,6 +185,20 @@ public sealed class FamilyRecorder : IComponent
                     ("$candidate", trade.Candidate), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)));
                 ended++;
             }
+        }
+
+        // Each ended trade's round trip at the published table, written beside its result and never into it, so the rule's
+        // record reads as it did and the run page states the edge after costs beside it: its company valued as the night's
+        // member readings read it, one they read none for in the $1 to 2 billion band, and the sale where its result puts it.
+        // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+        foreach (var (candidate, ticker, session, entry, stop, result, value) in await UnpricedAsync(connection, transaction, indexCode, cancellation))
+        {
+            var sale = entry + Statistic.ToPrice(result * Statistic.FromPrice(entry - stop));
+            var cost = TradeCost.InRisk(value, entry, stop, Math.Max(sale, 0.01m));
+
+            await ExecuteAsync(connection, transaction, Priced, cancellation,
+                ("$cost", double.IsNaN(cost) ? DBNull.Value : cost),
+                ("$candidate", candidate), ("$ticker", ticker), ("$session", Stamp(session)));
         }
 
         // A benchmark is written once every member's trade of the same plan has had its cap's sessions.
@@ -409,6 +436,33 @@ public sealed class FamilyRecorder : IComponent
         command.CommandText = NewestSession;
 
         return await command.ExecuteScalarAsync(cancellation) is string newest ? Date(newest) : null;
+    }
+
+    static async Task<IReadOnlyList<(string Candidate, string Ticker, DateOnly Session, decimal Entry, decimal Stop, double Result, decimal? Value)>> UnpricedAsync(SqliteConnection connection, SqliteTransaction transaction, string indexCode, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = Unpriced;
+        command.Parameters.AddWithValue("$index", indexCode);
+
+        var unpriced = new List<(string, string, DateOnly, decimal, decimal, double, decimal?)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            unpriced.Add((
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(3)),
+                Money.FromStorage(reader.GetString(4)),
+                reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6))));
+        }
+
+        return unpriced;
     }
 
     static async Task<IReadOnlyList<Kept>> PendingAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)

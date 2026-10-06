@@ -650,7 +650,8 @@ public sealed class SinglePageApp : IComponent
         NumbersSayView? says = null,
         NewsView? news = null,
         ListedUnderView? listedUnder = null,
-        string? heavyweight = null)
+        string? heavyweight = null,
+        MemberReadingsView? member = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -840,6 +841,23 @@ public sealed class SinglePageApp : IComponent
                 stamp: Cards.Night(swing.Session),
                 id: "swing",
                 region: "swing"));
+        }
+
+        // The member readings, beneath the swing readings: what a trade in it costs, the quality its quarters give it, its
+        // year's high, its volume and its industry, as the member reader stored them for the night under its index.
+        // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+        if (member is not null)
+        {
+            Card("member", "Its member readings", Cards.Computed(
+                "Member readings",
+                marks.MemberReadingsTable(ticker, member) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"The dollar volume is the mean of the close times the volume over the last {EquityBrief.Core.Readings.MemberReadings.DollarVolumeSessions} sessions. A round trip is half the published effective spread for the company's value and the price at the buy and half again at the sale, stated at the table's figure and at double. The profit gate sums net income over the {EquityBrief.Core.Readings.MemberReadings.Quarters} newest quarters filed before the night, and the coverage asks their operating income for at least twice their interest expense, a company filing none and a financial company passing. The year's high is the highest high of the {EquityBrief.Core.Readings.MemberReadings.YearSessions} sessions before the night, and the industry's figures are its S&amp;P 500 members', each weighted by its company's value."),
+                    "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."),
+                title: Invariant($"What a trade in it costs and what its quarters say, as a member of the {Escaped(member.Index)}"),
+                stamp: Cards.Night(member.Session),
+                id: "member",
+                region: "member"));
         }
 
         // The swing filter's answer for the name, whatever the name: each gate with whether it passed

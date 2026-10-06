@@ -10,7 +10,8 @@ public sealed record QuarterFigures(
     decimal? GrossProfit,
     decimal? NetIncome,
     decimal? OperatingIncome = null,
-    decimal? OperatingCashFlow = null);
+    decimal? OperatingCashFlow = null,
+    decimal? InterestExpense = null);
 
 // The balance sheet as of a filing. Five figures rather than the statement's
 // thirty, because these are the ones section 4's numbers row names and a column

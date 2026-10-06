@@ -1143,6 +1143,8 @@ public static class RunScreen
     // owes: The spend cap set from the passes the ledger has priced
     // owes: The event setups' triggers calibrated from resolved setups
     // owes: The trend confirmation's nights settled from flip-backs
+    // From 15.2 the S&P 400's and 600's members holding four dated rating counts, against nine in ten of them.
+    // owes: Analyst coverage tested as a dial once dated counts exist
     public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced, TriggerLine? labeller = null) =>
     [
         new(
@@ -1162,8 +1164,16 @@ public static class RunScreen
             reads.ConfirmationVersion is { } version
                 ? $"night(s) of trend labels scored under '{version}' since its window opened, against the sixty its nights are settled from"
                 : "night(s) of trend labels: no version holding a new label for more than one night is open, so nothing counts toward the sixty"),
+        new(
+            "analyst coverage",
+            reads.RatedFourTimes,
+            CoverageOf(reads.WiderMembers),
+            FormattableString.Invariant($"of the S&P 400's and 600's {reads.WiderMembers} member(s) on the newest night hold four dated rating counts, against the nine in ten analyst coverage is tested as a dial from")),
         .. labeller is null ? Array.Empty<TriggerLine>() : new[] { labeller },
     ];
+
+    // Nine in ten of the members, rounded up, the share of them that must hold four dated counts.
+    public static int CoverageOf(int members) => ((members * 9) + 9) / 10;
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted
     // by the run each was made under, and summed, off the rows the read surface handed back,
@@ -1181,7 +1191,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "index-families", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "index-families", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", QueueStage, "report", "label-news", "backup"]),
     ];

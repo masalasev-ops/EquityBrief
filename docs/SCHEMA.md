@@ -85,6 +85,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `quarter_ask` | QuarterFetcher | none | none |
 | `company` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
+| `member_reading` | MemberReader | none | MemberReader |
+| `switch_reading` | MemberReader | none | MemberReader |
 | `estimate_reading` | EstimatesFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_article` | NewsPulseCounter | none | NewsPulseCounter |
@@ -806,6 +808,7 @@ Grain: one row per registered family rule, stock and session the rule's own list
 | `result` | REAL | what the trade came to in multiples of its risk; null while it is open and where the stock's closes ran out before it ended |
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member the index held that night with a bar and a typical move, the stop the trade's distance in each member's own typical moves and the target its reward to risk above, or the stop trailing at that distance; null until every such trade has had its cap, and where none could be entered |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+| `cost` | REAL | from 15.2, the round trip the trade paid in multiples of its risk at the published table, its company valued as the night's member readings read it on the listing session and read in the $1 to 2 billion band where they hold none, the sale where its result puts it; null while the trade is open or ended with no result. The result is the one the record stored and is never read after it |
 
 Primary key: `candidate`, `ticker`, `session_date`.
 
@@ -1143,6 +1146,8 @@ Grain: one row per ticker per fetch per quarter.
 | `basis_session` | TEXT | the newest session of the closes this fetch asked for |
 | `basis_close` | TEXT | decimal in code, that session's close, which tonight's close is brought to this fetch's basis by |
 | `shares` | TEXT | decimal in code, the shares outstanding the quarter's balance sheet files, on this fetch's split basis, null where it files none and on every row a fetch stored before the column existed |
+| `interest_expense` | TEXT | from 15.2, decimal in code, the quarter's interest expense as the income statement files it, with the sign the provider files it under, null where it files none |
+| `interest_read` | INTEGER | from 15.2, 1 where the fetch that stored the row read the income statement's interest expense, filed or not, and 0 on every row stored before, whose null says nothing about what was filed |
 
 Primary key: `ticker`, `fetched_at`, `period_end`.
 
@@ -1185,6 +1190,7 @@ Grain: one row per ticker per storing fetch.
 | `industry_group` | TEXT | the GICS industry group, null where none is filed |
 | `industry` | TEXT | the GICS industry, null where none is filed |
 | `sub_industry` | TEXT | the GICS sub-industry, null where none is filed |
+| `strong_buy`, `buy`, `hold`, `sell`, `strong_sell` | INTEGER | from 15.2, the analysts' five rating counts the same answer files, null where it files none and on every row stored before |
 
 Primary key: `ticker`, `fetched_at`.
 
@@ -1206,6 +1212,52 @@ Grain: one row per ticker per night.
 Primary key: `ticker`, `session_date`.
 
 Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone).
+
+### member_reading
+Grain: one row per index, session and member of the S&P 500, 400 and 600 on the night.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index the member was read in, `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night's session |
+| `ticker` | TEXT | |
+| `close` | TEXT | decimal in code, the session's close as it traded, null where the member holds no bar on it |
+| `dollar_volume` | TEXT | decimal in code, the mean of close times volume over the 50 sessions to it, null under 50 |
+| `company_value` | TEXT | decimal in code, the company's value on the session from the count filed before it, null where none was filed |
+| `cost` | REAL | the round trip a trade bought and sold at the close pays, in per cent of it, at the published table's value |
+| `cost_double` | REAL | the same at double the table |
+| `profit` | INTEGER | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
+| `coverage` | INTEGER | 1 where the same four hold operating income at least twice their interest expense or the company is a financial one, 0 where they do not, null where a quarter among them was stored before interest expense was read |
+| `state` | TEXT | the state the night's fundamental reading gave the member, null where it read none |
+| `year_high` | TEXT | decimal in code, the highest high of the 251 sessions before the session, null on a member's first bar |
+| `nearness` | REAL | the close over that high, as stored |
+| `since_high` | INTEGER | the sessions since that high was made |
+| `volume_ratio` | REAL | the session's volume over its 50-session average as the indicators store it |
+| `industry` | TEXT | the GICS industry the member's newest company fetch files, null where none is filed |
+| `industry_month` | REAL | the industry's S&P 500 members' return over the 21 sessions to the session, each weighted by its value at the window's start, null where the industry holds no S&P 500 member read |
+| `industry_quarter` | REAL | the same over 63 sessions |
+| `peer_surprise` | REAL | the mean surprise in per cent of the industry's S&P 500 members reporting in the 20 sessions before the session, each weighted by its value on the session before it, null where none reported |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**The member reader writes it in the night after the fundamental readings, and is its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). A night run again for a session replaces that session's rows and no other's. Every reading is the one function the sweeps read it with, so a figure the page shows on a night is the one a sweep would have read there. Kept forever.
+
+### switch_reading
+Grain: one row per session the night read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the night's session |
+| `ijh_half_year` | REAL | IJH's adjusted close over SPY's on the session, over the same 126 sessions before, null where a close is missing |
+| `ijh_year` | REAL | the same over 252 sessions |
+| `ijr_half_year` | REAL | IJR's, over 126 sessions |
+| `ijr_year` | REAL | IJR's, over 252 sessions |
+| `hyg_average` | REAL | HYG's adjusted close over its mean over the 50 sessions to it |
+| `hyg_change` | REAL | HYG's adjusted close over its close 63 sessions before |
+
+Primary key: `session_date`.
+
+**The member reader writes it with the members' readings and is its own deleter.** A switch reads open where its reading is above one, as the sweeps read it. Kept forever.
 
 ### estimate_reading
 Grain: one row per ticker per night the night asked for its estimates.

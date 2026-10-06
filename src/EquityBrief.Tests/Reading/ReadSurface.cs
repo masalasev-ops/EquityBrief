@@ -66,6 +66,9 @@ public partial class ReadSurface
             // 12.6's correction drawing the news: the name page's region, tonight's counts and the Run page's labeller line and count.
             .. NewsSurfaceClaims,
 
+            // 15.2's second pull request, the name page's member readings and the run page's two parts.
+            .. MemberReadingClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

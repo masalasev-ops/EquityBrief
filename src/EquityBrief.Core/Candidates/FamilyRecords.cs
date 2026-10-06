@@ -7,7 +7,7 @@ namespace EquityBrief.Core.Candidates;
 
 // One trade a registered family rule kept, as its record reads it: the night it was listed, and once it ended
 // its result in multiples of its risk and the benchmark of the same plan on every member that night.
-public sealed record FamilyTradeRow(string Candidate, DateOnly Session, DateOnly? EndedOn, double? Result, double? Benchmark);
+public sealed record FamilyTradeRow(string Candidate, DateOnly Session, DateOnly? EndedOn, double? Result, double? Benchmark, double? Cost = null);
 
 // A replay of a registered family rule at a change of its code, as its row on the run log states it: the rule, the
 // code version it was replayed under, the session its record counted from when it ran, whether every trade it
@@ -31,7 +31,9 @@ public sealed record FamilyRecordView(
     double? PValue,
     double Level,
     bool Crossed,
-    string? Restarted = null);
+    string? Restarted = null,
+    double? EdgeAfterCosts = null,
+    int Priced = 0);
 
 // A registered family rule's record: its trades' edge, the result less the benchmark, summed over blocks of 63
 // sessions from the first session on or after the day it registered, a block whole once its last session and
@@ -198,6 +200,11 @@ public static class FamilyRecords
                 var blocks = sums[rule.Candidate];
                 var taken = Looks.Taken(blocks.Count);
 
+                // The edge after costs, beside the record and never in it: each decided trade's result less its own round
+                // trip, less its benchmark, over the decided trades the recorder has priced.
+                // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+                var priced = decided.Where(trade => trade.Cost is not null).ToArray();
+
                 return new FamilyRecordView(
                     rule.Candidate,
                     IsLive(rule.Candidate),
@@ -211,7 +218,9 @@ public static class FamilyRecords
                     taken > 0 ? SignFlip.PValue([.. blocks.Take(Looks.At[taken - 1])]) : null,
                     levels[rule.Candidate].Level,
                     levels[rule.Candidate].Crossed,
-                    starts[rule.Candidate].Restarted);
+                    starts[rule.Candidate].Restarted,
+                    priced.Length > 0 ? priced.Average(trade => trade.Result!.Value - trade.Cost!.Value - trade.Benchmark!.Value) : null,
+                    priced.Length);
             }),
         ];
     }

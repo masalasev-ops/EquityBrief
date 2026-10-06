@@ -2255,9 +2255,11 @@ public partial class NightlyRun
         // surface reads each index's members on the night twice: to count them
         // beside the Universe selector, and to draw an index's members; and from
         // 15.1's third pull request the overnight queue reads the S&P 400's and
-        // 600's members on the session to draft them after the S&P 500's.
+        // 600's members on the session to draft them after the S&P 500's; and
+        // from 15.2's second half the member reader reads the three indices'
+        // members on the session to read each of them.
         Assert.Equal(
-            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "OvernightQueue", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
+            ["CalendarFetcher", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "OvernightQueue", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

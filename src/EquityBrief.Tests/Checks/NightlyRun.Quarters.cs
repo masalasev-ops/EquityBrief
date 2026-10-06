@@ -51,6 +51,16 @@ public partial class NightlyRun
             [["AAPL", "no fundamentals yet"], ["KEYS", "no fundamentals yet"], ["MSFT", "no fundamentals yet"], ["NFLX", "no fundamentals yet"]],
             StoreRows(store, "SELECT ticker, state FROM fundamental_reading WHERE session_date = '2026-09-08' ORDER BY ticker;"));
 
+        // And in the same step, after them and before the listings, the member readings: a row for every member under
+        // its index, each carrying the state the readings wrote, and the switches' row beside them.
+        var members = stages.IndexOf(EquityBrief.Worker.Members.MemberReader.Stage);
+
+        Assert.True(members > read && members < stages.IndexOf(ShortlistBuilder.Stage), string.Join(", ", stages));
+        Assert.Equal(
+            [["GSPC", "AAPL", "no fundamentals yet"], ["GSPC", "KEYS", "no fundamentals yet"], ["GSPC", "MSFT", "no fundamentals yet"], ["GSPC", "NFLX", "no fundamentals yet"]],
+            StoreRows(store, "SELECT index_code, ticker, state FROM member_reading WHERE session_date = '2026-09-08' ORDER BY ticker;"));
+        Assert.Equal([["2026-09-08"]], StoreRows(store, "SELECT session_date FROM switch_reading;"));
+
         // The quarters step asked for each member once, the fill's, and stored what each answer carried.
         Assert.Equal(
             [["AAPL", "fill", "stored"], ["KEYS", "fill", "stored"], ["MSFT", "fill", "stored"], ["NFLX", "fill", "stored"]],

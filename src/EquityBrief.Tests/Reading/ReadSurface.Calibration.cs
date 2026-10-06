@@ -201,6 +201,26 @@ public partial class ReadSurface
             "('T00', '2026-09-14', 'the trend rule', 'the new label holds two nights', '2026-09-10T00:00:00Z', '{}', 'scored')," +
             "('T00', '2026-09-09', 'the trend rule', 'the new label holds two nights', '2026-09-10T00:00:00Z', '{}', 'in_sample');");
 
+        // From 15.2, the S&P 400's and 600's three members the newest night read: M1 holding four fetches that filed the
+        // analysts' rating counts, M2 three, and S1 four fetches of which one filed none, so one of the three holds four
+        // dated counts against the three, nine in ten of them rounded up, analyst coverage waits on. P1, an S&P 500
+        // member holding four, and an older night's member are not counted.
+        string Fetch(string ticker, int day, bool counted) =>
+            $"('{ticker}', '2026-0{day}-01T01:00:00Z', NULL, NULL, NULL, NULL, NULL, {(counted ? "3, 5, 2, 0, 0" : "NULL, NULL, NULL, NULL, NULL")})";
+
+        store.Execute(
+            "INSERT INTO member_reading (index_code, session_date, ticker) VALUES " +
+            "('MID', '2026-09-29', 'M1'), ('MID', '2026-09-29', 'M2'), ('SML', '2026-09-29', 'S1'), ('GSPC', '2026-09-29', 'P1'), ('MID', '2026-09-28', 'M9');" +
+            "INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell) VALUES " +
+            string.Join(", ", new[]
+            {
+                Fetch("M1", 3, true), Fetch("M1", 4, true), Fetch("M1", 5, true), Fetch("M1", 6, true),
+                Fetch("M2", 4, true), Fetch("M2", 5, true), Fetch("M2", 6, true),
+                Fetch("S1", 3, true), Fetch("S1", 4, true), Fetch("S1", 5, true), Fetch("S1", 6, false),
+                Fetch("P1", 3, true), Fetch("P1", 4, true), Fetch("P1", 5, true), Fetch("P1", 6, true),
+                Fetch("M9", 3, true), Fetch("M9", 4, true), Fetch("M9", 5, true), Fetch("M9", 6, true),
+            }) + ";");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
@@ -217,10 +237,12 @@ public partial class ReadSurface
         var lines = Regex.Matches(region, "<li data-trigger=\"([^\"]+)\" data-count=\"(\\d+)\" data-of=\"(\\d+)\">(.*?)</li>")
             .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Of: match.Groups[3].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
 
-        Assert.Equal(["spend cap", "event setups", "trend confirmation", "news labeller"], lines.Keys);
+        Assert.Equal(["spend cap", "event setups", "trend confirmation", "analyst coverage", "news labeller"], lines.Keys);
         Assert.Equal(("2", "20"), (lines["spend cap"].Count, lines["spend cap"].Of));
         Assert.Equal(("0", "250"), (lines["event setups"].Count, lines["event setups"].Of));
         Assert.Equal(("3", "60"), (lines["trend confirmation"].Count, lines["trend confirmation"].Of));
+        Assert.Equal(("1", "3"), (lines["analyst coverage"].Count, lines["analyst coverage"].Of));
+        Assert.Contains("of the S&P 400's and 600's 3 member(s) on the newest night hold four dated rating counts", lines["analyst coverage"].Text, StringComparison.Ordinal);
         Assert.Equal(("0", "20"), (lines["news labeller"].Count, lines["news labeller"].Of));
         Assert.Contains("no stage scores an event-book setup yet, so nothing counts toward it", lines["event setups"].Text, StringComparison.Ordinal);
         Assert.Contains("scored under 'the new label holds two nights' since its window opened", lines["trend confirmation"].Text, StringComparison.Ordinal);

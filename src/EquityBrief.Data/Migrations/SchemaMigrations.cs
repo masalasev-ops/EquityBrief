@@ -686,7 +686,58 @@ public static class SchemaMigrations
         new Migration(63, "create pulled_snapshot and pulled_holding", CreatePulledHoldings),
         new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding, and add family_pick.held_index", CreateIndexFamilies),
         new Migration(65, "create sweep_answer", CreateSweepAnswer),
+        new Migration(66, "create member_reading and switch_reading, and add company's rating counts, reported_quarter's interest expense and family_trade.cost", CreateMemberReadings),
     ];
+
+    // Every reading of every member of the three indices as it stood each night, the market switches an S&P 400's or
+    // 600's rule may read, the analysts' five rating counts each storing fetch files, each quarter's interest expense as
+    // filed with whether the fetch that stored it read one, and the round trip each S&P 500 family trade paid, its
+    // result left as it was.
+    // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+    const string CreateMemberReadings = @"
+        CREATE TABLE member_reading (
+            index_code     TEXT NOT NULL,
+            session_date   TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            close          TEXT,
+            dollar_volume  TEXT,
+            company_value  TEXT,
+            cost           REAL,
+            cost_double    REAL,
+            profit         INTEGER,
+            coverage       INTEGER,
+            state          TEXT,
+            year_high      TEXT,
+            nearness       REAL,
+            since_high     INTEGER,
+            volume_ratio   REAL,
+            industry          TEXT,
+            industry_month    REAL,
+            industry_quarter  REAL,
+            peer_surprise     REAL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+
+        CREATE TABLE switch_reading (
+            session_date     TEXT NOT NULL,
+            ijh_half_year    REAL,
+            ijh_year         REAL,
+            ijr_half_year    REAL,
+            ijr_year         REAL,
+            hyg_average      REAL,
+            hyg_change       REAL,
+            PRIMARY KEY (session_date)
+        ) STRICT;
+
+        ALTER TABLE company ADD COLUMN strong_buy INTEGER;
+        ALTER TABLE company ADD COLUMN buy INTEGER;
+        ALTER TABLE company ADD COLUMN hold INTEGER;
+        ALTER TABLE company ADD COLUMN sell INTEGER;
+        ALTER TABLE company ADD COLUMN strong_sell INTEGER;
+        ALTER TABLE reported_quarter ADD COLUMN interest_expense TEXT;
+        ALTER TABLE reported_quarter ADD COLUMN interest_read INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE family_trade ADD COLUMN cost REAL;
+    ";
 
     // The answer each sweep run states, recorded by the command run after it: the run, the index and the family as the
     // cards name it, the design where a family sweeps more than one, and whether a setting it read met the floors, read by
