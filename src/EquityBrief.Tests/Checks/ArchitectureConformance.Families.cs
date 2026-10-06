@@ -154,11 +154,13 @@ public partial class ArchitectureConformance
     // matrix rows.
     internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows];
 
-    // The sweep answers' catalogue and matrix rows, 15.4.
+    // The sweep answers' catalogue and matrix rows, 15.4, and the member reader's, 15.2's second half.
     internal static string[] SweepAnswersRows =>
     [
         CheckReach.Key(Scope.CatalogueTable, "Sweep answers"),
         CheckReach.Key(Scope.MatrixTable, "Sweep answers"),
+        CheckReach.Key(Scope.CatalogueTable, "Member reader"),
+        CheckReach.Key(Scope.MatrixTable, "Member reader"),
     ];
 
     // The index families' catalogue and matrix rows, 15.1's second half.
@@ -285,9 +287,10 @@ public partial class ArchitectureConformance
         // fund's file row and the Run page's members, 979 from 15.2's first half, section 17's three readings and
         // section 18's company filing no dated income, 981 from 15.3, section 18's filing the history pull cannot
         // read and holding matched to no code, 983 from 15.1's second half, the index families' catalogue and matrix
-        // rows, and 985 from 15.4, the sweep answers' catalogue and matrix rows.
+        // rows, 985 from 15.4, the sweep answers' catalogue and matrix rows, and 987 from 15.2's second half, the member
+        // reader's.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 985),
+            (789, 853, 6, 4, 855, 876, 987),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

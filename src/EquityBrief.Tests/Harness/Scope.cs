@@ -3091,6 +3091,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "Member reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, market series, calendar, indicators, reported quarters, companies and fundamental readings it reads and the member readings and switch readings it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Member reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Sweep answers")] = new Scoped(
             Verdict.Pass,
             "the class declares the sweep answers it writes and the run log it appends to and that it reads no store, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
