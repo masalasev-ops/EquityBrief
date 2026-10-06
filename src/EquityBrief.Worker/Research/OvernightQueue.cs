@@ -41,11 +41,12 @@ public sealed record QueueOutcome(
     public int ModelCalls => Completed.Sum(pass => pass.ModelCalls) + (Stopped?.ModelCalls ?? 0);
 }
 
-// The overnight queue. After the arithmetic has closed, every name in the index whose
-// research is missing or stale, the names on tonight's list first in the swing filter's
-// order, then the names one gate short in the order "Close to a buy point" draws them,
-// each given a pass of the local lane's sections, until the configured number of
-// hours has passed. Every name rather than the listed ones, because the one section the
+// The overnight queue. After the arithmetic has closed, every name in the indices the night
+// reads whose research is missing or stale, the names on tonight's list first in the swing
+// filter's order, then the S&P 400's and the S&P 600's lists each in its page's order, then
+// the names one gate short in the order "Close to a buy point" draws them, then the S&P 500's
+// other members and the 400's and 600's, each given a pass of the local lane's sections,
+// until the configured number of hours has passed. Every name rather than the listed ones, because the one section the
 // queue writes explains the night's figures and every name's page draws them.
 // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
 //
@@ -74,9 +75,11 @@ public sealed class OvernightQueue(
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
@@ -139,6 +142,17 @@ public sealed class OvernightQueue(
         WHERE g.session_date = $session AND g.version <> '" + ReplayedResults.Version + @"';
     ";
 
+    // An S&P 400's or 600's list on the night in its page's order, and its members on the night, each holding a span
+    // over it, the two the queue drafts after the S&P 500's list and after the S&P 500's members.
+    // see: The overnight queue drafts the three indices' lists before every other member, the S&P 500's first
+    const string IndexListedOnNight = "SELECT ticker FROM index_family_pick WHERE index_code = $index AND session_date = $session AND state = 'listed' ORDER BY place, ticker;";
+
+    const string IndexMembersOnNight = @"
+        SELECT DISTINCT ticker FROM membership
+        WHERE index_code = $index AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)
+        ORDER BY ticker;
+    ";
+
     const string SettingsOfVersion = "SELECT settings FROM filter_version WHERE version = $version;";
 
     const string TriggerEventsUpTo = "SELECT trigger_event FROM gate_result WHERE ticker = $ticker AND session_date <= $session ORDER BY session_date DESC;";
@@ -182,7 +196,10 @@ public sealed class OvernightQueue(
     public static string PassRunId(string nightRunId, string ticker) =>
         nightRunId + "-queue-" + ticker.ToUpperInvariant();
 
-    public async Task<QueueOutcome> RunAsync(string nightRunId, DateOnly night, CancellationToken cancellation = default)
+    // Given the wider indices the night reads, their lists follow the S&P 500's in the order handed in, each in its page's
+    // order, and their members follow the S&P 500's; handed none, the queue reads the S&P 500's alone.
+    // see: The overnight queue drafts the three indices' lists before every other member, the S&P 500's first
+    public async Task<QueueOutcome> RunAsync(string nightRunId, DateOnly night, CancellationToken cancellation = default, IReadOnlyList<string>? wider = null)
     {
         var startedAt = clock.UtcNow;
         var stopAt = startedAt + limit;
@@ -199,13 +216,25 @@ public sealed class OvernightQueue(
         // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
         var close = await CloseAsync(connection, night, cancellation);
         var near = close.ToHashSet(StringComparer.Ordinal);
+        var widerListed = new List<string>();
+        var widerMembers = new List<string>();
 
-        members =
+        foreach (var index in wider ?? [])
+        {
+            widerListed.AddRange(await TickersAsync(connection, IndexListedOnNight, index, night, cancellation));
+            widerMembers.AddRange(await TickersAsync(connection, IndexMembersOnNight, index, night, cancellation));
+        }
+
+        (string Ticker, int Passed)[] ordered =
         [
             .. members.Where(member => member.Passed > 0),
+            .. widerListed.Select(ticker => (ticker, 0)),
             .. close.Select(ticker => (ticker, 0)),
             .. members.Where(member => member.Passed == 0 && !near.Contains(member.Ticker)),
+            .. widerMembers.Select(ticker => (ticker, 0)),
         ];
+
+        members = [.. ordered.DistinctBy(member => member.Ticker, StringComparer.Ordinal)];
 
         using var held = awake.Hold(AwakeReason);
 
@@ -390,6 +419,27 @@ public sealed class OvernightQueue(
         }
 
         return members;
+    }
+
+    // The tickers one of a wider index's queries reads on the night, in the order it reads them.
+    static async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, string query, string index, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = query;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$session", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var tickers = new List<string>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            tickers.Add(reader.GetString(0));
+        }
+
+        return tickers;
     }
 
     // The members "Close to a buy point" draws on the night, in its order: each result one gate short with

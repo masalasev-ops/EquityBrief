@@ -38754,3 +38754,38 @@ Verified:   `tools/ci.ps1` green over 96da1f1, the tree main holds at 7f231c9 bu
             53 of 53 passing.
 Carried:    each index's Tonight page read back after the night of 2026-10-06, the line on both breakouts' cards and
             the S&P 600's drift's and on no other; then 15.1's third pull request and the queue the 15.4 ruling sets.
+
+### 15.1 - the overnight queue across the three indices: the S&P 500's list, then the S&P 400's and the S&P 600's each in its page's order, before every other member, and an S&P 400 member's pass written from its facts file   2026-10-06
+
+Built:      the night hands the overnight queue the wider indices it reads, as it hands every stage storing what a
+            member needs. The queue drafts the S&P 500's list in its page's order, then the S&P 400's and the S&P 600's
+            lists each in its page's order, read off the index families' picks, then the S&P 500's names one gate
+            short and its other members as before, then the S&P 400's and 600's other members in ticker order, read
+            off their spans on the session, a name drafted once; handed no wider index it reads the S&P 500's alone.
+            The first night over the three indices, of 2026-10-05, wrote a facts file for each of its 1,506 members,
+            233,770 facts, which is what this pull request waited for. The decision "The overnight queue drafts the
+            three indices' lists before every other member, the S&P 500's first"; the queue's catalogue and matrix
+            rows, its night step and section 17's row; the roster's nightly-run clause; the prior text of each edit in
+            `CHANGELOG.md`.
+Tests:      1896, from 1895: one added, the queue's order over a night reading the S&P 400 and 600 with an S&P
+            400 member's pass written; the three indices' night handed a queue answering nothing, the fixture holding
+            no recorded draft of a wider member; the membership reads naming the queue.
+Claims:     985, unchanged: the queue's rows were reworded, and nightly-run reaches its step by the new words.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights' own,
+            the swing filter's and the rule versions' lists; neither shipped file this tree edits is in any of them.
+Mutated:    the rule, stated before the run: each property the third pull request's done condition names broken alone,
+            made by hand over the working tree at 74323b6, filtered to the queue's order test and reverted.
+            Q1 the S&P 600's list drafted before the 400's: red.
+            Q2 the wider lists drafted after the S&P 500's other members: red.
+            Q3 an index's list read in ticker order rather than its page's: red, AA drafted before XRAY.
+            Q4 the wider members drafted before the S&P 500's other members: red.
+            Q5 the night handing its queue no wider index: red, its row queueing the S&P 500's four alone.
+            Results: Q1 to Q5 each red where stated, each reverted, and the queue's tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a8cfe2a.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1896 of 1896 tests ran with none failed, migrations 0
+            to 65 with none pending, schema version 65, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 985 claims, 985 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 996
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1896 of 1896 tests ran.
+Carried:    the queue's row on the night of 2026-10-06 read for the S&P 400's and 600's lists after the S&P 500's;
+            15.2's second pull request; then the queue the 15.4 ruling sets.
