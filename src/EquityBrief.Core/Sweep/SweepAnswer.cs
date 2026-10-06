@@ -24,6 +24,7 @@ public sealed record SweepAnswer(
     // The one line a card draws while the newest answer of each of its family's designs says none passed.
     public const string Line = "Its sweep found no setting that passed the floors";
 
+    [JsonIgnore]
     public string Word => Passed ? PassedWord : NonePassedWord;
 
     public string Json() => JsonSerializer.Serialize(this);

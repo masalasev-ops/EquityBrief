@@ -84,7 +84,7 @@ public sealed class SweepAnswers(IClock clock, string databaseFile, string sweep
         {
             command.Transaction = transaction;
             command.CommandText = AppendRun;
-            command.Parameters.AddWithValue("$run_id", RunPrefix + run);
+            command.Parameters.AddWithValue("$run_id", FormattableString.Invariant($"{RunPrefix}{run}-{started:yyyyMMddTHHmmss.fffffffZ}"));
             command.Parameters.AddWithValue("$stage", Stage);
             command.Parameters.AddWithValue("$started_at", Instant(started));
             command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
