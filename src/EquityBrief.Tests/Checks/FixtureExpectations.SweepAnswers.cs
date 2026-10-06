@@ -24,8 +24,10 @@ public partial class FixtureExpectations
         Assert.False(SweepLine.Drawn([Answered("r1", null, SweepAnswer.NonePassedWord, 10), Answered("r2", null, SweepAnswer.PassedWord, 11)], null));
         Assert.True(SweepLine.Drawn([Answered("r1", null, SweepAnswer.PassedWord, 9), Answered("r2", null, SweepAnswer.NonePassedWord, 10)], null));
 
-        // Two designs: drawn only where both newest say none passed.
+        // Two designs: drawn only where both newest say none passed, one design passing being a result even where the
+        // other's run after it found none.
         Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 10)], null));
+        Assert.False(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.PassedWord, 10), Answered("b1", "b", SweepAnswer.NonePassedWord, 11)], null));
         Assert.True(SweepLine.Drawn([Answered("a1", "a", SweepAnswer.NonePassedWord, 10), Answered("b1", "b", SweepAnswer.PassedWord, 9), Answered("b2", "b", SweepAnswer.NonePassedWord, 11)], null));
 
         // A freeze registered after the newest answer takes it away; one at its very instant does too, the freeze being

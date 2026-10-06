@@ -1,0 +1,6 @@
+# The remedy of 15.4 (the S&P 400's and 600's sweeps and their answers), as its PROGRESS entry prints it: the merge adds
+# migration 65, the sweep answers' table, which nothing fills until the operator records a run's answer. The migration
+# runs alone; the ten searches are then run again from the merged build by hand, and each run's answer is recorded by
+# its folder's name with sweep-answer, a name a remedy file cannot hold before the run starts. No provider request, no
+# model call and nothing bought. Run after the merge, when no night is running.
+migrate
