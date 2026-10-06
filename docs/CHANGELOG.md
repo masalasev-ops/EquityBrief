@@ -11550,3 +11550,49 @@ Was:
 Now:
 > each the same, then a clause from 16.1: each of the card's first five lines worked by hand on both sides of its value with each value moved alone, the earnings line's warning, note and tick, the cover at the coverage's floor, the S&P 400's cards read from its own breadth and sectors, and a rule's record the sweep's own reading; the step writing each index's cards after the index families, a failed index's cards named on the stage's row while the others are written, and a refused step named while the night closes; and each card on each of the three indices drawn beneath its row and at the top of the stock's page, read back against the stored card, each index's page drawing its own, its record under the rule's own heading naming its index and no word of the stock, and the card in one column on a phone's screen
 Why: the roster is where a check states what it asserts, and the tests the clauses name read the cards' lines, the night's step and the pages.
+
+### 2026-10-06 - ARCHITECTURE.html - the prose writer calls the flagged local model and waits for its load, section 17 names the model 6.10 measured, and section 18 gains two rows
+Authorised by: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+Was:
+> Prose writer: writes whatever sections the local lane holds, from numbers and stored research, on the local model, at no cost.
+
+> Overnight queue, why: 6.10 measured 12 passes on the local model the shipped configuration names, over the fixture's four listed names on three nights
+Now:
+> Prose writer: writes whatever sections the local lane holds, from numbers and stored research, on the local model its settings flag as the default, loaded at its profile's context and waited for before the first call, at no cost.
+
+> Overnight queue, why: 6.10 measured 12 passes on Qwen 3.5 9B, the local model the shipped configuration named then, over the fixture's four listed names on three nights
+
+> and section 18's rows "The local model is not loaded or still loading when a pass reaches it" and "The local lane's settings flag no model as the default or more than one", each citing its decision
+Why: the operator's rulings of 2026-10-06, Gemma 4 the default local model chosen by a flag in its settings and the lane waiting for its model to load; the measurement was Qwen's and the shipped configuration now names Gemma.
+
+### 2026-10-06 - BUILD_PLAN.md - the local lane's client cites the decision that superseded its own
+Authorised by: The local model answers at an OpenAI-compatible endpoint, and the lane calls the one model its settings flag as the default
+Was:
+> ... and a key configured for that lane refused rather than sent (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration).
+Now:
+> the same, citing the decision that superseded it.
+Why: no spec cites a decision under "Previously decided".
+
+### 2026-10-06 - RUNBOOK.md - the local model's settings are a profile a model with one flagged, the switch made in the secrets file, and the lane waiting for its model to load
+Authorised by: The local lane loads its model at the context its settings name and waits for it to load, one model at a time
+Was:
+> The local model takes settings and never a key. Each has a default measured on the machine this was first built for, so a blank file runs; set one where the machine or the runtime differs. They are configuration rather than secrets and may sit in either file.
+
+> a table of `EquityBrief:Models:Local:BaseAddress`, `Model`, `TimeoutSeconds` and `ContextTokens` with the defaults `http://127.0.0.1:1234/v1/`, `qwen/qwen3.5-9b`, `300` and `50176`, beside the lane's row
+
+> **Set the context to what the runtime reports for the loaded model**, not to what the model could hold. A section whose prompt and answer would not fit is refused before any call and left for the paid path, and the run log names it with the estimate it was refused on; a context set above what is loaded lets the call go out, and the runtime refuses it with a 400 naming its own count instead. A value that is not a whole number is refused rather than read as the default.
+
+> **A key at `EquityBrief:Models:Local:ApiKey` is refused, in either file and on a fixture run as well as a live one.** A local model that asks for a key is a model on somebody else's machine, and the overnight queue is allowed to call this lane because it costs nothing (see: The local model answers at an OpenAI-compatible endpoint, and which model answers is configuration).
+
+> 6.10 measured 12 passes on the local model the settings name, over the fixture's four listed names on three nights
+Now:
+> each model a profile under `EquityBrief:Models:Local:Profiles` with its five values and `IsDefault`, no value in the code, the two shipped profiles in a table, the switch as two blocks to paste into the secrets file, the lane loading its model at its profile's context and waiting for it, the context paragraph saying the lane loads at it, the key refused in a profile too and the keys read before the profiles refused; and 6.10's measurement named as Qwen 3.5 9B's
+Why: the operator's rulings of 2026-10-06; the night reads its settings from the clean copy's shipped file and the checkout's secrets file, so a switch made in the shipped file alone would not reach it.
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations reads the local lane's profiles and its load
+Authorised by: The local lane loads its model at the context its settings name and waits for it to load, one model at a time
+Was:
+> fixture-expectations' row ending "and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost |"
+Now:
+> the same, then a clause from the 16.1 ruling: the lane calling the one profile its settings flag with each refused shape, and over the runtime's captured answers the load at the profile's context waited for, another model unloaded first, a listed model's first call alone carrying the allowance and each failure the local model unavailable
+Why: the roster is where a check states what it asserts, and the tests the clause names read the settings and the captured answers.

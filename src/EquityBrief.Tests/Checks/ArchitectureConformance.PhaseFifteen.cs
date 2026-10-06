@@ -42,8 +42,8 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document gains after phase 15's report, named beside the pair and never counted in it: from 16.1 the
-    // decision card's rows.
-    internal static string[] AfterPhaseFifteen => [.. CardRows];
+    // decision card's rows, and the 16.1 ruling's section 18 rows on the local model's load and its settings.
+    internal static string[] AfterPhaseFifteen => [.. CardRows, .. FixtureExpectations.LocalModelClaims];
 
     // 16.1's rows: the decision cards' and the rule recorder's catalogue and matrix rows, their two stores, section 17's
     // four values and section 18's four failures.

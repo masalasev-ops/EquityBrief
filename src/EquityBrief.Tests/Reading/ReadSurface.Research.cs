@@ -350,7 +350,7 @@ public partial class ReadSurface
 
         using (store)
         {
-            using var client = new HttpClient(new NothingAnswers()) { BaseAddress = new Uri(LocalModelSettings.DefaultBaseAddress) };
+            using var client = new HttpClient(new NothingAnswers()) { BaseAddress = new Uri(FixtureExpectations.LocalSettings().BaseAddress) };
 
             await new ProseWriter(
                     new OpenAiCompatibleModelFeed(client, FixtureExpectations.LocalSettings()),
@@ -378,7 +378,7 @@ public partial class ReadSurface
             // takes it off the page, because a written section is drawn as written.
             Assert.Empty(NameScreen.NotWritten(
                 Rows(store, "SELECT detail FROM run_log WHERE run_id = 'prose-unavailable-page';").Single()[0],
-                [.. FixtureExpectations.ReleaseLane.Select(section => new WrittenSectionRow(section, 1, new DateOnly(2026, 9, 8), LocalModelSettings.DefaultModel, "prose", "[]"))],
+                [.. FixtureExpectations.ReleaseLane.Select(section => new WrittenSectionRow(section, 1, new DateOnly(2026, 9, 8), FixtureExpectations.LocalSettings().Model, "prose", "[]"))],
                 []));
         }
     }

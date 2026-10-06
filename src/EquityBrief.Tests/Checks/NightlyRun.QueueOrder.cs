@@ -38,7 +38,7 @@ public partial class NightlyRun
 
         return new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            sections => new ProseWriter(local, FixtureExpectations.LocalSettings(), sections, clock, store.DatabaseFile),
             new ClaimChecker(clock, store.DatabaseFile),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
@@ -105,6 +105,6 @@ public partial class NightlyRun
         Assert.Empty(pass.NotWritten);
         Assert.Equal([ClaimChecker.Accepted], Texts(store, "SELECT DISTINCT status FROM research_section WHERE ticker = 'AA';"));
         Assert.Equal(["[]"], Texts(store, "SELECT DISTINCT source_ids FROM research_section WHERE ticker = 'AA';"));
-        Assert.Equal([LocalModelSettings.DefaultModel], Texts(store, "SELECT DISTINCT model FROM research_section WHERE ticker = 'AA';"));
+        Assert.Equal([FixtureExpectations.LocalSettings().Model], Texts(store, "SELECT DISTINCT model FROM research_section WHERE ticker = 'AA';"));
     }
 }

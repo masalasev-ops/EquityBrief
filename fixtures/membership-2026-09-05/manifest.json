@@ -1322,6 +1322,48 @@
       "query": "https://www.ishares.com/us/products/239774/ishares-core-sp-smallcap-etf/1467271812596.ajax?fileType=csv&fileName=IJR_holdings&dataType=fund&asOfDate=20190131",
       "fetchedAt": "2026-10-04T21:04:36Z",
       "trimmedTo": "a note of what came back, with the answer's opening line and the holdings dates the page offers as served, of its 1,472,778 bytes. Kept as the dated holdings link answering the fund's product page and not its holdings, the page offering 2026-10-01, 2026-09-30 and 2025-12-31 alone."
+    },
+    {
+      "file": "local-runtime-models-gemma-loaded.json",
+      "endpoint": "api/v1/models on the operator's local model runtime, LM Studio's own interface beside its OpenAI-compatible one",
+      "query": "GET http://127.0.0.1:1234/api/v1/models, after a load of google/gemma-4-26b-a4b-qat at a context of 50,176 tokens had answered",
+      "fetchedAt": "2026-10-06T16:13:01Z",
+      "trimmedTo": "nothing. The whole list of the four models the runtime holds, Gemma 4 with its one loaded instance and the context it was loaded at, the other three with none. The list names an instance from the moment its load starts, which a call made during a load on demand showed, so a listed instance is a model loaded or loading."
+    },
+    {
+      "file": "local-runtime-models-none-loaded.json",
+      "endpoint": "api/v1/models on the operator's local model runtime, LM Studio's own interface beside its OpenAI-compatible one",
+      "query": "GET http://127.0.0.1:1234/api/v1/models, with no model loaded",
+      "fetchedAt": "2026-10-06T16:24:30Z",
+      "trimmedTo": "nothing. The whole list of the four models the runtime holds, none of them loaded: the same answer as the list with Gemma 4 loaded, its instance gone."
+    },
+    {
+      "file": "local-runtime-load-answered.json",
+      "endpoint": "api/v1/models/load on the operator's local model runtime, LM Studio's own interface",
+      "query": "POST http://127.0.0.1:1234/api/v1/models/load with model google/gemma-4-26b-a4b-qat and context_length 50176, with no model loaded",
+      "fetchedAt": "2026-10-06T16:13:43Z",
+      "trimmedTo": "nothing. The whole answer, sent once the model was loaded and not before: the call took 15.3 seconds and its answer states the same load time and a status of loaded."
+    },
+    {
+      "file": "local-runtime-load-refused.json",
+      "endpoint": "api/v1/models/load on the operator's local model runtime, LM Studio's own interface",
+      "query": "POST http://127.0.0.1:1234/api/v1/models/load with model no-such/model and context_length 50176",
+      "fetchedAt": "2026-10-06T16:15:41Z",
+      "trimmedTo": "nothing. The whole body of a 404, an error object whose message names the model the runtime does not hold."
+    },
+    {
+      "file": "local-runtime-unload-answered.json",
+      "endpoint": "api/v1/models/unload on the operator's local model runtime, LM Studio's own interface",
+      "query": "POST http://127.0.0.1:1234/api/v1/models/unload with instance_id google/gemma-4-26b-a4b-qat, the one instance loaded",
+      "fetchedAt": "2026-10-06T16:13:23Z",
+      "trimmedTo": "nothing. The whole answer, naming the instance unloaded, in 1.6 seconds."
+    },
+    {
+      "file": "local-gemma-answered.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving google/gemma-4-26b-a4b-qat",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions with a one-sentence system instruction and a one-sentence question, temperature 0, max_tokens 1024 and reasoning_effort none, as the lane sends a section, against the model loaded at a context of 50,176 tokens",
+      "fetchedAt": "2026-10-06T16:14:48Z",
+      "trimmedTo": "nothing. The whole answer: reasoning_effort none turns this model's reasoning off as it does the earlier model's, an empty reasoning_content and no reasoning tokens, and the answer stops on stop. A call naming the model while it was not loaded loaded it on demand at the runtime's own context of 32,000 tokens and answered in 19.8 seconds, which is why the lane loads the model itself at its profile's context before calling it."
     }
   ]
 }

@@ -20,12 +20,12 @@ public sealed record NightQueue(
     TimeSpan Limit,
     IMachineAwake Awake)
 {
-    // A night over a capture: the recorded local model in the same folder, this machine's
-    // default lane and settings, and the default limit.
+    // A night over a capture: the recorded local model in the same folder under the profile its
+    // recordings were made under, this machine's default lane, and the default limit.
     public static NightQueue FromFixture(string folder, IMachineAwake? awake = null) =>
         new(
             new RecordedLocalModelFeed(folder),
-            new LocalModelSettings(null, null, null, null, null),
+            LocalLane.OfFixture(folder),
             ProseWriter.DefaultLane,
             TimeSpan.FromHours(OvernightQueue.DefaultHours),
             awake ?? new MachineAwake());
@@ -38,7 +38,7 @@ public sealed record NightQueue(
         Resolve(
             source,
             fixtureFolder,
-            LocalLane.Settings(configuration),
+            LocalLane.For(configuration, source, fixtureFolder),
             LocalLane.Sections(configuration),
             OvernightQueue.Limit(configuration),
             awake);

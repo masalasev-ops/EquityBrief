@@ -97,6 +97,8 @@ public partial class FixtureExpectations
             .. IndexHeavyweightFreezeClaims,
             // 16.1, the decision card: section 17's four values and section 18's four failures.
             .. CardClaims,
+            // The local model chosen by a flag in its settings: section 18's rows on its load and on its settings.
+            .. LocalModelClaims,
             // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.
