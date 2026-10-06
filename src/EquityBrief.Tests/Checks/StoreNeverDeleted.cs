@@ -66,6 +66,8 @@ public class StoreNeverDeleted
 
         // Each stated with what it acts on, and none of it the store.
         //
+        // AccountPlan writes the account settings to a file beside their own under the data root and moves it over
+        // theirs, so a write that fails leaves the settings as they were; neither file is the store.
         // ComparisonCommand and SourceMeasurementRun write a report file into a folder the operator names.
         // DrainLauncher copies the worker's build into a fresh partial folder, with no overwrite, moves the
         // finished copy into place and removes a partial or an old one, under the data root's own folder
@@ -82,6 +84,8 @@ public class StoreNeverDeleted
         // read; the store itself it only reads, through SQLite's own backup.
         Assert.Equal(
             [
+                "AccountPlan.cs: File.Move(next)",
+                "AccountPlan.cs: File.WriteAllText(next)",
                 "ComparisonCommand.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
                 "ContextIdeasRunner.cs: File.WriteAllText(figures)",
                 "ContextIdeasRunner.cs: File.WriteAllText(report)",

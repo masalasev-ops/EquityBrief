@@ -26,7 +26,7 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // Nothing in it derives a figure. Every value is the stored column, and the one
 // thing that is worked out is which of the four momentum readings exist, which
 // is a lookup in a list the indicator arithmetic already carries.
-// see: A screen reads and renders, and computes nothing
+// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
 public static class NameScreen
 {
     // The three averages drawn on a price axis. The momentum readings are not
@@ -188,7 +188,7 @@ public static class NameScreen
     // earnings basis they were struck on, the market value likewise, the close and
     // the extremes are bars, and the averages, the momentum readings and the
     // typical daily move are the indicator engine's own rows.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public static string FactStrip(
         string ticker,
         decimal? close,
@@ -346,7 +346,7 @@ public static class NameScreen
     // stored value on its cell. Nothing here works a figure out: the margin was
     // computed by the fetcher from the two figures in its own filing, and the
     // valuation was copied from the provider with the earnings basis beside it.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
@@ -467,7 +467,7 @@ public static class NameScreen
     // being the fetcher's, and each row's element carries the stored value whole. The analysts'
     // target price is not among them, for the reason the facts file does not carry it: set
     // beside the company's own figures, an analyst's estimate reads as one of them.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
     static string Snapshot(JsonElement payload, string currency)
@@ -571,7 +571,7 @@ public static class NameScreen
     // column. A screen that guessed would be a screen deciding what an absence
     // meant, and the three reasons a part can be absent are exactly what this
     // column exists to tell apart.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     static IReadOnlyDictionary<string, string> Attribution(string source)
     {
         try
@@ -934,7 +934,7 @@ public static class NameScreen
     // The sizing arithmetic and the earnings rule, as the plan section states
     // them. Every figure is read off the ladder row, which derived them from its
     // own prices, so nothing here computes and nothing can drift.
-    // see: A screen reads and renders, and computes nothing
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
     public static string Arithmetic(LadderRow? ladder)
     {
         if (ladder is null)
@@ -1118,7 +1118,9 @@ public static class NameScreen
         MemberReadingRow? memberReading = null,
         RatingsRow? ratings = null,
         // The name's cards on the night, the family that listed it first in the page's order.
-        IReadOnlyList<DecisionCardRow>? decisionCards = null)
+        IReadOnlyList<DecisionCardRow>? decisionCards = null,
+        // The account and the taken trades its card draws, none for an export or an earlier night.
+        CardContext? cardContext = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1258,7 +1260,7 @@ public static class NameScreen
             memberReading is null ? null : Member(memberReading, ratings),
             (decisionCards ?? [])
                 .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
-                .Select(CardScreen.View)
+                .Select(card => CardScreen.View(card, cardContext))
                 .FirstOrDefault());
     }
 

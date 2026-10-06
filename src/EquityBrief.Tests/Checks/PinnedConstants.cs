@@ -506,6 +506,9 @@ public class PinnedConstants
             new("Card cover floor", "2", Core.Cards.CardSettings.DefaultCoverFloor, "CardSettings.DefaultCoverFloor"),
             new("Card held share", "0.75", (decimal)Core.Cards.CardSettings.DefaultHeldShare, "CardSettings.DefaultHeldShare"),
             new("Card round trip", "0.10", (decimal)Core.Cards.CardSettings.DefaultRoundTripRisks, "CardSettings.DefaultRoundTripRisks"),
+            // The card's plan in money and its sixth line, 16.2.
+            new("Card position cap", "0.2", Core.Cards.AccountSettings.ProposedCap, "AccountSettings.ProposedCap"),
+            new("Card sector open trades", "2", Core.Cards.CardLines.SectorOpenWarnAt, "CardLines.SectorOpenWarnAt"),
         ];
     }
 

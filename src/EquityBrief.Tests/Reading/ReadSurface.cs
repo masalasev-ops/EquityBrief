@@ -105,6 +105,10 @@ public partial class ReadSurface
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 
+            // 16.2, a pick's plan in the operator's money and the card's presses: section 17's two values and section
+            // 18's two rows.
+            .. TakenClaims,
+
             // 12.3, the Calibration region and section 17's two bands.
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
             CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),

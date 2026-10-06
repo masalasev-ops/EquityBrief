@@ -423,7 +423,7 @@ public sealed class FundamentalsFetcher : IComponent
                 // nothing in it is derived, and here rather than on the screen,
                 // which reads and renders and computes nothing. A margin is a
                 // property of the filing, so it belongs on the filing's row.
-                // see: A screen reads and renders, and computes nothing
+                // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
                 grossMargin = Money(Margined(quarter.Figures.GrossProfit, quarter.Figures.Revenue)),
                 netMargin = Money(Margined(quarter.Figures.NetIncome, quarter.Figures.Revenue)),
             },

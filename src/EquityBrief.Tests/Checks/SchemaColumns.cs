@@ -63,6 +63,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Decision cards"),
             CheckReach.Key(Scope.StoresTable, "Rule records"),
 
+            // 16.2, the operator's taken trades.
+            CheckReach.Key(Scope.StoresTable, "Taken trades"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

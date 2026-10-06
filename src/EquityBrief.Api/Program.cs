@@ -202,9 +202,9 @@ app.MapGet("/marks/level-chart/{ticker}", async (
 // asserts the shipped path rather than a copy of it. A route that assembled the
 // region itself would be a second composer, and the one thing a test could then
 // prove is that the test agrees with itself.
-app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
+app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store) =>
 {
-    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: false);
+    var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: false, cardContext: await CardContextAsync(read, store));
 
     // The link to the file, outside the region, so the file does not carry it.
     return Results.Content(ReportExporter.Link(ticker) + name.Region, "text/html; charset=utf-8");
@@ -220,13 +220,13 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
 // cannot be read is tonight's page with a line saying what was asked for, as an unknown route
 // is tonight's list with one.
 // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
-app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
+app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, StoreLocation store) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
     if (!DateOnly.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var asked))
     {
-        var tonight = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false);
+        var tonight = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false, cardContext: await CardContextAsync(read, store));
 
         return Results.Content(
             SinglePageApp.NotANight(date) + ReportExporter.Link(ticker) + tonight.Region,
@@ -254,7 +254,7 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
 });
 
 // The name screen's region, read here and composed by the app, for the page and for the file.
-static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null)
+static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null)
 {
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
@@ -418,7 +418,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // rating counts as its newest fetch on or before that night filed them.
         memberReading: await read.MemberReadingAsync(ticker, on),
         ratings: await read.RatingsAsync(ticker, on),
-        decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null);
+        decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null,
+        // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
+        cardContext: export ? null : cardContext);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -699,6 +701,12 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
     return await read.SpentRowsAsync(from, to);
 }
 
+// What the cards a page draws are handed beyond the night's rows: the operator's account where it is set, their taken
+// trades, and the card's presses, which a page the operator reads draws and an export never does.
+// see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+static async Task<CardContext> CardContextAsync(ReadApi read, StoreLocation store) =>
+    new(EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot), await read.OpenTakenTradesAsync(), await read.TakenTradesAsync(), Pressable: true);
+
 // How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
 // night's run log rows and the night holding the lock, if one does.
 // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
@@ -833,6 +841,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         // see: No family on any index is set aside or hidden by a test result without the operator's word
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
         var indexRegister = await read.RegisteredCandidatesAsync();
+        var indexCardContext = await CardContextAsync(read, store);
         var indexCards = CardScreen.WithCards(
             TonightScreen.WithSweepLines(
                 TonightScreen.WithIndexFreezes(
@@ -849,7 +858,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     indexNight),
                 indexAnswers,
                 family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight)),
-            await read.DecisionCardsAsync(reading.Code, dated));
+            await read.DecisionCardsAsync(reading.Code, dated),
+            indexCardContext);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
@@ -893,7 +903,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                             [.. indexAnswers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
                             TonightScreen.IndexFrozenAt(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight)),
                     },
-                    boughtCards),
+                    boughtCards,
+                    indexCardContext),
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading)),
             "text/html; charset=utf-8");
     }
@@ -1075,6 +1086,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     var answers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
     // Each pick with the card the night stored for it, opened in place beneath its row.
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+    var cardContext = await CardContextAsync(read, store);
     var cards = onThePage is null || gates is null
         ? null
         : CardScreen.WithCards(
@@ -1082,7 +1094,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                 TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings),
                 answers,
                 family => TonightScreen.FrozenAt(family, register, dated)),
-            await read.DecisionCardsAsync(reading.Code, dated));
+            await read.DecisionCardsAsync(reading.Code, dated),
+            cardContext);
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -1097,7 +1110,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     [.. answers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
                     TonightScreen.FrozenAt(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)),
             },
-            await read.BoughtCardsAsync(reading.Code, dated));
+            await read.BoughtCardsAsync(reading.Code, dated),
+            cardContext);
     var line = cards is null
         ? null
         : TonightScreen.Line(
@@ -1214,6 +1228,123 @@ app.MapPost(SinglePageApp.UnwatchPostRoute + "{ticker}", async (string ticker, H
         "text/html; charset=utf-8",
         statusCode: written.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
 });
+
+// The account's page and its press: the settings read from their own file under the data root and written whole by
+// the press, never into the store, a log or the run log.
+// see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+app.MapGet("/screens/account", (SinglePageApp page, StoreLocation store) =>
+{
+    var held = EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
+
+    return Results.Content(
+        page.AccountRegion(held?.Size, held?.RiskPercent, held?.PositionCap, EquityBrief.Core.Cards.AccountSettings.ProposedCap),
+        "text/html; charset=utf-8");
+});
+
+app.MapPost(SinglePageApp.AccountPostRoute, async (HttpRequest request, StoreLocation store) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was saved");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    if (Amount(form?["size"].ToString()) is not { } size || Amount(form?["risk"].ToString()) is not { } risk || Amount(form?["cap"].ToString()) is not { } cap)
+    {
+        return Said(false, "Nothing was saved: each of the three must be a number.");
+    }
+
+    if (EquityBrief.Core.Cards.AccountSettings.Refusal(size, risk, cap) is { } refusal)
+    {
+        return Said(false, "Nothing was saved: " + refusal);
+    }
+
+    EquityBrief.Core.Cards.AccountFile.Write(store.DataRoot, new EquityBrief.Core.Cards.AccountSettings(size, risk, cap));
+
+    return Said(true, "Saved. Each pick's card sizes its plan from these.");
+});
+
+// A pick's card's presses: a trade taken from it, one removed before a night has followed it, and an exit recorded.
+// see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+app.MapPost(SinglePageApp.TakenPostRoute + "{index}/{night}/{family}/{ticker}", async (string index, string night, string family, string ticker, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was taken");
+    }
+
+    if (!DateOnly.TryParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on))
+    {
+        return Said(false, "Nothing was taken: the card's night could not be read.");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+    var price = form?["price"].ToString() is { Length: > 0 } typed ? Amount(typed) : null;
+    var date = form?["date"].ToString() is { Length: > 0 } dated ? Day(dated) : null;
+
+    if ((form?["price"].ToString() is { Length: > 0 } && price is null) || (form?["date"].ToString() is { Length: > 0 } && date is null))
+    {
+        return Said(false, "Nothing was taken: a fill must be a number and its date a day.");
+    }
+
+    var written = await read.TakeAsync(index, on, family, ticker, price, date);
+
+    return Said(written.Written, written.Line);
+});
+
+app.MapPost(SinglePageApp.NotTakenPostRoute + "{ticker}/{takenAt}", async (string ticker, string takenAt, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was removed");
+    }
+
+    var written = await read.NotTakenAsync(ticker, takenAt);
+
+    return Said(written.Written, written.Line);
+});
+
+app.MapPost(SinglePageApp.ExitPostRoute + "{ticker}/{takenAt}", async (string ticker, string takenAt, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("no exit was recorded");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+
+    if (Amount(form?["price"].ToString()) is not { } price || Day(form?["date"].ToString()) is not { } date)
+    {
+        return Said(false, "No exit was recorded: its price must be a number and its date a day.");
+    }
+
+    var written = await read.ExitAsync(ticker, takenAt, price, date);
+
+    return Said(written.Written, written.Line);
+});
+
+// Whether a press came from a page of this tool, by the header every press carries.
+static bool FromAPage(HttpRequest request) =>
+    string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal);
+
+static IResult Refused(string what) =>
+    Results.Content(
+        $"<p class=\"card-refused\" data-refused=\"header\">{what}: the request did not come from a page of this tool</p>",
+        "text/html; charset=utf-8",
+        statusCode: StatusCodes.Status403Forbidden);
+
+static IResult Said(bool written, string line) =>
+    Results.Content(
+        $"<p class=\"card-said-line\" data-written=\"{(written ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
+
+static decimal? Amount(string? text) =>
+    decimal.TryParse(text?.Trim().Replace(",", string.Empty, StringComparison.Ordinal), NumberStyles.Number, CultureInfo.InvariantCulture, out var amount) ? amount : null;
+
+static DateOnly? Day(string? text) =>
+    DateOnly.TryParseExact(text?.Trim(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
 
 // The universe screen, section 15.8, read here and composed by the app for the
 // reason the name route gives: the composition is in EquityBrief.Web so the

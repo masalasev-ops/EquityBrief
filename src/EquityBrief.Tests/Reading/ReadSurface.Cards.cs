@@ -152,10 +152,16 @@ public partial class ReadSurface
                 Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s card.");
                 Assert.True(row.Success, $"The {index.Key} page draws no card row for {card.Ticker}.");
                 Assert.True(control[0].Index < row.Index, $"{card.Ticker}'s card row stands before the control opening it.");
-                Assert.Equal(
-                    card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"),
-                    Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">([^<]*)</span></li>")
-                        .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{match.Groups[4].Value}"));
+
+                // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
+                // operator's open trades where it draws the card.
+                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">([^<]*)</span></li>")
+                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{match.Groups[4].Value}")
+                    .ToArray();
+
+                Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"), drawn[..^1]);
+                Assert.StartsWith($"6|", drawn[^1], StringComparison.Ordinal);
+                Assert.Contains($"|{EquityBrief.Core.Cards.CardLines.ConcentrationName}|", drawn[^1], StringComparison.Ordinal);
 
                 rows[card.Ticker] = row.Groups[1].Value;
             }

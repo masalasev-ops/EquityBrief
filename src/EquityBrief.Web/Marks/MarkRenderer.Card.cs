@@ -24,8 +24,19 @@ public sealed record CardRecordView(
     DateOnly Through,
     string Membership);
 
+// A pick's plan in the operator's money as the card's one function worked it: the shares, the dollars at risk, the
+// position's value and its share of the account, the round trip in dollars, whether the cap sized it, and whether the
+// whole position is at risk for a holding with no stop.
+public sealed record CardMoneyView(long Shares, decimal AtRisk, decimal Value, decimal ShareOfAccount, decimal? RoundTrip, bool Capped, bool WholeAtRisk, decimal RiskPercent);
+
+// A trade the operator took from the card: when, at what fill and for which session, whether the fill is still the
+// plan's buy, and its exit where one is recorded; removable only before a night has followed it.
+public sealed record CardTakenView(string TakenAt, decimal Fill, DateOnly FillDate, bool Provisional, decimal? ExitPrice, DateOnly? ExitDate, bool Followed);
+
 // A pick's card on a night: the index, the night, the family that listed it and the stock, the rule the card names, the
-// plan's prices, the checklist's lines and the rule's record, none where the rule has not been replayed.
+// plan's prices, the checklist's lines and the rule's record, none where the rule has not been replayed; and, where the
+// page draws them, the plan in the operator's money or that the account is not set, the rule's management of the trade,
+// the trades taken from it and whether its presses are drawn, which an export never does.
 public sealed record DecisionCardView(
     string Index,
     DateOnly Night,
@@ -36,7 +47,12 @@ public sealed record DecisionCardView(
     decimal? Stop,
     decimal? Target,
     IReadOnlyList<CardLineView> Lines,
-    CardRecordView? Record)
+    CardRecordView? Record,
+    IReadOnlyList<string>? Management = null,
+    CardMoneyView? Money = null,
+    bool AccountUnset = false,
+    IReadOnlyList<CardTakenView>? Taken = null,
+    bool Pressable = false)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -78,10 +94,113 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</ol>");
+        body.Append(PlanInMoney(card));
         body.Append(RuleRecord(card));
+        body.Append(Taken(card));
         body.Append("</div>");
 
         return body.ToString();
+    }
+
+    // The route of the settings page the plan links to where the account is not set.
+    public const string AccountRoute = "#/account";
+
+    // The plan in the operator's money where the account is set, the line linking the settings page where it is not,
+    // and the rule's management of the trade, each stop a close below it.
+    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    static string PlanInMoney(DecisionCardView card)
+    {
+        if (card.Money is null && !card.AccountUnset && card.Management is null)
+        {
+            return string.Empty;
+        }
+
+        var body = new StringBuilder("<section class=\"card-plan\"><h5>Your plan</h5>");
+
+        if (card.Money is { } money)
+        {
+            body.Append(Invariant, $"<p class=\"card-money\" data-shares=\"{money.Shares}\" data-at-risk=\"{money.AtRisk.ToString("0.00", Invariant)}\">");
+            body.Append(Invariant, $"Buy {money.Shares:N0} shares at {card.Entry?.ToString("0.00", Invariant)}, a position of {money.Value.ToString("N2", Invariant)}, {money.ShareOfAccount:0.0%} of the account");
+            body.Append(money.WholeAtRisk
+                ? ". The whole position is at risk: nothing sells it at a price set in advance."
+                : Formatted($", with {money.AtRisk.ToString("N2", Invariant)} at risk to the stop at {card.Stop?.ToString("0.00", Invariant)}, the {money.RiskPercent.ToString("0.##", Invariant)}% a trade your settings give."));
+
+            if (money.Capped)
+            {
+                body.Append(" Fewer shares than the risk allows: the position cap limits it.");
+            }
+
+            if (money.RoundTrip is { } trip)
+            {
+                body.Append(Invariant, $" The round trip at the published table is about {trip.ToString("N2", Invariant)}.");
+            }
+
+            body.Append("</p>");
+        }
+        else if (card.AccountUnset)
+        {
+            body.Append(Invariant, $"<p class=\"card-money degraded\" data-account=\"unset\">Your account is not set, so the plan is drawn in prices and risks: <a href=\"{AccountRoute}\">set your account's size and risk</a> to see it in shares and dollars.</p>");
+        }
+
+        if (card.Management is { Count: > 0 } steps)
+        {
+            body.Append("<ul class=\"card-management\">");
+
+            foreach (var step in steps)
+            {
+                body.Append(Invariant, $"<li>{Escaped(step)}</li>");
+            }
+
+            body.Append("</ul>");
+        }
+
+        return body.Append("</section>").ToString();
+    }
+
+    // The trades taken from the card and, where the page draws its presses, the control taking one, each taken trade
+    // removable before a night has followed it and its exit recordable after.
+    // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+    static string Taken(DecisionCardView card)
+    {
+        var taken = card.Taken ?? [];
+
+        if (!card.Pressable && taken.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var body = new StringBuilder("<section class=\"card-taken\"><h5>Taken</h5>");
+
+        foreach (var trade in taken)
+        {
+            body.Append(Invariant, $"<p class=\"card-taken-line\" data-taken-at=\"{Escaped(trade.TakenAt)}\" data-provisional=\"{(trade.Provisional ? "yes" : "no")}\">");
+            body.Append(Invariant, $"Taken at {trade.Fill.ToString("0.00", Invariant)} for {DayOf(trade.FillDate)}");
+            body.Append(trade.Provisional ? ", provisional: the plan's buy until the next session's open is stored" : string.Empty);
+            body.Append(trade.ExitPrice is { } exit && trade.ExitDate is { } on
+                ? Formatted($"; exited at {exit.ToString("0.00", Invariant)} on {DayOf(on)}.")
+                : ".");
+            body.Append("</p>");
+
+            if (card.Pressable && trade.ExitPrice is null)
+            {
+                var path = $"{Escaped(card.Ticker)}/{Escaped(trade.TakenAt)}";
+
+                if (!trade.Followed)
+                {
+                    body.Append(Invariant, $"<form class=\"card-press\" method=\"post\" action=\"/taken/remove/{path}\"><button type=\"submit\">Not taken</button></form>");
+                }
+
+                body.Append(Invariant, $"<form class=\"card-press\" method=\"post\" action=\"/taken/exit/{path}\"><label>Exit price <input name=\"price\" inputmode=\"decimal\" required></label> <label>on <input name=\"date\" type=\"date\" required></label> <button type=\"submit\">Record exit</button></form>");
+            }
+        }
+
+        if (card.Pressable && taken.All(trade => trade.ExitPrice is not null))
+        {
+            body.Append(Invariant, $"<form class=\"card-press\" method=\"post\" action=\"/taken/{Escaped(card.Index)}/{DayOf(card.Night)}/{Escaped(card.Family)}/{Escaped(card.Ticker)}\">");
+            body.Append("<label>Fill <input name=\"price\" inputmode=\"decimal\" placeholder=\"the next open\"></label> <label>on <input name=\"date\" type=\"date\"></label> <button type=\"submit\">Taken</button></form>");
+        }
+
+        return body.Append("<p class=\"card-said\" aria-live=\"polite\"></p></section>").ToString();
     }
 
     // The rule's record under its own heading: its figures from the rules' minimum on, its trades against the minimum
