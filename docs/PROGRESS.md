@@ -38812,7 +38812,7 @@ Built:      15.2's second pull request. The member reader, in the fundamental re
             15.10, 16, 17, 18 and 19.1, the catalogue and matrix rows, `SCHEMA.md`, the guide, the roster's three
             clauses and the decision; the prior text in `CHANGELOG.md`. The commit pricing the trades was replayed
             with its own changelog entry before the push, its tree unchanged.
-Tests:      FILLED FROM THE RUN, from 1896: six added, each reading worked by hand at a constructed session, the
+Tests:      1902, from 1896: six added, each reading worked by hand at a constructed session, the
             switches, the shared readings at their edges, the fixture's night from its captures, the name page's
             readings and the run page's edge after costs.
 Claims:     995, from 985: the member reader's catalogue and matrix rows, its two stores, section 17's and section
@@ -38831,8 +38831,12 @@ Mutated:    the rule, stated before the run: each property the second pull reque
             Results: M1 to M7 each red where stated: M2 read A2's coverage as 1, M3 the industry's month as 0.563 and
             its quarter as 0.618, M4 the surprise as 22.05, M6 T's result as 0.2568; each reverted, and the seven
             tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 8b51547.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1902 of 1902 tests ran with none failed, migrations 0
+            to 66 with none pending, schema version 66, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 995 claims, 995 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1006
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1902 of 1902 tests ran.
 Carried:    after the merge, `tools/remedies/2026-10-06-15.2-the-member-readings.txt` (migration 66) and the
             surface's Release build again; the night of 2026-10-06 fills every member's readings and prices the trades
             ended before it, read off the night's member readings row on the run page; then 15.5.
