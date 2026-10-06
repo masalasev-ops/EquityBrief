@@ -556,7 +556,7 @@ public static class Nightly
                     queue.Limit,
                     queue.Awake,
                     clock,
-                    store.DatabaseFile).RunAsync(runId, clock.SessionDateAt(clock.UtcNow));
+                    store.DatabaseFile).RunAsync(runId, clock.SessionDateAt(clock.UtcNow), wider: wider);
 
                 queueCalls = outcome.ModelCalls;
 
