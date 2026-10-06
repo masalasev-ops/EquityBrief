@@ -39275,11 +39275,11 @@ Built:      The account page from the masthead, keeping the account's size, the 
             stores, limits and failure rows, SCHEMA's table, the roster's read-surface clause, the runbook and the
             guide, the prior text in `CHANGELOG.md`. Found writing the tests: the sixth line read "1 of your open trade
             is", corrected before its run.
-Tests:      FILLED FROM THE RUN, from 1934: six added, the plan worked by hand rounded down and capped, the plan read
+Tests:      1940, from 1934: six added, the plan worked by hand rounded down and capped, the plan read
             off each card on Tonight with no account and an unreadable one, each family's management on every index,
             the sixth line on both sides of 2, every press and its refusals, and the settings in no byte of the store,
             the run log, the captured log lines or an export.
-Claims:     FILLED FROM THE RUN, from 1016: the taken trades' store, section 17's two values and section 18's two rows.
+Claims:     1021, from 1016: the taken trades' store, section 17's two values and section 18's two rows.
 Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
             sector heavyweights' evaluator's lists; no file 16.2 edits or adds is among them.
 Mutated:    the rule, stated in phase 16's plan before the run: each of the three properties the plan names broken
@@ -39293,8 +39293,12 @@ Mutated:    the rule, stated in phase 16's plan before the run: each of the thre
             read back off Tonight; T2 red at the S&P 600's drift, whose card drew the added step between its target and
             its cap; T3 red at the log capture, the size found in a line; each reverted, and the six tests green over
             the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e387ec8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1940 of 1940 tests ran with none failed, migrations 0
+            to 70 with none pending, schema version 70, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1021 claims, 1021 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1032
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1940 of 1940 tests ran.
 Carried:    after the merge, `tools/remedies/2026-10-06-16.2-the-taken-trades.txt`, migration 70, no request and no
             model call, run outside the night's window, and the surface's Release build again. The provisional fill is
             replaced by the stored open from 16.3, which builds the follower. Then 16.3.
