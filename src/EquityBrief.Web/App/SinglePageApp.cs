@@ -2449,7 +2449,8 @@ public sealed class SinglePageApp : IComponent
         string selector,
         IReadOnlyList<DateOnly> held,
         IndexRunView? view,
-        IReadOnlyList<FamilyRunRow> setups)
+        IReadOnlyList<FamilyRunRow> setups,
+        IReadOnlyList<FamilyRecordRow>? records = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + universe.Name;
@@ -2499,12 +2500,28 @@ public sealed class SinglePageApp : IComponent
             "Setups",
             marks.FamilyRun(setups) + Cards.Key(
                 "How to read it.",
-                Invariant($"One row a setup of the {universe.Possessive} page, each on provisional settings: what it listed tonight and every trade its list has kept, open and finished."),
+                Invariant($"One row a setup of the {universe.Possessive} page, each on provisional settings until its freeze: what it listed tonight and every trade its list has kept, open and finished."),
                 "A provisional rule's record starts at its freeze, so no record is read here until the operator freezes it."),
             title: Invariant($"The {universe.Possessive} setups"),
             lede: "Each a rule of its own on the index's own members, listing at most five a night.",
             stamp: Cards.Night(night),
             region: "setups"));
+
+        // Each frozen family's registered rules, the live rule first, each over its own trades after each one's round trip.
+        // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+        if (records is { Count: > 0 })
+        {
+            region.Append(Cards.Computed(
+                "Records",
+                marks.FamilyRecords(records) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"One row a rule a freeze registered on the {universe.Name}, each family's live rule first: the trades its own list kept, those decided with their edge, being each trade's result less its own round trip at the published table less the same plan on every member of the index that night, in multiples of the risk, its whole blocks of 63 sessions against the look they wait for, and the level its looks are read at, its family's own share over its own rules on the index."),
+                    "A rule passes a checkpoint only where its blocks' sign-flip test falls under its level at a look."),
+                title: Invariant($"The {universe.Possessive} registered rules"),
+                lede: "Each frozen family's rules, read over their own trades.",
+                stamp: Cards.Night(night),
+                region: "records"));
+        }
 
         region.Append("</section>");
 

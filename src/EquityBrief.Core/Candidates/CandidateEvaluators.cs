@@ -25,6 +25,12 @@ public static class CandidateEvaluators
         new BreakoutCandidate(),
         new DriftCandidate(),
         new SectorHeavyweightCandidate(),
+        new IndexPullbackCandidate(Providers.FundHoldings.MidCapIndex),
+        new IndexBreakoutCandidate(Providers.FundHoldings.MidCapIndex),
+        new IndexDriftCandidate(Providers.FundHoldings.MidCapIndex),
+        new IndexPullbackCandidate(Providers.FundHoldings.SmallCapIndex),
+        new IndexBreakoutCandidate(Providers.FundHoldings.SmallCapIndex),
+        new IndexDriftCandidate(Providers.FundHoldings.SmallCapIndex),
     ];
 
     public static CandidateEvaluator? Find(string name) =>

@@ -827,21 +827,26 @@ app.MapGet("/screens/tonight/{night?}", async (
         var members = await read.IndexMembersAsync(reading.Code, dated);
         var indexResults = await read.IndexResultsAsync(reading.Code, dated);
         var (indexQueued, indexTimes, _) = await QueueRead(read, clock);
-        // Each card with its family's recorded sweep answers on the index; no freeze has registered an S&P 400 or 600
-        // rule, so each line goes with the family's next passing sweep alone.
+        // Each card with its family's recorded sweep answers on the index, each line gone with the family's next passing
+        // sweep or its freeze, and a frozen family's card live with its rule's words.
         // see: No family on any index is set aside or hidden by a test result without the operator's word
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
+        var indexRegister = await read.RegisteredCandidatesAsync();
         var indexCards = TonightScreen.WithSweepLines(
-            TonightScreen.IndexCards(
+            TonightScreen.WithIndexFreezes(
+                TonightScreen.IndexCards(
+                    reading,
+                    indexNight,
+                    await read.IndexPicksAsync(reading.Code, dated),
+                    indexResults,
+                    members,
+                    await read.ResearchedAsync(),
+                    QueueTimes.States(indexQueued, indexTimes, clock.SessionZone)),
                 reading,
-                indexNight,
-                await read.IndexPicksAsync(reading.Code, dated),
-                indexResults,
-                members,
-                await read.ResearchedAsync(),
-                QueueTimes.States(indexQueued, indexTimes, clock.SessionZone)),
+                indexRegister,
+                dated),
             indexAnswers,
-            _ => null);
+            family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, dated));
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         return Results.Content(
@@ -1495,7 +1500,9 @@ app.MapGet("/screens/run/{night?}", async (
                 selector,
                 await read.IndexNightsAsync(reading.Code),
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
-                TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings)),
+                TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings),
+                // Each registered rule's record, from the index's first freeze on.
+                TonightScreen.IndexRecordRows(reading, await read.RegisteredCandidatesAsync(), await read.IndexRuleTradesAsync(reading.Code, dated), dated)),
             "text/html; charset=utf-8");
     }
 

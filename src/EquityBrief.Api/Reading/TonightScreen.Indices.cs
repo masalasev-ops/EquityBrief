@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
@@ -99,6 +100,70 @@ public static partial class TonightScreen
         }
 
         return cards;
+    }
+
+    // The instant the live rule of a family on an S&P 400 or 600 index was registered, as of a night, none where no freeze
+    // stands; the card's line saying its sweep found none goes from that night on.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    public static DateTimeOffset? IndexFrozenAt(string index, string family, IReadOnlyList<CandidateRow> register, DateOnly night) =>
+        StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, night).Live?.RegisteredAt;
+
+    // Each card of a family whose live rule stands on the index as of the night: live since the day it was registered,
+    // the variants standing beside it, and its rule in the words its registration's name carries, which the code wrote
+    // from its settings.
+    // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    public static IReadOnlyList<FamilyCardView> WithIndexFreezes(IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, IReadOnlyList<CandidateRow> register, DateOnly night) =>
+    [
+        .. cards.Select(card => StandingRows(IndexRuleCandidate.FamilyOn(card.Family, universe.Code), register, night) is { Live: { } live } standing
+            ? card with
+            {
+                LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
+                Variants = standing.Variants,
+                Rule = "The " + live.Candidate[FamilyRecords.LivePrefix.Length..] + ", each trade paying the published spread, half at each end.",
+            }
+            : card),
+    ];
+
+    // Each registered rule of the index's swing families standing at the night's end, read over its own trades after each
+    // one's round trip, its correction its family's own on the index, each family's live rule first.
+    // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+    public static IReadOnlyList<FamilyRecordRow> IndexRecordRows(UniverseChoice universe, IReadOnlyList<CandidateRow> register, IReadOnlyList<FamilyTradeRow> trades, DateOnly night)
+    {
+        RegisterRow[] rows =
+        [
+            .. register.Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+        ];
+        var standing = CandidateFamily.Standing(rows, PastTheNight(night));
+
+        return
+        [
+            .. SetupFamilies.InPageOrder.SelectMany(family =>
+            {
+                var name = IndexRuleCandidate.FamilyOn(family.Name, universe.Code);
+                var rules = CandidateFamily.In(standing, name);
+                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, name), rules.Select(rule => rule.Candidate));
+
+                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials)
+                    .OrderBy(view => view.Live ? 0 : 1)
+                    .ThenBy(view => view.Candidate, StringComparer.Ordinal)
+                    .Select(view => new FamilyRecordRow(
+                        family.Name,
+                        family.Heading,
+                        view.Candidate,
+                        view.Live,
+                        view.Trades,
+                        view.Decided,
+                        view.Edge,
+                        view.Blocks,
+                        view.NextLook,
+                        view.Level,
+                        RecordWords(view).Replace(", an edge of ", ", an edge after each trade's own round trip of ", StringComparison.Ordinal),
+                        view.First,
+                        view.Restarted));
+            }),
+        ];
     }
 
     // Why an index's family lists a stock tonight: the night stores the trade of each member it passed and not its gates'

@@ -422,8 +422,12 @@ static async Task<int> IndexFamiliesRun()
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     IClock clock = SystemClock.ForUnitedStatesSessions();
-    var runId = FormattableString.Invariant($"{IndexFamilies.ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
-    var outcome = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId);
+    var startedAt = clock.UtcNow;
+    var runId = FormattableString.Invariant($"{IndexFamilies.ByHandPrefix}{startedAt:yyyyMMddTHHmmss.fffffffZ}");
+
+    // The index rules standing when the run started, as a night reads them.
+    var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync();
+    var outcome = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, default, register, startedAt);
 
     Console.Out.WriteLine(outcome.Session is { } session
         ? FormattableString.Invariant($"index-families: {session:yyyy-MM-dd} read under {runId}: {IndexFamilies.Detail(outcome.Nights)}")

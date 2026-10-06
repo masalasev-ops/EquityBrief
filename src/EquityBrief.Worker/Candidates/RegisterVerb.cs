@@ -45,6 +45,11 @@ public static class RegisterVerb
     // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
     public const string FamilyAgain = "--family-again";
 
+    // The flag that freezes a family on the S&P 400 or the S&P 600: its live rule at the parameters given and up to eight
+    // variants, each the live rule with the parameters it names moved, registered at one instant.
+    // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+    public const string IndexFamily = "--index-family";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -55,6 +60,7 @@ public static class RegisterVerb
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
+        new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants"], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -80,7 +86,7 @@ public static class RegisterVerb
 
         try
         {
-            return await FormAsync(args, registrar, replay, runId, output, error);
+            return await FormAsync(args, registrar, replay, runId, clock.UtcNow, output, error);
         }
         catch (SqliteException collided) when (collided.SqliteErrorCode == 19 && collided.Message.Contains("run_log", StringComparison.Ordinal))
         {
@@ -96,6 +102,7 @@ public static class RegisterVerb
         CandidateRegistrar registrar,
         FamilyReplay replay,
         string runId,
+        DateTimeOffset at,
         TextWriter output,
         TextWriter error)
     {
@@ -142,6 +149,33 @@ public static class RegisterVerb
         if (form.Flag == TheThree)
         {
             return await Said(await registrar.RegisterTogetherAsync(TheThreeCandidates.All, runId), output, error);
+        }
+
+        if (form.Flag == IndexFamily)
+        {
+            IReadOnlyDictionary<string, double> live;
+            IReadOnlyList<IReadOnlyDictionary<string, double>> variants;
+
+            try
+            {
+                live = VerbArguments.Parameters(Given("--parameters"));
+                variants =
+                [
+                    .. (VerbArguments.Value(args, "--variants") ?? string.Empty)
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(VerbArguments.Parameters),
+                ];
+            }
+            catch (FormatException unreadable)
+            {
+                return await RefusedAsync(registrar, runId, unreadable.Message, error);
+            }
+
+            var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at);
+
+            return registrations is null
+                ? await RefusedAsync(registrar, runId, refused!, error)
+                : await Said(await registrar.RegisterTogetherAsync(registrations, runId), output, error);
         }
 
         if (form.Flag == Family)

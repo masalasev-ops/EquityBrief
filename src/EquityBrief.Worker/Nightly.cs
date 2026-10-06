@@ -426,7 +426,7 @@ public static class Nightly
                 // their own row, and the step goes on.
                 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
                 // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
-                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token, register, nightStartedAt);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +

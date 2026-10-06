@@ -186,7 +186,11 @@ public sealed class DriftSweep
         return value;
     }
 
-    public static double BenchmarkOn(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double stopMoves, double rewardToRisk, int cap)
+    public static double BenchmarkOn(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double stopMoves, double rewardToRisk, int cap) =>
+        BenchmarkCounted(series, closes, members, session, stopMoves, rewardToRisk, cap).Average;
+
+    // The same, with how many members' results it averaged, which a registered rule's stored trade carries.
+    public static (double Average, int Members) BenchmarkCounted(IReadOnlyList<SweepSeries> series, double[][] closes, SweepBenchmark.Members members, int session, double stopMoves, double rewardToRisk, int cap)
     {
         var names = members.Names[session];
         var bars = members.Bars[session];
@@ -212,6 +216,6 @@ public sealed class DriftSweep
             }
         }
 
-        return count > 0 ? sum / count : double.NaN;
+        return (count > 0 ? sum / count : double.NaN, count);
     }
 }

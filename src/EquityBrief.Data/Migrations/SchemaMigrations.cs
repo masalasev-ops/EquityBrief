@@ -687,7 +687,37 @@ public static class SchemaMigrations
         new Migration(64, "create index_family_night, index_family_result, index_family_pick, index_family_trade and index_heavyweight_holding, and add family_pick.held_index", CreateIndexFamilies),
         new Migration(65, "create sweep_answer", CreateSweepAnswer),
         new Migration(66, "create member_reading and switch_reading, and add company's rating counts, reported_quarter's interest expense and family_trade.cost", CreateMemberReadings),
+        new Migration(67, "create index_rule_trade", CreateIndexRuleTrades),
     ];
+
+    // Each registered rule of the S&P 400's and 600's swing families keeping its own list: one row a trade, its plan as
+    // the night placed it with the stop's distance in typical moves and the reward to risk its benchmark reads, and once
+    // it ends its result, its round trip at the published table beside it and never in it, and the benchmark of the
+    // same plan on every member of the index that night with how many it averaged.
+    // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
+    const string CreateIndexRuleTrades = @"
+        CREATE TABLE index_rule_trade (
+            candidate       TEXT NOT NULL,
+            index_code      TEXT NOT NULL,
+            family          TEXT NOT NULL,
+            ticker          TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            place           INTEGER NOT NULL,
+            entry           TEXT NOT NULL,
+            stop            TEXT NOT NULL,
+            target          TEXT,
+            trail           TEXT,
+            cap             INTEGER NOT NULL,
+            risk_moves      REAL,
+            reward_to_risk  REAL,
+            ended_on        TEXT,
+            result          REAL,
+            cost            REAL,
+            benchmark       REAL,
+            members         INTEGER,
+            PRIMARY KEY (candidate, ticker, session_date)
+        ) STRICT;
+    ";
 
     // Every reading of every member of the three indices as it stood each night, the market switches an S&P 400's or
     // 600's rule may read, the analysts' five rating counts each storing fetch files, each quarter's interest expense as
