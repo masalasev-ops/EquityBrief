@@ -54,8 +54,10 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Member readings"),
             CheckReach.Key(Scope.StoresTable, "Switch readings"),
 
-            // 15.5, each registered rule of the S&P 400's and 600's swing families' trades.
+            // 15.5, each registered rule of the S&P 400's and 600's swing families' trades, and each heavyweights rule's book.
             CheckReach.Key(Scope.StoresTable, "Index rule trades"),
+            CheckReach.Key(Scope.StoresTable, "Index heavyweight rule nights"),
+            CheckReach.Key(Scope.StoresTable, "Index heavyweight rule holdings"),
 
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.

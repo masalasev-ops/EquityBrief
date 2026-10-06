@@ -11483,3 +11483,19 @@ Was:
 Now:
 > each the same, then a clause from 15.5: the freeze at one instant or none with its refusals, each variant on both sides of the setting it moves, each rule's own list and trades and a rule the night cannot read; a frozen family's card and its sweep's line read off the rendered page and each rule's record on the index's Run page; and each index rule's pins, its family's sweep files, the index night's files and every family rule's shared files
 Why: the roster is where a check states what it asserts, and the tests the clauses name read the command, the night, the pages and the pins.
+
+### 2026-10-06 - ARCHITECTURE.html - the index families keep a book for each registered heavyweights rule of the S&P 400 and 600
+Authorised by: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+Was:
+> the index families' catalogue row reading and writing the five index family stores and the index rule trades, its 15.5 clause ending "named on the stage's row (see: A rule of the S&amp;P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone);"; and section 14's swing filter step ending "a family's live rule drawing its list in the provisional rule's place and each rule keeping its own list and trades (see: ...) (see: ...) (see: A rule of the S&amp;P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone)."
+Now:
+> the row reading and writing the index heavyweight rule nights and holdings besides, with a clause keeping a book of its own for each registered heavyweights rule in either design, rebalanced on its own first night and the first of each month and waiting for a night holding what its design reads; section 14's step keeping each swing rule's list and trades and each heavyweights rule's book; and, added, section 15.7's sentence on a frozen heavyweights card, section 15.10's on its records in points, section 16's two stores and section 18's row on a rebalance waiting for what its design reads
+Why: 15.5's second pull request builds the heavyweights' freeze on each index and what the night, the pages and the store do with a rule it registers, with no freeze given.
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations, read-surface and register-append-only read the heavyweights' freezes
+Authorised by: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+Was:
+> fixture-expectations' row ending "the stage's row naming each with why |", read-surface's ending "and an index no freeze stands on draws no records |" and register-append-only's ending "and no S&P 500 evaluator pinning a sweep or an index file |"
+Now:
+> each the same, then a clause from 15.5's second pull request: the heavyweights' freeze in either design with its refusals, design (a)'s variants on both sides of each dial, each rule's book over constructed nights with its sales and its waits; the frozen heavyweights' card drawn from the live rule's book and each heavyweights rule's record in points; and the heavyweights rule's pins
+Why: the roster is where a check states what it asserts, and the tests the clauses name read the command, the books, the pages and the pins.

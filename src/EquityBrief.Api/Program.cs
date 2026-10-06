@@ -849,6 +849,30 @@ app.MapGet("/screens/tonight/{night?}", async (
             family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight));
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
+        // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
+        // night kept it.
+        // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+        var heavyweightRule = TonightScreen.IndexLiveRule(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight);
+        var heavyweightCard = heavyweightRule is null
+            ? TonightScreen.IndexHeavyweights(
+                reading,
+                indexNight,
+                await read.IndexHoldingsAsync(reading.Code, dated),
+                await read.IndexLastRebalanceAsync(reading.Code, dated),
+                await read.IndexHoldingClosesAsync(reading.Code, dated),
+                members)
+            : TonightScreen.WithIndexHeavyweightFreeze(
+                TonightScreen.IndexHeavyweights(
+                    reading,
+                    indexNight,
+                    await read.IndexRuleHoldingsAsync(heavyweightRule, dated),
+                    await read.IndexRuleLastRebalanceAsync(heavyweightRule, dated),
+                    await read.IndexRuleHoldingClosesAsync(heavyweightRule, dated),
+                    members),
+                reading,
+                indexRegister,
+                indexNight);
+
         return Results.Content(
             notice + page.IndexTonightRegion(
                 marks,
@@ -858,15 +882,11 @@ app.MapGet("/screens/tonight/{night?}", async (
                 indexHeld,
                 TonightScreen.IndexLine(reading, indexNight, indexCards, indexResults, indexOpen),
                 indexCards,
-                TonightScreen.IndexHeavyweights(
-                    reading,
-                    indexNight,
-                    await read.IndexHoldingsAsync(reading.Code, dated),
-                    await read.IndexLastRebalanceAsync(reading.Code, dated),
-                    await read.IndexHoldingClosesAsync(reading.Code, dated),
-                    members) with
+                heavyweightCard with
                 {
-                    SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn([.. indexAnswers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)], null),
+                    SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
+                        [.. indexAnswers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
+                        TonightScreen.IndexFrozenAt(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight)),
                 },
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading)),
             "text/html; charset=utf-8");

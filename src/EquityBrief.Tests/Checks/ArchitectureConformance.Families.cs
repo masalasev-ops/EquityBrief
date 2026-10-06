@@ -155,11 +155,16 @@ public partial class ArchitectureConformance
     // index rule trades' store and section 18's row on a registered rule the night does not read.
     internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims, .. NightlyRun.ThreeIndicesRows, .. FixtureExpectations.ReadingsClaims, .. FixtureExpectations.HoldingsClaims, .. IndexFamiliesRows, .. SweepAnswersRows, .. MemberReadingRows, .. IndexRuleRows];
 
-    // 15.5's rows: the index rule trades' store and section 18's row on a registered rule the night does not read.
+    // 15.5's rows: the index rule trades' store and section 18's row on a registered rule the night does not read, and
+    // from its second pull request each heavyweights rule's book's two stores and section 18's row on its rebalance
+    // waiting for what its design reads.
     internal static string[] IndexRuleRows =>
     [
         CheckReach.Key(Scope.StoresTable, "Index rule trades"),
         .. FixtureExpectations.IndexFreezeClaims,
+        CheckReach.Key(Scope.StoresTable, "Index heavyweight rule nights"),
+        CheckReach.Key(Scope.StoresTable, "Index heavyweight rule holdings"),
+        .. FixtureExpectations.IndexHeavyweightFreezeClaims,
     ];
 
     // The sweep answers' catalogue and matrix rows, 15.4.
@@ -307,10 +312,11 @@ public partial class ArchitectureConformance
         // read and holding matched to no code, 983 from 15.1's second half, the index families' catalogue and matrix
         // rows, 985 from 15.4, the sweep answers' catalogue and matrix rows, 995 from 15.2's second half, the member
         // reader's catalogue and matrix rows, its two stores, section 17's and section 18's rows, the fixture's, the name
-        // page's member readings and the run page's two parts, and 997 from 15.5, the index rule trades' store and
-        // section 18's row on a registered rule the night does not read.
+        // page's member readings and the run page's two parts, 997 from 15.5, the index rule trades' store and section
+        // 18's row on a registered rule the night does not read, and 1000 from its second pull request, the heavyweights
+        // rules' books' two stores and section 18's row on a rebalance waiting for what its design reads.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 997),
+            (789, 853, 6, 4, 855, 876, 1000),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

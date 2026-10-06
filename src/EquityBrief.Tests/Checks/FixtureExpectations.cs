@@ -91,8 +91,10 @@ public partial class FixtureExpectations
             .. ReadingsClaims,
             // 15.2's second pull request, the rest of the readings: section 17's row, section 18's and the fixture's.
             .. MemberReadingExpectationClaims,
-            // 15.5, the freezes on the S&P 400 and 600: section 18's row on a rule the night does not read.
+            // 15.5, the freezes on the S&P 400 and 600: section 18's row on a rule the night does not read, and its second
+            // pull request's on a heavyweights rule's rebalance waiting for what its design reads.
             .. IndexFreezeClaims,
+            .. IndexHeavyweightFreezeClaims,
             // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.

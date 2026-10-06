@@ -113,7 +113,7 @@ public static class IndexRules
             }
         }
 
-        if (parameters[IndexRuleCandidate.HoldParameter] == 63 && evaluator is not IndexDriftCandidate)
+        if (parameters.TryGetValue(IndexRuleCandidate.HoldParameter, out var hold) && hold == 63 && evaluator is not IndexDriftCandidate)
         {
             return "a hold of 63 sessions is the drift's alone, the breakout's and the pullback's own cap being 63 already.";
         }
@@ -122,8 +122,70 @@ public static class IndexRules
         {
             IndexBreakoutCandidate => OffTheGrid(BreakoutSweep.Grid, BreakoutValues(parameters)),
             IndexDriftCandidate => OffTheGrid(DriftSweep.Grid, DriftValues(parameters)),
+            IndexHeavyweightCandidate => HeavyweightRefusal(parameters),
             _ => PullbackOf(parameters) is null ? "the pullback's dials name a value the extended grid does not hold." : null,
         };
+    }
+
+    // Each heavyweights design's own dials and the values its sweep read, a size cut or an industries' count of nought
+    // standing for every one; the exits as the pair of whether a holding is sold on no longer leading and under its
+    // 200-day average, never neither.
+    static readonly (string Name, double[] Values)[] DesignADials =
+    [
+        (IndexHeavyweightCandidate.LargestParameter, Stated(HeavyweightSweep.Sizes, HeavyweightSweep.EveryCompany)),
+        (IndexHeavyweightCandidate.LookBackParameter, Stated(HeavyweightSweep.LookBacks)),
+        (IndexHeavyweightCandidate.LeadersParameter, Stated(HeavyweightSweep.LeaderCounts)),
+        (IndexHeavyweightCandidate.BetaParameter, [0, 1]),
+        (IndexHeavyweightCandidate.LeadingExitParameter, [0, 1]),
+        (IndexHeavyweightCandidate.AverageExitParameter, [0, 1]),
+    ];
+
+    static readonly (string Name, double[] Values)[] DesignBDials =
+    [
+        (IndexHeavyweightCandidate.WindowParameter, Stated(IndexSweepRunner.LeadWindows)),
+        (IndexHeavyweightCandidate.IndustriesParameter, Stated(IndexSweepRunner.IndustriesKept, IndexSweepRunner.EveryLeading)),
+        (IndexHeavyweightCandidate.MembersParameter, Stated(IndexSweepRunner.MembersPerIndustry)),
+    ];
+
+    // A dial's levels as a registration states them, the level standing for every one stated as nought.
+    static double[] Stated(IReadOnlyList<int> levels, int every = 0) =>
+        [.. levels.Select<int, double>(level => level == every && every != 0 ? 0 : level)];
+
+    // Why a heavyweights rule's parameters cannot be registered: a design that is neither, a dial of its design off the
+    // values its sweep read, a dial of the other design not nought, a holding sold on neither exit, or a floor its sweeps
+    // did not read; none where every value is one its design's sweep read.
+    static string? HeavyweightRefusal(IReadOnlyDictionary<string, double> p)
+    {
+        var design = p[IndexHeavyweightCandidate.DesignParameter];
+
+        if (design is not (IndexHeavyweightCandidate.DesignA or IndexHeavyweightCandidate.DesignB))
+        {
+            return FormattableString.Invariant($"'{IndexHeavyweightCandidate.DesignParameter}' is {Number(design)}, and the heavyweights read design (a) as 0 and design (b) as 1 alone.");
+        }
+
+        var (own, other) = design == IndexHeavyweightCandidate.DesignA ? (DesignADials, DesignBDials) : (DesignBDials, DesignADials);
+
+        foreach (var (name, values) in own)
+        {
+            if (!values.Contains(p[name]))
+            {
+                return FormattableString.Invariant($"'{name}' is {Number(p[name])}, and its design's sweep read it at {string.Join(", ", values.Select(Number))} alone.");
+            }
+        }
+
+        if (other.FirstOrDefault(dial => p[dial.Name] != 0) is { Name: { } stated })
+        {
+            return FormattableString.Invariant($"'{stated}' is {Number(p[stated])}, a dial of the other design, which this design's registration states as 0.");
+        }
+
+        if (design == IndexHeavyweightCandidate.DesignA && p[IndexHeavyweightCandidate.LeadingExitParameter] == 0 && p[IndexHeavyweightCandidate.AverageExitParameter] == 0)
+        {
+            return "design (a) sells a holding on no longer leading, under its 200-day average or on both, and the registration states neither.";
+        }
+
+        return p[IndexRuleCandidate.FloorsParameter] is 1 or 2
+            ? null
+            : FormattableString.Invariant($"'{IndexRuleCandidate.FloorsParameter}' is {Number(p[IndexRuleCandidate.FloorsParameter])}, and the heavyweights' sweeps read it at 1 and 2 alone.");
     }
 
     // A grid's dial a value is not on, named; none where each value is one of its dial's levels.
@@ -173,6 +235,29 @@ public static class IndexRules
     // A family's provisional rule on an index as a registration states it, which a freeze moves from.
     public static IReadOnlyDictionary<string, double> Provisional(IndexRuleCandidate evaluator)
     {
+        // The heavyweights' provisional book: design (a) at the S&P 500's frozen settings within the index, its quality
+        // the profit gate and its dollar volume floor the index's own.
+        if (evaluator is IndexHeavyweightCandidate)
+        {
+            var book = IndexHeavyweights.Provisional;
+
+            return new Dictionary<string, double>(StringComparer.Ordinal)
+            {
+                [IndexHeavyweightCandidate.DesignParameter] = IndexHeavyweightCandidate.DesignA,
+                [IndexHeavyweightCandidate.LargestParameter] = book.Largest == HeavyweightSweep.EveryCompany ? 0 : book.Largest,
+                [IndexHeavyweightCandidate.LookBackParameter] = book.LookBack,
+                [IndexHeavyweightCandidate.LeadersParameter] = book.Leaders,
+                [IndexHeavyweightCandidate.BetaParameter] = book.HighBeta ? 1 : 0,
+                [IndexHeavyweightCandidate.LeadingExitParameter] = book.Exit is HeavyweightExit.Both or HeavyweightExit.Drop ? 1 : 0,
+                [IndexHeavyweightCandidate.AverageExitParameter] = book.Exit is HeavyweightExit.Both or HeavyweightExit.Break ? 1 : 0,
+                [IndexHeavyweightCandidate.WindowParameter] = 0,
+                [IndexHeavyweightCandidate.IndustriesParameter] = 0,
+                [IndexHeavyweightCandidate.MembersParameter] = 0,
+                [IndexRuleCandidate.QualityParameter] = (int)IndexQuality.Profit,
+                [IndexRuleCandidate.FloorsParameter] = 1,
+            };
+        }
+
         var levels = new Dictionary<string, double>(StringComparer.Ordinal)
         {
             [IndexRuleCandidate.FloorsParameter] = 1,
@@ -255,6 +340,20 @@ public static class IndexRules
         "checkpoint passes it where the sign-flip test over its whole blocks falls under its level: 0.05 shared among the " +
         "rules the family registers on its index, its own and its variants, the test the register's candidates are judged by.";
 
+    // The words a heavyweights rule's registration states for its rule and its test.
+    public const string HeavyweightRuleWords =
+        "the sector heavyweights' rule on its index at every setting stated, its book kept by the index families' step over " +
+        "the index's own members: design (a), each sector's largest members leading their sector's members at its size " +
+        "cut, look-back, leaders, beta and exits, or design (b), the members following the S&P 500's leading industries at " +
+        "its window, its industries and its members an industry, each member held to the index's floors at the stated " +
+        "multiple and the stated quality, rebalanced on the first night of each month and on its own first night";
+
+    public const string HeavyweightTest =
+        "From the freeze, each rule's record is its holdings' result less each one's own round trip at the published table " +
+        "less the return of the equal-weighted members it was chosen beside over the same sessions, in percent of the buy, " +
+        "each holding counted in the block of 63 sessions it ended in, and a checkpoint passes it where the sign-flip test " +
+        "over its whole blocks falls under its level: 0.05 shared among the rules the family registers on its index.";
+
     // A freeze's registrations: the family's live rule on its index at the settings given and each variant the live rule
     // with the parameters it names moved, at most eight, all of them settings the index's sweep read; or why none can be
     // written, a family on the index already standing among the reasons, since its first freeze is the one form built.
@@ -268,7 +367,7 @@ public static class IndexRules
     {
         if (CandidateEvaluators.All.OfType<IndexRuleCandidate>().FirstOrDefault(evaluator => evaluator.SetupFamily == family && evaluator.Index == index) is not { } carried)
         {
-            return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", IndexNightRead.Families)} and the indices MID and SML.");
+            return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", CandidateEvaluators.All.OfType<IndexRuleCandidate>().Select(evaluator => evaluator.SetupFamily).Distinct(StringComparer.Ordinal))} and the indices MID and SML.");
         }
 
         if (variants.Count > MostVariants)
@@ -311,13 +410,14 @@ public static class IndexRules
         }
 
         var named = IndexRuleCandidate.NameOf(index) + " ";
+        var (rule, test) = carried is IndexHeavyweightCandidate ? (HeavyweightRuleWords, HeavyweightTest) : (RuleWords, Test);
 
         return (
             [
                 .. settings.Select((one, place) => new Registration(
                     (place == 0 ? FamilyRecords.LivePrefix : "the ") + named + Words(carried, one),
-                    RuleWords,
-                    Test,
+                    rule,
+                    test,
                     carried.Name,
                     one)),
             ],
@@ -334,6 +434,10 @@ public static class IndexRules
             IndexDriftCandidate => FormattableString.Invariant(
                 $"drift rule within {p[IndexDriftCandidate.WindowSessionsParameter]} sessions, up {Number(p[IndexDriftCandidate.ReactionMovesParameter])} typical moves on {Number(p[IndexDriftCandidate.VolumeMultipleParameter])} times the volume, the target at {Number(p[IndexDriftCandidate.TargetMultipleParameter])} times the risk")
                 + (p[IndexDriftCandidate.StopFloorParameter] > 0 ? FormattableString.Invariant($", the stop at least {Number(p[IndexDriftCandidate.StopFloorParameter])} typical move beneath") : string.Empty),
+            IndexHeavyweightCandidate when p[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignA => FormattableString.Invariant(
+                $"heavyweights rule of each sector's {(p[IndexHeavyweightCandidate.LargestParameter] == 0 ? "every member" : Number(p[IndexHeavyweightCandidate.LargestParameter]) + " largest members")} leading it over {p[IndexHeavyweightCandidate.LookBackParameter]} sessions, {p[IndexHeavyweightCandidate.LeadersParameter]} leader(s) a sector{(p[IndexHeavyweightCandidate.BetaParameter] == 1 ? " with a beta of at least 1" : string.Empty)}, sold {ExitWords(p)}"),
+            IndexHeavyweightCandidate => FormattableString.Invariant(
+                $"heavyweights rule following the S&P 500's {(p[IndexHeavyweightCandidate.IndustriesParameter] == 0 ? "every leading industry" : Number(p[IndexHeavyweightCandidate.IndustriesParameter]) + " strongest industries")} over {p[IndexHeavyweightCandidate.WindowParameter]} sessions, {p[IndexHeavyweightCandidate.MembersParameter]} member(s) an industry, sold where it is no longer bought"),
             _ => FormattableString.Invariant(
                 $"pullback rule at a strength of {Number(p[IndexPullbackCandidate.StrengthParameter])}, {Number(p[IndexPullbackCandidate.DepthLowParameter])} to {Number(p[IndexPullbackCandidate.DepthHighParameter])} typical moves deep, a dry-up {(p[IndexPullbackCandidate.DryUpParameter] == 0 ? "off" : "under " + Number(p[IndexPullbackCandidate.DryUpParameter]))}, fresh within {p[IndexPullbackCandidate.FreshnessParameter]}, {Number(p[IndexPullbackCandidate.RewardToRiskParameter])} times the risk, the stop {Number(p[IndexPullbackCandidate.StopLowParameter])} to {Number(p[IndexPullbackCandidate.StopHighParameter])} moves, the market {(p[IndexPullbackCandidate.MarketParameter] == 0 ? "off" : "at " + Number(p[IndexPullbackCandidate.MarketParameter]))} and band strength {p[IndexPullbackCandidate.BandParameter]}"),
         };
@@ -341,20 +445,48 @@ public static class IndexRules
         return family + LevelWords(evaluator, p);
     }
 
-    // The levels a rule states that its provisional rule does not, each in words.
+    // What sells a design (a) holding besides its stock leaving the index, in words.
+    static string ExitWords(IReadOnlyDictionary<string, double> p) =>
+        (p[IndexHeavyweightCandidate.LeadingExitParameter], p[IndexHeavyweightCandidate.AverageExitParameter]) switch
+        {
+            (1, 1) => "on no longer leading or under its 200-day average",
+            (1, _) => "on no longer leading",
+            _ => "under its 200-day average",
+        };
+
+    // A design (a) rule's setting as its sweep's grid holds it: its size cut, look-back, leaders and beta, a sector's
+    // return its members' mean, a monthly rebalance, and its exit.
+    public static HeavyweightSetting HeavyweightSettingOf(IReadOnlyDictionary<string, double> p) => new(
+        p[IndexHeavyweightCandidate.LargestParameter] == 0 ? HeavyweightSweep.EveryCompany : (int)p[IndexHeavyweightCandidate.LargestParameter],
+        (int)p[IndexHeavyweightCandidate.LookBackParameter],
+        (int)p[IndexHeavyweightCandidate.LeadersParameter],
+        HeavyweightSectorReturn.Members,
+        p[IndexHeavyweightCandidate.BetaParameter] == 1,
+        HeavyweightPeriod.Month,
+        (p[IndexHeavyweightCandidate.LeadingExitParameter], p[IndexHeavyweightCandidate.AverageExitParameter]) switch
+        {
+            (1, 1) => HeavyweightExit.Both,
+            (1, _) => HeavyweightExit.Drop,
+            _ => HeavyweightExit.Break,
+        });
+
+    // The levels a rule states that its provisional rule does not, each in words, a level its family states none of read
+    // at its provisional value.
     static string LevelWords(IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p)
     {
         var words = new List<string>();
         var floors = p[IndexRuleCandidate.FloorsParameter];
+
+        double At(string name, double provisional) => p.TryGetValue(name, out var stated) ? stated : provisional;
 
         if (floors != 1)
         {
             words.Add(FormattableString.Invariant($"the dollar volume floor at {Number(floors)} times"));
         }
 
-        if (p[IndexRuleCandidate.LowestCloseParameter] != Statistic.FromPrice(MemberReadings.LowestPrice))
+        if (At(IndexRuleCandidate.LowestCloseParameter, Statistic.FromPrice(MemberReadings.LowestPrice)) is var lowest && lowest != Statistic.FromPrice(MemberReadings.LowestPrice))
         {
-            words.Add(FormattableString.Invariant($"a close of at least ${Number(p[IndexRuleCandidate.LowestCloseParameter])}"));
+            words.Add(FormattableString.Invariant($"a close of at least ${Number(lowest)}"));
         }
 
         words.Add(p[IndexRuleCandidate.QualityParameter] switch
@@ -364,32 +496,32 @@ public static class IndexRules
             _ => "the profit gate",
         });
 
-        if (p[IndexRuleCandidate.HoldParameter] > 0)
+        if (At(IndexRuleCandidate.HoldParameter, 0) is var hold and > 0)
         {
-            words.Add(FormattableString.Invariant($"held {p[IndexRuleCandidate.HoldParameter]} sessions"));
+            words.Add(FormattableString.Invariant($"held {hold} sessions"));
         }
 
-        if (p[IndexRuleCandidate.IndustryFallParameter] > 0)
+        if (At(IndexRuleCandidate.IndustryFallParameter, 0) is var fall and > 0)
         {
-            words.Add(FormattableString.Invariant($"kept off where its industry fell over {p[IndexRuleCandidate.IndustryFallParameter]} sessions"));
+            words.Add(FormattableString.Invariant($"kept off where its industry fell over {fall} sessions"));
         }
 
-        if (p[IndexRuleCandidate.FundOverSpyParameter] > 0)
+        if (At(IndexRuleCandidate.FundOverSpyParameter, 0) is var fund and > 0)
         {
-            words.Add(FormattableString.Invariant($"listing while the index's fund leads SPY over {p[IndexRuleCandidate.FundOverSpyParameter]} sessions"));
+            words.Add(FormattableString.Invariant($"listing while the index's fund leads SPY over {fund} sessions"));
         }
 
-        if (p[IndexRuleCandidate.CreditAverageParameter] == 1)
+        if (At(IndexRuleCandidate.CreditAverageParameter, 0) == 1)
         {
             words.Add("while HYG stands above its 50-session average");
         }
 
-        if (p[IndexRuleCandidate.CreditChangeParameter] == 1)
+        if (At(IndexRuleCandidate.CreditChangeParameter, 0) == 1)
         {
             words.Add("while HYG is up over 63 sessions");
         }
 
-        if (p[IndexRuleCandidate.LargeBreadthParameter] == 1)
+        if (At(IndexRuleCandidate.LargeBreadthParameter, 0) == 1)
         {
             words.Add("its market check on the S&P 500's breadth");
         }

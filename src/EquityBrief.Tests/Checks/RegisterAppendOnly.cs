@@ -622,10 +622,16 @@ public class RegisterAppendOnly
         ];
 
         Assert.Equal(
-            ["breakout on the S&P 400", "breakout on the S&P 600", "drift on the S&P 400", "drift on the S&P 600", "pullback on the S&P 400", "pullback on the S&P 600"],
+            [
+                "breakout on the S&P 400", "breakout on the S&P 600", "drift on the S&P 400", "drift on the S&P 600",
+                "heavyweight on the S&P 400", "heavyweight on the S&P 600", "pullback on the S&P 400", "pullback on the S&P 600",
+            ],
             indexRules.Select(rule => rule.Family).Order(StringComparer.Ordinal));
         Assert.Equal(
-            ["breakout:src/EquityBrief.Worker/Sweep/BreakoutSweep.cs", "drift:src/EquityBrief.Worker/Sweep/DriftSweep.cs", "pullback:src/EquityBrief.Worker/Sweep/SweepCandidates.cs"],
+            [
+                "breakout:src/EquityBrief.Worker/Sweep/BreakoutSweep.cs", "drift:src/EquityBrief.Worker/Sweep/DriftSweep.cs",
+                "heavyweight:src/EquityBrief.Worker/Sweep/HeavyweightSweep.cs", "pullback:src/EquityBrief.Worker/Sweep/SweepCandidates.cs",
+            ],
             indexRules.Select(rule => rule.SetupFamily + ":" + rule.OwnSources[0]).Distinct().Order(StringComparer.Ordinal));
 
         foreach (var family in indexRules.GroupBy(rule => rule.SetupFamily))
