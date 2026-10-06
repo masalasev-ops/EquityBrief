@@ -9,6 +9,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Web.Marks;
@@ -693,6 +694,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
@@ -4854,6 +4856,36 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(6) ? "{}" : reader.GetString(6),
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    // The sweep answers recorded for an index before an instant, every run's, which a card reads to say its family's
+    // sweep found no setting that passed the floors.
+    // see: No family on any index is set aside or hidden by a test result without the operator's word
+    public async Task<IReadOnlyList<RecordedAnswer>> SweepAnswersAsync(string indexCode, DateTimeOffset before)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = "SELECT run, index_code, family, design, answer, recorded_at FROM sweep_answer WHERE index_code = $index AND recorded_at < $before;";
+        command.Parameters.AddWithValue("$index", indexCode);
+        command.Parameters.AddWithValue("$before", before.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture));
+
+        var rows = new List<RecordedAnswer>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RecordedAnswer(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.GetString(4),
+                DateTimeOffset.ParseExact(reader.GetString(5), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
         }
 
         return rows;
