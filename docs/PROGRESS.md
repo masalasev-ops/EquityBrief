@@ -39232,16 +39232,23 @@ Built:      the launcher hands every worker it starts the checkout's secrets fil
             main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead
             of the remote's main). The runbook's paragraph on the night's build and the roster's read-surface clause;
             the prior text in `CHANGELOG.md`.
-Tests:      FILLED FROM THE RUN, from 1933: one added, a worker started from a copy of a clean build reading the
+Tests:      1934, from 1933: one added, a worker started from a copy of a clean build reading the
             checkout's secret over the copy's shipped setting through the path the launcher handed it; the launcher's
             start info test reads the path.
-Claims:     FILLED FROM THE RUN, from 1016, none added.
+Claims:     1016, unchanged.
 Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
             sector heavyweights' evaluator's lists; neither file this edits is among them.
 Mutated:    the rule, stated before the run: the one property the correction adds broken, made by hand over the
-            working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            working tree at 04c7095, filtered to the tests that read it and reverted.
             P1 the launcher handing no secrets file: predicted red at both tests.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+            Results: P1 red where stated: both tests found no secrets file named in the start info; reverted, and
+            both green over the reverted tree. The first run of the gates over 04c7095 stopped at the suite on the
+            check that no tracked path carries the word a secrets file is named by, which the new test's file name
+            did; the file was renamed in 1dc4ab5, and the gates below ran over that.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 1dc4ab5.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1934 of 1934 tests ran with none failed, migrations 0
+            to 69 with none pending, schema version 69, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1016 claims, 1016 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1027
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1934 of 1934 tests ran.
 Carried:    after the merge, the surface's Release build again, since the launcher runs in the surface. Then 16.2.
