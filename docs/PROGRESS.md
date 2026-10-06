@@ -38885,7 +38885,11 @@ Mutated:    the rule, stated before the run: each property the first pull reques
             M2 fired IE, MV, PN, IA, IC, ID and IB at one, M3 drew the line on the frozen card, M4 kept ID sixth, M5
             drew the live rule's edge before costs, M6 kept a trade for the moved rule; each reverted, and the six
             tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 9c57296.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1908 of 1908 tests ran with none failed, migrations 0
+            to 67 with none pending, schema version 67, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 997 claims, 997 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1008
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1908 of 1908 tests ran.
 Carried:    after the merge, migration 67 applied to the store by `tools/migrate.ps1` and the surface's Release build
             again; then 15.5's second pull request, the sector heavyweights' freeze on each index.
