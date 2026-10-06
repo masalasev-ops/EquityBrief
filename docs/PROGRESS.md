@@ -39015,7 +39015,10 @@ Tests:      1913, unchanged.
 Claims:     1000, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
             plan and the decisions sit in no table the harness reads.
 Pins:       none moved: the pass edits no source.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 4fd6e6f, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1913 of 1913 tests ran with none failed, migrations 0 to 68 with none pending, schema
+            version 68, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not run,
+            on the operator's ruling of 2026-10-02.
 Carried:    16.1; the sign-offs of phases 14 and 15, owed to fresh sessions; the night of 2026-10-06 read the morning
             after it, each index's Tonight, the queue's order across the indices, the member readings and the edge
             after costs.
