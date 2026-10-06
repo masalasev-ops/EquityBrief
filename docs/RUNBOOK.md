@@ -659,6 +659,17 @@ dotnet run --project src/EquityBrief.Worker -- sweep-answer --run 20261006T00404
 
 The family's card then reads "Its sweep found no setting that passed the floors" while the newest answer recorded for each of its designs on that index says none passed, and the line goes with the family's next sweep that passes, recorded the same way, or its next freeze. The command writes the answer's row and a run log row and asks for nothing; a run stating no answer, one made before runs stated one among them, is refused with nothing written, and is run again from this build to be recorded.
 
+### The rule's record on each pick's card
+
+Each pick's card draws the record of the rule that picked it, replayed at its one setting over the pulled history with the sweep's own walk, each trade after its cost at the published table (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). The replay is run by hand, every index or one, and a freeze's remedy runs it again so the record follows the rule a card names:
+
+```
+dotnet run --project src/EquityBrief.Worker -- rule-record
+dotnet run --project src/EquityBrief.Worker -- rule-record --index MID
+```
+
+It reads the store's pulled history read-only, writes one row an index and family over what an earlier run wrote and a run log row, asks for nothing and calls no model. It refuses while the night holds the store or where a run started now would reach the night's window. A card drawn before its rule's record is stored shows a dashed outline saying so, and its earnings line reads the rule's cap alone.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.

@@ -208,7 +208,7 @@ public static class RunScreen
                 // verdict for a reason below either floor by forgetting to ask.
                 // see: A screen reads and renders, and computes nothing
                 // see: The record column stays empty until it has earned a number
-                // see: A reason's record is displayed, beside the reason and never beside the name
+                // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
                 return record.HasEarnedAVerdict
                     ? record with
                     {
@@ -1191,7 +1191,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "index-families", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "index-families", "decision-cards", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", QueueStage, "report", "label-news", "backup"]),
     ];

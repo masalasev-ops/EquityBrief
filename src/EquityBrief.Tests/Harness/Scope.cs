@@ -665,7 +665,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, the estimates of each member a registered rule reading them passes on everything else asked for once a member before any verdict is written (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night), and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family of any index is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end); then carry each sector heavyweight held to tonight's close, in the page's book and in each registered rule's own, sell one whose stock left the index at its last close as a member and, where the setting reads it, one closing under its 200-day average, and on the first night of a month read each sector's largest companies by their values as they stood, their returns against the sector's and their betas, sell each holding the rule would no longer buy and buy each leader it does not hold, reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut); then read the S&P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, storing every member's answer, drawing each index's list with none whose trade on any index's list is still open, ending and keeping its trades, and carrying and rebalancing its sector heavyweights, and read each rule registered on an index at its own settings the same way, a family's live rule drawing its list in the provisional rule's place, each swing rule keeping its own list and trades and each heavyweights rule its own book (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: Each index's market check closes its own swing lists together on its own breadth) (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone) (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, the estimates of each member a registered rule reading them passes on everything else asked for once a member before any verdict is written (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night), and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family of any index is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end); then carry each sector heavyweight held to tonight's close, in the page's book and in each registered rule's own, sell one whose stock left the index at its last close as a member and, where the setting reads it, one closing under its 200-day average, and on the first night of a month read each sector's largest companies by their values as they stood, their returns against the sector's and their betas, sell each holding the rule would no longer buy and buy each leader it does not hold, reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut); then read the S&P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, storing every member's answer, drawing each index's list with none whose trade on any index's list is still open, ending and keeping its trades, and carrying and rebalancing its sector heavyweights, and read each rule registered on an index at its own settings the same way, a family's live rule drawing its list in the provisional rule's place, each swing rule keeping its own list and trades and each heavyweights rule its own book (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own) (see: Each index's market check closes its own swing lists together on its own breadth) (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone) (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step); then write a card for each stock every index's families listed and each stock its books bought, the checklist's lines read from the rows the step stored with the rule's record and the card's values, a failure in an index's cards named on its own row while the night goes on (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter; and it reads the S&P 400's and 600's provisional rules after the S&P 500's books under a stage of its own, one night row an index",
             ByNight),
@@ -3045,6 +3045,65 @@ internal static class Scope
             Verdict.Pass,
             "over constructed nights design (b) buys nothing and writes no rebalance on its first night with no close of SPY and rebalances on the night run again once they are stored, and design (a)'s rules reading a beta hold what they held on a month's first night missing the fund's close and rebalance once it is stored",
             ByExpectations),
+
+        // 16.1, the decision card's frame, its first five lines and the rule's record: the two components' catalogue
+        // and matrix rows, the two stores, section 17's four values and section 18's four rows.
+        [CheckReach.Key(CatalogueTable, "Decision cards")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, calendar, companies, reported quarters, gate results, family results and picks, heavyweight holdings, member readings, the index family nights, results and picks, the index heavyweight holdings and the rule records it reads and the decision cards it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Decision cards")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Rule recorder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, calendar, gate results, heavyweight nights and the pulled history it reads through the sweep's history and the rule records it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Rule recorder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Decision cards")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Rule records")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Card sector place")] = new Scoped(
+            Verdict.Pass,
+            "the market and sector line worked by hand over constructed sectors on both sides of the bottom place, a sector not ranked warning, and with the place moved in the settings block; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Card cover floor")] = new Scoped(
+            Verdict.Pass,
+            "the business line worked by hand over constructed quarters on both sides of the floor, a financial company and one filing no interest read as neither, and with the floor moved, the card's cover equal to the coverage's own at its floor; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Card held share")] = new Scoped(
+            Verdict.Pass,
+            "a report one session inside the held time warns, one a session past it inside the cap notes and one a session past the cap ticks, worked by hand off a constructed record, and with the share moved; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Card round trip")] = new Scoped(
+            Verdict.Pass,
+            "the liquidity and cost line worked by hand on both sides of the value and with the value moved, a rule with no stop read in per cent and not warned on; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A rule a pick's card names that has no record")] = new Scoped(
+            Verdict.Pass,
+            "a card over a store holding no rule record draws the dashed outline saying the rule has not been replayed, read off the rendered card, and its earnings line warns inside the cap",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No report date on file for a pick")] = new Scoped(
+            Verdict.Pass,
+            "a pick with no report on file warns on the earnings line saying so, over a constructed night",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pick the night read nothing for")] = new Scoped(
+            Verdict.Pass,
+            "a pick with no member reading, no quarters and no sector warns on each line that reads them and names what is missing, over a constructed night",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A rule that sets no stop")] = new Scoped(
+            Verdict.Pass,
+            "a sector heavyweights' buy reads its round trip in per cent of the buy and is not warned on it, over a constructed night",
+            ByExpectations),
         [CheckReach.Key(FixtureTable, "member readings")] = new Scoped(
             Verdict.Pass,
             "the fixture's replay stores one row for each of its four names on its night under the index, the three holding a bar read against figures worked from the captured bars outside the repository and the one holding none read over nothing, and the switches' row holding none of its readings",
@@ -4136,6 +4195,9 @@ internal static class Scope
         ["Estimates fetcher"] = "14.6",
         // 15.1's second half, which the plan describes by the picks it computes rather than by the component's name.
         ["Index families"] = "15.1",
+        // 16.1's two, which the plan describes by the card each pick gains and the record its command replays.
+        ["Decision cards"] = "16.1",
+        ["Rule recorder"] = "16.1",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4197,6 +4259,9 @@ internal static class Scope
         ["Index rule trades"] = "15.5",
         ["Index heavyweight rule nights"] = "15.5",
         ["Index heavyweight rule holdings"] = "15.5",
+        // 16.1's two, each pick's card and each rule's record.
+        ["Decision cards"] = "16.1",
+        ["Rule records"] = "16.1",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5461,6 +5526,11 @@ internal static class Scope
         // The store's copy, the operator's ruling of 2026-10-02.
         ["A store copy that does not open and read"] = "13.10",
         ["The night, its drain or its labeller still holding the store after twenty hours"] = "13.10",
+        // The decision card's four, 16.1.
+        ["A rule a pick's card names that has no record"] = "16.1",
+        ["No report date on file for a pick"] = "16.1",
+        ["A pick the night read nothing for"] = "16.1",
+        ["A rule that sets no stop"] = "16.1",
         // The market switches, the operator's ruling of 2026-10-03.
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // The 9.2 correction of 2026-10-03, a drain that stops on an error.
@@ -5644,6 +5714,11 @@ internal static class Scope
         ["A print's revenue quarter"] = "14.4",
         ["Context ideas' test"] = "14.4",
         ["RSI fall order"] = "14.4",
+        // The decision card's values, 16.1.
+        ["Card sector place"] = "16.1",
+        ["Card cover floor"] = "16.1",
+        ["Card held share"] = "16.1",
+        ["Card round trip"] = "16.1",
         // The heavyweights' sweep, 14.5.
         ["Heavyweights' sweep grid"] = "14.5",
         // The research template, 12.6 corrections.

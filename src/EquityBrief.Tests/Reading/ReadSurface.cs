@@ -3469,7 +3469,7 @@ public partial class ReadSurface
         // assertions stay green while the rule is broken. What has teeth is the
         // nesting, asserted both ways: every record sits inside a reason, and
         // none sits outside one.
-        // see: A reason's record is displayed, beside the reason and never beside the name
+        // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
         // A row's record sits inside that row's own reason disclosure, and the footer's sits
         // inside the footer's own reason span. The two are counted apart rather than by one
         // matcher, because `record` is a prefix of `record-foot`: a matcher keyed on the

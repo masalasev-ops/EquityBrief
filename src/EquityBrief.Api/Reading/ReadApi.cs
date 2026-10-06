@@ -488,6 +488,24 @@ public sealed record PickRow(
     // What the plan put at risk from its fill, as the filler stored it beside the outcome.
     double? PlannedRisk = null);
 
+// A pick's card as the night stored it: its index, night, family and stock, its place, the plan's prices, the rule it
+// names, the card's values it was read with, its lines and the rule's record as the card read it, none where the rule had
+// not been replayed.
+// see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+public sealed record DecisionCardRow(
+    string Index,
+    DateOnly Night,
+    string Family,
+    string Ticker,
+    int Place,
+    decimal? Entry,
+    decimal? Stop,
+    decimal? Target,
+    string Rule,
+    string Settings,
+    string Lines,
+    string? Record);
+
 // One stock under one family on a night the families drew the page's list, as the store holds it: whether
 // the page lists it, its place down the page and the other families it qualified under, or why it is held
 // back, a trade still open naming the family and the night that listed it.
@@ -727,6 +745,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.DecisionCard, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3232,6 +3251,75 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(6) ? null : reader.GetString(6),
                 reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(8) ? null : reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    // ---- the decision cards ----
+    // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record";
+
+    const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY family, place, ticker;";
+
+    const string BoughtCardsTo = "SELECT " + CardColumns + @" FROM decision_card
+        WHERE index_code = $index AND family = $family AND session_date <= $on
+        ORDER BY session_date, ticker;";
+
+    const string CardsOfName = "SELECT " + CardColumns + @" FROM decision_card
+        WHERE ticker = $ticker AND session_date = $on
+        ORDER BY index_code, family;";
+
+    // Every card an index's night stored, the families' picks and its book's buys.
+    public Task<IReadOnlyList<DecisionCardRow>> DecisionCardsAsync(string index, DateOnly on) =>
+        CardsAsync(DecisionCardsOn, [("$index", index), ("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))]);
+
+    // The cards a sector heavyweights' book drew for what it bought on each night through a night, which each holding's
+    // row opens from the night it was bought.
+    public Task<IReadOnlyList<DecisionCardRow>> BoughtCardsAsync(string index, DateOnly on) =>
+        CardsAsync(BoughtCardsTo, [("$index", index), ("$family", EquityBrief.Core.Families.HeavyweightRule.Name), ("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))]);
+
+    // A stock's cards on a night, under whichever family and index listed it.
+    public Task<IReadOnlyList<DecisionCardRow>> DecisionCardsOfAsync(string ticker, DateOnly on) =>
+        CardsAsync(CardsOfName, [("$ticker", ticker), ("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))]);
+
+    async Task<IReadOnlyList<DecisionCardRow>> CardsAsync(string sql, IReadOnlyList<(string Name, string Value)> parameters)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        var rows = new List<DecisionCardRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            decimal? Price(int column) =>
+                reader.IsDBNull(column) ? null : decimal.Parse(reader.GetString(column), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture);
+
+            rows.Add(new DecisionCardRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetInt32(4),
+                Price(5),
+                Price(6),
+                Price(7),
+                reader.GetString(8),
+                reader.GetString(9),
+                reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11)));
         }
 
         return rows;

@@ -79,6 +79,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_rule_trade` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `index_heavyweight_rule_night` | IndexFamilies | none | IndexFamilies |
 | `index_heavyweight_rule_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
+| `decision_card` | DecisionCards | none | DecisionCards |
+| `rule_record` | RuleRecorder | RuleRecorder | none |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -1086,6 +1088,53 @@ Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, st
 Primary key: `candidate`, `ticker`, `entered_on`.
 
 **The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). Each night they carry each rule's holdings and their size cuts by tonight's closes, sell one whose stock left the index at its last close as a member and one closing under its 200-day average where the rule reads that exit, and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold. A night run again deletes what each rule bought that night and opens again what each sold that night. The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
+
+### decision_card
+Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | the index the pick was listed on, `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night |
+| `family` | TEXT | the family that listed it, by the word it is stored under, `heavyweights` for a book's buy |
+| `ticker` | TEXT | |
+| `place` | INTEGER | its place down the family's list, or among the book's buys of the night in the order of their sectors |
+| `entry` | TEXT | decimal in code, the plan's buy, null where the row the card reads stores none |
+| `stop` | TEXT | decimal in code, the plan's stop, null for a rule setting none |
+| `target` | TEXT | decimal in code, the plan's target, null for a rule that trails or sets none |
+| `rule` | TEXT | the rule the card names, its family and its index in words |
+| `settings` | TEXT | JSON: the card's values the night read it with |
+| `lines` | TEXT | JSON: the checklist's lines in order, each its place, its name, its verdict, `tick`, `note` or `warning`, and its words |
+| `record` | TEXT | JSON: the rule's record as the card read it, its rule in words, trades, share won, mean result and its unit, median sessions held, the sessions by which the card's share of the trades had ended and that share, the median worst close, the history's first and last session and its membership; null where the rule has not been replayed |
+
+Primary key: `index_code`, `session_date`, `family`, `ticker`.
+
+**The decision cards write it in the night after every index's families and books, and are its own deleter** (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it). A night run again deletes its own night's rows and writes them again, and no other night's; nothing else deletes a row, so an earlier night's cards stand as they were read, with the values they were read with.
+
+### rule_record
+Grain: one row per index and family a card names on it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the family, by the word it is stored under |
+| `rule` | TEXT | the rule replayed, in words |
+| `settings` | TEXT | the one setting replayed, as its sweep keys it |
+| `recorded_at` | TEXT | UTC instant of the command that wrote it |
+| `first_session` | TEXT | the history's first scored session |
+| `last_session` | TEXT | the history's last session |
+| `membership` | TEXT | `as it stood` or `survivors only` |
+| `unit` | TEXT | `risks` for a rule with a stop, `percent` for one with none |
+| `trades` | INTEGER | the trades the replay kept that ended inside the history |
+| `won` | REAL | the share that ended at its target, null for a rule that sets no target |
+| `average` | REAL | the mean result after each trade's cost, in its unit |
+| `median_sessions` | INTEGER | the median sessions held |
+| `ended_by` | TEXT | JSON: how many trades ended at each session held, from one, which any share's holding time is read from |
+| `worst_close` | REAL | the median of the lowest close each trade was held through against its buy, in its unit, nothing for one that never closed under its buy |
+
+Primary key: `index_code`, `family`.
+
+**The rule recorder writes it by hand, one row an index and family over what an earlier run wrote** (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). It replays each family's live rule on the S&P 500 and its provisional rule on the S&P 400 and 600 at its one setting, and a freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
 
 ### sweep_answer
 Grain: one row per sweep run recorded.

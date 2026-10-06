@@ -394,6 +394,16 @@ public sealed class SinglePageApp : IComponent
             paintTheme();
             return;
           }
+          // A pick's card opens and closes in place beneath its row, and the row is not picked for it.
+          const toggle = event.target.closest('.card-toggle');
+          if (toggle) {
+            const card = document.getElementById(toggle.getAttribute('aria-controls'));
+            if (card) {
+              card.hidden = !card.hidden;
+              toggle.setAttribute('aria-expanded', card.hidden ? 'false' : 'true');
+            }
+            return;
+          }
           const row = event.target.closest('.list-table tr[data-ticker]');
           if (row && !event.target.closest('a, button, form')) {
             const pick = row.getAttribute('data-select-href');
@@ -651,7 +661,8 @@ public sealed class SinglePageApp : IComponent
         NewsView? news = null,
         ListedUnderView? listedUnder = null,
         string? heavyweight = null,
-        MemberReadingsView? member = null)
+        MemberReadingsView? member = null,
+        DecisionCardView? decision = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1117,6 +1128,13 @@ public sealed class SinglePageApp : IComponent
         if (heavyweight is not null)
         {
             region.Append(Invariant($"<p class=\"listed-under heavyweight-held\">{Escaped(heavyweight)}</p>"));
+        }
+
+        // The card of the family that listed the name on the night, at the top of the page.
+        // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+        if (decision is not null)
+        {
+            region.Append(Invariant($"<section class=\"name-card\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
 
         region.Append(body);

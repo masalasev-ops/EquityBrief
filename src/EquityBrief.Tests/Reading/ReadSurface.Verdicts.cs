@@ -675,7 +675,7 @@ public partial class ReadSurface
     {
         // 15.11 says wherever the reason appears: one reason clears both floors beside six losses that
         // set no bar, and the other has the rows and not the nights.
-        // see: A reason's record is displayed, beside the reason and never beside the name
+        // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
         var night = new DateOnly(2026, 9, 4);
 
         var atEntry = Setups(night, wins: 150, losses: 100, breakEven: 40d, withoutABar: 6);

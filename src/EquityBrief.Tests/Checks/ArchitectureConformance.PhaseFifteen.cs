@@ -41,8 +41,22 @@ public partial class ArchitectureConformance
         ("15.5", 3),
     ];
 
-    // The rows the document gains after phase 15's report, named beside the pair and never counted in it: none yet.
-    internal static string[] AfterPhaseFifteen => [];
+    // The rows the document gains after phase 15's report, named beside the pair and never counted in it: from 16.1 the
+    // decision card's rows.
+    internal static string[] AfterPhaseFifteen => [.. CardRows];
+
+    // 16.1's rows: the decision cards' and the rule recorder's catalogue and matrix rows, their two stores, section 17's
+    // four values and section 18's four failures.
+    internal static string[] CardRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Decision cards"),
+        CheckReach.Key(Scope.MatrixTable, "Decision cards"),
+        CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
+        CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
+        CheckReach.Key(Scope.StoresTable, "Decision cards"),
+        CheckReach.Key(Scope.StoresTable, "Rule records"),
+        .. FixtureExpectations.CardClaims,
+    ];
 
     [Fact]
     public void ThePhaseFifteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()

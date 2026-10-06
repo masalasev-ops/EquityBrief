@@ -16,7 +16,8 @@ public sealed record FamilyPickCell(
     bool Trailing,
     decimal? RewardToRisk,
     string Why,
-    IReadOnlyList<string> Also);
+    IReadOnlyList<string> Also,
+    DecisionCardView? Card = null);
 
 // One family's card on a night: the family's words, where it stands in the page's order, the day its
 // rule went live or nothing while it runs on provisional settings, how many variants are scored beside
@@ -413,6 +414,12 @@ public sealed partial class MarkRenderer
             foreach (var pick in card.Picks)
             {
                 body.Append(FamilyRow(card.Family, pick));
+
+                // The pick's card in place beneath its row, opened by the control in its name cell.
+                if (pick.Card is { } decision)
+                {
+                    body.Append(CardRow(decision, FamilyHeadings.Count));
+                }
             }
 
             body.Append("</tbody></table></div>");
@@ -447,6 +454,11 @@ public sealed partial class MarkRenderer
         foreach (var also in pick.Also)
         {
             cells.Append(Invariant, $" <span class=\"also-family\" data-also=\"{Escaped(also)}\">also {Escaped(Article(also))}</span>");
+        }
+
+        if (pick.Card is { } decision)
+        {
+            cells.Append(CardToggle(decision));
         }
 
         var researched = row.ResearchedOn is not null;

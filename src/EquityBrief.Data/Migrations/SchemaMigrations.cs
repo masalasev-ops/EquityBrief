@@ -689,7 +689,51 @@ public static class SchemaMigrations
         new Migration(66, "create member_reading and switch_reading, and add company's rating counts, reported_quarter's interest expense and family_trade.cost", CreateMemberReadings),
         new Migration(67, "create index_rule_trade", CreateIndexRuleTrades),
         new Migration(68, "create index_heavyweight_rule_night and index_heavyweight_rule_holding", CreateIndexHeavyweightRules),
+        new Migration(69, "create decision_card and rule_record", CreateDecisionCards),
     ];
+
+    // A pick's card on a night: one row an index, night, family and stock the family listed, with the plan's prices, the rule
+    // the card names in words, the card's values it was read with, its lines and the rule's record as the card read it; and
+    // a rule's record, one row an index and family, replayed at the rule's one setting over the pulled history after each
+    // trade's cost, with how many trades had ended by each session held.
+    // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+    // see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+    const string CreateDecisionCards = @"
+        CREATE TABLE decision_card (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            family        TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            place         INTEGER NOT NULL,
+            entry         TEXT,
+            stop          TEXT,
+            target        TEXT,
+            rule          TEXT NOT NULL,
+            settings      TEXT NOT NULL,
+            lines         TEXT NOT NULL,
+            record        TEXT,
+            PRIMARY KEY (index_code, session_date, family, ticker)
+        ) STRICT;
+
+        CREATE TABLE rule_record (
+            index_code       TEXT NOT NULL,
+            family           TEXT NOT NULL,
+            rule             TEXT NOT NULL,
+            settings         TEXT NOT NULL,
+            recorded_at      TEXT NOT NULL,
+            first_session    TEXT NOT NULL,
+            last_session     TEXT NOT NULL,
+            membership       TEXT NOT NULL,
+            unit             TEXT NOT NULL,
+            trades           INTEGER NOT NULL,
+            won              REAL,
+            average          REAL,
+            median_sessions  INTEGER,
+            ended_by         TEXT NOT NULL,
+            worst_close      REAL,
+            PRIMARY KEY (index_code, family)
+        ) STRICT;
+    ";
 
     // Each registered sector heavyweights rule of the S&P 400 and 600 keeping a book of its own: one row a rule and each
     // night it rebalanced on, with what it bought and sold there; and one row a holding, carried every night as the

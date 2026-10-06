@@ -39044,3 +39044,52 @@ Changes:    `BUILD_PLAN.md`'s phase 16 rulings paragraph says the three sign-off
             `CHANGELOG.md`.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and 16.1's, with
             the figures 16.1's entry states.
+
+### 16.1 - the decision card's frame, its first five lines and the rule's record: a card beside every pick on every index, on Tonight and at the top of the stock's page   2026-10-06
+
+Built:      The decision cards, a night step at the end of the swing filter's after the index families: one card for
+            each stock every index's families listed and each stock its books bought, into `decision_card` (migration
+            69), a night run again replacing its own; an index whose cards fail is undone and named on the stage's row
+            while the others are written. Its first five lines, each a tick, a note or a warning with its reason in
+            words: the gates the family passed, the business from the stored quarters and state, the market from the
+            index's own breadth with the sector's place among the index's sectors over 63 sessions, the next report
+            against the time three in four of the rule's trades had ended by and the cap, and the dollar volume with
+            the round trip in risks, in per cent for a rule with no stop. The values in `EquityBrief:Card` with
+            defaults in code, stored on each card. The `rule-record` verb replays each family's rule on each index at
+            its one setting over the pulled history with the sweeps' own walks, each trade after its cost, into
+            `rule_record`. The card opens in place under each pick's row and at the top of the stock's page, the rule's
+            record under the rule's own heading naming its index, or the outline where it was not replayed; one
+            column under 640 pixels. CLAUDE.md's record hard rule and its decision superseded per R1, sections 7, 13,
+            14, 15.18, 16, 17, 18 and 23, `SCHEMA.md`, the runbook and the roster's three clauses; the prior text in
+            `CHANGELOG.md`. The guide gains a paragraph on what the card holds; its section with the figure is 16.4's.
+Fixture:    the fixture's own night lists nothing, so its replay writes no card and `fixture-replay` names none. The
+            card's expectations are `fixture-expectations`' over constructed stores, derived by hand: PICK's business
+            covering its interest 3.00 times, its sector tenth of eleven on the S&P 400 where the S&P 500's ranks
+            would put it first, and its report on the fifth session inside the fifteen by which three in four of the
+            rule's twenty trades had ended.
+Tests:      FILLED FROM THE RUN, from 1913: eleven added, each line on both sides of its value, each value moved, the
+            earnings line's three verdicts, the cover at its floor, the S&P 400's night, the record against the sweep,
+            a failed index and a refused step, the cards on each index's pages and the phone's column.
+Claims:     FILLED FROM THE RUN, from 1000: the two catalogue and matrix rows, the two stores, the night step, section
+            17's four values and section 18's four failures.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists, 60 files named; no file 16.1 edits or adds is among them.
+Mutated:    the rule, stated before the run: each property the done condition names broken alone, made by hand over
+            the working tree at FILLED FROM THE RUN, filtered to the tests that read it and reverted.
+            M1 a card's readings read from the newest stored on or after the night: predicted red at the S&P 400's
+            night, whose later reading is a million dollars a session and deteriorating.
+            M2 an S&P 400 card reading the S&P 600's night row: predicted red at the same, its breadth 30% under 45%.
+            M3 the earnings line warning anywhere inside the cap: predicted red at the earnings line's note.
+            M4 the sector's bottom places read at 3 whatever the settings: predicted red at the values moved.
+            M5 the record's average read before each trade's cost: predicted red at the record against the sweep.
+            M6 an index's cards kept on a failure: predicted red at the failed index's test, whose first card is
+            written before its second fails.
+            M7 the record's heading naming the stock in place of the rule: predicted red at the S&P 400's and 600's
+            cards on their pages.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, `tools/remedies/2026-10-06-16.1-the-decision-card.txt`, migration 69 and then
+            `rule-record`, no request and no model call, run outside the night's window, and the surface's Release
+            build again; the night of 2026-10-06 writes the first cards, read off the run page's decision cards row.
+            Then the local model chosen by a flag in its settings, then 16.2.

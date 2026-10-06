@@ -15,7 +15,8 @@ public sealed record HeavyweightHoldingCell(
     DateOnly? LeadOn,
     decimal? Close,
     double? Average200,
-    bool Under);
+    bool Under,
+    DecisionCardView? Card = null);
 
 // A holding the book ended, as the card names it: the stock, the session it ended on and why.
 public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, string Reason);
@@ -114,6 +115,12 @@ public sealed partial class MarkRenderer
             foreach (var (holding, at) in card.Holdings.Select((holding, at) => (holding, at)))
             {
                 body.Append(HeavyweightRow(holding, at + 1, card.LookBack));
+
+                // The card of the night the holding was bought, in place beneath its row.
+                if (holding.Card is { } decision)
+                {
+                    body.Append(CardRow(decision, HeavyweightHeadings.Count));
+                }
             }
 
             body.Append("</tbody></table></div>");
@@ -147,7 +154,7 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"<tr data-ticker=\"{Escaped(holding.Ticker)}\" data-sector=\"{Escaped(holding.Sector)}\" data-held-since=\"{DayOf(holding.HeldSince)}\" ");
         cells.Append(Invariant, $"data-lead=\"{(holding.Lead is { } stored ? stored.ToString("R", Invariant) : "none")}\" data-close=\"{(holding.Close is { } close ? close.ToString(Invariant) : "none")}\" data-average=\"{(holding.Average200 is { } average ? average.ToString("R", Invariant) : "none")}\">");
         cells.Append(Invariant, $"<td class=\"place\">{place}</td>");
-        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Card is { } decision ? CardToggle(decision) : string.Empty)}{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
         cells.Append(Invariant, $"<td class=\"setup\">{Escaped(holding.Sector)}</td>");
         cells.Append(Invariant, $"<td>{DayOf(holding.HeldSince)}</td>");
         cells.Append(holding.Lead is { } lead

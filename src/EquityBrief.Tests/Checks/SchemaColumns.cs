@@ -59,6 +59,10 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Index heavyweight rule nights"),
             CheckReach.Key(Scope.StoresTable, "Index heavyweight rule holdings"),
 
+            // 16.1, each pick's card and each rule's record.
+            CheckReach.Key(Scope.StoresTable, "Decision cards"),
+            CheckReach.Key(Scope.StoresTable, "Rule records"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),
