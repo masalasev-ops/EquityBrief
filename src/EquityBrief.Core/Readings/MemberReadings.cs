@@ -72,6 +72,60 @@ public static class MemberReadings
             && read.Sum(quarter => quarter.NetIncome!.Value) > 0m;
     }
 
+    // The sessions before a session its year's high is read over.
+    public const int YearSessions = 251;
+
+    // The sessions before a reaction its industry's peers' reports are read over.
+    public const int PeerSessions = 20;
+
+    // The windows an industry's return is read over.
+    public static IReadOnlyList<int> IndustryWindows { get; } = [21, 63];
+
+    // The highest high of the 251 sessions before a bar, the newer of two equal highs, and the sessions since it; none
+    // for the first bar.
+    public static (decimal High, int Since)? YearHigh(IReadOnlyList<Sweep.SweepBar> bars, int bar)
+    {
+        (decimal High, int At)? best = null;
+
+        for (var at = Math.Max(0, bar - YearSessions); at < bar; at++)
+        {
+            if (best is not { } held || bars[at].High >= held.High)
+            {
+                best = (bars[at].High, at);
+            }
+        }
+
+        return best is { } found ? (found.High, bar - found.At) : null;
+    }
+
+    // A session's volume over the mean of the 50 sessions' volumes the indicator engine stores for it; none where the
+    // mean is not held or is nothing.
+    public static double? VolumeRatio(long volume, double? average) =>
+        average is { } mean && mean > 0 ? volume / mean : null;
+
+    // The value-weighted mean of a group's figures: each member's figure weighted by its company's value, a member with no
+    // value above nothing left out, and a group left with none reading none. An industry's return and its peers' mean
+    // surprise are both read through it.
+    public static double? ValueWeighted(IEnumerable<(decimal Value, double Figure)> members)
+    {
+        var (weighted, weight) = (0.0, 0.0);
+
+        foreach (var (value, figure) in members)
+        {
+            if (value <= 0m || double.IsNaN(figure))
+            {
+                continue;
+            }
+
+            var held = Prices.Statistic.FromPrice(value);
+
+            weighted += held * figure;
+            weight += held;
+        }
+
+        return weight > 0 ? weighted / weight : null;
+    }
+
     // The coverage: operating income over the four newest quarters at least twice their interest expense. A company
     // filing no interest expense on any of them passes, a financial company passes, and fewer than four filed or one
     // stating no operating income does not.

@@ -234,23 +234,10 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         // The year's high a breakout is read against: the highest high of the 251 sessions before the listing, and the
         // sessions since the session it was made on.
-        (double High, int Since) YearHigh(FamilyListing listing)
-        {
-            var bars = series[listing.Name].Bars;
-            var (high, at) = (double.NaN, -1);
-
-            for (var bar = Math.Max(0, listing.Bar - BreakoutYearSessions); bar < listing.Bar; bar++)
-            {
-                var value = Statistic.FromPrice(bars[bar].High);
-
-                if (double.IsNaN(high) || value >= high)
-                {
-                    (high, at) = (value, bar);
-                }
-            }
-
-            return (high, at < 0 ? int.MaxValue : listing.Bar - at);
-        }
+        (double High, int Since) YearHigh(FamilyListing listing) =>
+            MemberReadings.YearHigh(series[listing.Name].Bars, listing.Bar) is { } found
+                ? (Statistic.FromPrice(found.High), found.Since)
+                : (double.NaN, int.MaxValue);
 
         // The drift's peer reading: the mean surprise of the S&P 500 members of the listing's industry that reported in
         // the 20 sessions before its reaction session, each weighted by its company's value on the session before the
@@ -267,7 +254,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
             var reaction = listing.Session - back;
             var (from, to) = (calendar[reaction - PeerSessions], calendar[reaction - 1]);
-            var (weighted, weight) = (0.0, 0.0);
+            var peers = new List<(decimal Value, double Figure)>();
 
             foreach (var (name, surprise) in reported)
             {
@@ -279,11 +266,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                     continue;
                 }
 
-                weighted += Statistic.FromPrice(value) * surprise.Percent;
-                weight += Statistic.FromPrice(value);
+                peers.Add((value, surprise.Percent));
             }
 
-            return weight > 0 && weighted / weight > 0;
+            // The peers' mean surprise through the one function the night reads it with.
+            return MemberReadings.ValueWeighted(peers) is > 0;
         }
 
         var levels = new List<DialLevel<FamilyListing>>
@@ -873,11 +860,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     public const int DriftWideWindow = 20;
 
-    public const int PeerSessions = 20;
+    public const int PeerSessions = MemberReadings.PeerSessions;
 
     // The breakout's levels: the sessions before a listing its year's high is read over, the nearness to it, the
     // sessions within which it is recent and the highest volume multiple.
-    public const int BreakoutYearSessions = 251;
+    public const int BreakoutYearSessions = MemberReadings.YearSessions;
 
     public const double NearHigh = 0.95;
 
