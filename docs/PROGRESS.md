@@ -39605,10 +39605,13 @@ Mutated:    the rule, stated before the run: the window's edge and the card's wo
             V2 the card drawing "none" for an unread date: predicted red at the card's test alone.
             Results: V1 red at the reading's test alone, a hold through 2026-11-04 read unread; V2 red at the card's test
             alone, the line reading none. Each reverted, and the four tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing; `dividend_reading` fills as companies report, and the line reads each as it is kept.
 
 ### 11.1 - correction: the drain's build copy is moved into place again where the system refuses the move, and a refusal names no rooted path   2026-10-07
