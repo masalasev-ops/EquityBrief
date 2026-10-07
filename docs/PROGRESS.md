@@ -39568,10 +39568,13 @@ Mutated:    the rule, stated before the run: the line drawn beneath the boxes ra
             K1 the line drawn after the form: predicted red at the press test alone.
             Results: K1 red at the press test alone, the line found after the form's action. Reverted, and the two
             tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing.
 
 ### 16.3 - correction: a card says a later ex-dividend date is not ruled out where no dividend of the company's is stored, where it said there was none   2026-10-07
