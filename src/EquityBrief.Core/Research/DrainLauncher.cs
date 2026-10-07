@@ -59,8 +59,16 @@ public sealed class WorkerDrainLauncher(
     string dataRoot,
     IClock clock,
     Func<ProcessStartInfo, bool>? start = null,
-    Func<string?>? nightBuild = null) : IDrainLauncher
+    Func<string?>? nightBuild = null,
+    Action<string, string>? move = null,
+    Action<TimeSpan>? pause = null) : IDrainLauncher
 {
+    // How many times a finished copy is moved into place, half a second apart, since the system refuses the move for as
+    // long as something still holds a file the copy just wrote, as a scan of new files does for a few seconds.
+    public const int MoveAttempts = 20;
+
+    public static readonly TimeSpan MoveApart = TimeSpan.FromMilliseconds(500);
+
     public const string Executable = "dotnet";
 
     // The worker's assembly inside a build, which `dotnet` runs.
@@ -159,7 +167,7 @@ public sealed class WorkerDrainLauncher(
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
         {
-            return new DrainStart(false, $"The worker was not started, because its build could not be copied to start from: {failure.Message}");
+            return new DrainStart(false, $"The worker was not started, because its build could not be copied to start from: {Unrooted(failure.Message)}");
         }
 
         try
@@ -170,8 +178,21 @@ public sealed class WorkerDrainLauncher(
         }
         catch (System.ComponentModel.Win32Exception failure)
         {
-            return new DrainStart(false, $"The worker was not started: {failure.Message}");
+            return new DrainStart(false, $"The worker was not started: {Unrooted(failure.Message)}");
         }
+    }
+
+    // The system's own words with the data root's and the checkout's paths taken out, so a path in them is named under the
+    // data root and the line, which the night's row and the press's reply carry, holds no path a machine roots.
+    // see: The whole system is a checkout and one database file
+    string Unrooted(string said)
+    {
+        foreach (var root in new[] { dataRoot, checkout }.OfType<string>().Where(root => root.Length > 0).Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).OrderByDescending(root => root.Length))
+        {
+            said = said.Replace(Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar, string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return said;
     }
 
     // How the process is started, stated apart from starting it so what a press would run is
@@ -211,7 +232,9 @@ public sealed class WorkerDrainLauncher(
 
     // The copy for this build, made where none is held yet. Made beside its final name and
     // moved into it, so a drain never starts from a copy another press is still writing, and
-    // two presses copying the same build at once keep one and discard the other.
+    // two presses copying the same build at once keep one and discard the other. A move the
+    // system refuses is tried again, half a second apart, and one refused every time removes
+    // its partial copy and says why.
     public string CopyOf(string build)
     {
         var copies = Path.Combine(dataRoot, CopiesFolder);
@@ -229,13 +252,40 @@ public sealed class WorkerDrainLauncher(
                 File.Copy(file, target);
             }
 
-            try
+            for (var attempt = 1; ; attempt++)
             {
-                Directory.Move(partial, copy);
-            }
-            catch (IOException) when (Directory.Exists(copy))
-            {
-                Directory.Delete(partial, recursive: true);
+                try
+                {
+                    if (move is not null)
+                    {
+                        move(partial, copy);
+                    }
+                    else
+                    {
+                        Directory.Move(partial, copy);
+                    }
+
+                    break;
+                }
+                catch (Exception refused) when (refused is IOException or UnauthorizedAccessException)
+                {
+                    // Another press's copy of the same build moved into place first: this one is discarded.
+                    if (Directory.Exists(copy))
+                    {
+                        Discard(partial);
+
+                        break;
+                    }
+
+                    if (attempt == MoveAttempts)
+                    {
+                        Discard(partial);
+
+                        throw;
+                    }
+
+                    (pause ?? Thread.Sleep)(MoveApart);
+                }
             }
         }
 
@@ -287,6 +337,19 @@ public sealed class WorkerDrainLauncher(
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
             {
             }
+        }
+    }
+
+    // A partial copy removed, and left for a later press to remove once nothing holds it where one of its files is still
+    // held.
+    static void Discard(string partial)
+    {
+        try
+        {
+            Directory.Delete(partial, recursive: true);
+        }
+        catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+        {
         }
     }
 

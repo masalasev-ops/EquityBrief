@@ -235,6 +235,91 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public void ACopyTheSystemRefusesToMoveIntoPlaceIsMovedAgainAndARefusalNamesNoRootedPath()
+    {
+        using var root = new TemporaryDirectory();
+
+        var build = Path.Combine(root.Path, "build");
+
+        Directory.CreateDirectory(build);
+        File.WriteAllText(Path.Combine(build, WorkerDrainLauncher.Assembly), "the worker");
+
+        var now = UtcAt("2026-10-07T01:35:14Z");
+
+        (WorkerDrainLauncher Launcher, List<ProcessStartInfo> Started, List<TimeSpan> Waits, string Copies) Over(string data, Action<string, string> move)
+        {
+            var started = new List<ProcessStartInfo>();
+            var waits = new List<TimeSpan>();
+            var launcher = new WorkerDrainLauncher(root.Path, build, Path.Combine(root.Path, data), FixedClock.At(now, SessionZones.UnitedStates), info =>
+            {
+                started.Add(info);
+
+                return true;
+            }, move: move, pause: waits.Add);
+
+            return (launcher, started, waits, Path.Combine(root.Path, data, WorkerDrainLauncher.CopiesFolder));
+        }
+
+        static Exception Denied(string from) => new UnauthorizedAccessException($"Access to the path '{from}' is denied.");
+
+        // Refused twice, as the move of the night of 2026-10-06 was, and then made: the worker starts from the copy, the
+        // move asked three times with two waits of half a second between, and no partial copy is left.
+        var moves = 0;
+        var twice = Over("refused-twice", (from, to) =>
+        {
+            if (++moves <= 2)
+            {
+                throw Denied(from);
+            }
+
+            Directory.Move(from, to);
+        });
+
+        Assert.True(twice.Launcher.Start().Started);
+        Assert.Equal((3, 2), (moves, twice.Waits.Count));
+        Assert.All(twice.Waits, wait => Assert.Equal(WorkerDrainLauncher.MoveApart, wait));
+        Assert.Equal(twice.Copies, Path.GetDirectoryName(Path.GetDirectoryName(Assert.Single(twice.Started).ArgumentList[0])));
+        Assert.Single(Directory.GetDirectories(twice.Copies));
+
+        // Refused every time: nothing starts, the move asked as many times as it is tried with a wait between each, the
+        // partial copy removed, and the line naming the copy under the data root with no path the machine roots.
+        moves = 0;
+
+        var always = Over("refused-always", (from, _) =>
+        {
+            moves++;
+
+            throw Denied(from);
+        });
+        var refused = always.Launcher.Start();
+
+        Assert.False(refused.Started);
+        Assert.Equal((WorkerDrainLauncher.MoveAttempts, WorkerDrainLauncher.MoveAttempts - 1, 0), (moves, always.Waits.Count, always.Started.Count));
+        Assert.Empty(Directory.GetDirectories(always.Copies));
+        Assert.StartsWith($"The worker was not started, because its build could not be copied to start from: Access to the path '{WorkerDrainLauncher.CopiesFolder}{Path.DirectorySeparatorChar}", refused.Line, StringComparison.Ordinal);
+        Assert.EndsWith(".partial' is denied.", refused.Line, StringComparison.Ordinal);
+        Assert.DoesNotContain(root.Path, refused.Line, StringComparison.OrdinalIgnoreCase);
+
+        // Refused because another launch's copy of the same build moved into place first: the worker starts from that
+        // copy at once, and this launch's partial copy is removed.
+        moves = 0;
+
+        var beaten = Over("beaten", (from, to) =>
+        {
+            moves++;
+            Directory.CreateDirectory(to);
+            File.WriteAllText(Path.Combine(to, WorkerDrainLauncher.Assembly), "the other launch's copy");
+
+            throw new IOException($"Cannot create '{to}' because a file or directory with the same name already exists.");
+        });
+
+        Assert.True(beaten.Launcher.Start().Started);
+        Assert.Equal((1, 0), (moves, beaten.Waits.Count));
+        Assert.Equal("the other launch's copy", File.ReadAllText(Assert.Single(beaten.Started).ArgumentList[0]));
+        Assert.Single(Directory.GetDirectories(beaten.Copies));
+    }
+
+    [Fact]
     public void TheWorkersBuildIsFoundBesideTheSurfacesOwnAndNeverBesideTheSuites()
     {
         var checkout = Repository.Root;

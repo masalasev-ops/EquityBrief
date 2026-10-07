@@ -39588,3 +39588,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/ci.ps1`: FILLED FROM THE RUN.
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    nothing; `dividend_reading` fills as companies report, and the line reads each as it is kept.
+
+### 11.1 - correction: the drain's build copy is moved into place again where the system refuses the move, and a refusal names no rooted path   2026-10-07
+
+Corrects:   11.1's launcher, which moved a finished copy of the worker's build into place once and, refused, started
+            nothing, a refusal of access never read as the other launch's copy arriving first; and whose refusal line
+            carried the system's own words whole, an absolute path among them, into the night's row on the run log.
+Found:      by the night of 2026-10-06: its report row of 01:35:14 UTC reads "The worker was not started, because its
+            build could not be copied to start from: Access to the path ... is denied", the path the partial copy's
+            under the data root's folder of builds, with the drive and the checkout's folders in full; the labeller's
+            copy of the same build, made two seconds later, moved into place. The four reports were written by a drain
+            started by hand from that copy at 03:52 UTC.
+Built:      the move tried up to 20 times, half a second apart, the copy another launch moved into place first started
+            from at once, and a move refused every time removing its partial copy and saying why with the data root's
+            and the checkout's paths taken out, so the line names the copy under the data root. The move is handed to
+            the launcher in the suite, as its start is. The roster's `read-surface` clause says so, with its prior text in
+            `CHANGELOG.md`. The one row of 2026-10-06 stands as written, a record of what the launcher said.
+Tests:      1968, from 1967: one added, a move refused twice and then made starting from the copy after two waits, one
+            refused every time starting nothing with its partial removed and its line naming the copy under the data
+            root and no rooted path, and one refused because another launch's copy arrived first starting from it.
+Claims:     1031, unchanged.
+Pins:       none moved; the launcher is in no pin list. `store-never-deleted` holds the launcher's sites as they stood:
+            the move and the partial's removal keep their arguments.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made on the branch in this
+            checkout, filtered to the three launcher tests and reverted.
+            D1 the move tried once: predicted red at the new test alone.
+            D2 the refusal's words kept as thrown: predicted red at the new test alone.
+            D3 the copy another launch moved into place not read: predicted red at the new test alone.
+            Results: D1 red at the new test alone, the move refused twice starting nothing; D2 red at the new test alone,
+            the line opening with the temporary folder's full path; D3 red at the new test alone, the launch starting
+            nothing over the other's copy. Each reverted, and the three tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing. The partial copy of 2026-10-06 in the data root's folder of builds is removed by a later press once
+            a copy is kept longer than a week.
