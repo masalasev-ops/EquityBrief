@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // rebalance bought, what was sold at it or since, and the next rebalance; drawn on a night the market check closed
 // the lists, and saying why where it holds nothing. Past picks draws each holding in percent beside its size cut, and
 // a name's page says the heavyweights hold it.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: The market check closes every swing family's list together, and the sector heavyweights read none
 // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
 public partial class ReadSurface
@@ -101,11 +101,12 @@ public partial class ReadSurface
         var card = HeavyweightCardOf(page);
 
         // After every family's card, under its own heading and rule, provisional since no freeze stands in this store, its
-        // last rebalance 2026-10-01 and its next November's first session, Monday the 2nd, its leads read over the twelve
-        // months the freeze set.
+        // last rebalance on the month's first session and its next the session after November's first, Monday the 2nd,
+        // whose stored year holds 251 closes of the 252 its readings need, its leads read over the twelve months the
+        // freeze set.
         Assert.True(page.IndexOf("heavyweight-card", StringComparison.Ordinal) > page.LastIndexOf("data-card=\"family\"", StringComparison.Ordinal));
         Assert.StartsWith(
-            "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-02\" data-look-back=\"251\">",
+            "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-03\" data-look-back=\"251\">",
             card,
             StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Rotation · {SetupFamilies.SectorHeavyweights.Eyebrow}</div><h2>{SetupFamilies.SectorHeavyweights.Heading}</h2>", page, StringComparison.Ordinal);
@@ -113,7 +114,7 @@ public partial class ReadSurface
         // look-back, 2 leaders against the sector fund, a beta of at least one, sold when it no longer leads.
         Assert.Contains("<p class=\"lede\">On each month's first session, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at that close. Held while it leads: sold at a month's first close where the rule would no longer buy it.</p>", page, StringComparison.Ordinal);
         Assert.Contains(
-            $"<p class=\"family-state\"><b class=\"provisional\">{SetupFamilies.ProvisionalStatus}</b> · 3 holdings tonight · held while leading · last rebalance 2026-10-01 · next rebalance <b class=\"next-rebalance\">2026-11-02</b></p>",
+            $"<p class=\"family-state\"><b class=\"provisional\">{SetupFamilies.ProvisionalStatus}</b> · 3 holdings tonight · held while leading · last rebalance 2026-10-01 · next rebalance <b class=\"next-rebalance\">2026-11-03</b></p>",
             card,
             StringComparison.Ordinal);
 
@@ -189,15 +190,15 @@ public partial class ReadSurface
         var none = HeavyweightCardOf(WebUtility.HtmlDecode(await emptyClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
         Assert.Contains("data-holdings=\"0\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"none\"", none, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund and the 252 sessions its readings need, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("heavyweight-table", none, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task TheHeavyweightsCardNamesTheNextSessionAsItsNextRebalanceWhereTheBookHasReadNoneInThatMonth()
     {
-        // A book that has read no rebalance reads its first on the next night it runs, so Friday 2026-10-02's card names
-        // Monday the 5th, the next session, and not November's first.
+        // A book that has read no rebalance reads its first on the next night its store's year holds the 252 closes its
+        // readings need, so Friday's card names Tuesday, the Monday between holding 251, and not November's first.
         using var none = await FamilyNightStore();
 
         using (var host = new Host(none.Root))
@@ -205,12 +206,13 @@ public partial class ReadSurface
         {
             var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
-            Assert.Contains("data-last-rebalance=\"none\" data-next-rebalance=\"2026-10-05\"", card, StringComparison.Ordinal);
-            Assert.Contains("· no rebalance read yet · next rebalance <b class=\"next-rebalance\">2026-10-05</b></p>", card, StringComparison.Ordinal);
+            Assert.Contains("data-last-rebalance=\"none\" data-next-rebalance=\"2026-10-06\"", card, StringComparison.Ordinal);
+            Assert.Contains("· no rebalance read yet · next rebalance <b class=\"next-rebalance\">2026-10-06</b></p>", card, StringComparison.Ordinal);
+            Assert.DoesNotContain("heavyweight-waits", card, StringComparison.Ordinal);
         }
 
-        // One whose last rebalance was September's, drawn on an October night that read none, rebalances on the next night
-        // it runs as well, since no rebalance of October has been read.
+        // One whose last rebalance was September's, drawn on an October night that read none, rebalances on the same
+        // session as well, since no rebalance of October has been read, and says the month's rebalance has not been read.
         using var september = await FamilyNightStore();
 
         september.Execute(
@@ -222,8 +224,47 @@ public partial class ReadSurface
         {
             var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
-            Assert.Contains("data-last-rebalance=\"2026-09-01\" data-next-rebalance=\"2026-10-05\"", card, StringComparison.Ordinal);
+            Assert.Contains("data-last-rebalance=\"2026-09-01\" data-next-rebalance=\"2026-10-06\"", card, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"family-note heavyweight-waits\">The rebalance of this month has not been read, and the book tries again on 2026-10-06.</p>", card, StringComparison.Ordinal);
         }
+    }
+
+    // The card a book draws on a night, its last rebalance read on the session given and nothing held.
+    static string HeavyweightCardOn(DateOnly night, DateOnly last) =>
+        new EquityBrief.Web.Marks.MarkRenderer().HeavyweightCard(EquityBrief.Api.Reading.TonightScreen.Heavyweights(
+            night,
+            [],
+            [new EquityBrief.Api.Reading.HeavyweightReadRow(last, "Energy", 1, "F1", "CIK 0000000101", 5000m, 0.25, 0.127, 0.123, true, true)],
+            [],
+            new Dictionary<string, EquityBrief.Web.Marks.UniverseCell>()));
+
+    [Fact]
+    public void TheHeavyweightsCardNamesTheFirstSessionWhoseStoredYearHoldsTheLiveSettingsNeedAndSaysTheMonthsRebalanceWaits()
+    {
+        var read = new DateOnly(2026, 10, 2);
+
+        // The month's last session: the next month's first is a Monday whose year holds 251 closes, so the card names the
+        // Tuesday, whose year holds 252, and says nothing waits.
+        var before = HeavyweightCardOn(new DateOnly(2026, 10, 30), read);
+
+        Assert.Contains("data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", before, StringComparison.Ordinal);
+        Assert.DoesNotContain("heavyweight-waits", before, StringComparison.Ordinal);
+
+        // On that Monday the month's rebalance has not been read: the card names the Tuesday and says the rebalance waits
+        // on the year's 251 closes.
+        var monday = HeavyweightCardOn(new DateOnly(2026, 11, 2), read);
+
+        Assert.Contains("data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", monday, StringComparison.Ordinal);
+        Assert.Contains(
+            "<p class=\"family-note heavyweight-waits\">The rebalance of this month waits: the year of closes the store keeps to 2026-11-02 holds 251 sessions and its readings need 252, so the book reads it on 2026-11-03.</p>",
+            monday,
+            StringComparison.Ordinal);
+
+        // A month whose first session holds 252 is named as the calendar names it, and nothing waits.
+        var november = HeavyweightCardOn(new DateOnly(2026, 11, 30), new DateOnly(2026, 11, 3));
+
+        Assert.Contains("data-last-rebalance=\"2026-11-03\" data-next-rebalance=\"2026-12-01\"", november, StringComparison.Ordinal);
+        Assert.DoesNotContain("heavyweight-waits", november, StringComparison.Ordinal);
     }
 
     [Fact]

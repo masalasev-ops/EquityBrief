@@ -584,7 +584,7 @@ public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly Enter
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
 // size cut's return over the same sessions, each none for a holding still open on the night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public sealed record HeavyweightHoldingRow(
     string Ticker,
     DateOnly EnteredOn,
@@ -4142,7 +4142,7 @@ public sealed class ReadApi : IComponent
     ";
 
     // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     public async Task<IReadOnlyList<HeavyweightHoldingRow>> HeavyweightHoldingsAsync(DateOnly on)
     {
         await using var connection = Open();

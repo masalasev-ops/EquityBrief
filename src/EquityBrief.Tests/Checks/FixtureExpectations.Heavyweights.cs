@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Checks;
 // a holiday and after a night not run, the night's value on its count's basis, and the book over four constructed
 // nights: what it buys at the rank as it stood, what it carries, what it sells and why, a night run again and an
 // earlier night.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A sector's return is the mean of its members' own returns over the look-back
 // see: A heavyweight leaving the index is sold at its last session's close as a member
@@ -180,14 +180,15 @@ public partial class FixtureExpectations
         // January 2026 opens after the exchange's holiday on New Year's Day: its first session is the 2nd, which
         // rebalances, and the night of the year's last session names it next.
         Assert.True(HeavyweightRule.Rebalances(new DateOnly(2026, 1, 2), new DateOnly(2025, 12, 1)));
-        Assert.Equal(new DateOnly(2026, 1, 2), HeavyweightRule.NextRebalance(new DateOnly(2025, 12, 31)));
+        Assert.Equal(new DateOnly(2026, 1, 2), HeavyweightRule.NextRebalance(new DateOnly(2025, 12, 31), new DateOnly(2025, 12, 1), HeavyweightRule.Provisional));
 
         // November 2026 opens on Monday the 2nd, the 1st a Sunday; January 2027 on Monday the 4th, New Year's Day a
-        // Friday the exchange keeps; and a month past the calendar's table, or a night before it, names none.
-        Assert.Equal(new DateOnly(2026, 11, 2), HeavyweightRule.NextRebalance(new DateOnly(2026, 10, 5)));
-        Assert.Equal(new DateOnly(2027, 1, 4), HeavyweightRule.NextRebalance(new DateOnly(2026, 12, 31)));
-        Assert.Null(HeavyweightRule.NextRebalance(new DateOnly(2027, 12, 15)));
-        Assert.Null(HeavyweightRule.NextRebalance(new DateOnly(2024, 6, 3)));
+        // Friday the exchange keeps; and a month past the calendar's table, or a night before it, names none. The
+        // provisional setting's 127 closes are held on every one of them.
+        Assert.Equal(new DateOnly(2026, 11, 2), HeavyweightRule.NextRebalance(new DateOnly(2026, 10, 5), new DateOnly(2026, 10, 5), HeavyweightRule.Provisional));
+        Assert.Equal(new DateOnly(2027, 1, 4), HeavyweightRule.NextRebalance(new DateOnly(2026, 12, 31), new DateOnly(2026, 12, 1), HeavyweightRule.Provisional));
+        Assert.Null(HeavyweightRule.NextRebalance(new DateOnly(2027, 12, 15), new DateOnly(2027, 12, 1), HeavyweightRule.Provisional));
+        Assert.Null(HeavyweightRule.NextRebalance(new DateOnly(2024, 6, 3), new DateOnly(2024, 6, 3), HeavyweightRule.Provisional));
     }
 
     [Fact]

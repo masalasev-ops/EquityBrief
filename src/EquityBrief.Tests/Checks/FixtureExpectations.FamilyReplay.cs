@@ -142,4 +142,124 @@ public partial class FixtureExpectations
             standing.Where(rule => rule.Candidate != LiveBreakoutRule),
             rule => Assert.Equal((new DateOnly(2026, 10, 2), (string?)null), FamilyRecords.StartOf(rule, replays)));
     }
+
+    // The breakouts registered again over the replay store after one stored trade of the live rule was changed: the live
+    // rule restarts naming the trade with the sentence given, where one is, and every other rule carries its record on.
+    static async Task ReplayFinds(TemporaryStore store, string? differed)
+    {
+        var again = new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero);
+        var (code, said) = await RegisterVerbAt(store, again, RegisterVerb.FamilyAgain, BreakoutRule.Name, "--evidence", "a change of code");
+        var rows = ReplayRows(store);
+
+        Assert.Equal(0, code);
+        Assert.Equal(8, rows.Count);
+
+        if (differed is null)
+        {
+            Assert.All(rows, row => Assert.Contains($"|{FamilyRecords.ReplayReproduced}|", row, StringComparison.Ordinal));
+
+            return;
+        }
+
+        Assert.Contains($"replay: '{LiveBreakoutRule}' restarts its record at this registration: {differed}", said, StringComparison.Ordinal);
+        Assert.Contains($"{LiveBreakoutRule}|{FamilyRecords.ReplayDiffers}|{differed}", rows);
+        Assert.Equal(7, rows.Count(row => row.Contains($"|{FamilyRecords.ReplayReproduced}|", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseStoredTradeDiffersInItsEndAloneWithNoResultEitherSide()
+    {
+        using var store = await ReplayStore();
+
+        // The record says BA ended on Monday with no result, as a trade run out of its closes is ended, where Monday's
+        // close above its stop keeps it open: the end alone differs, the result none on both sides.
+        store.Execute($"UPDATE family_trade SET ended_on = '2026-10-05', result = NULL WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "BA on 2026-10-02 ends still open in the replay and on 2026-10-05 with no result in the record");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseStoredTradeDiffersInItsResultAloneOnATradeTheReplayEnds()
+    {
+        using var store = await ReplayStore();
+
+        // A session more on which BA closes at 99.30, under its stop of 99.75, and the record walked over it by the night's
+        // own recorder: every rule's BA trade ends there, the live rule's at 99.30 less 102 over a risk of 2.25, -1.2.
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+            "SELECT ticker, '2026-10-06', close, close, close, CASE ticker WHEN 'BA' THEN '99.3' ELSE close END, 1000, 'test', '2026-10-06T21:00:00Z', CASE ticker WHEN 'BA' THEN '99.3' ELSE close END FROM bar WHERE session_date = '2026-10-05';");
+
+        var nightAt = new DateTimeOffset(2026, 10, 6, 23, 40, 0, TimeSpan.Zero);
+
+        await new FamilyRecorder(FixedClock.At(nightAt, SessionZones.UnitedStates), store.DatabaseFile).RunAsync("GSPC", "records-after", await StandingBreakoutsAsync(store, nightAt));
+
+        Assert.Equal(["2026-10-06|-1.2"], FamilyRows(store, $"SELECT ended_on || '|' || ROUND(result, 9) FROM family_trade WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';"));
+
+        // Its result alone moved, its end where the replay ends it.
+        store.Execute($"UPDATE family_trade SET result = -0.5 WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "BA on 2026-10-02 ends on 2026-10-06 at -1.200 in the replay and on 2026-10-06 at -0.500 in the record");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseStoredTradeDiffersInItsPlaceAlone()
+    {
+        using var store = await ReplayStore();
+
+        store.Execute($"UPDATE family_trade SET place = 4 WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "BA on 2026-10-02 is at place 1 in the replay and 4 in the record");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseStoredStopMovedBeyondAMillionthOfItsBuyAndNotOneMovedWithin()
+    {
+        // A stop of 99.7499, a ten-thousandth under 99.75, moves its distance from the buy of 102 by under a millionth,
+        // inside what a rescale needs, and reproduces; one of 99.70 moves it by about five ten-thousandths and restarts.
+        using (var within = await ReplayStore())
+        {
+            within.Execute($"UPDATE family_trade SET stop = '99.7499' WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+            await ReplayFinds(within, null);
+        }
+
+        using var store = await ReplayStore();
+
+        store.Execute($"UPDATE family_trade SET stop = '99.70' WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "BA on 2026-10-02 has its stop at another distance from its buy in the replay");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseStoredTargetDiffersFromTheOneTheReplayPlaces()
+    {
+        using var store = await ReplayStore();
+
+        // The live rule trails its stop and places no target; the record states one of 110.
+        store.Execute($"UPDATE family_trade SET target = '110' WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "BA on 2026-10-02 has its target at another distance from its buy in the replay");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseRecordLacksATradeTheReplayKeeps()
+    {
+        using var store = await ReplayStore();
+
+        store.Execute($"DELETE FROM family_trade WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BB';");
+
+        await ReplayFinds(store, "the replay keeps BB on 2026-10-02 where the record keeps none");
+    }
+
+    [Fact]
+    public async Task AReplayRestartsARuleWhoseRecordKeepsATradeTheReplayDoesNot()
+    {
+        using var store = await ReplayStore();
+
+        store.Execute(
+            "INSERT INTO family_trade (candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap) " +
+            $"SELECT candidate, 'NH', session_date, family, 4, entry, stop, target, risk_moves, reward_to_risk, cap FROM family_trade WHERE candidate = '{LiveBreakoutRule}' AND ticker = 'BA';");
+
+        await ReplayFinds(store, "the record keeps NH on 2026-10-02 where the replay keeps none");
+    }
 }

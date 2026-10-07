@@ -1779,7 +1779,7 @@ public static class SchemaMigrations
     // its entry and exit, why it ended, and its growth and its size cut's carried each night from that night's closes,
     // which a corporate action's refetch of the year leaves standing. Values and closes are text, growths and returns
     // statistics.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     // see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night
     const string CreateHeavyweights = @"
         ALTER TABLE reported_quarter ADD COLUMN shares TEXT;

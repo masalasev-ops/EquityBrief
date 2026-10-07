@@ -105,6 +105,8 @@ public partial class FixtureExpectations
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.
             .. HeavyweightClaims,
+            // The sector heavyweights' rebalance waiting for the closes its readings need: section 18's row.
+            .. HeavyweightWaitClaims,
             // 14.4, the context checks over the history: section 17's three rows and section 18's two.
             .. ContextClaims,
             // 14.5, the heavyweights' sweep: section 17's row and section 18's two.
