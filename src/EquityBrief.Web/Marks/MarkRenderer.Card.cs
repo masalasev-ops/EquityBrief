@@ -50,7 +50,8 @@ public sealed record CardHitsView(
     double? DividendRisks,
     double? DividendPercent,
     IReadOnlyList<(DateOnly Date, string Name)> Events,
-    IReadOnlyList<string> PastTheTable);
+    IReadOnlyList<string> PastTheTable,
+    bool DividendUnread = false);
 
 // The operator's own record of the card's family on its index, as the night's follower wrote it.
 public sealed record CardOperatorRecordView(string Unit, int Won, int Lost, int Ended, int Open, double? Average, int Minimum, bool Trailing, CardSameNightsView? SameNights = null);
@@ -265,7 +266,9 @@ public sealed partial class MarkRenderer
 
         body.Append(hits.DividendDate is { } paid
             ? Formatted($"<li data-hit=\"dividend\" data-declared=\"{(hits.DividendDeclared ? "yes" : "no")}\">Ex-dividend {DayOf(paid)}, {(hits.DividendDeclared ? "declared" : "estimated from the company's last declared date and its usual interval")}{Paid(hits)}.</li>")
-            : "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>");
+            : hits.DividendUnread
+                ? "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one from, so one later in the hold is not ruled out.</li>"
+                : "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>");
 
         foreach (var (date, name) in hits.Events)
         {

@@ -13,8 +13,10 @@ public sealed record ReactionFigures(int Count, double? MedianTypical, double? M
 public sealed record DividendAhead(DateOnly Date, bool Declared, decimal? Amount, double? InRisks, double? InPercent);
 
 // What could hit a pick's trade before it ends: the hold's last session, the reactions, the next ex-dividend date inside
-// the hold, and the market events inside it with each kind whose table ends before the hold does.
-public sealed record CardHits(DateOnly HoldThrough, ReactionFigures Reactions, DividendAhead? Dividend, IReadOnlyList<MarketEvent> Events, IReadOnlyList<string> PastTheTable);
+// the hold, and the market events inside it with each kind whose table ends before the hold does. Where no date is found
+// and the hold runs past the sessions the calendar is asked for with no dividend of the company's kept to estimate from,
+// a later date is unread rather than ruled out.
+public sealed record CardHits(DateOnly HoldThrough, ReactionFigures Reactions, DividendAhead? Dividend, IReadOnlyList<MarketEvent> Events, IReadOnlyList<string> PastTheTable, bool DividendUnread = false);
 
 // The company's dividend as the quarters fetch kept it: the forward rate a share, the last declared ex-date and each year's
 // count.
@@ -104,12 +106,17 @@ public static class CardHitsReading
         return next <= through ? Ahead(next, false) : null;
     }
 
-    public static CardHits Read(DateOnly night, int? cap, ReactionFigures reactions, IReadOnlyList<DateOnly> declared, DividendKept? kept, decimal? buy, decimal? stop, IReadOnlyList<MarketEvent>? table = null)
+    // A hold running past the last of the sessions the calendar is asked for, the count the night's ask states, finds no date
+    // the calendar does not declare unless the company's dividend is kept to estimate one from; with none kept, a date after
+    // those sessions is unread, and the card says so rather than that there is none.
+    public static CardHits Read(DateOnly night, int? cap, ReactionFigures reactions, IReadOnlyList<DateOnly> declared, DividendKept? kept, decimal? buy, decimal? stop, IReadOnlyList<MarketEvent>? table = null, int? declaredSessions = null)
     {
         var through = HoldThrough(night, cap);
         var (events, past) = MarketEvents.Within(night.AddDays(1), through, table);
+        var dividend = Dividend(night, through, declared, kept, buy, stop);
+        var unread = dividend is null && kept is null && declaredSessions is { } asked && through > HoldThrough(night, asked);
 
-        return new CardHits(through, reactions, Dividend(night, through, declared, kept, buy, stop), events, past);
+        return new CardHits(through, reactions, dividend, events, past, unread);
     }
 
     static double Median(IEnumerable<double> values)

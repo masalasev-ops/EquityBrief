@@ -39554,3 +39554,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/ci.ps1`: FILLED FROM THE RUN.
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    nothing.
+
+### 16.3 - correction: a card says a later ex-dividend date is not ruled out where no dividend of the company's is stored, where it said there was none   2026-10-07
+
+Corrects:   16.3's dividend line, which drew "No ex-dividend date inside the hold, declared or estimated" wherever the
+            calendar declared none in its 21 sessions and nothing was estimated, including where nothing could be: the
+            estimate reads the dividend the quarters fetch keeps, which it keeps from the night after a company next
+            reports, and the store held none on 2026-10-07.
+Found:      by 16.4's screens read back over the cards of 2026-10-06: ADM's hold runs to 2027-01-06, ADM pays a
+            quarterly dividend, and its card said no ex-dividend date fell inside the hold; `dividend_reading` held 0 rows.
+Built:      the card's reading marks a later date unread where no date is found, no dividend of the company's is kept,
+            and the hold runs past the last of the sessions the calendar is asked for, the 21 of the night's ask; the
+            night stores the mark with the card's hits, and the card says "No ex-dividend date is declared in the
+            sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one
+            from, so one later in the hold is not ruled out." A hold ending on the 21st, a dividend kept and a declared
+            date each leave the line as it was. Section 15.18's paragraph and the guide say so, and the roster's
+            `fixture-expectations` and `read-surface` clauses, with the prior text in `CHANGELOG.md`. A card written
+            before it keeps its line until the next night's cards.
+Tests:      1967, from 1965: two added, the reading worked by hand at a hold ending on the calendar's 21st session and
+            one a session past it, with a declared date, a dividend kept and one paying none, and the card read back
+            on Tonight with no dividend stored and with one paying none.
+Claims:     1031, unchanged.
+Pins:       none moved; the card's reading and renderer are in no pin list.
+Mutated:    the rule, stated before the run: the window's edge and the card's words each broken, made together on the
+            branch in this checkout since each reaches only its own test, filtered to the four dividend tests and
+            reverted.
+            V1 a hold ending on the calendar's last session read as unread: predicted red at the reading's test alone.
+            V2 the card drawing "none" for an unread date: predicted red at the card's test alone.
+            Results: V1 red at the reading's test alone, a hold through 2026-11-04 read unread; V2 red at the card's test
+            alone, the line reading none. Each reverted, and the four tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing; `dividend_reading` fills as companies report, and the line reads each as it is kept.

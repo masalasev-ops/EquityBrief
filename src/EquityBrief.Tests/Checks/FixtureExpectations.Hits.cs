@@ -100,4 +100,32 @@ public partial class FixtureExpectations
         Assert.Null(CardHitsReading.Dividend(HitsNight, new DateOnly(2027, 1, 6), [], kept with { ByYear = [] }, 100.00m, 97.00m));
         Assert.Null(CardHitsReading.Dividend(HitsNight, new DateOnly(2026, 11, 4), [HitsNight], kept with { LastExDate = null }, 100.00m, 97.00m));
     }
+
+    [Fact]
+    public void AHoldPastTheCalendarsSessionsWithNoDividendKeptLeavesALaterDateUnreadRatherThanRuledOut()
+    {
+        // The calendar is asked for the 21 sessions after the night, through 2026-11-04. A hold capped at 21 ends there, so
+        // the calendar answers for the whole of it and a date it does not declare is none; one capped at 22 ends a session
+        // past it, 11-05, and with no dividend of the company's kept nothing can estimate a later date, so it is unread.
+        var reactions = new ReactionFigures(0, null, null, 0);
+
+        CardHits Read(int cap, IReadOnlyList<DateOnly> declared, DividendKept? kept) =>
+            CardHitsReading.Read(HitsNight, cap, reactions, declared, kept, 100.00m, 97.00m, declaredSessions: 21);
+
+        Assert.Equal((false, (DividendAhead?)null), (Read(21, [], null).DividendUnread, Read(21, [], null).Dividend));
+        Assert.Equal((new DateOnly(2026, 11, 5), true), (Read(22, [], null).HoldThrough, Read(22, [], null).DividendUnread));
+        Assert.True(Read(63, [], null).DividendUnread);
+
+        // A date the calendar declares is drawn whatever is kept, and a dividend kept estimates a date or reads none, so
+        // neither leaves one unread.
+        Assert.Equal((new DateOnly(2026, 10, 20), false), (Read(63, [new DateOnly(2026, 10, 20)], null).Dividend!.Date, Read(63, [new DateOnly(2026, 10, 20)], null).DividendUnread));
+
+        var kept = new DividendKept(1.08m, new DateOnly(2026, 8, 10), [new DividendsInYear(2025, 4), new DividendsInYear(2026, 3)]);
+
+        Assert.Equal((new DateOnly(2026, 11, 9), false), (Read(63, [], kept).Dividend!.Date, Read(63, [], kept).DividendUnread));
+        Assert.Equal(((DividendAhead?)null, false), (Read(63, [], new DividendKept(0m, null, [])).Dividend, Read(63, [], new DividendKept(0m, null, [])).DividendUnread));
+
+        // Read with no count of the calendar's sessions, as a caller stating none, nothing is unread.
+        Assert.False(CardHitsReading.Read(HitsNight, 63, reactions, [], null, 100.00m, 97.00m).DividendUnread);
+    }
 }
