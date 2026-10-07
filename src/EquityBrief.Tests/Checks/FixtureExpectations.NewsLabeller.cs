@@ -76,7 +76,7 @@ public partial class FixtureExpectations
         return store;
     }
 
-    static NewsLabeller Labeller(TemporaryStore store, IResearchModelFeed model, ResearchModelSettings? settings = null, NewsLimits? limits = null, IClock? clock = null)
+    static NewsLabeller Labeller(TemporaryStore store, IResearchModelFeed model, ResearchModelSettings? settings = null, NewsLimits? limits = null, IClock? clock = null, Func<TimeSpan, CancellationToken, Task>? wait = null)
     {
         var at = clock ?? FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
 
@@ -85,8 +85,17 @@ public partial class FixtureExpectations
             settings ?? Providers.ResearchModelFeedTests.Pinned(),
             limits ?? NewsLimits.Default,
             at,
-            store.DatabaseFile);
+            store.DatabaseFile,
+            wait ?? ((_, _) => Task.CompletedTask));
     }
+
+    // A wait that moves the clock by what it is asked to wait, as the labeller's own wait moves the machine's.
+    static Func<TimeSpan, CancellationToken, Task> Moving(CallClock clock) => (span, _) =>
+    {
+        clock.Advance(span);
+
+        return Task.CompletedTask;
+    };
 
     static JsonElement LabellerRow(TemporaryStore store, string runId) =>
         JsonDocument.Parse(Text(store, $"SELECT detail FROM run_log WHERE run_id = '{runId}' AND stage = '{NewsLabeller.Stage}';")).RootElement;
@@ -151,7 +160,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheLabellerStopsBeforeTheCallThatWouldPassItsMonthLimitAtItsTimeLimitAndInsideAPeakWindow()
+    public async Task TheLabellerStopsBeforeTheCallThatWouldPassItsMonthLimitAndAtItsTimeLimitAndWaitsOutAPeakWindow()
     {
         using var store = await NewsStore();
 
@@ -178,12 +187,75 @@ public partial class FixtureExpectations
 
         Assert.Equal((0, NewsLabeller.TimeLimitPassed, 1), (late.Requests, outOfTime.Stop, outOfTime.NamesReached));
 
-        // A peak window of the profile open, the recorded profile's being weekdays from 01:00 to 04:00 UTC.
-        var peak = new ScriptedModel(Good, Good, Good);
-        var inPeak = await Labeller(store, peak, clock: FixedClock.At(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates)).RunAsync(new DateOnly(2026, 9, 8), "label-news-peak");
+        // A peak window of the profile open, the recorded profile's being weekdays from 01:00 to 04:00 and 06:00 to 10:00
+        // UTC, and a wait that does not see it end: nothing is asked, and the run stops naming the window.
+        var stuck = new ScriptedModel(Good, Good, Good);
+        var neverEnds = await Labeller(store, stuck, clock: FixedClock.At(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates)).RunAsync(new DateOnly(2026, 9, 8), "label-news-stuck");
 
-        Assert.Equal((0, NewsLabeller.PeakWindowOpened), (peak.Requests, inPeak.Stop));
+        Assert.Equal((0, NewsLabeller.PeakWindowOpened), (stuck.Requests, neverEnds.Stop));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+
+        // Started at 02:00 inside the window, the labeller waits two hours to its end at 04:00, as the drain does, and then
+        // labels every article; its row says it waited once for 120 minutes.
+        var peakClock = new CallClock(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero));
+        var peak = new ScriptedModel(Good, Good, Good);
+        var inPeak = await Labeller(store, peak, clock: peakClock, wait: Moving(peakClock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-peak");
+
+        Assert.Equal((3, NewsLabeller.Finished, 3, 1, TimeSpan.FromHours(2)), (peak.Requests, inPeak.Stop, inPeak.Labelled, inPeak.PeakWaits, inPeak.Waited));
+        Assert.Equal((1, 120), (LabellerRow(store, "label-news-peak").GetProperty("peakWaits").GetInt32(), LabellerRow(store, "label-news-peak").GetProperty("waitedMinutes").GetInt32()));
+    }
+
+    [Fact]
+    public async Task ALabellerStartedInsideAPeakWindowLabelsForItsLimitAfterItsEndWithItsWaitLeftOutOfTheCount()
+    {
+        // Worked by hand over a limit of twenty minutes, each call ten minutes: started at 02:00 on Tuesday 2026-09-08,
+        // it waits to 04:00, labels ZZB's b1 by 04:10 and b2 by 04:20, and stops before ZZC's c1 at twenty minutes of
+        // labelling; counted from its start, the two hours it waited would have stopped it before its first call.
+        using (var store = await NewsStore())
+        {
+            var clock = new CallClock(new DateTimeOffset(2026, 9, 8, 2, 0, 0, TimeSpan.Zero));
+            var model = new PricedModel(clock, TimeSpan.FromMinutes(10), 0.01m, Good, Good, Good);
+            var outcome = await Labeller(store, model, limits: new NewsLimits(5m, TimeSpan.FromMinutes(20)), clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-after-window");
+
+            Assert.Equal((2, NewsLabeller.TimeLimitPassed, 2, TimeSpan.FromHours(2)), (model.Requests, outcome.Stop, outcome.Labelled, outcome.Waited));
+            Assert.Equal(["b1", "b2"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+        }
+
+        // Started a second before the window's end it waits that second, and started at its end it waits none.
+        foreach (var (start, waited, waits) in new[]
+        {
+            (new DateTimeOffset(2026, 9, 8, 3, 59, 59, TimeSpan.Zero), TimeSpan.FromSeconds(1), 1),
+            (new DateTimeOffset(2026, 9, 8, 4, 0, 0, TimeSpan.Zero), TimeSpan.Zero, 0),
+        })
+        {
+            using var store = await NewsStore();
+
+            var clock = new CallClock(start);
+            var outcome = await Labeller(store, new ScriptedModel(Good, Good, Good), clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), "label-news-edge");
+
+            Assert.Equal((NewsLabeller.Finished, 3, waits, waited), (outcome.Stop, outcome.Labelled, outcome.PeakWaits, outcome.Waited));
+        }
+    }
+
+    [Fact]
+    public void ALabellersLatestEndCountsItsLimitOverTheHoursOutsideThePeakWindows()
+    {
+        // Worked by hand over the recorded profile's windows, 01:00 to 04:00 and 06:00 to 10:00 UTC on weekdays, and a
+        // limit of twenty minutes: started at 01:35 on Wednesday 2026-10-07, as the night of 2026-10-06 started it, it
+        // ends at 04:20; at 23:30 on the Tuesday before, off peak with an hour and a half to the window, at 23:50; at 05:50,
+        // ten minutes before the second window, at 10:10 after it; a second before 04:00, at 04:20; on Saturday 2026-10-03,
+        // which names no window, twenty minutes after its start; and with no prices, which name no window, the same.
+        var pricing = Providers.ResearchModelFeedTests.Pinned().Pricing;
+        var limit = TimeSpan.FromMinutes(20);
+
+        DateTimeOffset At(int year, int month, int day, int hour, int minute, int second = 0) => new(year, month, day, hour, minute, second, TimeSpan.Zero);
+
+        Assert.Equal(At(2026, 10, 7, 4, 20), NewsLabelling.EndsBy(At(2026, 10, 7, 1, 35), limit, pricing));
+        Assert.Equal(At(2026, 10, 6, 23, 50), NewsLabelling.EndsBy(At(2026, 10, 6, 23, 30), limit, pricing));
+        Assert.Equal(At(2026, 10, 7, 10, 10), NewsLabelling.EndsBy(At(2026, 10, 7, 5, 50), limit, pricing));
+        Assert.Equal(At(2026, 10, 7, 4, 20), NewsLabelling.EndsBy(At(2026, 10, 7, 3, 59, 59), limit, pricing));
+        Assert.Equal(At(2026, 10, 3, 2, 20), NewsLabelling.EndsBy(At(2026, 10, 3, 2, 0), limit, pricing));
+        Assert.Equal(At(2026, 10, 7, 1, 55), NewsLabelling.EndsBy(At(2026, 10, 7, 1, 35), limit, null));
     }
 
     // A model priced at its own ceiling, every call the same, that answers each call with the next of its texts and
@@ -223,7 +295,7 @@ public partial class FixtureExpectations
     {
         var clock = new CallClock(start);
         var model = new PricedModel(clock, step, 0.01m, "no json here", Good, Good, Good, Good);
-        var outcome = await Labeller(store, model, limits: limits, clock: clock).RunAsync(new DateOnly(2026, 9, 8), runId);
+        var outcome = await Labeller(store, model, limits: limits, clock: clock, wait: Moving(clock)).RunAsync(new DateOnly(2026, 9, 8), runId);
 
         return (outcome, model.Requests);
     }
@@ -280,30 +352,32 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task ARetryInsideAPeakWindowIsNotAskedAndItsArticleIsLeftUnlabelled()
+    public async Task ARetryReachingAPeakWindowWaitsForItsEndAndIsAsked()
     {
-        // Worked by hand: the recorded profile's peak window opens at 01:00 UTC on a weekday. A run starting at 00:50
-        // on Wednesday 2026-09-09 asks its first call off peak, the answer arrives at 01:00 and cannot be read, and the
-        // retry, judged inside the window, is not asked.
+        // Worked by hand over a limit of an hour: the recorded profile's peak window opens at 01:00 UTC on a weekday. A run
+        // starting at 00:50 on Wednesday 2026-09-09 asks its first call off peak, the answer arrives at 01:00 and cannot be
+        // read, and the retry, judged inside the window, waits three hours to 04:00 and is asked; it labels b1, and b2 and
+        // c1 follow, ten minutes of labelling before the window and thirty after it.
         var tenToOne = new DateTimeOffset(2026, 9, 9, 0, 50, 0, TimeSpan.Zero);
+        var hour = new NewsLimits(5m, TimeSpan.FromHours(1));
 
         using (var store = await NewsStore())
         {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10), NewsLimits.Default, "label-news-retry-peak");
+            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10), hour, "label-news-retry-peak");
 
-            Assert.Equal((1, NewsLabeller.PeakWindowOpened, 0, 0), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount));
-            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
-            Assert.Equal(NewsLabeller.PeakWindowOpened, LabellerRow(store, "label-news-retry-peak").GetProperty("stop").GetString());
+            Assert.Equal((4, NewsLabeller.Finished, 3, 0, 1, TimeSpan.FromHours(3)), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount, outcome.PeakWaits, outcome.Waited));
+            Assert.Equal(["b1", "b2", "c1"], TextRows(store, "SELECT article_id FROM news_label ORDER BY article_id;"));
+            Assert.Equal(NewsLabeller.Finished, LabellerRow(store, "label-news-retry-peak").GetProperty("stop").GetString());
         }
 
-        // An answer arriving a second before the window leaves the retry off peak: it is asked and labels the article,
-        // and the next article's first call, inside the window, is the one refused.
+        // An answer arriving a second before the window leaves the retry off peak: it is asked at once and labels the
+        // article, and the next article's first call, judged inside the window, waits for its end and is asked.
         using (var store = await NewsStore())
         {
-            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1), NewsLimits.Default, "label-news-retry-peak-before");
+            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1), hour, "label-news-retry-peak-before");
 
-            Assert.Equal((2, NewsLabeller.PeakWindowOpened, 1), (calls, outcome.Stop, outcome.Labelled));
-            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
+            Assert.Equal((4, NewsLabeller.Finished, 3, 1), (calls, outcome.Stop, outcome.Labelled, outcome.PeakWaits));
+            Assert.Equal(new DateTimeOffset(2026, 9, 9, 4, 0, 0, TimeSpan.Zero) - (tenToOne + (2 * (TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1)))), outcome.Waited);
         }
     }
 

@@ -11942,3 +11942,43 @@ Was:
 Now:
 > ... and removes a copy nothing has started from for longer than a copy is kept, a copy the system refuses to move into place moved again half a second apart up to its count, one refused every time removed and named under the data root with no path a machine roots, and one another launch moved into place first started from at once; ...
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - ARCHITECTURE.html - the labeller waits out a peak window and the copy waits for it the same way
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> section 18, A peak window of the news profile opens while the labeller runs: <td>no call starts inside it and what is left waits for the next night; a profile naming no windows never stops here (see: Queued work runs off-peak, and every schedule is written in UTC)</td><td>the run's row names the peak window as its stop</td><td>every paid call runs off peak where the provider prices a peak, and the labeller is no exception</td>
+> the labeller's catalogue row: ... stops at its time limit, its month limit, the day or month cap, a peak window or a model that does not answer, leaving the rest for the next night; ...
+> the copy's catalogue row: waits while the night holds its lock, for the labeller the night started until its last row or its time limit and ten minutes more, and for the drain, ...
+> section 17, News labeller time limit: <td>20 minutes from the labeller's start, proposed, after which no call starts ... (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)</td>
+> section 17, Store copies: ... and for the labeller until its last row or 10 minutes past its own time limit (see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read)</td>
+Now:
+> section 18: <td>no call starts inside it: before its next call the labeller waits for the window to end, as the drain does, and then asks, its time limit counted over the time it labels and not the time it waits; a profile naming no windows never waits, and a wait that does not see the window end stops the run there (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td><td>the run's row counts the windows it waited out and the minutes it waited</td><td>every paid call runs off peak where the provider prices a peak, and the labeller is no exception; a night ending inside a window would otherwise label none of its list</td>
+> the labeller's row: ... waits out a peak window of its profile before a call, as the drain does, and stops at its time limit, counted over the time it labels, its month limit, the day or month cap or a model that does not answer, leaving the rest for the next night; ...
+> the copy's row: ... for the labeller the night started until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+> section 17, News labeller time limit: <td>20 minutes of the labeller's labelling, proposed, the time it waits out a peak window not counted, after which no call starts ... (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td>
+> section 17, Store copies: ... and for the labeller until its last row or 10 minutes past the latest instant a labeller started with it could end, its own time limit counted over the hours outside the news profile's peak windows (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td>
+Why: 16.5, on the operator's ruling of 2026-10-07.
+
+### 2026-10-07 - RUNBOOK.md - the labeller waits out a peak window and the copy waits for it the same way
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> ... neither falls back to another profile. It stops at its own time limit and month limit, at the day or month cap, and where a peak window of its profile opens, and what is left waits for the next night.
+> | how long the news labeller may run from its start, in minutes | `EquityBrief:Models:News:TimeLimitMinutes` | `20` |
+> It waits while the night holds its lock, for the labeller until its last row or its time limit and ten minutes more, and for the drain, ...
+> | ... | the news job's model is down or retired, or a limit the labeller runs under was reached | ...
+Now:
+> ... neither falls back to another profile. Where a peak window of its profile is open before a call, it waits for the window to end, as the drain does, and then asks, so a labeller the night starts at half past one labels from four (see: ...). It stops at its own time limit, counted over the time it labels and not the time it waits, at its month limit and at the day or month cap, and what is left waits for the next night.
+> | how long the news labeller may label, in minutes, the time it waits out a peak window not counted | `EquityBrief:Models:News:TimeLimitMinutes` | `20` |
+> It waits while the night holds its lock, for the labeller until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+> | ... | ...; a peak window stops it only where its wait for the window's end did not see the end | ...
+Why: 16.5, on the operator's ruling of 2026-10-07.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations states the labeller's wait and the copy's
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> ... stops before the call that would pass its month limit, at its time limit, inside a peak window, where the cap pauses it and where its model answers nothing, naming each stop on its own row, a retry judged by the first three as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; ...
+> ... and the copy waits for the night, for the labeller the night started until its last row or its time limit and ten minutes more, and for the drain, ...
+Now:
+> ... stops before the call that would pass its month limit, at its time limit counted over the time it labels and not the time it waits, inside a peak window whose end its wait did not see, where the cap pauses it and where its model answers nothing, naming each stop on its own row, a retry judged by those stops as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; and from 16.5 a labeller started inside a peak window, over a clock its own wait moves, waits to the window's end and labels for its limit after it, a retry reaching a window waits for its end and is asked, one started a second before the end waits that second and one started at it none, its row counting the windows it waited out and the minutes, and the latest end a labeller started at an instant could reach is worked by hand inside a window, before one, across the second and on a day naming none; ...
+> ... and the copy waits for the night, for the labeller the night started until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+Why: the roster is where a check states what it asserts.

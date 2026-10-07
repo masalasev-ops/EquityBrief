@@ -14,8 +14,9 @@ namespace EquityBrief.Worker.Backup;
 public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Detail);
 
 // The store's copy, made once the night, the drain it started and the labeller have finished. It waits while
-// the night holds its lock and, started by the night, until the labeller has written its last row or its own
-// time limit has passed, then holds the drain's lock so no pass writes beneath it, copies the store page by
+// the night holds its lock and, started by the night, until the labeller has written its last row or the latest
+// instant a labeller started with it could end has passed, its time limit counted over the hours outside the news
+// profile's peak windows as the labeller counts it, then holds the drain's lock so no pass writes beneath it, copies the store page by
 // page through SQLite's own backup into a file of its own in the copies' folder, names it by its instant once
 // written, and opens and reads it against the store. It keeps the newest three of the copies its own rows
 // name, opening and reading each before any older one is removed, and removes nothing where one of them does
@@ -25,7 +26,8 @@ public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Det
 // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
 // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
-public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFile, string folder, TimeSpan labellerLimit, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
+// see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFile, string folder, TimeSpan labellerLimit, Func<TimeSpan, CancellationToken, Task>? wait = null, EquityBrief.Core.Providers.ResearchPricing? labellerPricing = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -85,7 +87,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
     {
         var started = clock.UtcNow;
         var givesUpAt = started + StoreCopies.WaitsAtMost;
-        var labellerBy = started + labellerLimit + PastTheLabellersLimit;
+        var labellerBy = NewsLabelling.EndsBy(started, labellerLimit, labellerPricing) + PastTheLabellersLimit;
         var waitedFor = new SortedSet<string>(StringComparer.Ordinal);
 
         // The night, then the labeller the night started, each looked at again until neither holds.

@@ -35,4 +35,33 @@ public static class NewsLabelling
     public static string WindowFrom(DateOnly night) => night.AddDays(-WindowDays).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
     public static string WindowTo(DateOnly night) => night.AddDays(1).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    // The latest instant a run started at an instant can end: its limit counted over the time outside the profile's peak
+    // windows, which the labeller waits through rather than labels in, so a run started inside a window ends its limit
+    // after the window, and one whose limit reaches the next window ends its limit after that. A profile naming no
+    // windows ends at the start plus the limit.
+    // see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+    public static DateTimeOffset EndsBy(DateTimeOffset start, TimeSpan limit, Providers.ResearchPricing? pricing)
+    {
+        if (pricing is null)
+        {
+            return start + limit;
+        }
+
+        var at = start;
+        var left = limit;
+
+        while (true)
+        {
+            at = pricing.OffPeakFrom(at);
+
+            if (pricing.PeakOpensAfter(at) is not { } opens || opens - at >= left)
+            {
+                return at + left;
+            }
+
+            left -= opens - at;
+            at = opens;
+        }
+    }
 }

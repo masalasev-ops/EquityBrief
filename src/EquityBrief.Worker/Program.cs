@@ -1285,11 +1285,28 @@ static async Task<int> BackupRun(string[] args)
         store.DataRoot,
         store.DatabaseFile,
         StoreCopies.Folder(configuration[StoreCopies.FolderKey], store.DataRoot),
-        NewsLane.Limits(configuration).TimeLimit).RunAsync(args.Contains(EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller));
+        NewsLane.Limits(configuration).TimeLimit,
+        labellerPricing: NewsPricing(configuration)).RunAsync(args.Contains(EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller));
 
     Console.WriteLine("backup: " + outcome.Detail);
 
     return outcome.Outcome == EquityBrief.Worker.Backup.StoreBackup.Copied ? 0 : 1;
+}
+
+// The news profile's prices, which name its peak windows, read without its key, since the copy waits through the windows
+// the labeller waits through and calls no model; none where the settings state no prices the copy can read, and the copy
+// then waits for the labeller's limit alone.
+// see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+static EquityBrief.Core.Providers.ResearchPricing? NewsPricing(IConfiguration configuration)
+{
+    try
+    {
+        return NewsLane.Profile(configuration)?.Pricing;
+    }
+    catch (InvalidOperationException)
+    {
+        return null;
+    }
 }
 
 // The articles of the last days stored at once, one dated query a day, for the names the index holds, run by hand on

@@ -39624,3 +39624,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    nothing. The partial copy of 2026-10-06 in the data root's folder of builds is removed by a later press once
             a copy is kept longer than a week.
+
+### 16.5 - the news labeller waits for the end of a peak window, its time limit counted over the time it labels, and the store's copy waits for it the same way   2026-10-07
+
+Queue:      done, 16.4, PR 386, and the 16.1 correction, PR 387; in progress, this pull request: the 16.5 ruling, the
+            corrections the screens read back found at 16.1, 16.2 and 16.3, the 11.1 correction, and 16.5; next, the
+            sign-offs of phases 14, 15 and 16, each by a session the operator starts, one at a time.
+Built:      before each call, a retry's among them, the labeller waits out a peak window of its profile to its end, as the
+            drain does, and then asks; its time limit counts the time it labels and not the time it waits; a wait that
+            does not see the window end stops it there; and its row counts the windows it waited out and the minutes.
+            One function in the core reads the latest instant a run started at an instant can end, its limit counted
+            over the hours outside the profile's windows, and the store's copy waits for the labeller until then and
+            ten minutes more, the news profile's prices read without its key. The decision (see: The news labeller waits
+            for the end of a peak window rather than stopping at one, and its time limit counts the time it labels),
+            section 18's row for a window opening while the labeller runs, section 17's rows for the labeller's time
+            limit and the copies, the labeller's and the copy's catalogue rows, the runbook's labeller and copy
+            paragraphs and its settings row, the roster's `fixture-expectations` clauses and the guide, with the specs'
+            prior text in `CHANGELOG.md`.
+Rows:       none added: 16.5's words went to rows that stand, so phase 16's pair, 1031 and 1031, stands beside its
+            report unchanged.
+Tests:      1971, from 1968: three added, a labeller started at 02:00 inside a window waiting to 04:00 and labelling for
+            twenty minutes after it with its two hours left out of the count, one started a second before the window's
+            end waiting that second and one at its end waiting none, and the latest end worked by hand at 01:35 on a
+            weekday, at 23:30 before a window, at 05:50 across the second window to 10:10, a second before 04:00, on a
+            Saturday and with no prices. Two changed from stopping to waiting: a run at 02:00 waiting two hours and
+            labelling every article, its row counting one wait of 120 minutes, a wait that does not see the end
+            stopping at the window; and a retry reaching the window at 01:00 waiting three hours and asked. The copy's
+            wait gains a labeller started at 01:35 on a weekday, waited for until 04:30, and one on a Saturday, as before.
+Claims:     1031, unchanged.
+Pins:       none moved; the labeller, the copy and the news constants are in no pin list.
+Mutated:    the rule, stated before the run: each property 16.5 adds broken alone, made on the branch in this checkout,
+            filtered to the twelve labeller and copy tests and reverted.
+            W1 the labeller stopping at a window as it did: predicted red at the three tests that wait.
+            W2 its waits counted in its time limit: predicted red at the three tests that wait.
+            W3 the copy reading the labeller's limit alone: predicted red at the copy's wait test alone.
+            Results: W1 red at the three, the run stopping before its first call; W2 red at the three, the run stopping
+            at its limit on the window's end; W3 red at the copy's wait test alone, the copy made at 02:05 where 04:30 was
+            worked by hand. Each reverted, and the twelve tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    the sign-offs of phases 14, 15 and 16, each owed by a session the operator starts, one at a time, their
+            handoffs issued with the figures as they stand after this merge; and phase 16's operating row read on the
+            first five nights.
