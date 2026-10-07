@@ -39893,8 +39893,11 @@ Mutated:    the rule, stated before the run: the property broken alone, the page
             rows read no lead, made on the branch in this checkout over a copy of `HeavyweightBook.cs` and restored from
             it, filtered to the 28 heavyweights tests: predicted red in the new test alone. Result: red in the new test
             alone, 1 of 28. Restored, and the test green over the restored tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 411ac8c3, the
+            pull request's first commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1987 of 1987 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1987 of 1987 tests ran.
 Carried:    nothing.
