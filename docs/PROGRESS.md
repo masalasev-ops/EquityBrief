@@ -40020,9 +40020,12 @@ Mutated:    the rule: each reworded text no test read put back to its old words,
             test alone; x3 the opening's period fixed to a month in the new words test alone.
             Results: x1, x2 and x3 each red in its test alone, 1 of 10. Each restored, the tree's diff the same after as
             before.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 80da66c0, the
+            pull request's commit, merged as 99173b93 before the two finished, its tree the same.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1992 of 1992 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1992 of 1992 tests ran.
 Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
             session.
