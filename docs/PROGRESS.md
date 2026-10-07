@@ -39485,10 +39485,14 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             capture's 50,176 against the profile's 50,176 loaded again; L3 red at the new test alone, the unload of
             Gemma's own instance missing from what the runtime was asked. Each reverted, and the 22 tests green over
             the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            last commit of the pull request after this entry's, the operator having merged this entry's as PR 387
+            before its gates ran.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing. The next night's queue reads the new load. Then the 16.4 screens, the drain's build copy
             correction and the sign-offs.
 
@@ -39535,10 +39539,13 @@ Mutated:    the rule, stated before the run: the property the correction adds br
             R2 the breakout's replay named by its key again: predicted red at the replay test alone.
             Results: R1 red at the words test alone, "up 2 typical moves" against "up 0.5"; R2 red at the replay test
             alone, the key's name against the words. Each reverted, and the two tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    the remedy, run by me after the merge.
 
 ### 16.2 - correction: the Taken control says above its boxes what it records and what each empty box means   2026-10-07
