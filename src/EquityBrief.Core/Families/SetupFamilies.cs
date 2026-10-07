@@ -93,7 +93,7 @@ public static class SetupFamilies
         "Sector heavyweight",
         "Sector heavyweights",
         "Largest companies leading their sectors",
-        "On each month's first session, among each sector's ten largest companies, the two whose twelve-month returns beat the sector fund's by the most, where they beat it at all, their close is above their 50-day average and that above their 200-day, and their beta is at least one, bought at that close. Held while it leads: sold at a month's first close where the rule would no longer buy it.");
+        "On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's ten largest companies, the two whose twelve-month returns beat the sector fund's by the most, where they beat it at all, their close is above their 50-day average and that above their 200-day, and their beta is at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.");
 
     // The families the page drew once and draws no longer, kept so a pick one listed is still named and scored.
     public static IReadOnlyList<SetupFamily> Former { get; } = [SectorLeaders];

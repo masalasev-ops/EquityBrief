@@ -447,6 +447,9 @@ public partial class FixtureExpectations
         var (tape, sessions) = HeavyweightSweep.Lay(inputs, history, null, months.Concat(weeks).ToHashSet(), first);
         var read = HeavyweightSweep.ReadAll(tape, sessions, months, weeks);
 
+        // Every session handed in is laid, so a night's reading within an index never finds the session it hands in missing.
+        Assert.Equal(months.Concat(weeks).Distinct().Order(), sessions.Keys.Order());
+
         // At the provisional setting A leads the sector's mean of its own return and B's nothing and is bought on the first
         // session scored at 97.4, held through February's rebalance, and sold at 40 under its average: a result of 40 over
         // 97.4 less one, its cut A's and B's nothing, an edge of half the result; nothing leads in March.

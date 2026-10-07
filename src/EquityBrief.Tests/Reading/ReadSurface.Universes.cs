@@ -126,13 +126,18 @@ public partial class ReadSurface
 
         // The heavyweights' card names its design and the sector comparison its index reads, against the 400's fund.
         Assert.Contains(
-            "<p class=\"lede\">On each month's first session, among each sector's 10 largest companies of the S&P 400 by value, the 2 whose 251-session returns beat their sector's members' mean in the S&P 400 by the most, where they beat it at all, " +
-            "their close above their 50-day average and that above their 200-day, their beta against IJH at least one, bought at that close. Held while it leads: sold at a month's first close where the rule would no longer buy it. " +
+            "<p class=\"lede\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the S&P 400 by value, the 2 whose 251-session returns beat their sector's members' mean in the S&P 400 by the most, where they beat it at all, " +
+            "their close above their 50-day average and that above their 200-day, their beta against IJH at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it. " +
             "Design (a): a sector's return is its members' mean within the S&P 400, since no sector fund is read at the index's level. Unlike the S&P 500's rules,",
             page,
             StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\"", page, StringComparison.Ordinal);
         Assert.Contains("The rebalance of 2026-10-02 bought M2.", page, StringComparison.Ordinal);
+        Assert.Contains(
+            "Each row is a stock the S&P 400's sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index.",
+            page,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("month's first close", page, StringComparison.Ordinal);
 
         // The S&P 600's families read no night, and its page says so under its own heading.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
@@ -236,6 +241,11 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"setup\" data-setup=\"pullback\">Pullback · S&P 400</td>", picks, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">+2.00</td><td class=\"r num\">+0.02</td><td class=\"r num\">+1.98</td>", picks, StringComparison.Ordinal);
         Assert.Contains("Showing 2 of 2 S&P 400 trades, 1 open", picks, StringComparison.Ordinal);
+        Assert.Contains(
+            "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector among the S&P 400's members, or at its last close as a member.",
+            picks,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("month's first close", picks, StringComparison.Ordinal);
 
         // Run: the S&P 400's own night read off its rows.
         var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400"));

@@ -39901,3 +39901,101 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1987 of 1987 tests ran.
 Carried:    nothing.
+
+### 14.6 - correction: the guard holds a rebalance back only where no ranked company reads a lead, or no beta where the setting reads one, asserted where only every one reading none was   2026-10-07
+
+Corrects:   the 14.6 correction's guard, `HeavyweightRule.ReadNothing`, was asserted only over rebalances at which every
+            ranked company read no lead or no beta, so either half's any could become all with every test green. Under
+            that edit a ranked company holding fewer closes than the look-back, a member that joined inside the year,
+            holds every rebalance of its book back until it holds them; the live store's HONA, FDXF and Q hold 79, 93
+            and 237 closes, and the every-company variant ranks all three.
+Found:      by the second phase 14 sign-off review over d9360729 (J1): its mutation b, the lead half from any to all,
+            survived the whole suite, and its hg, the beta half, its 73 heavyweights tests. Reproduced: b over the whole
+            suite, red in 1 of 1987, the pin test that reddens on any edit to a pinned file.
+Built:      tests only, no shipped code. Over the book: on its first night, with the store's 252 sessions, a member
+            holding 86 of them ranks first by value with no return and no lead and is not bought, W1 leads and is
+            bought, and the month is stored; at six months with a beta, a member holding 150 sessions reads a lead and no
+            beta, leads its sector by most in its trend and is not bought, the month stored. The same cases on
+            `ReadNothing` directly, a company reading none beside one reading a lead or a beta in its own sector or
+            another. The roster's fixture-expectations clause states it, prior text in `CHANGELOG.md`.
+Tests:      three added.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, the review's: each half of the guard from any to all, made on the branch in this checkout and
+            restored with git, filtered to 53 tests, the 50 the review's heavyweights filter names and the three added:
+            b predicted red in the lead test and the direct test alone, hg in the beta test and the direct test alone.
+            Results: b red in the lead test and the direct test, 2 of 53; hg red in the beta test and the direct test,
+            2 of 53. Each restored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            entry for the rule's words below states.
+Carried:    the night of 2026-10-07, the first to read October for the four books, had not run when the gates ran, and
+            is read by the next review.
+
+### 14.6 - correction: the S&P 400's and 600's books wait on a night no member of the index holds a close, asserted   2026-10-07
+
+Corrects:   the 14.6 correction's wait in the index books' reading, where no member of the index holds a close on the
+            night, was reached by no test, so it could return no wait with every test green. The shape is producible:
+            the index night reads no inputs exactly then and still runs both books, and under that edit a month's
+            rebalance reads no leaders and the provisional book sells every holding as no longer the leader at its entry
+            close.
+Found:      by the second phase 14 sign-off review over d9360729 (J2): its mutation f survived the whole suite.
+            Reproduced: f over the whole suite, red in 1 of 1987, the pin test.
+Built:      tests only, no shipped code. Over a constructed S&P 400 store whose members hold closes to the day before the
+            next month's first night, an S&P 500 member's bar making that night the store's newest session: the
+            provisional book and a registered design (a) rule each wait naming the night, nothing sold or bought, the
+            holdings carried, the index's night row not rebalanced and no rule night row; the night after, with the
+            members' closes stored, both read. The same reading's second such return, where the sweep's laying holds no
+            session for the night, is an unproducible shape: `HeavyweightSweep.Lay` lays every session it is handed,
+            now asserted in the sweep's constructed history test. It stays, since removing it edits a pinned file and
+            moves the four index evaluators' versions for no change in behaviour. The roster's fixture-expectations
+            clauses state both, prior text in `CHANGELOG.md`.
+Tests:      one added; one assertion added to the sweep's constructed history test.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, the review's: f, the no-close return giving no wait, made on the branch in this checkout and
+            restored with git, filtered to the 53 tests above and the one added: predicted red in the new test alone.
+            Result: red in the new test alone, 1 of 54, the provisional book rebalancing and selling both holdings.
+            Restored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            entry for the rule's words below states.
+Carried:    nothing.
+
+### 14.6 - correction: the rule's words name the month's rebalance session as the decision does, where they still said its first session   2026-10-07
+
+Corrects:   the 14.6 correction moved the rebalance to the first session of each month whose stored year holds the
+            closes its readings need, and the rule's words still said a month's first session or close: every
+            heavyweights card's rule sentence and sale clause on the three indices, the family's words, the card's Plan
+            key, Tonight's and Past picks' keys on the S&P 500 and on the S&P 400 and 600, each pick's management line,
+            the registration's rule text and section 17's card hold row. The live Tonight page drew "next rebalance
+            2026-11-03" beside "a month's first close"; from 2026-11-03 a card and Past picks would show a buy or a sale
+            on a month's second session under words naming its first.
+Found:      by the second phase 14 sign-off review over d9360729 (J3). Reproduced by its grep and on the live Tonight
+            page; the same grep also found section 11.4's paragraph, twice, section 15.18's plan paragraph and the guide.
+Built:      each place says the month's first session or the first after it whose stored year holds the closes its
+            readings need, and a sale at the close of a later month's rebalance; the sweep's comments keep the first
+            session, which the sweep reads. Sections 11.4, 15.18 and 17 are clean edits, prior text in `CHANGELOG.md`,
+            and the guide's sentence moved with them. Register rows 228 to 231, the four rules registered at
+            2026-10-07T14:17:59Z, keep the rule text they were registered with, "on the first session of each month":
+            registering them again would restart the four records, which from the night of 2026-10-07 hold October's
+            buys, so a registration from here carries the new text. The build plan's phase 14 and 16 paragraphs stand
+            as planned.
+Tests:      none added. Three moved with the words: the S&P 500 and S&P 400 cards' sentences and the management line on
+            both indices. Four now assert what no test read whole: the S&P 500 card's Plan key, the Tonight and Past
+            picks keys on both indices, and no "month's first close" on any of those four pages.
+Claims:     unchanged. Pins: none moved; no file this edits is in a pin list.
+Mutated:    the rule: a sentence on each surface put back to its old words, made on the branch in this checkout over the
+            file's own text and restored from it, filtered to the nine tests that draw them: w1 the cards' sale clause
+            in `RuleWords` predicted red in the S&P 500 and S&P 400 Tonight tests; w2 the management line in the
+            management test alone; w3 the S&P 400 Past picks key in its Past picks test alone; w4 the S&P 500 Tonight
+            key in the S&P 500 card test alone.
+            Results: w1 red in both Tonight tests, 2 of 9; w2, w3 and w4 each red in its own test alone, 1 of 9. Each
+            restored, the tree's diff the same after as before, and the nine green over it before the run. A first run
+            restored each file from git, which undid this correction's edits in three files; it was discarded, the
+            edits made again and the four run over the tree as it stands.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 3af3a16e, the
+            pull request's third commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1991 of 1991 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1991 of 1991 tests ran.
+Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
+            session.
