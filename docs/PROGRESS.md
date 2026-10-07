@@ -39806,10 +39806,13 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             the need test alone; M3 red in the no-beta test alone; M4 red in the fetch-cut book test and the fund-wait
             test; M5 red in 5, the card test, the calendar test and three other card tests; M6 red in the S&P 400 test
             alone; M7 red in the read-again test alone. Each restored, and the 27 green over the restored tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 7629c5b6, the
+            pull request's last commit, merged as d804b020.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1986 of 1986 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1986 of 1986 tests ran.
 Carried:    the remedy, run after the merge and before the night; the phase 14 sign-off handoff, for a fresh session.
 
 ### 14.1 - correction: the replay's comparison asserted field by field, where only a trade's end and result together were   2026-10-07
@@ -39837,10 +39840,13 @@ Mutated:    the rule, stated before the run: each comparison removed alone, the 
             Results: d red in the end test alone, r1 in the result test alone, r2 in the place test alone, r3 in the stop
             test alone, r4 in the target test alone, r5 in the record-lacks test alone and r6 in the replay-lacks test
             alone, 1 of 9 each. Each restored, and the nine green over the restored tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 7629c5b6, the
+            pull request's last commit, merged as d804b020.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1986 of 1986 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1986 of 1986 tests ran.
 Carried:    nothing.
 
 ### 12.5 - correction: the sweep read's overlap with a writer shown without depending on the read outlasting the writer's wait between tries   2026-10-07
@@ -39863,8 +39869,11 @@ Mutated:    the rule, from the review: the read made into one statement held acr
             made on the branch in this checkout over a copy of `SweepHistory.cs` and restored from it, filtered to the
             test: predicted red. Result: red, the writer failing with "database is locked" while the write made inside the
             read waited on the held statement. Restored, and the test green over the restored tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 7629c5b6, the
+            pull request's last commit, merged as d804b020.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1986 of 1986 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1986 of 1986 tests ran.
 Carried:    nothing.
