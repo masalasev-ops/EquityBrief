@@ -4,11 +4,13 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indices;
 using Microsoft.Data.Sqlite;
 
@@ -52,6 +54,9 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.RuleRecord, Touch.Read),
+            new StoreTouch(Store.EarningsReaction, Touch.Read),
+            new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.DividendReading, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -162,8 +167,8 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits);
     ";
 
     const string AppendRun = @"
@@ -353,10 +358,106 @@ public sealed class DecisionCards : IComponent
             ("$cap", plan.Cap is { } cap ? (object)cap : DBNull.Value),
             ("$round_trip", Price(RoundTrip(value, plan.Entry))),
             ("$book_holdings", bookHoldings is { } most ? (object)most : DBNull.Value),
+            ("$hits", HitsJson(await HitsAsync(connection, transaction, ticker, night, plan, cancellation))),
         ], cancellation);
 
         return 1;
     }
+
+    const string ReactionMoves = "SELECT move_pct FROM earnings_reaction WHERE ticker = $ticker AND reaction_session <= $night ORDER BY report_date;";
+
+    const string NightClose = "SELECT close FROM bar WHERE ticker = $ticker AND session_date = $night;";
+
+    const string NightTypicalMove = "SELECT value FROM indicator WHERE ticker = $ticker AND session_date = $night AND name = $name;";
+
+    const string DeclaredExDates = "SELECT event_date FROM calendar WHERE ticker = $ticker AND kind = $kind AND event_date > $night ORDER BY event_date;";
+
+    const string DividendKeptOf = @"
+        SELECT forward_rate, last_ex_date, by_year FROM dividend_reading
+        WHERE ticker = $ticker AND fetched_at = (SELECT MAX(fetched_at) FROM dividend_reading WHERE ticker = $ticker);
+    ";
+
+    // What could hit the trade before it ends, from the stored reactions, the night's close and typical move, the
+    // calendar's declared ex-dates, the dividend the quarters fetch kept and the market events table.
+    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    static async Task<CardHits> HitsAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, Plan plan, CancellationToken cancellation)
+    {
+        var moves = new List<double>();
+        var declared = new List<DateOnly>();
+        DividendKept? kept = null;
+
+        await using (var command = Command(connection, transaction, ReactionMoves, [("$ticker", ticker), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                moves.Add(reader.GetDouble(0));
+            }
+        }
+
+        await using (var command = Command(connection, transaction, DeclaredExDates, [("$ticker", ticker), ("$kind", CalendarFetcher.ExDividend), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                declared.Add(Date(reader.GetString(0)));
+            }
+        }
+
+        await using (var command = Command(connection, transaction, DividendKeptOf, [("$ticker", ticker)]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            if (await reader.ReadAsync(cancellation))
+            {
+                using var years = JsonDocument.Parse(reader.GetString(2));
+
+                kept = new DividendKept(
+                    MoneyOrNone(reader, 0),
+                    reader.IsDBNull(1) ? null : Date(reader.GetString(1)),
+                    [.. years.RootElement.EnumerateArray().Select(year => new DividendsInYear(year.GetProperty("year").GetInt32(), year.GetProperty("count").GetInt32()))]);
+            }
+        }
+
+        decimal? close = null;
+        double? typical = null;
+
+        if (await ScalarAsync(connection, NightClose, [("$ticker", ticker), ("$night", Stamp(night))], cancellation, transaction) is string closed)
+        {
+            close = Money(closed);
+        }
+
+        if (await ScalarAsync(connection, NightTypicalMove, [("$ticker", ticker), ("$night", Stamp(night)), ("$name", IndicatorSeries.Atr14)], cancellation, transaction) is double move)
+        {
+            typical = move;
+        }
+
+        return CardHitsReading.Read(night, plan.Cap, CardHitsReading.Reactions(moves, close, typical, plan.Entry, plan.Stop), declared, kept, plan.Entry, plan.Stop);
+    }
+
+    // What could hit the trade as a card stores it.
+    static string HitsJson(CardHits hits) => JsonSerializer.Serialize(new
+    {
+        through = Stamp(hits.HoldThrough),
+        reactions = new
+        {
+            count = hits.Reactions.Count,
+            medianTypical = hits.Reactions.MedianTypical,
+            medianRisks = hits.Reactions.MedianRisks,
+            pastTheStop = hits.Reactions.PastTheStop,
+        },
+        dividend = hits.Dividend is { } dividend
+            ? new
+            {
+                date = Stamp(dividend.Date),
+                declared = dividend.Declared,
+                amount = dividend.Amount?.ToString(CultureInfo.InvariantCulture),
+                inRisks = dividend.InRisks,
+                inPercent = dividend.InPercent,
+            }
+            : null,
+        events = hits.Events.Select(one => new { date = Stamp(one.Date), name = one.Name, source = one.Source }),
+        pastTheTable = hits.PastTheTable,
+    });
 
     // The lines as a card stores them.
     public static string LinesJson(IReadOnlyList<CardLine> lines) =>

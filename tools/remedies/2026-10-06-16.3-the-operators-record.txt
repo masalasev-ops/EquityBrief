@@ -1,0 +1,6 @@
+# The remedy of 16.3 (what could hit a pick, and the operator's record), as its PROGRESS entry prints it: the merge adds
+# migration 71, the taken trades' end columns, decision_card's hits, the operator's record and the dividend readings. No
+# provider request, no model call and nothing bought. A card written before it holds no hits, so it draws none of what
+# could hit the trade until the next night's cards; the follower writes the record on the next night. Run after the
+# merge, when no night is running and not inside the night's window, and before the surface is started on the new build.
+migrate

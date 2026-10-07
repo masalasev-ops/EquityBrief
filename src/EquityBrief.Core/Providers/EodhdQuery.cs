@@ -79,4 +79,7 @@ public static class ProviderWeights
     // calendar request over a ninety-day window returned 22,526 rows worldwide
     // and moved the account's own request counter by one.
     public const int EarningsCalendar = 1;
+
+    // Measured at 16.0: 21 dividend calendar requests, one a session, moved the account's counter from 2,723 to 2,744.
+    public const int DividendCalendar = 1;
 }

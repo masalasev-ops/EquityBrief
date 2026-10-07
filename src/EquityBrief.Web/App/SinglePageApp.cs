@@ -16,6 +16,9 @@ public sealed record NameMast(string? Company, string? Sector, string? Industry,
 // day its newest researched section was written, null where it holds none.
 public sealed record Findable(string Ticker, string? Name, DateOnly? Researched);
 
+// One trade the operator took, as Past picks' "Your trades" draws it.
+public sealed record YourTradeView(string Ticker, string TakenAt, string Rule, DateOnly Night, decimal Fill, DateOnly FillDate, bool Provisional, bool Open, DateOnly? EndedOn, string? EndReason, decimal? EndPrice, double? Result, string Unit);
+
 // A name holding researched sections, as the researched list draws it.
 public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
 
@@ -2417,6 +2420,47 @@ public sealed class SinglePageApp : IComponent
     // each kept in a file of their own under the data root and in no store, log or export, written whole by the press.
     // A pick's card sizes its plan from them; where they are not set the card draws its plan in prices and risks.
     // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+    // Past picks' "Your trades" for the index the page reads: every trade the operator took from that index's cards,
+    // open ones first in the order taken and then the ended newest first, each with its card's family and night, its
+    // fill, where and why it ended with its result, and the exit press on an open one.
+    // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+    public string YourTradesRegion(string indexName, IReadOnlyList<YourTradeView> trades)
+    {
+        var body = new StringBuilder();
+
+        if (trades.Count == 0)
+        {
+            body.Append(Invariant($"<p class=\"degraded\" data-trades=\"none\">You have taken no trade from a card on the {Escaped(indexName)}.</p>"));
+        }
+        else
+        {
+            body.Append("<div class=\"tbl-wrap\"><table class=\"your-trades\"><tr><th>Stock</th><th>Rule and night</th><th>Fill</th><th>State</th><th>Result</th></tr>");
+
+            foreach (var trade in trades.Where(one => one.Open).Concat(trades.Where(one => !one.Open).OrderByDescending(one => one.EndedOn)))
+            {
+                var fill = Invariant($"{trade.Fill.ToString("0.00", CultureInfo.InvariantCulture)} for {trade.FillDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}") +
+                    (trade.Provisional ? ", provisional" : string.Empty);
+                var state = trade.Open
+                    ? Invariant($"open<form class=\"card-press\" method=\"post\" action=\"{ExitPostRoute}{Escaped(trade.Ticker)}/{Escaped(trade.TakenAt)}\"><label>Exit price <input name=\"price\" inputmode=\"decimal\" required></label> <label>on <input name=\"date\" type=\"date\" required></label> <button type=\"submit\">Record exit</button></form><p class=\"card-said\" aria-live=\"polite\"></p>")
+                    : Invariant($"ended by its {Escaped(trade.EndReason ?? "exit")} on {trade.EndedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} at {trade.EndPrice?.ToString("0.00", CultureInfo.InvariantCulture)}");
+                var result = trade.Result is { } read
+                    ? read.ToString(trade.Unit == "percent" ? "0.00'%'" : "0.00' risks'", CultureInfo.InvariantCulture)
+                    : "not read";
+
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-open=\"{(trade.Open ? "yes" : "no")}\"><td>{Escaped(trade.Ticker)}</td><td>{Escaped(trade.Rule)}, {trade.Night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}</td><td>{fill}</td><td>{state}</td><td>{result}</td></tr>"));
+            }
+
+            body.Append("</table></div>");
+        }
+
+        return Cards.Computed(
+            "Your trades",
+            body.ToString(),
+            title: Invariant($"Your trades on the {Escaped(indexName)}"),
+            lede: "The trades you took from a pick's card, followed each night under the rule's own management. Nothing that picks a stock reads them.",
+            region: "your-trades");
+    }
+
     public string AccountRegion(decimal? size, decimal? riskPercent, decimal? positionCap, decimal proposedCap)
     {
         var region = new StringBuilder();

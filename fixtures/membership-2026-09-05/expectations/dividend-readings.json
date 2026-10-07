@@ -1,0 +1,13 @@
+{
+ "stage": "dividend-readings",
+ "derivation": "derived",
+ "derivedFrom": "the four captured fundamentals payloads read by hand, not from a run. Each name's forward rate, last ex-dividend date and count of dividends in each year are the SplitsDividends section's ForwardAnnualDividendRate, ExDividendDate and NumberDividendsByYear as filed: AAPL and MSFT each file 24 years ending in 2026's three, 2025 their last whole year at four; KEYS and NFLX file a rate of 0, no ex-date and no year's count. The night keeps the part beside the company row each storing fetch writes, so a fetch that read another section, dropped a year or kept the pay date for the ex-date would read differently here.",
+ "tables": ["dividend_reading"],
+ "night": "2026-09-08",
+ "names": {
+  "AAPL": { "forwardRate": "1.08", "lastExDate": "2026-08-10", "years": 24, "lastWhole": [2025, 4] },
+  "KEYS": { "forwardRate": "0", "lastExDate": null, "years": 0 },
+  "MSFT": { "forwardRate": "3.64", "lastExDate": "2026-08-20", "years": 24, "lastWhole": [2025, 4] },
+  "NFLX": { "forwardRate": "0", "lastExDate": null, "years": 0 }
+ }
+}

@@ -6,7 +6,7 @@ namespace EquityBrief.Api.Reading;
 
 // What a page hands its cards beyond what the night stored: the operator's account where it is set, their open taken
 // trades, the trades taken from the cards drawn, and whether the page draws the card's presses. An export hands none.
-public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable)
+public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account, IReadOnlyList<TakenTradeRow> Open, IReadOnlyList<TakenTradeRow> Taken, bool Pressable, IReadOnlyList<TakenRecordRow>? Records = null)
 {
     public static CardContext None { get; } = new(null, [], [], false);
 }
@@ -66,9 +66,41 @@ public static class CardScreen
             [
                 .. given.Taken
                     .Where(trade => trade.Ticker == row.Ticker && trade.Index == row.Index && trade.Family == row.Family && trade.Night == row.Night)
-                    .Select(trade => new CardTakenView(trade.TakenAt, trade.Fill, trade.FillDate, trade.Provisional, trade.ExitPrice, trade.ExitDate, trade.FollowedThrough is not null)),
+                    .Select(trade => new CardTakenView(trade.TakenAt, trade.Fill, trade.FillDate, trade.Provisional, trade.ExitPrice, trade.ExitDate, trade.FollowedThrough is not null, trade.EndedOn, trade.EndReason, trade.EndPrice)),
             ],
-            given.Pressable);
+            given.Pressable,
+            row.Hits is { } hitsStored ? Hits(hitsStored) : null,
+            given.Pressable && (given.Records ?? []).FirstOrDefault(mine => mine.Index == row.Index && mine.Family == row.Family) is { } kept
+                ? new CardOperatorRecordView(kept.Unit, kept.Won, kept.Lost, kept.Ended, kept.Open, kept.Average, EquityBrief.Core.Cards.TakenWalk.RecordMinimum, heavyweights || EquityBrief.Core.Families.SetupFamilies.Named(row.Family) is { Trails: true },
+                    new CardSameNightsView(kept.SameNights, kept.RuleListed, kept.RuleWon, kept.RuleLost, kept.RuleEnded, kept.RuleAverage))
+                : null);
+    }
+
+    // What could hit the trade, as the night stored it on the card.
+    static CardHitsView Hits(string stored)
+    {
+        using var document = JsonDocument.Parse(stored);
+        var hits = document.RootElement;
+        var reactions = hits.GetProperty("reactions");
+        var dividend = hits.TryGetProperty("dividend", out var paid) && paid.ValueKind == JsonValueKind.Object ? paid : (JsonElement?)null;
+
+        double? Number(JsonElement element, string name) => element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Number ? value.GetDouble() : null;
+
+        DateOnly Day(string text) => DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        return new CardHitsView(
+            Day(hits.GetProperty("through").GetString()!),
+            reactions.GetProperty("count").GetInt32(),
+            Number(reactions, "medianTypical"),
+            Number(reactions, "medianRisks"),
+            reactions.GetProperty("pastTheStop").GetInt32(),
+            dividend is { } on ? Day(on.GetProperty("date").GetString()!) : null,
+            dividend is { } declared && declared.GetProperty("declared").GetBoolean(),
+            dividend is { } amount && amount.GetProperty("amount").GetString() is { } text ? decimal.Parse(text, NumberStyles.Number, CultureInfo.InvariantCulture) : null,
+            dividend is { } risks ? Number(risks, "inRisks") : null,
+            dividend is { } percent ? Number(percent, "inPercent") : null,
+            [.. hits.GetProperty("events").EnumerateArray().Select(one => (Day(one.GetProperty("date").GetString()!), one.GetProperty("name").GetString()!))],
+            [.. hits.GetProperty("pastTheTable").EnumerateArray().Select(kind => kind.GetString()!)]);
     }
 
     static CardRecordView Record(string stored)

@@ -510,6 +510,10 @@ public class PinnedConstants
             // The card's plan in money and its sixth line, 16.2.
             new("Card position cap", "0.2", Core.Cards.AccountSettings.ProposedCap, "AccountSettings.ProposedCap"),
             new("Card sector open trades", "2", Core.Cards.CardLines.SectorOpenWarnAt, "CardLines.SectorOpenWarnAt"),
+            // What could hit a pick and the operator's record, 16.3.
+            new("Dividend calendar sessions", "21", Worker.Calendar.CalendarFetcher.DividendSessions, "CalendarFetcher.DividendSessions"),
+            new("Operator's record minimum", "20", Core.Cards.TakenWalk.RecordMinimum, "TakenWalk.RecordMinimum"),
+            new("Card hold with no cap", "21", Core.Cards.CardHitsReading.UncappedSessions, "CardHitsReading.UncappedSessions"),
         ];
     }
 

@@ -2,4 +2,10 @@
 
   <!-- Domain, clock and config. Empty until 0.3 builds the clock. -->
 
+  <!-- The market events a pick's card reads inside a hold, the table committed at the root, carried in the build so a
+       night built from a clean copy reads the table its commit holds. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\market-events.json" LogicalName="market-events.json" />
+  </ItemGroup>
+
 </Project>

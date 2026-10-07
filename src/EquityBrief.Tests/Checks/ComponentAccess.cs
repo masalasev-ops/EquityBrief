@@ -149,6 +149,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
             CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
 
+            // 16.3, the taken trades' follower.
+            CheckReach.Key(Scope.CatalogueTable, "Taken follower"),
+            CheckReach.Key(Scope.MatrixTable, "Taken follower"),
+
             // The market switches' ruling of 2026-10-03, the market series fetcher.
             CheckReach.Key(Scope.CatalogueTable, "Market series fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Market series fetcher"),

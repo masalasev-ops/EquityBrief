@@ -99,6 +99,8 @@ public partial class FixtureExpectations
             .. CardClaims,
             // The local model chosen by a flag in its settings: section 18's rows on its load and on its settings.
             .. LocalModelClaims,
+            // 16.3, what could hit a pick and the operator's record: section 17's three values and section 18's three rows.
+            .. FollowerClaims,
             // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.

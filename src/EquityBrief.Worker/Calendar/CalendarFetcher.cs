@@ -16,7 +16,9 @@ public sealed record CalendarOutcome(
     int Requests,
     DateOnly From,
     DateOnly To,
-    int NoLongerFiled = 0);
+    int NoLongerFiled = 0,
+    int ExDividends = 0,
+    string? DividendsFault = null);
 
 // The calendar fetcher. One request for the whole index's dated events over the
 // window, stored for current members only.
@@ -39,9 +41,17 @@ public sealed class CalendarFetcher : IComponent
             new StoreTouch(Store.Calendar, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.EarningsCalendar]);
+        Feeds: [Feed.EarningsCalendar, Feed.DividendCalendar]);
 
     public const string Stage = "calendar";
+
+    // The kind a declared ex-dividend date is filed under, beside the earnings.
+    public const string ExDividend = "ex-dividend";
+
+    // The sessions after the night whose ex-dividend dates the night asks for, one request a session: a little over a
+    // month, the time by which most of a swing rule's trades have ended.
+    // see: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+    public const int DividendSessions = 21;
 
     // The kind this endpoint files. The column admits others and the provider
     // supplies one, which is why the value is written rather than assumed by the
@@ -121,14 +131,94 @@ public sealed class CalendarFetcher : IComponent
     ";
 
     readonly IEarningsCalendarFeed feed;
+    readonly IDividendCalendarFeed dividends;
     readonly IClock clock;
     readonly string databaseFile;
 
-    public CalendarFetcher(IEarningsCalendarFeed feed, IClock clock, string databaseFile)
+    public CalendarFetcher(IEarningsCalendarFeed feed, IClock clock, string databaseFile, IDividendCalendarFeed? dividends = null)
     {
         this.feed = feed;
+        this.dividends = dividends ?? RecordedDividendCalendarFeed.None;
         this.clock = clock;
         this.databaseFile = databaseFile;
+    }
+
+    // The sessions after the night the dividend calendar is asked for, read off the exchange's calendar.
+    public static IReadOnlyList<DateOnly> DividendWindow(DateOnly night)
+    {
+        var sessions = new List<DateOnly>();
+
+        for (var day = night.AddDays(1); sessions.Count < DividendSessions; day = day.AddDays(1))
+        {
+            if (EquityBrief.Core.Bars.ExchangeClosures.IsSession(day))
+            {
+                sessions.Add(day);
+            }
+        }
+
+        return sessions;
+    }
+
+    // Each member's declared ex-dividend dates over the window, one request a session, stored under a kind of their own
+    // and replacing what the window held where the answers stored any member's date. A calendar that refuses or answers
+    // in a form that cannot be read stores nothing and is named, and the earnings already stored stand.
+    // see: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+    async Task<(int Stored, string? Fault)> ExDividendsAsync(SqliteConnection connection, DateOnly session, HashSet<string> members, string observedAt, CancellationToken cancellation)
+    {
+        var window = DividendWindow(session);
+        var found = new List<ExDividend>();
+
+        try
+        {
+            foreach (var day in window)
+            {
+                found.AddRange(await dividends.ExDividendsAsync(day, cancellation).ConfigureAwait(false));
+            }
+        }
+        catch (Exception failure) when (failure is ProviderRefusal or FormatException or JsonException)
+        {
+            return (0, failure.Message);
+        }
+
+        var stored = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var row in found.Where(row => members.Contains(row.Ticker)).DistinctBy(row => (row.Ticker, row.Date)))
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = Upsert;
+            command.Parameters.AddWithValue("$ticker", row.Ticker);
+            command.Parameters.AddWithValue("$event_date", row.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$kind", ExDividend);
+            command.Parameters.AddWithValue("$timing", Filed(EventTiming.Unstated));
+            command.Parameters.AddWithValue("$detail", "{}");
+            command.Parameters.AddWithValue("$observed_at", observedAt);
+
+            await command.ExecuteNonQueryAsync(cancellation);
+
+            stored++;
+        }
+
+        if (stored > 0)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.Transaction = transaction;
+            command.CommandText = DropUnfiled;
+            command.Parameters.AddWithValue("$kind", ExDividend);
+            command.Parameters.AddWithValue("$from", window[0].ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", window[^1].ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$observed_at", observedAt);
+
+            await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return (stored, null);
     }
 
     // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' events the one window
@@ -207,9 +297,10 @@ public sealed class CalendarFetcher : IComponent
             await transaction.CommitAsync(cancellation);
         }
 
+        var (exDividends, dividendsFault) = await ExDividendsAsync(connection, session, members, observedAt, cancellation);
         var dropped = await DroppedAsync(connection, from, cancellation);
 
-        var outcome = new CalendarOutcome(events.Count, written, notMembers, dropped, feed.Requests, from, to, unfiled);
+        var outcome = new CalendarOutcome(events.Count, written, notMembers, dropped, feed.Requests + dividends.Requests, from, to, unfiled, exDividends, dividendsFault);
 
         await RecordAsync(connection, runId, startedAt, outcome, cancellation);
 
@@ -297,7 +388,12 @@ public sealed class CalendarFetcher : IComponent
             "$detail",
             FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to {outcome.To:yyyy-MM-dd}, ") +
             $"{outcome.RowsWritten} stored, {outcome.NotMembers} for names the index does not hold, " +
-            $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)");
+            $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)" +
+            (dividends.Requests == 0 && outcome.DividendsFault is null
+                ? string.Empty
+                : outcome.DividendsFault is { } fault
+                    ? $"; the dividend calendar not read: {fault}"
+                    : $"; {outcome.ExDividends} ex-dividend date(s) over the next {DividendSessions} sessions"));
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

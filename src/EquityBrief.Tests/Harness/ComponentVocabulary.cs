@@ -69,7 +69,7 @@ internal static class ComponentVocabulary
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
@@ -78,7 +78,7 @@ internal static class ComponentVocabulary
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
         ("Series state", [DataStore.SeriesState]),
         ("Research requests", [DataStore.ResearchRequest]),
-        ("Watch list", [DataStore.WatchList, DataStore.TakenTrade]),
+        ("Watch list", [DataStore.WatchList, DataStore.TakenTrade, DataStore.TakenRecord]),
         ("Run log", [DataStore.RunLog]),
     ];
 
@@ -148,6 +148,7 @@ internal static class ComponentVocabulary
         ["historical price feed"] = Feed.HistoricalPrice,
         ["splits and dividends feed"] = Feed.SplitsAndDividends,
         ["earnings calendar feed"] = Feed.EarningsCalendar,
+        ["dividend calendar feed"] = Feed.DividendCalendar,
         ["news feed"] = Feed.News,
         ["company financials"] = Feed.CompanyFinancials,
         ["company financials feed"] = Feed.CompanyFinancials,
@@ -236,6 +237,8 @@ internal static class ComponentVocabulary
         ["research requests"] = DataStore.ResearchRequest,
         ["watch list"] = DataStore.WatchList,
         ["taken trades"] = DataStore.TakenTrade,
+        ["taken records"] = DataStore.TakenRecord,
+        ["dividend readings"] = DataStore.DividendReading,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

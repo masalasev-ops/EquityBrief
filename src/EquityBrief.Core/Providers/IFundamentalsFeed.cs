@@ -118,7 +118,24 @@ public sealed record AnalystRatings(decimal? Rating, decimal? TargetPrice, int? 
 // dates. As of the fetch, for the reason the ratios are: a forward rate and a yield move with the
 // price and the board.
 // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
-public sealed record DividendFiled(decimal? ForwardAnnualRate, decimal? ForwardYield, decimal? PayoutRatio, DateOnly? ExDividendDate, DateOnly? PayDate);
+public sealed record DividendFiled(decimal? ForwardAnnualRate, decimal? ForwardYield, decimal? PayoutRatio, DateOnly? ExDividendDate, DateOnly? PayDate)
+{
+    // How many dividends the company paid in each year the answer files, oldest first, which a pick's card reads the
+    // company's usual interval between ex-dates from.
+    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    public IReadOnlyList<DividendsInYear> ByYear { get; init; } = [];
+
+    // Two filings are the same where every value and every year's count are.
+    public bool Equals(DividendFiled? other) =>
+        other is not null
+        && (ForwardAnnualRate, ForwardYield, PayoutRatio, ExDividendDate, PayDate) == (other.ForwardAnnualRate, other.ForwardYield, other.PayoutRatio, other.ExDividendDate, other.PayDate)
+        && ByYear.SequenceEqual(other.ByYear);
+
+    public override int GetHashCode() => HashCode.Combine(ForwardAnnualRate, ForwardYield, PayoutRatio, ExDividendDate, PayDate, ByYear.Count);
+}
+
+// The dividends a company paid in one year, as the fundamentals answer counts them.
+public sealed record DividendsInYear(int Year, int Count);
 
 // One name's fundamentals as one provider files them.
 //
