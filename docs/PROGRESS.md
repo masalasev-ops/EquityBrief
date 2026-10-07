@@ -39424,9 +39424,9 @@ Screens:    read back on 2026-10-07 over the night of 2026-10-06 run again from 
             back found three faults, each corrected in an entry below: eight of the twelve records named by the sweep's
             key, at 16.1; the Taken control saying nothing of what it records, at 16.2, which the operator found reading
             the card; and the dividend line saying none where nothing could estimate one, at 16.3. It found two more on
-            the S&P 400's and 600's rows on Tonight, outside phase 16 and left for phase 15's sign-off to read: the
-            business column reading "not read" where the card read the member's stored state, and the reward to risk
-            "none" on the drift's rows beside a stop and a target.
+            the S&P 400's and 600's rows on Tonight, outside phase 16 and corrected at 15.1 below: the business column
+            reading "not read" where the card read the member's stored state, and the reward to risk "none" on the
+            drift's rows where the night stores none beside a stop and a target.
 Operating:  phase 16 opened one operating row, at 16.0: "The card and the follower read within their time on the
             first five nights"; `obligation-reconciles` states phase 16 at one.
 Tests:      1963, from 1961: two added.
