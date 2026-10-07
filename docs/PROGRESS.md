@@ -39511,7 +39511,9 @@ Plan:       `BUILD_PLAN.md` gains 16.5 after the report, with its done condition
 Queue:      done, 16.4, PR 386, and the 16.1 correction, PR 387; in progress, this ruling, the screens read back and
             the corrections they found, the drain's build copy correction, and 16.5; next, the sign-offs of phases
             14, 15 and 16, each by a session the operator starts, one at a time.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 0306806, the pull request's last commit, all six
+            steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0 to 71 with none pending,
+            schema version 71, against `data-ci` and never `data`.
 Carried:    16.5.
 
 ### 16.1 - correction: a rule's record names its rule in the register's words, where eight of the twelve carried the sweep's key   2026-10-07
@@ -39689,10 +39691,13 @@ Mutated:    the rule, stated before the run: each property 16.5 adds broken alon
             Results: W1 red at the three, the run stopping before its first call; W2 red at the three, the run stopping
             at its limit on the window's end; W3 red at the copy's wait test alone, the copy made at 02:05 where 04:30 was
             worked by hand. Each reverted, and the twelve tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    the sign-offs of phases 14, 15 and 16, each owed by a session the operator starts, one at a time, their
             handoffs issued with the figures as they stand after this merge; and phase 16's operating row read on the
             first five nights.
