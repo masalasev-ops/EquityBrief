@@ -39442,3 +39442,40 @@ Carried:    the sign-offs of phases 14, 15 and 16, each owed on the phase as a w
             place where Windows refused the move on the night of 2026-10-06, and the local lane loading its model again
             where it finds it loaded at a smaller context than its profile's; and the operating row read on the first
             five nights.
+
+### 16.1 - correction: the local lane loads its model again where it finds it loaded at a smaller context than its profile's, where it called it as it stood   2026-10-07
+
+Corrects:   the 16.1 ruling's load, which read a model the runtime lists as loaded or loading and called it as it
+            stood, whatever context it was loaded at.
+Found:      on the evening of 2026-10-06, Gemma 4 stood loaded at 32,000 tokens from a load by hand before the night,
+            and the lane would have called it there where its profile names 50,176; the runtime refuses a prompt past
+            the loaded context, as the captured overflow refusal shows. The operator had it unloaded and the night
+            loaded it at 50,176.
+Built:      the runtime's list read for the context each of the model's instances states. One stated smaller than the
+            profile's is unloaded after every other model and the model loaded again at the profile's, waited for as
+            a model not loaded is; one at the profile's or more, or stating none, is called as it stands. The
+            superseding decision (see: The local lane loads its model at its profile's context before its first call
+            of a night or a pass, and loads again a model held at a smaller one), cited in two sources and two specs,
+            section 18's row and the runbook's paragraph, the roster's `fixture-expectations` row, the prior text in
+            `CHANGELOG.md`.
+Tests:      1964, from 1963: one added, the captured list with Gemma's instance at 32,000 and at 50,175 each unloaded
+            and loaded again at 50,176 before the first call with the second call asking nothing more, and one stating
+            no context called as it stands; the list's reader reads the capture's 50,176 and its instance.
+Claims:     1031, unchanged.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this edits is among them.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand on the branch
+            in this checkout, filtered to the 22 tests that read the lane's load and reverted.
+            L1 the context not read, a listed model called as it stands: predicted red at the new test alone.
+            L2 a model at exactly the profile's context loaded again: predicted red at the already listed test alone.
+            L3 the model's own smaller instance not unloaded before the load: predicted red at the new test alone.
+            Results: L1 red at the new test alone, 21 of 22 passing; L2 red at the already listed test alone, the
+            capture's 50,176 against the profile's 50,176 loaded again; L3 red at the new test alone, the unload of
+            Gemma's own instance missing from what the runtime was asked. Each reverted, and the 22 tests green over
+            the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing. The next night's queue reads the new load. Then the 16.4 screens, the drain's build copy
+            correction and the sign-offs.
