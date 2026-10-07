@@ -39680,3 +39680,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the sign-offs of phases 14, 15 and 16, each owed by a session the operator starts, one at a time, their
             handoffs issued with the figures as they stand after this merge; and phase 16's operating row read on the
             first five nights.
+
+### 15.1 - correction: the S&P 400's and 600's rows on Tonight draw each pick's stored business state, and a reward to risk the night did not store says so   2026-10-07
+
+Corrects:   15.1's rows on the S&P 400's and 600's Tonight, which drew "not read" for every pick's business, since
+            they were built before the night stored any of their members' readings and were not given them when 15.2
+            began storing every member's every night; and "none" for the reward to risk of a pick whose rule's night
+            stores none beside a stop and a target, the drift's on both indices.
+Found:      by 16.4's screens read back on the night of 2026-10-06: APOG's and LW's rows on the S&P 600 read "not read"
+            and "none" where `fundamental_reading` held "steady" for both and their plans held a stop and a target; the
+            cards beside them read the state.
+Built:      the S&P 400's and 600's cards read the night's stored readings and each pick's row draws its state as the
+            S&P 500's rows draw theirs, "not read" only where none was stored; and a row whose reward to risk the night
+            did not store, beside a stop and a target, says "not stored", a trailing rule's still reading "open". No
+            screen works the ratio out (see: A screen reads and renders, and computes only the plan in the operator's
+            money and a pick's open trades in its sector). The roster's `read-surface` clause says so, with its prior
+            text in `CHANGELOG.md`.
+Tests:      1972, from 1970: two added, an S&P 400 pick's row reading not read with no reading stored and its state with
+            one, and a drift pick's row saying not stored beside the breakout's open.
+Claims:     1031, unchanged.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: each property broken alone, made on the branch in this checkout, filtered
+            to the S&P 400's Tonight tests and reverted.
+            B1 the index cards handed no readings: predicted red at the business test alone.
+            B2 an unstored ratio beside a stop and a target drawn as none: predicted red at the reward to risk test alone.
+            Results: B1 red at the business test alone, M1's row reading not read with its reading stored; B2 red at the
+            reward to risk test alone, M2's row reading none. Each reverted, and the nine tests green over the reverted
+            tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing.

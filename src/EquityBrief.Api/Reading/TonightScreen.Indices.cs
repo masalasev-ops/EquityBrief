@@ -26,9 +26,14 @@ public static partial class TonightScreen
         IReadOnlyList<IndexResultRow> results,
         IReadOnlyList<(string Ticker, string? Company, decimal? Close)> members,
         IReadOnlyList<ResearchedRow> researched,
-        IReadOnlyDictionary<string, QueueState> queue)
+        IReadOnlyDictionary<string, QueueState> queue,
+        IReadOnlyList<FundamentalReadingRow>? readings = null)
     {
         var settings = IndexRuleSettings.Read(night.Settings);
+
+        // Each pick's business state as the night stored it under its index, so a row says not read only where no
+        // reading was stored for it.
+        var readingBy = (readings ?? []).ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var memberBy = members.ToDictionary(member => member.Ticker, StringComparer.Ordinal);
         var writtenOn = researched.ToDictionary(row => row.Ticker, row => row.Written, StringComparer.Ordinal);
         var passedBy = results.Where(result => result.Passed).ToDictionary(result => (result.Family, result.Ticker));
@@ -60,7 +65,8 @@ public static partial class TonightScreen
                             [],
                             Distance: new UniverseCell(pick.Ticker, string.Empty, member.Close, null, null, null, null, null, null, Name: member.Company),
                             ResearchedOn: writtenOn.TryGetValue(pick.Ticker, out var written) ? written : null,
-                            Queue: queue.GetValueOrDefault(pick.Ticker));
+                            Queue: queue.GetValueOrDefault(pick.Ticker),
+                            Business: Business(readingBy.GetValueOrDefault(pick.Ticker)));
 
                         return new FamilyPickCell(
                             row,
