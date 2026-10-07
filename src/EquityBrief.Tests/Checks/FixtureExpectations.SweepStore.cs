@@ -153,9 +153,32 @@ public partial class FixtureExpectations
             }
         });
 
-        long started;
-        long ended;
+        // A write made from inside the read, once it says it has read its names, by the same writer: it commits before
+        // the read returns where the read holds no statement open across its names, whatever the machine's speed.
+        var inside = new List<string>();
         SweepHistoryInputs inputs;
+
+        void WriteInside(string said)
+        {
+            if (said != FormattableString.Invariant($"read {Names} of {Names} name(s)"))
+            {
+                return;
+            }
+
+            try
+            {
+                using var connection = new SqliteConnection(writer.ConnectionString);
+                connection.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'INSIDE', NULL, NULL, '2025-07-01T21:10:00Z');";
+                command.ExecuteNonQuery();
+                inside.Add("committed");
+            }
+            catch (SqliteException refused)
+            {
+                inside.Add(refused.Message);
+            }
+        }
 
         try
         {
@@ -173,9 +196,7 @@ public partial class FixtureExpectations
                 await Task.Delay(10);
             }
 
-            started = clock.ElapsedTicks;
-            inputs = await new SweepHistory(store.DatabaseFile).ReadAsync(through);
-            ended = clock.ElapsedTicks;
+            inputs = await new SweepHistory(store.DatabaseFile).ReadAsync(through, WriteInside);
         }
         finally
         {
@@ -185,10 +206,7 @@ public partial class FixtureExpectations
         }
 
         Assert.Empty(failures);
-
-        var during = committed.Count(write => write.At > started && write.At < ended);
-
-        Assert.True(during >= 1, $"{during} write(s) committed while the read ran, of {committed.Count}; the read took {(ended - started) * 1000.0 / Stopwatch.Frequency:0} ms.");
+        Assert.Equal(["committed"], inside);
 
         // The read holds every name's sessions and none a writer added after the end it was handed.
         Assert.Equal(Names, inputs.Names.Count);

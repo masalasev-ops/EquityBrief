@@ -39842,3 +39842,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/ci.ps1`: FILLED FROM THE RUN.
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    nothing.
+
+### 12.5 - correction: the sweep read's overlap with a writer shown without depending on the read outlasting the writer's wait between tries   2026-10-07
+
+Corrects:   12.5's sweep store test asserted that a write committed while the sweep's read ran, which is a bound on the
+            machine's speed: on PR 338's macOS runner the read took 106 ms and no write committed inside it.
+Found:      by the phase 14 sign-off review over 887ca6f3 (H3), from the red pull_request macOS job of PR 338's first
+            attempt.
+Built:      tests only, no shipped code. The property assertions stand: no write fails while a writer commits every ten
+            milliseconds through the read, and a statement held open past the writer's two-second wait fails it. The
+            overlap is shown by a write the same writer makes from inside the read, once the read says it has read its
+            names, which commits before the read returns wherever the read holds no statement open across its names,
+            whatever the machine's speed. No count or time was raised. A first form, reading again up to 20 times until a
+            commit landed inside a read, was dropped before this entry: its mutant survived twice, a commit landing after
+            the read let go and before the test's clock, or while a writer already held its commit as the read opened,
+            counting as overlap. The roster's clause landed with the 14.6 correction.
+Tests:      none added; one rewritten.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, from the review: the read made into one statement held across every name, opened at the read's start,
+            made on the branch in this checkout over a copy of `SweepHistory.cs` and restored from it, filtered to the
+            test: predicted red. Result: red, the writer failing with "database is locked" while the write made inside the
+            read waited on the held statement. Restored, and the test green over the restored tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing.
