@@ -39414,7 +39414,19 @@ Built:      Figure 15.1 in section 15.18, a pick's card with its seven parts num
             figure's key names every part the figure draws, in the architecture and in the guide, and neither picture's
             text holds a night's figure. The roster's `architecture-conformance` row says so, with its prior text in
             `CHANGELOG.md`.
-Screens:    FILLED FROM THE RUN.
+Screens:    read back on 2026-10-07 over the night of 2026-10-06 run again from 4351dc4, the cards as it wrote them:
+            ADM's and HPQ's on the S&P 500's pullback and APOG's and LW's on the S&P 600's drift, each at 1,440 pixels
+            and at 390 inside a frame of that width, since the headless browser lays a page out no narrower than 496.
+            Each card's 21 items read off the page against its stored row, 84 of 84: the plan's stop, target and cap,
+            the hold's end, the reactions, the dividend line, the five market events, the record's five figures and the
+            five lines. At 390 every line and figure stands in one column and nothing runs past the screen. The S&P
+            400's lists were closed by its breadth of 44.5% under its floor of 45%, so its page drew no card. The read
+            back found three faults, each corrected in an entry below: eight of the twelve records named by the sweep's
+            key, at 16.1; the Taken control saying nothing of what it records, at 16.2, which the operator found reading
+            the card; and the dividend line saying none where nothing could estimate one, at 16.3. It found two more on
+            the S&P 400's and 600's rows on Tonight, outside phase 16 and left for phase 15's sign-off to read: the
+            business column reading "not read" where the card read the member's stored state, and the reward to risk
+            "none" on the drift's rows beside a stop and a target.
 Operating:  phase 16 opened one operating row, at 16.0: "The card and the follower read within their time on the
             first five nights"; `obligation-reconciles` states phase 16 at one.
 Tests:      1963, from 1961: two added.
