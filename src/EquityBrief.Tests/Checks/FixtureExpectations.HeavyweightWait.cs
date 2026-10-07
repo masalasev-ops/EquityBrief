@@ -455,6 +455,77 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheSAndP400sBookAndARegisteredRuleBookWaitOnANightNoMemberOfTheIndexHoldsACloseAndReadTheNightAfter()
+    {
+        var (store, closes) = HeavyweightIndexStore();
+
+        using (store)
+        {
+            var freezeAt = new DateTimeOffset(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
+            var heavyweights = HeavyweightIndexEvaluator("heavyweight-400");
+
+            Assert.Equal(0, (await RegisterVerbAt(store, freezeAt, RegisterVerb.IndexFamily, "heavyweight", "--index", "MID", "--parameters", Typed(IndexRules.Provisional(heavyweights)))).Code);
+
+            var register = await new CandidateRegistrar(FixedClock.At(freezeAt, SessionZones.UnitedStates), store.DatabaseFile).RowsAsync();
+
+            async Task<IndexNightOutcome> Night(DateOnly session, string run) =>
+                (await new IndexFamilies(FixedClock.At(At(session, 23, 40), SessionZones.UnitedStates), store.DatabaseFile).RunAsync(run, default, register, freezeAt.AddHours(1)))
+                    .Nights.Single(night => night.Index == "MID");
+
+            // The books' first night: the index's book and the registered rule's each buy L1 and L2.
+            var first = await Night(new DateOnly(2026, 10, 1), "first");
+
+            Assert.Equal(new IndexHeavyweightsOutcome(true, 2, 0, 2), first.Heavyweights);
+            Assert.Equal((true, 2), (first.HeavyweightRules.Rebalanced, first.HeavyweightRules.Held));
+
+            // A calendar session a day to the day before the next month's first night, each member flat at its close of
+            // the session after the first night, and the fund's close on each to the night after it. An S&P 500 member's
+            // bar makes the month's first night the store's newest session, and no S&P 400 member holds a close on it.
+            var monthFirst = new DateOnly(2026, 11, 2);
+
+            foreach (var ticker in closes.Keys)
+            {
+                StoreYear(store, ticker, [.. Enumerable.Range(1, 31).Select(day => new DateOnly(2026, 10, 1).AddDays(day)).Select(day => new FamilyBar(day, closes[ticker][261], closes[ticker][261], closes[ticker][261], 1_000_000))]);
+            }
+
+            store.Execute(
+                "INSERT INTO market_bar (series, session_date, open, high, low, close, run_id) VALUES " +
+                string.Join(", ", Enumerable.Range(2, 32).Select(day => $"('IJH', '{Day(new DateOnly(2026, 10, 1).AddDays(day))}', '100', '100', '100', '100', 'test')")) + ";");
+            store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'LG', '2025-01-02', NULL, '2025-01-02T00:00:00Z');");
+            StoreYear(store, "LG", [new FamilyBar(monthFirst, 50m, 50m, 50m, 1_000_000)]);
+
+            Assert.Equal(["2026-11-02"], FamilyRows(store, "SELECT MAX(session_date) FROM bar;"));
+            Assert.Equal(["2026-11-01"], FamilyRows(store, "SELECT MAX(session_date) FROM bar WHERE ticker IN ('L1', 'L2', 'L3');"));
+
+            // Both books wait, naming the night: nothing bought or sold, the holdings carried, and no rebalance stored.
+            const string Waits = "the rebalance waits, since no member of the index holds a close on 2026-11-02";
+            var waited = await Night(monthFirst, "waits");
+
+            Assert.Equal(new IndexHeavyweightsOutcome(false, 0, 0, 2, Waits), waited.Heavyweights);
+            Assert.Equal((false, 0, 0, 2), (waited.HeavyweightRules.Rebalanced, waited.HeavyweightRules.Entered, waited.HeavyweightRules.Ended, waited.HeavyweightRules.Held));
+            Assert.EndsWith(Waits, waited.HeavyweightRules.Waits, StringComparison.Ordinal);
+            Assert.Equal(["L1|open", "L2|open"], TextRows(store, "SELECT ticker || '|' || IFNULL(ended_on, 'open') FROM index_heavyweight_holding ORDER BY ticker;"));
+            Assert.Equal(["L1|open", "L2|open"], TextRows(store, "SELECT ticker || '|' || IFNULL(ended_on, 'open') FROM index_heavyweight_rule_holding ORDER BY ticker;"));
+            Assert.Equal(["2026-11-02|0"], FamilyRows(store, "SELECT session_date, rebalanced FROM index_family_night WHERE index_code = 'MID' AND session_date = '2026-11-02';"));
+            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM index_heavyweight_rule_night WHERE session_date = '2026-11-02';"));
+
+            // The night after, with the members' closes of both sessions stored, both books read the month's rebalance.
+            foreach (var ticker in closes.Keys)
+            {
+                StoreYear(store, ticker, [.. new[] { monthFirst, monthFirst.AddDays(1) }.Select(day => new FamilyBar(day, closes[ticker][261], closes[ticker][261], closes[ticker][261], 1_000_000))]);
+            }
+
+            StoreYear(store, "LG", [new FamilyBar(monthFirst.AddDays(1), 50m, 50m, 50m, 1_000_000)]);
+
+            var read = await Night(monthFirst.AddDays(1), "reads");
+
+            Assert.True(read.Heavyweights.Rebalanced);
+            Assert.True(read.HeavyweightRules.Rebalanced);
+            Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM index_heavyweight_rule_night WHERE session_date = '2026-11-03';"));
+        }
+    }
+
+    [Fact]
     public void TheStoresYearHoldsTheSessionsTheClosureTableGivesItAndTheLiveBookReadsEachMonthOnTheFirstHoldingItsNeed()
     {
         // Worked by hand from the closure table and a one-year cut, a session at a time: each month's first session, the

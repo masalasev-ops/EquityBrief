@@ -39929,3 +39929,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             entry for the rule's words below states.
 Carried:    the night of 2026-10-07, the first to read October for the four books, had not run when the gates ran, and
             is read by the next review.
+
+### 14.6 - correction: the S&P 400's and 600's books wait on a night no member of the index holds a close, asserted   2026-10-07
+
+Corrects:   the 14.6 correction's wait in the index books' reading, where no member of the index holds a close on the
+            night, was reached by no test, so it could return no wait with every test green. The shape is producible:
+            the index night reads no inputs exactly then and still runs both books, and under that edit a month's
+            rebalance reads no leaders and the provisional book sells every holding as no longer the leader at its entry
+            close.
+Found:      by the second phase 14 sign-off review over d9360729 (J2): its mutation f survived the whole suite.
+            Reproduced: f over the whole suite, red in 1 of 1987, the pin test.
+Built:      tests only, no shipped code. Over a constructed S&P 400 store whose members hold closes to the day before the
+            next month's first night, an S&P 500 member's bar making that night the store's newest session: the
+            provisional book and a registered design (a) rule each wait naming the night, nothing sold or bought, the
+            holdings carried, the index's night row not rebalanced and no rule night row; the night after, with the
+            members' closes stored, both read. The same reading's second such return, where the sweep's laying holds no
+            session for the night, is an unproducible shape: `HeavyweightSweep.Lay` lays every session it is handed,
+            now asserted in the sweep's constructed history test. It stays, since removing it edits a pinned file and
+            moves the four index evaluators' versions for no change in behaviour. The roster's fixture-expectations
+            clauses state both, prior text in `CHANGELOG.md`.
+Tests:      one added; one assertion added to the sweep's constructed history test.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, the review's: f, the no-close return giving no wait, made on the branch in this checkout and
+            restored with git, filtered to the 53 tests above and the one added: predicted red in the new test alone.
+            Result: red in the new test alone, 1 of 54, the provisional book rebalancing and selling both holdings.
+            Restored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            entry for the rule's words below states.
+Carried:    nothing.
