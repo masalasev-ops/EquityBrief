@@ -337,17 +337,22 @@ public static partial class TonightScreen
                     ? FormattableString.Invariant($"No sector's largest companies of the {universe.Name} led their sector at the rebalance of {rebalance:yyyy-MM-dd} while passing the floors, the profit check, the trend gate and the beta, so the book holds nothing until the next.")
                     : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
 
+        // The book's look-back and beta as its night stored them, which the sessions its rebalance needs are read from.
+        var reading = new HeavyweightSettings(HeavyweightRule.Largest, lookBack, HeavyweightRule.Leaders, HighBeta: settings.Heavyweights.GetValueOrDefault("beta") is not (null or "off"));
+        var next = HeavyweightRule.NextRebalance(night.Session, last, reading);
+
         return new HeavyweightCardView(
             words.Heading,
             words.Eyebrow,
             RuleWords.Heavyweights(settings, universe.Name, fund),
             lookBack,
             last,
-            NextRebalance(night.Session, last),
+            next,
             cells,
             entered,
             ended,
-            empty);
+            empty,
+            Waits: computed ? Waiting(night.Session, last, next, reading) : null);
     }
 
     // How an index's night went, read off the rows its families stored for it.

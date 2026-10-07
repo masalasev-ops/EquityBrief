@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Checks;
 // book stored over a constructed store, and the report's figures read back against a constructed history's known answer.
 // see: The heavyweights' sweep replays the book over the pulled history across its settings and proposes the best edge among those meeting the family sweeps' floors
 // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
-// see: A heavyweight's beta is read over 251 daily returns against the index
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public partial class FixtureExpectations
 {
     // The rows the heavyweights' sweep adds that this check reaches: section 17's row and section 18's two.

@@ -494,6 +494,7 @@ public class PinnedConstants
             new("Heavyweights' leaders", "2", Core.Families.HeavyweightRule.Leaders, "HeavyweightRule.Leaders"),
             new("Heavyweights' leaders", "1", (decimal)Core.Families.HeavyweightRule.BetaFloor, "HeavyweightRule.BetaFloor"),
             new("Heavyweights' leaders", "251", Core.Families.HeavyweightRule.BetaReturns, "HeavyweightRule.BetaReturns"),
+            new("Heavyweights' rebalance and exits", "252", Core.Families.HeavyweightRule.SessionsNeeded(Core.Families.HeavyweightRule.Live), "HeavyweightRule.SessionsNeeded(HeavyweightRule.Live)"),
             new("Heavyweights' registrations", "3", Worker.Candidates.TheSetupFamilies.Heavyweights.Count - 1, "TheSetupFamilies.Heavyweights' variants"),
             new("Heavyweights' registrations", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
             // The context checks, 14.4.

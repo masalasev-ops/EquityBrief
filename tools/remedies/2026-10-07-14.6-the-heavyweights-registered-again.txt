@@ -1,0 +1,7 @@
+# The remedy of the 14.6 correction (a sector heavyweights rebalance waits for a night the store's year holds the closes
+# its readings need), as its PROGRESS entry prints it: the merge moves the heavyweights' evaluator's version, so the four
+# standing heavyweights rules would be named as failures on the night, kept by no book, until they are registered again.
+# Registering the moved rules again names each as not replayed, its record restarting at the registration. No S&P 400
+# or 600 rule stands, no other evaluator moves, and nothing asks the provider or calls a model. Run after the merge and
+# before the night, when no night, queue, report pass or labeller is running.
+register --moved --evidence "14.6 correction: a sector heavyweights rebalance waits for a night the store's year holds the closes its readings need, and one reading no lead or no beta waits the same way, which moves the heavyweights' evaluator"

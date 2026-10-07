@@ -111,8 +111,8 @@ public sealed record HeavyweightProposal(HeavyweightSetting? Setting, Heavyweigh
     public bool NonePassed => Proposed is null;
 }
 
-// How the replay at the provisional setting read the rebalances the night's book stored: the sessions and sectors
-// compared, those whose largest companies, leads and leaders were the stored ones, and each difference found.
+// How the replay at the setting the runner hands it read the rebalances the night's book stored: the sessions and
+// sectors compared, those whose largest companies, leads and leaders were the stored ones, and each difference found.
 public sealed record HeavyweightComparison(int Sessions, int Sectors, int Matched, IReadOnlyList<string> Differences);
 
 // The history laid out on the calendar for the heavyweights' walk: each name's adjusted close, its 200-session average
@@ -176,7 +176,7 @@ public sealed record HeavyweightRebalance(IReadOnlyList<(string Sector, int[] Le
 // context. One holding a stock in each setting, as the book holds it.
 // see: The heavyweights' sweep replays the book over the pulled history across its settings and proposes the best edge among those meeting the family sweeps' floors
 // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
-// see: A heavyweight's beta is read over 251 daily returns against the index
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public static class HeavyweightSweep
 {
     // The size cut that reads every company of a sector.
@@ -721,10 +721,10 @@ public static class HeavyweightSweep
     // How many settings luck alone would put above nothing in the floor's years, were the settings independent.
     public static double Luck(int settings) => 1.0 * settings * LuckPatterns() / (1 << SweepFigures.Years);
 
-    // The replay at the provisional setting held to the rebalances the night's book stored: on each stored session,
-    // each sector's largest companies in order, each lead within a billionth and each leader, against the rows the
-    // night wrote; a session the history does not hold, a sector either side holds alone and every row that differs
-    // named.
+    // The replay at the setting the runner hands it, the frozen one the page's book holds at, held to the rebalances the
+    // night's book stored: on each stored session, each sector's largest companies in order, each lead within a
+    // billionth and each leader, against the rows the night wrote; a session the history does not hold, a sector either
+    // side holds alone and every row that differs named.
     public static HeavyweightComparison Compare(IReadOnlyList<StoredHeavyweightRow> stored, Func<DateOnly, IReadOnlyList<HeavyweightSector>?> provisionalAt)
     {
         var differences = new List<string>();

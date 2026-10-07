@@ -319,10 +319,11 @@ public partial class ArchitectureConformance
         // 16.1, the decision cards' and the rule recorder's catalogue and matrix rows, their two stores, section 17's four
         // values and section 18's four failures, 1016 from the 16.1 ruling's local model, section 18's rows on its load
         // and on its settings, 1021 from 16.2, the taken trades' store, section 17's two values and section 18's two
-        // rows, and 1031 from 16.3, the follower's catalogue and matrix rows, the operator's record's and the dividend
-        // readings' stores, section 17's three values and section 18's three rows.
+        // rows, 1031 from 16.3, the follower's catalogue and matrix rows, the operator's record's and the dividend
+        // readings' stores, section 17's three values and section 18's three rows, and 1032 from the 14.6 correction,
+        // section 18's row on a heavyweights' rebalance waiting for the closes its readings need.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1031),
+            (789, 853, 6, 4, 855, 876, 1032),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

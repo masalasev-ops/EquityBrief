@@ -1167,7 +1167,7 @@ public sealed class SinglePageApp : IComponent
         }
 
         // Where the sector heavyweights hold the name at the night's close, which card holds it and since when.
-        // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+        // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
         if (heavyweight is not null)
         {
             region.Append(Invariant($"<p class=\"listed-under heavyweight-held\">{Escaped(heavyweight)}</p>"));
@@ -1678,7 +1678,7 @@ public sealed class SinglePageApp : IComponent
 
             // The sector heavyweights' card after the swing families', its holdings, its last rebalance and its
             // next, drawn whatever the market check read.
-            // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+            // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
             // see: The market check closes every swing family's list together, and the sector heavyweights read none
             if (heavyweights is not null)
             {

@@ -38,6 +38,10 @@ public partial class ArchitectureConformance
     // ruling's two failure rows on the local model's load and its settings.
     static string[] PhaseSixteenBeside => FixtureExpectations.LocalModelClaims;
 
+    // The rows the document gains after phase 16's report, named beside the pair and never counted in it: the 14.6
+    // correction's section 18 row on a heavyweights' rebalance waiting for the closes its readings need.
+    internal static string[] AfterPhaseSixteen => FixtureExpectations.HeavyweightWaitClaims;
+
     [Fact]
     public void ThePhaseSixteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
     {
@@ -71,13 +75,14 @@ public partial class ArchitectureConformance
         Assert.Equal(predicted - actual, PhaseSixteenShort.Sum(checkpoint => checkpoint.Fewer) - PhaseSixteenBeside.Length);
 
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood
-        // before it, none out of scope and none unexamined, with no row after this report.
+        // before it and the rows after its report, none out of scope and none unexamined.
         var report = Report();
+        var total = actual + AfterPhaseSixteen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
         Assert.Equal(
-            (actual, 0, 0, actual),
+            (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.

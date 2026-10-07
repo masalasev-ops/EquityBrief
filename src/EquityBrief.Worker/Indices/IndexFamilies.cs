@@ -391,9 +391,9 @@ public sealed class IndexFamilies : IComponent
         string.Join("; ", outcomes.Select(outcome => outcome.Fault is { } fault
             ? $"{outcome.Index}: not computed tonight, {fault}"
             : FormattableString.Invariant(
-                $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
+                $"{outcome.Index}: {outcome.Members} member(s) read, breadth {(outcome.Breadth is { } breadth ? breadth.ToString("0.00", CultureInfo.InvariantCulture) : "not read")}, the market check {(outcome.MarketOpen ? "open" : "closed")}, {string.Join(", ", outcome.Passed.Select(pair => $"{pair.Value} passed by the {pair.Key}"))}, {outcome.Listed} listed, {outcome.HeldByATrade} held back by a trade still open, {outcome.TradesKept} trade(s) kept, {outcome.TradesEnded} ended; the sector heavyweights {(outcome.Heavyweights.Rebalanced ? "rebalanced" : "carried")}{(outcome.Heavyweights.Waits is { } waits ? ", " + waits : string.Empty)}, {outcome.Heavyweights.Entered} bought, {outcome.Heavyweights.Ended} sold, {outcome.Heavyweights.Held} held")
                 + (outcome.Rules > 0 ? FormattableString.Invariant($"; {outcome.Rules} registered rule(s) kept {outcome.RuleTrades.Trades} trade(s) on their own lists, {outcome.RuleTrades.Ended} ended and {outcome.RuleTrades.Benchmarked} benchmarked") : string.Empty)
-                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held") : string.Empty)));
+                + (outcome.HeavyweightRules is { Held: > 0 } or { Entered: > 0 } or { Ended: > 0 } or { Rebalanced: true } or { Waits: not null } ? FormattableString.Invariant($"; the registered heavyweights rules' books {(outcome.HeavyweightRules.Rebalanced ? "rebalanced" : "carried")}, {outcome.HeavyweightRules.Entered} bought, {outcome.HeavyweightRules.Ended} sold, {outcome.HeavyweightRules.Held} held{(outcome.HeavyweightRules.Waits is { } ruleWaits ? "; " + ruleWaits : string.Empty)}") : string.Empty)));
 
     // The registered rules a night left unread, each with why, after the indices' own words.
     static string Skipped(IReadOnlyList<string> skipped) =>
@@ -822,9 +822,9 @@ public sealed class IndexFamilies : IComponent
     static DateOnly Date(string stamp) => DateOnly.ParseExact(stamp, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 }
 
-// What an index's sector heavyweights did on the night: whether the book rebalanced, and the holdings bought, ended
-// and held at the close.
-public sealed record IndexHeavyweightsOutcome(bool Rebalanced, int Entered, int Ended, int Held);
+// What an index's sector heavyweights did on the night: whether the book rebalanced, the holdings bought, ended and
+// held at the close, and why a rebalance waits where one waits.
+public sealed record IndexHeavyweightsOutcome(bool Rebalanced, int Entered, int Ended, int Held, string? Waits = null);
 
 // One member of the index as the heavyweights' design (b) reads it on a rebalance: its ticker, its industry and its
 // sector as filed, its return over the rule's window, and whether it clears the floors and the quality.
@@ -837,8 +837,10 @@ public sealed record IndexFollower(string Ticker, string? Industry, string? Sect
 // floors and the profit gate, and a holding the rule would no longer buy sold at the close; every night each holding and
 // its size cut carried by the night's closes, and a holding whose stock left the index sold at its last close as a
 // member. A holding's result is its growth less one, beside its size cut's, and its cost the published table's round
-// trip.
+// trip. A rebalance waits for a night the index's members hold the sessions its readings need, and one reading no lead,
+// or no beta where it reads one, waits the same way, selling and buying nothing.
 // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
 public static class IndexHeavyweights
 {
@@ -952,8 +954,14 @@ public static class IndexHeavyweights
         }
 
         // The rebalance: the sweep's own reading of the night's session within the index, the members clearing the floors
-        // and the gate.
+        // and the gate, which waits where it cannot read.
         var rebalance = await ReadAsync(connection, transaction, index, night, names, Provisional, name => Clears(index, name, night, income.GetValueOrDefault(name.Ticker) ?? []), cancellation);
+
+        if (rebalance.Waits is { } waits)
+        {
+            return new IndexHeavyweightsOutcome(false, 0, ended, held.Count, waits);
+        }
+
         var leaders = rebalance.Leaders.ToDictionary(one => one.Ticker, StringComparer.Ordinal);
 
         foreach (var (ticker, holding) in held.ToArray())
@@ -985,8 +993,10 @@ public static class IndexHeavyweights
 
     // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
     // was chosen from: the sweep's tape laid over the members' year with each company's value from the newest count filed
-    // before the session, a beta against the index's fund, and the members failing the floors or the quality read by none.
-    static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, int Read)> ReadAsync(
+    // before the session, a beta against the index's fund, and the members failing the floors or the quality read by none;
+    // or why the rebalance waits, the members holding no close for the night, fewer sessions to it than the setting's
+    // readings need, or reading no lead, or no beta where the setting reads one.
+    static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, int Read, string? Waits)> ReadAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         string index,
@@ -1025,7 +1035,12 @@ public static class IndexHeavyweights
 
         if (at < 0)
         {
-            return ([], 0);
+            return ([], 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+        }
+
+        if (HeavyweightRule.WaitsForSessions(setting.Reading, calendar.Length, night) is { } few)
+        {
+            return ([], 0, few);
         }
 
         var inputs = new SweepHistoryInputs(night, calendar, names, 0, 0, 0, 0, string.Empty);
@@ -1039,16 +1054,21 @@ public static class IndexHeavyweights
 
         if (!sessions.TryGetValue(at, out var session))
         {
-            return ([], 0);
+            return ([], 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
         }
 
         var kept = session.Members
             .Where(candidate => clears(names[candidate.Name]))
             .ToArray();
-        var lookup = tape.Tickers.Select((ticker, place) => (ticker, place)).ToDictionary(pair => pair.ticker, pair => pair.place, StringComparer.Ordinal);
-        var rebalance = HeavyweightSweep.Read(session with { Members = kept }, setting, lookup);
+        var sectors = HeavyweightSweep.Sectors(session with { Members = kept }, setting);
+        var betas = kept.ToDictionary(candidate => candidate.Member.Ticker, candidate => candidate.Member.Beta, StringComparer.Ordinal);
 
-        return ([.. rebalance.Sectors.SelectMany(sector => sector.Leaders.Select(leader => (tape.Tickers[leader], sector.Sector, (IReadOnlyList<string>)[.. sector.Cut.Select(cut => tape.Tickers[cut])])))], kept.Length);
+        if (HeavyweightRule.ReadNothing(sectors, setting.Reading, ticker => betas.GetValueOrDefault(ticker), night) is { } unread)
+        {
+            return ([], kept.Length, unread);
+        }
+
+        return ([.. sectors.SelectMany(sector => sector.Leaders.Select(leader => (leader, sector.Sector, (IReadOnlyList<string>)[.. sector.Largest.Select(ranked => ranked.Ticker)])))], kept.Length, null);
     }
 
     // The fund each index's beta is read against.
@@ -1155,6 +1175,7 @@ public static class IndexHeavyweights
         CancellationToken cancellation)
     {
         var (entered, ended, held, rebalanced) = (0, 0, 0, false);
+        var waiting = new List<string>();
         var bars = names.ToDictionary(name => name.Ticker, name => name.Bars.ToDictionary(bar => bar.Session), StringComparer.Ordinal);
         var byTicker = names.ToDictionary(name => name.Ticker, StringComparer.Ordinal);
         var members = names.Where(name => name.MemberOn(night)).Select(name => name.Ticker).ToHashSet(StringComparer.Ordinal);
@@ -1219,16 +1240,32 @@ public static class IndexHeavyweights
             var last = await ScalarAsync(connection, transaction, RuleLastRebalance, key, cancellation) is string stored ? Date(stored) : (DateOnly?)null;
 
             // A rebalance waits for a night holding what its design reads, so a series or a reading the night could not
-            // store moves no holding: the index's fund's close where design (a) reads a beta, and SPY's closes and the
+            // store moves no holding: the index's fund's close where design (a) reads a beta, the sessions its readings
+            // need and a lead, or a beta where it reads one, and the sessions of its window, SPY's closes and the
             // industries' returns design (b) reads.
             var setting = designA ? IndexRules.HeavyweightSettingOf(p) : null;
-            IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)>? buys = !HeavyweightRule.Rebalances(night, last)
-                ? null
-                : setting is not null
-                    ? setting.HighBeta && await ScalarAsync(connection, transaction, FundCloseOn, [("$series", IndexSweepFunds[index]), ("$night", Stamp(night))], cancellation) is null
-                        ? null
-                        : (await ReadAsync(connection, transaction, index, night, names, setting, Clears, cancellation)).Leaders
-                    : await FollowersAsync(connection, transaction, index, night, names, p, Clears, cancellation);
+            IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)>? buys = null;
+
+            if (HeavyweightRule.Rebalances(night, last))
+            {
+                if (setting is null)
+                {
+                    buys = await FollowersAsync(connection, transaction, index, night, names, p, Clears, cancellation);
+                }
+                else if (!setting.HighBeta || await ScalarAsync(connection, transaction, FundCloseOn, [("$series", IndexSweepFunds[index]), ("$night", Stamp(night))], cancellation) is not null)
+                {
+                    var read = await ReadAsync(connection, transaction, index, night, names, setting, Clears, cancellation);
+
+                    if (read.Waits is { } waits)
+                    {
+                        waiting.Add($"'{rule.Candidate}' {waits}");
+                    }
+                    else
+                    {
+                        buys = read.Leaders;
+                    }
+                }
+            }
 
             if (buys is not null)
             {
@@ -1268,7 +1305,7 @@ public static class IndexHeavyweights
             held += holding.Count;
         }
 
-        return new IndexHeavyweightsOutcome(rebalanced, entered, ended, held);
+        return new IndexHeavyweightsOutcome(rebalanced, entered, ended, held, waiting.Count > 0 ? string.Join("; ", waiting) : null);
     }
 
     // Whether a member clears the price floor and the dollar volume floor at a multiple of it, and the quality on the
@@ -1326,7 +1363,7 @@ public static class IndexHeavyweights
         var calendar = names.SelectMany(name => name.Bars.Select(bar => bar.Session)).Where(session => session <= night).Distinct().Order().ToArray();
         var at = Array.IndexOf(calendar, night);
 
-        if (at < window)
+        if (at < 0 || HeavyweightRule.WaitsForSessions(new HeavyweightSettings(1, window, 1), at + 1, night) is not null)
         {
             return null;
         }

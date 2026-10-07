@@ -86,7 +86,7 @@ public static class SetupFamilies
     // of a list of the night's buy points, so it is drawn after the swing families and stands in none of their
     // orders, horizons or caps. A stock it holds is free for any swing family, each card keeping its own one trade a
     // stock, and the night asks for a report on what it buys after the swing families' picks.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
     public static FamilyWords SectorHeavyweights { get; } = new(
         HeavyweightRule.Name,

@@ -222,7 +222,7 @@ public partial class ReadSurface
         // M1 and not the index's own book's M2, its rebalance buying M1 and selling M3, under its rule's words.
         var (page, card, run) = await Pages(readByIt: true);
 
-        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\"", card, StringComparison.Ordinal);
+        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain(SweepLineDrawn, card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 holding tonight · held while leading · 1 variant kept in books of their own · last rebalance 2026-10-02", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);

@@ -39736,3 +39736,78 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing.
+
+### 14.6 - correction: a sector heavyweights rebalance waits for a night the store holds the sessions its readings need, where it read none and sold every holding   2026-10-07
+
+Corrects:   14.6's books read a twelve-month return and a beta over 251 daily returns, each needing 252 closes, over a
+            store whose one-year cut holds 251 on a night whose date a year back was no session. On such a night every
+            return, beta and lead read none, no sector had a leader, the month was stored as read, and a book holding
+            anything would have sold all of it as no longer the leader and bought nothing until the next month. Two
+            decisions stated the false premise.
+Found:      by the phase 14 sign-off review over 887ca6f3 (H1, H4, H5). Reproduced read-only on the live store:
+            `heavyweight_rule_night` holds 829 rows on 2026-10-05, 110, 499, 110 and 110 by rule, every `look_back`
+            and `beta` NULL and 0 leaders; the page's 110 rows of 2026-10-02 read whole with 5 leaders; the store holds
+            252 sessions from 2025-10-06. The night of 2026-10-05 every phase 14 entry carried, as the review read it:
+            the four books as above; the estimates asked for ETN and GOOG, both raised; and on 2026-10-06 ADM, not
+            raised, and HPQ, raised.
+Ruling:     the review recommended the wait over a store keeping 252 sessions, and the operator handed this correction
+            with it. Asked mid-build whether to rerun the heavyweights' judgement, the operator answered "Re-read
+            October tonight": a month counts as read only where a row of it read a lead, so the four books read
+            October on the night of 2026-10-07, which holds 252. Both stand in the new decision.
+Built:      `BarRetention` in the core, the store's year that `BarFetcher.RetentionYears` now reads, and the sessions
+            it holds to a night on the exchange's calendar. `HeavyweightRule.SessionsNeeded` (a look-back's sessions and
+            one more, 252 with a beta), `WaitsForSessions`, the guard `ReadNothing`, and `NextRebalance` over the
+            calendar and the store's year. The book waits on the store's own sessions beside the fund and index wait,
+            then on the guard after reading: a waiting rebalance reads, sells, buys and stores nothing, while the carry,
+            the 200-day exit and the sale on leaving the index run as before; both books' last rebalance counts a month
+            only where a row of it read a lead. The S&P 400's and 600's provisional book (15.1's code) and registered
+            rule books (15.5's code) wait through the same functions, design (b) on its window's sessions, the index
+            families' row naming each wait; this commit edits that code under 14.6. The card names the first session
+            with none read in its month whose stored year holds the live setting's need, says the month's rebalance
+            waits on a night it has not been read, and the index card reads its book's look-back and beta. H4: the
+            sweep's replay comments name the setting the runner hands it, comment only. Corpus: the decision "The
+            sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each
+            month whose stored year holds the closes their readings need" supersedes the two, each moved below with its
+            reasoning and every citation in code and documents repointed; section 11.4, section 15.7's note, section
+            17's look-back and rebalance rows with 252 pinned, section 18's new row, SCHEMA's two book paragraphs, the
+            guide, the runbook's remedy and the roster's clauses for this correction and the two after it, prior text
+            in `CHANGELOG.md`. Section 18's row is named after phase 16's report beside the pairs of phases 14 to 16.
+Tests:      seven added: the book over a store the night's own fetch cut on a Monday, 251 held and waiting, the
+            Tuesday holding 252 and rebalancing; a setting's need with a beta and without; every beta none over an
+            index missing one close, waiting and selling nothing; a month whose rows read no lead read again; the S&P
+            400's book and a registered rule's waiting on 251; the card on the session before a 251 month-first, on the
+            waiting Monday and in a 252 month; and each month-first session from 2026-10 to 2027-12 with its count and
+            the session the live book reads it on, worked by hand from the closure table, 8 of 15 waiting, seven a
+            session and April 2027 three. Six existing expectations moved with the corrected answer: three card dates
+            and the empty line, the S&P 400 card's date, and the next-rebalance calls' new form.
+Claims:     1032, from 1031: section 18's row.
+Pins:       read: `SectorHeavyweightCandidate.OwnSources`, `IndexHeavyweightCandidate.OwnSources`,
+            `IndexRuleCandidate.IndexSourcesWith`, `CandidateEvaluator.EvaluationSources`,
+            `SwingFilter.CodeVersionSources` and `RuleVersionScorer.CodeVersionSources`. Moved: the sector heavyweights
+            dc6589c2124b to b43f2a67cd18; the S&P 400's and 600's heavyweights 2b65185ed51f to 88c804a7df64, pullback
+            7b442d98f2ec to 1a1a1b276350, breakout 3a611b8ed00b to 096c6019f135 and drift 21c60dff5c1e to 25cd7517dcee.
+            No other list holds a file this edits. No S&P 400 or 600 rule stands.
+Remedy:     `tools/remedies/2026-10-07-14.6-the-heavyweights-registered-again.txt`: `register --moved`, the four
+            standing heavyweights rules registered again, each named not replayed with its record restarting there.
+            Until it runs a night names the four as failures, kept by no book. No request and no model call.
+Stored:     the four books' 829 rows of 2026-10-05 stay as written and are read again on 2026-10-07; the page's rebalance
+            of 2026-10-02 stands.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made on the branch in this
+            checkout over a copy of its file and restored from it, filtered to the 27 heavyweights tests (`~Heavyweight`,
+            `~ARebalance`, `~ASettingNeeds`, `~TheStoresYear`, `~ARegisteredRulesMonth`, `~TheSAndP400sBook`,
+            `~EachIndexs`, `~EachFrozenHeavyweights`, `~IndexFreezes`).
+            M1 the need read without the close before the look-back's or the beta's sessions: predicted red in the
+            fetch-cut book test. M2 the beta's need ignored: predicted red in the need test alone. M3 the guard removed:
+            predicted red in the no-beta test. M4 a waiting rebalance storing a row of its month: predicted red in the
+            fetch-cut book test. M5 the card's next rebalance read without the store's year: predicted red in the card
+            test. M6 the S&P 400's provisional book not waiting: predicted red in the S&P 400 test. M7 a month whose
+            rows read no lead counted as read: predicted red in the read-again test.
+            Results: M1 red in 9, the fetch-cut book, the need, the S&P 400, the calendar and five card tests; M2 red in
+            the need test alone; M3 red in the no-beta test alone; M4 red in the fetch-cut book test and the fund-wait
+            test; M5 red in 5, the card test, the calendar test and three other card tests; M6 red in the S&P 400 test
+            alone; M7 red in the read-again test alone. Each restored, and the 27 green over the restored tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    the remedy, run after the merge and before the night; the phase 14 sign-off handoff, for a fresh session.

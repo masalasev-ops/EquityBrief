@@ -44,14 +44,15 @@ public sealed record HeavyweightRuleOutcome(
 // 200-session average tonight. On a rebalance, the first night of a month the book reads, or of a week where the
 // settings rebalance weekly, it reads every sector's largest companies, values each member from its newest fetch,
 // stores each sector's reading, ends the holdings the rule would not buy where the settings sell on that, and buys the
-// leaders it does not hold, each with the sector's largest as its size cut. A rebalance reading the sector funds or the
-// betas waits for a night the store holds the fund's or the index's close for, so a series the night could not fetch
-// moves no holding.
+// leaders it does not hold, each with the sector's largest as its size cut. A rebalance waits for a night the store
+// holds the sessions its readings need, and where it reads the sector funds or the betas, the fund's or the index's
+// close for the night; one reading no lead, or no beta where it reads one, waits the same way. A rebalance that waits
+// reads, sells and buys nothing and stores no row of its month, so the next night tries again.
 //
 // It runs in the swing filter's step after the family recorder, reads what the night and the quarters step stored,
 // makes no request and calls no model, and no market check closes it. A night run again replaces what it wrote for
 // that night, and a night before one it has read is read for nothing.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A heavyweight leaving the index is sold at its last session's close as a member
 // see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night
@@ -126,8 +127,9 @@ public sealed class HeavyweightBook : IComponent
             UNION ALL SELECT MAX(through) FROM heavyweight_rule_holding);
     ";
 
-    // The page's book.
-    const string LastRebalance = "SELECT MAX(session_date) FROM heavyweight_night WHERE session_date < $night;";
+    // The page's book. A month counts as read where a row of it read a lead, so a month whose rows read none is read
+    // again on the next night that can.
+    const string LastRebalance = "SELECT MAX(session_date) FROM heavyweight_night WHERE session_date < $night AND lead IS NOT NULL;";
 
     const string Open = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through FROM heavyweight_holding WHERE ended_on IS NULL ORDER BY ticker;";
 
@@ -157,7 +159,7 @@ public sealed class HeavyweightBook : IComponent
     ";
 
     // Each registered rule's book, the same statements over the rule's own rows.
-    const string LastRuleRebalance = "SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date < $night;";
+    const string LastRuleRebalance = "SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date < $night AND lead IS NOT NULL;";
 
     const string OpenRule = "SELECT ticker, entered_on, sector, company, entry_close, growth, cut, through FROM heavyweight_rule_holding WHERE candidate = $candidate AND ended_on IS NULL ORDER BY ticker;";
 
@@ -329,8 +331,9 @@ public sealed class HeavyweightBook : IComponent
                 return (new HeavyweightRuleOutcome(ledger.Candidate ?? string.Empty, false, entered, ended, open.Count), 0, rows + ended.Count);
             }
 
-            // A rebalance reading what the store holds no close for tonight waits for a night it does.
-            if (Waits(ledger.Settings, series, night) is { } waits)
+            // A rebalance waits for a night the store holds the sessions its readings need, and the night's close of each
+            // series it reads.
+            if ((HeavyweightRule.WaitsForSessions(ledger.Settings, sessions.Count, night) ?? Waits(ledger.Settings, series, night)) is { } waits)
             {
                 return (new HeavyweightRuleOutcome(ledger.Candidate ?? string.Empty, false, entered, ended, open.Count, waits), 0, rows + ended.Count);
             }
@@ -340,8 +343,15 @@ public sealed class HeavyweightBook : IComponent
                 [.. read.Select(member => member.At(ledger.Settings.LookBack))],
                 ledger.Settings,
                 ledger.Settings.FundReturn ? FundReturns(series, night, ledger.Settings.LookBack) : null);
-            var buys = HeavyweightRule.Buys(sectors);
             var betas = read.ToDictionary(member => member.Ticker, member => member.Beta, StringComparer.Ordinal);
+
+            // One that read no lead, or no beta where the settings read one, waits the same way whatever the cause.
+            if (HeavyweightRule.ReadNothing(sectors, ledger.Settings, ticker => betas.GetValueOrDefault(ticker), night) is { } unread)
+            {
+                return (new HeavyweightRuleOutcome(ledger.Candidate ?? string.Empty, false, entered, ended, open.Count, unread), 0, rows + ended.Count);
+            }
+
+            var buys = HeavyweightRule.Buys(sectors);
 
             foreach (var sector in sectors)
             {
@@ -474,7 +484,7 @@ public sealed class HeavyweightBook : IComponent
 
     // A stock's beta on the night: its newest 252 closes beside the index's on the same sessions, none where the index
     // holds no close on one of them or the stock holds fewer.
-    // see: A heavyweight's beta is read over 251 daily returns against the index
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     static double? BetaOf(Bar[] upTo, IReadOnlyDictionary<DateOnly, double>? index)
     {
         if (index is null || upTo.Length < HeavyweightRule.BetaReturns + 1)

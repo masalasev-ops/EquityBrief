@@ -64,11 +64,9 @@ public sealed class BarFetcher : IComponent
     public const string Source = "bulk";
     public const string Exchange = "US";
 
-    // One year kept, which is the limits table's figure and the window the
-    // level builder reads. Expressed as a year rather than as a session count
-    // because the boundary is a date and a session count would drift with
-    // holidays.
-    public const int RetentionYears = 1;
+    // The year the store keeps, which the sector heavyweights' rebalance reads
+    // the sessions of, so the cut and the wait read one figure.
+    public const int RetentionYears = BarRetention.Years;
 
     readonly IBulkPriceFeed feed;
     readonly IClock clock;

@@ -41,14 +41,14 @@ public sealed record HeavyweightRanked(int Place, string Ticker, string Company,
 // companies in order of value, and the leaders the rule buys.
 public sealed record HeavyweightSector(string Sector, double? Return, int Counted, IReadOnlyList<HeavyweightRanked> Largest, IReadOnlyList<string> Leaders);
 
-// The sector heavyweights: on the first session of each month, the largest companies of each sector by value, one
-// listing a company, and among them the ones leading their sector by most over the look-back, bought where that lead
-// is above nothing, the stock passes the trend gate and, where the settings ask, its beta is at least one. A holding
-// ends at a month's first session where the rule would not buy it, at a close under its 200-session average where
-// the settings read one, and at its last session as a member. The night holds at the settings the family's freeze
-// registered, the sweep's proposal: the ten largest, twelve months against the sector's fund, two leaders a sector, a
-// beta of at least one, and sold on no longer leading.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// The sector heavyweights: on the first session of each month whose stored year holds the closes the readings need,
+// the largest companies of each sector by value, one listing a company, and among them the ones leading their sector
+// by most over the look-back, bought where that lead is above nothing, the stock passes the trend gate and, where the
+// settings ask, its beta is at least one. A holding ends at a month's rebalance where the rule would not buy it, at a
+// close under its 200-session average where the settings read one, and at its last session as a member. The night
+// holds at the settings the family's freeze registered, the sweep's proposal: the ten largest, twelve months against
+// the sector's fund, two leaders a sector, a beta of at least one, and sold on no longer leading.
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A sector's return is the mean of its members' own returns over the look-back
 // see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
@@ -76,9 +76,7 @@ public static class HeavyweightRule
 
     public const int ProvisionalLeaders = 1;
 
-    // A beta's floor where a setting reads one, and the daily returns it is read over, the most the year of bars the
-    // store keeps holds.
-    // see: A heavyweight's beta is read over 251 daily returns against the index
+    // A beta's floor where a setting reads one, and the daily returns it is read over, which need one close more.
     public const double BetaFloor = 1.0;
 
     public const int BetaReturns = 251;
@@ -98,21 +96,55 @@ public static class HeavyweightRule
 
     static DateOnly MondayOf(DateOnly day) => day.AddDays(-(((int)day.DayOfWeek + 6) % 7));
 
-    // The session the book next rebalances on after a night, the first session of the month after the night's, or of
-    // the week after it, on the exchange's own calendar, and none past the end of the calendar's table.
-    public static DateOnly? NextRebalance(DateOnly night, bool weekly = false)
-    {
-        var first = weekly ? MondayOf(night).AddDays(7) : new DateOnly(night.Year, night.Month, 1).AddMonths(1);
-        var end = weekly ? first.AddDays(7) : first.AddMonths(1);
+    // The closes a setting's readings need to a night: a return over the look-back reads the close that many sessions
+    // before the night, so the look-back and one more, and a beta over its daily returns the same where it reads one.
+    public static int SessionsNeeded(HeavyweightSettings settings) =>
+        Math.Max(settings.LookBack, settings.HighBeta ? BetaReturns : 0) + 1;
 
-        if (night < ExchangeClosures.CoveredFrom || first > ExchangeClosures.CoveredThrough)
+    // Why a rebalance at a setting waits for the store's sessions: the store holding fewer to the night than the
+    // setting's readings need; none where it holds them.
+    public static string? WaitsForSessions(HeavyweightSettings settings, int held, DateOnly night) =>
+        held < SessionsNeeded(settings)
+            ? FormattableString.Invariant($"the rebalance waits for a night the store holds the {SessionsNeeded(settings)} sessions its readings need, since it holds {held} to {night:yyyy-MM-dd}")
+            : null;
+
+    // Why a rebalance read nothing it could rank by, whatever the cause: no ranked company of any sector reading a lead,
+    // or, where the settings read a beta, none reading a beta; none where one does. Such a rebalance waits rather than
+    // storing its month and selling every holding on readings that are none.
+    public static string? ReadNothing(IReadOnlyList<HeavyweightSector> sectors, HeavyweightSettings settings, Func<string, double?> betaOf, DateOnly night)
+    {
+        var ranked = sectors.SelectMany(sector => sector.Largest).ToArray();
+
+        return !ranked.Any(one => one.Lead is not null)
+            ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a lead on {night:yyyy-MM-dd}")
+            : settings.HighBeta && !ranked.Any(one => betaOf(one.Ticker) is not null)
+                ? FormattableString.Invariant($"the rebalance waits, since no sector's largest companies read a beta on {night:yyyy-MM-dd}")
+                : null;
+    }
+
+    // The session a book next rebalances on after a night: the next session on the exchange's calendar with no
+    // rebalance read in its month, or its week where the settings rebalance weekly, whose stored year holds the closes
+    // the settings' readings need; none past the end of the calendar's table.
+    public static DateOnly? NextRebalance(DateOnly night, DateOnly? lastRebalance, HeavyweightSettings settings)
+    {
+        if (night < ExchangeClosures.CoveredFrom)
         {
             return null;
         }
 
-        for (var day = first; day < end && day <= ExchangeClosures.CoveredThrough; day = day.AddDays(1))
+        for (var day = night.AddDays(1); day <= ExchangeClosures.CoveredThrough; day = day.AddDays(1))
         {
-            if (ExchangeClosures.IsSession(day))
+            if (!ExchangeClosures.IsSession(day) || !Rebalances(day, lastRebalance, settings.Weekly))
+            {
+                continue;
+            }
+
+            if (BarRetention.SessionsTo(day) is not { } held)
+            {
+                return null;
+            }
+
+            if (held >= SessionsNeeded(settings))
             {
                 return day;
             }
@@ -132,7 +164,7 @@ public static class HeavyweightRule
     // A stock's beta: the slope of its daily returns on the index's over the newest 251 of the sessions handed in, each
     // return a session's close over the one before it, the stock's and the index's on the same sessions; none where
     // fewer than 252 sessions are handed in, a close is nothing, or the index's returns do not vary.
-    // see: A heavyweight's beta is read over 251 daily returns against the index
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     public static double? Beta(IReadOnlyList<(double Stock, double Index)> closes)
     {
         if (closes.Count < BetaReturns + 1)

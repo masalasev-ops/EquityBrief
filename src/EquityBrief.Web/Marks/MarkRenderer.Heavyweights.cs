@@ -5,7 +5,7 @@ namespace EquityBrief.Web.Marks;
 // One holding on the sector heavyweights' card: the stock and its company, its sector, the session it was bought on,
 // its lead over its sector at the last rebalance that read it, and tonight's close beside its 200-session average with
 // whether the book's own rule reads the close as under it.
-// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public sealed record HeavyweightHoldingCell(
     string Ticker,
     string? Company,
@@ -23,8 +23,9 @@ public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, strin
 
 // The sector heavyweights' card on a night: the family's words, the sessions its returns are read over, its last
 // rebalance on or before the night and the next one, the holdings open at the night's close in sector order, what the
-// last rebalance bought, what ended at it or since, why it holds nothing where it holds nothing, and the day its live
-// rule registered with the variants standing beside it, none where no freeze has registered it.
+// last rebalance bought, what ended at it or since, why it holds nothing where it holds nothing, the day its live
+// rule registered with the variants standing beside it, none where no freeze has registered it, and why the month's
+// rebalance waits where it has not been read.
 public sealed record HeavyweightCardView(
     string Heading,
     string Eyebrow,
@@ -38,7 +39,8 @@ public sealed record HeavyweightCardView(
     string? Empty,
     DateOnly? LiveSince = null,
     int Variants = 0,
-    bool SweepFoundNone = false);
+    bool SweepFoundNone = false,
+    string? Waits = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -70,7 +72,7 @@ public sealed partial class MarkRenderer
 
     // The sector heavyweights' card: its standing and the night's count in a line, the holdings one to a row, what
     // the last rebalance bought and what ended, and the next rebalance.
-    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
     public string HeavyweightCard(HeavyweightCardView card)
     {
@@ -91,6 +93,11 @@ public sealed partial class MarkRenderer
         body.Append(card.NextRebalance is { } coming ? Formatted($" · next rebalance <b class=\"next-rebalance\">{DayOf(coming)}</b>") : " · next rebalance past the exchange calendar's table");
         body.Append("</p>");
         body.Append(SweepFoundNoneLine(card.SweepFoundNone));
+
+        if (card.Waits is { } waits)
+        {
+            body.Append(Invariant, $"<p class=\"family-note heavyweight-waits\">{Escaped(waits)}</p>");
+        }
 
         if (card.Holdings.Count == 0)
         {
