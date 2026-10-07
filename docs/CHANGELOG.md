@@ -11857,3 +11857,27 @@ Was:
 Now:
 > ... each checkpoint's named with where they went, and phase 16's the same way, its actual inside the range and short of the pair by the claims each checkpoint's count held that landed as no row of its own less the two rows its ruling added beside them; and the card's figure's key names every part the figure draws, in the architecture and in the guide, neither figure's text holding any night's figure; and no sentence of the architecture ...
 Why: 16.4's two tests are architecture-conformance's, the phase's report and its figure.
+
+### 2026-10-07 - ARCHITECTURE.html - the local model's load row loads again a model held at a smaller context
+Authorised by: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one
+Was:
+> ... and calls it once the runtime says the load is done; a model already loading is not loaded again and its first call carries the profile's load allowance beside its own timeout; a model the runtime does not hold, ... a model loaded on demand comes up at the runtime's own context rather than the one the lane planned its prompts for (see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass)
+Now:
+> ... and calls it once the runtime says the load is done; a model already loaded or loading at its profile's context or more, or at one the list does not state, is not loaded again and its first call carries the profile's load allowance beside its own timeout, while one the list states at a smaller context is unloaded and loaded again at the profile's; a model the runtime does not hold, ... a model loaded on demand or by hand comes up at a context other than the one the lane planned its prompts for (see: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one)
+Why: Gemma 4 stood loaded at 32,000 tokens from a load by hand on the evening of 2026-10-06, and the lane as built would have called it there.
+
+### 2026-10-07 - RUNBOOK.md - the lane loads again a model loaded at a smaller context
+Authorised by: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one
+Was:
+> ... for at most `LoadSeconds` (see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass). A model already loading is not loaded again; its first call is given its load time on top of its own.
+Now:
+> ... for at most `LoadSeconds` (see: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one). A model already loaded or loading at the profile's context or more is not loaded again; its first call is given its load time on top of its own. One loaded at a smaller context, a load by hand in LM Studio at its default among them, is unloaded and loaded again at the profile's, so loading Gemma 4 by hand before a night does not leave the night calling it at 32,000 tokens.
+Why: the operator reads here what the lane does with a model they loaded themselves.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations states the load of a model held at a smaller context
+Authorised by: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one
+Was:
+> ... another model loaded unloaded first, a model listed not loaded again with its first call alone carrying the load's allowance, a runtime stating no load state called the same way, ...
+Now:
+> ... another model loaded unloaded first, a model listed at its profile's context not loaded again with its first call alone carrying the load's allowance, one listed at a smaller context, at the runtime's own and at one token under the profile's, unloaded and loaded again at its profile's, a runtime stating no load state called the same way, ...
+Why: the roster is where a check states what it asserts.

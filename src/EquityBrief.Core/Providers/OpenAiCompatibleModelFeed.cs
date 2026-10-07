@@ -14,7 +14,7 @@ namespace EquityBrief.Core.Providers;
 // captured from LM Studio serving qwen/qwen3.5-9b before a line of it existed, and
 // both of them are why it is shaped the way it is.
 // see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
-// see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
+// see: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one
 public sealed class OpenAiCompatibleModelFeed(
     HttpClient client,
     LocalModelSettings settings,
@@ -144,11 +144,13 @@ public sealed class OpenAiCompatibleModelFeed(
     }
 
     // Whether the model is ready before the first call, read off LM Studio's own interface. A model the
-    // runtime holds and has not loaded is loaded at the context the profile names, any other model loaded
-    // first unloaded so the runtime holds one at a time, and the load is waited for within the profile's
-    // allowance, so a pass never calls a model mid-load. Read once a feed, before the first call of a pass or
-    // of a night's overnight queue. True once the load answers that the model is loaded. False where the model
-    // is already listed, which it is from the moment a load starts, or where the runtime states no load state,
+    // runtime holds and has not loaded, or holds loaded at a smaller context than the profile names, is loaded
+    // at the profile's context, any other model loaded and its own smaller instance first unloaded so the
+    // runtime holds one at a time, and the load is waited for within the profile's allowance, so a pass never
+    // calls a model mid-load or one that cannot hold the prompts the lane plans. Read once a feed, before the
+    // first call of a pass or of a night's overnight queue. True once the load answers that the model is
+    // loaded. False where the model is already listed at the profile's context or more, or at one the list
+    // does not state, which it is from the moment a load starts, or where the runtime states no load state,
     // being another runtime or not answering the list in time: its first call then carries the allowance. A
     // model the runtime does not hold, a load it refuses and one past the allowance are the local model
     // unavailable, so every section is left unwritten with why and no later call reads or loads again.
@@ -167,12 +169,12 @@ public sealed class OpenAiCompatibleModelFeed(
                 $"The runtime holds no model named {settings.Model}, which the local profile {settings.Profile} names, so the lane's sections are not written.");
         }
 
-        if (held.Loaded)
+        if (held.Loaded && (held.Context is not { } context || context >= settings.ContextTokens))
         {
             return false;
         }
 
-        foreach (var other in held.Others)
+        foreach (var other in held.Others.Concat(held.Instances))
         {
             var unloaded = await AskAsync(HttpMethod.Post, UnloadPath, JsonSerializer.Serialize(new { instance_id = other }), settings.Timeout, section, cancellation).ConfigureAwait(false);
 
@@ -232,10 +234,14 @@ public sealed class OpenAiCompatibleModelFeed(
         }
     }
 
-    // A model as the runtime's list holds it: whether it is listed, whether an instance of it is loaded or
-    // loading, and every other model's loaded instance, so the runtime is left holding one. None where the
-    // answer is not LM Studio's list, which is a runtime stating no load state.
-    public sealed record RuntimeModels(bool Listed, bool Loaded, IReadOnlyList<string> Others);
+    // A model as the runtime's list holds it: whether it is listed, its own instances loaded or loading, the
+    // smallest context any of them states, none where none states one, and every other model's loaded
+    // instance, so the runtime is left holding one. None where the answer is not LM Studio's list, which is a
+    // runtime stating no load state.
+    public sealed record RuntimeModels(bool Listed, IReadOnlyList<string> Instances, int? Context, IReadOnlyList<string> Others)
+    {
+        public bool Loaded => Instances.Count > 0;
+    }
 
     public static RuntimeModels? Held(string json, string model)
     {
@@ -251,20 +257,28 @@ public sealed class OpenAiCompatibleModelFeed(
             }
 
             var listed = false;
-            var loaded = false;
+            string[] own = [];
+            int? context = null;
             var others = new List<string>();
 
             foreach (var entry in models.EnumerateArray())
             {
                 var key = entry.TryGetProperty("key", out var named) && named.ValueKind == JsonValueKind.String ? named.GetString() : null;
-                string[] instances = entry.TryGetProperty("loaded_instances", out var held) && held.ValueKind == JsonValueKind.Array
-                    ? [.. held.EnumerateArray().Select(instance => instance.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String ? id.GetString()! : string.Empty).Where(id => id.Length > 0)]
+                JsonElement[] loaded = entry.TryGetProperty("loaded_instances", out var held) && held.ValueKind == JsonValueKind.Array
+                    ? [.. held.EnumerateArray().Where(instance => instance.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String && id.GetString()!.Length > 0)]
                     : [];
+                string[] instances = [.. loaded.Select(instance => instance.GetProperty("id").GetString()!)];
 
                 if (string.Equals(key, model, StringComparison.Ordinal))
                 {
                     listed = true;
-                    loaded = instances.Length > 0;
+                    own = instances;
+                    context = loaded
+                        .Select(instance => instance.TryGetProperty("config", out var config) && config.ValueKind == JsonValueKind.Object
+                            && config.TryGetProperty("context_length", out var length) && length.ValueKind == JsonValueKind.Number && length.TryGetInt32(out var tokens)
+                                ? tokens
+                                : (int?)null)
+                        .Min();
                 }
                 else
                 {
@@ -272,7 +286,7 @@ public sealed class OpenAiCompatibleModelFeed(
                 }
             }
 
-            return new RuntimeModels(listed, loaded, others);
+            return new RuntimeModels(listed, own, context, others);
         }
         catch (JsonException)
         {

@@ -13,10 +13,11 @@ namespace EquityBrief.Tests.Checks;
 // flag, read whole with no value in the code, a run over the capture calling the profile its recordings were made
 // under; and before a pass's first call the model is loaded at its profile's context and waited for, read over the
 // answers captured from the operator's runtime: a model not loaded loaded and its load waited for, another model
-// unloaded first, one already listed called with the load's allowance, and a load refused or past its allowance and
-// a model the runtime does not hold each the local model unavailable.
+// unloaded first, one already listed at its profile's context called with the load's allowance, one listed at a
+// smaller context unloaded and loaded again at its profile's, and a load refused or past its allowance and a model
+// the runtime does not hold each the local model unavailable.
 // see: The local lane calls the one model its settings flag as the default, and a profile it cannot read is the local model unavailable
-// see: The local lane loads its model at its profile's context and waits for the load before its first call of a night or a pass
+// see: The local lane loads its model at its profile's context before its first call of a night or a pass, and loads again a model held at a smaller one
 public partial class FixtureExpectations
 {
     // The rows the lane's profiles and its load add that this check reaches.
@@ -268,6 +269,59 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task AModelLoadedAtASmallerContextThanItsProfilesIsUnloadedAndLoadedAgainAtItsProfiles()
+    {
+        // The captured list with Gemma's instance at the runtime's own context of 32,000 and at one token under the
+        // profile's: each is unloaded and loaded again at 50,176 before the first call, and the second call asks the
+        // runtime nothing more.
+        foreach (var held in new[] { 32000, 50175 })
+        {
+            var settings = LoadingProfile(Gemma);
+            var list = System.Text.Json.Nodes.JsonNode.Parse(Runtime("local-runtime-models-gemma-loaded.json"))!;
+
+            list["models"]!.AsArray().Single(model => (string?)model!["key"] == Gemma)!["loaded_instances"]![0]!["config"]!["context_length"] = held;
+
+            var runtime = new ScriptedRuntime((path, _) => Task.FromResult(path switch
+            {
+                "/api/v1/models" => Answered(HttpStatusCode.OK, list.ToJsonString()),
+                "/api/v1/models/unload" => Answered(HttpStatusCode.OK, Runtime("local-runtime-unload-answered.json")),
+                "/api/v1/models/load" => Answered(HttpStatusCode.OK, Runtime("local-runtime-load-answered.json")),
+                _ => Answered(HttpStatusCode.OK, Runtime("local-gemma-answered.json")),
+            }));
+
+            var feed = FeedOver(runtime, settings);
+
+            await feed.CompleteAsync(KeyRequest(settings));
+            await feed.CompleteAsync(KeyRequest(settings));
+
+            Assert.Equal(held, OpenAiCompatibleModelFeed.Held(list.ToJsonString(), Gemma)!.Context);
+            Assert.Equal(
+                [
+                    "GET /api/v1/models",
+                    $$"""POST /api/v1/models/unload {"instance_id":"{{Gemma}}"}""",
+                    $$"""POST /api/v1/models/load {"model":"{{Gemma}}","context_length":50176}""",
+                    "POST /v1/chat/completions",
+                    "POST /v1/chat/completions",
+                ],
+                runtime.Asked);
+        }
+
+        // An instance whose list states no context is not loaded again, as one at the profile's own is not.
+        var unstated = System.Text.Json.Nodes.JsonNode.Parse(Runtime("local-runtime-models-gemma-loaded.json"))!;
+
+        unstated["models"]!.AsArray().Single(model => (string?)model!["key"] == Gemma)!["loaded_instances"]![0]!.AsObject().Remove("config");
+
+        var quiet = new ScriptedRuntime((path, _) => Task.FromResult(path == "/api/v1/models"
+            ? Answered(HttpStatusCode.OK, unstated.ToJsonString())
+            : Answered(HttpStatusCode.OK, Runtime("local-gemma-answered.json"))));
+
+        await FeedOver(quiet, LoadingProfile(Gemma)).CompleteAsync(KeyRequest(LoadingProfile(Gemma)));
+
+        Assert.Null(OpenAiCompatibleModelFeed.Held(unstated.ToJsonString(), Gemma)!.Context);
+        Assert.Equal(["GET /api/v1/models", "POST /v1/chat/completions"], quiet.Asked);
+    }
+
+    [Fact]
     public async Task ALoadRefusedOrPastItsAllowanceAndAModelTheRuntimeDoesNotHoldAreTheLocalModelUnavailable()
     {
         // The runtime's own words on a load it refused, and no section asked for.
@@ -415,9 +469,9 @@ public partial class FixtureExpectations
         var qwen = OpenAiCompatibleModelFeed.Held(Runtime("local-runtime-models-gemma-loaded.json"), Qwen)!;
         var none = OpenAiCompatibleModelFeed.Held(Runtime("local-runtime-models-none-loaded.json"), Qwen)!;
 
-        Assert.Equal((true, true), (gemma.Listed, gemma.Loaded));
+        Assert.Equal((true, true, 50176, Gemma), (gemma.Listed, gemma.Loaded, gemma.Context, Assert.Single(gemma.Instances)));
         Assert.Empty(gemma.Others);
-        Assert.Equal((true, false, Gemma), (qwen.Listed, qwen.Loaded, Assert.Single(qwen.Others)));
+        Assert.Equal((true, false, null, Gemma), (qwen.Listed, qwen.Loaded, qwen.Context, Assert.Single(qwen.Others)));
         Assert.Equal((true, false), (none.Listed, none.Loaded));
         Assert.Empty(none.Others);
         Assert.Null(OpenAiCompatibleModelFeed.Held(Runtime("local-gemma-answered.json"), Gemma));
