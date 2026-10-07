@@ -39362,7 +39362,7 @@ Built:      The card's "What could hit it before" section: the stock's stored ea
             plan's buy, the average of each drawn once twenty have ended. Past picks' Your trades with the exit press.
             Migration 71. Two decisions, CLAUDE.md's hard rule naming the ask, sections 7, 14, 15.18, 16, 17, 18 and
             23, SCHEMA, the runbook, the guide and the roster's three clauses; the prior text in `CHANGELOG.md`.
-Tests:      FILLED FROM THE RUN, from 1940: the follower to its stop, target, cap, trail, a split, an exit, a gapped
+Tests:      1961, from 1940: the follower to its stop, target, cap, trail, a split, an exit, a gapped
             open, a book's sale and a stock that left, and a close equal to the stop leaving it open; the record at
             nineteen and twenty; the rule's own picks on the same nights from the plan's buy at nineteen and twenty; the
             dividend window, the exchange read, the stored dates and the requests; the events table; the reactions in
@@ -39381,9 +39381,16 @@ Mutated:    the rule, stated before the run: one mutation for each kind of prope
             estimated ex-date test.
             M4 the rule's own picks bought at the next session's open rather than the plan's buy: predicted red at the
             same nights test.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+            Results: M1 red where stated: a close of 47.00 ended the trade at its stop. M2 red where stated: the split's
+            first close read as 24.50 against a stop of 47.00, ended at -8.50. M3 red where stated: the estimate read
+            2026-12-10 where the hand reads 2026-11-09. M4 red where stated: the rule's picks read 0.6333 where the plan's
+            buy reads 0.9600. Each reverted, and the four tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 75ba620.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1961 of 1961 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1961 of 1961 tests ran.
 Carried:    after the merge, `tools/remedies/2026-10-06-16.3-the-operators-record.txt`, migration 71, no request and no
             model call, run outside the night's window and before the surface's Release build again. The first live
             night's calendar row reads the dividend calendar's 21 requests. Then 16.4.
