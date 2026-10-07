@@ -39999,3 +39999,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1991 of 1991 tests ran.
 Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
             session.
+
+### 14.6 - correction: the registration's rule text and the sentence at every exit and period asserted, where no test read the words the correction above reworded   2026-10-07
+
+Corrects:   the correction above reworded the registration's rule text and the cards' sale clause at each exit, and no
+            test read the registration's text or the sale on either exit, so either could go back to a month's first
+            session with every test green; the S&P 400's card draws the either-exit clause for a rule selling on both.
+Found:      by me, sorting what a reviewer would find before the phase 14 sign-off handoff.
+Built:      tests only, no shipped code. The freeze's four rows carry the rule text naming the month's first session or
+            the first after it whose stored year holds the closes the setting's readings need; the cards' sentence at
+            the S&P 500's settings opens on that session for a month and for a week, and sells at the close of a later
+            rebalance on no longer leading and on either exit. The family's own words in `SetupFamilies`, reworded with
+            the rest, are drawn on no page, each card writing its sentence from `RuleWords`, so no page can be read for
+            them.
+Tests:      one added; one assertion added to the freeze test.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule: each reworded text no test read put back to its old words, made on the branch in this checkout over
+            the file's own text and restored from it, filtered to the nine word tests above and the one added: x1 the
+            registration's text predicted red in the freeze test alone; x2 the either-exit sale clause in the new words
+            test alone; x3 the opening's period fixed to a month in the new words test alone.
+            Results: x1, x2 and x3 each red in its test alone, 1 of 10. Each restored, the tree's diff the same after as
+            before.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
+            session.
