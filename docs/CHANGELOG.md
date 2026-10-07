@@ -11760,3 +11760,35 @@ Was:
 Now:
 > the same, then: and from 16.2 a pick's plan in the operator's money is worked by hand, ... and settings with distinctive values are found in no byte of the store, no run log row, no captured log line and no exported report, the file under the data root the ignore list covers |
 Why: the roster is where a check states what it asserts, and 16.2's five tests are read-surface's.
+
+### 2026-10-06 - ARCHITECTURE.html - the limits table bounds each attempt of the night's news query by 90 seconds
+Authorised by: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
+Was:
+> <td>at most 3 attempts per request, waiting 2 seconds and then 4; each attempt bounded by 30 seconds; the arithmetic as a whole, ... (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move) (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed)</td><td>... which is far outside a healthy fetch and far inside the night. 120 minutes because ...</td><td>run log attempt count, and a constructed night whose deadline is exceeded</td>
+Now:
+> <td>at most 3 attempts per request, waiting 2 seconds and then 4; each attempt bounded by 30 seconds, and each of the night's news query's by 90; the arithmetic as a whole, ... (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move) (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed)</td><td>... which is far outside a healthy fetch and far inside the night. The night's news query is bounded apart because the provider's time to answer it grows with the articles a page carries, and a page of a whole market's day comes back in a few seconds on most nights and took forty-five on a night it answered none of its tries inside thirty, which stopped the night at its news step on every try; ninety is twice the slowest answer measured. One name's news, asked a month at a time, keeps the thirty. 120 minutes because ...</td><td>run log attempt count, a constructed night whose deadline is exceeded, and the night's news feed read as built on its own bound and one name's news on the standard one</td>
+Why: the provider answered the night's news query in 45.2 seconds on the night of 2026-10-06, after it had stopped that night's news step on its first two tries at 30 seconds an attempt, and the operator ruled the bound at 90 and permanent.
+
+### 2026-10-06 - ARCHITECTURE.html - the wall clock row cites the decision superseding the retry decision
+Authorised by: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
+Was:
+> scale to about 29 to 35 minutes over three times the names (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move).
+Now:
+> scale to about 29 to 35 minutes over three times the names (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move).
+Why: a superseded decision is cited nowhere in a spec.
+
+### 2026-10-06 - BUILD_PLAN.md - 2.2 cites the decision superseding the retry decision
+Authorised by: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
+Was:
+> To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move).
+Now:
+> To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move).
+Why: the same; 2.2's words stand, since it built the policy the new decision keeps for every other request.
+
+### 2026-10-06 - RUNBOOK.md - the scheduler's limit cites the decision superseding the retry decision
+Authorised by: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
+Was:
+> each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move).
+Now:
+> each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move).
+Why: the same; the deadline the paragraph reads is unchanged.

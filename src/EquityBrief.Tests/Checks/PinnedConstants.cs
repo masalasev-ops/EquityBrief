@@ -117,6 +117,7 @@ public class PinnedConstants
             new(Retry, "2", (decimal)RetryPolicy.Standard.WaitBefore(2).TotalSeconds, "the wait before the second attempt"),
             new(Retry, "4", (decimal)RetryPolicy.Standard.WaitBefore(3).TotalSeconds, "the wait before the third attempt"),
             new(Retry, "30", (decimal)RetryPolicy.Standard.Timeout.TotalSeconds, "RetryPolicy.Standard.Timeout in seconds"),
+            new(Retry, "90", (decimal)RetryPolicy.News.Timeout.TotalSeconds, "RetryPolicy.News.Timeout in seconds"),
             new(Retry, "120", (decimal)RetryPolicy.Standard.Deadline.TotalMinutes, "RetryPolicy.Standard.Deadline in minutes"),
             new("Waiting on another writer", "600", StoreConnection.WaitSeconds, "StoreConnection.WaitSeconds"),
             new(Budget, "100,000", ProviderWeights.DailyAllowance, "ProviderWeights.DailyAllowance"),
