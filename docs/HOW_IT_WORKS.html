@@ -124,6 +124,7 @@
     <li><a href="#levels">Finding the prices that matter</a></li>
     <li><a href="#plan">Turning those prices into a plan</a></li>
     <li><a href="#list">Choosing tonight's list</a></li>
+    <li><a href="#card">How to read a pick's card</a></li>
     <li><a href="#report">What a report contains</a></li>
     <li><a href="#research">Research, written once and kept</a></li>
     <li><a href="#improve">How the picks get better</a></li>
@@ -455,7 +456,7 @@
   <tr><td>A trade worth taking</td><td>From tonight's price, is the target far enough away compared with the stop?</td><td>A good chart with a poor payoff is not a trade. Measuring from tonight's price also drops any stock that has already run away from its buy point.</td></tr>
   <tr><td>Exclusions</td><td>Is an earnings report due within the holding period? Are the prices in doubt?</td><td>An earnings report can jump straight past a stop (<a href="#s-dubinsky">Dubinsky and others 2019</a>).</td></tr>
 </table></div>
-<p class="note">The exact values each gate uses are in the specification. The pullback was frozen at them on 2026-10-02, with the minimum reward for the risk raised to 2, and calibration, described in section 9, moves them only on your word.</p>
+<p class="note">The exact values each gate uses are in the specification. The pullback was frozen at them on 2026-10-02, with the minimum reward for the risk raised to 2, and calibration, described in section 10, moves them only on your word.</p>
 
 <p><b>Improving businesses first.</b> Among the stocks that pass, the pullback's card puts first those whose business is improving: sales above a year earlier and the operating margin wider than a year earlier, in both of the last two quarters. Steady businesses come next, then those with too few quarters or none stored yet, then those deteriorating, and inside each group the order stays reward to risk, then strength, then support. Every stock that passes is still listed. The order decides what comes first, not what is recommended, and no gate reads the business at all. A night drawn before the readings existed keeps the order it was drawn in.</p>
 
@@ -477,7 +478,90 @@
 </div>
 
 <!-- 7 -->
-<h2 id="report">7. What a report contains</h2>
+<h2 id="card">7. How to read a pick's card</h2>
+<p class="asks">A stock is on tonight's list. What does its card tell me before I buy?</p>
+<p>Each pick on Tonight has a card, opened beneath its row. It gathers what a decision on that one trade needs into seven parts, every figure in them worked out by the tool from stored prices and filings, never by a model. The picture below is a card with its figures blanked out as n.n and nn%, so it shows what each part says rather than any one night's numbers.</p>
+<figure>
+<svg viewBox="0 0 700 600" role="img" aria-labelledby="f-card">
+<title id="f-card">A pick's card, its seven parts numbered</title>
+<rect x="40" y="8" width="652" height="584" rx="6" fill="var(--panel)" stroke="var(--rule)" stroke-width="1"/>
+<text x="56" y="32" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">XYZ, the pullback on the S&amp;P 500, the night of yyyy-mm-dd</text>
+<g data-part="1">
+<circle cx="20" cy="58" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="62.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">1</text>
+<text x="56" y="62" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">&#10003; Trend and strength: passed every gate of the pullback on the S&amp;P 500</text>
+<text x="56" y="80" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">! Business: interest covered n.n times, under the floor of 2</text>
+<text x="56" y="98" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">&#10003; Market and sector: breadth nn%, the sector nth of the index's 11</text>
+<text x="56" y="116" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">! Earnings in the hold: a report in nn sessions, inside the time nn% of the rule's trades had ended</text>
+<text x="56" y="134" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">&#10003; Liquidity and cost: a round trip of n.nn of the risk</text>
+<text x="56" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">&#10003; Concentration: n of your open trades in the stock's sector</text>
+</g>
+<line x1="56" y1="166" x2="676" y2="166" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="2">
+<circle cx="20" cy="184" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="188.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">2</text>
+<text x="56" y="188" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The record of the pullback on the S&amp;P 500</text>
+<text x="56" y="206" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">This is the rule's record over every stock it bought, not this stock's chance.</text>
+<text x="56" y="224" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">n,nnn trades; nn% won at the target; an average of n.nn of the risk after costs;</text>
+<text x="56" y="242" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">held a median nn sessions; a median worst close of n.nn of the risk</text>
+</g>
+<line x1="56" y1="256" x2="676" y2="256" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="3">
+<circle cx="20" cy="274" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="278.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">3</text>
+<text x="56" y="278" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The plan in your money</text>
+<text x="56" y="296" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Buy nn shares at nn.nn: nnn.nn at risk, n,nnn.nn held, nn% of the account; a round trip of n.nn</text>
+</g>
+<g data-part="4">
+<circle cx="20" cy="320" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="324.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">4</text>
+<text x="56" y="324" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Sell at the close of a session that closes below nn.nn, or at a close at or above nn.nn,</text>
+<text x="56" y="342" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">or at the close nn sessions after the buy, whichever comes first</text>
+</g>
+<line x1="56" y1="356" x2="676" y2="356" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="5">
+<circle cx="20" cy="374" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="378.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">5</text>
+<text x="56" y="378" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">What could hit it before yyyy-mm-dd</text>
+<text x="56" y="396" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Its n stored earnings reactions moved a median n.n typical moves, n.nn of this plan's risk</text>
+<text x="56" y="414" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Ex-dividend yyyy-mm-dd, estimated, n.nn a share</text>
+<text x="56" y="432" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">CPI release on yyyy-mm-dd; FOMC decision on yyyy-mm-dd</text>
+</g>
+<line x1="56" y1="446" x2="676" y2="446" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="6">
+<circle cx="20" cy="464" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="468.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">6</text>
+<text x="56" y="468" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Your trades of the pullback on the S&amp;P 500</text>
+<text x="56" y="486" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">n won, n lost, n ended otherwise and n open; n of 20 ended</text>
+<text x="56" y="504" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">The rule's own nn picks on the same n nights, each bought at the plan's buy: n won, n lost</text>
+</g>
+<line x1="56" y1="518" x2="676" y2="518" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="7">
+<circle cx="20" cy="547" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="551.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">7</text>
+<rect x="56" y="534" width="70" height="26" rx="4" fill="none" stroke="var(--ink)" stroke-width="1.2"/>
+<text x="91" y="551.5" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Taken</text>
+<text x="140" y="551.5" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">fill nn.nn, optional, for yyyy-mm-dd</text>
+<text x="56" y="580" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">provisional: the plan's buy until the next session's open is stored</text>
+</g>
+</svg>
+<figcaption>A pick's card, its figures blanked out, each part numbered as the list below explains it.</figcaption>
+</figure>
+<ol class="parts">
+  <li data-part="1"><b>Six quick checks on the trade.</b> A tick means nothing stands against it, a "!" means look closer, and each says why in words: whether the stock is rising and strong, whether the company makes money and earns enough to pay its interest, whether the market and the stock's industry are healthy, whether the company reports its results before the trade would usually end, whether the stock is cheap to buy and sell, and how many of your open trades are in the same industry.</li>
+  <li data-part="2"><b>How the rule that picked it has done.</b> The rule replayed over years of past prices, after trading costs: how many trades it made, how many reached their target, the average gain or loss, and how long it held them. It is the rule's record over every stock it bought, never a forecast for this one.</li>
+  <li data-part="3"><b>The trade in your money.</b> Once you have entered your account's size and how much you are willing to lose on one trade, how many shares that buys and how much is at risk if the stop is hit.</li>
+  <li data-part="4"><b>When to sell, exactly as the rule does.</b> At the close of a day that ends below the stop, at the close of a day that ends at or above the target, or after a set number of days, whichever comes first.</li>
+  <li data-part="5"><b>What could jolt the price before the trade ends.</b> How far the stock moved on its past results days compared with this trade's stop, when its next dividend comes off the price, and the Federal Reserve decisions and inflation reports due in the meantime.</li>
+  <li data-part="6"><b>Your own trades of this rule.</b> How the trades you took from it went, and beneath them how the rule's own picks on those same days went at the plan's price, so a gap between the two is your choices and your buying prices rather than the market of those weeks.</li>
+  <li data-part="7"><b>The button you press when you buy.</b> It records the trade, at the price you paid if you enter it; until the next day's opening price is stored the card assumes the plan's price, and then that opening price.</li>
+</ol>
+<div class="why">
+  <p><b>Why a card and not a verdict.</b> Each part is a fact you can check, and the card removes no pick and reorders none. Whether to buy stays your decision, made with the facts that bear on it in one place.</p>
+</div>
+
+<!-- 8 -->
+<h2 id="report">8. What a report contains</h2>
 <p class="asks">When I open a stock, what do I get, and where does each part come from?</p>
 <figure>
   <svg viewBox="0 0 1000 300" role="img" aria-labelledby="f7">
@@ -514,8 +598,8 @@
 <p>A listed stock's news is sorted by what kind of story each article is and which way it cuts for the company, by a paid model you choose, and the page names which model wrote the labels.</p>
 <p>The numbers open with what they say: the business's state, then one plain sentence for each of four readings of its reported quarters, whether sales and the operating margin are growing on a year earlier, how it has done against analysts' estimates, whether its profits are backed by cash, and where its price sits in its own range of earnings multiples. The code writes each sentence from a fixed pattern with the stored figures filled in, so no model writes any of it, and the full table of quarters sits folded beneath. The heading says the state is read from sales and operating margin alone, so a business can read improving beside earnings that ran ahead of cash.</p>
 
-<!-- 8 -->
-<h2 id="research">8. Research, written once and kept</h2>
+<!-- 9 -->
+<h2 id="research">9. Research, written once and kept</h2>
 <p class="asks">How is the written analysis produced, and how do we know it is not made up?</p>
 <figure>
   <svg viewBox="0 0 1000 400" role="img" aria-labelledby="f8">
@@ -576,8 +660,8 @@
   <p><b>Seeing which sections keep failing.</b> The run page lists each report section by section: passed first time, passed on its retry, or left out and why, with what each cost, and each section's rate over the last twenty reports. One setting names the model for each section, so a section that keeps failing can be given to another model. Before that, a trial can ask the other model for the same section beside a few reports, and a command writes the drafts side by side to a file without changing the report or showing them on any page. For now every report is written by DeepSeek: the one report written on Claude cost many times what DeepSeek's did, so no setting names Claude.</p>
 </div>
 
-<!-- 9 -->
-<h2 id="improve">9. How the picks get better</h2>
+<!-- 10 -->
+<h2 id="improve">10. How the picks get better</h2>
 <p class="asks">How does the system learn which settings work, without fooling itself?</p>
 <figure>
   <svg viewBox="0 0 1000 240" role="img" aria-labelledby="f9">
@@ -749,8 +833,8 @@
   <p><b>Why the system never applies a change itself.</b> A filter that moved its own settings would tune itself toward whatever it saw last. Every change also restarts the evidence for the settings it replaces, so it should be a deliberate choice with a written reason.</p>
 </div>
 
-<!-- 10 -->
-<h2 id="screens">10. The screens</h2>
+<!-- 11 -->
+<h2 id="screens">11. The screens</h2>
 <p class="asks">Where do I look, and what does each page answer?</p>
 <figure>
   <svg viewBox="0 0 1000 374" role="img" aria-labelledby="f11">
@@ -782,8 +866,8 @@
   <p><b>What to take from it.</b> On every screen, green means a level below the price and orange means a level above it. Nothing else uses those two colours.</p>
 </div>
 
-<!-- 11 -->
-<h2 id="why">11. Why these choices: sources</h2>
+<!-- 12 -->
+<h2 id="why">12. Why these choices: sources</h2>
 <p class="asks">What published work supports the approach?</p>
 <p>These are the sources the design rests on, grouped by the choice they support. Some were read in full and some only in summary; the specification records which, and which rule each one supports.</p>
 

@@ -265,6 +265,10 @@ internal static class PhaseReport
             "near-miss attribution with invented shares, illustrative and labelled so, whose rule section 15.10's near misses claim; a picture of claims placed elsewhere and none of its own"),
         ["Figure 13.2"] = new Placement(
             "the gate a candidate passes drawn end to end, whose steps section 13's subsections state and the register and verdict rows carry; a picture of claims placed elsewhere and none of its own"),
+        // 16.4's: the card drawn with its parts numbered, its figures placeholders, and a key the conformance check
+        // holds to name every part the figure draws.
+        ["Figure 15.1"] = new Placement(
+            "a pick's card drawn with its parts numbered and every figure a placeholder, whose parts section 15.18's paragraphs state and whose values section 17's card rows claim; a picture of claims placed elsewhere and none of its own"),
     };
 
     // The placements' own notes, read by the same guard that reads the scope
