@@ -39643,10 +39643,13 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             Results: D1 red at the new test alone, the move refused twice starting nothing; D2 red at the new test alone,
             the line opening with the temporary folder's full path; D3 red at the new test alone, the launch starting
             nothing over the other's copy. Each reverted, and the three tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing. The partial copy of 2026-10-06 in the data root's folder of builds is removed by a later press once
             a copy is kept longer than a week.
 
