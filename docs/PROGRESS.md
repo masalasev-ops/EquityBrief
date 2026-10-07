@@ -39332,7 +39332,13 @@ Mutated:    the rule, stated before the run: the one property the correction add
             working tree carrying this entry, filtered to the tests that read it and reverted.
             N1 the night's news feed built on the standard policy: predicted red at the limits row's test.
             N2 the news query's bound at 60 seconds: predicted red at the limits row's test and at pinned-constants.
-            Results: FILLED FROM THE RUN.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+            Results: N1 red where stated: the night's news feed read a bound of 30 seconds where the news query's is
+            90. N2 red at both: the row carried no "by 60", and pinned-constants found the row's 90 held by nothing.
+            Each reverted, and the eleven tests the filter reads green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2be6d45.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1940 of 1940 tests ran with none failed, migrations 0
+            to 70 with none pending, schema version 70, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 1021 claims, 1021 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1032
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1940 of 1940 tests ran.
 Carried:    nothing. The next night's news step reads the new bound. Then 16.3.
