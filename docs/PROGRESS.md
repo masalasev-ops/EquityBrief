@@ -39990,9 +39990,12 @@ Mutated:    the rule: a sentence on each surface put back to its old words, made
             restored, the tree's diff the same after as before, and the nine green over it before the run. A first run
             restored each file from git, which undid this correction's edits in three files; it was discarded, the
             edits made again and the four run over the tree as it stands.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 3af3a16e, the
+            pull request's third commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1991 of 1991 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1991 of 1991 tests ran.
 Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
             session.
