@@ -14,9 +14,9 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations: a sector heavyweights rebalance waits for a night the store's year holds the closes its
 // readings need, and one reading no lead, or no beta where it reads one, waits the same way, reading, selling and
-// buying nothing and storing no row of its month; a month whose rows read no lead is read again; the S&P 400's books
-// wait the same way; and the store's year holds the sessions the exchange's calendar gives it, worked by hand from the
-// closure table.
+// buying nothing and storing no row of its month, while one where a company reading none ranks beside others reading
+// them goes ahead; a month whose rows read no lead is read again; the S&P 400's books wait the same way; and the store's
+// year holds the sessions the exchange's calendar gives it, worked by hand from the closure table.
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public partial class FixtureExpectations
 {
@@ -283,6 +283,109 @@ public partial class FixtureExpectations
         Assert.Equal(["W1"], outcome.Entered);
         Assert.Equal(3, Scalar(store, "SELECT COUNT(*) FROM heavyweight_night WHERE session_date = '2026-10-05' AND lead IS NULL;"));
         Assert.Equal(3, Scalar(store, "SELECT COUNT(*) FROM heavyweight_night WHERE session_date = '2026-10-06' AND lead IS NOT NULL;"));
+    }
+
+    // A fourth member of the sector, holding its bars from a later session: from its first it rises a fifth a session from
+    // 100 on 2,000 shares, so it is the sector's largest company, leads the sector's mean over any look-back its bars hold
+    // and passes the trend gate.
+    static decimal LateClose(DateOnly first, DateOnly session) => 100m + (0.2m * (WaitAt(session) - WaitAt(first)));
+
+    static void LateMember(TemporaryStore store, DateOnly first, DateOnly night)
+    {
+        var close = LateClose(first, night);
+
+        store.Execute($"INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'W4', '{Day(first)}', NULL, '{Day(first)}T00:00:00Z');");
+        store.Execute($"INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry) VALUES ('W4', '2026-09-30T23:50:00Z', 'CIKW4', '{TechSector}', NULL, NULL, NULL);");
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, basis_session, basis_close, shares) VALUES " +
+            FormattableString.Invariant($"('W4', '2026-09-30T23:50:00Z', '2026-09-30', '2026-06-30', '2026-08-01', '{Day(WaitBasis)}', '{LateClose(first, WaitBasis)}', '2000');"));
+        StoreYear(store, "W4", [.. WaitSessions.Where(session => session >= first && session <= night).Select(session => new FamilyBar(session, LateClose(first, session), LateClose(first, session), LateClose(first, session), 1000))]);
+        store.Execute(FormattableString.Invariant(
+            $"INSERT INTO indicator (ticker, session_date, name, value, bar_count) VALUES ('W4', '{Day(night)}', 'sma50', {close - 1m}, 50), ('W4', '{Day(night)}', 'sma200', {close - 2m}, 50);"));
+    }
+
+    [Fact]
+    public async Task ARebalanceGoesAheadWhereOneRankedCompanyHoldsTooFewClosesForALeadBesideOthersReadingOne()
+    {
+        // The book's first night, the store holding the 252 sessions the twelve-month return reads, and W4 a member
+        // since June holding 86 of them, too few for a return over 251 sessions.
+        var night = new DateOnly(2026, 10, 1);
+
+        using var store = WaitStore(new DateOnly(2025, 10, 1), night);
+
+        LateMember(store, new DateOnly(2026, 6, 1), night);
+        WaitAverages(store, night);
+
+        Assert.Equal(252, Scalar(store, "SELECT COUNT(DISTINCT session_date) FROM bar;"));
+        Assert.Equal(86, Scalar(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'W4';"));
+
+        // The rebalance goes ahead: W4 is ranked first by value with no return and no lead and is not bought, W1 leads the
+        // sector's mean of the three returns read and is bought, and the month is stored.
+        var outcome = await new HeavyweightBook(FixedClock.At(At(night, 23, 40), SessionZones.UnitedStates), store.DatabaseFile, YearLong).RunAsync("GSPC", "night-late");
+
+        Assert.Equal((true, (string?)null), (outcome.Rebalanced, outcome.Waits));
+        Assert.Equal(["W1"], outcome.Entered);
+        Assert.Equal(
+            ["1|W4|no lead|0", "2|W1|lead|1", "3|W2|lead|0", "4|W3|lead|0"],
+            TextRows(store, "SELECT place || '|' || ticker || '|' || CASE WHEN lead IS NULL THEN 'no lead' ELSE 'lead' END || '|' || leader FROM heavyweight_night WHERE session_date = '2026-10-01' ORDER BY place;"));
+    }
+
+    [Fact]
+    public async Task ARebalanceReadingABetaGoesAheadWhereOneRankedCompanyHoldsItsLookBackButTooFewClosesForABeta()
+    {
+        // Six months with a beta, which needs 252 closes; the store holds the 252 sessions to a month's rebalance with
+        // the index's close on each, and W4 a member since April holding 150 of them, enough for its 126-session return
+        // and too few for a beta over 251 daily returns.
+        var night = new DateOnly(2026, 11, 3);
+
+        using var store = WaitStore(new DateOnly(2025, 11, 3), night);
+
+        var held = WaitSessions.Where(session => session >= new DateOnly(2025, 11, 3) && session <= night).ToArray();
+
+        store.Execute(
+            "INSERT INTO market_bar (series, session_date, open, high, low, close, run_id) VALUES " +
+            string.Join(", ", held.Select(session => WaitAt(session) % 2 == 0 ? (session, 5010m) : (session, 4990m)).Select(one => FormattableString.Invariant($"('GSPC', '{Day(one.session)}', '{one.Item2}', '{one.Item2}', '{one.Item2}', '{one.Item2}', 'test')"))) + ";");
+        LateMember(store, new DateOnly(2026, 4, 1), night);
+        WaitAverages(store, night);
+
+        Assert.Equal(252, held.Length);
+        Assert.Equal(150, Scalar(store, "SELECT COUNT(*) FROM bar WHERE ticker = 'W4';"));
+
+        // The rebalance goes ahead and stores the month: every company reads a lead, the three holding the year read a
+        // beta, and W4, leading the sector by most in its trend, reads none and is not bought.
+        var outcome = await new HeavyweightBook(FixedClock.At(At(night, 23, 40), SessionZones.UnitedStates), store.DatabaseFile, HeavyweightRule.Provisional with { HighBeta = true }).RunAsync("GSPC", "night-late-beta");
+
+        Assert.Equal((true, (string?)null), (outcome.Rebalanced, outcome.Waits));
+        Assert.Equal(
+            ["1|W4|lead|no beta|0", "2|W1|lead|beta|0", "3|W2|lead|beta|0", "4|W3|lead|beta|0"],
+            TextRows(store, "SELECT place || '|' || ticker || '|' || CASE WHEN lead IS NULL THEN 'no lead' ELSE 'lead' END || '|' || CASE WHEN beta IS NULL THEN 'no beta' ELSE 'beta' END || '|' || leader FROM heavyweight_night WHERE session_date = '2026-11-03' ORDER BY place;"));
+        Assert.Equal(["1|1"], TextRows(store, "SELECT (lead = (SELECT MAX(lead) FROM heavyweight_night WHERE session_date = '2026-11-03')) || '|' || trend FROM heavyweight_night WHERE session_date = '2026-11-03' AND ticker = 'W4';"));
+        Assert.DoesNotContain("W4", outcome.Entered);
+    }
+
+    [Fact]
+    public void TheGuardWaitsOnlyWhereNoRankedCompanyOfAnySectorReadsALeadOrNoneReadsABetaWhereTheSettingReadsOne()
+    {
+        var night = new DateOnly(2026, 11, 3);
+
+        static HeavyweightRanked Ranked(int place, string ticker, double? lead) => new(place, ticker, "CIK " + ticker, 1000m, lead, lead, true, false);
+
+        // A sector whose every ranked company reads no lead, and one where a company reading none ranks beside one reading
+        // a lead.
+        var none = new HeavyweightSector(GicsSectors.Energy, null, 0, [Ranked(1, "E1", null), Ranked(2, "E2", null)], []);
+        var mixed = new HeavyweightSector(TechSector, 0.1, 1, [Ranked(1, "W4", null), Ranked(2, "W1", 0.05)], []);
+
+        Assert.Equal("the rebalance waits, since no sector's largest companies read a lead on 2026-11-03", HeavyweightRule.ReadNothing([none], YearLong, _ => null, night));
+        Assert.Null(HeavyweightRule.ReadNothing([mixed], YearLong, _ => null, night));
+        Assert.Null(HeavyweightRule.ReadNothing([none, mixed], YearLong, _ => null, night));
+
+        // Where the setting reads a beta: none reading one waits, and one reading a beta beside others reading none, in
+        // its own sector or another, reads.
+        var reading = HeavyweightRule.Provisional with { HighBeta = true };
+
+        Assert.Equal("the rebalance waits, since no sector's largest companies read a beta on 2026-11-03", HeavyweightRule.ReadNothing([mixed], reading, _ => null, night));
+        Assert.Null(HeavyweightRule.ReadNothing([mixed], reading, ticker => ticker == "W1" ? 1.2 : null, night));
+        Assert.Null(HeavyweightRule.ReadNothing([none, mixed], reading, ticker => ticker == "E1" ? 0.8 : null, night));
     }
 
     [Fact]

@@ -39901,3 +39901,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1987 of 1987 tests ran.
 Carried:    nothing.
+
+### 14.6 - correction: the guard holds a rebalance back only where no ranked company reads a lead, or no beta where the setting reads one, asserted where only every one reading none was   2026-10-07
+
+Corrects:   the 14.6 correction's guard, `HeavyweightRule.ReadNothing`, was asserted only over rebalances at which every
+            ranked company read no lead or no beta, so either half's any could become all with every test green. Under
+            that edit a ranked company holding fewer closes than the look-back, a member that joined inside the year,
+            holds every rebalance of its book back until it holds them; the live store's HONA, FDXF and Q hold 79, 93
+            and 237 closes, and the every-company variant ranks all three.
+Found:      by the second phase 14 sign-off review over d9360729 (J1): its mutation b, the lead half from any to all,
+            survived the whole suite, and its hg, the beta half, its 73 heavyweights tests. Reproduced: b over the whole
+            suite, red in 1 of 1987, the pin test that reddens on any edit to a pinned file.
+Built:      tests only, no shipped code. Over the book: on its first night, with the store's 252 sessions, a member
+            holding 86 of them ranks first by value with no return and no lead and is not bought, W1 leads and is
+            bought, and the month is stored; at six months with a beta, a member holding 150 sessions reads a lead and no
+            beta, leads its sector by most in its trend and is not bought, the month stored. The same cases on
+            `ReadNothing` directly, a company reading none beside one reading a lead or a beta in its own sector or
+            another. The roster's fixture-expectations clause states it, prior text in `CHANGELOG.md`.
+Tests:      three added.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, the review's: each half of the guard from any to all, made on the branch in this checkout and
+            restored with git, filtered to 53 tests, the 50 the review's heavyweights filter names and the three added:
+            b predicted red in the lead test and the direct test alone, hg in the beta test and the direct test alone.
+            Results: b red in the lead test and the direct test, 2 of 53; hg red in the beta test and the direct test,
+            2 of 53. Each restored.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            entry for the rule's words below states.
+Carried:    the night of 2026-10-07, the first to read October for the four books, had not run when the gates ran, and
+            is read by the next review.
