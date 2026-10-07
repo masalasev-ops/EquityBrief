@@ -502,6 +502,9 @@ public class ObligationReconciles
         // Two, both opened by the 15.0 planning pass: the night's time and growth over the three indices, read on its
         // first five nights, and analyst coverage as a dial once dated counts exist.
         ["15"] = 2,
+        // One, opened by the 16.0 planning pass: the card and the follower read within their time on the first five
+        // nights.
+        ["16"] = 1,
     };
 
     // The first phase whose report is read for the operating rows it opened.

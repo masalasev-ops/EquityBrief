@@ -39394,3 +39394,51 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, `tools/remedies/2026-10-06-16.3-the-operators-record.txt`, migration 71, no request and no
             model call, run outside the night's window and before the surface's Release build again. The first live
             night's calendar row reads the dividend calendar's 21 requests. Then 16.4.
+
+### 16.4 - the phase 16 report: the card's figure and its key, the guide's card section, the screens read back, and every claim the phase added reached and passing with the pair checked against the actual   2026-10-07
+
+Queue:      done, 16.3, PR 385; in progress, 16.4; next, the news labeller waiting for the off-peak hours, then the
+            sign-offs of phases 14, 15 and 16, one session at a time.
+Built:      Figure 15.1 in section 15.18, a pick's card with its seven parts numbered and every figure drawn as n.n or
+            nn%, and its key beneath, a line a part; the guide's section 7, "How to read a pick's card", with the same
+            picture and a line a part for a reader who does not invest, the sections after it renumbered. A test under
+            `architecture-conformance` reading phase 16's pair off the plan: 1000 before it, 1040 after 16.4 within
+            1030 to 1052, counted as 16, 10, 12 and 2 at 16.1 to 16.4. Those checkpoints landed 14, 5, 10 and none, and
+            the 16.1 ruling two rows beside them, so 1031: inside the range and short of the pair by nine, each claim a
+            count held that landed as no row named in `ArchitectureConformance.PhaseSixteenShort` with where it went.
+            At 16.1, 2: the record's command as words in the rule recorder's row, and the concentration's threshold
+            landing at 16.2. At 16.2, 5: the settings file and the three presses as section 15.18's paragraphs and words
+            in the read API's row, less the threshold it received. At 16.3, 2: the events table as section 15.18's
+            paragraph with its source, and the dividend ask as words in the calendar fetcher's row and section 14's
+            step. At 16.4, 2: the figure and its key, placed as a picture of claims placed elsewhere. A second test: the
+            figure's key names every part the figure draws, in the architecture and in the guide, and neither picture's
+            text holds a night's figure. The roster's `architecture-conformance` row says so, with its prior text in
+            `CHANGELOG.md`.
+Screens:    FILLED FROM THE RUN.
+Operating:  phase 16 opened one operating row, at 16.0: "The card and the follower read within their time on the
+            first five nights"; `obligation-reconciles` states phase 16 at one.
+Tests:      1963, from 1961: two added.
+Claims:     1031, unchanged, with 1031 PASS; the pair is 1031 and 1031.
+Pins:       none moves. The branch edits two specs' text, the guide, the records, a rules file and the suite, none of
+            them in a pin list.
+Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the branch in
+            this checkout, filtered to the tests that read it and reverted.
+            T1 one part's line removed from the figure's key: predicted red at the key test alone.
+            T2 16.3's claims landing as no row stated as one: predicted red at the pair test alone.
+            T3 phase 16 stated as opening no operating row: predicted red at the operating rows test alone.
+            Results: T1 red at the key test alone, the key reading parts 1 to 3 and 5 to 7 against the figure's 1 to 7;
+            T2 red at the pair test alone, 16.3 stated to land 11 rows against the 10 it landed; T3 red at the
+            operating rows test alone, phase 16 stated at none against the one row its table holds. Each reverted, and
+            the five tests the filter reads green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0c7a1c7.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1963 of 1963 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1963 of 1963 tests ran.
+Carried:    the sign-offs of phases 14, 15 and 16, each owed on the phase as a whole by a session the operator starts,
+            one at a time and none beside the build, their handoffs issued with the figures as they stand after this
+            merge; the news labeller waiting for the off-peak hours; two corrections, the drain's build copy moved into
+            place where Windows refused the move on the night of 2026-10-06, and the local lane loading its model again
+            where it finds it loaded at a smaller context than its profile's; and the operating row read on the first
+            five nights.

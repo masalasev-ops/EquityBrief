@@ -11849,3 +11849,11 @@ Was:
 Now:
 > each row the same, then a clause from 16.3: the follower, the record, the dividend ask, the events table and the card's figures worked by hand under fixture-expectations; the card's hits, the record and Your trades read back under read-surface; and no pick-making component reading the operator's trades or record under rules-choose-the-stocks
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - .claude/rules/checks.md - architecture-conformance reads phase 16's pair and the card's figure's key
+Authorised by: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+Was:
+> ... landed as words in rows that stood or as paragraphs, each checkpoint's named with where they went; and no sentence of the architecture describes tonight's list chosen by a reason firing as the live rule ...
+Now:
+> ... each checkpoint's named with where they went, and phase 16's the same way, its actual inside the range and short of the pair by the claims each checkpoint's count held that landed as no row of its own less the two rows its ruling added beside them; and the card's figure's key names every part the figure draws, in the architecture and in the guide, neither figure's text holding any night's figure; and no sentence of the architecture ...
+Why: 16.4's two tests are architecture-conformance's, the phase's report and its figure.
