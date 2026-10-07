@@ -103,6 +103,27 @@ public static class PicksScreen
             holding.Result,
             holding.CutReturn))]);
 
+    // The operator's trades taken from one index's cards as "Your trades" draws them: ended where the night's follower or
+    // the operator's own exit ended them, its rule named by its family's words, and a holding's result in per cent.
+    // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+    public static IReadOnlyList<EquityBrief.Web.App.YourTradeView> YourTrades(IReadOnlyList<TakenTradeRow> taken, string index) =>
+    [
+        .. taken.Where(trade => trade.Index == index).Select(trade => new EquityBrief.Web.App.YourTradeView(
+            trade.Ticker,
+            trade.TakenAt,
+            trade.Family == HeavyweightRule.Name ? SetupFamilies.SectorHeavyweights.Heading : SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
+            trade.Night,
+            trade.Fill,
+            trade.FillDate,
+            trade.Provisional,
+            trade.IsOpen,
+            trade.EndedOn ?? trade.ExitDate,
+            trade.EndReason ?? (trade.ExitDate is null ? null : EquityBrief.Core.Cards.TakenWalk.Exited),
+            trade.EndPrice ?? trade.ExitPrice,
+            trade.Result,
+            trade.Family == HeavyweightRule.Name ? "percent" : "risks")),
+    ];
+
     public static IReadOnlyList<HeavyweightPickCell> Heavyweights(IReadOnlyList<HeavyweightHoldingRow> holdings) =>
     [
         .. holdings

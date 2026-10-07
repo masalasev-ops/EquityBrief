@@ -510,7 +510,14 @@ public sealed record DecisionCardRow(
     decimal? Trail = null,
     int? Cap = null,
     decimal? RoundTrip = null,
-    int? BookHoldings = null);
+    int? BookHoldings = null,
+    string? Hits = null);
+
+// The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
+// in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
+// the average result once enough have ended.
+// see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+public sealed record TakenRecordRow(string Index, string Family, string Unit, int Won, int Lost, int Ended, int Open, double? Average, int SameNights = 0, int RuleListed = 0, int RuleWon = 0, int RuleLost = 0, int RuleEnded = 0, double? RuleAverage = null);
 
 // A trade the operator took from a card, as the store holds it: the stock and when it was taken, the card it came from,
 // the stock's sector, its fill and the session it is for, whether that fill is still the plan's buy awaiting the next
@@ -533,7 +540,15 @@ public sealed record TakenTradeRow(
     int? Cap,
     decimal? ExitPrice,
     DateOnly? ExitDate,
-    string? FollowedThrough);
+    string? FollowedThrough,
+    DateOnly? EndedOn = null,
+    decimal? EndPrice = null,
+    string? EndReason = null,
+    double? Result = null)
+{
+    // Open while neither the operator's exit nor the night's follower has ended it.
+    public bool IsOpen => ExitDate is null && EndedOn is null;
+}
 
 // One stock under one family on a night the families drew the page's list, as the store holds it: whether
 // the page lists it, its place down the page and the other families it qualified under, or why it is held
@@ -799,6 +814,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.WatchList, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.TakenRecord, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -3289,7 +3305,7 @@ public sealed class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -3354,7 +3370,8 @@ public sealed class ReadApi : IComponent
                 Price(13),
                 reader.IsDBNull(14) ? null : reader.GetInt32(14),
                 Price(15),
-                reader.IsDBNull(16) ? null : reader.GetInt32(16)));
+                reader.IsDBNull(16) ? null : reader.GetInt32(16),
+                reader.IsDBNull(17) ? null : reader.GetString(17)));
         }
 
         return rows;
@@ -3362,9 +3379,9 @@ public sealed class ReadApi : IComponent
 
     // ---- the operator's taken trades, written by a card's presses alone ----
 
-    const string TakenColumns = "ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through";
+    const string TakenColumns = "ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through, ended_on, end_price, end_reason, result";
 
-    const string OpenTaken = "SELECT " + TakenColumns + " FROM taken_trade WHERE exit_date IS NULL ORDER BY taken_at, ticker;";
+    const string OpenTaken = "SELECT " + TakenColumns + " FROM taken_trade WHERE exit_date IS NULL AND ended_on IS NULL ORDER BY taken_at, ticker;";
 
     const string TakenOfStock = "SELECT " + TakenColumns + " FROM taken_trade WHERE ticker = $ticker ORDER BY taken_at;";
 
@@ -3373,7 +3390,7 @@ public sealed class ReadApi : IComponent
     const string CardTaken = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $night AND family = $family AND ticker = $ticker;";
 
-    const string OpenOfStock = "SELECT COUNT(*) FROM taken_trade WHERE ticker = $ticker AND exit_date IS NULL;";
+    const string OpenOfStock = "SELECT COUNT(*) FROM taken_trade WHERE ticker = $ticker AND exit_date IS NULL AND ended_on IS NULL;";
 
     const string InsertTaken = @"
         INSERT INTO taken_trade (ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through)
@@ -3398,6 +3415,46 @@ public sealed class ReadApi : IComponent
 
     // Every taken trade, which the cards a page draws read theirs from.
     public Task<IReadOnlyList<TakenTradeRow>> TakenTradesAsync() => TakenAsync(EveryTaken, []);
+
+    const string TakenRecords = @"
+        SELECT index_code, family, unit, won, lost, ended, open_trades, average,
+               same_nights, rule_listed, rule_won, rule_lost, rule_ended, rule_average
+        FROM taken_record ORDER BY index_code, family;
+    ";
+
+    // The operator's record of each family on each index, as the night's follower last wrote it.
+    public async Task<IReadOnlyList<TakenRecordRow>> TakenRecordsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = TakenRecords;
+
+        var rows = new List<TakenRecordRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new TakenRecordRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                reader.GetInt32(8),
+                reader.GetInt32(9),
+                reader.GetInt32(10),
+                reader.GetInt32(11),
+                reader.GetInt32(12),
+                reader.IsDBNull(13) ? null : reader.GetDouble(13)));
+        }
+
+        return rows;
+    }
 
     // A trade taken from a card the night stored, read from the store and never from the press: its fill the price the
     // operator entered or, where none was, the plan's buy marked provisional until the next session's open replaces it,
@@ -3547,7 +3604,11 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(13) ? null : reader.GetInt32(13),
                 Price(14),
                 reader.IsDBNull(15) ? null : Day(15),
-                reader.IsDBNull(16) ? null : reader.GetString(16)));
+                reader.IsDBNull(16) ? null : reader.GetString(16),
+                reader.IsDBNull(17) ? null : Day(17),
+                Price(18),
+                reader.IsDBNull(19) ? null : reader.GetString(19),
+                reader.IsDBNull(20) ? null : reader.GetDouble(20)));
         }
 
         return rows;

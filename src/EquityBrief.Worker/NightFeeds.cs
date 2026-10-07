@@ -43,11 +43,16 @@ public sealed record NightFeeds(
     // see: The S&P 400's and 600's members are read each night from their funds' own holdings files
     public IFundHoldingsFeed Funds { get; init; } = RecordedFundHoldingsFeed.None;
 
+    // The tenth is the provider's dividend calendar, one request for each of the 21 sessions after the night whatever
+    // the index's size. A set of feeds built without it asks for none, as a capture made before the night asked does.
+    // see: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+    public IDividendCalendarFeed Dividends { get; init; } = RecordedDividendCalendarFeed.None;
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
-        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests + Funds.Requests;
+        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests + Funds.Requests + Dividends.Requests;
 
     // The same night in the units the provider bills in, which is the unit
     // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
@@ -59,6 +64,7 @@ public sealed record NightFeeds(
         + (Bulk.Requests * ProviderWeights.BulkEndOfDay)
         + (Corporate.Requests * ProviderWeights.BulkEndOfDay)
         + (Calendar.Requests * ProviderWeights.EarningsCalendar)
+        + (Dividends.Requests * ProviderWeights.DividendCalendar)
         + (News.Requests * ProviderWeights.News)
         + (Fundamentals.Requests * ProviderWeights.Fundamentals)
         + (Market.Requests * ProviderWeights.HistoricalPerTicker);
@@ -77,6 +83,7 @@ public sealed record NightFeeds(
             RecordedMarketSeriesFeed.FromFolder(folder))
         {
             Funds = RecordedFundHoldingsFeed.FromFolder(folder),
+            Dividends = RecordedDividendCalendarFeed.FromFolder(folder),
         };
 
     // The live bulk feed, from the two settings, or a refusal naming the one
@@ -108,6 +115,7 @@ public sealed record NightFeeds(
             EodhdMarketSeriesFeed.Live(address, key))
         {
             Funds = BlackRockFundHoldingsFeed.Live(),
+            Dividends = EodhdDividendCalendarFeed.Live(address, key),
         };
     }
 
@@ -179,5 +187,6 @@ public sealed record NightFeeds(
         || News is not RecordedNewsFeed
         || Fundamentals is not RecordedFundamentalsFeed
         || Market is not RecordedMarketSeriesFeed
-        || Funds is not RecordedFundHoldingsFeed;
+        || Funds is not RecordedFundHoldingsFeed
+        || Dividends is not RecordedDividendCalendarFeed;
 }

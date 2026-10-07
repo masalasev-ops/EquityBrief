@@ -222,16 +222,25 @@ public class FundamentalsFeedTests
                     ? DateOnly.ParseExact(filed.GetProperty(name).GetString()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
                     : null;
 
+            // Each year's count as the capture files it under NumberDividendsByYear, oldest first.
+            DividendsInYear[] years = filed.TryGetProperty("NumberDividendsByYear", out var counted) && counted.ValueKind == System.Text.Json.JsonValueKind.Object
+                ? [.. counted.EnumerateObject().Select(row => new DividendsInYear(row.Value.GetProperty("Year").GetInt32(), row.Value.GetProperty("Count").GetInt32())).OrderBy(year => year.Year)]
+                : [];
+
             Assert.Equal(
-                new DividendFiled(Number("ForwardAnnualDividendRate"), Number("ForwardAnnualDividendYield"), Number("PayoutRatio"), Day("ExDividendDate"), Day("DividendDate")),
+                new DividendFiled(Number("ForwardAnnualDividendRate"), Number("ForwardAnnualDividendYield"), Number("PayoutRatio"), Day("ExDividendDate"), Day("DividendDate"))
+                {
+                    ByYear = years,
+                },
                 Read(ticker).Dividend);
             Assert.DoesNotContain("dividend", Read(ticker).PartsNotCarried);
         }
 
         // AAPL's, stated as well as derived: a forward rate of 1.08 a share, a yield of 0.0033 and
-        // a payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; and KEYS's a
-        // rate of zero and no dates.
-        Assert.Equal(new DividendFiled(1.08m, 0.0033m, 0.1216m, new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 13)), Read("AAPL").Dividend);
+        // a payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13, 24 years of
+        // counts ending in 2025's four and 2026's three; and KEYS's a rate of zero, no dates and no year.
+        Assert.Equal(new DividendFiled(1.08m, 0.0033m, 0.1216m, new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 13)), Read("AAPL").Dividend! with { ByYear = [] });
+        Assert.Equal((24, new DividendsInYear(2025, 4), new DividendsInYear(2026, 3)), (Read("AAPL").Dividend!.ByYear.Count, Read("AAPL").Dividend!.ByYear[^2], Read("AAPL").Dividend!.ByYear[^1]));
         Assert.Equal(new DividendFiled(0m, 0m, 0m, null, null), Read("KEYS").Dividend);
 
         // The same payload with the object taken out reads as a dividend not filed rather than as a

@@ -47,6 +47,7 @@ public sealed class QuarterFetcher : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read | Touch.Insert),
             new StoreTouch(Store.Company, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.DividendReading, Touch.Insert),
             new StoreTouch(Store.QuarterAsk, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -141,6 +142,14 @@ public sealed class QuarterFetcher : IComponent
     const string InsertCompany = @"
         INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell)
         VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry, $strong_buy, $buy, $hold, $sell, $strong_sell)
+        ON CONFLICT (ticker, fetched_at) DO NOTHING;
+    ";
+
+    // The dividend part of the same answer, kept where the answer files one.
+    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    const string InsertDividend = @"
+        INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year)
+        VALUES ($ticker, $fetched_at, $forward_rate, $last_ex_date, $by_year)
         ON CONFLICT (ticker, fetched_at) DO NOTHING;
     ";
 
@@ -529,6 +538,21 @@ public sealed class QuarterFetcher : IComponent
             company.Parameters.AddWithValue("$strong_sell", (object?)fetched.Ratings.StrongSell ?? DBNull.Value);
 
             await company.ExecuteNonQueryAsync(cancellation);
+        }
+
+        if (fetched.Dividend is { } dividend)
+        {
+            await using var paid = connection.CreateCommand();
+
+            paid.Transaction = (SqliteTransaction)transaction;
+            paid.CommandText = InsertDividend;
+            paid.Parameters.AddWithValue("$ticker", ticker);
+            paid.Parameters.AddWithValue("$fetched_at", Instant(fetchedAt));
+            paid.Parameters.AddWithValue("$forward_rate", Figure(dividend.ForwardAnnualRate));
+            paid.Parameters.AddWithValue("$last_ex_date", Date(dividend.ExDividendDate));
+            paid.Parameters.AddWithValue("$by_year", System.Text.Json.JsonSerializer.Serialize(dividend.ByYear.Select(year => new { year = year.Year, count = year.Count })));
+
+            await paid.ExecuteNonQueryAsync(cancellation);
         }
 
         await transaction.CommitAsync(cancellation);

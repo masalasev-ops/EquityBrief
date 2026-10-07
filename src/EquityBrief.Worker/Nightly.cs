@@ -280,13 +280,18 @@ public static class Nightly
             // size.
             new("calendar", async () =>
             {
-                var outcome = await new CalendarFetcher(calendar, clock, store.DatabaseFile)
+                // And the dividend calendar, one request for each of the 21 sessions after the night.
+                // see: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+                var outcome = await new CalendarFetcher(calendar, clock, store.DatabaseFile, feeds.Dividends)
                     .RunAsync(indexCode, clock.SessionDateAt(clock.UtcNow), runId, night.Token, wider);
 
                 return FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to ") +
                     FormattableString.Invariant($"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, ") +
                     $"{outcome.NotMembers} for names the index does not hold, " +
-                    $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)";
+                    $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)" +
+                    (outcome.DividendsFault is { } fault
+                        ? $"; the dividend calendar not read: {fault}"
+                        : feeds.Dividends.Requests > 0 ? $"; {outcome.ExDividends} ex-dividend date(s)" : string.Empty);
             }),
             // Section 14's per-name computations, one step each and in its
             // order. They were one step in the document until 4.0 and one step
@@ -438,6 +443,11 @@ public static class Nightly
                 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
                 var decisionCards = await new DecisionCards(clock, store.DatabaseFile, cards).RunAsync(runId, night.Token);
 
+                // Each trade the operator took followed to the night under its rule's own management, and their record. A
+                // failure is named on its own row, and the step goes on.
+                // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+                var takenFollowed = await new TakenFollower(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
@@ -448,8 +458,9 @@ public static class Nightly
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
                     $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
                     $"; {decisionCards.Cards} decision card(s)" +
-                    (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty);
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage]),
+                    (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty) +
+                    (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, TakenFollower.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

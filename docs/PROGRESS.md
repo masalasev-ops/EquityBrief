@@ -39342,3 +39342,48 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1940 of 1940 tests ran.
 Carried:    nothing. The next night's news step reads the new bound. Then 16.3.
+
+### 16.3 - what could hit a pick, and the operator's record: the earnings reactions, the ex-dividend date and the market events inside a hold, the taken trades followed each night, and the operator's record beside the rule's own picks on the same nights   2026-10-06
+
+Queue:      done, 16.2, PR 383, and the 2.2 correction, PR 384; in progress, 16.3; next, 16.4, then the news labeller
+            waiting for the off-peak hours, then the sign-offs of phases 14, 15 and 16, one session at a time.
+Built:      The card's "What could hit it before" section: the stock's stored earnings reactions as a median in typical
+            moves and in the plan's risks with how many moved past the stop's distance; the next ex-dividend date inside
+            the hold, declared where the provider's dividend calendar carries one and estimated as the last declared
+            date plus the usual interval where it does not, with the amount; and each FOMC decision and CPI release
+            inside the hold from `market-events.json` at the root, read from the Fed's and the BLS's own pages, a hold
+            past the table's end saying so. The night asks the dividend calendar for each of the 21 sessions after it,
+            one request a session, weight 1, stored under the calendar's kind `ex-dividend`; the quarters fetch keeps
+            the dividend part of the answer it already asks for in `dividend_reading`, no request added. `TakenFollower`
+            after the cards: each open taken trade followed under its rule's management at the series' scale on the
+            night, a provisional fill replaced by its session's stored open, ended at its stop, target, cap, the book's
+            sale, the operator's exit or the stock leaving every index. The operator's record per family and index,
+            and beside it the rule's own picks listed on the nights the operator took one, each followed from the
+            plan's buy, the average of each drawn once twenty have ended. Past picks' Your trades with the exit press.
+            Migration 71. Two decisions, CLAUDE.md's hard rule naming the ask, sections 7, 14, 15.18, 16, 17, 18 and
+            23, SCHEMA, the runbook, the guide and the roster's three clauses; the prior text in `CHANGELOG.md`.
+Tests:      FILLED FROM THE RUN, from 1940: the follower to its stop, target, cap, trail, a split, an exit, a gapped
+            open, a book's sale and a stock that left, and a close equal to the stop leaving it open; the record at
+            nineteen and twenty; the rule's own picks on the same nights from the plan's buy at nineteen and twenty; the
+            dividend window, the exchange read, the stored dates and the requests; the events table; the reactions in
+            risks; the declared and estimated ex-dates; the card and Your trades read back; and no pick-making
+            component reading the taken trades or the record.
+Claims:     1031, from 1021: the follower's catalogue and matrix rows, the taken records' and dividend readings' stores,
+            section 17's three values and section 18's three rows.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this edits is among them.
+Mutated:    the rule, stated before the run: one mutation for each kind of property the checkpoint adds, the walk, the
+            scale, the estimate and the comparison, made by hand over the working tree carrying this entry, filtered to
+            the tests that read it and reverted.
+            M1 a close equal to the stop ending the trade: predicted red at the stop test.
+            M2 the series' scale ignored, every session's factor one: predicted red at the split test.
+            M3 the estimated ex-date's interval read over one dividend fewer: predicted red at the declared and
+            estimated ex-date test.
+            M4 the rule's own picks bought at the next session's open rather than the plan's buy: predicted red at the
+            same nights test.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, `tools/remedies/2026-10-06-16.3-the-operators-record.txt`, migration 71, no request and no
+            model call, run outside the night's window and before the surface's Release build again. The first live
+            night's calendar row reads the dividend calendar's 21 requests. Then 16.4.

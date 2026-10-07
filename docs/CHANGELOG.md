@@ -11792,3 +11792,60 @@ Was:
 Now:
 > each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move).
 Why: the same; the deadline the paragraph reads is unchanged.
+
+### 2026-10-06 - CLAUDE.md - the nightly hard rule names the dividend calendar's ask
+Authorised by: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+Was:
+> and the S&P 400's and 600's members in one request a fund from their funds' holdings files on the operator's ruling of 2026-10-05, so a night costs
+Now:
+> the same, then: and the declared ex-dividend dates of the 21 sessions after the night in one request a session from the provider's dividend calendar on the operator's ruling of 2026-10-05 (see: The night asks the dividend calendar for each of the next 21 sessions, one request a session), so a night costs
+Why: 16.3 adds a night's ask whose count does not grow with the index, and the hard rule lists every such ask.
+
+### 2026-10-06 - ARCHITECTURE.html - the calendar fetcher, the decision cards and the quarter fetcher read and write what 16.3 adds
+Authorised by: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+Was:
+> <td>earnings calendar feed, membership, calendar</td><td>calendar</td><td>... and never a date a research pass found</td></tr>
+> ... index heavyweight holdings, rule records</td><td>decision cards</td> ... and the card's values it was read with; a night run again replaces its own cards ...
+> <td>reported quarters, quarter asks, companies</td><td>asks the provider ...
+Now:
+> the calendar fetcher reads the dividend calendar feed and asks it for each of the 21 sessions after the night; the decision cards read the earnings reactions, the indicators and the dividend readings and write what could hit the trade; the quarter fetcher writes the dividend readings
+Why: each catalogue row states what its component reads and writes, which `component-access` holds against its declaration.
+
+### 2026-10-06 - ARCHITECTURE.html - section 14's calendar and swing filter steps name the dividend ask and the follower
+Authorised by: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
+Was:
+> and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only).</li>
+> ... with the rule's record and the card's values, a failure in an index's cards named on its own row while the night goes on (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it).</li>
+Now:
+> the same, then each member's declared ex-dividend dates over the 21 sessions after the night, one request a session; and the cards' step then follows each trade the operator took and writes the operator's record, a failure named on the follower's own row
+Why: section 14 states the night's steps in order, and 16.3 adds the ask and the follower.
+
+### 2026-10-06 - SCHEMA.md - the taken trades are followed by the night, and two tables join them
+Authorised by: The operator's own record states its average result once twenty of its trades in a family and index have ended
+Was:
+> | `taken_trade` | ReadApi | ReadApi | ReadApi |
+> | `followed_through` | TEXT | the newest night that followed the trade, null until one has; written by nothing before the follower |
+> **The read surface writes it on the card's presses, and nothing else does**
+> | `kind` | TEXT | a provider event kind, `earnings` today |
+Now:
+> `taken_trade` updated by ReadApi and TakenFollower over declared column sets; its end columns; `taken_record` written by TakenFollower and `dividend_reading` by QuarterFetcher; decision_card's `hits`; and the calendar's kind `ex-dividend`
+Why: 16.3's follower updates the trades the read surface writes, each over columns of its own, and its record and the dividend part the quarters fetch keeps are tables of their own.
+
+### 2026-10-06 - RUNBOOK.md - the taken trades are followed each night, and what could hit a pick is asked and kept
+Authorised by: The night asks the dividend calendar for each of the next 21 sessions, one request a session
+Was:
+> The trades are in `taken_trade`, written by the read surface's presses alone, and nothing that picks a stock reads them.
+> ... and moved the counter by one.
+Now:
+> the same, followed by the night; a paragraph on the follower and a section on what could hit a pick, the dividend calendar's 21 requests and the market events table kept by hand; and the dividend calendar's weight of 1 a session beside the earnings calendar's
+Why: the runbook says what the night asks and costs, and how the operator keeps the events table current.
+
+### 2026-10-06 - .claude/rules/checks.md - fixture-expectations, read-surface and rules-choose-the-stocks state what 16.3's tests assert
+Authorised by: The operator's own record states its average result once twenty of its trades in a family and index have ended
+Was:
+> ... a refused load leaving every section of the lane unwritten |
+> ... the file under the data root the ignore list covers |
+> ... and to pass a clean one (see: Rules choose the stocks, and the AI writes the reports) |
+Now:
+> each row the same, then a clause from 16.3: the follower, the record, the dividend ask, the events table and the card's figures worked by hand under fixture-expectations; the card's hits, the record and Your trades read back under read-surface; and no pick-making component reading the operator's trades or record under rules-choose-the-stocks
+Why: the roster is where a check states what it asserts.

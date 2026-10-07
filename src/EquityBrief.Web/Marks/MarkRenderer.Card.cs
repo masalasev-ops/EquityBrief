@@ -31,7 +31,33 @@ public sealed record CardMoneyView(long Shares, decimal AtRisk, decimal Value, d
 
 // A trade the operator took from the card: when, at what fill and for which session, whether the fill is still the
 // plan's buy, and its exit where one is recorded; removable only before a night has followed it.
-public sealed record CardTakenView(string TakenAt, decimal Fill, DateOnly FillDate, bool Provisional, decimal? ExitPrice, DateOnly? ExitDate, bool Followed);
+public sealed record CardTakenView(string TakenAt, decimal Fill, DateOnly FillDate, bool Provisional, decimal? ExitPrice, DateOnly? ExitDate, bool Followed, DateOnly? EndedOn = null, string? EndReason = null, decimal? EndPrice = null)
+{
+    public bool Ended => ExitPrice is not null || EndedOn is not null;
+}
+
+// What could hit the trade as the night stored it: the hold's last session, the stock's reactions, the next ex-dividend
+// date inside the hold and the market events inside it, with each kind whose table ends before the hold does.
+public sealed record CardHitsView(
+    DateOnly Through,
+    int Reactions,
+    double? MedianTypical,
+    double? MedianRisks,
+    int PastTheStop,
+    DateOnly? DividendDate,
+    bool DividendDeclared,
+    decimal? DividendAmount,
+    double? DividendRisks,
+    double? DividendPercent,
+    IReadOnlyList<(DateOnly Date, string Name)> Events,
+    IReadOnlyList<string> PastTheTable);
+
+// The operator's own record of the card's family on its index, as the night's follower wrote it.
+public sealed record CardOperatorRecordView(string Unit, int Won, int Lost, int Ended, int Open, double? Average, int Minimum, bool Trailing, CardSameNightsView? SameNights = null);
+
+// The rule's own picks listed on the nights the operator took one, each followed from the plan's buy: how many nights,
+// how many picks, won, lost and ended, and the average once enough have ended.
+public sealed record CardSameNightsView(int Nights, int Listed, int Won, int Lost, int Ended, double? Average);
 
 // A pick's card on a night: the index, the night, the family that listed it and the stock, the rule the card names, the
 // plan's prices, the checklist's lines and the rule's record, none where the rule has not been replayed; and, where the
@@ -52,7 +78,9 @@ public sealed record DecisionCardView(
     CardMoneyView? Money = null,
     bool AccountUnset = false,
     IReadOnlyList<CardTakenView>? Taken = null,
-    bool Pressable = false)
+    bool Pressable = false,
+    CardHitsView? Hits = null,
+    CardOperatorRecordView? OperatorRecord = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -95,7 +123,9 @@ public sealed partial class MarkRenderer
 
         body.Append("</ol>");
         body.Append(PlanInMoney(card));
+        body.Append(Hits(card));
         body.Append(RuleRecord(card));
+        body.Append(OperatorRecord(card));
         body.Append(Taken(card));
         body.Append("</div>");
 
@@ -178,10 +208,12 @@ public sealed partial class MarkRenderer
             body.Append(trade.Provisional ? ", provisional: the plan's buy until the next session's open is stored" : string.Empty);
             body.Append(trade.ExitPrice is { } exit && trade.ExitDate is { } on
                 ? Formatted($"; exited at {exit.ToString("0.00", Invariant)} on {DayOf(on)}.")
-                : ".");
+                : trade.EndedOn is { } ended && trade.EndPrice is { } sold
+                    ? Formatted($"; ended by its rule's {Escaped(trade.EndReason ?? "end")} on {DayOf(ended)} at {sold.ToString("0.00", Invariant)}.")
+                    : ".");
             body.Append("</p>");
 
-            if (card.Pressable && trade.ExitPrice is null)
+            if (card.Pressable && !trade.Ended)
             {
                 var path = $"{Escaped(card.Ticker)}/{Escaped(trade.TakenAt)}";
 
@@ -194,7 +226,7 @@ public sealed partial class MarkRenderer
             }
         }
 
-        if (card.Pressable && taken.All(trade => trade.ExitPrice is not null))
+        if (card.Pressable && taken.All(trade => trade.Ended))
         {
             body.Append(Invariant, $"<form class=\"card-press\" method=\"post\" action=\"/taken/{Escaped(card.Index)}/{DayOf(card.Night)}/{Escaped(card.Family)}/{Escaped(card.Ticker)}\">");
             body.Append("<label>Fill <input name=\"price\" inputmode=\"decimal\" placeholder=\"the next open\"></label> <label>on <input name=\"date\" type=\"date\"></label> <button type=\"submit\">Taken</button></form>");
@@ -206,6 +238,95 @@ public sealed partial class MarkRenderer
     // The rule's record under its own heading: its figures from the rules' minimum on, its trades against the minimum
     // before it, and a dashed outline saying why where the rule has not been replayed.
     // see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index
+    // What could hit the trade before its hold ends, each as the night stored it: the stock's reactions, the next
+    // ex-dividend date declared or estimated, and each market event inside the hold, with a kind whose table ends first
+    // said to end.
+    // see: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider
+    static string Hits(DecisionCardView card)
+    {
+        if (card.Hits is not { } hits)
+        {
+            return string.Empty;
+        }
+
+        var body = new StringBuilder(Formatted($"<section class=\"card-hits\" data-through=\"{DayOf(hits.Through)}\"><h5>What could hit it before {DayOf(hits.Through)}</h5><ul>"));
+
+        body.Append(hits.Reactions == 0
+            ? "<li data-hit=\"reactions\">No earnings reaction of the stock's is stored.</li>"
+            : Formatted($"<li data-hit=\"reactions\">Its {hits.Reactions} stored earnings {(hits.Reactions == 1 ? "reaction" : "reactions")} moved a median {Figure(hits.MedianTypical)} typical moves, {Figure(hits.MedianRisks)} of this plan's risk; {hits.PastTheStop} moved further than the stop's distance.</li>"));
+
+        body.Append(hits.DividendDate is { } paid
+            ? Formatted($"<li data-hit=\"dividend\" data-declared=\"{(hits.DividendDeclared ? "yes" : "no")}\">Ex-dividend {DayOf(paid)}, {(hits.DividendDeclared ? "declared" : "estimated from the company's last declared date and its usual interval")}{Paid(hits)}.</li>")
+            : "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>");
+
+        foreach (var (date, name) in hits.Events)
+        {
+            body.Append(Formatted($"<li data-hit=\"event\">{Escaped(name)} on {DayOf(date)}.</li>"));
+        }
+
+        if (hits.Events.Count == 0)
+        {
+            body.Append("<li data-hit=\"event\">No FOMC decision or CPI release inside the hold.</li>");
+        }
+
+        foreach (var kind in hits.PastTheTable)
+        {
+            body.Append(Formatted($"<li data-hit=\"past\">The hold runs past the last {Escaped(kind)} the table holds, so one after it is not ruled out.</li>"));
+        }
+
+        return body.Append("</ul></section>").ToString();
+
+        static string Figure(double? value) => value is { } held ? held.ToString("0.0#", Invariant) : "not read";
+
+        static string Paid(CardHitsView hits) =>
+            hits.DividendAmount is not { } amount ? string.Empty
+            : hits.DividendRisks is { } risks ? Formatted($", {amount.ToString("0.00##", Invariant)} a share, {risks.ToString("0.00", Invariant)} of the risk")
+            : hits.DividendPercent is { } percent ? Formatted($", {amount.ToString("0.00##", Invariant)} a share, {percent.ToString("0.00", Invariant)}% of the buy")
+            : Formatted($", {amount.ToString("0.00##", Invariant)} a share");
+    }
+
+    // The operator's own record of the card's family on its index, under the rule's heading and never the stock's:
+    // won, lost and open, or ended for a rule setting no target, and the average result once enough have ended, a dashed
+    // outline saying how many have before. Beneath it the rule's own picks listed on the same nights, bought at the plan's
+    // buy and counted the same way, so what differs between the two is the operator's choices and fills.
+    // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+    static string OperatorRecord(DecisionCardView card)
+    {
+        if (card.OperatorRecord is not { } mine)
+        {
+            return string.Empty;
+        }
+
+        var counts = mine.Trailing
+            ? Formatted($"{mine.Ended} ended and {mine.Open} open")
+            : Formatted($"{mine.Won} won, {mine.Lost} lost, {mine.Ended - mine.Won - mine.Lost} ended otherwise and {mine.Open} open");
+        var average = mine.Average is { } read
+            ? Formatted($"<p data-average=\"{read.ToString("0.00", Invariant)}\">An average of {read.ToString("0.00", Invariant)} {(mine.Unit == "percent" ? "per cent" : "of the risk")} a trade over the {mine.Ended} that ended.</p>")
+            : Formatted($"<p class=\"degraded\" data-average=\"none\">{mine.Ended} of {mine.Minimum} ended: the average is drawn once {mine.Minimum} have.</p>");
+
+        return Formatted($"<section class=\"card-mine{(mine.Average is null ? " outline" : string.Empty)}\"><h5>Your trades of {Escaped(InASentence(card.Rule))}</h5><p>{counts}.</p>{average}{SameNights(mine)}</section>");
+    }
+
+    static string SameNights(CardOperatorRecordView mine)
+    {
+        if (mine.SameNights is not { } rule)
+        {
+            return string.Empty;
+        }
+
+        var open = rule.Listed - rule.Ended;
+        var counts = mine.Trailing
+            ? Formatted($"{rule.Ended} ended and {open} open")
+            : Formatted($"{rule.Won} won, {rule.Lost} lost, {rule.Ended - rule.Won - rule.Lost} ended otherwise and {open} open");
+        var nights = rule.Nights == 1 ? "night" : "nights";
+        var picks = rule.Listed == 1 ? "pick" : "picks";
+        var average = rule.Average is { } read
+            ? Formatted($" An average of {read.ToString("0.00", Invariant)} {(mine.Unit == "percent" ? "per cent" : "of the risk")} a trade over the {rule.Ended} that ended.")
+            : Formatted($" {rule.Ended} of {mine.Minimum} ended: the average is drawn once {mine.Minimum} have.");
+
+        return Formatted($"<p class=\"card-same-nights\" data-nights=\"{rule.Nights}\" data-listed=\"{rule.Listed}\" data-average=\"{(rule.Average is { } shown ? shown.ToString("0.00", Invariant) : "none")}\">The rule's own {rule.Listed} {picks} on the same {rule.Nights} {nights}, each bought at the plan's buy: {counts}.{average}</p>");
+    }
+
     static string RuleRecord(DecisionCardView card)
     {
         if (card.Record is not { } record)

@@ -115,6 +115,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/BlackRockFundHoldingsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdDividendCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdFundamentalsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
@@ -299,11 +300,12 @@ public partial class NightlyCost
         // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does,
         // sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night, and eighteen
         // from 15.3, the funds' quarter-end filings at the archive and the provider's symbol lists, which the history
-        // pull asks by hand and no night does.
+        // pull asks by hand and no night does, and nineteen from 16.3, the dividend calendar, one request a session for
+        // the 21 sessions after the night.
         Assert.True(
-            MayHoldAClient.Length <= 18,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are eighteen feed " +
-            "implementations. A nineteenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 19,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are nineteen feed " +
+            "implementations. A twentieth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.
@@ -543,6 +545,7 @@ public partial class NightlyCost
         Feed.HistoricalPrice,
         Feed.SplitsAndDividends,
         Feed.EarningsCalendar,
+        Feed.DividendCalendar,
         Feed.News,
         Feed.LocalModel,
     ];
@@ -1385,6 +1388,7 @@ public partial class NightlyCost
             [nameof(ProviderWeights.Fundamentals)] = $"Fundamentals cost {ProviderWeights.Fundamentals} per ticker",
             [nameof(ProviderWeights.News)] = $"News costs {ProviderWeights.News}",
             [nameof(ProviderWeights.EarningsCalendar)] = $"The earnings calendar costs {ProviderWeights.EarningsCalendar} for a whole window",
+            [nameof(ProviderWeights.DividendCalendar)] = $"The dividend calendar costs {ProviderWeights.DividendCalendar} a session",
         };
 
         // Every figure the class holds, so a weight added to it is one read here.

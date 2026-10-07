@@ -286,7 +286,24 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                 Money(part, "PayoutRatio"),
                 Date(Text(part, "ExDividendDate")),
                 Date(Text(part, "DividendDate")))
+            {
+                ByYear = ByYear(part),
+            }
             : null;
+
+    // Each year's count of dividends, filed under `NumberDividendsByYear` as an object of numbered rows each a year and
+    // a count, and an empty object for a company paying none; oldest first.
+    static IReadOnlyList<DividendsInYear> ByYear(JsonElement part) =>
+        part.TryGetProperty("NumberDividendsByYear", out var years) && years.ValueKind == JsonValueKind.Object
+            ?
+            [
+                .. years.EnumerateObject()
+                    .Select(row => row.Value)
+                    .Where(row => row.ValueKind == JsonValueKind.Object && Count(row, "Year") is not null && Count(row, "Count") is not null)
+                    .Select(row => new DividendsInYear(Count(row, "Year")!.Value, Count(row, "Count")!.Value))
+                    .OrderBy(row => row.Year),
+            ]
+            : [];
 
     // A count of analysts, which the payload sends as a whole number.
     static int? Count(JsonElement row, string name) =>

@@ -691,7 +691,52 @@ public static class SchemaMigrations
         new Migration(68, "create index_heavyweight_rule_night and index_heavyweight_rule_holding", CreateIndexHeavyweightRules),
         new Migration(69, "create decision_card and rule_record", CreateDecisionCards),
         new Migration(70, "add decision_card's sector, trail, cap, round trip and book holdings, and create taken_trade", CreateTakenTrades),
+        new Migration(71, "add taken_trade's end and decision_card's hits, and create taken_record and dividend_reading", CreateTakenRecords),
     ];
+
+    // Where the night's follower found each taken trade ended, the session, the close it was sold at as the stock traded
+    // that day, why and its result from the fill, in multiples of its risk or in per cent for a holding with no stop; the
+    // operator's own record, one row an index and family, written by the follower over every trade the operator took, with
+    // the rule's own picks listed on the same nights beside it, each followed from the plan's buy; and
+    // the dividend part of each answer the quarters fetch stores, the forward rate, the last declared ex-date and each
+    // year's count, which a pick's card estimates the next ex-date from where the calendar declares none.
+    // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    const string CreateTakenRecords = @"
+        ALTER TABLE taken_trade ADD COLUMN ended_on TEXT;
+        ALTER TABLE taken_trade ADD COLUMN end_price TEXT;
+        ALTER TABLE taken_trade ADD COLUMN end_reason TEXT;
+        ALTER TABLE taken_trade ADD COLUMN result REAL;
+        ALTER TABLE decision_card ADD COLUMN hits TEXT;
+
+        CREATE TABLE taken_record (
+            index_code  TEXT    NOT NULL,
+            family      TEXT    NOT NULL,
+            unit        TEXT    NOT NULL,
+            won         INTEGER NOT NULL,
+            lost        INTEGER NOT NULL,
+            ended       INTEGER NOT NULL,
+            open_trades INTEGER NOT NULL,
+            average     REAL,
+            same_nights INTEGER NOT NULL,
+            rule_listed INTEGER NOT NULL,
+            rule_won    INTEGER NOT NULL,
+            rule_lost   INTEGER NOT NULL,
+            rule_ended  INTEGER NOT NULL,
+            rule_average REAL,
+            night       TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family)
+        ) STRICT;
+
+        CREATE TABLE dividend_reading (
+            ticker        TEXT NOT NULL,
+            fetched_at    TEXT NOT NULL,
+            forward_rate  TEXT,
+            last_ex_date  TEXT,
+            by_year       TEXT NOT NULL,
+            PRIMARY KEY (ticker, fetched_at)
+        ) STRICT;
+    ";
 
     // What a pick's card sizes its plan and words its management from, stored by the night beside the lines: the
     // stock's sector, the trail and the cap the rule manages the trade by, the round trip a share at the published
