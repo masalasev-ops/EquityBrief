@@ -39877,3 +39877,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1986 of 1986 tests ran.
 Carried:    nothing.
+
+### 14.6 - correction: the page's book reads again a month whose rows read no lead, asserted where only the rule books' was   2026-10-07
+
+Corrects:   the 14.6 correction above counted a month as read only where a row of it read a lead in both books' last
+            rebalance, and asserted it for the registered rules' books alone, so the page's query could drop its filter
+            with every test green.
+Found:      by me, sorting what a reviewer would find before the phase 14 sign-off handoff: of the properties that
+            correction added, the page's filter was the one no test named.
+Built:      tests only, no shipped code: the page's book over a store holding a month's rows that read no lead reads the
+            month again on the next night holding 252 sessions and buys W1, the rows kept as written.
+Tests:      one added.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, stated before the run: the property broken alone, the page's last rebalance counting a month whose
+            rows read no lead, made on the branch in this checkout over a copy of `HeavyweightBook.cs` and restored from
+            it, filtered to the 28 heavyweights tests: predicted red in the new test alone. Result: red in the new test
+            alone, 1 of 28. Restored, and the test green over the restored tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing.

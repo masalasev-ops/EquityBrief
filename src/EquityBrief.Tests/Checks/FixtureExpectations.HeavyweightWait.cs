@@ -262,6 +262,30 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ThePagesMonthWhoseRowsReadNoLeadIsReadAgainOnTheNextNightThatCan()
+    {
+        // The page's book stored a month's rebalance that read every return, beta and lead as none and no leader; the
+        // store now holds the 252 sessions to the next night of that month.
+        var night = new DateOnly(2026, 10, 6);
+
+        using var store = WaitStore(new DateOnly(2025, 10, 6), night);
+
+        store.Execute(
+            "INSERT INTO heavyweight_night (session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta) VALUES " +
+            string.Join(", ", WaitMembers.Select((member, at) => $"('2026-10-05', '{TechSector}', {at + 1}, '{member.Ticker}', 'CIK CIK{member.Ticker}', '1000', NULL, NULL, NULL, 0, 0, NULL)")) + ";");
+        WaitAverages(store, night);
+
+        // The month counts as read only where a row of it read a lead, so the page's book reads it on this night and buys
+        // W1, the rows that read nothing kept as they were written.
+        var outcome = await new HeavyweightBook(FixedClock.At(At(night, 23, 40), SessionZones.UnitedStates), store.DatabaseFile, YearLong).RunAsync("GSPC", "night-again");
+
+        Assert.True(outcome.Rebalanced);
+        Assert.Equal(["W1"], outcome.Entered);
+        Assert.Equal(3, Scalar(store, "SELECT COUNT(*) FROM heavyweight_night WHERE session_date = '2026-10-05' AND lead IS NULL;"));
+        Assert.Equal(3, Scalar(store, "SELECT COUNT(*) FROM heavyweight_night WHERE session_date = '2026-10-06' AND lead IS NOT NULL;"));
+    }
+
+    [Fact]
     public async Task TheSAndP400sBookAndARegisteredRuleBookWaitOnANightTheirMembersHoldOneSessionShort()
     {
         var (store, closes) = HeavyweightIndexStore();
