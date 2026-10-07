@@ -205,6 +205,12 @@ public partial class FixtureExpectations
         Assert.Equal([TheSetupFamilies.HeavyweightTest], TextRows(store, "SELECT DISTINCT test FROM candidate_register;"));
         Assert.Equal(HeavyweightRule.Name, CandidateFamily.SetupFamilyOf(SectorHeavyweightCandidate.EvaluatorName));
 
+        // The rule each stores names the session a rebalance is read on as the book reads it.
+        Assert.StartsWith(
+            "the sector heavyweights' rule at every setting stated: on the first session of each month, or of each week where stated, or the first after it whose stored year holds the closes the setting's readings need, each sector's stated count of largest companies",
+            Assert.Single(TextRows(store, "SELECT DISTINCT rule FROM candidate_register;")),
+            StringComparison.Ordinal);
+
         // A second freeze is refused whole, each rule standing already, and writes nothing.
         var (again, refused) = await RegisterVerbAt(store, FreezeRegisteredAt.AddHours(1), RegisterVerb.Family, HeavyweightRule.Name);
 

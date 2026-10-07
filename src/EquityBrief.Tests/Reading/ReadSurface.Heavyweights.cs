@@ -323,4 +323,38 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("heavyweight-picks", WebUtility.HtmlDecode(await emptyClient.GetStringAsync("/screens/picks")), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void TheRulesSentenceNamesItsRebalanceSessionAndEachSaleAtEveryExitAndPeriod()
+    {
+        static string Words(HeavyweightSettings settings) => EquityBrief.Api.Reading.RuleWords.Heavyweights(settings);
+
+        // A month's rebalance opens the sentence, and each exit names the session it sells on.
+        Assert.StartsWith(
+            "On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the index by value,",
+            Words(HeavyweightRule.Live),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.",
+            Words(HeavyweightRule.Live),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "bought at that close. Sold at the close of a later month's rebalance where it no longer leads, or at a close under its 200-day average.",
+            Words(HeavyweightRule.Live with { SoldUnderAverage = true }),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "bought at that close. Sold at a close under its 200-day average.",
+            Words(HeavyweightRule.Live with { SoldOnLeading = false, SoldUnderAverage = true }),
+            StringComparison.Ordinal);
+
+        // A weekly setting reads each week's the same way.
+        Assert.StartsWith(
+            "On each week's first session, or the first after it whose stored year holds the closes its readings need,",
+            Words(HeavyweightRule.Live with { Weekly = true }),
+            StringComparison.Ordinal);
+        Assert.EndsWith(
+            "Held while it leads: sold at the close of a later week's rebalance where the rule would no longer buy it.",
+            Words(HeavyweightRule.Live with { Weekly = true }),
+            StringComparison.Ordinal);
+    }
 }
