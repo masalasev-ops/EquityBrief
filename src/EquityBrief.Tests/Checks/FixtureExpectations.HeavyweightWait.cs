@@ -47,7 +47,7 @@ public partial class FixtureExpectations
     {
         var at = WaitSessions.ToList().IndexOf(session);
 
-        Assert.True(at >= 0, $"{session:yyyy-MM-dd} is no session the stores are drawn from.");
+        Assert.True(at >= 0, FormattableString.Invariant($"{session:yyyy-MM-dd} is no session the stores are drawn from."));
 
         return at;
     }
