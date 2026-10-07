@@ -494,5 +494,33 @@ public partial class FixtureExpectations
         Assert.Equal((4, (double?)null), (record.MedianSessions, record.Won));
         Assert.Equal([0, 0, 0, 1], record.EndedBy);
         Assert.Equal((RuleReplay.SurvivorsOnly, RuleReplay.Risks, key), (replayed.Membership, replayed.Unit, replayed.Settings));
+
+        // Named in the register's words from the frozen dials, 126, 1.5, 0.85 and 1.5, and never by the sweep's key.
+        Assert.Equal("the breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath", replayed.Rule);
+    }
+
+    [Fact]
+    public void ARulesRecordNamesItsRuleInTheRegistersWordsReadOffItsOwnSettingAndNeverByTheSweepsKey()
+    {
+        // Worked by hand from each setting's dials: the drift frozen at 3 sessions, 0.5 typical moves, 2 times the volume
+        // and a target at 2.5 times the risk; the S&P 500's heavyweights at the 10 largest over 251 sessions against the
+        // sector's fund with 2 leaders and a beta of at least 1, monthly, sold on no longer leading; and the S&P 400's and
+        // 600's the same against the sector's members.
+        Assert.Equal(
+            "the drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk",
+            RuleReplay.SwingWords(DriftRule.Name, IndexNightRead.DriftAsFrozen));
+        Assert.Equal(
+            "the sector heavyweights rule at the 10 largest, 251 sessions against the sector's fund, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
+            RuleReplay.HeavyweightWords(HeavyweightSweep.Frozen));
+        Assert.Equal(
+            "the sector heavyweights rule at the 10 largest, 251 sessions against the sector's members, 2 leaders, a beta of at least 1, monthly, sold on no longer leading",
+            RuleReplay.HeavyweightWords(IndexHeavyweights.Provisional));
+
+        // Each family's sweep key, whose dials these words state, carries an equals sign and a bar the words never do.
+        foreach (var words in new[] { RuleReplay.SwingWords(BreakoutRule.Name, IndexNightRead.BreakoutAsFrozen), RuleReplay.SwingWords(DriftRule.Name, IndexNightRead.DriftAsFrozen), RuleReplay.HeavyweightWords(HeavyweightSweep.Frozen) })
+        {
+            Assert.DoesNotContain("=", words, StringComparison.Ordinal);
+            Assert.DoesNotContain("|", words, StringComparison.Ordinal);
+        }
     }
 }

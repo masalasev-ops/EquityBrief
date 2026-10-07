@@ -11900,3 +11900,11 @@ Was:
 Now:
 > <td>the build plan's phase 16 checkpoints, 16.0 to 16.5</td>
 Why: 16.5 is a checkpoint of phase 16.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations states a rule's record named in words
+Corrects: eight of the twelve rule records named their rule by the sweep's key, found by 16.4's screens read back.
+Was:
+> ... and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost; ...
+Now:
+> ... and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost, named in the register's words read off its own setting and never by the sweep's key; ...
+Why: the roster is where a check states what it asserts.

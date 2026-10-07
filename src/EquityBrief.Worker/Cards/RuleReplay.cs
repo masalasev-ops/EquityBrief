@@ -3,6 +3,7 @@ using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Sweep;
 
@@ -186,10 +187,32 @@ public static class RuleReplay
                 listing.Trails ? null : result >= ((listing.Target - listing.Entry) / risk) - Tolerance));
         }
 
-        var words = family == BreakoutRule.Name ? "the breakout" : "the earnings drift";
-
-        return new Replayed(family, $"{words} at {adapter.Grid.Key(setting)}", adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept);
+        return new Replayed(family, SwingWords(family, setting), adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept);
     }
+
+    // The breakout's or the drift's setting in the words the register names a family rule in, read off the setting's own
+    // dials, so the card names its rule as the run page does and never by the sweep's key.
+    public static string SwingWords(string family, IReadOnlyList<int> setting)
+    {
+        double Dial(FamilyGrid grid, int dial) => grid.Value([.. setting], dial);
+
+        return "the " + (family == BreakoutRule.Name
+            ? TheSetupFamilies.Words(new BreakoutSettings((int)Dial(BreakoutSweep.Grid, 0), Dial(BreakoutSweep.Grid, 1), Dial(BreakoutSweep.Grid, 2), Dial(BreakoutSweep.Grid, 3)))
+            : TheSetupFamilies.Words(new DriftSettings((int)Dial(DriftSweep.Grid, 0), Dial(DriftSweep.Grid, 1), Dial(DriftSweep.Grid, 2), Dial(DriftSweep.Grid, 3))));
+    }
+
+    // The sector heavyweights' setting in the register's words, its sector's return, its period and its exit read off the
+    // sweep's own setting.
+    public static string HeavyweightWords(HeavyweightSetting setting) =>
+        "the " + TheSetupFamilies.Words(new HeavyweightSettings(
+            setting.Largest,
+            setting.LookBack,
+            setting.Leaders,
+            setting.HighBeta,
+            FundReturn: setting.Sector == HeavyweightSectorReturn.Fund,
+            Weekly: setting.Period == HeavyweightPeriod.Week,
+            SoldOnLeading: setting.Exit != HeavyweightExit.Break,
+            SoldUnderAverage: setting.Exit != HeavyweightExit.Drop));
 
     // The sector heavyweights' book at the setting frozen on the S&P 500, the S&P 400's and 600's reading each sector's
     // return from its members within the index after their floors and gate, every holding's result after its cost in per
@@ -246,7 +269,7 @@ public static class RuleReplay
 
         return new Replayed(
             HeavyweightRule.Name,
-            read.Large ? $"the sector heavyweights as frozen, {setting.Key}" : $"the sector heavyweights' design (a) at the S&P 500's frozen settings within the index, {setting.Key}",
+            HeavyweightWords(setting),
             setting.Key,
             read.From,
             read.Inputs.Through,

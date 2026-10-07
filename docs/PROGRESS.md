@@ -39497,3 +39497,34 @@ Queue:      done, 16.4, PR 386, and the 16.1 correction, PR 387; in progress, th
             14, 15 and 16, each by a session the operator starts, one at a time.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
 Carried:    16.5.
+
+### 16.1 - correction: a rule's record names its rule in the register's words, where eight of the twelve carried the sweep's key   2026-10-07
+
+Corrects:   16.1's rule recorder, which named the breakout, the drift and the sector heavyweights on every index by the
+            sweep's key, so the card under each of those rules' records read "the earnings drift at
+            window=3|reaction=0.5|volume=2|target=2.5".
+Found:      by 16.4's screens read back over the cards of 2026-10-06: APOG's and LW's cards on the S&P 600 drew the
+            drift's key, and the store's twelve records named eight rules so; the pullback's four read in words.
+Built:      the breakout and the drift named from the frozen setting's own dials, and the heavyweights from the sweep's
+            setting, each in the words the register names a family rule in, "the drift rule within 3 sessions, up 0.5
+            typical moves on 2 times the volume, the target at 2.5 times the risk". The remedy
+            `tools/remedies/2026-10-07-16.1-the-rules-in-words.txt` runs `rule-record` again, no request and no model
+            call; a card written before it keeps its name until the next night's cards. The roster's
+            `fixture-expectations` clause says so, with its prior text in `CHANGELOG.md`.
+Tests:      1965, from 1964: one added, each family's name worked by hand from its setting's dials on the S&P 500 and
+            on the S&P 400 and 600 and holding neither the key's equals sign nor its bar; the S&P 600's replay named so
+            in the test that reads it against the sweep.
+Claims:     1031, unchanged.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; the rule replay is in none of them.
+Mutated:    the rule, stated before the run: the property the correction adds broken two ways, made on the branch in this
+            checkout, filtered to the two record tests and reverted.
+            R1 the drift's reaction read from its volume dial: predicted red at the words test alone.
+            R2 the breakout's replay named by its key again: predicted red at the replay test alone.
+            Results: R1 red at the words test alone, "up 2 typical moves" against "up 0.5"; R2 red at the replay test
+            alone, the key's name against the words. Each reverted, and the two tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    the remedy, run by me after the merge.
