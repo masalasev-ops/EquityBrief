@@ -11881,3 +11881,22 @@ Was:
 Now:
 > ... another model loaded unloaded first, a model listed at its profile's context not loaded again with its first call alone carrying the load's allowance, one listed at a smaller context, at the runtime's own and at one token under the profile's, unloaded and loaded again at its profile's, a runtime stating no load state called the same way, ...
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - BUILD_PLAN.md - phase 16 gains 16.5, the news labeller's wait for the end of a peak window, after its report
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> **One pull request a checkpoint.** 16.1 to 16.4 in order, each reported after it merges.
+> ... and about 2 at 16.4, the card's figure and its key.
+Now:
+> **One pull request a checkpoint.** 16.1 to 16.4 in order, each reported after it merges, and 16.5 after the report on the operator's ruling of 2026-10-07, in one pull request with the corrections the screens read back found.
+> ... and about 2 at 16.4, the card's figure and its key. 16.5, after the report, adds no row of a table the harness reads: its words go to rows that stand.
+> and the section "### 16.5 The news labeller waits for the end of a peak window" after 16.4's, with its done condition.
+Why: the operator ruled on 2026-10-07 that the labeller's addendum is built inside phase 16.
+
+### 2026-10-07 - ARCHITECTURE.html - section 20's phase 16 row names its checkpoints through 16.5
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> <td>the build plan's phase 16 checkpoints, 16.0 to 16.4</td>
+Now:
+> <td>the build plan's phase 16 checkpoints, 16.0 to 16.5</td>
+Why: 16.5 is a checkpoint of phase 16.

@@ -39479,3 +39479,21 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    nothing. The next night's queue reads the new load. Then the 16.4 screens, the drain's build copy
             correction and the sign-offs.
+
+### 16.5 ruling - the news labeller's wait for the end of a peak window built inside phase 16, after its report   2026-10-07
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-07: "Actually fit the labeller addendum within phase 16". The addendum is the one
+            the queue ruling of 2026-10-05 put after 16.4, the news labeller waiting for the end of a peak window as
+            the drain does, where it stops at one now. On the night of 2026-10-06 the labeller started at 01:35 UTC
+            inside the window from 01:00 to 04:00 and labelled nothing.
+Plan:       `BUILD_PLAN.md` gains 16.5 after the report, with its done condition; 16.5 adds no row of a table the
+            harness reads, said beside phase 16's pair; section 20's row names 16.0 to 16.5; the decision is written
+            (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit
+            counts the time it labels), narrowing the labeller's and the copy's, which both stand. 16.5 lands in one
+            pull request with the corrections the screens read back found, and the phase 16 sign-off covers it.
+Queue:      done, 16.4, PR 386, and the 16.1 correction, PR 387; in progress, this ruling, the screens read back and
+            the corrections they found, the drain's build copy correction, and 16.5; next, the sign-offs of phases
+            14, 15 and 16, each by a session the operator starts, one at a time.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    16.5.
