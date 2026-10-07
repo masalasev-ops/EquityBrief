@@ -45,7 +45,8 @@ public static class TheSetupFamilies
 
     public const string HeavyweightWords =
         "the sector heavyweights' rule at every setting stated: on the first session of each month, or of each week where " +
-        "stated, each sector's stated count of largest companies by value as it stood, one listing a company and every " +
+        "stated, or the first after it whose stored year holds the closes the setting's readings need, each sector's " +
+        "stated count of largest companies by value as it stood, one listing a company and every " +
         "company where the count is nought; a company's lead its return over the stated look-back less its sector's, the " +
         "sector's its fund's over the fund's own sessions where stated and its members' mean otherwise; the stated count " +
         "of leaders a sector, the largest leads above nothing whose close sits above its 50-day average and that above its " +

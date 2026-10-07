@@ -151,14 +151,14 @@ public static class RuleWords
         + $"Bought within {window} sessions while it holds above that day's low. Stop at that day's low, target at the next band above or {Number(target)} times the risk, whichever is nearer.";
 
     static string Heavyweights(string size, string lookBack, string leaders, string comparison, string? beta, string period, string exit, string within) =>
-        $"On each {period}'s first session, among each sector's {(size == "every" ? "companies" : size + " largest companies")} {within} by value, the {leaders} whose {lookBack}-session returns beat {comparison} by the most, where they beat it at all, their close above their 50-day average and that above their 200-day"
+        $"On each {period}'s first session, or the first after it whose stored year holds the closes its readings need, among each sector's {(size == "every" ? "companies" : size + " largest companies")} {within} by value, the {leaders} whose {lookBack}-session returns beat {comparison} by the most, where they beat it at all, their close above their 50-day average and that above their 200-day"
         + (beta is null ? string.Empty : ", " + beta)
         + $", bought at that close. "
         + exit switch
         {
             "break" => "Sold at a close under its 200-day average.",
-            "both" => $"Sold at a {period}'s first close where it no longer leads, or at a close under its 200-day average.",
-            _ => $"Held while it leads: sold at a {period}'s first close where the rule would no longer buy it.",
+            "both" => $"Sold at the close of a later {period}'s rebalance where it no longer leads, or at a close under its 200-day average.",
+            _ => $"Held while it leads: sold at the close of a later {period}'s rebalance where the rule would no longer buy it.",
         };
 
     static string Number(string stored) =>

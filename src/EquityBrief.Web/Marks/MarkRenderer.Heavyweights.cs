@@ -67,7 +67,7 @@ public sealed partial class MarkRenderer
         ("Held since", "The session the book bought it on, at that session's close."),
         ("Lead over its sector", "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it."),
         ("Close against its 200-day", "Tonight's close beside its 200-day average, which the trend gate read at the rebalance. A close under it sells nothing on its own."),
-        ("Plan", "Held while it leads: no stop and no target. It is sold at a month's first close where it no longer leads, or at its last close as a member."),
+        ("Plan", "Held while it leads: no stop and no target. It is sold at the close of a later month's rebalance where it no longer leads, or at its last close as a member."),
     ];
 
     // The sector heavyweights' card: its standing and the night's count in a line, the holdings one to a row, what

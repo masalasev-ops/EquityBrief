@@ -39957,3 +39957,42 @@ Mutated:    the rule, the review's: f, the no-close return giving no wait, made 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
             entry for the rule's words below states.
 Carried:    nothing.
+
+### 14.6 - correction: the rule's words name the month's rebalance session as the decision does, where they still said its first session   2026-10-07
+
+Corrects:   the 14.6 correction moved the rebalance to the first session of each month whose stored year holds the
+            closes its readings need, and the rule's words still said a month's first session or close: every
+            heavyweights card's rule sentence and sale clause on the three indices, the family's words, the card's Plan
+            key, Tonight's and Past picks' keys on the S&P 500 and on the S&P 400 and 600, each pick's management line,
+            the registration's rule text and section 17's card hold row. The live Tonight page drew "next rebalance
+            2026-11-03" beside "a month's first close"; from 2026-11-03 a card and Past picks would show a buy or a sale
+            on a month's second session under words naming its first.
+Found:      by the second phase 14 sign-off review over d9360729 (J3). Reproduced by its grep and on the live Tonight
+            page; the same grep also found section 11.4's paragraph, twice, section 15.18's plan paragraph and the guide.
+Built:      each place says the month's first session or the first after it whose stored year holds the closes its
+            readings need, and a sale at the close of a later month's rebalance; the sweep's comments keep the first
+            session, which the sweep reads. Sections 11.4, 15.18 and 17 are clean edits, prior text in `CHANGELOG.md`,
+            and the guide's sentence moved with them. Register rows 228 to 231, the four rules registered at
+            2026-10-07T14:17:59Z, keep the rule text they were registered with, "on the first session of each month":
+            registering them again would restart the four records, which from the night of 2026-10-07 hold October's
+            buys, so a registration from here carries the new text. The build plan's phase 14 and 16 paragraphs stand
+            as planned.
+Tests:      none added. Three moved with the words: the S&P 500 and S&P 400 cards' sentences and the management line on
+            both indices. Four now assert what no test read whole: the S&P 500 card's Plan key, the Tonight and Past
+            picks keys on both indices, and no "month's first close" on any of those four pages.
+Claims:     unchanged. Pins: none moved; no file this edits is in a pin list.
+Mutated:    the rule: a sentence on each surface put back to its old words, made on the branch in this checkout over the
+            file's own text and restored from it, filtered to the nine tests that draw them: w1 the cards' sale clause
+            in `RuleWords` predicted red in the S&P 500 and S&P 400 Tonight tests; w2 the management line in the
+            management test alone; w3 the S&P 400 Past picks key in its Past picks test alone; w4 the S&P 500 Tonight
+            key in the S&P 500 card test alone.
+            Results: w1 red in both Tonight tests, 2 of 9; w2, w3 and w4 each red in its own test alone, 1 of 9. Each
+            restored, the tree's diff the same after as before, and the nine green over it before the run. A first run
+            restored each file from git, which undid this correction's edits in three files; it was discarded, the
+            edits made again and the four run over the tree as it stands.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
+            session.

@@ -153,7 +153,7 @@ public partial class ReadSurface
             ManagementOf(await CardRowOf(client, "MID", "breakout", "M1")));
         Assert.Equal(
             [
-                "Held while it leads its sector: sell at the close of a month's first session where the rule would no longer buy it.",
+                "Held while it leads its sector: sell at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the rule reads, where the rule would no longer buy it.",
                 "Sell at its last close as a member if it leaves the index.",
                 "No stop and no target: nothing sells it at a price set in advance, so the whole position is at risk.",
             ],
@@ -200,7 +200,7 @@ public partial class ReadSurface
 
         Assert.Equal(
             [
-                "Held while it leads its sector: sell at the close of a month's first session where the rule would no longer buy it.",
+                "Held while it leads its sector: sell at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the rule reads, where the rule would no longer buy it.",
                 "Sell at its last close as a member if it leaves the index.",
                 "No stop and no target: nothing sells it at a price set in advance, so the whole position is at risk.",
             ],

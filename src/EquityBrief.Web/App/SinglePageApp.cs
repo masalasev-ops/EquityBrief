@@ -1686,7 +1686,7 @@ public sealed class SinglePageApp : IComponent
                     Invariant($"Rotation · {heavyweights.Eyebrow}"),
                     marks.HeavyweightCard(heavyweights) + Cards.Key(
                         "How to read the card.",
-                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at a month's first close as one of the two leaders of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of its sector fund's at the rebalance that read it.",
+                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the two leaders of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of its sector fund's at the rebalance that read it.",
                         "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card, and a stock held here can be listed by a swing setup too: each card keeps its own one trade a stock."),
                     title: Escaped(heavyweights.Heading),
                     lede: Escaped(heavyweights.Rule),
@@ -1880,7 +1880,7 @@ public sealed class SinglePageApp : IComponent
                 Invariant($"Rotation · {heavyweights.Eyebrow}"),
                 marks.HeavyweightCard(heavyweights) + Cards.Key(
                     "How to read the card.",
-                    $"Each row is a stock the {Escaped(universe.Possessive)} sector heavyweights hold at tonight's close, bought at a month's first close as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, or at its last close as a member of the index.",
+                    $"Each row is a stock the {Escaped(universe.Possessive)} sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index.",
                     "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card."),
                 title: Escaped(heavyweights.Heading),
                 lede: Escaped(heavyweights.Rule),
@@ -2710,7 +2710,7 @@ public sealed class SinglePageApp : IComponent
                     + marks.HeavyweightPicks(holdings)
                     + Cards.Key(
                         "How to read it.",
-                        $"A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
+                        $"A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
                         "Provisional like every rule of this index: followed, and in no record until its freeze."),
                 title: Invariant($"The {universe.Possessive} sector heavyweights, newest first"),
                 lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
@@ -2743,7 +2743,7 @@ public sealed class SinglePageApp : IComponent
                 + marks.HeavyweightPicks(holdings)
                 + Cards.Key(
                     "How to read it.",
-                    "A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
+                    "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
                     "The difference is what leading its sector was worth over being merely large, which is what each rule's record asks; a holding still held has neither yet."),
             title: "Sector heavyweights, newest first",
             lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
