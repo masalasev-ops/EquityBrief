@@ -39877,3 +39877,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1986 of 1986 tests ran.
 Carried:    nothing.
+
+### 14.6 - correction: the page's book reads again a month whose rows read no lead, asserted where only the rule books' was   2026-10-07
+
+Corrects:   the 14.6 correction above counted a month as read only where a row of it read a lead in both books' last
+            rebalance, and asserted it for the registered rules' books alone, so the page's query could drop its filter
+            with every test green.
+Found:      by me, sorting what a reviewer would find before the phase 14 sign-off handoff: of the properties that
+            correction added, the page's filter was the one no test named.
+Built:      tests only, no shipped code: the page's book over a store holding a month's rows that read no lead reads the
+            month again on the next night holding 252 sessions and buys W1, the rows kept as written.
+Tests:      one added.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, stated before the run: the property broken alone, the page's last rebalance counting a month whose
+            rows read no lead, made on the branch in this checkout over a copy of `HeavyweightBook.cs` and restored from
+            it, filtered to the 28 heavyweights tests: predicted red in the new test alone. Result: red in the new test
+            alone, 1 of 28. Restored, and the test green over the restored tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 411ac8c3, the
+            pull request's first commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1987 of 1987 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1987 of 1987 tests ran.
+Carried:    nothing.
