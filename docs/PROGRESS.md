@@ -39655,11 +39655,11 @@ Built:      before each call, a retry's among them, the labeller waits out a pea
             prior text in `CHANGELOG.md`.
 Rows:       none added: 16.5's words went to rows that stand, so phase 16's pair, 1031 and 1031, stands beside its
             report unchanged.
-Tests:      1971, from 1968: three added, a labeller started at 02:00 inside a window waiting to 04:00 and labelling for
-            twenty minutes after it with its two hours left out of the count, one started a second before the window's
-            end waiting that second and one at its end waiting none, and the latest end worked by hand at 01:35 on a
-            weekday, at 23:30 before a window, at 05:50 across the second window to 10:10, a second before 04:00, on a
-            Saturday and with no prices. Two changed from stopping to waiting: a run at 02:00 waiting two hours and
+Tests:      1970, from 1968: two added, a labeller started at 02:00 inside a window waiting to 04:00 and labelling for
+            twenty minutes after it with its two hours left out of the count, with one started a second before the
+            window's end waiting that second and one at its end waiting none; and the latest end worked by hand at
+            01:35 on a weekday, at 23:30 before a window, at 05:50 across the second window to 10:10, a second before
+            04:00, on a Saturday and with no prices. Two changed from stopping to waiting: a run at 02:00 waiting two hours and
             labelling every article, its row counting one wait of 120 minutes, a wait that does not see the end
             stopping at the window; and a retry reaching the window at 01:00 waiting three hours and asked. The copy's
             wait gains a labeller started at 01:35 on a weekday, waited for until 04:30, and one on a Saturday, as before.
