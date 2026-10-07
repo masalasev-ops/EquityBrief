@@ -431,7 +431,7 @@ public sealed class DecisionCards : IComponent
             typical = move;
         }
 
-        return CardHitsReading.Read(night, plan.Cap, CardHitsReading.Reactions(moves, close, typical, plan.Entry, plan.Stop), declared, kept, plan.Entry, plan.Stop);
+        return CardHitsReading.Read(night, plan.Cap, CardHitsReading.Reactions(moves, close, typical, plan.Entry, plan.Stop), declared, kept, plan.Entry, plan.Stop, declaredSessions: CalendarFetcher.DividendSessions);
     }
 
     // What could hit the trade as a card stores it.
@@ -455,6 +455,7 @@ public sealed class DecisionCards : IComponent
                 inPercent = dividend.InPercent,
             }
             : null,
+        dividendUnread = hits.DividendUnread,
         events = hits.Events.Select(one => new { date = Stamp(one.Date), name = one.Name, source = one.Source }),
         pastTheTable = hits.PastTheTable,
     });

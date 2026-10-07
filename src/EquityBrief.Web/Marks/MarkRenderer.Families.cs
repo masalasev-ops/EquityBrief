@@ -505,7 +505,7 @@ public sealed partial class MarkRenderer
 
         cells.Append(pick.RewardToRisk is { } ratio
             ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
-            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : "<span class=\"degraded\">none</span>")}</td>");
+            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>");
 
         cells.Append(Invariant, $"<td class=\"why-tonight\">{Escaped(pick.Why)}</td>");
 

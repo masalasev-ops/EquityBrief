@@ -56,6 +56,38 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task APicksCardSaysALaterExDividendDateIsNotRuledOutWhereNoDividendOfTheCompanysIsStored()
+    {
+        // M1's breakout holds 63 sessions, past the 21 the calendar is asked for, the calendar declares it no date, and the
+        // store keeps no dividend of the company's to estimate one from: the card says a later one is not ruled out.
+        using (var store = TakenStore())
+        {
+            await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            Assert.Contains(
+                "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one from, so one later in the hold is not ruled out.</li>",
+                await CardRowOf(client, "MID", "breakout", "M1"),
+                StringComparison.Ordinal);
+        }
+
+        // With a dividend kept that pays none, nothing is left to estimate, and the card says no date falls in the hold.
+        using (var store = TakenStore())
+        {
+            store.Execute("INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES ('M1', '2026-10-01T23:00:00Z', '0', NULL, '[]');");
+
+            await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            Assert.Contains("<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public async Task PastPicksDrawsTheOperatorsTradesOnTheChosenIndexOpenOnesFirst()
     {
         using var store = TakenStore();

@@ -73,7 +73,7 @@ public partial class FixtureExpectations
     }
 
     // A copy whose wait moves the clock a look at a time and runs what the script holds at each instant reached.
-    static (StoreBackup Backup, CopyClock Clock) Copying(TemporaryStore store, DateTimeOffset start, string folder, Action<DateTimeOffset>? script = null)
+    static (StoreBackup Backup, CopyClock Clock) Copying(TemporaryStore store, DateTimeOffset start, string folder, Action<DateTimeOffset>? script = null, EquityBrief.Core.Providers.ResearchPricing? pricing = null)
     {
         var clock = new CopyClock(start);
 
@@ -83,7 +83,7 @@ public partial class FixtureExpectations
             script?.Invoke(clock.UtcNow);
 
             return Task.CompletedTask;
-        }), clock);
+        }, pricing), clock);
     }
 
     static JsonElement CopyRow(TemporaryStore store, string runId, out string outcome)
@@ -311,6 +311,28 @@ public partial class FixtureExpectations
         using (var store = CopyStore())
         {
             var (backup, clock) = Copying(store, CopyStart, Path.Combine(store.Root, "copies"));
+
+            Assert.Equal(StoreBackup.Copied, (await backup.RunAsync(afterTheLabeller: true)).Outcome);
+            Assert.Equal(CopyStart + TimeSpan.FromMinutes(20) + StoreBackup.PastTheLabellersLimit, clock.UtcNow);
+        }
+
+        // Started at 01:35 on Wednesday 2026-10-07, as the night of 2026-10-06 started it, inside the news profile's window
+        // from 01:00 to 04:00, the labeller waits to 04:00 and labels for its twenty minutes, so the copy waits for it until
+        // 04:20 and ten minutes more, where it would have copied at 02:05 beneath a labeller still to label; on Saturday
+        // 2026-10-03, which names no window, the copy waits as before.
+        var waited = new DateTimeOffset(2026, 10, 7, 1, 35, 0, TimeSpan.Zero);
+
+        using (var store = CopyStore())
+        {
+            var (backup, clock) = Copying(store, waited, Path.Combine(store.Root, "copies"), pricing: Providers.ResearchModelFeedTests.Pinned().Pricing);
+
+            Assert.Equal(StoreBackup.Copied, (await backup.RunAsync(afterTheLabeller: true)).Outcome);
+            Assert.Equal(new DateTimeOffset(2026, 10, 7, 4, 30, 0, TimeSpan.Zero), clock.UtcNow);
+        }
+
+        using (var store = CopyStore())
+        {
+            var (backup, clock) = Copying(store, CopyStart, Path.Combine(store.Root, "copies"), pricing: Providers.ResearchModelFeedTests.Pinned().Pricing);
 
             Assert.Equal(StoreBackup.Copied, (await backup.RunAsync(afterTheLabeller: true)).Outcome);
             Assert.Equal(CopyStart + TimeSpan.FromMinutes(20) + StoreBackup.PastTheLabellersLimit, clock.UtcNow);

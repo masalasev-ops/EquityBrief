@@ -15,7 +15,7 @@ namespace EquityBrief.Worker.News;
 
 // What one run of the labeller came to: the names it reached, the labels written, the answers kept as
 // unreadable by cause, the articles not sent for their admissibility, the ones labelled already, what the
-// run cost and what the month has, and what stopped it.
+// run cost and what the month has, what stopped it, and the peak windows it waited out and for how long.
 public sealed record NewsLabelOutcome(
     int Names,
     int NamesReached,
@@ -26,7 +26,9 @@ public sealed record NewsLabelOutcome(
     decimal Cost,
     decimal MonthCost,
     string Stop,
-    int LabelsDropped)
+    int LabelsDropped,
+    int PeakWaits = 0,
+    TimeSpan Waited = default)
 {
     public int UnreadableCount => Unreadable.Values.Sum();
 }
@@ -162,14 +164,16 @@ public sealed class NewsLabeller : IComponent
     readonly NewsLimits limits;
     readonly IClock clock;
     readonly string databaseFile;
+    readonly Func<TimeSpan, CancellationToken, Task> wait;
 
-    public NewsLabeller(SpendCap cap, ResearchModelSettings settings, NewsLimits limits, IClock clock, string databaseFile)
+    public NewsLabeller(SpendCap cap, ResearchModelSettings settings, NewsLimits limits, IClock clock, string databaseFile, Func<TimeSpan, CancellationToken, Task>? wait = null)
     {
         this.cap = cap;
         this.settings = settings;
         this.limits = limits;
         this.clock = clock;
         this.databaseFile = databaseFile;
+        this.wait = wait ?? Task.Delay;
     }
 
     public async Task<NewsLabelOutcome> RunAsync(DateOnly session, string runId, CancellationToken cancellation = default)
@@ -198,13 +202,28 @@ public sealed class NewsLabeller : IComponent
             stop = MonthLimitReached;
         }
 
-        // The stops judged before every call, a retry's among them: the time limit, a peak window and the month's
-        // limit, read as the spend so far and the call's own ceiling.
-        string? Stopping(ModelRequest request)
+        // Before every call, a retry's among them, a peak window of the profile open is waited out to its end, as the drain
+        // waits; then the stops: the time limit, counted over the time spent labelling and not waiting, and the month's
+        // limit, read as the spend so far and the call's own ceiling. A window the wait did not see end stops the run.
+        // see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+        var waited = TimeSpan.Zero;
+        var waits = 0;
+
+        async Task<string?> StoppingAsync(ModelRequest request)
         {
+            if (settings.Pricing.IsPeak(clock.UtcNow))
+            {
+                var from = clock.UtcNow;
+
+                await wait(settings.Pricing.OffPeakFrom(from) - from, cancellation).ConfigureAwait(false);
+
+                waited += clock.UtcNow - from;
+                waits++;
+            }
+
             var now = clock.UtcNow;
 
-            if (now - startedAt >= limits.TimeLimit)
+            if (now - startedAt - waited >= limits.TimeLimit)
             {
                 return TimeLimitPassed;
             }
@@ -232,7 +251,7 @@ public sealed class NewsLabeller : IComponent
             {
                 var request = new ModelRequest(NewsInstruction.Lane, NewsInstruction.Section, settings.Model, [articleId], NewsInstruction.System, NewsInstruction.Prompt(company, ticker, title, text));
 
-                if (Stopping(request) is { } before)
+                if (await StoppingAsync(request) is { } before)
                 {
                     stop = before;
                     break;
@@ -262,7 +281,7 @@ public sealed class NewsLabeller : IComponent
                 {
                     // Asked once more, the same request under a round of its own, where the stops a first call is
                     // judged by let it be asked; where they do not, the article is left unlabelled for the next night.
-                    if (Stopping(request) is { } again)
+                    if (await StoppingAsync(request) is { } again)
                     {
                         stop = again;
                         break;
@@ -301,7 +320,7 @@ public sealed class NewsLabeller : IComponent
         }
 
         var dropped = await DropOrphansAsync(connection, cancellation);
-        var outcome = new NewsLabelOutcome(names.Count, reached, labelled, unreadable, refused, already, cost, monthBefore + cost, stop, dropped);
+        var outcome = new NewsLabelOutcome(names.Count, reached, labelled, unreadable, refused, already, cost, monthBefore + cost, stop, dropped, waits, waited);
 
         await RecordAsync(connection, runId, session, startedAt, calls, outcome, cancellation);
 
@@ -515,6 +534,8 @@ public sealed class NewsLabeller : IComponent
             monthCost = outcome.MonthCost.ToString(CultureInfo.InvariantCulture),
             stop = outcome.Stop,
             labelsDropped = outcome.LabelsDropped,
+            peakWaits = outcome.PeakWaits,
+            waitedMinutes = (int)Math.Round(outcome.Waited.TotalMinutes, MidpointRounding.AwayFromZero),
         }));
 
         await command.ExecuteNonQueryAsync(cancellation);

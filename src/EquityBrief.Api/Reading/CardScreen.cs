@@ -100,7 +100,8 @@ public static class CardScreen
             dividend is { } risks ? Number(risks, "inRisks") : null,
             dividend is { } percent ? Number(percent, "inPercent") : null,
             [.. hits.GetProperty("events").EnumerateArray().Select(one => (Day(one.GetProperty("date").GetString()!), one.GetProperty("name").GetString()!))],
-            [.. hits.GetProperty("pastTheTable").EnumerateArray().Select(kind => kind.GetString()!)]);
+            [.. hits.GetProperty("pastTheTable").EnumerateArray().Select(kind => kind.GetString()!)],
+            hits.TryGetProperty("dividendUnread", out var unread) && unread.ValueKind == JsonValueKind.True);
     }
 
     static CardRecordView Record(string stored)

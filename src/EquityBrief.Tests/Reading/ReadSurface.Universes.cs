@@ -143,6 +143,53 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task AnSAndP400PicksRowDrawsTheBusinessStateItsNightStoredAndSaysNotReadOnlyWhereNoneWasStored()
+    {
+        // M1, the S&P 400's breakout pick, with no reading stored for the night: its row says not read.
+        using (var store = UniversesStore())
+        {
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+            Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+        }
+
+        // Its reading stored for the night, improving: its row draws the state as the S&P 500's rows draw theirs.
+        using (var store = UniversesStore())
+        {
+            StoreReading(store, IndexNight, "M1", Improving());
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+            Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task AnSAndP400PicksRowSaysARewardToRiskItsNightDidNotStoreIsNotStoredRatherThanNone()
+    {
+        // M2 listed by the S&P 400's drift with a stop and a target, the night storing no reward to risk for the drift's
+        // rows: its row says the ratio is not stored, where the breakout's M1, trailing with no target, reads open.
+        using var store = UniversesStore();
+
+        store.Execute($"UPDATE index_family_result SET passed = 1, place = 1, entry = '40', stop = '37.85', target = '44.05', cap = 60, reason = NULL WHERE index_code = 'MID' AND session_date = '{IndexNight}' AND ticker = 'M2' AND family = 'drift';");
+        store.Execute($"INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES ('MID', '{IndexNight}', 'M2', 'drift', 'listed', 1, '[]', NULL, NULL, NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", FamilyRowOf(FamilyCardOf(page, "drift"), "M2"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AnSAndP400RuleWhoseSettingChangesHasItsCardDescriptionChangeWithIt()
     {
         using var store = UniversesStore();

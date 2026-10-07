@@ -11881,3 +11881,112 @@ Was:
 Now:
 > ... another model loaded unloaded first, a model listed at its profile's context not loaded again with its first call alone carrying the load's allowance, one listed at a smaller context, at the runtime's own and at one token under the profile's, unloaded and loaded again at its profile's, a runtime stating no load state called the same way, ...
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - BUILD_PLAN.md - phase 16 gains 16.5, the news labeller's wait for the end of a peak window, after its report
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> **One pull request a checkpoint.** 16.1 to 16.4 in order, each reported after it merges.
+> ... and about 2 at 16.4, the card's figure and its key.
+Now:
+> **One pull request a checkpoint.** 16.1 to 16.4 in order, each reported after it merges, and 16.5 after the report on the operator's ruling of 2026-10-07, in one pull request with the corrections the screens read back found.
+> ... and about 2 at 16.4, the card's figure and its key. 16.5, after the report, adds no row of a table the harness reads: its words go to rows that stand.
+> and the section "### 16.5 The news labeller waits for the end of a peak window" after 16.4's, with its done condition.
+Why: the operator ruled on 2026-10-07 that the labeller's addendum is built inside phase 16.
+
+### 2026-10-07 - ARCHITECTURE.html - section 20's phase 16 row names its checkpoints through 16.5
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> <td>the build plan's phase 16 checkpoints, 16.0 to 16.4</td>
+Now:
+> <td>the build plan's phase 16 checkpoints, 16.0 to 16.5</td>
+Why: 16.5 is a checkpoint of phase 16.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations states a rule's record named in words
+Corrects: eight of the twelve rule records named their rule by the sweep's key, found by 16.4's screens read back.
+Was:
+> ... and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost; ...
+Now:
+> ... and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost, named in the register's words read off its own setting and never by the sweep's key; ...
+Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - .claude/rules/checks.md - read-surface states the line above the Taken control
+Corrects: the Taken control's boxes said nothing of what they record, found by the operator reading a card.
+Was:
+> ... and the round trip ...; each press on a card without the page's own header writes nothing, and a fill at or under the stop, ...
+Now:
+> ...; the control taking a trade says above its boxes what it records and what each empty box means, and each press on a card without the page's own header writes nothing, and a fill at or under the stop, ...
+Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - ARCHITECTURE.html - section 15.18 says a card leaves a later ex-dividend date unread where no dividend is stored
+Corrects: a card said no ex-dividend date fell inside the hold where nothing could estimate one, found by 16.4's screens read back on ADM's card.
+Was:
+> ... with the payment a share in the plan's risk (see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not). And each FOMC ...
+Now:
+> ... with the payment a share in the plan's risk (see: ...). Where the calendar declares none and the store keeps none of the company's dividend yet, which the quarters fetch keeps from the night after the company next reports, a hold running past the sessions the calendar is asked for says a later date is not ruled out, rather than that there is none. And each FOMC ...
+Why: a date nothing could estimate is unread, not absent.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations and read-surface state the unread ex-dividend date
+Corrects: the same defect.
+Was:
+> ... the next ex-dividend date declared or estimated are each worked by hand; ...
+> ... its ex-dividend date and each market event inside its hold with a kind whose table ends first, ...
+Now:
+> ... the next ex-dividend date declared or estimated are each worked by hand, and a hold running a session past the calendar's 21 with no dividend of the company's kept leaves a later date unread and not ruled out where one ending on the 21st does not; ...
+> ... its ex-dividend date, or that a later one is not ruled out where no dividend of the company's is stored, and each market event inside its hold with a kind whose table ends first, ...
+Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - .claude/rules/checks.md - read-surface states the drain's copy moved into place again
+Corrects: the launcher started nothing where the system refused the copy's move once, and its refusal carried an absolute path into the run log, found by the night of 2026-10-06.
+Was:
+> ... finds the worker's build only beside the surface's own and never beside the suite's, and removes a copy nothing has started from for longer than a copy is kept; ...
+Now:
+> ... and removes a copy nothing has started from for longer than a copy is kept, a copy the system refuses to move into place moved again half a second apart up to its count, one refused every time removed and named under the data root with no path a machine roots, and one another launch moved into place first started from at once; ...
+Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - ARCHITECTURE.html - the labeller waits out a peak window and the copy waits for it the same way
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> section 18, A peak window of the news profile opens while the labeller runs: <td>no call starts inside it and what is left waits for the next night; a profile naming no windows never stops here (see: Queued work runs off-peak, and every schedule is written in UTC)</td><td>the run's row names the peak window as its stop</td><td>every paid call runs off peak where the provider prices a peak, and the labeller is no exception</td>
+> the labeller's catalogue row: ... stops at its time limit, its month limit, the day or month cap, a peak window or a model that does not answer, leaving the rest for the next night; ...
+> the copy's catalogue row: waits while the night holds its lock, for the labeller the night started until its last row or its time limit and ten minutes more, and for the drain, ...
+> section 17, News labeller time limit: <td>20 minutes from the labeller's start, proposed, after which no call starts ... (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)</td>
+> section 17, Store copies: ... and for the labeller until its last row or 10 minutes past its own time limit (see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read)</td>
+Now:
+> section 18: <td>no call starts inside it: before its next call the labeller waits for the window to end, as the drain does, and then asks, its time limit counted over the time it labels and not the time it waits; a profile naming no windows never waits, and a wait that does not see the window end stops the run there (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td><td>the run's row counts the windows it waited out and the minutes it waited</td><td>every paid call runs off peak where the provider prices a peak, and the labeller is no exception; a night ending inside a window would otherwise label none of its list</td>
+> the labeller's row: ... waits out a peak window of its profile before a call, as the drain does, and stops at its time limit, counted over the time it labels, its month limit, the day or month cap or a model that does not answer, leaving the rest for the next night; ...
+> the copy's row: ... for the labeller the night started until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+> section 17, News labeller time limit: <td>20 minutes of the labeller's labelling, proposed, the time it waits out a peak window not counted, after which no call starts ... (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td>
+> section 17, Store copies: ... and for the labeller until its last row or 10 minutes past the latest instant a labeller started with it could end, its own time limit counted over the hours outside the news profile's peak windows (see: ...) (see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels)</td>
+Why: 16.5, on the operator's ruling of 2026-10-07.
+
+### 2026-10-07 - RUNBOOK.md - the labeller waits out a peak window and the copy waits for it the same way
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> ... neither falls back to another profile. It stops at its own time limit and month limit, at the day or month cap, and where a peak window of its profile opens, and what is left waits for the next night.
+> | how long the news labeller may run from its start, in minutes | `EquityBrief:Models:News:TimeLimitMinutes` | `20` |
+> It waits while the night holds its lock, for the labeller until its last row or its time limit and ten minutes more, and for the drain, ...
+> | ... | the news job's model is down or retired, or a limit the labeller runs under was reached | ...
+Now:
+> ... neither falls back to another profile. Where a peak window of its profile is open before a call, it waits for the window to end, as the drain does, and then asks, so a labeller the night starts at half past one labels from four (see: ...). It stops at its own time limit, counted over the time it labels and not the time it waits, at its month limit and at the day or month cap, and what is left waits for the next night.
+> | how long the news labeller may label, in minutes, the time it waits out a peak window not counted | `EquityBrief:Models:News:TimeLimitMinutes` | `20` |
+> It waits while the night holds its lock, for the labeller until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+> | ... | ...; a peak window stops it only where its wait for the window's end did not see the end | ...
+Why: 16.5, on the operator's ruling of 2026-10-07.
+
+### 2026-10-07 - .claude/rules/checks.md - fixture-expectations states the labeller's wait and the copy's
+Authorised by: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
+Was:
+> ... stops before the call that would pass its month limit, at its time limit, inside a peak window, where the cap pauses it and where its model answers nothing, naming each stop on its own row, a retry judged by the first three as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; ...
+> ... and the copy waits for the night, for the labeller the night started until its last row or its time limit and ten minutes more, and for the drain, ...
+Now:
+> ... stops before the call that would pass its month limit, at its time limit counted over the time it labels and not the time it waits, inside a peak window whose end its wait did not see, where the cap pauses it and where its model answers nothing, naming each stop on its own row, a retry judged by those stops as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; and from 16.5 a labeller started inside a peak window, over a clock its own wait moves, waits to the window's end and labels for its limit after it, a retry reaching a window waits for its end and is asked, one started a second before the end waits that second and one started at it none, its row counting the windows it waited out and the minutes, and the latest end a labeller started at an instant could reach is worked by hand inside a window, before one, across the second and on a day naming none; ...
+> ... and the copy waits for the night, for the labeller the night started until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, ...
+Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - .claude/rules/checks.md - read-surface states an S&P 400 pick's business state and its unstored reward to risk on Tonight
+Corrects: the S&P 400's and 600's rows on Tonight said "not read" for every pick's business where the night stored each member's state, and "none" for a reward to risk the night never stored beside a stop and a target, found by 16.4's screens read back on APOG's and LW's rows.
+Was:
+> ... and an S&P 500 card names the index whose open trade holds a stock back; ...
+Now:
+> ... and an S&P 500 card names the index whose open trade holds a stock back, and an S&P 400 pick's row draws the business state its night stored and says not read only where none was stored, and a reward to risk its night did not store beside a stop and a target says not stored rather than none; ...
+Why: the roster is where a check states what it asserts.

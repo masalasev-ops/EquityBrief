@@ -1,0 +1,6 @@
+# The remedy of the 16.1 correction (a rule's record named in words), as its PROGRESS entry prints it: the rule recorder
+# replays each rule a card names on each index again and writes each record's name in the register's words, where eight
+# of the twelve carried the sweep's key. No provider request, no model call and nothing bought. A card written before it
+# keeps the name it was written with until the next night's cards. Run after the merge, when no night is running and not
+# inside the night's window.
+rule-record
