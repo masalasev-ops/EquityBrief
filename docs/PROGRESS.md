@@ -39811,3 +39811,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/ci.ps1`: FILLED FROM THE RUN.
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    the remedy, run after the merge and before the night; the phase 14 sign-off handoff, for a fresh session.
+
+### 14.1 - correction: the replay's comparison asserted field by field, where only a trade's end and result together were   2026-10-07
+
+Corrects:   14.1's tests asserted the replay's comparison through one trade differing in its end and its result together,
+            so each other comparison, and either of those two alone, could be removed with every test green.
+Found:      by the phase 14 sign-off review over 887ca6f3 (H2): its mutation d, the end dropped from the comparison,
+            survived the whole suite, and r1 to r6 survived the 20 tests that run the replay.
+Built:      tests only, no shipped code. The repair is assertions: the replay behaves as it did, and a comparison no test
+            names is one a later change could drop with nothing failing. Over the replay store, one stored trade of the
+            live breakout rule changed in exactly one field, each restarting that rule with the sentence the comparison
+            writes while the other seven carry on: its end alone with no result either side; its result alone on a
+            trade the replay ends, a session more closing BA under its stop and the night's own recorder walking the
+            record over it; its place; its stop's distance beyond a millionth of the buy, a stop moved within one
+            reproducing; its target's distance; a trade the record lacks; and a trade the replay lacks. The roster's
+            clause landed with the 14.6 correction, with its prior text in `CHANGELOG.md`.
+Tests:      seven added.
+Claims:     unchanged. Pins: none moved.
+Mutated:    the rule, stated before the run: each comparison removed alone, the review's edits in `FamilyReplay.cs`, made
+            on the branch in this checkout over a copy of the file and restored from it, filtered to the nine replay
+            tests (`~AReplayRestarts`, `~AFamilyRuleWhose`), each predicted red in its own test alone: d the end dropped,
+            r1 the result dropped, r2 the place ignored, r3 the replay's stop read as the record's, r4 the replay's target
+            read as the record's, r5 a trade only the replay keeps passed over, r6 a trade only the record keeps passed
+            over.
+            Results: d red in the end test alone, r1 in the result test alone, r2 in the place test alone, r3 in the stop
+            test alone, r4 in the target test alone, r5 in the record-lacks test alone and r6 in the replay-lacks test
+            alone, 1 of 9 each. Each restored, and the nine green over the restored tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing.
