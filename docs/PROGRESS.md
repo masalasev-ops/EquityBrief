@@ -39528,3 +39528,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `tools/ci.ps1`: FILLED FROM THE RUN.
             `tools/verify-phase.ps1`: FILLED FROM THE RUN.
 Carried:    the remedy, run by me after the merge.
+
+### 16.2 - correction: the Taken control says above its boxes what it records and what each empty box means   2026-10-07
+
+Corrects:   16.2's Taken control, drawn as "Fill [the next open] on [date] Taken" under a heading of "Taken" with
+            nothing saying that it records a trade the operator made, that each night follows it, or that an empty
+            date means the session after the pick's night.
+Found:      by the operator on 2026-10-07, reading ADM's card: "i am not getting what this section means".
+Built:      one line above the boxes: "Bought this stock? Record it here, and each night follows your trade by the
+            rule's own exits above and adds it to your record. Leave Fill empty to use the next session's opening price
+            once it is stored, and the date empty for the session after this pick's night." Drawn only with the
+            control, so a page for an earlier night, which offers none, draws none of it. The roster's `read-surface`
+            clause says so, with its prior text in `CHANGELOG.md`; the guide's card section already says it.
+Tests:      1965, unchanged: the press test reads the line above the boxes' own form on Tonight's card, and the
+            concentration test finds none of it on the stock's page for an earlier night.
+Claims:     1031, unchanged.
+Pins:       none moved; the card's renderer is in no pin list.
+Mutated:    the rule, stated before the run: the line drawn beneath the boxes rather than above them, made on the branch
+            in this checkout, filtered to the press and concentration tests and reverted.
+            K1 the line drawn after the form: predicted red at the press test alone.
+            Results: K1 red at the press test alone, the line found after the form's action. Reverted, and the two
+            tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    nothing.

@@ -187,6 +187,13 @@ public sealed partial class MarkRenderer
         return body.Append("</section>").ToString();
     }
 
+    // What the control taking a trade records, said above it, since a fill box and a date box alone do not say that the
+    // trade is the operator's own, that each night follows it, or what an empty box means.
+    public const string TakenSays =
+        "Bought this stock? Record it here, and each night follows your trade by the rule's own exits above and adds it to " +
+        "your record. Leave Fill empty to use the next session's opening price once it is stored, and the date empty for the " +
+        "session after this pick's night.";
+
     // The trades taken from the card and, where the page draws its presses, the control taking one, each taken trade
     // removable before a night has followed it and its exit recordable after.
     // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
@@ -228,6 +235,7 @@ public sealed partial class MarkRenderer
 
         if (card.Pressable && taken.All(trade => trade.Ended))
         {
+            body.Append(Formatted($"<p class=\"card-taken-says\">{TakenSays}</p>"));
             body.Append(Invariant, $"<form class=\"card-press\" method=\"post\" action=\"/taken/{Escaped(card.Index)}/{DayOf(card.Night)}/{Escaped(card.Family)}/{Escaped(card.Ticker)}\">");
             body.Append("<label>Fill <input name=\"price\" inputmode=\"decimal\" placeholder=\"the next open\"></label> <label>on <input name=\"date\" type=\"date\"></label> <button type=\"submit\">Taken</button></form>");
         }

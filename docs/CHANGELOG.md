@@ -11908,3 +11908,11 @@ Was:
 Now:
 > ... and a rule's record the sweep's own reading of its one setting over a constructed history after each trade's cost, named in the register's words read off its own setting and never by the sweep's key; ...
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-07 - .claude/rules/checks.md - read-surface states the line above the Taken control
+Corrects: the Taken control's boxes said nothing of what they record, found by the operator reading a card.
+Was:
+> ... and the round trip ...; each press on a card without the page's own header writes nothing, and a fill at or under the stop, ...
+Now:
+> ...; the control taking a trade says above its boxes what it records and what each empty box means, and each press on a card without the page's own header writes nothing, and a fill at or under the stop, ...
+Why: the roster is where a check states what it asserts.

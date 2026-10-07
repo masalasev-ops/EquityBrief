@@ -11,6 +11,7 @@ using EquityBrief.Core.Families;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
 using Microsoft.AspNetCore.Hosting;
@@ -281,6 +282,7 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("data-line=\"6\"", named, StringComparison.Ordinal);
         Assert.DoesNotContain("class=\"card-press\"", named, StringComparison.Ordinal);
+        Assert.DoesNotContain("card-taken-says", named, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -294,6 +296,16 @@ public partial class ReadSurface
         using var client = host.CreateClient();
 
         var take = $"{SinglePageApp.TakenPostRoute}MID/{IndexNight}/breakout/M1";
+
+        // Above its boxes the control says what it records and what each empty box means, so a fill box and a date box
+        // are not left to say it alone.
+        var drawn = await CardRowOf(client, "MID", "breakout", "M1");
+        var says = drawn.IndexOf($"<p class=\"card-taken-says\">{MarkRenderer.TakenSays}</p>", StringComparison.Ordinal);
+
+        Assert.True(says >= 0 && says < drawn.IndexOf($"action=\"{take}\"", StringComparison.Ordinal), "The Taken control's boxes are drawn with nothing above them saying what they record.");
+        Assert.Contains("Leave Fill empty to use the next session's opening price once it is stored", MarkRenderer.TakenSays, StringComparison.Ordinal);
+        Assert.Contains("the date empty for the session after this pick's night", MarkRenderer.TakenSays, StringComparison.Ordinal);
+
         string Rows() => string.Join(";", WatchRows(store, "SELECT ticker || ' ' || fill || ' ' || fill_date || ' ' || provisional || ' ' || entered || ' ' || stop || ' ' || IFNULL(trail, '-') || ' ' || IFNULL(cap, '-') || ' ' || IFNULL(sector, '-') || ' ' || IFNULL(exit_price, '-') FROM taken_trade ORDER BY taken_at;"));
 
         // Without the page's own header nothing is taken.
