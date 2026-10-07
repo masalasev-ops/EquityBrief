@@ -39728,8 +39728,11 @@ Mutated:    the rule, stated before the run: each property broken alone, made on
             Results: B1 red at the business test alone, M1's row reading not read with its reading stored; B2 red at the
             reward to risk test alone, M2's row reading none. Each reverted, and the nine tests green over the reverted
             tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 0306806, the
+            pull request's last commit.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1972 of 1972 tests ran with none failed, migrations 0
+            to 71 with none pending, schema version 71, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1031 claims, 1031 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1042
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1972 of 1972 tests ran.
 Carried:    nothing.
