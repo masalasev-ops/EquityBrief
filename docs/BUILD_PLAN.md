@@ -200,7 +200,7 @@ The provider's posting hour for the day's bulk file is bounded here from live fe
 **Done when** a night fetches the day's bars from the provider in one request, the run log's `network_requests` is measured off the live feed rather than off a double, the key is refused by name at startup when it is blank, and no request URL reaches a log line or a store row. The last is not incidental: a URL carries the key in a query string on this provider, and the run log is a store this repository copies between machines.
 
 ### 2.2 Retry, backoff and the night's deadline
-To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move). A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
+To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move). A cancellation source threaded into `Nightly.RunAsync`, which takes none today while every feed interface accepts one, so a night that hangs on a socket has no deadline and nothing to cancel it.
 
 Section 17 gains the row **Per-request timeout and the night's deadline**, carrying the three attempts, the doubling wait, the thirty-second bound on an attempt and the fifteen-minute bound on the night. The figures are read off that row and asserted against the code's own policy, because a limit stated in a document and again in code is two places holding one fact.
 

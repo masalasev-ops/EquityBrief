@@ -85,7 +85,7 @@ Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
              -Trigger $trigger -Settings $settings
 ```
 
-Twelve hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own of two hours from 15.1, and the overnight queue and the report follow the close, so a shorter limit would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move). A task registered with an earlier limit of two or eight hours takes the new one from an elevated PowerShell:
+Twelve hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own of two hours from 15.1, and the overnight queue and the report follow the close, so a shorter limit would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own) (see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move). A task registered with an earlier limit of two or eight hours takes the new one from an elevated PowerShell:
 
 ```powershell
 $t = Get-ScheduledTask -TaskName 'EquityBrief nightly'

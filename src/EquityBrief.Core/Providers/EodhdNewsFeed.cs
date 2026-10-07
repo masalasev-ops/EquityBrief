@@ -29,18 +29,20 @@ public sealed class EodhdNewsFeed(
     // request into ten.
     public const int Limit = 1000;
 
-    readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
+    readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.News);
 
     public int Requests { get; private set; }
 
     public int Attempts => request.Attempts;
+
+    public RetryPolicy Policy => request.Policy;
 
     public static EodhdNewsFeed Live(
         string baseAddress,
         ProviderCredentials credentials,
         ProviderRequest? request = null)
     {
-        var policy = request?.Policy ?? RetryPolicy.Standard;
+        var policy = request?.Policy ?? RetryPolicy.News;
 
         return new(
             new HttpClient

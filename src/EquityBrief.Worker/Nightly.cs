@@ -159,7 +159,7 @@ public static class Nightly
         // a request's: a per-request timeout bounds one attempt, and three
         // attempts on nine steps is a bound nobody would recognise as an
         // evening.
-        // see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+        // see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
         var limit = deadline ?? RetryPolicy.Standard.Deadline;
 
         // Each try's deadline is its own, so a try again is not started with the minutes an earlier try

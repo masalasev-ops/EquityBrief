@@ -39302,3 +39302,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, `tools/remedies/2026-10-06-16.2-the-taken-trades.txt`, migration 70, no request and no
             model call, run outside the night's window, and the surface's Release build again. The provisional fill is
             replaced by the stored open from 16.3, which builds the follower. Then 16.3.
+
+### 2.2 - correction: the night's news query waits ninety seconds a try, where each attempt waited thirty and a slow answer stopped the night's news step   2026-10-06
+
+Corrects:   the 2.2 bound of thirty seconds on every attempt of every request, which the night's news query shares.
+            The provider's time to answer it grows with the articles a page carries, a thousand of a whole market's
+            day: 5 to 11 seconds for the step's pages on 14 of the 20 tries that answered from 2026-09-15 and 24 to 40
+            on the other six. Every attempt of a try failed past thirty on the nights of 2026-09-28 and 2026-10-05
+            once each and on the night of 2026-10-06 on its first two tries, each try then waiting fifteen minutes
+            for the next; the night of 2026-10-06's third try answered both pages in 46 seconds.
+Found:      by the night of 2026-10-06, its news step stopped twice, and a page asked for by hand between its second
+            and third tries, the night's own query, which answered after 45.2 seconds, where a page of a hundred
+            articles answered after 5.7: the provider answering slowly rather than not at all, and smaller pages
+            taking as long for the day as a whole. Two requests, 10 weighted calls.
+Built:      the news query's policy, the standard one with each attempt bounded by ninety seconds, twice the slowest
+            answer measured, on the operator's ruling of 2026-10-06, "if it fails timeout needs to increase to 90
+            sec" and "90 sec fix needs to be permanent". The night's news feed is built on it; one name's news, asked
+            a month at a time and reading a window not answered in time as unread, keeps the standard bound. The
+            superseding decision (see: A feed is tried three times with a doubling backoff and the night's news query
+            waits ninety seconds a try, and the night has a two-hour deadline it cannot move), cited in five sources
+            and three specs, the limits table's row, the prior text in `CHANGELOG.md`.
+Tests:      1940, unchanged: the limits row's test reads the news query's bound off the row against its policy, the
+            policy the standard one but for the bound, and the night's news feed, live and through the night's own
+            feeds, built on it with one name's news on the standard one; pinned-constants holds the 90.
+Claims:     1021, unchanged.
+Pins:       none moved. Read: the rule versions' code version, the swing filter's, each candidate evaluator's and the
+            sector heavyweights' evaluator's lists; no file this edits is among them.
+Mutated:    the rule, stated before the run: the one property the correction adds broken, made by hand over the
+            working tree carrying this entry, filtered to the tests that read it and reverted.
+            N1 the night's news feed built on the standard policy: predicted red at the limits row's test.
+            N2 the news query's bound at 60 seconds: predicted red at the limits row's test and at pinned-constants.
+            Results: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    nothing. The next night's news step reads the new bound. Then 16.3.

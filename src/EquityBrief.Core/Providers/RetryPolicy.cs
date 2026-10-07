@@ -5,7 +5,7 @@ namespace EquityBrief.Core.Providers;
 // The distinction is the whole of the retry policy. A refused connection and a
 // rejected rate are worth asking again; a rejected key is wrong three times and
 // the retry only delays the message that says so.
-// see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+// see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
 //
 // `Unusable` marks a model's answer that arrived and could not be stored, empty or cut short,
 // which a caller may ask for once more where it would not ask again after a refusal.
@@ -22,7 +22,7 @@ public sealed class ProviderRefusal(string message, bool transient, bool unusabl
 // the test that reads that row against this record is what keeps the two from
 // drifting. Written as a record rather than as constants so a test can hand in
 // a policy of its own without the production one moving.
-// see: A feed is tried three times with a doubling backoff, and the night has a two-hour deadline it cannot move
+// see: A feed is tried three times with a doubling backoff and the night's news query waits ninety seconds a try, and the night has a two-hour deadline it cannot move
 public sealed record RetryPolicy(int Attempts, TimeSpan FirstWait, TimeSpan Timeout, TimeSpan Deadline)
 {
     // The wall clock section 17 states for a night at universe size, and the
@@ -58,6 +58,12 @@ public sealed record RetryPolicy(int Attempts, TimeSpan FirstWait, TimeSpan Time
         FirstWait: TimeSpan.FromSeconds(2),
         Timeout: TimeSpan.FromSeconds(30),
         Deadline: WallClock * DeadlineMultiple);
+
+    // The night's news query's, the same but for each attempt's bound. A page of a whole market's day of
+    // articles comes back in a few seconds on most nights and took forty-five on a night it answered none
+    // inside thirty, so its bound is twice the slowest answer measured rather than the bulk file's. One
+    // name's news is asked a month at a time, which answers well inside thirty, and keeps the standard bound.
+    public static RetryPolicy News { get; } = Standard with { Timeout = TimeSpan.FromSeconds(90) };
 
     // The wait before attempt n, doubling. Attempt 1 waits for nothing because
     // nothing has failed yet.

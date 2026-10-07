@@ -3935,7 +3935,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(LimitsTable, "Per-request timeout and the night's deadline")] = new Scoped(
             Verdict.Pass,
-            "the three attempts, the doubling wait and both bounds are read off the row and asserted against the policy the code uses, and a night given a deadline it cannot meet stops on the step it was on and says so",
+            "the three attempts, the doubling wait, both bounds and the night's news query's own are read off the row and asserted against the policies the code uses, the night's news feed built on its own and one name's news on the standard one, and a night given a deadline it cannot meet stops on the step it was on and says so",
             ByNight),
         [CheckReach.Key(LimitsTable, "Waiting on another writer")] = new Scoped(
             Verdict.Pass,

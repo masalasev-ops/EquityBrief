@@ -25,6 +25,8 @@ public sealed class EodhdNameNewsFeed(
 
     public int Attempts => request.Attempts;
 
+    public RetryPolicy Policy => request.Policy;
+
     public static EodhdNameNewsFeed Live(
         string baseAddress,
         ProviderCredentials credentials,

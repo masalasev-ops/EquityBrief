@@ -196,7 +196,19 @@ public partial class NightlyRun
         Assert.Contains($"at most {policy.Attempts} attempts", cell, StringComparison.Ordinal);
         Assert.Contains($"{policy.FirstWait.TotalSeconds:0} seconds and then {policy.FirstWait.TotalSeconds * 2:0}", cell, StringComparison.Ordinal);
         Assert.Contains($"bounded by {policy.Timeout.TotalSeconds:0} seconds", cell, StringComparison.Ordinal);
+        Assert.Contains($"each of the night's news query's by {RetryPolicy.News.Timeout.TotalSeconds:0};", cell, StringComparison.Ordinal);
         Assert.Contains($"bounded by {policy.Deadline.TotalMinutes:0} minutes", cell, StringComparison.Ordinal);
+
+        // The news query's policy is the standard one but for its bound, and the night's news feed is built on it
+        // where one name's news, asked a month at a time, keeps the standard one.
+        Assert.Equal(policy with { Timeout = RetryPolicy.News.Timeout }, RetryPolicy.News);
+        Assert.NotEqual(policy.Timeout, RetryPolicy.News.Timeout);
+
+        var credentials = new ProviderCredentials("demo-key-not-a-real-one");
+
+        Assert.Equal(RetryPolicy.News, EodhdNewsFeed.Live("https://eodhd.example/api/", credentials).Policy);
+        Assert.Equal(RetryPolicy.News, ((EodhdNewsFeed)NightFeeds.Live("https://eodhd.example/api/", credentials.ApiKey).News).Policy);
+        Assert.Equal(policy, EodhdNameNewsFeed.Live("https://eodhd.example/api/", credentials).Policy);
 
         // The wall clock the deadline is three times, read off its own row, so
         // the limit cannot move in one place alone. Before 5.7 the two numbers
