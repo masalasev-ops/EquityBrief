@@ -40743,13 +40743,16 @@ Mutated:    the rule, stated before the run: the property each of the two done c
             went red as predicted. Second, the stretch mark counting tonight among its own past empty nights: predicted
             red at the stretch one night past its mark, and red as predicted, the 89th night reading a mark of 89 and
             not flagged. Each made on this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
-            entry's commit, the second reading the first's suite result.
-            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e7427d6a, the
+            pull request's last commit but its fill, the second reading the first's suite result. The entry's commit
+            was followed by one, the repairs the first run found, three assertions on a card's opening tag, the stage's
+            place in the Run page's groups, the checklist's new mark counted and the live rule's words drawn once, and
+            the gates ran over the tree with it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2024 of 2024 tests ran with none failed, migrations 0 to
             75 with none pending, schema version 75, against `data-ci` and never `data`.
-            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            `tools/verify-phase.ps1`: 45 tables, 1066 claims, 1066 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1077
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
-            carried and 43 passed, <n> of <n> tests ran.
+            carried and 43 passed, 2024 of 2024 tests ran.
 Carried:    the remedy after the merge, outside the night's window and more than two hours before it, `tools/migrate.ps1`
             then `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`, about two hours, asking for nothing;
             the first night under the stage read the morning after before the next night-code checkpoint merges; the
