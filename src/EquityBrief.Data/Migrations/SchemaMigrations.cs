@@ -722,7 +722,7 @@ public static class SchemaMigrations
             completed       INTEGER,
             sessions        INTEGER,
             source          TEXT NOT NULL,
-            PRIMARY KEY (index_code, session_date, rule)
+            PRIMARY KEY (index_code, session_date, family, rule)
         ) STRICT;
 
         CREATE TABLE rule_pick (

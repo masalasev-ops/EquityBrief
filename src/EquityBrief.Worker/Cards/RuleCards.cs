@@ -91,18 +91,21 @@ public sealed class RuleCards : IComponent
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
+    // A night run again replaces its own rows: its rule rows, its picks, its forming rows, and the end it wrote on an
+    // earlier pick at its own close, which the walk writes again.
     const string ClearTheNight = @"
         DELETE FROM rule_night WHERE index_code = $index AND session_date = $night AND source = 'night';
         DELETE FROM rule_pick WHERE index_code = $index AND session_date = $night;
+        UPDATE rule_pick SET ended_on = NULL, result = NULL WHERE index_code = $index AND ended_on = $night;
         DELETE FROM forming_row WHERE index_code = $index AND session_date = $night;
     ";
 
-    const string ClearTheHistory = "DELETE FROM rule_night WHERE index_code = $index AND rule = $rule AND source = 'history';";
+    const string ClearTheHistory = "DELETE FROM rule_night WHERE index_code = $index AND family = $family AND rule = $rule AND source = 'history';";
 
     // A rule's listed counts on the nights before, oldest first, which its stretch is read over.
     const string ListedBefore = @"
         SELECT listed FROM rule_night
-        WHERE index_code = $index AND rule = $rule AND evaluated = 1 AND session_date < $night
+        WHERE index_code = $index AND family = $family AND rule = $rule AND evaluated = 1 AND session_date < $night
         ORDER BY session_date;
     ";
 
@@ -263,7 +266,7 @@ public sealed class RuleCards : IComponent
         await connection.OpenAsync(cancellation);
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-        await ExecuteAsync(connection, transaction, ClearTheHistory, [("$index", index), ("$rule", rule)], cancellation);
+        await ExecuteAsync(connection, transaction, ClearTheHistory, [("$index", index), ("$family", family), ("$rule", rule)], cancellation);
 
         var ordered = nights.OrderBy(night => night.Session).ToArray();
         var readings = RuleStretch.ReadEach([.. ordered.Select(night => night.Listed)]);
@@ -293,7 +296,10 @@ public sealed class RuleCards : IComponent
         // The swing filter's rules: the live filter's list is the page's, and each variant keeps its own here.
         var filterRules = standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule).ToArray();
         var open = await OpenPicksAsync(connection, transaction, index, night, cancellation);
-        var walked = await WalkOpenPicksAsync(connection, transaction, index, night, open, cancellation);
+
+        // Every pick open before the night holds its stock off its rule's list tonight, one ending at tonight's close
+        // among them, which frees the stock from the night after; the walk ends those the closes since have ended.
+        await WalkOpenPicksAsync(connection, transaction, index, night, open, cancellation);
 
         foreach (var row in filterRules)
         {
@@ -308,7 +314,7 @@ public sealed class RuleCards : IComponent
             }
             else
             {
-                var held = walked.Where(pick => pick.Rule == row.Candidate).Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
+                var held = open.Where(pick => pick.Rule == row.Candidate).Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
                 var kept = KeepPullbackPicks(verdicts.Where(pair => pair.Verdict!.Fired).Select(pair => (pair.member, pair.Verdict!)), held);
 
                 foreach (var pick in kept)
@@ -569,20 +575,19 @@ public sealed class RuleCards : IComponent
 
     sealed record OpenPick(string Rule, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, int Cap);
 
-    // The open picks walked on the closes to the night: each ended as the family's walk ends it, and the ones still
-    // open after, which hold their stock off their rule's list.
-    async Task<IReadOnlyList<OpenPick>> WalkOpenPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<OpenPick> open, CancellationToken cancellation)
+    // The open picks walked on the closes to the night: each ended as the family's walk ends it, at the first close
+    // through its stop, at its target or at its cap's close, and left open otherwise.
+    async Task WalkOpenPicksAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<OpenPick> open, CancellationToken cancellation)
     {
         if (open.Count == 0)
         {
-            return [];
+            return;
         }
 
         var from = open.Min(pick => pick.Session);
         var calendar = await FamilyRecorder.SessionsAsync(connection, from, cancellation);
         var closes = await FamilyRecorder.ClosesAsync(connection, from, cancellation);
         var at = calendar.Select((session, place) => (session, place)).ToDictionary(pair => pair.session, pair => pair.place);
-        var still = new List<OpenPick>();
 
         foreach (var pick in open)
         {
@@ -594,13 +599,7 @@ public sealed class RuleCards : IComponent
                     ("$index", index), ("$rule", pick.Rule), ("$ticker", pick.Ticker), ("$session", Stamp(pick.Session)),
                 ], cancellation);
             }
-            else
-            {
-                still.Add(pick);
-            }
         }
-
-        return still;
     }
 
     async Task InsertNightsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<RuleNightRow> rules, CancellationToken cancellation)
@@ -610,7 +609,7 @@ public sealed class RuleCards : IComponent
             // The stretch over the rule's evaluated nights before and the night's own listed count, read where the night
             // evaluated the rule and it is a rule a stretch is read for, which the sector heavyweights' are not.
             var stretch = rule.Evaluated && rule.Family != HeavyweightRule.Name
-                ? RuleStretch.Read([.. await ListedBeforeAsync(connection, transaction, index, rule.Rule, night, cancellation), rule.Listed])
+                ? RuleStretch.Read([.. await ListedBeforeAsync(connection, transaction, index, rule.Family, rule.Rule, night, cancellation), rule.Listed])
                 : null;
 
             await InsertNightAsync(connection, transaction, index, night, rule with { Stretch = stretch }, FromTheNight, cancellation);
@@ -706,9 +705,9 @@ public sealed class RuleCards : IComponent
         return counted + ((days * 5) + 6) / 7 <= sessions;
     }
 
-    async Task<IReadOnlyList<int>> ListedBeforeAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string rule, DateOnly night, CancellationToken cancellation)
+    async Task<IReadOnlyList<int>> ListedBeforeAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string rule, DateOnly night, CancellationToken cancellation)
     {
-        await using var command = Command(connection, transaction, ListedBefore, [("$index", index), ("$rule", rule), ("$night", Stamp(night))]);
+        await using var command = Command(connection, transaction, ListedBefore, [("$index", index), ("$family", family), ("$rule", rule), ("$night", Stamp(night))]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
         var listed = new List<int>();
 
