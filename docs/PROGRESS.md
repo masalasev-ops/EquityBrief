@@ -40758,3 +40758,30 @@ Carried:    the remedy after the merge, outside the night's window and more than
             the first night under the stage read the morning after before the next night-code checkpoint merges; the
             operator's choice among C5's options before 17.3; the sector heavyweights' card's selector, owed by 17.5;
             then 17.2a once the growth proposal is approved, and 17.3.
+
+### 17.2 - correction: the stretch history's replay reads the market switches of the breakout's and the drift's rows alone   2026-10-08
+
+Corrects:   17.2's `rule-record --nights`, which read every standing rule's market switch parameters before asking
+            which rule the row was, and the swing filter's and the heavyweights' rows, stating no switch, stopped it
+            on the first key they lack, so the remedy wrote no history.
+Found:      by the remedy itself, `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`, run at 19:59 UTC
+            on 2026-10-08 after PR 404 merged: stopped at its one step with the key named, nothing written.
+Built:      the reader asks the row's evaluator first and passes over every row but the breakout's and the drift's,
+            then reads their switches and their grid places as before.
+Tests:      2025, one more: over six constructed standing rows, the live breakout and a drift with its stop floor
+            replayed at their grid places, and the swing filter's row, the heavyweights' row, a switched variant and
+            one off the grid passed over without a throw.
+Claims:     1066, unchanged.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the correction's own test removed, the type asked after the switches
+            again. Predicted red at the new test on the filter's row's missing key; red as predicted, the same
+            exception the remedy threw. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+            75 with none pending, schema version 75, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, <n> of <n> tests ran.
+Carried:    17.2's remedy run again after this merges, `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`,
+            migration 75 already applied to the store at 19:58 UTC; 17.2's other carried items stand.

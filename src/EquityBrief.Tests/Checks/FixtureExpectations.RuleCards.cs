@@ -234,6 +234,33 @@ public partial class FixtureExpectations
         Assert.Equal(SetupFamilies.Pullbacks.CapSessions, kept[0].Cap);
     }
 
+    static RegisterRow Standing(long id, string candidate, string evaluator, IReadOnlyDictionary<string, double> parameters) =>
+        new(id, candidate, "rule", "test", evaluator, CandidateEvaluator.Write(parameters), "v", CandidateFamily.Registered, null, new DateTimeOffset(2026, 10, 4, 16, 0, 0, TimeSpan.Zero), null);
+
+    // The 17.2 correction of 2026-10-08: the replay read every standing row's market switches before asking which rule it
+    // was, and the swing filter's rows, stating none, stopped it on their first key.
+    [Fact]
+    public void TheHistoryReplaysTheBreakoutsAndTheDriftsGridRulesAndPassesOverEveryOtherStandingRow()
+    {
+        var variants = RuleRecorder.Variants(
+        [
+            Standing(1, "the live swing filter, version 5", SwingFilterRule.EvaluatorName, new Dictionary<string, double> { ["breadthFloor"] = 0.45 }),
+            Standing(2, "the live sector heavyweights rule", SectorHeavyweightCandidate.EvaluatorName, new Dictionary<string, double> { ["largest"] = 10 }),
+            Standing(3, "the live breakout rule", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live)),
+            Standing(4, "the breakout rule only on nights the index closes above its average", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live, new MarketSwitches(200, 0))),
+            Standing(5, "the drift rule with the stop a move beneath", DriftCandidate.EvaluatorName, DriftCandidate.ParametersOf(new DriftSettings(3, 0.5, 2.0, 2.5, 1))),
+            Standing(6, "the breakout rule off the grid", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { HighSessions = 200 })),
+        ]);
+
+        // The live breakout at its grid place and the drift at its own with its stop floor; the filter's and the
+        // heavyweights' rows, the switched variant and the one off the grid passed over.
+        Assert.Equal(["the live breakout rule", "the drift rule with the stop a move beneath"], variants.Select(variant => variant.Name));
+        Assert.Equal([BreakoutRule.Name, DriftRule.Name], variants.Select(variant => variant.Family));
+        Assert.Equal(IndexNightRead.BreakoutAsFrozen, variants[0].Setting);
+        Assert.Equal(0, variants[0].StopFloor);
+        Assert.Equal(1, variants[1].StopFloor);
+    }
+
     [Fact]
     public void TheEarningsWindowIsCountedOverTheSessionsTheStoreHoldsAndOverCalendarDaysBeyondThem()
     {
