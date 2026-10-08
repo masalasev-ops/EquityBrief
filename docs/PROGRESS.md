@@ -40373,10 +40373,10 @@ Tests:      1999, unchanged.
 Claims:     1036, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
             plan and the decisions sit in no table the harness reads.
 Pins:       none moved: the pass edits no source.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN, the entry's commit, all six
-            steps, 0 warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0 to 73 with none pending,
-            schema version 73, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not
-            run, on the operator's ruling of 2026-10-02.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 30213e3a, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0 to 73 with none pending, schema
+            version 73, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not run,
+            on the operator's ruling of 2026-10-02.
 Carried:    the 15.2 correction, then 17.1a; the growth proposal's approval, which gates 17.2a alone; the night's
             options before 17.2 merges; the sign-offs of phases 15 and 16, owed to fresh sessions; and why two copies
             went on 2026-10-08, which the machine's antivirus history may say.
