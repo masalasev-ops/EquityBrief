@@ -40489,8 +40489,11 @@ Reruns:     the ten as-it-stood searches from this build. One answer moved: the 
 Provider:   read off the provider's count: 1,978 at the start, 4,886 after five holdings runs, 5,016 after the two
             codes' pulls, 16 over the 5,000 cap, because the bars pull asks the earnings calendar's 106 months
             whatever the names, which the count stated before it left out.
-Tests:      FILLED FROM THE RUN.
-Claims:     FILLED FROM THE RUN.
+Tests:      2000, one more: OpenFIGI's six captured answers read as sent; the tracking test's constructed fund
+            extended with the carry-back, a rename after a step, the join's own ratio, two mapped holdings and each
+            holding's shares and value; the holdings test's line with the carried count.
+Claims:     1036, unchanged: the catalogue row, section 18's paragraph and the failure row changed in their words
+            alone.
 Pins:       none moved: the matcher, the pull and the mapping are in no pin list.
 Mutated:    the rule, stated before the run: each property this entry adds broken alone, made on the branch in this
             checkout, filtered to the tracking tests and reverted.
@@ -40508,9 +40511,12 @@ Departed:   the 15.3 correction landed in this pull request's one commit rather 
             and the mapping share one pass and one constructed fund. The migration, the holdings pulls and the named
             pulls ran on the operator's store from this branch's build before the merge, which took the store to
             schema 74 ahead of main, so this merges before the night of 2026-10-08.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f89d94b8, the
+            pull request's last commit but its fill.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2000 of 2000 tests ran with none failed, migrations 0
+            to 74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1036 claims, 1036 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1047
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2000 of 2000 tests ran.
 Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
             tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; then 17.1b.
