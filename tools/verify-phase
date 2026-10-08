@@ -4,10 +4,11 @@
 # on a commit.
 #
 # Two steps, and the first is what makes the second able to fail. The suite runs
-# and writes what each test did; the report reads that back and gives a claim
-# PASS only where the check reaching it ran and held. Before 0.7's repair this
-# script ran the report alone, so every verdict came from a reach declaration
-# and Verdict.Fail was reachable from nowhere.
+# and writes what each test did, here or in tools/ci.* over this same commit; the
+# report reads that back and gives a claim PASS only where the check reaching it
+# ran and held. Before 0.7's repair this script ran the report alone, so every
+# verdict came from a reach declaration and Verdict.Fail was reachable from
+# nowhere.
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,21 +16,42 @@ cd "$root"
 
 mkdir -p artifacts
 
-# Removed before the run rather than overwritten by it. A result left from an
-# earlier run is worse than none: the report would read it, find every check
-# passing, and print green over a tree whose suite had failed to build. The two
-# report files go with it, so a run that cannot get that far leaves no green page
-# from the run before rather than a stale one nothing dates.
-rm -f artifacts/suite.trx artifacts/phase-report.html artifacts/phase-report.json
+# The suite's result tools/ci.* wrote is read in place of a run of the suite
+# here where the stamp beside it names the commit this tree stands at and the
+# tree is clean, since that script stamps only a result made over a clean tree
+# at that commit and a clean tree at one commit is one tree: running the suite
+# again would read the same tree a second time, ten minutes of every code pull
+# request's gates. A stamp naming another commit, an empty one, or a tree
+# holding an edit or a stray file runs the suite here as before.
+# see: The phase report reads the checkpoint script's suite result over the same commit and a clean tree
+commit="$(git rev-parse HEAD 2>/dev/null || true)"
+stamped="$(tr -d '\r' < artifacts/suite.commit 2>/dev/null || true)"
 
-# A failing suite is not an error here. It is the input that makes the report
-# red, so the non-zero exit is swallowed and the verdict is left to the report.
-# Relative paths throughout, because this hands them to a native binary and an
-# absolute path composed here is the one that needs translating on Windows.
-dotnet test src/EquityBrief.Tests \
-  --results-directory artifacts \
-  --logger "trx;LogFileName=suite.trx" \
-  >artifacts/suite.log 2>&1 || true
+if [ -n "$commit" ] && [ "$stamped" = "$commit" ] && [ -z "$(git status --porcelain 2>/dev/null)" ] && [ -f artifacts/suite.trx ]; then
+  printf 'verify-phase: reading the suite result tools/ci wrote over %s\n' "$commit"
+
+  # The two report files alone go, for the reason below.
+  rm -f artifacts/phase-report.html artifacts/phase-report.json
+else
+  printf 'verify-phase: running the suite\n'
+
+  # Removed before the run rather than overwritten by it. A result left from an
+  # earlier run is worse than none: the report would read it, find every check
+  # passing, and print green over a tree whose suite had failed to build. The two
+  # report files go with it, so a run that cannot get that far leaves no green page
+  # from the run before rather than a stale one nothing dates. The stamp goes too,
+  # so a result this run writes is never read as the checkpoint script's.
+  rm -f artifacts/suite.trx artifacts/suite.commit artifacts/phase-report.html artifacts/phase-report.json
+
+  # A failing suite is not an error here. It is the input that makes the report
+  # red, so the non-zero exit is swallowed and the verdict is left to the report.
+  # Relative paths throughout, because this hands them to a native binary and an
+  # absolute path composed here is the one that needs translating on Windows.
+  dotnet test src/EquityBrief.Tests \
+    --results-directory artifacts \
+    --logger "trx;LogFileName=suite.trx" \
+    >artifacts/suite.log 2>&1 || true
+fi
 
 code=0
 dotnet run --project src/EquityBrief.Tests -- "$root" artifacts/suite.trx || code=$?

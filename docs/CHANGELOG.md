@@ -12291,3 +12291,20 @@ Was:
 Now:
 > named as a limit, the freshness reaching 14 sessions at most; an index sweep's search reading a widened grid, the depth's high end reaching 16 typical moves and the freshness 21 sessions, looking beyond such an end a second time, and each setting its report reads stating its depth and the dial binding it
 Why: the two values more were first put on the extended grid every search reads, which moved what the S&P 500's search names as a dial's own end; a widened grid of the index searches' own keeps the S&P 500's as it was, as the decision says.
+
+### 2026-10-08 - .claude/rules/scripts.md - the phase report reads the checkpoint script's suite result over the same commit
+Authorised by: The phase report reads the checkpoint script's suite result over the same commit and a clean tree
+Was:
+> **`tools/verify-phase` is what a phase signs off against.** It runs the suite, which is what replays the stages that exist over the committed fixture and diffs each one's output against expectations derived from the rules, and it writes what every test did. Then it parses `docs/ARCHITECTURE.html`'s tables
+Now:
+> **`tools/verify-phase` is what a phase signs off against.** It runs the suite, which is what replays the stages that exist over the committed fixture and diffs each one's output against expectations derived from the rules, and it writes what every test did; or, where `tools/ci.*` ran the suite over the commit the tree stands at and stamped its result so, with the tree clean at both runs, it reads that result in place of a second run of the same suite over the same tree, and says which it did on its first line (see: The phase report reads the checkpoint script's suite result over the same commit and a clean tree). Then it parses `docs/ARCHITECTURE.html`'s tables
+Why: a pull request changing code ran the whole suite twice over one tree, once in each gate, and the operator ruled the wait too long.
+
+### 2026-10-08 - CLAUDE.md - the artifacts folder's suite result is written by the checkpoint script as well
+Authorised by: The phase report reads the checkpoint script's suite result over the same commit and a clean tree
+Was:
+> /artifacts        gitignored. the phase report and the suite result it reads, written by verify-phase
+Now:
+> /artifacts        gitignored. the phase report, written by verify-phase, and the suite result it reads,
+>                   written by tools/ci.* with a stamp naming the commit, or by verify-phase itself
+Why: the checkpoint script's suite step now writes its result and its stamp into the folder, and the layout said one writer.

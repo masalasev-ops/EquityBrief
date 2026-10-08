@@ -71,7 +71,8 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                                  reads its required fields from here rather than restating them
                   one folder per fixture name and date: the committed inputs, and
                   expectations/ holding what the rules in ARCHITECTURE produce over them
-/artifacts        gitignored. the phase report and the suite result it reads, written by verify-phase
+/artifacts        gitignored. the phase report, written by verify-phase, and the suite result it reads,
+                  written by tools/ci.* with a stamp naming the commit, or by verify-phase itself
 /prompts          gitignored. spent build prompts, kept locally
 /data             gitignored. the store lives here, and nothing that verifies reaches it
 /data-ci          gitignored. the store `tools/ci.*` creates and drops, which is not the one above
