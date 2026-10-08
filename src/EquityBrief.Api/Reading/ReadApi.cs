@@ -791,6 +791,9 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read),
+            new StoreTouch(Store.RuleNight, Touch.Read),
+            new StoreTouch(Store.RulePick, Touch.Read),
+            new StoreTouch(Store.FormingRow, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3716,6 +3719,136 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
+    }
+
+    const string RuleNightsOn = @"
+        SELECT index_code, session_date, family, rule, evaluated, listed, gates, stretch, mark, flagged, completed, sessions, source
+        FROM rule_night
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY family, rule;
+    ";
+
+    // Every standing rule's row on a night: how many it listed, its funnel and its stretch against its mark.
+    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    public async Task<IReadOnlyList<RuleNightRow>> RuleNightsAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RuleNightsOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<RuleNightRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RuleNightRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetInt32(4) == 1,
+                reader.GetInt32(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                reader.GetInt32(9) == 1,
+                reader.IsDBNull(10) ? null : reader.GetInt32(10),
+                reader.IsDBNull(11) ? null : reader.GetInt32(11),
+                reader.GetString(12)));
+        }
+
+        return rows;
+    }
+
+    // The picks every variant kept on a night: the swing filter's variants' own, and each registered breakout, drift or
+    // index rule's list as its recorder kept it, each with its plan.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    const string RulePicksOn = @"
+        SELECT rule, ticker, session_date, place, entry, stop, target, reward_to_risk, why FROM rule_pick
+        WHERE index_code = $index AND session_date = $on
+        UNION ALL
+        SELECT candidate, ticker, session_date, place, entry, stop, target, reward_to_risk, '{}' FROM family_trade
+        WHERE $index = 'GSPC' AND session_date = $on
+        UNION ALL
+        SELECT candidate, ticker, session_date, place, entry, stop, target, reward_to_risk, '{}' FROM index_rule_trade
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY 1, 4;
+    ";
+
+    public async Task<IReadOnlyList<RulePickRow>> RulePicksAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RulePicksOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<RulePickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RulePickRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(3),
+                Money.FromStorage(reader.GetString(4)),
+                Money.FromStorage(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    const string FormingRowsOn = @"
+        SELECT rule, place, ticker, close, high, moves_under, volume_needed, volume, range_ratio, missing, next_earnings, forming
+        FROM forming_row
+        WHERE index_code = $index AND session_date = $on
+        ORDER BY rule, place;
+    ";
+
+    // The members forming a breakout under each breakout rule on a night.
+    // see: The forming list advises and never lists a stock
+    public async Task<IReadOnlyList<FormingRow>> FormingRowsAsync(string index, DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FormingRowsOn;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FormingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FormingRow(
+                reader.GetString(0),
+                reader.GetInt32(1),
+                reader.GetString(2),
+                Money.FromStorage(reader.GetString(3)),
+                Money.FromStorage(reader.GetString(4)),
+                reader.GetDouble(5),
+                reader.GetDouble(6),
+                reader.GetDouble(7),
+                reader.GetDouble(8),
+                reader.GetString(9),
+                reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(11)));
+        }
+
+        return rows;
     }
 
     const string IndexPicksOn = @"

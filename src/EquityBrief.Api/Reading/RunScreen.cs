@@ -2074,7 +2074,8 @@ public static class RunScreen
         IReadOnlyList<LeftOutSection> fellBack,
         IReadOnlyList<RunStageRow> log,
         IReadOnlyList<ModelProfile>? profiles = null,
-        StoreCopyRead? storeCopy = null)
+        StoreCopyRead? storeCopy = null,
+        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null)
     {
         var quarters = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && row.Stage == "quarters")
@@ -2144,8 +2145,19 @@ public static class RunScreen
                 stops.Length == 0,
                 string.Join("; ", stops.Select(stop => FormattableString.Invariant($"the drain that started at {stop.StartedAt.UtcDateTime:HH:mm} UTC stopped on an error: {stop.Detail}")))),
             .. storeCopy is null ? [] : CopyItems(night, storeCopy),
+            .. pastTheirMark is null ? Array.Empty<WorryItem>() : [StretchItem(pastTheirMark)],
         ];
     }
+
+    // The live rules whose empty stretch is past the mark their own past empty nights set, each named with its stretch
+    // against its mark; held where none is.
+    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    public static WorryItem StretchItem(IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> pastTheirMark) =>
+        pastTheirMark.Count == 0
+            ? new WorryItem(StretchWorry, WorryItem.Held, null)
+            : new WorryItem(StretchWorry, WorryItem.Failed, string.Join("; ", pastTheirMark.Select(rule => FormattableString.Invariant($"the {rule.Family}'s live rule has listed nothing for {rule.Stretch} nights, past its mark of {rule.Mark}"))));
+
+    public const string StretchWorry = "No live rule has gone longer without a pick than its own history says it does";
 
     // The checklist's two items on the store's copies, read off the copies' rows as the page read them.
     static WorryItem[] CopyItems(NightView night, StoreCopyRead storeCopy)

@@ -79,13 +79,11 @@ public sealed class RuleCards : IComponent
 
     public const string Stage = "rule-cards";
 
-    // The rule a family's list is drawn by on an index no freeze has registered a rule on.
-    public const string ProvisionalRule = "provisional";
+    public const string ProvisionalRule = RuleRows.ProvisionalRule;
 
-    // Where a rule's row came from: the night, or the record command's replay of the pulled history.
-    public const string FromTheNight = "night";
+    public const string FromTheNight = RuleRows.FromTheNight;
 
-    public const string FromTheHistory = "history";
+    public const string FromTheHistory = RuleRows.FromTheHistory;
 
     public const string Ok = DecisionCards.Ok;
 
@@ -622,7 +620,7 @@ public sealed class RuleCards : IComponent
             ("$rule", rule.Rule),
             ("$evaluated", rule.Evaluated ? 1 : 0),
             ("$listed", rule.Listed),
-            ("$gates", rule.Gates is null ? DBNull.Value : GatesJson(rule.Gates)),
+            ("$gates", rule.Gates is null ? DBNull.Value : RuleRows.GatesJson(rule.Gates)),
             ("$stretch", rule.Stretch?.Stretch is { } stretch ? stretch : DBNull.Value),
             ("$mark", rule.Stretch?.Mark is { } mark ? mark : DBNull.Value),
             ("$flagged", rule.Stretch?.Flagged == true ? 1 : 0),
@@ -630,21 +628,6 @@ public sealed class RuleCards : IComponent
             ("$sessions", rule.Stretch?.Sessions is { } sessions ? sessions : DBNull.Value),
             ("$source", source),
         ], cancellation);
-
-    public static string GatesJson(IReadOnlyList<(string Gate, int Passed)> gates) =>
-        JsonSerializer.Serialize(gates.Select(gate => new { gate = gate.Gate, passed = gate.Passed }).ToArray());
-
-    public static IReadOnlyList<(string Gate, int Passed)> ReadGates(string? json)
-    {
-        if (string.IsNullOrEmpty(json))
-        {
-            return [];
-        }
-
-        using var document = JsonDocument.Parse(json);
-
-        return [.. document.RootElement.EnumerateArray().Select(gate => (gate.GetProperty("gate").GetString()!, gate.GetProperty("passed").GetInt32()))];
-    }
 
     async Task InsertPickAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string rule, DateOnly night, RulePick pick, CancellationToken cancellation) =>
         await ExecuteAsync(connection, transaction, InsertPick,

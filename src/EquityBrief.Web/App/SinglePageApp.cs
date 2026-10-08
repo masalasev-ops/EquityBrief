@@ -333,11 +333,36 @@ public sealed class SinglePageApp : IComponent
         document.addEventListener('focusin', placePop);
         // The version a reader compares tonight's picks with lives in the link, so the view is one to share, and so
         // does the index a page reads, chosen under Universe.
+        // A key merged into the link's own query, its path and every other key kept, so a card's chosen rule and the
+        // index chosen under Universe stand in one link; the live rule is the key's absence, so the default returns to it.
+        function merged(key, value) {
+          const hash = location.hash || '#/';
+          const cut = hash.indexOf('?');
+          const path = cut < 0 ? hash : hash.slice(0, cut);
+          const params = new URLSearchParams(cut < 0 ? '' : hash.slice(cut + 1));
+          if (value === null) { params.delete(key); } else { params.set(key, value); }
+          const query = params.toString();
+          return path + (query ? '?' + query : '');
+        }
+        // A link of the page's own merged with the keys the link holds now that it does not set, the index among them.
+        function mergedInto(target) {
+          const cut = target.indexOf('?');
+          const path = cut < 0 ? target : target.slice(0, cut);
+          const params = new URLSearchParams(cut < 0 ? '' : target.slice(cut + 1));
+          const own = location.hash.indexOf('?');
+          const held = new URLSearchParams(own < 0 ? '' : location.hash.slice(own + 1));
+          for (const [key, value] of held) { if (!params.has(key)) { params.set(key, value); } }
+          const query = params.toString();
+          return path + (query ? '?' + query : '');
+        }
         document.addEventListener('change', (event) => {
           const chosen = event.target.closest ? event.target.closest('select[data-compare]') : null;
           if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
           const universe = event.target.closest ? event.target.closest('select[data-universe-route]') : null;
           if (universe) { location.hash = universe.getAttribute('data-universe-route') + '?{{{Universes.Query}}}=' + encodeURIComponent(universe.value); }
+          // A card's rule, kept in the link under the family's own key with every other key kept.
+          const rule = event.target.closest ? event.target.closest('select[data-rule-choice]') : null;
+          if (rule) { location.hash = merged(rule.getAttribute('data-rule-choice'), rule.value === '{{{RuleScreenWords.LiveSlug}}}' ? null : rule.value); }
         });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
@@ -450,7 +475,7 @@ public sealed class SinglePageApp : IComponent
           const row = event.target.closest('.list-table tr[data-ticker]');
           if (row && !event.target.closest('a, button, form')) {
             const pick = row.getAttribute('data-select-href');
-            if (pick) { fresh = true; location.hash = pick; }
+            if (pick) { fresh = true; location.hash = mergedInto(pick); }
             return;
           }
           if (event.target.closest('a[href^="#"]')) { fresh = true; }
@@ -2585,7 +2610,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly> held,
         IndexRunView? view,
         IReadOnlyList<FamilyRunRow> setups,
-        IReadOnlyList<FamilyRecordRow>? records = null)
+        IReadOnlyList<FamilyRecordRow>? records = null,
+        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + universe.Name;
@@ -2631,9 +2657,17 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "night"));
 
+        // The rule drawing a setup's list past the mark its own past empty nights set, in one line, or that none is.
+        // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+        var stretches = pastTheirMark is null
+            ? string.Empty
+            : pastTheirMark.Count == 0
+                ? "<p class=\"stretch-worry\" data-past-mark=\"0\">No setup's rule has gone longer without a pick than its own history says it does.</p>"
+                : Invariant($"<p class=\"stretch-worry flagged\" data-past-mark=\"{pastTheirMark.Count}\">") + Escaped(string.Join("; ", pastTheirMark.Select(rule => Invariant($"the {rule.Family}'s rule has listed nothing for {rule.Stretch} nights, past its mark of {rule.Mark}")))) + "</p>";
+
         region.Append(Cards.Computed(
             "Setups",
-            marks.FamilyRun(setups) + Cards.Key(
+            stretches + marks.FamilyRun(setups) + Cards.Key(
                 "How to read it.",
                 Invariant($"One row a setup of the {universe.Possessive} page, each on provisional settings until its freeze: what it listed tonight and every trade its list has kept, open and finished."),
                 "A provisional rule's record starts at its freeze, so no record is read here until the operator freezes it."),

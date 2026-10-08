@@ -842,25 +842,38 @@ app.MapGet("/screens/tonight/{night?}", async (
         var indexAnswers = await read.SweepAnswersAsync(reading.Code, TonightScreen.PastTheNight(dated));
         var indexRegister = await read.RegisteredCandidatesAsync();
         var indexCardContext = await CardContextAsync(read, store);
-        var indexCards = CardScreen.WithCards(
-            TonightScreen.WithSweepLines(
-                TonightScreen.WithIndexFreezes(
-                    TonightScreen.IndexCards(
+        // Each card drawn by the rule the link chooses for it, the provisional rule or the live rule where it names none,
+        // with its funnel, its stretch line and, under the breakout card, the breakouts forming.
+        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        var indexCards = RuleScreen.WithRules(
+            CardScreen.WithCards(
+                TonightScreen.WithSweepLines(
+                    TonightScreen.WithIndexFreezes(
+                        TonightScreen.IndexCards(
+                            reading,
+                            indexNight,
+                            await read.IndexPicksAsync(reading.Code, dated),
+                            indexResults,
+                            members,
+                            await read.ResearchedAsync(),
+                            QueueTimes.States(indexQueued, indexTimes, clock.SessionZone),
+                            await read.FundamentalReadingsAsync(dated)),
                         reading,
-                        indexNight,
-                        await read.IndexPicksAsync(reading.Code, dated),
-                        indexResults,
-                        members,
-                        await read.ResearchedAsync(),
-                        QueueTimes.States(indexQueued, indexTimes, clock.SessionZone),
-                        await read.FundamentalReadingsAsync(dated)),
-                    reading,
-                    indexRegister,
-                    indexNight),
-                indexAnswers,
-                family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight)),
-            await read.DecisionCardsAsync(reading.Code, dated),
-            indexCardContext);
+                        indexRegister,
+                        indexNight),
+                    indexAnswers,
+                    family => TonightScreen.IndexFrozenAt(reading.Code, family, indexRegister, indexNight)),
+                await read.DecisionCardsAsync(reading.Code, dated),
+                indexCardContext),
+            reading.Name,
+            false,
+            dated,
+            indexRegister,
+            family => request.Query[RuleScreen.QueryKey(family)].FirstOrDefault(),
+            await read.RuleNightsAsync(reading.Code, dated),
+            await read.RulePicksAsync(reading.Code, dated),
+            await read.FormingRowsAsync(reading.Code, dated),
+            indexNight.MarketOpen);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
@@ -1088,15 +1101,28 @@ app.MapGet("/screens/tonight/{night?}", async (
     // Each pick with the card the night stored for it, opened in place beneath its row.
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
     var cardContext = await CardContextAsync(read, store);
+    // Each card drawn by the rule the link chooses for it, the live rule where it names none, with its funnel, its
+    // stretch line and, under a breakout card, the breakouts forming.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
     var cards = onThePage is null || gates is null
         ? null
-        : CardScreen.WithCards(
-            TonightScreen.WithSweepLines(
-                TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings),
-                answers,
-                family => TonightScreen.FrozenAt(family, register, dated)),
-            await read.DecisionCardsAsync(reading.Code, dated),
-            cardContext);
+        : RuleScreen.WithRules(
+            CardScreen.WithCards(
+                TonightScreen.WithSweepLines(
+                    TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings),
+                    answers,
+                    family => TonightScreen.FrozenAt(family, register, dated)),
+                await read.DecisionCardsAsync(reading.Code, dated),
+                cardContext),
+            reading.Name,
+            true,
+            dated,
+            register,
+            family => request.Query[RuleScreen.QueryKey(family)].FirstOrDefault(),
+            await read.RuleNightsAsync(reading.Code, dated),
+            await read.RulePicksAsync(reading.Code, dated),
+            await read.FormingRowsAsync(reading.Code, dated),
+            ruleView.MarketOpen);
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -1671,7 +1697,8 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.IndexNightsAsync(reading.Code),
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
                 TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
-                indexRecords),
+                indexRecords,
+                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated)),
             "text/html; charset=utf-8");
     }
 
@@ -1800,7 +1827,8 @@ app.MapGet("/screens/run/{night?}", async (
                 RunScreen.FellBack(await read.FellBackAsync(dated)),
                 log,
                 [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()],
-                storeCopy),
+                storeCopy,
+                RuleScreen.Flagged(await read.RuleNightsAsync(index, dated), dated)),
             background: versions,
             compare: compare,
             checkpoints: RunScreen.Checkpoints(edge),
