@@ -2151,7 +2151,7 @@ public static class RunScreen
 
     // The live rules whose empty stretch is past the mark their own past empty nights set, each named with its stretch
     // against its mark; held where none is.
-    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     public static WorryItem StretchItem(IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> pastTheirMark) =>
         pastTheirMark.Count == 0
             ? new WorryItem(StretchWorry, WorryItem.Held, null)

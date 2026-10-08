@@ -3,6 +3,7 @@ using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Worker.Cards;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Indices;
 
 namespace EquityBrief.Tests.Checks;
@@ -11,11 +12,33 @@ namespace EquityBrief.Tests.Checks;
 // hand one night either side of it and at the floors; a member one session before its breakout stands in the forming
 // list with the price it must close above and the volume the rule needs, and is absent the night it breaks out; the
 // funnels, a variant's own picks and the earnings window are each worked by hand.
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 // see: The forming list advises and never lists a stock
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
 public partial class FixtureExpectations
 {
+    // The rows 17.2's cards add that this check reaches: section 17's two rows and section 18's two.
+    internal static readonly string[] RuleCardsClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Forming list thresholds"),
+        CheckReach.Key(Scope.LimitsTable, "Stretch mark"),
+        CheckReach.Key(Scope.FailureTable, "A rule the night did not evaluate"),
+        CheckReach.Key(Scope.FailureTable, "A forming list on a night the market check closed"),
+    ];
+
+    // Every row 17.2 adds, named after phase 16's report until phase 17's own pair is checked: the stage's catalogue
+    // and matrix rows, its three stores, the four above and the pages' fifteen.
+    internal static string[] RuleCardsRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Rule cards"),
+        CheckReach.Key(Scope.MatrixTable, "Rule cards"),
+        CheckReach.Key(Scope.StoresTable, "Rule nights"),
+        CheckReach.Key(Scope.StoresTable, "Rule picks"),
+        CheckReach.Key(Scope.StoresTable, "Forming rows"),
+        .. RuleCardsClaims,
+        .. Reading.ReadSurface.RuleCardsPageClaims,
+    ];
+
     // Thirty stretches of two empty nights each ended by a pick, one stretch of a hundred ended by a pick, and enough
     // pick nights after to pass the sessions floor: 511 nights, 31 completed stretches, 160 past empty nights whose
     // reached stretches are 1 and 2 thirty-one times each and 3 to 100 once each.

@@ -1401,7 +1401,8 @@ public partial class ArchitectureConformance
         // 126 at the 9.2 correction of 2026-10-03: the queue page's drain that stopped.
         // 129 at 14.3, the sector heavyweights: tonight's card, the name page's line and Past picks' holdings.
         // 130 at 15.2's second pull request: the name page's member readings.
-        Assert.Equal(130, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 131 at 17.2: a family's card's rule on Tonight.
+        Assert.Equal(131, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1510,7 +1511,8 @@ public partial class ArchitectureConformance
         // 472 at 15.2's second pull request: the name page's member readings, the setup families' row stating each
         // rule's edge after costs and what waits on a count stating the members holding four dated rating counts.
         // 474 at the 13.10 correction of 2026-10-08: the checklist's two items on the store's copies.
-        Assert.Equal(474, inDocument.Length);
+        // 489 at 17.2: a family's card's rule as its fourteen parts and the checklist's item on a live rule past its mark.
+        Assert.Equal(489, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1609,7 +1611,8 @@ public partial class ArchitectureConformance
         // 445 at 15.2's second pull request: the setup families' part on the edge after costs and what waits on a
         // count's part on the members holding four dated rating counts.
         // 447 at the 13.10 correction of 2026-10-08: the checklist's two parts on the store's copies.
-        Assert.Equal(447, checkedElements);
+        // 462 at 17.2: the fourteen parts a card's rule row states and the checklist's part on a live rule past its mark.
+        Assert.Equal(462, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

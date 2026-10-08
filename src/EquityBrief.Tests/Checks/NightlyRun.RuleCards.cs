@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Checks;
 // stock its open pick holds off, that pick walked to its end on the night's close, the history the record command
 // replays read under the night's own row, and a night run again replacing its own rows.
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public partial class NightlyRun
 {
     const string RuleNight = "2026-10-07";

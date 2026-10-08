@@ -146,6 +146,8 @@ public partial class ComponentAccess
             // 16.1, the decision cards and the rule recorder.
             CheckReach.Key(Scope.CatalogueTable, "Decision cards"),
             CheckReach.Key(Scope.MatrixTable, "Decision cards"),
+            CheckReach.Key(Scope.CatalogueTable, "Rule cards"),
+            CheckReach.Key(Scope.MatrixTable, "Rule cards"),
             CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
             CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
 

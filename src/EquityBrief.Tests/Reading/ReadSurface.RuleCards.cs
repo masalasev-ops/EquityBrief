@@ -13,17 +13,14 @@ namespace EquityBrief.Tests.Reading;
 // funnel are drawn from the rule's row; the S&P 400's selector lists the provisional rule alone with the line saying no
 // variant is registered before its freeze; and the live rules past their mark stand on the Run pages.
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public partial class ReadSurface
 {
+    // The card's row as the parts the scope enumerates, and the checklist's item on a live rule past its mark.
     internal static readonly string[] RuleCardsPageClaims =
     [
-        CheckReach.Key("15.7 Tonight", "A family's card, its selector"),
-        CheckReach.Key("15.7 Tonight", "A family's card, a variant chosen"),
-        CheckReach.Key("15.7 Tonight", "A family's card, its stretch line"),
-        CheckReach.Key("15.7 Tonight", "A family's card, the breakouts forming"),
-        CheckReach.Key("15.7 Tonight", "A family's card, no variant registered on the S&P 400 or 600"),
-        CheckReach.Key("15.10 Run", "Anything to worry about, a live rule past its mark"),
+        .. Scope.ElementsOf(CheckReach.Key("15.7 Tonight", "A family's card's rule")).Select(part => CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
+        CheckReach.Key("15.10 Run", "Anything to worry about, no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark"),
     ];
 
     static void RuleNightRow(TemporaryStore store, string index, string night, string family, string rule, int listed, string? gates, int? stretch, int? mark, bool flagged, int completed, int sessions) =>

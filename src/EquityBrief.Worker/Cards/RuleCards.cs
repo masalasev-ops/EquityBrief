@@ -45,7 +45,7 @@ public sealed record RuleNightRow(string Index, string Family, string Rule, bool
 // rows.
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
 // see: The forming list advises and never lists a stock
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 // see: The nightly run is arithmetic only
 public sealed class RuleCards : IComponent
 {
@@ -69,6 +69,7 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
+            new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.RuleNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RulePick, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),

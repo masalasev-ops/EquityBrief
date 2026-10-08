@@ -2658,7 +2658,7 @@ public sealed class SinglePageApp : IComponent
             region: "night"));
 
         // The rule drawing a setup's list past the mark its own past empty nights set, in one line, or that none is.
-        // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+        // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
         var stretches = pastTheirMark is null
             ? string.Empty
             : pastTheirMark.Count == 0

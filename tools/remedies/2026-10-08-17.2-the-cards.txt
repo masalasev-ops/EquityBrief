@@ -1,0 +1,9 @@
+# The remedy of 17.2 (the cards), as its PROGRESS entry prints it: run tools/migrate.ps1 first, which creates
+# migration 75's rule nights, rule picks and forming rows. The record command's --nights form then replays each
+# index's live or provisional pullback, breakout and drift rule, and on the S&P 500 the breakout's and the drift's
+# registered variants at their grid settings, over the pulled history with the sweep's own walk, writing each rule's
+# listed count on every scored session since 2019 into the rule nights for the cards' stretch lines, about two hours
+# for the three indices. It reads the store read-only but for those rows, asks for nothing and calls no model. Run
+# after the merge, when no night is running, and more than two hours before the night's window; the night then
+# carries each rule's row on.
+rule-record --nights

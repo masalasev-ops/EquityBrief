@@ -22,7 +22,7 @@ public sealed record FormingRow(string Rule, int Place, string Ticker, decimal C
 // none.
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
 // see: The forming list advises and never lists a stock
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public static class RuleScreen
 {
     // The card's selector: the live rule, then each variant by the number of its first registration.

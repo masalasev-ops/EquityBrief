@@ -12308,3 +12308,51 @@ Now:
 > /artifacts        gitignored. the phase report, written by verify-phase, and the suite result it reads,
 >                   written by tools/ci.* with a stamp naming the commit, or by verify-phase itself
 Why: the checkpoint script's suite step now writes its result and its stamp into the folder, and the layout said one writer.
+
+### 2026-10-08 - ARCHITECTURE.html - the taken follower runs after the rule cards
+Authorised by: A variant's picks are shown on its card when chosen and its results only under its tests
+Was:
+> nightly, once, in the swing filter's step after the decision cards
+Now:
+> nightly, once, in the swing filter's step after the rule cards
+Why: 17.2's rule cards stage joins the swing filter's step between the decision cards and the taken follower, so the follower's place in the step moved by one.
+
+### 2026-10-08 - ARCHITECTURE.html - the rule recorder reads the register and gains its --nights form
+Authorised by: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+Was:
+> membership, bar store, calendar, gate results, heavyweight nights, pulled bars, pulled earnings, pulled surprises, pulled market series, pulled companies, pulled share counts, pulled splits, pulled revenue, pulled members, pulled income, pulled snapshots, pulled holdings
+Now:
+> membership, bar store, calendar, gate results, heavyweight nights, candidate register, pulled bars, pulled earnings, pulled surprises, pulled market series, pulled companies, pulled share counts, pulled splits, pulled revenue, pulled members, pulled income, pulled snapshots, pulled holdings
+Why: the record command's --nights form reads the register for the rules standing, and the catalogue row, the matrix row and the component's declaration say so together; the row's description gains the form's sentence beside its citation.
+
+### 2026-10-08 - ARCHITECTURE.html - section 14's swing filter step writes the rule cards' rows
+Authorised by: A variant's picks are shown on its card when chosen and its results only under its tests
+Was:
+> a failure in an index's cards named on its own row while the night goes on (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it); then follow each trade the operator took
+Now:
+> a failure in an index's cards named on its own row while the night goes on (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it); then write every standing rule's night on each index, live or variant, its listed count, its funnel and its empty stretch against its mark, the swing filter variants' own picks walked and kept, and the members forming a breakout under each breakout rule, a failure in an index's part named on the stage's row while the night goes on (see: A variant's picks are shown on its card when chosen and its results only under its tests) (see: The forming list advises and never lists a stock); then follow each trade the operator took
+Why: the step gains the rule cards stage after the decision cards, and the step's text says what each stage does in order.
+
+### 2026-10-08 - ARCHITECTURE.html - the checklist gains the live rules past their mark
+Authorised by: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+Was:
+> every copy the newest copy's row before it kept still in the folder, and where any is gone each named; the four harness counts beneath;
+Now:
+> every copy the newest copy's row before it kept still in the folder, and where any is gone each named; no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark; the four harness counts beneath;
+Why: a live rule past its empty-stretch mark is a thing to worry about, and the Run page's checklist is where those stand.
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations states 17.2's tests
+Authorised by: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+Was:
+> and the replay keeps each fixture name's dividend part as its captured answer files it |
+Now:
+> and the replay keeps each fixture name's dividend part as its captured answer files it; and from 17.2 a card's stretch mark is worked by hand over constructed nights, counted night by night by the stretch each past empty night had reached and shown to differ from one counted a stretch at a time, the stretch at its mark not flagged and one night past it flagged, no mark under thirty completed stretches or under 504 sessions and a mark at each floor, and each night's reading in turn; a member half a typical move under its look-back high stands forming a breakout with the price it must close above and the volume the rule needs, still failing the new high, the volume and the tightening, is absent the night it closes above the high, two moves under, with the market check closed or with no typical move or average volume, and the nearest misses order first; a rule's funnel counts each gate and every gate before off each member's answers and an index rule's parts off the first each member failed; a swing filter variant keeps five in the list's own order on the plan it reads, none its open pick holds and none whose stop sits at its buy; the earnings window is counted over the sessions the store holds and at five a week beyond them; and over a constructed store the stage writes each standing rule's night with its listed count and funnel, an index the night did not read nothing, a variant's own picks with a stock its pick ending at the night's close held off and that pick ended at its stop, the history the record command replays read under the night's row with its mark, and a night run again replacing its own rows |
+Why: the roster names every check that runs and what each asserts, and 17.2's tests join the row of the check that carries them.
+
+### 2026-10-08 - .claude/rules/checks.md - read-surface states 17.2's tests
+Authorised by: A variant's picks are shown on its card when chosen and its results only under its tests
+Was:
+> and Past picks draws the operator's trades on the chosen index, open ones first with their exit press, and says so where the index holds none |
+Now:
+> and Past picks draws the operator's trades on the chosen index, open ones first with their exit press, and says so where the index holds none; and from 17.2 each setup card's selector lists the live rule and each registered variant by its number, a variant chosen in the link redraws the card under the band from that rule's rows with the clauses the live rule's words lack marked and its own picks, one the live rule did not list among them, read back off the rendered card, the default and a link naming no standing rule returning to the live rule with no band, the shell's script merging a card's key into the link's own query and a row's link merging the keys the link holds, the funnel and the stretch line read back off the card, flagged past its mark with the live rule named among the things to worry about, and the S&P 400's selector listing the provisional rule alone with the line that no variant is registered before its freeze, its funnel off the rule's parts and the breakouts forming beneath it with each row's price, volume needed, gates still failing and next report under the closing line |
+Why: the same, for the check reading the pages.

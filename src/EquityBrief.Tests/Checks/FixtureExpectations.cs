@@ -115,6 +115,8 @@ public partial class FixtureExpectations
             .. HeavyweightSweepClaims,
             // 17.1, the five searches and the pulls' provider stop: section 17's five rows and section 18's one.
             .. SearchClaims,
+            // 17.2, the cards: section 17's two rows and section 18's two.
+            .. RuleCardsClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

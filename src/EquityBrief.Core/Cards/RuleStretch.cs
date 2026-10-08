@@ -11,7 +11,7 @@ public sealed record StretchReading(int Stretch, int? Mark, bool Flagged, int Co
 // 100 empty nights of a rule whose stretches are what they are, and night by night about 5 in 100, which is what a
 // 95 per cent mark is meant to say. No mark is drawn under 30 completed stretches, a stretch completing on the night a
 // pick ends it, or under 504 sessions evaluated, two years of them.
-// see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+// see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public static class RuleStretch
 {
     public const int CompletedStretchesFloor = 30;

@@ -706,7 +706,7 @@ public static class SchemaMigrations
     // breakout rule on a night, at most the stated rows a rule with the whole count on each.
     // see: A variant's picks are shown on its card when chosen and its results only under its tests
     // see: The forming list advises and never lists a stock
-    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     const string CreateRuleCards = @"
         CREATE TABLE rule_night (
             index_code      TEXT NOT NULL,

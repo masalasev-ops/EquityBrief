@@ -3729,7 +3729,7 @@ public sealed class ReadApi : IComponent
     ";
 
     // Every standing rule's row on a night: how many it listed, its funnel and its stretch against its mark.
-    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     public async Task<IReadOnlyList<RuleNightRow>> RuleNightsAsync(string index, DateOnly on)
     {
         await using var connection = Open();

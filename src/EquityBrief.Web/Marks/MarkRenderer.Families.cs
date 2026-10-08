@@ -610,7 +610,7 @@ public sealed partial class MarkRenderer
 
     // The stretch line: how many nights the rule has listed nothing for and the mark its past empty nights set, flagged
     // past the mark; no mark under the floors, with how far the floors are from being met.
-    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     static string StretchLine(StretchLineView? stretch, bool evaluated)
     {
         if (stretch is null)

@@ -138,7 +138,7 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
     // 400's and 600's live or provisional rules, and the breakout's and the drift's registered variants whose settings
     // sit on their family's grid and read no market switch; a variant off the grid, reading a switch or of the swing
     // filter's own starts its history at its registration, and the sector heavyweights carry no stretch line.
-    // see: A card's stretch line counts its mark over past empty nights and draws none under 30 completed stretches
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     public async Task<int> NightsAsync(IReadOnlyList<string> named, CancellationToken cancellation = default)
     {
         var indices = named.Count == 0 ? DecisionCards.Indices : named;
