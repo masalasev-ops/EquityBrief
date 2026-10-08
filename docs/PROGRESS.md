@@ -40806,13 +40806,17 @@ Pins:       none moved; the fetcher is in no pin list.
 Mutated:    the rule, stated before the run: the property the done condition names, a dropped bar landing in the kept
             bars, broken alone by removing the copy before the drop. Predicted red at the kept bars holding the dropped
             sessions; red as predicted, the kept bars empty. Reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
-            entry's commit, the second reading the first's suite result.
-            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 98bacc88, the
+            pull request's last commit but its fill, the second reading the first's suite result. The entry's commit
+            was followed by two, the bars expectation's note on the kept bars read by the test that works them, which
+            the first run found, and the checkpoint script's stamp reader given its own Continue preference, since a
+            git warning on stderr under a redirected host had emptied the stamp over a clean tree and sent the phase
+            report back to running the suite; the gates ran over the tree with both.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2027 of 2027 tests ran with none failed, migrations 0 to
             76 with none pending, schema version 76, against `data-ci` and never `data`.
-            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            `tools/verify-phase.ps1`: 45 tables, 1067 claims, 1067 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1078
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
-            carried and 43 passed, <n> of <n> tests ran.
+            carried and 43 passed, 2027 of 2027 tests ran.
 Carried:    this pull request changes the night's code, so it merges after 17.2's first night, 2026-10-08, is read the
             morning after, with `tools/migrate.ps1` run on the store after the merge; the kept bars fill from the night
             after that as the fetcher drops its sessions, an operating fact the 17.3 entry records. Then the ledger.
