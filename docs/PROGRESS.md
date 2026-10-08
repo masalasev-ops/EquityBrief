@@ -40302,10 +40302,13 @@ Mutated:    the rule, stated before the run: the property the operator asked for
             at the two tests predicted, the first counting one row of two and the ended copy's finding no start; C3
             red at the surface's test alone, the start at its wait and hour read as gone. Each reverted, and the nine
             copy tests green over the reverted tree, filtered to them.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN, the pull request's last commit.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 80193348, the
+            pull request's last commit but this fill.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0
+            to 73 with none pending, schema version 73, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1036 claims, 1036 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1047
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1999 of 1999 tests ran.
 Carried:    the folder back at three copies by tonight's copy; why the two went, which the machine's antivirus history
             may say and this repository cannot; and the night of 2026-10-07's copy, whose start wrote no row since it
             ran the code before this, which the run page will draw from its ending row alone.
