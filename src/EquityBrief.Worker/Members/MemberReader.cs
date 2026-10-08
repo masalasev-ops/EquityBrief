@@ -221,7 +221,7 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
         }
 
         var peerSurprise = Weighted(peers);
-        var switches = at >= 0 ? await SwitchesAsync(connection, calendar, at, night, cancellation) : null;
+        var switches = await SwitchesAsync(connection, night, cancellation);
         var withABar = 0;
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
@@ -325,21 +325,18 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
     }
 
     // The switches on the night: each index fund over SPY across half a year and a year of sessions, and HYG against its
-    // average and its change, every close aligned on the store's sessions.
+    // average and its change, every close aligned on the funds' own stored sessions and not the members' bars, since
+    // the bar store holds a year and a year's window reads the close 252 sessions before the night, which the members'
+    // sessions never reach, while the night's fetch holds each fund's series over the 400 days before its first night
+    // and every session since, so the window is read from the funds' own closes once they hold 253 sessions. None is
+    // read where the night is no session of the funds'.
+    // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
+    // see: The night's switches are aligned on the funds' own sessions, so a year's window is read from closes the members' year of bars never reaches
     sealed record Switches(double? MidHalfYear, double? MidYear, double? SmallHalfYear, double? SmallYear, double? CreditAverage, double? CreditChange);
 
-    static async Task<Switches> SwitchesAsync(SqliteConnection connection, IReadOnlyList<DateOnly> calendar, int at, DateOnly night, CancellationToken cancellation)
+    static async Task<Switches?> SwitchesAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
     {
-        var position = calendar.Select((day, index) => (day, index)).ToDictionary(pair => pair.day, pair => pair.index);
-        var closes = new Dictionary<string, double[]>(StringComparer.Ordinal);
-
-        foreach (var fund in new[] { LargeFund, MidFund, SmallFund, CreditFund })
-        {
-            var aligned = new double[calendar.Count];
-
-            Array.Fill(aligned, double.NaN);
-            closes[fund] = aligned;
-        }
+        var rows = new List<(string Fund, DateOnly Session, double Close)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -354,11 +351,31 @@ public sealed class MemberReader(IClock clock, string databaseFile) : IComponent
 
             while (await reader.ReadAsync(cancellation))
             {
-                if (position.TryGetValue(Date(reader.GetString(1)), out var index))
-                {
-                    closes[reader.GetString(0)][index] = Statistic.FromPrice(Money(reader.GetString(2)));
-                }
+                rows.Add((reader.GetString(0), Date(reader.GetString(1)), Statistic.FromPrice(Money(reader.GetString(2)))));
             }
+        }
+
+        var calendar = rows.Select(row => row.Session).Distinct().Order().ToArray();
+        var position = calendar.Select((day, index) => (day, index)).ToDictionary(pair => pair.day, pair => pair.index);
+
+        if (!position.TryGetValue(night, out var at))
+        {
+            return null;
+        }
+
+        var closes = new Dictionary<string, double[]>(StringComparer.Ordinal);
+
+        foreach (var fund in new[] { LargeFund, MidFund, SmallFund, CreditFund })
+        {
+            var aligned = new double[calendar.Length];
+
+            Array.Fill(aligned, double.NaN);
+            closes[fund] = aligned;
+        }
+
+        foreach (var (fund, session, close) in rows)
+        {
+            closes[fund][position[session]] = close;
         }
 
         double? Against(string fund, int window) =>

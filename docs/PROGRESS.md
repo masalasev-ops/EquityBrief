@@ -40380,3 +40380,40 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: 30213e3a, th
 Carried:    the 15.2 correction, then 17.1a; the growth proposal's approval, which gates 17.2a alone; the night's
             options before 17.2 merges; the sign-offs of phases 15 and 16, owed to fresh sessions; and why two copies
             went on 2026-10-08, which the machine's antivirus history may say.
+
+### 15.2 - correction: the night's switches aligned on the funds' own sessions, where the members' year of bars left the year's window unread   2026-10-08
+
+Corrects:   15.2's member reader, which aligned the switches' closes on the sessions the members' bars hold, a year
+            of them, so the half-year windows read and the year's never did: a year's window reads the close 252
+            sessions before the night, which a calendar of 252 sessions never holds, and `ijh_year` and `ijr_year`
+            were null on both nights the readings were stored, 2026-10-06 and 2026-10-07. No rule read them.
+Found:      on 2026-10-08 by phase 17's evaluation of the store, read-only, and ruled that morning: "read it from the
+            market series and pulled history, so it is filled every night, before the ledger reads it (at the latest
+            17.3), with a test that it is never null once 252 sessions exist."
+Built:      the switches aligned on the funds' own stored sessions in `market_bar`, which the night's fetch holds over
+            the 400 days before the first night that asked for them and every session since, 279 on 2026-10-08, so a
+            year's window is read once they hold 253; a night that is no session of the funds' reads none, as before.
+            The pulled fund series are not read, since the night's own hold a year and grow a session a night, and a
+            night reading a pulled table would narrow two decisions that say none does for a store that a store with
+            no pulled history is as well; the decision says so, and a ruling that wants the pulled series read behind
+            the night's own is the one that narrows them. `SCHEMA.md`'s switch readings paragraph and the roster's
+            `fixture-expectations` clause carry the change, their prior text in `CHANGELOG.md`.
+Tests:      1999, unchanged: the switches' test extended, a member holding sixty bars reading both year switches from
+            the funds' 253 sessions and none at 252 with the half-year's still read.
+Claims:     1036, unchanged.
+Pins:       none moved: `MemberReader.cs` is in no pin list, and the readings' and the switches' shared functions are
+            untouched.
+Mutated:    the rule, stated before the run: the property the correction adds broken alone, made on the branch in this
+            checkout, filtered to the member readings' tests and reverted.
+            S1 the funds' calendar cut to its newest 252 sessions, the members' year in effect: predicted red at the
+            switches' test alone, both year switches null at 253.
+            Results: S1 red at the switches' test alone, the two other member readings' tests green; reverted, and
+            the three green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 17c7b280, the
+            pull request's last commit but its fill.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0
+            to 73 with none pending, schema version 73, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1036 claims, 1036 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1047
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1999 of 1999 tests ran.
+Carried:    the night of 2026-10-08 read the morning after for the two year switches filled; then 17.1a.
