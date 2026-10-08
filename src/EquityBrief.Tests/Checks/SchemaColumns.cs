@@ -62,6 +62,9 @@ public class SchemaColumns
             // 16.1, each pick's card and each rule's record.
             CheckReach.Key(Scope.StoresTable, "Decision cards"),
             CheckReach.Key(Scope.StoresTable, "Rule records"),
+            CheckReach.Key(Scope.StoresTable, "Rule nights"),
+            CheckReach.Key(Scope.StoresTable, "Rule picks"),
+            CheckReach.Key(Scope.StoresTable, "Forming rows"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

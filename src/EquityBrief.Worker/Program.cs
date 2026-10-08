@@ -127,6 +127,9 @@ static int NoVerb()
         "which a family's card reads to say its sweep found none, " +
         "'rule-record' replays each rule a pick's card names on each index at its one setting over the pulled history, " +
         "each trade after its cost, and stores its record for the card, with '--index <GSPC, MID or SML>' one index alone, " +
+        "and 'rule-record --nights' replays instead each standing rule's listed count on every session of the pulled " +
+        "history, the live rules and the breakout's and the drift's variants at their grid settings, for the cards' " +
+        "stretch lines, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -520,12 +523,16 @@ static async Task<int> RuleRecordRun(string[] args)
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var named = VerbArguments.Value(args, "--index");
-
-    return await new EquityBrief.Worker.Cards.RuleRecorder(
+    string[] indices = named is null ? [] : named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var recorder = new EquityBrief.Worker.Cards.RuleRecorder(
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         store.DataRoot,
-        Console.Out).RunAsync(named is null ? [] : [.. named.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
+        Console.Out);
+
+    return args.Contains("--nights", StringComparer.Ordinal)
+        ? await recorder.NightsAsync(indices)
+        : await recorder.RunAsync(indices);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule
@@ -1173,7 +1180,8 @@ static async Task<int> NightlyRun(string[] args)
         tryNumber: rest?.NextTry ?? 1,
         resume: rest is not null,
         build: build,
-        cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]));
+        cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]),
+        forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]));
 }
 
 // A night refused before its first step, on stderr and on the run log.

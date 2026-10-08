@@ -26,14 +26,21 @@ public static class RuleReplay
     public const string SurvivorsOnly = "survivors only";
 
     // One rule's replay: its family, the rule in words, the setting it was walked at, the history's first and last
-    // session, whether membership was read as it stood or as today's members, the unit its results are in, and its trades.
-    public sealed record Replayed(string Family, string Rule, string Settings, DateOnly From, DateOnly Through, string Membership, string Unit, IReadOnlyList<RecordTrade> Trades);
+    // session, whether membership was read as it stood or as today's members, the unit its results are in, its trades,
+    // and how many it listed on each scored session, zeros included, which the cards' stretch lines read.
+    public sealed record Replayed(string Family, string Rule, string Settings, DateOnly From, DateOnly Through, string Membership, string Unit, IReadOnlyList<RecordTrade> Trades, IReadOnlyList<(DateOnly Session, int Listed)> Nights);
+
+    // A registered breakout or drift rule walked in place of the family's frozen setting: its name as the register
+    // holds it, its family, its place on the family's grid and the drift's stop floor in typical moves.
+    public sealed record SwingVariant(string Name, string Family, int[] Setting, double StopFloor);
 
     // The families a card names on an index, in the page's order with the sector heavyweights after them.
     public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, HeavyweightRule.Name];
 
-    // Every rule a card can name on an index, or the families named, each replayed over the history the index's sweep reads.
-    public static async Task<IReadOnlyList<Replayed>> IndexAsync(string databaseFile, string index, Action<string> progress, CancellationToken cancellation, IReadOnlyList<string>? families = null)
+    // Every rule a card can name on an index, or the families named, each replayed over the history the index's sweep
+    // reads; where variants are given for the breakout or the drift, each is walked at its own setting in place of the
+    // family's frozen one.
+    public static async Task<IReadOnlyList<Replayed>> IndexAsync(string databaseFile, string index, Action<string> progress, CancellationToken cancellation, IReadOnlyList<string>? families = null, IReadOnlyList<SwingVariant>? variants = null)
     {
         bool Asked(string family) => families is null || families.Contains(family, StringComparer.Ordinal);
 
@@ -71,7 +78,18 @@ public static class RuleReplay
 
             foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name }.Where(Asked))
             {
-                replayed.Add(Swing(read, family, sessions, members, firstScored));
+                var own = (variants ?? []).Where(variant => variant.Family == family).ToArray();
+
+                if (own.Length == 0)
+                {
+                    replayed.Add(Swing(read, family, sessions, members, firstScored));
+                }
+
+                foreach (var variant in own)
+                {
+                    progress($"replaying {variant.Name} on the {DecisionCards.NameOf(index)}");
+                    replayed.Add(Swing(read, family, sessions, members, firstScored, variant.Setting, variant.StopFloor) with { Rule = variant.Name });
+                }
             }
         }
 
@@ -113,6 +131,7 @@ public static class RuleReplay
         var trades = replay.Trades(rule, read.Large ? null : (name, bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []));
         var exit = SweepAxes.ExitIndex(SweepIdeas.Cap, breakEven: false);
         var kept = new List<RecordTrade>();
+        var nights = Nights(read, trades.Select(trade => trade.Listing.Session));
 
         foreach (var trade in trades)
         {
@@ -142,16 +161,37 @@ public static class RuleReplay
             read.Inputs.Through,
             read.Membership,
             Risks,
-            kept);
+            kept,
+            nights);
+    }
+
+    // How many trades a rule's walk listed on each scored session of the history, zeros included, read off the sessions
+    // its trades were listed on.
+    static IReadOnlyList<(DateOnly Session, int Listed)> Nights(Read read, IEnumerable<int> listedOn)
+    {
+        var calendar = read.Inputs.Sessions;
+        var first = Array.FindIndex(calendar, session => session >= read.From);
+        var counts = new int[calendar.Length];
+
+        foreach (var session in listedOn)
+        {
+            if (session >= 0 && session < counts.Length)
+            {
+                counts[session]++;
+            }
+        }
+
+        return [.. Enumerable.Range(Math.Max(0, first), calendar.Length - Math.Max(0, first)).Select(session => (calendar[session], counts[session]))];
     }
 
     // The breakout or the drift at the setting it was frozen at on the S&P 500, which the S&P 400 and 600 run as their
-    // provisional rule: its sweep's own listings and exit, five a night with one open trade a stock.
-    static Replayed Swing(Read read, string family, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored)
+    // provisional rule, or at a registered rule's own setting: its sweep's own listings and exit, five a night with one
+    // open trade a stock.
+    static Replayed Swing(Read read, string family, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, int[]? at = null, double stopFloor = 0)
     {
         var calendar = read.Inputs.Sessions;
-        var adapter = FamilySweepRunner.For(family, read.Series, sessions, members, firstScored, calendar);
-        int[] setting = family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
+        var adapter = FamilySweepRunner.For(family, read.Series, sessions, members, firstScored, calendar, stopFloor);
+        int[] setting = at ?? (family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen]);
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var held = new Dictionary<(int Name, int Session), int>();
 
@@ -187,7 +227,7 @@ public static class RuleReplay
                 listing.Trails ? null : result >= ((listing.Target - listing.Entry) / risk) - Tolerance));
         }
 
-        return new Replayed(family, SwingWords(family, setting), adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept);
+        return new Replayed(family, SwingWords(family, setting), adapter.Grid.Key(setting), read.From, read.Inputs.Through, read.Membership, Risks, kept, Nights(read, trades.Select(trade => trade.Listing.Session)));
     }
 
     // The breakout's or the drift's setting in the words the register names a family rule in, read off the setting's own
@@ -275,7 +315,8 @@ public static class RuleReplay
             read.Inputs.Through,
             read.Membership,
             Percent,
-            kept);
+            kept,
+            []);
     }
 
     // How near a result may sit under its target's multiple and still be read as the close that reached it.

@@ -695,7 +695,72 @@ public static class SchemaMigrations
         new Migration(72, "add index_heavyweight_holding.lead", AddIndexHoldingLead),
         new Migration(73, "add index_heavyweight_rule_holding.lead", AddIndexRuleHoldingLead),
         new Migration(74, "add pulled_holding's shares and value", AddPulledHoldingValue),
+        new Migration(75, "create rule_night, rule_pick and forming_row", CreateRuleCards),
     ];
+
+    // The cards' rule rows: one row a standing rule, index and night, live or variant, with whether the night
+    // evaluated it, how many it listed with zeros, how many members passed each of its gates and every gate before,
+    // its empty stretch and the mark the stretch is read against, written by the night or replayed from the pulled
+    // history; one row a pick of a rule whose list no other table keeps, the swing filter's variants, with its plan,
+    // the figures that listed it and its end as the walk ends it; and one row a member forming a breakout under a
+    // breakout rule on a night, at most the stated rows a rule with the whole count on each.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: The forming list advises and never lists a stock
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+    const string CreateRuleCards = @"
+        CREATE TABLE rule_night (
+            index_code      TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            family          TEXT NOT NULL,
+            rule            TEXT NOT NULL,
+            evaluated       INTEGER NOT NULL,
+            listed          INTEGER NOT NULL,
+            gates           TEXT,
+            stretch         INTEGER,
+            mark            INTEGER,
+            flagged         INTEGER NOT NULL,
+            completed       INTEGER,
+            sessions        INTEGER,
+            source          TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, family, rule)
+        ) STRICT;
+
+        CREATE TABLE rule_pick (
+            index_code      TEXT NOT NULL,
+            rule            TEXT NOT NULL,
+            ticker          TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            family          TEXT NOT NULL,
+            place           INTEGER NOT NULL,
+            entry           TEXT NOT NULL,
+            stop            TEXT,
+            target          TEXT,
+            reward_to_risk  REAL,
+            cap             INTEGER NOT NULL,
+            why             TEXT NOT NULL,
+            ended_on        TEXT,
+            result          REAL,
+            PRIMARY KEY (index_code, rule, ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE forming_row (
+            index_code      TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            rule            TEXT NOT NULL,
+            place           INTEGER NOT NULL,
+            ticker          TEXT NOT NULL,
+            close           TEXT NOT NULL,
+            high            TEXT NOT NULL,
+            moves_under     REAL NOT NULL,
+            volume_needed   REAL NOT NULL,
+            volume          REAL NOT NULL,
+            range_ratio     REAL NOT NULL,
+            missing         TEXT NOT NULL,
+            next_earnings   TEXT,
+            forming         INTEGER NOT NULL,
+            PRIMARY KEY (index_code, session_date, rule, place)
+        ) STRICT;
+    ";
 
     // Each holding of a fund's filing, the shares the fund held and their value in dollars as the filing states them,
     // which give the price the fund valued a share at on the quarter's end; null where the filing states neither, as the

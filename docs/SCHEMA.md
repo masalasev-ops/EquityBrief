@@ -81,6 +81,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `index_heavyweight_rule_holding` | IndexFamilies | IndexFamilies | IndexFamilies |
 | `decision_card` | DecisionCards | none | DecisionCards |
 | `rule_record` | RuleRecorder | RuleRecorder | none |
+| `rule_night` | RuleCards | none | RuleCards |
+| `rule_pick` | RuleCards | RuleCards | RuleCards |
+| `forming_row` | RuleCards | none | RuleCards |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1148,6 +1151,77 @@ Grain: one row per index and family a card names on it.
 Primary key: `index_code`, `family`.
 
 **The rule recorder writes it by hand, one row an index and family over what an earlier run wrote** (see: A rule's record is replayed at its one setting by the sweep's own code over the pulled history, after costs on every index). It replays each family's live rule on the S&P 500 and its provisional rule on the S&P 400 and 600 at its one setting, and a freeze's remedy runs it again so the row follows the rule a card names. No row is deleted.
+
+### rule_night
+Grain: one row per index, night, family and rule standing when the night started, live or variant, or replayed from the pulled history by the record command.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night, or the replayed session |
+| `family` | TEXT | the family, by the word it is stored under |
+| `rule` | TEXT | the rule's name as the register holds it, or `provisional` for the rule drawing a family's list on an index no freeze has registered one on |
+| `evaluated` | INTEGER | 1 where the night evaluated the rule, 0 where its index's part failed |
+| `listed` | INTEGER | how many the rule listed on the night, zeros included |
+| `gates` | TEXT | JSON: each gate or part of the rule in its order with how many members passed it and every one before; null where the night did not evaluate the rule, for a sector heavyweights rule, and on a replayed row |
+| `stretch` | INTEGER | the nights the rule has listed nothing for, counting this one where it listed nothing; null where it was not evaluated and for a sector heavyweights rule |
+| `mark` | INTEGER | the stretch the share of its past empty nights had not gone past; null under the floors |
+| `flagged` | INTEGER | 1 where the stretch is past the mark |
+| `completed` | INTEGER | the stretches completed to the night, a stretch completing on the night a pick ends it |
+| `sessions` | INTEGER | the nights evaluated to and including this one, which the mark was counted over |
+| `source` | TEXT | `night` for a row the night wrote, `history` for one the record command's replay wrote |
+
+Primary key: `index_code`, `session_date`, `family`, `rule`.
+
+**The rule cards stage writes the night's rows in the swing filter's step after the decision cards, and the record command's `--nights` form writes the history's through the same component, which is its own deleter: a night run again replaces its own rows, and a replay writes over the rule's history** (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches).
+
+### rule_pick
+Grain: one row per index, rule, stock and night a rule whose list no other table keeps kept a pick on, the swing filter's variants.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC` |
+| `rule` | TEXT | the variant's name as the register holds it |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night the pick was kept on, bought at that close |
+| `family` | TEXT | `pullback` |
+| `place` | INTEGER | the pick's place on the variant's own list, counted from one, at most five |
+| `entry` | TEXT | decimal in code, the night's close |
+| `stop` | TEXT | decimal in code, the stop of the plan the variant reads, the plan clear of the noise or the swing plan at the nearest bands |
+| `target` | TEXT | decimal in code, that plan's target, null where it names none |
+| `reward_to_risk` | REAL | that plan's, null where it has no target |
+| `cap` | INTEGER | the sessions the pick is given, the pullback family's |
+| `why` | TEXT | JSON: the figures the swing filter stored for the member on the night, each gate's values by name |
+| `ended_on` | TEXT | the session the walk ended it on, at a close through its stop, at its target or at its cap; null while it is open |
+| `result` | REAL | what it came to in multiples of its risk; null while open and where the closes ran out before its cap |
+
+Primary key: `index_code`, `rule`, `ticker`, `session_date`.
+
+**The rule cards stage writes and ends them, and is its own deleter: a night run again removes its own picks and clears the ends it wrote at its close, which the walk writes again** (see: A variant's picks are shown on its card when chosen and its results only under its tests).
+
+### forming_row
+Grain: one row per index, night, breakout rule and place a member forming a breakout under the rule stands at.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night |
+| `rule` | TEXT | the breakout rule's name as the register holds it, or `provisional` |
+| `place` | INTEGER | the member's place in the list, the nearest misses first, counted from one, at most the stated rows |
+| `ticker` | TEXT | |
+| `close` | TEXT | decimal in code, the night's close |
+| `high` | TEXT | decimal in code, the highest high of the rule's look-back, the price it would have to close above |
+| `moves_under` | REAL | how far the close sits under the high in the member's typical moves |
+| `volume_needed` | REAL | the shares the rule would need, its multiple of the 50-session average |
+| `volume` | REAL | the night's shares |
+| `range_ratio` | REAL | the newer ranges over the older, as the rule's tightening gate reads them |
+| `missing` | TEXT | JSON: the gates the member still fails in the rule's order, the new high always among them |
+| `next_earnings` | TEXT | the member's next report date where one falls within the stated sessions after the night, null otherwise |
+| `forming` | INTEGER | how many members were forming under the rule that night, the rows drawn or more |
+
+Primary key: `index_code`, `session_date`, `rule`, `place`.
+
+**The rule cards stage writes them and is its own deleter: a night run again replaces its own rows** (see: The forming list advises and never lists a stock).
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.

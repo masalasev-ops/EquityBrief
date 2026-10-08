@@ -58,7 +58,7 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         // The card: the third of the page's families, two picks, on provisional settings.
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\">"), card, StringComparison.Ordinal);
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 3 of {families} · After a strong report</div><h2>Earnings drift</h2>"), page, StringComparison.Ordinal);
         // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
         // on twice the volume and a target at 2.5 times the risk.
