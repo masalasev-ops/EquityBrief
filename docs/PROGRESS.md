@@ -40312,3 +40312,71 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the folder back at three copies by tonight's copy; why the two went, which the machine's antivirus history
             may say and this repository cannot; and the night of 2026-10-07's copy, whose start wrote no row since it
             ran the code before this, which the run page will draw from its ending row alone.
+
+### 17.0 planning - phase 17 planned: the improvement loop, a ledger of every setup, three engines, a walk-forward tester, a monthly decision by the operator and the cards' variant selector, with the store's growth and the night's headroom measured   2026-10-08
+
+Not a checkpoint entry. It lands 17.0, the pass that plans phase 17, and builds none of the loop.
+Queue:      done, the 13.10 correction of the store's copy, merged as PR 398 at 10:11 UTC with the folder back at three
+            copies by 10:13; in progress, this pass; next, in order, the 15.2 correction of the one-year
+            small-against-large reading, 17.1a and 17.1b, 17.2, 17.2a once the operator approves the growth proposal
+            below, and 17.3 to 17.10, each merged once its gates and the hosted runs are green and reported after it
+            merges; beside them, in fresh sessions the operator starts one at a time, the sign-offs of phases 15 and 16,
+            phase 17 pausing with the checkout on main while each runs and never beside one.
+Ruled:      by the operator on 2026-10-08: the brief, the plan approved in two rounds, R1 to R11 and R13 as
+            recommended, R12 changed to a block of 63 sessions, two gos, five changes and four more, each word for word
+            in `prompts/2026-10-08-17.0-*.md`. Nothing here discharges either sign-off.
+Planned:    `BUILD_PLAN.md`'s phase 17 section, its checkpoints 17.0 to 17.10 with 17.2a, and six operating rows, the
+            night's added time, the ledger's growth, the night's growth after the change, the first scheduled monthly
+            run, the alarm's first two months and a replaced rule's 63 sessions; section 20's row; and seven decisions
+            the phase rests on that describe no running code, the operator's approval and the mode shipped off, each
+            family on each index its own, adoption only on unseen years with a search judged as a procedure, the
+            operator's trades feeding nothing, the sign-offs between pull requests, the pass rule, and a declined
+            proposal's return after a block. The decisions that change what runs are written where they are built.
+Measured:   the store's growth by table, read-only, the copy of 2026-10-07 05:16 UTC against the live store at about
+            07:00 UTC on 2026-10-08, the rows each table gained and its newest rows' payload bytes. In order: the facts
+            files 23.2 MB, 1,501 at 15.5 KB, which the retention empties the night after, so they stand as a peak the
+            file carries and not as growth, the night before's 1,505 rows averaging 33 bytes; the news articles 9.7,
+            2,220 at 4.4 KB, kept 31 days, so their growth ends on 2026-11-01 at about 300 MB; the breakout's and the
+            drift's results 4.3, 1,006 rows of gate words and shadow verdicts at 4.3 KB, kept a year; the levels 3.8 and
+            the volume profiles 1.9, each kept over 23 nights by its own deleter and so bounded; the swing filter's gate
+            results 2.2, 503 at 4.5 KB, kept a year; the fundamental readings 1.6, 1,505 at 1.1 KB, kept forever; the run
+            log 1.3, the drain's and the labeller's call rows; the version scores 1.0, kept a year; the research
+            documents 2.0; and the rest under 0.8 together. The payload that persists is about 29 MB a night with the
+            news among it and about 20 without, before the indexes and the pages' slack, against the file's 44 MB
+            between the two readings, which also carried migrations 72 and 73 and the leavers' remedy. The copy of
+            1.42 GB took 287 seconds, about 5 MB a second, and the copy made by hand at 10:13 UTC with the file's
+            pages still in memory 18 seconds.
+Proposed:   for the operator's approval, as 17.2a or as none: (1) nothing stored changes until the news window is
+            full on 2026-11-01 and five more three-index nights are read, since the growth the 15.0 row settles is
+            then measured without the window's filling, which is a third of what was measured; (2) the one change
+            worth making, the gate words and shadow verdicts of the breakout's, the drift's and the swing filter's
+            results stored once a night a gate as a dictionary and each member's row keyed to it, every value kept
+            and every reader reading the same words, taking about 4 MB a night off at 1,006 and 503 rows; (3) no
+            summary rolls any per-member row up, since Past picks, a name's earlier-night page and the ledger read
+            each member's own row as it stood. Projected a year on, at 30 MB a night over 252 nights and the ledger's
+            0.5 GB once and 60 MB a year of kept bars, the store reaches about 9.5 GB and a copy about 32 minutes at
+            today's rate, three copies holding 29 GB of the disk's 1.3 TB free.
+Projected:  the night. The three-index arithmetic reached the close in 1,588 seconds on 2026-10-07, 1,983 on the
+            session of 2026-10-05 run again and 2,109 on 2026-10-06, against the wall clock of 2,400; indicators,
+            levels, moves and the volume profile are 1,415 of the 1,588. Phase 17 adds the cards' stages, the forming
+            lists and the ledger's append, about 100 seconds together, proposed, and the filings' refresh, about 1,506
+            submissions requests at ten a second and the facts of 20 to 150 filers, about 200 seconds, proposed: 1,888,
+            2,283 and 2,409, so two of the three nights would pass 2,160, 90 per cent, and the slowest the limit. The
+            options, for the operator before 17.2 merges: (a) the filings' refresh as a step after the fetch under a
+            limit of its own and outside the arithmetic's clock, as the quarters step runs, which keeps the three at
+            1,688, 2,083 and 2,209 and the slowest at 92 per cent; (b) the wall clock, still proposed under the 15.0 row
+            and settled from the first five three-index nights, moved to 60 minutes with its deadline three times
+            that; (c) the four heavy steps faster, which on this machine means the store off the spinning disk, where
+            the same night ran about seven times faster, the operator's own decision; the recommendation is (a) now
+            and (b) only where the five nights the 15.0 row waits on say so.
+Tests:      1999, unchanged.
+Claims:     1036, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
+            plan and the decisions sit in no table the harness reads.
+Pins:       none moved: the pass edits no source.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN, the entry's commit, all six
+            steps, 0 warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0 to 73 with none pending,
+            schema version 73, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not
+            run, on the operator's ruling of 2026-10-02.
+Carried:    the 15.2 correction, then 17.1a; the growth proposal's approval, which gates 17.2a alone; the night's
+            options before 17.2 merges; the sign-offs of phases 15 and 16, owed to fresh sessions; and why two copies
+            went on 2026-10-08, which the machine's antivirus history may say.
