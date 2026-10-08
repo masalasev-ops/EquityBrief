@@ -156,7 +156,7 @@ public partial class ReadSurface
         // registered, two variants standing beside it. Its heading and its rule in a sentence are the family's.
         var families = SetupFamilies.InPageOrder.Count;
 
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\">"), card, StringComparison.Ordinal);
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-09-25</b> · 5 picks tonight · 2 variants scoring in the background</p>", card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 1 of {families} · Pullback in an uptrend</div><h2>Pullbacks to support</h2>"), page, StringComparison.Ordinal);
         // Its rule in words, written from the settings of the version its night ran under, the version every row is

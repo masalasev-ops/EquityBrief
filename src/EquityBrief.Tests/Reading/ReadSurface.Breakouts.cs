@@ -74,7 +74,7 @@ public partial class ReadSurface
         // The card: the second of the page's families, two picks, on provisional settings, in the ruling's words.
         var families = SetupFamilies.InPageOrder.Count;
 
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\">"), card, StringComparison.Ordinal);
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">Provisional: not yet frozen</b> · 2 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 2 of {families} · Breakout from a base</div><h2>Breakouts to a new high</h2>"), page, StringComparison.Ordinal);
 

@@ -455,8 +455,6 @@ public sealed partial class MarkRenderer
 
                 return body.ToString();
             }
-
-            body.Append(RuleWordsLine(rule.Parts));
         }
 
         if (card.Picks.Count == 0)
