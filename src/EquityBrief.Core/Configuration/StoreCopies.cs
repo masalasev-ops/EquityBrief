@@ -6,15 +6,18 @@ namespace EquityBrief.Core.Configuration;
 // data root where it names none; each copy named by the instant it was made, which orders them; and the folder
 // as a store row carries it, relative to the data root with forward separators, since no absolute path is
 // written into a store row, or by its name alone where it lies on a volume no relative path reaches.
-// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 public static class StoreCopies
 {
     public const string FolderKey = "EquityBrief:Backup:Folder";
 
     public const string DefaultFolder = "backups";
 
-    // The stage the copy's own row is written under.
+    // The stage the copy's ending row is written under, and the stage of the row it writes as it starts: two
+    // stages under one run, since the run log holds one row a run and stage.
     public const string Stage = "store-backup";
+
+    public const string StartStage = "store-backup-started";
 
     // How many copies are kept, the newest.
     public const int Kept = 3;
@@ -22,6 +25,11 @@ public static class StoreCopies
     // How long a copy waits for the night, its drain and its labeller before it gives up, which ends it well
     // before the next night is built.
     public static readonly TimeSpan WaitsAtMost = TimeSpan.FromHours(20);
+
+    // How long after a copy started its ending row is waited for before the copy is read as ended before it
+    // finished: its longest wait, and an hour for the copy itself and its reading back.
+    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    public static readonly TimeSpan EndsBy = WaitsAtMost + TimeSpan.FromHours(1);
 
     // A copy written and not yet checked and named, which a copy that did not finish leaves behind.
     public const string Unfinished = ".partial";

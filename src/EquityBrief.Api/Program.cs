@@ -1688,6 +1688,9 @@ app.MapGet("/screens/run/{night?}", async (
     var everyListing = await read.ListingsAsync();
     var returns = await read.ForwardReturnsAsync();
     var log = await read.RunLogAsync(dated);
+
+    // The store's copies as their own rows state them, read once for the checklist's two items and the line beneath it.
+    var storeCopy = RunScreen.StoreCopy(await read.StoreBackupsAsync(), store.DataRoot, clock.UtcNow);
     var stages = RunScreen.Stages(log);
     var records = RunScreen.Records(everyListing, RunScreen.Resolved(returns));
     var flips = await read.LabelReturnsAsync();
@@ -1796,7 +1799,8 @@ app.MapGet("/screens/run/{night?}", async (
                 RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
                 RunScreen.FellBack(await read.FellBackAsync(dated)),
                 log,
-                [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()]),
+                [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()],
+                storeCopy),
             background: versions,
             compare: compare,
             checkpoints: RunScreen.Checkpoints(edge),
@@ -1813,7 +1817,7 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.FamilyTradesAsync(dated),
                     await read.FamilyReplaysAsync()),
             familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
-            storeCopy: RunScreen.StoreCopy(await read.StoreBackupsAsync(), store.DataRoot),
+            storeCopy: storeCopy,
             selector: selector),
         "text/html; charset=utf-8");
 });

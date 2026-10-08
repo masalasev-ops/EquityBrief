@@ -21,9 +21,11 @@ public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Det
 // written, and opens and reads it against the store. It keeps the newest three of the copies its own rows
 // name, opening and reading each before any older one is removed, and removes nothing where one of them does
 // not open and read; a copy another store made in the same folder is neither counted nor removed. It gives up
-// waiting after twenty hours, well before the next night is built. It writes one row of its own on the run
-// log, naming the folder relative to the data root and never as an absolute path, and nothing else.
-// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// waiting after twenty hours, well before the next night is built. It writes two rows of its own on the run
+// log and nothing else: one as it starts, so a copy ended before it finished leaves a start with no end, and
+// one as it ends, naming the folder relative to the data root and never as an absolute path, and naming the
+// copies its own earlier rows kept that are gone from the folder, removed by no copy.
+// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
 // see: The news labeller waits for the end of a peak window rather than stopping at one, and its time limit counts the time it labels
@@ -51,6 +53,9 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
 
     public const string NotCopied = "failed";
 
+    // The outcome of the row a copy writes as it starts, before it has waited for anything.
+    public const string Started = "started";
+
     // How long between looks at what still holds the store.
     public static readonly TimeSpan Between = TimeSpan.FromSeconds(30);
 
@@ -63,8 +68,9 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
     // Whether a labeller has written its run's last row since a moment, which it writes refused or not.
     const string LabellerEnded = "SELECT COUNT(*) FROM run_log WHERE stage = $stage AND started_at >= $since;";
 
-    // The rows this store's copies wrote, each naming the copy it made, kept or refused.
-    const string OwnRows = "SELECT detail FROM run_log WHERE stage = $stage;";
+    // The ending rows this store's copies wrote, newest first: each naming the copy it made, kept or refused, and
+    // the copies it kept.
+    const string OwnRows = "SELECT detail FROM run_log WHERE stage = $stage ORDER BY rowid DESC;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -89,6 +95,10 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         var givesUpAt = started + StoreCopies.WaitsAtMost;
         var labellerBy = NewsLabelling.EndsBy(started, labellerLimit, labellerPricing) + PastTheLabellersLimit;
         var waitedFor = new SortedSet<string>(StringComparer.Ordinal);
+
+        // The row that says the copy started, written before any wait under a stage of its own, so a copy ended
+        // before it finished is a start the run log holds with no end.
+        await RecordAsync(started, started, StoreCopies.StartStage, Started, new { afterTheLabeller }, cancellation);
 
         // The night, then the labeller the night started, each looked at again until neither holds.
         while (true)
@@ -160,6 +170,12 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             }
         }
 
+        // The copies this store's own rows name, and the ones its newest ending row kept that are gone from the
+        // folder before this copy is counted: removed by no copy, since a copy removes only beyond the three it
+        // keeps and names each removal, so a copy gone unnamed went by another hand, and the row says so.
+        var (own, lastKept) = await OwnCopiesAsync(cancellation);
+        var missing = lastKept.Where(kept => !File.Exists(Path.Combine(folder, kept))).ToArray();
+
         (string? Newest, long Bars) source;
 
         await using (var store = new SqliteConnection(StoreConnection.For(databaseFile)))
@@ -194,13 +210,12 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
                 folder = stored,
                 elsewhere,
                 reason = $"the copy did not open and read as the store does: {why}, so no older copy was removed",
+                missing,
                 waited = waitedFor,
             }, name, cancellation);
         }
 
         // The newest three of this store's own copies kept, each opened and read before any older one is removed.
-        var own = await OwnCopiesAsync(cancellation);
-
         own.Add(name);
 
         var copies = StoreCopies.In(folder).Where(one => own.Contains(Path.GetFileName(one.File))).ToArray();
@@ -240,6 +255,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             kept = StoreCopies.In(folder).Select(one => Path.GetFileName(one.File)).Where(own.Contains).ToArray(),
             removed,
             unread,
+            missing,
             waited = waitedFor,
         }, name, cancellation);
     }
@@ -309,10 +325,12 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         return await reader.ReadAsync(cancellation) ? (reader.IsDBNull(0) ? null : reader.GetString(0), reader.GetInt64(1)) : (null, 0);
     }
 
-    // The copies this store's own rows name, read off each row's copy, whether it was kept or refused.
-    async Task<HashSet<string>> OwnCopiesAsync(CancellationToken cancellation)
+    // The copies this store's own rows name, read off each ending row's copy, whether it was kept or refused, and
+    // the copies the newest row that kept any says it kept; a row written as a copy started names none.
+    async Task<(HashSet<string> Own, IReadOnlyList<string> LastKept)> OwnCopiesAsync(CancellationToken cancellation)
     {
         var own = new HashSet<string>(StringComparer.Ordinal);
+        IReadOnlyList<string>? lastKept = null;
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -325,30 +343,46 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
 
         while (await reader.ReadAsync(cancellation))
         {
-            if (!reader.IsDBNull(0) && CopyNamed(reader.GetString(0)) is { } copy)
+            if (reader.IsDBNull(0))
+            {
+                continue;
+            }
+
+            var (copy, kept) = Named(reader.GetString(0));
+
+            if (copy is not null)
             {
                 own.Add(copy);
             }
+
+            lastKept ??= kept;
         }
 
-        return own;
+        return (own, lastKept ?? []);
     }
 
-    static string? CopyNamed(string detail)
+    // The copy an ending row names, and the copies it kept where it kept any.
+    static (string? Copy, IReadOnlyList<string>? Kept) Named(string detail)
     {
         try
         {
             using var parsed = JsonDocument.Parse(detail);
 
-            return parsed.RootElement.ValueKind == JsonValueKind.Object
-                && parsed.RootElement.TryGetProperty("copy", out var copy)
-                && copy.ValueKind == JsonValueKind.String
-                    ? copy.GetString()
-                    : null;
+            if (parsed.RootElement.ValueKind != JsonValueKind.Object)
+            {
+                return (null, null);
+            }
+
+            var copy = parsed.RootElement.TryGetProperty("copy", out var named) && named.ValueKind == JsonValueKind.String ? named.GetString() : null;
+            var kept = parsed.RootElement.TryGetProperty("kept", out var list) && list.ValueKind == JsonValueKind.Array
+                ? list.EnumerateArray().Where(one => one.ValueKind == JsonValueKind.String).Select(one => one.GetString()!).ToArray()
+                : null;
+
+            return (copy, kept);
         }
         catch (JsonException)
         {
-            return null;
+            return (null, null);
         }
     }
 
@@ -384,7 +418,17 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
     Task<StoreBackupOutcome> NotMadeAsync(DateTimeOffset started, IReadOnlyCollection<string> waitedFor, string reason, CancellationToken cancellation) =>
         RecordAsync(started, NotCopied, new { reason, waited = waitedFor }, null, cancellation);
 
+    // The copy's ending row, stamped with the instant it ends.
     async Task<StoreBackupOutcome> RecordAsync(DateTimeOffset started, string outcome, object detail, string? copy, CancellationToken cancellation)
+    {
+        var said = await RecordAsync(started, clock.UtcNow, StoreCopies.Stage, outcome, detail, cancellation);
+
+        return new StoreBackupOutcome(outcome, copy, said);
+    }
+
+    // A row of the copy's own under its run and the stage given, the one as it starts stamped with its start at
+    // both ends.
+    async Task<string> RecordAsync(DateTimeOffset started, DateTimeOffset endedAt, string stage, string outcome, object detail, CancellationToken cancellation)
     {
         var said = JsonSerializer.Serialize(detail, Written);
 
@@ -394,14 +438,14 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
 
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", RunIdAt(started));
-        command.Parameters.AddWithValue("$stage", StoreCopies.Stage);
+        command.Parameters.AddWithValue("$stage", stage);
         command.Parameters.AddWithValue("$started_at", started.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", endedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", outcome);
         command.Parameters.AddWithValue("$detail", said);
 
         await command.ExecuteNonQueryAsync(cancellation);
 
-        return new StoreBackupOutcome(outcome, copy, said);
+        return said;
     }
 }

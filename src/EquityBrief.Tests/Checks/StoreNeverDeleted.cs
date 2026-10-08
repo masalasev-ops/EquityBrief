@@ -246,6 +246,8 @@ public class StoreNeverDeleted
         Assert.Equal(
             [
                 "FilingsArchiveTests.cs: Directory.Delete(folder)",
+                // A kept copy of a temporary store's, removed as another hand would, so the next copy names it gone.
+                "FixtureExpectations.StoreBackup.cs: File.Delete(Path.Combine(folder, made.Copy!))",
                 "NightlyRun.Script.cs: Directory.Delete(Root)",
                 "NightlyRun.Script.cs: Directory.Delete(folder.Path)",
                 "ReadSurface.Drain.cs: File.Delete(Path.Combine(build, WorkerDrainLauncher.Assembly))",

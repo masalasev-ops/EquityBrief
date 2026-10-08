@@ -1271,7 +1271,7 @@ static async Task<int> LabelNews(string[] args)
 // The store copied into the copies' folder, as the night starts it after its labeller or by hand: it waits while a
 // night or a drain holds the store, and for the labeller where '--after-labeller' says the night started one, then
 // copies, opens and reads the copy and keeps the newest three.
-// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 static async Task<int> BackupRun(string[] args)
 {
     var configuration = Configuration();

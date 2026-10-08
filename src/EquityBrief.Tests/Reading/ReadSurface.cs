@@ -86,8 +86,11 @@ public partial class ReadSurface
             // and the half of section 18's row about a key the secrets file does not hold that the run page draws.
             .. ProfileSurfaceClaims,
 
-            // The store's copy, on the operator's ruling of 2026-10-02: the worry region's line beneath its items.
+            // The store's copy, on the operator's ruling of 2026-10-02: the worry region's line beneath its items, and
+            // from the 13.10 correction of 2026-10-08 the checklist's two items on the copies.
             CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine),
+            CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiedItem),
+            CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopiesKeptItem),
 
             // The 9.2 correction of 2026-10-03, a drain that stops on an error: the queue page's region, the checklist's
             // item and section 18's row.

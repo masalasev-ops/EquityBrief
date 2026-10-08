@@ -2060,13 +2060,21 @@ public static class RunScreen
     // section 17 names is named with its cost, so an expensive report is seen the morning after it was
     // written rather than in the month's spend.
     // see: A profile carries its provider's earliest retirement date, and the run page names it from thirty days before
+    //
+    // Two more follow where the page was handed the store's copies as read: the store copied after the night
+    // began, held by a copy made since it began or by one started since that is waiting or copying still, and
+    // failed by one that was ended before it finished, by one that made none, or by none started since; and
+    // every copy the newest copy's row before it kept still in the folder, failed where the newest copy found
+    // any gone that no copy removed, each named. Neither is read where the store holds no copy's row.
+    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public static IReadOnlyList<WorryItem> Worries(
         IReadOnlyList<string> stale,
         NightView night,
         IReadOnlyList<RefusedDocument> refused,
         IReadOnlyList<LeftOutSection> fellBack,
         IReadOnlyList<RunStageRow> log,
-        IReadOnlyList<ModelProfile>? profiles = null)
+        IReadOnlyList<ModelProfile>? profiles = null,
+        StoreCopyRead? storeCopy = null)
     {
         var quarters = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && row.Stage == "quarters")
@@ -2135,19 +2143,70 @@ public static class RunScreen
                 "No drain stopped on an error",
                 stops.Length == 0,
                 string.Join("; ", stops.Select(stop => FormattableString.Invariant($"the drain that started at {stop.StartedAt.UtcDateTime:HH:mm} UTC stopped on an error: {stop.Detail}")))),
+            .. storeCopy is null ? [] : CopyItems(night, storeCopy),
         ];
     }
 
-    // The store's newest copy off the copies' own rows, newest first: the newest that made one, its folder read
-    // against this surface's data root or named alone where its row could carry no path to it, and the newest
-    // attempt after it that made none, with why.
-    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
-    public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot)
+    // The checklist's two items on the store's copies, read off the copies' rows as the page read them.
+    static WorryItem[] CopyItems(NightView night, StoreCopyRead storeCopy)
     {
-        var made = rows.Select((row, place) => (Row: row, Place: place)).FirstOrDefault(one => one.Row.Outcome == Ok);
-        var failed = rows.Select((row, place) => (Row: row, Place: place)).FirstOrDefault(one => one.Row.Outcome != Ok && one.Row.RunId.Length > 0);
+        const string copied = "The store was copied after the last night";
+        const string stillThere = "Every copy the last copy kept is still in its folder";
 
-        if (made.Row is null && failed.Row is null)
+        if (storeCopy.Newest is not { } copy)
+        {
+            return
+            [
+                new WorryItem(copied, WorryItem.NotRead, "no copy of the store is recorded yet"),
+                new WorryItem(stillThere, WorryItem.NotRead, "no copy of the store is recorded yet"),
+            ];
+        }
+
+        static string At(DateTimeOffset instant) => FormattableString.Invariant($"{instant.UtcDateTime:HH:mm} UTC on {instant.UtcDateTime:yyyy-MM-dd}");
+
+        var began = night.Started ?? DateTimeOffset.MinValue;
+        var since = copy.MadeAt is { } made && made >= began
+            ? new WorryItem(copied, WorryItem.Held, null)
+            : copy.StartedAt is { } started && started >= began
+                ? copy.Gone
+                    ? new WorryItem(copied, WorryItem.Failed, $"the copy started at {At(started)} was ended before it finished, and made none")
+                    : new WorryItem(copied, WorryItem.Held, $"a copy started at {At(started)} is waiting or copying")
+                : copy.FailedAt is { } tried && tried >= began
+                    ? new WorryItem(copied, WorryItem.Failed, $"the copy tried at {At(tried)} was not made: {copy.Failed ?? "no reason was recorded"}")
+                    : new WorryItem(copied, WorryItem.Failed, night.Started is { } start ? $"no copy has started since the night began at {At(start)}" : "no copy has started since the night");
+
+        var missing = copy.Missing ?? [];
+        var kept = copy.MadeAt is null
+            ? new WorryItem(stillThere, WorryItem.NotRead, "no copy of the store has been made yet")
+            : missing.Count == 0
+                ? new WorryItem(stillThere, WorryItem.Held, null)
+                : new WorryItem(stillThere, WorryItem.Failed, FormattableString.Invariant($"{missing.Count} gone from the folder, removed by no copy: {string.Join(", ", missing)}"));
+
+        return [since, kept];
+    }
+
+    // The outcome of the row a copy writes as it starts, as the worker writes it.
+    public const string CopyStarted = "started";
+
+    // The store's newest copy off the copies' own rows, newest first: the newest ending row that made one, its
+    // folder read against this surface's data root or named alone where its row could carry no path to it, the
+    // newest attempt after it that made none, with why, the newest copy started after it that has written no end,
+    // waiting or copying still or ended before it finished where its start is older than a copy's longest wait
+    // and an hour, and the copies the newest copy found gone from the folder that no copy removed.
+    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+    public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot, DateTimeOffset now)
+    {
+        var placed = rows.Select((row, place) => (Row: row, Place: place)).ToArray();
+        var made = placed.FirstOrDefault(one => one.Row.Outcome == Ok);
+        var failed = placed.FirstOrDefault(one => one.Row.Outcome != Ok && one.Row.Outcome != CopyStarted && one.Row.RunId.Length > 0);
+
+        // A start whose run wrote no end: its ending row, written later, would sit before it among rows newest
+        // first, so a start with no earlier row of its run is one still open.
+        var open = placed.FirstOrDefault(one =>
+            one.Row.Outcome == CopyStarted
+            && !placed.Take(one.Place).Any(earlier => string.Equals(earlier.Row.RunId, one.Row.RunId, StringComparison.Ordinal)));
+
+        if (made.Row is null && failed.Row is null && open.Row is null)
         {
             return new StoreCopyRead(null);
         }
@@ -2169,10 +2228,19 @@ public static class RunScreen
         static string? Text(JsonElement detail, string field) =>
             detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
+        static string[] Listed(JsonElement detail, string field) =>
+            detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(field, out var list) && list.ValueKind == JsonValueKind.Array
+                ? [.. list.EnumerateArray().Where(one => one.ValueKind == JsonValueKind.String).Select(one => one.GetString()!)]
+                : [];
+
+        static DateTimeOffset? Stamp(string at) =>
+            DateTimeOffset.TryParseExact(at, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var instant) ? instant : null;
+
         DateTimeOffset? madeAt = null;
         string? copy = null;
         string? folder = null;
         var kept = 0;
+        string[] missing = [];
 
         if (made.Row is { } row)
         {
@@ -2183,16 +2251,29 @@ public static class RunScreen
             folder = Text(detail, "folder") is { } stored
                 ? EquityBrief.Core.Configuration.StoreCopies.FromStored(stored, dataRoot)
                 : Text(detail, "elsewhere") is { } named ? $"a folder named {named} on a drive the store's rows do not name" : null;
-            kept = detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty("kept", out var list) && list.ValueKind == JsonValueKind.Array ? list.GetArrayLength() : 0;
+            kept = Listed(detail, "kept").Length;
+            missing = Listed(detail, "missing");
         }
 
         // An attempt that made none is drawn only where it is newer than the copy drawn.
         var notMade = failed.Row is { } attempt && (made.Row is null || failed.Place < made.Place) ? attempt : null;
-        DateTimeOffset? failedAt = notMade is null
-            ? null
-            : DateTimeOffset.TryParseExact(notMade.EndedAt, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var ended) ? ended : null;
+        var failedAt = notMade is null ? null : Stamp(notMade.EndedAt);
 
-        return new StoreCopyRead(new StoreCopyView(madeAt, copy, folder, kept, failedAt, notMade is null ? null : Text(Detail(notMade), "reason") ?? "no reason was recorded"));
+        // A start with no end is drawn only where it is newer than the copy drawn and the attempt drawn.
+        var unfinished = open.Row is { } start && (made.Row is null || open.Place < made.Place) && (notMade is null || open.Place < failed.Place) ? start : null;
+        var startedAt = unfinished is null ? null : Stamp(unfinished.StartedAt);
+        var gone = startedAt is { } since && now - since > EquityBrief.Core.Configuration.StoreCopies.EndsBy;
+
+        return new StoreCopyRead(new StoreCopyView(
+            madeAt,
+            copy,
+            folder,
+            kept,
+            failedAt,
+            notMade is null ? null : Text(Detail(notMade), "reason") ?? "no reason was recorded",
+            startedAt,
+            gone,
+            missing));
     }
 
     static decimal Spent(string spend) =>
