@@ -1199,8 +1199,8 @@ public static class IndexHeavyweights
     ";
 
     const string RuleBuy = @"
-        INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through)
-        VALUES ($candidate, $index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night);
+        INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead)
+        VALUES ($candidate, $index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead);
     ";
 
     const string RuleNight = @"
@@ -1230,13 +1230,15 @@ public static class IndexHeavyweights
 
     // Each registered heavyweights rule of the index keeping a book of its own on the night, as the index's own book is
     // kept: every open holding carried by tonight's closes, one whose stock left the index sold at its last close as a
-    // member, one closing under its 200-day average sold there where its rule reads that exit, and on a night its rule
-    // rebalances, its first or the first of a month, each holding the rule would no longer buy sold where its rule sells
-    // on that, and each stock it buys and does not hold bought at tonight's close: design (a)'s leaders read by the
-    // sweep's own code at the rule's setting with its size cut, and design (b)'s followers with their sector's members in
-    // the index as theirs. A night run again deletes what each rule bought that night, opens again what each sold that
-    // night and writes its rebalance again.
+    // member, read from the bar table whatever the night's members, one closing under its 200-day average sold there where
+    // its rule reads that exit, and on a night its rule rebalances, its first or the first of a month, each holding the
+    // rule would no longer buy sold where its rule sells on that, and each stock it buys and does not hold bought at
+    // tonight's close: design (a)'s leaders read by the sweep's own code at the rule's setting with its size cut, each with
+    // its lead, and design (b)'s followers with their sector's members in the index as theirs. A night run again deletes
+    // what each rule bought that night, opens again what each sold that night and writes its rebalance again.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
+    // see: A heavyweight leaving the index is sold at its last session's close as a member
+    // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
     public static async Task<IndexHeavyweightsOutcome> RulesAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
@@ -1283,7 +1285,9 @@ public static class IndexHeavyweights
             {
                 if (!members.Contains(one.Ticker))
                 {
-                    await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, one.Through, CloseOn(one.Ticker, one.Through) ?? one.Entry, LeftTheIndex, one.Growth, one.Cut, one.Entry, cancellation);
+                    var member = await ScalarAsync(connection, transaction, CloseOnSession, [("$ticker", one.Ticker), ("$session", Stamp(one.Through))], cancellation) is string closed ? Money.FromStorage(closed) : one.Entry;
+
+                    await RuleEndAsync(connection, transaction, index, rule.Candidate, one.Ticker, one.Entered, one.Through, member, LeftTheIndex, one.Growth, one.Cut, one.Entry, cancellation);
                     ended++;
 
                     continue;
@@ -1319,6 +1323,7 @@ public static class IndexHeavyweights
             // industries' returns design (b) reads.
             var setting = designA ? IndexRules.HeavyweightSettingOf(p) : null;
             IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)>? buys = null;
+            var leads = NoLeads;
 
             if (HeavyweightRule.Rebalances(night, last))
             {
@@ -1336,7 +1341,7 @@ public static class IndexHeavyweights
                     }
                     else
                     {
-                        buys = read.Leaders;
+                        (buys, leads) = (read.Leaders, read.Leads);
                     }
                 }
             }
@@ -1367,7 +1372,7 @@ public static class IndexHeavyweights
 
                     var cut = buy.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
 
-                    await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut))], cancellation);
+                    await ExecuteAsync(connection, transaction, RuleBuy, [.. key, ("$index", index), ("$ticker", buy.Ticker), ("$sector", buy.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", leads.TryGetValue(buy.Ticker, out var lead) ? lead : DBNull.Value)], cancellation);
                     holding[buy.Ticker] = (night, close, 1.0, cut);
                     bought++;
                 }

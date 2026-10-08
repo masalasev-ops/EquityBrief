@@ -268,6 +268,18 @@ public partial class FixtureExpectations
             Assert.Equal(designA, Books());
             Assert.Equal(["1", "2", "3", "4", "5"], TextRows(store, "SELECT r.id FROM index_heavyweight_rule_night n JOIN candidate_register r ON r.candidate = n.candidate ORDER BY r.id;"));
 
+            // The live rule reads at the index's own book's settings, so each of its holdings is bought with its lead, its
+            // return over the 251 sessions less the mean of the three members' returns from the close 251 sessions before.
+            var returns = new[] { "L1", "L2", "L3" }.ToDictionary(ticker => ticker, ticker => Statistic.FromRatio(closes[ticker][260] / closes[ticker][9]) - 1.0, StringComparer.Ordinal);
+
+            foreach (var ticker in new[] { "L1", "L2" })
+            {
+                Assert.Equal(
+                    returns[ticker] - returns.Values.Average(),
+                    double.Parse(TextRows(store, $"SELECT printf('%.12f', h.lead) FROM index_heavyweight_rule_holding h JOIN candidate_register r ON r.candidate = h.candidate WHERE r.id = 1 AND h.ticker = '{ticker}';").Single(), CultureInfo.InvariantCulture),
+                    9);
+            }
+
             // With SPY's closes of 100, 101 and 102 stored 63 and 21 sessions before the night and on it, the night run again
             // writes what it wrote for design (a) and design (b) rebalances: at a month's window Machinery leads SPY's 0.0099
             // fifth, so it buys Machinery's stronger member, or both at two a industry, and Airlines sixth joins it at
@@ -290,6 +302,11 @@ public partial class FixtureExpectations
 
             Assert.Equal(first, Books());
             Assert.Equal(9, Scalar(store, "SELECT COUNT(*) FROM index_heavyweight_rule_night WHERE session_date = '2026-10-01';"));
+
+            // Every design (a) holding stores a lead and no design (b) holding does, that design reading none over a sector.
+            Assert.Equal(
+                ["1|2", "2|1", "3|1", "4|1", "5|2", "6|0", "7|0", "8|0", "9|0"],
+                TextRows(store, "SELECT r.id || '|' || COUNT(h.lead) FROM index_heavyweight_rule_holding h JOIN candidate_register r ON r.candidate = h.candidate GROUP BY r.id ORDER BY r.id;"));
             Assert.Equal(["L1", "L2"], TextRows(store, "SELECT ticker FROM index_heavyweight_rule_holding h JOIN candidate_register r ON r.candidate = h.candidate WHERE r.id = 1 ORDER BY ticker;"));
 
             // The next night, the same month's, with no rebalance: L1 closes at half the night before's, under its 200-day
@@ -375,6 +392,24 @@ public partial class FixtureExpectations
 
             // And the index's own book kept beside them as before, its rows untouched by any rule's.
             Assert.Equal(["L1|2026-10-01", "L2|2026-10-01"], TextRows(store, "SELECT ticker || '|' || entered_on FROM index_heavyweight_holding WHERE index_code = 'MID' ORDER BY ticker;"));
+
+            // L2 leaves the index on the session after, holding no bar since: each rule holding it is sold at its last close
+            // as a member, the close of the session it was last carried to, and not at its buy, the live rule's and the
+            // one selling under the average bought a month before at a close of their own.
+            store.Execute("UPDATE membership SET \"left\" = '2026-11-02' WHERE ticker = 'L2';");
+            StoreYear(store, "L1", [new FamilyBar(new DateOnly(2026, 11, 2), crash, crash, crash, 1_000_000)]);
+            StoreYear(store, "L3", [new FamilyBar(new DateOnly(2026, 11, 2), closes["L3"][261], closes["L3"][261], closes["L3"][261], 1_000_000)]);
+
+            await Night(new DateOnly(2026, 11, 2), "fourth");
+
+            Assert.Equal(
+                [
+                    FormattableString.Invariant($"1|2026-10-01|2026-11-01|{closes["L2"][261]}|{IndexHeavyweights.LeftTheIndex}"),
+                    FormattableString.Invariant($"4|2026-11-01|2026-11-01|{closes["L2"][261]}|{IndexHeavyweights.LeftTheIndex}"),
+                    FormattableString.Invariant($"5|2026-10-01|2026-11-01|{closes["L2"][261]}|{IndexHeavyweights.LeftTheIndex}"),
+                ],
+                TextRows(store, "SELECT r.id || '|' || h.entered_on || '|' || h.ended_on || '|' || h.exit_close || '|' || h.reason FROM index_heavyweight_rule_holding h JOIN candidate_register r ON r.candidate = h.candidate WHERE h.ticker = 'L2' AND h.ended_on = '2026-11-01' AND h.reason = 'left the index' ORDER BY r.id;"));
+            Assert.NotEqual(closes["L2"][260], closes["L2"][261]);
         }
     }
 }

@@ -693,7 +693,15 @@ public static class SchemaMigrations
         new Migration(70, "add decision_card's sector, trail, cap, round trip and book holdings, and create taken_trade", CreateTakenTrades),
         new Migration(71, "add taken_trade's end and decision_card's hits, and create taken_record and dividend_reading", CreateTakenRecords),
         new Migration(72, "add index_heavyweight_holding.lead", AddIndexHoldingLead),
+        new Migration(73, "add index_heavyweight_rule_holding.lead", AddIndexRuleHoldingLead),
     ];
+
+    // Each holding of a registered S&P 400 or 600 heavyweights rule's book, its lead over its sector's members' mean at the
+    // rebalance that bought it, none for a design (b) rule, which reads no lead over a sector.
+    // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+    const string AddIndexRuleHoldingLead = @"
+        ALTER TABLE index_heavyweight_rule_holding ADD COLUMN lead REAL;
+    ";
 
     // Each holding of an S&P 400's or 600's book, its lead over its sector's members' mean at the rebalance that bought it,
     // none on a holding bought before the book stored one.

@@ -158,18 +158,46 @@ public static partial class TonightScreen
         ReadByLiveRule(night, family) ? StandingRows(IndexRuleCandidate.FamilyOn(family, index), register, night.Session).Live?.Candidate : null;
 
     // The heavyweights' card of an index whose live rule stands and kept the book the card draws that night: live since
-    // the day it was registered, the variants beside it in books of their own, and its rule in the words its registration
-    // carries.
+    // the day it was registered, the variants beside it in books of their own, its rule in the words its registration
+    // carries, and its look-back and next rebalance read at the rule's own settings, the closes its readings need being
+    // its look-back's or design (b)'s window's and the beta's where it reads one; a design (b) rule's card saying in its
+    // keys and its rows that it reads no lead over a sector.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
-    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night) =>
-        ReadByLiveRule(night, HeavyweightRule.Name) && StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, night.Session) is { Live: { } live } standing
-            ? card with
-            {
-                LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
-                Variants = standing.Variants,
-                Rule = "The " + live.Candidate[FamilyRecords.LivePrefix.Length..] + ", each holding paying the published spread, half at each end.",
-            }
-            : card;
+    // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+    public static HeavyweightCardView WithIndexHeavyweightFreeze(HeavyweightCardView card, UniverseChoice universe, IReadOnlyList<CandidateRow> register, IndexNightRow night)
+    {
+        if (!ReadByLiveRule(night, HeavyweightRule.Name) || StandingRows(IndexRuleCandidate.FamilyOn(HeavyweightRule.Name, universe.Code), register, night.Session) is not { Live: { } live } standing)
+        {
+            return card;
+        }
+
+        var dials = CandidateEvaluator.Read(live.Parameters);
+        var followers = dials[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignB;
+        var lookBack = (int)(followers ? dials[IndexHeavyweightCandidate.WindowParameter] : dials[IndexHeavyweightCandidate.LookBackParameter]);
+        var reading = new HeavyweightSettings(1, lookBack, 1, HighBeta: !followers && dials[IndexHeavyweightCandidate.BetaParameter] == 1);
+        var next = HeavyweightRule.NextRebalance(night.Session, card.LastRebalance, reading);
+
+        return card with
+        {
+            LiveSince = DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
+            Variants = standing.Variants,
+            Rule = "The " + live.Candidate[FamilyRecords.LivePrefix.Length..] + ", each holding paying the published spread, half at each end.",
+            LookBack = lookBack,
+            NextRebalance = next,
+            Waits = night.Fault is null ? Waiting(night.Session, card.LastRebalance, next, reading) : null,
+            Holdings = followers ? [.. card.Holdings.Select(holding => holding with { NoLead = FollowersReadNoLead })] : card.Holdings,
+            Says = followers
+                ? new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    [MarkRenderer.SectorHeading] = "The sector its company files, or none where it files none: design (b) buys a member of an industry leading the S&P 500, not a sector's leader.",
+                    [MarkRenderer.LeadHeading] = "Design (b) buys the strongest members of the industries whose S&P 500 members lead the S&P 500 over its window, and reads no lead over a sector.",
+                }
+                : card.Says,
+        };
+    }
+
+    // What a design (b) rule's card draws in place of a holding's lead.
+    const string FollowersReadNoLead = "none: design (b) reads no lead over a sector";
 
     // Each registered rule of the index's swing families standing at the night's end, read over its own trades after each
     // one's round trip, its correction its family's own on the index, each family's live rule first; the sector

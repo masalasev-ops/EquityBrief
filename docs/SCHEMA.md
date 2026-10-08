@@ -1083,15 +1083,16 @@ Grain: one row per registered sector heavyweights rule of the S&P 400 or 600, st
 | `cut` | TEXT | JSON: each of the size cut it was chosen from, design (a)'s sector's largest companies and design (b)'s sector's members in the index, its ticker, its growth carried the same way and the session it was carried to |
 | `through` | TEXT | the session its growth was last carried to |
 | `ended_on` | TEXT | the session it was sold on, null while held |
-| `exit_close` | TEXT | the close it was sold at, null while held |
+| `exit_close` | TEXT | the close it was sold at, for a holding whose stock left the index its stock's close on the session it was last carried to as the bar table holds it, null while held |
 | `reason` | TEXT | `no longer the leader`, `no longer among those it buys`, `a close under its 200-day average` or `left the index`, null while held |
 | `result` | REAL | its growth less one at the sale, null while held |
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
 | `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it on its buy, null while held |
+| `lead` | REAL | for a design (a) rule, its return over the rule's look-back less its sector's members' mean in the index at the rebalance that bought it; null for a design (b) rule, which reads no lead over a sector |
 
 Primary key: `candidate`, `ticker`, `entered_on`.
 
-**The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). Each night they carry each rule's holdings and their size cuts by tonight's closes, sell one whose stock left the index at its last close as a member and one closing under its 200-day average where the rule reads that exit, and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold. A night run again deletes what each rule bought that night and opens again what each sold that night. The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
+**The index families write it for each registered heavyweights rule and are its own deleter** (see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step). Each night they carry each rule's holdings and their size cuts by tonight's closes, sell one whose stock left the index at its last close as a member and one closing under its 200-day average where the rule reads that exit, and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold, a design (a) rule's each with its lead (see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on). A night run again deletes what each rule bought that night and opens again what each sold that night. The rows are never deleted otherwise: a rule's record on the index's Run page is its holdings.
 
 ### decision_card
 Grain: one row per index, night, family and stock the family listed or the index's sector heavyweights' book bought.

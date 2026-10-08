@@ -12103,3 +12103,33 @@ Now:
 > ... worked by hand over a constructed sector and its fund, each holding bought with its lead and keeping it through a later rebalance, and one whose stock left the index sold at its stock's close on the session it was last carried to and not at its buy, a trade's and a holding's round trip read at its company's value on its buy under its index, worked by hand in a band other than the $1 to 2 billion and in that band for a company valued at none, a holding sold on leaving at another close sold again by hand at its stock's close there and a second run writing nothing, and the S&P 500's list holds back ...
 > ... the heavyweights' design and sector comparison, each holding's lead over its sector's members' mean at the rebalance that bought it under a key naming that comparison and a holding bought before its book stored a lead saying so, an S&P 600 night not read says so, ...
 Why: the roster is where a check states what it asserts; the review's combined mutation x, both provisional costs doubled and a leaver sold at twice its buy, reddened the pin test alone.
+
+### 2026-10-08 - SCHEMA.md - a registered S&P 400 or 600 heavyweights rule's leaver sold at its close from the bar table, and its holding's lead
+Authorised by: A heavyweight leaving the index is sold at its last session's close as a member; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> `index_heavyweight_rule_holding` | `exit_close` | TEXT | the close it was sold at, null while held |
+> (`index_heavyweight_rule_holding` held no `lead` column)
+> ... and on the rule's rebalance sell each holding it no longer buys where it sells on that and buy each stock it buys and does not hold. A night run again ...
+Now:
+> `index_heavyweight_rule_holding` | `exit_close` | TEXT | the close it was sold at, for a holding whose stock left the index its stock's close on the session it was last carried to as the bar table holds it, null while held |
+> `index_heavyweight_rule_holding` | `lead` | REAL | for a design (a) rule, its return over the rule's look-back less its sector's members' mean in the index at the rebalance that bought it; null for a design (b) rule, which reads no lead over a sector |
+> ... and buy each stock it buys and does not hold, a design (a) rule's each with its lead (see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on). A night run again ...
+Why: the 15.5 correction, phase 15's first sign-off review's F3 in the registered rules' books, and the leads those books read and stored none of.
+
+### 2026-10-08 - ARCHITECTURE.html - a frozen S&P 400 or 600 heavyweights rule's card reads its own look-back and next rebalance, and a design (b) rule's says it reads no lead
+Authorised by: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> section 15.7: The sector heavyweights frozen on either index are drawn the same way from their live rule's own book: its holdings, its last rebalance and what that bought and sold, live since the day it registered with its variants kept in books of their own, and the index's own book drawn on any night the live rule's was not kept (see: ...).
+Now:
+> section 15.7: ... its holdings, its last rebalance and what that bought and sold, its look-back and its next rebalance read at the rule's own settings, live since the day it registered with its variants kept in books of their own, a design (b) rule's card saying in its keys and its rows that it reads no lead over a sector, and the index's own book drawn on any night the live rule's was not kept (see: ...) (see: ...).
+Why: the 15.5 correction; the card drew a live rule's book at the index's own book's look-back and beta, and design (a)'s keys over a design (b) book.
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations and read-surface state the registered rules' books' leads and leavers and a live rule's card at its own settings
+Authorised by: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> ... a rebalance waiting where the night lacks SPY's closes or the fund's close and taken once they are stored; ...
+> ... its rebalance's buys and sales and its rule's words, its sweeps' line gone from that night and not before, ...
+Now:
+> ... a rebalance waiting where the night lacks SPY's closes or the fund's close and taken once they are stored, each design (a) holding bought with its lead, worked by hand for the live rule, and no design (b) holding with one, and a holding whose stock left the index sold at its stock's close on the session it was last carried to and not at its buy; ...
+> ... its rebalance's buys and sales and its rule's words, its look-back and its next rebalance at the rule's own settings, a rule over 126 sessions with no beta reading November's first session where the index's own book reads the session after, and a design (b) rule's keys and rows saying it reads no lead over a sector, its sweeps' line gone from that night and not before, ...
+Why: the roster is where a check states what it asserts.

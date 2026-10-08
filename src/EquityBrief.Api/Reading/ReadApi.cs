@@ -3874,7 +3874,7 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
                CASE WHEN ended_on <= $on THEN cost END,
-               NULL
+               lead
         FROM index_heavyweight_rule_holding
         WHERE candidate = $candidate AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;

@@ -40181,3 +40181,54 @@ Verified:   with the 15.5 correction below, in one pull request: `tools/ci.ps1` 
             over the tree carrying both entries, with the figures the entry below states.
 Carried:    the remedy, run after the merge and before the night, then the surface's Release build started again, since
             Tonight on the S&P 400 and 600 reads the new column.
+
+### 15.5 - correction: a registered S&P 400 or 600 heavyweights rule sells a holding leaving the index at its last close as a member and stores each design (a) holding's lead, and a live rule's card reads its own look-back and next rebalance   2026-10-08
+
+Corrects:   15.5's registered heavyweights books and their card. A rule's holding whose stock left the index found no
+            bar among the night's members and was sold at its buy, as the index's own book was; each design (a)
+            rebalance read its leaders' leads and stored none; and the card drawing a live rule's book read the index's
+            own book's look-back and beta for its lead cells, its next rebalance and its wait, and drew design (a)'s
+            keys over a design (b) book, which reads no lead over a sector. No rule stands registered on the S&P 400 or
+            600, so no stored row is wrong.
+Found:      the leaver by phase 15's first sign-off review over e79e38cb (F3, in its registered rules' books); the
+            leads and the card's settings by me, building the 15.1 correction above.
+Built:      a rule's holding leaving the index is sold at its stock's close on the session it was last carried to, read
+            from the bar table (see: A heavyweight leaving the index is sold at its last session's close as a member).
+            Migration 73 adds `index_heavyweight_rule_holding.lead`, each design (a) buy storing the lead its own
+            reading read and design (b)'s none. A live rule's card reads its look-back and the closes its readings need
+            from its registration, design (b)'s window its look-back, so a rule over 126 sessions with no beta reads
+            November's first session, where the index's own book needs 252 closes and reads the session after; a design
+            (b) rule's card states its sector and lead columns in that design's words and draws each row's lead as
+            "none: design (b) reads no lead over a sector" (see: An S&P 400 or 600 heavyweights holding keeps the lead it
+            was bought on). SCHEMA's rule-holding close, lead and paragraph; section 15.7's sentence; the roster's two
+            clauses; prior text in `CHANGELOG.md`.
+Tests:      1996, from 1992 at e79e38cb: one added here, the live rule's card at 126 sessions with no beta and in design
+            (b), beside the 15.1 correction's three; one extended, the rule books over constructed nights, the live
+            rule's leads worked by hand, every design (a) holding storing a lead and no design (b) holding one, and L2
+            leaving the index sold by rules 1, 4 and 5 at its last close as a member and not at its buy.
+Claims:     1032, unchanged.
+Pins:       read: the five lists the 15.1 correction names. `IndexFamilies.cs` moved the S&P 400's and 600's evaluators
+            again; across both corrections pullback 1a1a1b276350 to 10a73e50cb06, breakout 096c6019f135 to 6e0e1d992cef,
+            drift 25cd7517dcee to f3f543712e7d and heavyweights 88c804a7df64 to 4888ec129082, the 400's and the 600's of
+            each family carrying one version. None is registered, so nothing is registered again. No S&P 500 pin moved.
+Remedy:     none of its own: the 15.1 correction's remedy's `migrate` applies migration 73 with 72, as the night's own
+            would. No request and no model call.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made on the branch in this
+            checkout over the file's own text and restored from it, filtered to the twelve tests of the S&P 400's and
+            600's books, cards and freezes, the evaluators' pin test left out.
+            N1 a rule's leaver sold at its buy again: predicted red in the rule books' test alone. N2 a rule's buy
+            storing no lead: predicted red in the rule books' test alone. N3 the live card keeping the index's own
+            book's look-back, next rebalance and wait: predicted red in the live card test alone. N4 the live rule's beta
+            read whatever it states: predicted red in the live card test alone. N5 a design (b) card's rows drawn with
+            the index's own book's words: predicted red in the live card test alone. N6 a design (b) card's keys left as
+            design (a)'s: predicted red in the live card test alone.
+            Results: each red where predicted, 1 of 12. N1 in the rule books' test, rules 1 and 5 selling L2 at its buy of
+            170.3593 where it last closed as a member at 169.0305; N2 there, the live rule's L1 storing no lead; N3 and N4
+            in the live card test, the rule over 126 sessions drawn at the index's own book's need and November's second
+            session; N5 there, a design (b) row saying it was bought before its book stored a lead; N6 there, design (a)'s
+            sector key over a design (b) book. Each restored from the file's own text, the tree's diff the same after as
+            before.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the one above:
+            FILLED FROM THE RUN.
+Carried:    the 15.1 correction's remedy, then the surface's Release build started again; phase 15's sign-off, by a
+            session that committed none of this code.
