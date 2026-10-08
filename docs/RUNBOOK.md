@@ -590,7 +590,7 @@ The sweeps read a name as a member from the first snapshot holding it to the las
 dotnet run --project src/EquityBrief.Worker -- history-pull --companies --from 2018-01-01 --index SML --names ARCH,OPITQ --live
 ```
 
-Before any pull, the provider's own count of the day's calls is read off its user endpoint, and a pull is run on a day's allowance no night is drawing on.
+Before any pull, the provider's own count of the day's calls is read off its user endpoint, and a pull is run on a day's allowance no night is drawing on. From 17.1 the bars, surprises, companies and splits pulls each state, as their first line and before their first request, what they are about to ask in weighted calls, from their names and the calendar's months at each endpoint's weight, so the bars pull of two codes says it asks 108 and not 2; a statement past 25,000, a quarter of the day's allowance, is refused before any request with nothing written, and goes only with `--past-the-stop` on the operator's word (see: Every pull states its provider calls before it runs and stops for the operator at the day's cap). The operator holds every planned run under 5,000 a day, read against the statement.
 
 Remove a pull whole by its run id:
 
@@ -672,6 +672,15 @@ dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family 
 ```
 
 Each run reads the live store read-only, writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep folder, claimed by a file only one run can create, so runs started in the same second do not share one. A run where no setting meets the floors says so and its report states the five strongest settings with the floor each misses and what could be tried next, and nothing is set aside (see: No family on any index is set aside or hidden by a test result without the operator's word).
+
+From 17.1 four more families run the searches the operator's brief of 2026-10-08 named, each read-only and after costs. `heavyweights-six` and `heavyweights-b-six` read the sector heavyweights' six settings a design registered in the ruling entry before the run, and only those (see: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run); `pullback-neighbours` reads the S&P 400's pullback with profit and cover at half steps about the setting the brief names and replays its trades under three exits (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits); and `pullback-joint`, given either index, searches the S&P 400's and 600's candidates together and confirms each setting on each alone (see: The S&P 400's and 600's pullbacks are searched together for a shared setting and confirmed on each alone). The `breakout` and `drift` searches' second stages carry the brief's levels, the breakout day's close in the top quarter of its range and an entry on the first pullback within ten sessions, and the drift's hold of 10, surprise of 5 or 10 per cent, revenue growth as first filed and the other index's fund (see: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage); the S&P 400's drift passes only where its edge over the last two years together stands above nothing (see: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing), and `pullback-search` on either index looks a second time beyond a grid end and prints each setting's depth with the dial binding it (see: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth). Every report states what luck alone would pass of its tries.
+
+```
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family heavyweights-six
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index SML --family heavyweights-b-six
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family pullback-neighbours
+dotnet run --project src/EquityBrief.Worker -- sweep-index --index MID --family pullback-joint
+```
 
 Every search, on any index, also states its answer in `answer.json` beside its report: passed where its proposal or a setting its second stage crossed meets the floors, and none passed otherwise; the pullback's base reads one setting, searches nothing and states none. Once the operator has the report, record the answer by the run's folder name:
 

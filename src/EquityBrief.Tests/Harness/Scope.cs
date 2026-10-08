@@ -3405,6 +3405,31 @@ internal static class Scope
             Verdict.Pass,
             "every combination of the dials read once with the provisional setting among them, each setting's neighbours one dial a step away, the rebalances of each period, a beta by hand and a fund's return in the members' mean's place, the walk by hand under each exit and a constructed history's report read back with no setting passing, its strongest settings and what could be tried next; the levels read off the document against the constants",
             ByExpectations),
+        // 17.1, the five searches and the pulls' provider stop: section 17's five rows and section 18's one.
+        [CheckReach.Key(LimitsTable, "Heavyweights' six settings a design")] = new Scoped(
+            Verdict.Pass,
+            "the six as the ruling registered them, twelve months' strength and a quarter's sessions worked by hand, each design's leaders read over a constructed sector at the look-back and at twelve months skipping the latest, the floors at their edges and luck over six; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Index second stage's added levels")] = new Scoped(
+            Verdict.Pass,
+            "the top quarter at three quarters of the range and a cent under, a breakout's first pullback to its level and a drift's first lower close each bought at that session's close over constructed series, the tenth session read and the eleventh not, and the market check closed on that session leaving no trade; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Mid cap drift's last two years")] = new Scoped(
+            Verdict.Pass,
+            "the two years' edge worked by hand over constructed years, each weighted by its trades and a year with none counted in neither, and the mid cap drift's run stating it beside the floors",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Mid cap pullback's half steps")] = new Scoped(
+            Verdict.Pass,
+            "the setting the brief names held by the extended grid, each dial's half steps worked by hand with the dry-up off on one side and the stop at the two options sharing an end, 17 neighbours each moving one dial, and each of three exits replayed at its edge over constructed closes; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Provider stop of a pull")] = new Scoped(
+            Verdict.Pass,
+            "the stop at a quarter of the allowance and a call past it, a bars pull's statement from its names and months read as its first line, and a companies pull past the stop refused with no request and no row; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pull whose stated calls pass the provider stop")] = new Scoped(
+            Verdict.Pass,
+            "a companies pull of 2,501 names over a constructed store states 25,010 weighted calls and is refused before any request with the count, the stop and the word that goes past it, its feed asked nothing and no row written",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A rebalance the night's book stored that the heavyweights' replay reads differently")] = new Scoped(
             Verdict.Pass,
             "over a constructed store the replay at the provisional setting reads a rebalance the night's book stored as stored, and read at another look-back names each sector it reads differently, a stored session the history does not hold named too",
@@ -5695,6 +5720,8 @@ internal static class Scope
         // The ideas' run, a 12.5 correction built once phase 13 was finished.
         ["An ideas' run in which no idea passes"] = "12.5",
         ["A market series missing on a session an idea reads"] = "12.5",
+        // The pulls' provider stop, 17.1.
+        ["A pull whose stated calls pass the provider stop"] = "17.1",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -5836,6 +5863,12 @@ internal static class Scope
         ["Card hold with no cap"] = "16.3",
         // The heavyweights' sweep, 14.5.
         ["Heavyweights' sweep grid"] = "14.5",
+        // Four of the five searches' rows and the pulls' provider stop, 17.1; the heavyweights' six settings a design
+        // are named by the plan's own text and derive from it.
+        ["Index second stage's added levels"] = "17.1",
+        ["Mid cap drift's last two years"] = "17.1",
+        ["Mid cap pullback's half steps"] = "17.1",
+        ["Provider stop of a pull"] = "17.1",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

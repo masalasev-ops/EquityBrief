@@ -40520,3 +40520,129 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2000 of 2000 tests ran.
 Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
             tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; then 17.1b.
+
+### 17.1 ruling - the sector heavyweights' six settings a design on the S&P 400 and 600, pre-registered before their run   2026-10-08
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator's brief of 2026-10-08, approved with the plan that day: "at most six settings per design,
+            pre-registered in the entry before the run, each justified from the evidence ... and only those tested,
+            so the luck figure stays near one." Committed before either index's run; the same six read on both.
+Design (a): leaders within the index, each sector's return its members' mean, scored against the size cut it was
+            chosen from after each holding's round trip.
+            1. The provisional book: the ten largest a sector, the return over 251 sessions, two leaders, a beta of at
+               least 1 against IJH or IJR, rebalanced monthly and sold on no longer leading, the profit gate and the
+               dollar volume floor once. The S&P 500's frozen setting, read within the index.
+            2. Twelve months' strength skipping the latest: the return from 252 sessions back to 21 back. Evidence:
+               Jegadeesh and Titman 1993; Asness, Moskowitz and Pedersen 2013.
+            3. The profit gate and the interest cover. Evidence: Novy-Marx 2013; Asness, Frazzini and Pedersen 2019.
+            4. Rebalanced on the first session of January, April, July and October. Evidence: Novy-Marx and Velikov
+               2016 on what turnover costs; the quarter is judgement.
+            5. The beta floor off. Evidence: Frazzini and Pedersen 2014, the operator's words of 2026-10-03.
+            6. 2, 3 and 4 together.
+Design (b): followers of the S&P 500's industry leaders, scored against the equal-weighted members of the holding's
+            sector in the index after each holding's round trip.
+            1. The base: the 10 industries whose S&P 500 members' value-weighted return leads SPY's most over 63
+               sessions, one member an industry by its own return over the window, the profit gate and the floor
+               once, rebalanced monthly and sold where not bought. Judgement: the design holds no provisional book,
+               so its grid's longer window and middle count.
+            2. Twelve months' strength skipping the latest, for the industries' lead and the member's own return.
+               Evidence: Moskowitz and Grinblatt 1999; Jegadeesh and Titman 1993.
+            3. The profit gate and the interest cover, as (a)'s third.
+            4. Rebalanced quarterly, as (a)'s fourth.
+            5. Two members an industry. Judgement: the plan's two leaders a sector, in this design's terms.
+            6. 2, 3 and 4 together.
+Read:       each setting's holdings, edge after costs and years above nothing; the floors, 300 holdings and an edge
+            above nothing in 6 of the 8 years; luck, six tries a design each passing the years by chance 37 times in
+            256, about 0.87 a design. A setting meeting the floors passes; nothing is frozen and no answer recorded
+            before the operator reads it.
+Departed:   the plan's fifth setting, two leaders a sector, is design (a)'s provisional book already, so (a)'s fifth
+            reads the beta floor off.
+Queue:      done, C1 PR 398, 17.0 PR 399, the 15.2 correction PR 400, 17.1's first pull request PR 401; in progress,
+            17.1's second; next, 17.2, 17.2a once the growth proposal is approved, and 17.3 to 17.10.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: the figures the second pull request's entry below
+            records, the two entries verified by one run.
+
+### 17.1 - the searches: the sector heavyweights' six settings a design, the breakouts' and drift's new levels, the S&P 400 pullback's half steps and exits, the two indices searched together, the S&P 600's grid widened, and each pull stating its calls   2026-10-08
+
+Built:      the five searches the brief named, each read-only on the pulled history as it stood and after costs, each
+            report stating its figures by year, what luck passes of its tries and what could be tried next, nothing
+            frozen and no answer recorded. (e) `heavyweights-six` and `heavyweights-b-six` read the six settings a
+            design the ruling entry above registered before the run. (d) the breakouts' second stage gains the
+            breakout day's close in the top quarter of its range and an entry on the first pullback to the level
+            within 10 sessions; (a) the S&P 400 drift's gains a hold of 10, a surprise of 5 or 10 per cent, the print's
+            revenue growth as first filed and known from the report, IJR against SPY, and an entry on the first
+            pullback after the reaction, and its answer reads the extra condition, the edge over 2025 and 2026
+            together above nothing. (b) `pullback-neighbours` reads the named S&P 400 setting at half steps on every
+            dial and replays its trades under three exits; `pullback-joint` searches the S&P 400's and 600's
+            candidates together and confirms on each alone. (c) the extended grid reaches a depth of 16 and a
+            freshness of 21, an index's search looks a second time beyond a grid end, and every setting a report reads
+            prints its depth with the dial binding it. Every search's report states its luck figure. The bars,
+            surprises, companies and splits pulls state their weighted calls as their first line, from their names
+            and months, and refuse a statement past 25,000 unless run with `--past-the-stop`. Seven decisions; five
+            limits rows and one failure row; the runbook; the roster; the four index evaluators' versions raised to
+            their pins, no rule standing on either index.
+Pulled:     the SEC's revenue facts for every filer the companies pull names, 2,102 requests, free, 288,632 figures,
+            2,102 of 2,102 filers answered, 89 filing under no revenue concept; the four index and credit funds to
+            2026-10-07, 4 weighted calls, stated before the run.
+Results:    (e) the S&P 400: none of six meets the floors in either design, design (a)'s provisional book the
+            strongest at 446 holdings and +0.78 points in 4 of 8 years; the S&P 600: design (a)'s twelve months'
+            strength skipping the latest meets the floors at 438 holdings and +0.99 points in 6 of 8 years, and the
+            profit gate with the interest cover at 410 and +1.25 in 6 of 8, against luck of 0.87 of six; design (b)
+            none on either, its strongest +0.20 at 361 holdings in 5 of 8. (d) no level survives on either index, the
+            top quarter kept on 1 and 0 of the ten strongest settings and the first pullback on 0 and 0; the S&P
+            400's strongest 1,029 trades at 0.026 in 3 of 8 years, the S&P 600's 678 at 0.037 in 5. (a) at the stop
+            floor of 1 as the runbook runs it: the proposal 2,036 trades at 0.037 in 6 of 8 years; none of the 15
+            grid settings meeting the floors is above nothing over 2025 and 2026 together and none of 24 levels
+            survives, the first pullback kept on 3, the peer version on 4, the surprises on 0 and 1, the revenue on 0,
+            IJR against SPY on 0; the revenue dial read 8,818 of the provisional setting's 9,464 listings, 2,863 of
+            them a quarter first filed after the listing's session; a first run without the floor read 2,974 trades at
+            0.376 on hair-wide stops and is void, both reports kept. (b) the named setting 555 trades at 0.217 in 6 of
+            8 years; 4 of 17 half steps fall under the floors, the reward to risk either way, 1.75 at 700 trades and
+            0.126 in 5 years and 2.25 at 438 and 0.158 in 5, the strength higher at 0.80, 430 trades in 5 years, and
+            the stop's low end at 1, 299 trades in 4; the exits over its 558 to 560 trades: fixed 0.218 in 6 of 8,
+            break-even 0.240 in 5, the trail 0.222 in 5. The joint search: no setting meets the floors over both
+            indices and on each alone; its proposal 3,131 trades at 0.110 in 6 of 8 years over both, 7 of 8 on the S&P
+            600 at 1,601 trades and 0.138, 5 of 8 on the S&P 400 at 1,530 and 0.080, and each of the five strongest
+            settings 7 of 8 over both on about 310 trades at 0.42, the S&P 400's 125 to 128 trades holding 4 of 8. (c) the S&P 600
+            search looked beyond its depth high at 10 and 12 and its freshness at 11 and 14, as before, and its
+            proposal's depth stayed 0, bound by the reward to risk going higher, within the grid, so no second look
+            was owed; the proposal 2,771 trades at 0.085 in 7 of 8 years, the base 1,778 at 0.063 in 6, and the five
+            strongest settings each at 314 to 317 trades and about 0.40, each bound at a grid end.
+Tests:      2010, ten more: the six as registered with luck and the floors, twelve months'
+            strength and the quarter's sessions, each design's leaders over a constructed sector and a session laid
+            with no candidates, the top quarter at its edge, each entry's first session, the last two years' edge,
+            the half steps worked by hand, each exit at its edge, and the pulls' statement and stop.
+Claims:     1042, six more: section 17's five rows and section 18's one, each reached by fixture-expectations.
+Pins:       the four index evaluators' versions moved with the sweep files they pin, SweepColumns' longest window
+            among them; no rule stands registered on the S&P 400 or 600, so no record restarts.
+Mutated:    the rule, stated before the run: each property this entry adds broken alone, made on the branch in this
+            checkout, filtered to its tests and reverted. M7 twelve months' strength read to the session, the latest
+            month not skipped: predicted red at the twelve-months test and the designs test. M8 the breakout's
+            pullback reading an eleventh session: predicted red at the breakout entry test alone. M9 the break-even
+            move armed at the fill: predicted red at the exits test alone. M10 the stop refusing a statement at
+            25,000: predicted red at the pull's statement test. M11 the last two years read as three: predicted red
+            at its test.
+            Results: M7 red at both; M8 red at the breakout test alone; M9 red at the exits test alone; M10 red; M11
+            red; each reverted and the tests green.
+Departed:   the facts' other five kinds, gross profit, operating income, operating cash flow, net income and
+            interest expense, move to 17.3 with the table and the night step that refresh them, where their first
+            reader is, the plan edited with its prior text in `CHANGELOG.md`. The provider stop reads each pull's
+            own statement and not the provider's count of the day: the request reading that count carries the key,
+            and the permission check refused the capture, so no code reads it; the operator's 5,000 a day is held by
+            hand against the statements. The S&P 400 drift was first run without the stop floor the runbook names;
+            the run stands in its folder, void, and the floored run is the one read.
+Discharged: (i3), carried by the phase 14 sign-off: `Lay` handed a session no member holds a bar on lays it with no
+            candidates, asserted in the designs test over the constructed sector.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ca0cc042, the
+            pull request's last commit but its fill. The entry's commit was followed by two, the widened grid moved to a
+            grid of the index searches' own and the index pullback evaluator's version raised, each a repair the first
+            run found, and the gates ran over the tree with both.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2010 of 2010 tests ran with none failed, migrations 0
+            to 74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1042 claims, 1042 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1053
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2010 of 2010 tests ran.
+Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
+            tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; the operator's
+            reading of each search's report, the S&P 400 pullback's answer first; the S&P 600 heavyweights' two
+            passing settings for the operator's ruling; then 17.2.

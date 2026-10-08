@@ -39,9 +39,10 @@ public partial class ArchitectureConformance
     static string[] PhaseSixteenBeside => FixtureExpectations.LocalModelClaims;
 
     // The rows the document gains after phase 16's report, named beside the pair and never counted in it: the 14.6
-    // correction's section 18 row on a heavyweights' rebalance waiting for the closes its readings need, and the 13.10
-    // correction's two checklist items on the store's copies and its two section 18 rows.
-    internal static string[] AfterPhaseSixteen => [.. FixtureExpectations.HeavyweightWaitClaims, .. FixtureExpectations.StoreCopyRowsClaims];
+    // correction's section 18 row on a heavyweights' rebalance waiting for the closes its readings need, the 13.10
+    // correction's two checklist items on the store's copies and its two section 18 rows, and phase 17's rows as each
+    // checkpoint lands them until the phase's own pair is checked at its report, 17.1's six first.
+    internal static string[] AfterPhaseSixteen => [.. FixtureExpectations.HeavyweightWaitClaims, .. FixtureExpectations.StoreCopyRowsClaims, .. FixtureExpectations.SearchClaims];
 
     [Fact]
     public void ThePhaseSixteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()

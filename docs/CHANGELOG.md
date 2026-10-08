@@ -12231,3 +12231,63 @@ Was:
 Now:
 > a code stepping to a level it holds kept, a name's code at a steady distance from the value a share, off the level and at no one ratio, matched to none from the 15.3 correction of 2026-10-08 where the rule before kept it, one off the level at one ratio at every quarter end kept, the one ratio worked at half a per cent apart and a cent past it and at no single quarter end, and a name's code at the level and in step kept, a code the fund held by ISIN beside a holding at every one of its quarter ends not read as that holding renamed though equal to the cent twice and in step, and a renamed company matched to the code its fund held by ISIN at two quarter ends equal to the cent and not at one, with the tracking check worked by hand; and from 17.1 a holding of a schedule filed with no identifier carries the code the next coded quarter's holding of the identical name matched where the values a share move in step over the joined quarters, one whose identical name matched no code and one whose code holds no close on the day left matched to none, and each holding's shares and value stored as its filing states them; and OpenFIGI's captured answers for the 27 identifiers of 2026-10-08 are read as sent, each identifier's tickers on the US venues worked by hand off the capture with a delisted security's placeholder and a listing elsewhere left out and an identifier found nothing for carrying its warning, every one a warning under the composite's exchange code, an answer short of the identifiers asked refused, and over the constructed fund a holding no symbol list carries is matched under `figi` to the one ticker OpenFIGI answered on a US venue at the level and in step, its placeholder passed over, one whose ticker's closes sit off the level matched to none, and the one request's identifiers counted;
 Why: the roster is where a check states what it asserts, and the clause it carried asserted the reading the correction refuses.
+
+### 2026-10-08 - ARCHITECTURE.html - the sweep search's limits row: an index sweep's search looks a second time beyond a grid end, to 16 moves and 21 sessions
+Authorised by: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth
+Was:
+> where the depth runs into a grid end on a dial of three or more values that dial is looked beyond by up to 2 values, the refinement run again with them open, and a dial that cannot be extended or whose end still bounds the depth named as a limit, the freshness reaching 14 sessions at most;
+Now:
+> where the depth runs into a grid end on a dial of three or more values that dial is looked beyond by up to 2 values, the refinement run again with them open, and a dial that cannot be extended or whose end still bounds the depth named as a limit, an index sweep's search looking beyond such an end a second time, the depth's high end reaching 16 typical moves and the freshness 21 sessions at most, and each setting its report reads stating its depth and the dial binding it;
+Why: the operator's brief of 2026-10-08 asked the S&P 600 pullback's depth high and freshness extended past their grid ends and its depth measured again (see: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth).
+
+### 2026-10-08 - ARCHITECTURE.html - the five searches' paragraph, five limits rows and the pull's stop row added to sections 13, 17 and 18
+Authorised by: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
+Was:
+> (no prior text: the paragraph after the one on a sweep run's answer, the limits rows after the heavyweights' sweep grid and after the weighted-call budget, and the failure row after the holding matched to no code are new)
+Now:
+> a paragraph on the five searches of 17.1, each read-only and after costs and nothing frozen; limits rows "Heavyweights' six settings a design", "Index second stage's added levels", "Mid cap drift's last two years", "Mid cap pullback's half steps" and "Provider stop of a pull"; and the failure row "A pull whose stated calls pass the provider stop"
+Why: 17.1's second pull request builds the searches the operator's brief of 2026-10-08 named, each needing the limit it reads stated where every other limit is (see: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage) (see: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing) (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits) (see: The S&P 400's and 600's pullbacks are searched together for a shared setting and confirmed on each alone) (see: Every pull states its provider calls before it runs and stops for the operator at the day's cap).
+
+### 2026-10-08 - RUNBOOK.md - the four search families of 17.1 and the pulls' provider statement
+Authorised by: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+Was:
+> Before any pull, the provider's own count of the day's calls is read off its user endpoint, and a pull is run on a day's allowance no night is drawing on.
+Now:
+> the sentence followed by the pulls' statement as their first line, the stop at 25,000 and `--past-the-stop`; and, after the index sweep's paragraph on a run where none passes, a paragraph on `heavyweights-six`, `heavyweights-b-six`, `pullback-neighbours` and `pullback-joint` with the breakout's, the drift's and the pullback search's additions, and their four command lines
+Why: the runbook is where every verb is run from, and 17.1 adds four families to one and a word to another (see: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run).
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations states the searches' tests and the pull's statement
+Authorised by: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
+Was:
+> ... and a dial's level is kept on a setting where it is higher in six of the eight years with two of the last three and survives on six of the ten; and the answer a run states is recorded by the command run after it, ...
+Now:
+> the clause followed by "and from 17.1 the sector heavyweights' six settings a design are the ones the ruling registered, ... and a companies pull past the stop refused with no request and no row;" before "and the answer a run states"
+Why: the roster is where a check states what it asserts, and 17.1 adds seven tests to the check (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits).
+
+### 2026-10-08 - ARCHITECTURE.html - the added levels row reads the other fund's two windows with "and over"
+Authorised by: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage
+Was:
+> the other index's fund over SPY up over 126 or 252 sessions, and an entry on the first session within 10 after the reaction
+Now:
+> the other index's fund over SPY up over 126 and over 252 sessions, and an entry on the first session within 10 after the reaction
+Why: the pinned figures' restatement reader reads "or 252 sessions" as the setup cap's figure, so the row says the two windows as the readings row does.
+
+### 2026-10-08 - BUILD_PLAN.md - 17.1's facts pull narrowed to the revenue, the other five kinds moved to 17.3
+Authorised by: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing
+Was:
+> The second, the searches: the SEC company facts pulled for every filer the history holds, storing revenue, gross profit, operating income, operating cash flow, net income and interest expense as first filed with their accession numbers and filing dates, and the index funds pulled again; then the five searches as the plan states them,
+>
+> ... the roster's clauses, `SCHEMA.md` for the facts' and the holdings' columns, and the 15.3 correction's decision ...
+Now:
+> The second, the searches: the SEC's revenue facts pulled for every filer the history holds, each figure as first filed with its accession number and filing date, the other five kinds the ledger reads, gross profit, operating income, operating cash flow, net income and interest expense, pulled once into their own table at 17.3 with the night step that refreshes it, where their first reader is; the index funds pulled again; then the five searches as the plan states them,
+>
+> ... the roster's clauses, `SCHEMA.md` for the holdings' columns, and the 15.3 correction's decision ...
+Why: the drift's revenue dial is the one reader of the facts before the ledger, and the revenue pull of 14.2 already stores every revenue concept as first filed for every filer the companies pull names, 2,102 on 2026-10-08; a table of six kinds nothing reads for two checkpoints is built where its reader and its nightly refresh are, 17.3, whose text already names the SEC's facts as first filed in a table of their own.
+
+### 2026-10-08 - ARCHITECTURE.html - the sweep search's limits row: the extended grid's freshness of 14 kept, the widened grid the index's search reads
+Authorised by: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth
+Was:
+> named as a limit, an index sweep's search looking beyond such an end a second time, the depth's high end reaching 16 typical moves and the freshness 21 sessions at most, and each setting its report reads stating its depth and the dial binding it
+Now:
+> named as a limit, the freshness reaching 14 sessions at most; an index sweep's search reading a widened grid, the depth's high end reaching 16 typical moves and the freshness 21 sessions, looking beyond such an end a second time, and each setting its report reads stating its depth and the dial binding it
+Why: the two values more were first put on the extended grid every search reads, which moved what the S&P 500's search names as a dial's own end; a widened grid of the index searches' own keeps the S&P 500's as it was, as the decision says.

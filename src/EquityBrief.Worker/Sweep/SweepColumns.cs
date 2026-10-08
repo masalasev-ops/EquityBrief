@@ -93,8 +93,8 @@ public static class SweepColumns
 {
     public static readonly DateOnly FirstScored = new(2019, 1, 2);
 
-    // The arrival window's longest, the fourteen sessions the widest freshness the search may look at reads back.
-    public const int LongestWindow = 14;
+    // The arrival window's longest, the 21 sessions the widest freshness an index's search may look at reads back.
+    public const int LongestWindow = 21;
 
     // The gap check's reach, the year of sessions the night checks a name's series over.
     public const int GapSessions = 252;

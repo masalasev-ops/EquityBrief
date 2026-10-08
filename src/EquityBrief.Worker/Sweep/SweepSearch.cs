@@ -791,11 +791,12 @@ public sealed class SweepDesignSearch
     // Where the refined proposal's depth runs into a grid end on a dial of three or more values, that dial is
     // extended by up to two values beyond the end, depth is measured again and the refinement runs again with
     // the extension open to it. A dial that cannot be extended, or whose extension still leaves the depth at
-    // the new end, is named as a limit of the search.
-    public SweepProposal Extend(SweepProposal start, SweepMeasures live, List<string> rounds, List<string> extensions, List<string> limits)
+    // the new end, is named as a limit of the search; given more looks than one, a dial whose new end still bounds
+    // the depth is looked beyond again while the extended grid holds values past it.
+    public SweepProposal Extend(SweepProposal start, SweepMeasures live, List<string> rounds, List<string> extensions, List<string> limits, int looks = 1)
     {
         var current = start;
-        var extended = new HashSet<(int Dial, int Direction)>();
+        var extended = new Dictionary<(int Dial, int Direction), int>();
 
         while (current.Depth.AtAGridEnd && current.Depth.Dial >= 0)
         {
@@ -804,7 +805,7 @@ public sealed class SweepDesignSearch
             var name = Space.Dials[dial].Name;
             var end = direction < 0 ? "low" : "high";
 
-            if (extended.Contains((dial, direction)) || !Space.CanExtend(dial, direction))
+            if (extended.GetValueOrDefault((dial, direction)) >= looks || !Space.CanExtend(dial, direction))
             {
                 limits.Add(FormattableString.Invariant($"the {name} dial's {end} end bounds the depth at {current.Depth.Depth} and cannot be looked beyond"));
 
@@ -813,7 +814,7 @@ public sealed class SweepDesignSearch
 
             var opened = Space.Extend(dial, direction);
 
-            extended.Add((dial, direction));
+            extended[(dial, direction)] = extended.GetValueOrDefault((dial, direction)) + 1;
             extensions.Add(FormattableString.Invariant($"the {name} dial looked beyond its {end} end at {string.Join(" and ", opened.Select(at => Space.Label(dial, at)))}"));
 
             var depth = Depth(current.Point);
@@ -821,7 +822,8 @@ public sealed class SweepDesignSearch
             current = new SweepProposal(current.Point, current.Summary, depth, current.Measures);
             current = Refine(current, live, rounds);
 
-            if (current.Depth.AtAGridEnd && current.Depth.Dial == dial && current.Depth.Direction == direction)
+            if (current.Depth.AtAGridEnd && current.Depth.Dial == dial && current.Depth.Direction == direction
+                && (extended[(dial, direction)] >= looks || !Space.CanExtend(dial, direction)))
             {
                 limits.Add(FormattableString.Invariant($"the {name} dial's {end} end still bounds the depth at {current.Depth.Depth} after looking beyond it"));
 

@@ -256,6 +256,16 @@ public sealed record SweepGrid(
         [MarketOff, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65],
         [0, 2, 4, 6, 8, 10]);
 
+    // The extended grid with two values more past the depth's high end and the freshness's, to 16 moves and 21
+    // sessions at the spacing of the last two, which an index's search looks at a second time beyond; every other
+    // dial the extended grid's own, and every value's place on it the same, so a setting read on one reads on the
+    // other.
+    public static SweepGrid Widened { get; } = Extended with
+    {
+        DepthHighs = [.. Extended.DepthHighs, 14, 16],
+        Freshness = [.. Extended.Freshness, 17, 21],
+    };
+
     // The dials a cumulative table runs over besides the stop bounds, whose options it is read at one by one.
     public const int OrderedDials = 8;
 

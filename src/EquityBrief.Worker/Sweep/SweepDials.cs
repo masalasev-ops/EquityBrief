@@ -11,7 +11,8 @@ public sealed record DialTry(string Dial, string Level, bool Switch, int Setting
 
 // One level of a new dial or one market switch as the second stage reads it: the quality, the multiple of the dollar
 // volume floor, the hold or the drift's window it sets in place of the provisional one, a test a candidate or a
-// listing must pass beside the floors and the gate, or the S&P 500's breadth read in place of the index's own.
+// listing must pass beside the floors and the gate, the S&P 500's breadth read in place of the index's own, or the
+// entry a listing is bought at in place of its own close, none or one for each listing under the setting read.
 public sealed record DialLevel<T>(
     string Dial,
     string Name,
@@ -21,7 +22,8 @@ public sealed record DialLevel<T>(
     int? Hold = null,
     Func<T, bool>? Keep = null,
     bool LargeBreadth = false,
-    int? Window = null);
+    int? Window = null,
+    Func<T, int[], IEnumerable<T>>? Instead = null);
 
 // One level that survived, with how many of the strongest settings kept it and the median change it made there, on the
 // edge after costs or, for a switch, on the result a trade.
@@ -72,6 +74,31 @@ public static class SweepDials
             && recent >= SweepIdeas.RecentYearsBetter
             && (!onTotals || (with.AverageMultiple is { } result && without.AverageMultiple is { } before && result > before));
     }
+
+    // How often a level with no effect is kept on one setting: of the 256 ways eight years can fall either side, those
+    // with at least six higher and two of the last three, 34; and how often it survives, kept on at least six of the
+    // ten were the settings independent, about seven in ten thousand.
+    public static double LuckOfOneSetting =>
+        1.0 * Enumerable.Range(0, 1 << SweepFigures.Years).Count(pattern =>
+            System.Numerics.BitOperations.PopCount((uint)pattern) >= SweepIdeas.YearsBetter
+            && System.Numerics.BitOperations.PopCount((uint)pattern >> (SweepFigures.Years - SweepIdeas.RecentYears)) >= SweepIdeas.RecentYearsBetter) / (1 << SweepFigures.Years);
+
+    public static double LuckOfALevel
+    {
+        get
+        {
+            var (kept, survives) = (LuckOfOneSetting, 0.0);
+
+            for (var settings = KeptOn; settings <= Settings; settings++)
+            {
+                survives += Choose(Settings, settings) * Math.Pow(kept, settings) * Math.Pow(1 - kept, Settings - settings);
+            }
+
+            return survives;
+        }
+    }
+
+    static double Choose(int n, int k) => Enumerable.Range(1, k).Aggregate(1.0, (product, at) => product * (n - k + at) / at);
 
     // A year's total result, each scored trade's result in multiples of its risk summed, a year with none nothing.
     public static double Total(SweepMeasures measures, int year) => (measures.YearAverageMultiple[year] ?? 0) * measures.YearScored[year];
