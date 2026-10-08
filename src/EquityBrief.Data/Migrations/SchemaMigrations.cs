@@ -694,7 +694,18 @@ public static class SchemaMigrations
         new Migration(71, "add taken_trade's end and decision_card's hits, and create taken_record and dividend_reading", CreateTakenRecords),
         new Migration(72, "add index_heavyweight_holding.lead", AddIndexHoldingLead),
         new Migration(73, "add index_heavyweight_rule_holding.lead", AddIndexRuleHoldingLead),
+        new Migration(74, "add pulled_holding's shares and value", AddPulledHoldingValue),
     ];
+
+    // Each holding of a fund's filing, the shares the fund held and their value in dollars as the filing states them,
+    // which give the price the fund valued a share at on the quarter's end; null where the filing states neither, as the
+    // schedules before the first N-PORT state none, and on rows a pull wrote before the columns were, filled by the next
+    // holdings pull reading the quarter.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    const string AddPulledHoldingValue = @"
+        ALTER TABLE pulled_holding ADD COLUMN shares TEXT;
+        ALTER TABLE pulled_holding ADD COLUMN value_usd TEXT;
+    ";
 
     // Each holding of a registered S&P 400 or 600 heavyweights rule's book, its lead over its sector's members' mean at the
     // rebalance that bought it, none for a design (b) rule, which reads no lead over a sector.

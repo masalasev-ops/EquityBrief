@@ -40417,3 +40417,106 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 1999 of 1999 tests ran.
 Carried:    the night of 2026-10-08 read the morning after for the two year switches filled; then 17.1a.
+
+### 15.3 - correction: a code a holding's name reads held to the level or to one ratio at each quarter end, and a code its fund held beside it never read as the holding renamed   2026-10-08
+
+Corrects:   15.3's in-step reading of a holding's codes by name, which kept a name's code wherever its closes moved in
+            step with the fund's values a share, at any distance from them: GrubHub matched to GRUB at five quarter
+            ends from 2020-03-31 to 2021-03-31 at a ratio running 4.53 to 6.71, on a listing that began trading on
+            2020-03-25; Dime Community's two schedule quarters to DCOM at 0.666 and 0.639, Bridge Bancorp's closes
+            before the 2021 merger; and Aqua America's two to WTRU, where the renamed company's rule reads WTRG.
+Found:      on 2026-10-08 by phase 17's evaluation, read-only, and given its go that day: "the 15.3 correction (the
+            level test against the close for name matches): yes". The first rerun found the level test refusing
+            Providence Service's eight quarters at a ratio to PRSC of exactly 3.000 at each, the provider's own closes
+            divided by a factor, and the operator ruled the same day: "Keep exact ratios".
+Built:      a code a holding's name reads over several quarter ends kept only where it stands within 5 per cent of
+            the fund's value a share at each, or at one ratio within half a per cent at every one, as well as moving in
+            step, in the one check the name's recovery and the mapping share; and a code the fund held by ISIN as
+            another holding at one of the holding's quarter ends left out of the renamed company's codes, which a
+            constructed fund showed the level test otherwise sending a refused holding to. (A) superseded by the
+            decision carrying both readings and moved to Previously decided, the decision on a code held beside a
+            holding added, every citation moved; the catalogue row, section 18's paragraph and failure row, `SCHEMA.md`,
+            the runbook and the roster's clause, their prior text in `CHANGELOG.md`.
+Moved:      on the operator's store against its copy of 10:13Z: GrubHub's 5 quarters and Dime Community's 2 to none,
+            Aqua America's 2 from WTRU to WTRG, Providence Service's 8 kept at PRSC.
+Tests:      in the 17.1 entry below, one tree and one run. The tracking test's constructed fund gains a name's code in
+            step off the level at no one ratio, refused, one at one ratio of three, kept, and a code held beside a
+            holding, not read; the matcher's own test the level and the one ratio each at its edge.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made on the branch in
+            this checkout, filtered to the tracking tests and reverted.
+            M1 the level clause removed: predicted red, Steady Steel kept by name.
+            M2 the one-ratio clause removed: predicted red, Exact matched to none.
+            M3 the code held beside a holding left in: predicted red, Steady Steel matched to SPUN.
+            Results: M1 red at the tracking test, its first difference Mapped Co matched to none, since Steady Steel
+            kept by name leaves the mapping's one request; M2 red, Exact matched to none; M3 red, Steady Steel's
+            schedule quarter carried to SPUN; each reverted and the tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 17.1 entry
+            below, its figures stated there.
+Carried:    nothing.
+
+### 17.1 - membership: each holding's shares and value stored, a schedule's holding carried to the next coded quarter's code, the holdings no symbol list carries mapped through OpenFIGI, and every as-it-stood search and record run again   2026-10-08
+
+Built:      migration 74, `pulled_holding`'s `shares` and `value_usd` as each filing states them, filled where a pull
+            matches a stored quarter again. The carry-back: a holding of the N-Q or the annual report still matched to
+            none carries the code the next coded quarter's holding of the identical name matched, where that code holds
+            a close on the day, the values a share move in step over the joined quarters, read by the security's key
+            across a rename, and the join itself holds the ratio; stored under `carried`. OpenFIGI's mapping, keyless,
+            the twentieth file allowed a client, its six answers captured into the fixture before the reader was
+            written: each identifier still matched to none, ten a request, and each ticker it answers on a US venue
+            read under the checks a name's code is, stored under `figi`; the identifier mapping feed on the history
+            pull's catalogue row and in its declaration. Two decisions; `SCHEMA.md`'s columns and keys; the runbook;
+            the catalogue and failure rows, the provider stop's row left to 17.1b, where the pulls reaching it run;
+            the roster; `CHANGELOG.md`; the remedy file.
+Moved:      on the operator's store against its copy of 10:13Z, holding-quarters matched to none: the S&P 400's 51 to
+            52, the S&P 600's 180 to 139. Carried 8 and 12; mapped 9 identifiers in 1 request and 24 in 3, matching 4
+            and 28; Leslie's 10 to LESLQ by name. RGS and LESLQ, held by no pulled history, had their bars, splits and
+            companies pulled by name.
+Became:     the 32 lines still matched to none, read off each filer's SEC submissions and its completion 8-K: 20
+            acquired, 8 renamed or reorganised and still trading, 1 bankrupt, Pennsylvania REIT, and 3 not common
+            stock, two contra lines and OmniAb's earn-out shares. The table is in the pull request.
+Reruns:     the ten as-it-stood searches from this build. One answer moved: the S&P 400 pullback passed on 2026-10-06
+            and passes none now. Its profit and cover level held on 5 of the 10 strongest settings, one short of the
+            6 it needs to be crossed, because the tenth strongest changed: 634 trades at 0.1707 in 4 of 8 years in place
+            of 611 at 0.1716 in 6, so the crossing that met the floors, 557 trades at 0.2184, was never read. The S&P
+            600 pullback still passes, its strongest setting 609 trades at 0.3155 against 610 at 0.2972. The S&P 400
+            breakout's strongest setting moved to the stop at 3 typical moves, 1,029 trades at 0.0256 against 1,116 at
+            0.0280; the S&P 600 breakout's provisional edge from 0.0036 to 0.0012; the other six within a thousandth
+            and eight trades. No answer is recorded from this build; the operator reads the S&P 400 pullback's first.
+            The records replayed: the S&P 400 pullback 1,172 trades averaging 0.105 risks against 1,173 at 0.112, its
+            drift 1,639 at -0.017 against 1,638 at -0.016, its breakout and heavyweights unchanged; the S&P 600 pullback
+            1,251 at 0.067 against 1,248 at 0.067, its breakout 713 at -0.056 against 708 at -0.053, its drift 1,414 at
+            -0.249 against 1,412, its heavyweights 455 holdings at 2.054 per cent against 454 at 2.102.
+Provider:   read off the provider's count: 1,978 at the start, 4,886 after five holdings runs, 5,016 after the two
+            codes' pulls, 16 over the 5,000 cap, because the bars pull asks the earnings calendar's 106 months
+            whatever the names, which the count stated before it left out.
+Tests:      2000, one more: OpenFIGI's six captured answers read as sent; the tracking test's constructed fund
+            extended with the carry-back, a rename after a step, the join's own ratio, two mapped holdings and each
+            holding's shares and value; the holdings test's line with the carried count.
+Claims:     1036, unchanged: the catalogue row, section 18's paragraph and the failure row changed in their words
+            alone.
+Pins:       none moved: the matcher, the pull and the mapping are in no pin list.
+Mutated:    the rule, stated before the run: each property this entry adds broken alone, made on the branch in this
+            checkout, filtered to the tracking tests and reverted.
+            M4 the carry-back joined by the name rather than the security's key: predicted red, Spun's schedule
+            quarter left matched to none.
+            M5 the join's own ratio unread: predicted red, Level's schedule quarter carried at five times.
+            M6 placeholders read as tickers: predicted red at the capture test, Coherent's 2150994D among its tickers.
+            Results: M4 red, Spun's schedule quarter matched to none; M5 red, Level's carried to LEVL; M6 red at the
+            capture test with 2150994D beside COHR, the tracking test green since the provider holds no close under a
+            placeholder, so the capture test carries that property; each reverted and the tests green.
+Amended:    this checkpoint amends its own done condition. It said the carry-back "leaves Commerce Bancshares as it
+            stood"; the evaluation read Commerce as matched from 2018-12-31, and its quarter to 2019-03-31 was matched
+            to none. The carry-back carries it to CBSH, the code its other quarters hold.
+Departed:   the 15.3 correction landed in this pull request's one commit rather than its own, since it, the carry-back
+            and the mapping share one pass and one constructed fund. The migration, the holdings pulls and the named
+            pulls ran on the operator's store from this branch's build before the merge, which took the store to
+            schema 74 ahead of main, so this merges before the night of 2026-10-08.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f89d94b8, the
+            pull request's last commit but its fill.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2000 of 2000 tests ran with none failed, migrations 0
+            to 74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1036 claims, 1036 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1047
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2000 of 2000 tests ran.
+Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
+            tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; then 17.1b.

@@ -1,0 +1,18 @@
+# The remedy of 17.1's first pull request (membership), as its PROGRESS entry prints it: run tools/migrate.ps1 first,
+# which adds migration 74's shares and value to the pulled holdings. The holdings pulls read each fund's filings at the
+# SEC again, free, store every holding's shares and value, and match every holding again under the level test, the
+# one-ratio reading, the carry-back and OpenFIGI's mapping, keyless and one to three requests an index; each asks the
+# provider for the codes it reads at each quarter end, about 400 weighted calls for the S&P 400 and 880 for the S&P
+# 600. The two codes the reruns matched that the pulled history held none of, RGS and LESLQ, then have their bars,
+# splits, companies and surprises pulled by name: the bars and the surprises each ask the earnings calendar's 106
+# months, about 110 calls each, the splits 2 and the companies 20. The rule records of both indices are replayed last,
+# asking for nothing. Everything goes into the pulled history's tables and the rule records, read by no night but
+# the cards' records. No model call and nothing bought. Run after the merge, when no night is running.
+history-pull --holdings --index MID --live
+history-pull --holdings --index SML --live
+history-pull --from 2018-01-01 --index SML --names RGS,LESLQ --live
+history-pull --splits --from 2018-01-01 --index SML --names RGS,LESLQ --live
+history-pull --companies --from 2018-01-01 --index SML --names RGS,LESLQ --live
+history-pull --surprises --from 2018-01-01 --index SML --names RGS,LESLQ --live
+rule-record --index MID
+rule-record --index SML

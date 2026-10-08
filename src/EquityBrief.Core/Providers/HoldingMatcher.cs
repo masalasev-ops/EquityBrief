@@ -37,6 +37,16 @@ public sealed class HoldingMatcher
     // since, read by the code it trades as.
     public const string ByHeld = "held";
 
+    // The key a holding of a schedule filed with no identifier is stored under where it is matched to the code the next
+    // coded quarter's holding of the identical name matched, the in-step check holding across the joined quarters.
+    // see: A holding of a schedule filed with no identifier carries the code the next coded quarter's holding of the identical name matched, where the closes move in step across them
+    public const string ByCarried = "carried";
+
+    // The key a holding is stored under where its code is one OpenFIGI mapped its identifier to, held to the checks
+    // a name's code is.
+    // see: A holding the symbol lists carry under no code is mapped to the tickers it traded under through OpenFIGI, each held to the checks a name's code is
+    public const string ByMapping = "figi";
+
     // How far the price the fund valued a share at may sit from a code's close on the quarter's end, as a share of the
     // close, for a match by name to stand, and how far the one over the other may move from one quarter end to the next
     // for a code's closes to move in step with the fund's values a share.
@@ -159,14 +169,32 @@ public sealed class HoldingMatcher
 
     static bool Within(decimal price, decimal close) => close > 0m && Math.Abs((price / close) - 1m) <= ValueTolerance;
 
-    // Whether a code's closes move in step with a holding's values a share over the quarter ends both are read at, in
-    // order: the value a share over the close, as sent or with the splits filed after undone, whichever sits nearer the
-    // same ratio a quarter end before, holds within the tolerance from one quarter end to the next, or steps to a level it
-    // holds at the next quarter end as well, as the provider's closes divided down for a corporate action step and then
-    // hold; read at a single quarter end it stands within the tolerance there, as a match by name must; read at none, it
-    // is not read.
-    // see: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
-    public static bool? Tracks(IReadOnlyList<(decimal ValuePerShare, QuarterEndClose Close)> quarters)
+    // Whether the price the fund valued a share at stands within the tolerance of a code's close, as sent or with the
+    // later splits undone: the level a match by name is held to at each quarter it is read at, which the in-step check
+    // over two quarters or more does not test, since a steady ratio off the level is another security's price moving
+    // with the holding's, as GrubHub's code carried another's at about six and a half times the value a share.
+    // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
+    public static bool AtTheLevel(decimal valuePerShare, QuarterEndClose close) =>
+        Within(valuePerShare, close.AsSent) || (close.SplitsUndone is { } undone && Within(valuePerShare, undone));
+
+    // Whether the value a share over a code's close is one ratio at every quarter end both are read at, two or more,
+    // within half a per cent: the provider's own closes divided by a factor for a corporate action it files as no split,
+    // which another security's price moving with the holding's does not hold to, as Providence Service's code stood at
+    // exactly three at eight quarter ends where GrubHub's ran from four and a half to six and three quarters.
+    // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
+    public static bool OneRatio(IReadOnlyList<(decimal ValuePerShare, QuarterEndClose Close)> quarters)
+    {
+        var ratios = Ratios(quarters);
+
+        return ratios.Count >= 2 && ratios.Min() > 0m && (ratios.Max() / ratios.Min()) - 1m <= RatioTolerance;
+    }
+
+    // How far apart the ratios of one code's closes may stand and still be read as one ratio.
+    public const decimal RatioTolerance = 0.005m;
+
+    // The value a share over the close at each quarter end both are read at, in order, as sent or with the splits filed
+    // after undone, whichever sits nearer the ratio a quarter end before.
+    static List<decimal> Ratios(IReadOnlyList<(decimal ValuePerShare, QuarterEndClose Close)> quarters)
     {
         var ratios = new List<decimal>();
 
@@ -180,6 +208,20 @@ public sealed class HoldingMatcher
                 ratios.Add(read.MinBy(ratio => Math.Abs((ratio / before) - 1m)));
             }
         }
+
+        return ratios;
+    }
+
+    // Whether a code's closes move in step with a holding's values a share over the quarter ends both are read at, in
+    // order: the value a share over the close, as sent or with the splits filed after undone, whichever sits nearer the
+    // same ratio a quarter end before, holds within the tolerance from one quarter end to the next, or steps to a level it
+    // holds at the next quarter end as well, as the provider's closes divided down for a corporate action step and then
+    // hold; read at a single quarter end it stands within the tolerance there, as a match by name must; read at none, it
+    // is not read.
+    // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
+    public static bool? Tracks(IReadOnlyList<(decimal ValuePerShare, QuarterEndClose Close)> quarters)
+    {
+        var ratios = Ratios(quarters);
 
         if (ratios.Count == 0)
         {

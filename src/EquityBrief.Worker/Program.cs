@@ -290,6 +290,12 @@ static async Task<int> HistoryPullRun(string[] args)
             () => EodhdSymbolListFeed.Live(
                 string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
                 new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a holdings pull"),
+        () => FeedSource.Resolve<IOpenFigiMappingFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("holdings")),
+            () => OpenFigiMappingFeed.Live(),
             "a holdings pull"));
 
     // The companies, splits, revenue, members and holdings pulls ask their sources alone: the fixture holds the answers
