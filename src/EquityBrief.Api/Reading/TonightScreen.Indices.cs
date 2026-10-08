@@ -272,8 +272,11 @@ public static partial class TonightScreen
     }
 
     // An index's sector heavyweights' card: the holdings open at the night's close in the order of their sectors, each
-    // with its close against its 200-session average, what the last rebalance bought, what ended at it or since, and the
-    // next rebalance, its rule written from the settings the night stored with its design and its sector comparison.
+    // with the lead over its sector's members' mean in the index it was bought on, or that it was bought before its book
+    // stored one, and its close against its 200-session average, what the last rebalance bought, what ended at it or
+    // since, and the next rebalance, its rule written from the settings the night stored with its design and its sector
+    // comparison.
+    // see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
     public static HeavyweightCardView IndexHeavyweights(
         UniverseChoice universe,
         IndexNightRow night,
@@ -307,11 +310,12 @@ public static partial class TonightScreen
                         companies.GetValueOrDefault(holding.Ticker),
                         holding.Sector,
                         holding.EnteredOn,
-                        null,
-                        null,
+                        holding.Lead,
+                        holding.Lead is null ? null : holding.EnteredOn,
                         close?.Close,
                         close?.Average200,
-                        close is { Close: { } shut, Average200: { } average } && HeavyweightRule.Broken(Statistic.FromPrice(shut), average));
+                        close is { Close: { } shut, Average200: { } average } && HeavyweightRule.Broken(Statistic.FromPrice(shut), average),
+                        NoLead: BoughtBeforeALead);
                 }),
         ];
 
@@ -352,8 +356,15 @@ public static partial class TonightScreen
             entered,
             ended,
             empty,
-            Waits: computed ? Waiting(night.Session, last, next, reading) : null);
+            Waits: computed ? Waiting(night.Session, last, next, reading) : null,
+            Says: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [MarkRenderer.LeadHeading] = $"Its return over the look-back less its sector's members' mean in the {universe.Name} over the same sessions, in percentage points, at the rebalance that bought it.",
+            });
     }
+
+    // What an index's card draws for a holding whose book stored no lead, which a design (a) book stores at every buy.
+    const string BoughtBeforeALead = "bought before its book stored a lead";
 
     // How an index's night went, read off the rows its families stored for it.
     public static IndexRunView IndexRun(IndexNightRow night, IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexResultRow> results, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<IndexHoldingRow> holdings) =>

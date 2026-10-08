@@ -148,6 +148,35 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task AnSAndP400HeavyweightsCardDrawsEachHoldingsLeadOverItsSectorsMembersMeanAsItsBookStoredIt()
+    {
+        // M2's lead stored at the rebalance that bought it on the night, 4.12 points, and M3 held since a month before,
+        // bought before its book stored a lead.
+        using var store = UniversesStore();
+
+        store.Execute("UPDATE index_heavyweight_holding SET lead = 0.0412 WHERE index_code = 'MID' AND ticker = 'M2';");
+        store.Execute("INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through) VALUES ('MID', 'M3', '2026-09-01', 'Energy', '45', 1.1, '[]', '2026-10-01');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
+
+        Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\" data-lead=\"0.0412\"", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\">+4.1 points over 251 sessions, at 2026-10-02</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M3\" data-sector=\"Energy\" data-held-since=\"2026-09-01\" data-lead=\"none\"", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"degraded\">bought before its book stored a lead</span></td>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("not read", card, StringComparison.Ordinal);
+
+        // The column's key names the comparison design (a) reads on the index, its sector's members' mean, and no fund.
+        Assert.Contains(
+            "<span class=\"head-tip\" role=\"tooltip\">Its return over the look-back less its sector's members' mean in the S&P 400 over the same sessions, in percentage points, at the rebalance that bought it.</span>",
+            card,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("fund's", card, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AnSAndP400PicksRowDrawsTheBusinessStateItsNightStoredAndSaysNotReadOnlyWhereNoneWasStored()
     {
         // M1, the S&P 400's breakout pick, with no reading stored for the night: its row says not read.

@@ -61,6 +61,12 @@ dotnet run --project src/EquityBrief.Worker -- index-families
 
 `index-families` writes under a run id the run page reads as run by hand, and a night run after it over the same session writes that session again. Each page then reads one index at a time chosen under Universe at its top, the S&P 500 where its link names none, and a link carries the choice, as `#/?universe=400` opens tonight's page for the S&P 400 (see: Every page reads one index at a time chosen under Universe, and every figure names its index).
 
+**A holding the S&P 400's or 600's book sold on leaving the index at another close is sold again by hand.** A holding whose stock left the index is sold at its stock's close on the session it was last carried to, read from the bar table whatever the night's members (see: A heavyweight leaving the index is sold at its last session's close as a member). The line below writes again the close and the round trip of each holding sold on leaving the index at a close other than its stock's on the session it was sold, and nothing else, asking the provider for nothing and naming each on its row under a run id the run page reads as run by hand; run again, it writes nothing:
+
+```
+dotnet run --project src/EquityBrief.Worker -- index-families --leavers
+```
+
 **An index whose part of the night failed says "Not computed tonight".** The night goes on past it, and its stage, `index-families`, is drawn on the run page among the stages to look at, under the outcome "not computed" with the failure's type and message (see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless). Once the cause is repaired, the line above reads that index's night again over the same session, replacing the row that named the failure.
 
 ### Registering the schedule

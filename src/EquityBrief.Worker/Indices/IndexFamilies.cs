@@ -155,6 +155,9 @@ public sealed class IndexFamilies : IComponent
         WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session;
     ";
 
+    // A company's value on a trade's own night as the member readings read it under the index, none where they read none.
+    const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
+
     // An index's night that failed, where no earlier try of the night computed one.
     const string InsertNotComputed = @"
         INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced, fault)
@@ -248,6 +251,35 @@ public sealed class IndexFamilies : IComponent
 
             return new IndexFamiliesOutcome(read, all);
         }
+    }
+
+    // Each holding the S&P 400's and 600's books sold on leaving the index, sold again by hand at its stock's close on the
+    // session it was sold as the bar table holds it, with its round trip from that close; one already sold there, or one
+    // whose close the bar table does not hold, is left as it was. The step's own row under the run names each holding
+    // written with its close before and after, and the words are returned.
+    // see: A heavyweight leaving the index is sold at its last session's close as a member
+    public async Task<string> SellLeaversAgainAsync(string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        IReadOnlyList<string> sold;
+
+        await using (var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation))
+        {
+            sold = await IndexHeavyweights.SellLeaversAgainAsync(connection, transaction, cancellation);
+            await transaction.CommitAsync(cancellation);
+        }
+
+        var detail = sold.Count == 0
+            ? "no holding sold on leaving the index stands at a close other than its stock's on the session it was sold"
+            : "sold again at its stock's close on the session it was sold: " + string.Join("; ", sold);
+
+        await AppendAsync(connection, runId, startedAt, sold.Count, Ok, detail, cancellation);
+
+        return detail;
     }
 
     // The failure an index's part of the night stopped on, as its row and the stage's name it.
@@ -660,7 +692,9 @@ public sealed class IndexFamilies : IComponent
     }
 
     // Each of the index's trades not yet ended, walked over the member's closes since its night at the scale the
-    // series has now, written where it ended with its result and its cost; the count ended.
+    // series has now, written where it ended with its result and its cost, its company valued as the member readings
+    // read it under the index on the trade's night; the count ended.
+    // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
     async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         var open = new List<(string Family, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap)>();
@@ -738,7 +772,8 @@ public sealed class IndexFamilies : IComponent
             }
 
             var sale = bars[sessions];
-            var cost = TradeCost.InPercent(null, bars[0].Raw > 0m ? bars[0].Raw : bars[0].Close, sale.Raw > 0m ? sale.Raw : sale.Close, 1) / 100.0 / ((entry - stop) / entry);
+            decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", index), ("$session", Stamp(trade.Session)), ("$ticker", trade.Ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+            var cost = TradeCost.InPercent(value, bars[0].Raw > 0m ? bars[0].Raw : bars[0].Close, sale.Raw > 0m ? sale.Raw : sale.Close) / 100.0 / ((entry - stop) / entry);
 
             await ExecuteAsync(connection, transaction, EndTrade,
             [
@@ -772,6 +807,21 @@ public sealed class IndexFamilies : IComponent
     {
         await using var command = connection.CreateCommand();
 
+        command.CommandText = sql;
+
+        foreach (var (name, value) in parameters)
+        {
+            command.Parameters.AddWithValue(name, value);
+        }
+
+        return await command.ExecuteScalarAsync(cancellation);
+    }
+
+    static async Task<object?> ScalarAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
         command.CommandText = sql;
 
         foreach (var (name, value) in parameters)
@@ -834,14 +884,17 @@ public sealed record IndexFollower(string Ticker, string? Industry, string? Sect
 // sweep's own code, kept by the index families in their step: on the first night of a month the book reads, each
 // sector's ten largest members of the index by value as it stood, its return its members' mean and a leader's beta at
 // least one against the index's fund, the two leading their sector above nothing bought among the members clearing the
-// floors and the profit gate, and a holding the rule would no longer buy sold at the close; every night each holding and
-// its size cut carried by the night's closes, and a holding whose stock left the index sold at its last close as a
-// member. A holding's result is its growth less one, beside its size cut's, and its cost the published table's round
-// trip. A rebalance waits for a night the index's members hold the sessions its readings need, and one reading no lead,
-// or no beta where it reads one, waits the same way, selling and buying nothing.
+// floors and the profit gate, each bought with its lead, and a holding the rule would no longer buy sold at the close;
+// every night each holding and its size cut carried by the night's closes, and a holding whose stock left the index sold
+// at its last close as a member, read from the bar table whatever the night's members. A holding's result is its growth
+// less one, beside its size cut's, and its cost the published table's round trip at its company's value on its buy. A
+// rebalance waits for a night the index's members hold the sessions its readings need, and one reading no lead, or no
+// beta where it reads one, waits the same way, selling and buying nothing.
 // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
+// see: A heavyweight leaving the index is sold at its last session's close as a member
+// see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
 public static class IndexHeavyweights
 {
     // Design (a) within an index at the S&P 500's frozen settings, a sector's return its members' mean.
@@ -888,8 +941,19 @@ public static class IndexHeavyweights
     ";
 
     const string Buy = @"
-        INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through)
-        VALUES ($index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night);
+        INSERT INTO index_heavyweight_holding (index_code, ticker, entered_on, sector, entry_close, growth, cut, through, lead)
+        VALUES ($index, $ticker, $night, $sector, $entry_close, 1.0, $cut, $night, $lead);
+    ";
+
+    // A stock's close on a session as the bar table holds it, whatever the night's members.
+    const string CloseOnSession = "SELECT close FROM bar WHERE ticker = $ticker AND session_date = $session;";
+
+    // Every holding of the index books sold on leaving the index.
+    const string Leavers = "SELECT index_code, ticker, entered_on, ended_on, entry_close, exit_close FROM index_heavyweight_holding WHERE reason = $left ORDER BY index_code, ended_on, ticker;";
+
+    const string SoldAgain = @"
+        UPDATE index_heavyweight_holding SET exit_close = $exit_close, cost = $cost
+        WHERE index_code = $index AND ticker = $ticker AND entered_on = $entered_on;
     ";
 
     // One stock of a size cut, its growth carried as a holding's is and the session it was carried to.
@@ -913,7 +977,7 @@ public static class IndexHeavyweights
         decimal? CloseOn(string ticker, DateOnly session) => bars.TryGetValue(ticker, out var held) && held.TryGetValue(session, out var bar) ? bar.Close : null;
 
         // Each open holding and its size cut carried by tonight's closes, and one whose stock left the index sold at the
-        // session it was last carried to, its last close as a member.
+        // session it was last carried to, its last close as a member, which the night's members hold no bar of.
         var open = new List<(string Ticker, DateOnly Entered, string Sector, decimal Entry, double Growth, List<CutMember> Cut, DateOnly Through)>();
 
         await foreach (var row in RowsAsync(connection, transaction, OpenHoldings, [("$index", index), ("$night", Stamp(night))], cancellation))
@@ -927,7 +991,9 @@ public static class IndexHeavyweights
         {
             if (!members.Contains(holding.Ticker))
             {
-                await EndAsync(connection, transaction, index, holding.Ticker, holding.Entered, holding.Through, CloseOn(holding.Ticker, holding.Through) ?? holding.Entry, LeftTheIndex, holding.Growth, holding.Cut, holding.Entry, cancellation);
+                var member = await ScalarAsync(connection, transaction, CloseOnSession, [("$ticker", holding.Ticker), ("$session", Stamp(holding.Through))], cancellation) is string close ? Money.FromStorage(close) : holding.Entry;
+
+                await EndAsync(connection, transaction, index, holding.Ticker, holding.Entered, holding.Through, member, LeftTheIndex, holding.Growth, holding.Cut, holding.Entry, cancellation);
                 ended++;
 
                 continue;
@@ -983,7 +1049,7 @@ public static class IndexHeavyweights
 
             var cut = leader.Cut.Select(ticker => new CutMember(ticker, 1.0, Stamp(night))).ToList();
 
-            await ExecuteAsync(connection, transaction, Buy, [("$index", index), ("$ticker", leader.Ticker), ("$night", Stamp(night)), ("$sector", leader.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut))], cancellation);
+            await ExecuteAsync(connection, transaction, Buy, [("$index", index), ("$ticker", leader.Ticker), ("$night", Stamp(night)), ("$sector", leader.Sector), ("$entry_close", Money.ToStorage(close)), ("$cut", JsonSerializer.Serialize(cut)), ("$lead", rebalance.Leads.TryGetValue(leader.Ticker, out var lead) ? lead : DBNull.Value)], cancellation);
             held[leader.Ticker] = (night, leader.Sector, close, 1.0, cut);
             entered++;
         }
@@ -992,11 +1058,12 @@ public static class IndexHeavyweights
     }
 
     // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
-    // was chosen from: the sweep's tape laid over the members' year with each company's value from the newest count filed
-    // before the session, a beta against the index's fund, and the members failing the floors or the quality read by none;
-    // or why the rebalance waits, the members holding no close for the night, fewer sessions to it than the setting's
-    // readings need, or reading no lead, or no beta where the setting reads one.
-    static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, int Read, string? Waits)> ReadAsync(
+    // was chosen from, and the lead of every company ranked in a sector's size cut: the sweep's tape laid over the
+    // members' year with each company's value from the newest count filed before the session, a beta against the index's
+    // fund, and the members failing the floors or the quality read by none; or why the rebalance waits, the members
+    // holding no close for the night, fewer sessions to it than the setting's readings need, or reading no lead, or no
+    // beta where the setting reads one.
+    static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, IReadOnlyDictionary<string, double> Leads, int Read, string? Waits)> ReadAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         string index,
@@ -1035,12 +1102,12 @@ public static class IndexHeavyweights
 
         if (at < 0)
         {
-            return ([], 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
         }
 
         if (HeavyweightRule.WaitsForSessions(setting.Reading, calendar.Length, night) is { } few)
         {
-            return ([], 0, few);
+            return ([], NoLeads, 0, few);
         }
 
         var inputs = new SweepHistoryInputs(night, calendar, names, 0, 0, 0, 0, string.Empty);
@@ -1054,7 +1121,7 @@ public static class IndexHeavyweights
 
         if (!sessions.TryGetValue(at, out var session))
         {
-            return ([], 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
+            return ([], NoLeads, 0, FormattableString.Invariant($"the rebalance waits, since no member of the index holds a close on {night:yyyy-MM-dd}"));
         }
 
         var kept = session.Members
@@ -1065,11 +1132,17 @@ public static class IndexHeavyweights
 
         if (HeavyweightRule.ReadNothing(sectors, setting.Reading, ticker => betas.GetValueOrDefault(ticker), night) is { } unread)
         {
-            return ([], kept.Length, unread);
+            return ([], NoLeads, kept.Length, unread);
         }
 
-        return ([.. sectors.SelectMany(sector => sector.Leaders.Select(leader => (leader, sector.Sector, (IReadOnlyList<string>)[.. sector.Largest.Select(ranked => ranked.Ticker)])))], kept.Length, null);
+        return (
+            [.. sectors.SelectMany(sector => sector.Leaders.Select(leader => (leader, sector.Sector, (IReadOnlyList<string>)[.. sector.Largest.Select(ranked => ranked.Ticker)])))],
+            sectors.SelectMany(sector => sector.Largest).Where(ranked => ranked.Lead is not null).ToDictionary(ranked => ranked.Ticker, ranked => ranked.Lead!.Value, StringComparer.Ordinal),
+            kept.Length,
+            null);
     }
+
+    static IReadOnlyDictionary<string, double> NoLeads { get; } = new Dictionary<string, double>(StringComparer.Ordinal);
 
     // The fund each index's beta is read against.
     static IReadOnlyDictionary<string, string> IndexSweepFunds { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -1148,8 +1221,9 @@ public static class IndexHeavyweights
 
     const string SpyCloses = "SELECT session_date, close FROM market_bar WHERE series = 'SPY' AND session_date IN ($from, $night);";
 
-    // A company's value on a holding's own night as the member readings read it, none where they read none.
-    const string RuleValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
+    // A company's value on a holding's own night as the member readings read it under the index, none where they read
+    // none.
+    const string ValueOn = "SELECT company_value FROM member_reading WHERE index_code = $index AND session_date = $session AND ticker = $ticker;";
 
     // The index's fund's close on the night, which a beta is read against.
     const string FundCloseOn = "SELECT close FROM market_bar WHERE series = $series AND session_date = $night;";
@@ -1469,7 +1543,7 @@ public static class IndexHeavyweights
     static async Task RuleEndAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string candidate, string ticker, DateOnly entered, DateOnly on, decimal exit, string reason, double growth, List<CutMember> cut, decimal entry, CancellationToken cancellation)
     {
         double? cutReturn = cut.Count > 0 ? cut.Average(one => one.Growth) - 1.0 : null;
-        decimal? value = await ScalarAsync(connection, transaction, RuleValueOn, [("$index", index), ("$session", Stamp(entered)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+        decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", index), ("$session", Stamp(entered)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
         var cost = TradeCost.InPercent(value, entry, exit) / 100.0;
 
         await ExecuteAsync(connection, transaction, RuleEnd,
@@ -1479,10 +1553,54 @@ public static class IndexHeavyweights
         ], cancellation);
     }
 
+    // Each holding of the index books sold on leaving the index whose close stands other than its stock's close on the
+    // session it was sold, as the bar table holds it, written again at that close with its round trip from it; each
+    // written named with the close it stood at and the close it was written at.
+    public static async Task<IReadOnlyList<string>> SellLeaversAgainAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellation)
+    {
+        var leavers = new List<(string Index, string Ticker, DateOnly Entered, DateOnly Sold, decimal Entry, decimal Exit)>();
+
+        await foreach (var row in RowsAsync(connection, transaction, Leavers, [("$left", LeftTheIndex)], cancellation))
+        {
+            leavers.Add((row.GetString(0), row.GetString(1), Date(row.GetString(2)), Date(row.GetString(3)), Money.FromStorage(row.GetString(4)), Money.FromStorage(row.GetString(5))));
+        }
+
+        var written = new List<string>();
+
+        foreach (var leaver in leavers)
+        {
+            if (await ScalarAsync(connection, transaction, CloseOnSession, [("$ticker", leaver.Ticker), ("$session", Stamp(leaver.Sold))], cancellation) is not string stored)
+            {
+                continue;
+            }
+
+            var close = Money.FromStorage(stored);
+
+            if (close == leaver.Exit)
+            {
+                continue;
+            }
+
+            decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", leaver.Index), ("$session", Stamp(leaver.Entered)), ("$ticker", leaver.Ticker)], cancellation) is string held ? Money.FromStorage(held) : null;
+
+            await ExecuteAsync(connection, transaction, SoldAgain,
+            [
+                ("$index", leaver.Index), ("$ticker", leaver.Ticker), ("$entered_on", Stamp(leaver.Entered)),
+                ("$exit_close", Money.ToStorage(close)), ("$cost", TradeCost.InPercent(value, leaver.Entry, close) / 100.0),
+            ], cancellation);
+            written.Add(FormattableString.Invariant($"{leaver.Index} {leaver.Ticker} bought {leaver.Entered:yyyy-MM-dd} and sold {leaver.Sold:yyyy-MM-dd}, at {Money.ToStorage(leaver.Exit)} and now at {Money.ToStorage(close)}"));
+        }
+
+        return written;
+    }
+
+    // A holding of the index's book sold, its round trip at the published table at its company's value on its buy.
+    // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
     static async Task EndAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string ticker, DateOnly entered, DateOnly on, decimal exit, string reason, double growth, List<CutMember> cut, decimal entry, CancellationToken cancellation)
     {
         double? cutReturn = cut.Count > 0 ? cut.Average(one => one.Growth) - 1.0 : null;
-        var cost = TradeCost.InPercent(null, entry, exit) / 100.0;
+        decimal? value = await ScalarAsync(connection, transaction, ValueOn, [("$index", index), ("$session", Stamp(entered)), ("$ticker", ticker)], cancellation) is string stored ? Money.FromStorage(stored) : null;
+        var cost = TradeCost.InPercent(value, entry, exit) / 100.0;
 
         await ExecuteAsync(connection, transaction, End,
         [

@@ -578,8 +578,9 @@ public sealed record IndexResultRow(string Ticker, string Family, bool Passed, i
 public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost);
 
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
-// size cut's and its cost, each a fraction of its buy and none while it is held on the night.
-public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost);
+// size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought
+// on, none where its book stored none.
+public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null);
 
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
@@ -3852,7 +3853,8 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN reason END,
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN ended_on <= $on THEN cost END
+               CASE WHEN ended_on <= $on THEN cost END,
+               lead
         FROM index_heavyweight_holding
         WHERE index_code = $index AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;
@@ -3871,7 +3873,8 @@ public sealed class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN reason END,
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN ended_on <= $on THEN cost END
+               CASE WHEN ended_on <= $on THEN cost END,
+               NULL
         FROM index_heavyweight_rule_holding
         WHERE candidate = $candidate AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;
@@ -3921,7 +3924,8 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                reader.IsDBNull(10) ? null : reader.GetDouble(10)));
+                reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                reader.IsDBNull(11) ? null : reader.GetDouble(11)));
         }
 
         return rows;

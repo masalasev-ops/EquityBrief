@@ -40116,3 +40116,68 @@ Found:      no defect in shipped code. One test defect, carried below: (i3) surv
 Carried:    (i3), the sweep's constructed history asserting `Lay` lays a session holding no candidates, owed by the
             next change to `HeavyweightSweep`; the operator's question of weekly heavyweights; and phases 15 and
             16, signed after this one, one session at a time.
+
+### 15.1 - correction: the S&P 400's and 600's books price each trade and holding at its company's value, store each holding's lead, and sell a holding leaving the index at its last close as a member   2026-10-08
+
+Corrects:   15.1's provisional books on the S&P 400 and 600. The swing trades' walk and the heavyweights' sale priced
+            every round trip with no company value, so every company in the $1 to 2 billion band, where the registered
+            rules' books and the S&P 500's recorder read the member readings' value on the buy; the rebalance read each
+            leader's lead and stored none, so the card's lead read "not read" on every night under a key naming a sector
+            fund, where design (a) on an index reads its sector's members' mean; and a holding whose stock left the index
+            found no bar among the night's members and was sold at its buy.
+Found:      by phase 15's first sign-off review over e79e38cb (F1 to F3). Reproduced read-only on the live store: APOG,
+            LW and PENG, open on the S&P 600's list and valued at $852 million, $6.6 billion and $3.9 billion on their
+            nights, would pay 0.025, 0.060 and 0.015 risks at their targets against 0.049, 0.033 and 0.008, worked by
+            hand; WABC, ATRC and INSP were listed before any member reading, so ATRC's 0.032 and INSP's 0.034 stand as
+            the corrected code writes them; none of the 15 holdings of 2026-10-02 stores a lead; FORM, which left the
+            S&P 600 on 2026-10-06, stored `exit_close` 149.15, its buy, where it closed 147.99 on 2026-10-05.
+Built:      the walk reads the company's value on the trade's night and the sale on the holding's buy, each under its
+            index, one valued at none in the $1 to 2 billion band, as the decision states (see: A 400 or 600 trade pays
+            the published effective spread for its size and price, and its pass tests read the edge after it). A
+            holding whose stock left the index is sold at its stock's close on the session it was last carried to, read
+            from the bar table as the S&P 500's book reads it (see: A heavyweight leaving the index is sold at its last
+            session's close as a member). Migration 72 adds `index_heavyweight_holding.lead`: each leader is bought with
+            its lead over its sector's members' mean, and the S&P 400's and 600's card draws it with the session bought
+            under a key naming that comparison, a holding with none saying it was bought before its book stored a lead;
+            the new decision "An S&P 400 or 600 heavyweights holding keeps the lead it was bought on" says why the lead at
+            the buy. `index-families --leavers` sells again by hand each holding the books sold on leaving the index at a
+            close other than its stock's on the session it was sold, its round trip from that close, naming each on its
+            row. SCHEMA's three cost and close rows, the lead and the paragraph; section 7's index families row and
+            section 15.7's paragraph; the runbook; the roster's `fixture-expectations` and `read-surface` clauses; prior
+            text in `CHANGELOG.md`.
+Tests:      three added, the trade's round trip at its value in the $2 to 5 billion band and at none, the card's lead and
+            its key, and the leavers sold again by hand; one rewritten, the book's night test, whose leaver now leaves a
+            session after its buy and whose holdings carry their leads through a later rebalance.
+Claims:     1032, unchanged.
+Pins:       read: `IndexRuleCandidate.IndexSourcesWith`, `IndexHeavyweightCandidate.OwnSources`,
+            `CandidateEvaluator.EvaluationSources`, `SwingFilter.CodeVersionSources` and
+            `RuleVersionScorer.CodeVersionSources`. `IndexFamilies.cs` moved the S&P 400's and 600's pullback, breakout,
+            drift and heavyweights, none registered, so nothing is registered again; the 15.5 correction below moves
+            them once more and states where they end. No S&P 500 pin moved.
+Remedy:     `tools/remedies/2026-10-08-15.1-the-leavers-sold-again.txt`: `migrate`, then `index-families --leavers`,
+            which writes FORM's row of the S&P 600's book again through the index families' own update, its
+            `exit_close` 149.15 to 147.99 and its cost 0.00129 to 0.001284984, a company valued at none on 2026-10-02 in
+            the $1 to 2 billion band. Its result, -0.0078, stands. No request and no model call.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made on the branch in this
+            checkout over the file's own text and restored from it, filtered to the four tests above and the S&P 400's
+            Tonight and freeze tests, the evaluators' pin test left out since any edit to `IndexFamilies.cs` reddens it.
+            M1 the trade's value back to none: predicted red in the trade test alone. M2 the trade's value read on its
+            sale's session: predicted red in the trade test alone. M3 the holding's value back to none: predicted red in
+            the book's night test alone. M4 the holding's value read on its sale's session: predicted red in the book's
+            night test alone. M5 a leaver sold at its buy again: predicted red in the book's night test alone. M6 the lead
+            left unstored: predicted red in the book's night test alone. M7 the card handed no lead: predicted red in the
+            card test alone. M8 the leavers sold again by hand with every sale's reason read: predicted red in the
+            leavers test alone. M9 the review's combined edit over the whole suite, both books' round trips doubled
+            and a leaver sold at twice its buy: predicted red in the trade test, the book's night test and the pin test.
+            Results: each red where predicted. Of the nine tests filtered, M1 and M2 red in the trade test alone, IA's
+            round trip read in the $1 to 2 billion band and at the $700 million its sale's session stored; M3 and M4 in
+            the book's night test alone, L2's round trip; M5 there alone, L2 sold at 170.3593, its buy, where it last
+            closed as a member at 169.0305; M6 there alone, no lead stored; M7 in the card test alone, M2's lead drawn as
+            none; M8 in the leavers test alone, NL's sale written again at 36. M9 red in the three predicted, 3 of 1995.
+            Each restored from the file's own text, the tree's diff the same after as before. M9's first run was cut by
+            the tool's time limit before its restore ran; its three edits were reverted by hand, the diff checked the
+            same as before the sweep, and the run made again.
+Verified:   with the 15.5 correction below, in one pull request: `tools/ci.ps1` green and `tools/verify-phase.ps1` green
+            over the tree carrying both entries, with the figures the entry below states.
+Carried:    the remedy, run after the merge and before the night, then the surface's Release build started again, since
+            Tonight on the S&P 400 and 600 reads the new column.

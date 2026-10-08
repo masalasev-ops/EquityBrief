@@ -992,7 +992,7 @@ Grain: one row per index, family, stock and session the index's list kept a trad
 | `cap` | INTEGER | the sessions it is given |
 | `ended_on` | TEXT | the session it ended on, null while it is open |
 | `result` | REAL | what it came to in multiples of its risk before its cost, null while open |
-| `cost` | REAL | its round trip in multiples of its risk at the published table, which the result after costs subtracts, null while open |
+| `cost` | REAL | its round trip in multiples of its risk at the published table, its company valued as the member readings read it under its index on its night and one they read none for in the $1 to 2 billion band, which the result after costs subtracts, null while open |
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until every such trade has had its cap |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
 
@@ -1014,15 +1014,16 @@ Grain: one row per index, stock and the session the index's sector heavyweights 
 | `cut` | TEXT | JSON: each of the size cut it was chosen from, its ticker, its growth carried the same way and the session it was carried to |
 | `through` | TEXT | the session its growth was last carried to |
 | `ended_on` | TEXT | the session it was sold on, null while held |
-| `exit_close` | TEXT | the close it was sold at, null while held |
+| `exit_close` | TEXT | the close it was sold at, for a holding whose stock left the index its stock's close on the session it was last carried to as the bar table holds it, null while held |
 | `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held |
 | `result` | REAL | its growth less one at the sale, null while held |
 | `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
-| `cost` | REAL | its round trip as a fraction of the buy at the published table, null while held |
+| `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it under its index on its buy and one they read none for in the $1 to 2 billion band, null while held |
+| `lead` | REAL | its return over the look-back less its sector's members' mean in the index at the rebalance that bought it, null on a holding bought before the book stored one |
 
 Primary key: `index_code`, `ticker`, `entered_on`.
 
-**The index families write it for each index's book and are its own deleter** (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). Each night they carry each holding and its size cut by tonight's closes, end a holding whose stock left the index and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, as the S&P 500's book is kept. A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. The rows are never deleted otherwise.
+**The index families write it for each index's book and are its own deleter** (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). Each night they carry each holding and its size cut by tonight's closes, end a holding whose stock left the index at its last close as a member and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, each with its lead, as the S&P 500's book is kept (see: A heavyweight leaving the index is sold at its last session's close as a member) (see: An S&P 400 or 600 heavyweights holding keeps the lead it was bought on). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. By hand, `index-families --leavers` writes again the close and the round trip of a holding sold on leaving the index at a close other than its stock's on the session it was sold. The rows are never deleted otherwise.
 
 ### index_rule_trade
 Grain: one row per registered rule of an S&P 400's or 600's swing family, stock and session the rule's own list kept a trade on.

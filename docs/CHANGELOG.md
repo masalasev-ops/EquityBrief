@@ -12067,3 +12067,39 @@ Now:
 > section 15.18: ... and the sector heavyweights held while they lead and sold at the close of a later month's rebalance where the rule would no longer buy them; ...
 > | Card hold with no cap | ... | a heavyweight is read again at the next month's rebalance, its first session or the first after it whose stored year holds the closes its readings need, so a month is the hold the card can speak to | ... |
 Why: the 14.6 correction moved the rebalance to the first session of each month whose stored year holds the closes its readings need, and these still said its first session; the second phase 14 sign-off review's J3.
+
+### 2026-10-08 - SCHEMA.md - an S&P 400 or 600 trade's and holding's round trip at its company's value, a holding's lead, and a leaver's close from the bar table
+Authorised by: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> `index_family_trade` | `cost` | REAL | its round trip in multiples of its risk at the published table, which the result after costs subtracts, null while open |
+> `index_heavyweight_holding` | `exit_close` | TEXT | the close it was sold at, null while held |
+> `index_heavyweight_holding` | `cost` | REAL | its round trip as a fraction of the buy at the published table, null while held |
+> (`index_heavyweight_holding` held no `lead` column)
+> ... end a holding whose stock left the index and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, as the S&P 500's book is kept. A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. The rows are never deleted otherwise.
+Now:
+> `index_family_trade` | `cost` | REAL | its round trip in multiples of its risk at the published table, its company valued as the member readings read it under its index on its night and one they read none for in the $1 to 2 billion band, which the result after costs subtracts, null while open |
+> `index_heavyweight_holding` | `exit_close` | TEXT | the close it was sold at, for a holding whose stock left the index its stock's close on the session it was last carried to as the bar table holds it, null while held |
+> `index_heavyweight_holding` | `cost` | REAL | its round trip as a fraction of the buy at the published table, its company valued as the member readings read it under its index on its buy and one they read none for in the $1 to 2 billion band, null while held |
+> `index_heavyweight_holding` | `lead` | REAL | its return over the look-back less its sector's members' mean in the index at the rebalance that bought it, null on a holding bought before the book stored one |
+> ... end a holding whose stock left the index at its last close as a member and one the rule's exit ends, and on the first night of a month buy each sector's leaders within the index the rule buys and do not hold, each with its lead, as the S&P 500's book is kept (see: ...) (see: ...). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again. By hand, `index-families --leavers` writes again the close and the round trip of a holding sold on leaving the index at a close other than its stock's on the session it was sold. The rows are never deleted otherwise.
+Why: the 15.1 correction, phase 15's first sign-off review's F1 to F3: the S&P 400's and 600's books priced every trade and holding in the $1 to 2 billion band, stored no lead, and sold a holding leaving the index at its buy.
+
+### 2026-10-08 - ARCHITECTURE.html - the index families price each trade and holding at its company's value, sell a leaver at its last close as a member, and draw each holding's lead
+Authorised by: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it; A heavyweight leaving the index is sold at its last session's close as a member; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> section 7, the index families' row: ... walks each index's open trades over the closes since and keeps tonight's listed rows as trades with their cost; and keeps each index's sector heavyweights on design (a) within the index, carried every night and rebalanced on the first night of a month; replaces its own night ...
+> section 15.7: ... and the heavyweights' card names its design and the sector comparison its index reads (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs). A note under a card ...
+Now:
+> section 7, the index families' row: ... keeps tonight's listed rows as trades with their cost, a trade's round trip read at its company's value on its night (see: ...); and keeps each index's sector heavyweights on design (a) within the index, carried every night, a holding whose stock left the index sold at its stock's close on the session it was last carried to whatever the night's members (see: ...), and rebalanced on the first night of a month, each holding bought with its lead and its round trip read at its company's value on its buy (see: ...); replaces its own night ...
+> section 15.7: ... (see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs), and draws each holding's lead over its sector's members' mean at the rebalance that bought it, a holding bought before its book stored one saying so (see: ...). A note under a card ...
+Why: the 15.1 correction, phase 15's first sign-off review's F1 to F3.
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations and read-surface state the S&P 400's and 600's books' round trips, leads and leavers
+Authorised by: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it; An S&P 400 or 600 heavyweights holding keeps the lead it was bought on
+Was:
+> ... its sector heavyweights rebalance on the first night of a month and carry and sell as the book keeps them, worked by hand over a constructed sector and its fund, and the S&P 500's list holds back ...
+> ... the drift's line of evidence and the heavyweights' design and sector comparison, an S&P 600 night not read says so, ...
+Now:
+> ... worked by hand over a constructed sector and its fund, each holding bought with its lead and keeping it through a later rebalance, and one whose stock left the index sold at its stock's close on the session it was last carried to and not at its buy, a trade's and a holding's round trip read at its company's value on its buy under its index, worked by hand in a band other than the $1 to 2 billion and in that band for a company valued at none, a holding sold on leaving at another close sold again by hand at its stock's close there and a second run writing nothing, and the S&P 500's list holds back ...
+> ... the heavyweights' design and sector comparison, each holding's lead over its sector's members' mean at the rebalance that bought it under a key naming that comparison and a holding bought before its book stored a lead saying so, an S&P 600 night not read says so, ...
+Why: the roster is where a check states what it asserts; the review's combined mutation x, both provisional costs doubled and a leaver sold at twice its buy, reddened the pin test alone.
