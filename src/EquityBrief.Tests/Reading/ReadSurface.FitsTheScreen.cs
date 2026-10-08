@@ -212,8 +212,9 @@ public partial class ReadSurface
         // how the system learns: the shape clock's bar, its five ranges and the edge clock's line, the fixture
         // registering no version to compare or put at a checkpoint, and 71 from the 12.6 correction that adds
         // the checklist's two items for a profile near its retirement date and a report costing more than $2,
-        // and 72 from the 9.2 correction of 2026-10-03 that adds its item for a drain that stopped on an error.
-        Assert.Equal(72, pictures);
+        // and 72 from the 9.2 correction of 2026-10-03 that adds its item for a drain that stopped on an error, and 74
+        // from the 13.10 correction of 2026-10-08 that adds the checklist's two items on the store's copies.
+        Assert.Equal(74, pictures);
 
         var page = screens[3].Item2;
 

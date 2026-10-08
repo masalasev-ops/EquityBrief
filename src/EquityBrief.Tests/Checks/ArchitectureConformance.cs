@@ -1509,7 +1509,8 @@ public partial class ArchitectureConformance
         // 469 at 15.1: the Run page's first region stating each index's members beside the time to the close.
         // 472 at 15.2's second pull request: the name page's member readings, the setup families' row stating each
         // rule's edge after costs and what waits on a count stating the members holding four dated rating counts.
-        Assert.Equal(472, inDocument.Length);
+        // 474 at the 13.10 correction of 2026-10-08: the checklist's two items on the store's copies.
+        Assert.Equal(474, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1607,7 +1608,8 @@ public partial class ArchitectureConformance
         // 443 at 15.1: the Run page's first region's part on each index's members.
         // 445 at 15.2's second pull request: the setup families' part on the edge after costs and what waits on a
         // count's part on the members holding four dated rating counts.
-        Assert.Equal(445, checkedElements);
+        // 447 at the 13.10 correction of 2026-10-08: the checklist's two parts on the store's copies.
+        Assert.Equal(447, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

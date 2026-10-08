@@ -40237,3 +40237,75 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1996 of 1996 tests ran.
 Carried:    the 15.1 correction's remedy, then the surface's Release build started again; phase 15's sign-off, by a
             session that committed none of this code.
+
+### 13.10 - correction: the store's copy writes a row as it starts and one as it ends, its ending row names the copies gone that no copy removed, and rotation is held to leave no fewer than the three kept   2026-10-08
+
+Corrects:   13.10's copy, which wrote its one row only as it ended, so a copy ended before it finished, by a hand or by
+            a machine stopping its process, left no row and nothing on any page, and a night whose copy never
+            happened read on the run page as one whose copy had not yet started, the row before it standing as the
+            newest; and which named the copies it kept and removed and nothing of a copy gone from the folder by
+            another hand, so the rows went on saying three were kept where the folder held one.
+Found:      on 2026-10-08, by the operator's reading of the copies' folder before phase 17 was planned, and ruled that
+            morning: "find why two copies were removed at about 04:35Z and why the run log says three were kept,
+            restore the copy count the backup ruling set, record a copy row for every night, and add a test that
+            rotation never leaves fewer copies than the setting". The folder held one copy, 20261007T051654Z, where
+            the newest row, written at 05:21 UTC on 2026-10-07, named three kept; the two others, 20261007T013548Z
+            and 20261006T042350Z, went at about 04:35 UTC with no row, the folder's own time, and sit in no recycle
+            bin. The night of 2026-10-07's copy, started at the night's end, was ended at 01:46 UTC on the operator's
+            word, started again by a one-off scheduled run at 04:00 UTC that the machine's antivirus stopped, and
+            again by hand at 05:18 UTC, waiting on the drain as this is written, and had written no row at any of the
+            three starts. Why the two went is not found in this repository: the copy removes only beyond the three it
+            keeps and names each removal, so one run of it removes one copy and never two; every removal the suite
+            makes is under a temporary root, held so by `store-never-deleted`; no script under `tools/` reaches the
+            folder; and the one agent that intervened between 04:00 and 05:18 UTC is the antivirus that stopped the
+            scheduled run, whose own history is the operator's to read. The rows said three were kept because they say
+            what the copy saw as it ended, and nothing recorded a removal made by another hand after it.
+Built:      the copy writes a row as it starts, before it waits for anything, under the stage `store-backup-started`,
+            stamped with its start at both ends and saying whether it waits for the labeller, and its ending row under
+            `store-backup` as before, so a start the run log holds with no end is a copy ended before it finished; the
+            run log holds one row a run and stage, which is why the start is a stage of its own. The ending row gains
+            `missing`, the copies the newest ending row before it kept that are gone from the folder when it begins,
+            counted among neither the kept nor the removed and named once. The run page's line beneath anything to
+            worry about names a copy started since the newest copy that has written no end, as waiting or copying
+            within a copy's longest wait and an hour of its start and as ended before it finished past them, and the
+            copies gone; and the checklist gains two items, the store copied after the night began, held by a copy made
+            since or a start since still waiting and failed by a start past its wait, an attempt that made none or none
+            started since, and every copy the last copy kept still in its folder, failed with each gone named, neither
+            read over a store holding no copy's row. The decision is superseded by one naming the two rows, its prior
+            entry under Previously decided, and its 17 citations moved to the new name; `SCHEMA.md`'s run log
+            paragraph, `RUNBOOK.md`'s copy paragraph, the roster's `fixture-expectations` and `read-surface` clauses
+            and the architecture's catalogue row, night step, worry row and two failure rows carry the change with
+            their prior text in `CHANGELOG.md`, and section 18 gains two rows, a store copy ended before it finished
+            and copies gone that no copy removed. The copy count is restored by the copies to come: the one waiting on
+            the drain as this is written, one started by hand after it, and tonight's.
+Tests:      1999, from 1996: three added. Rotation over none to five copies standing before one more is made leaves
+            never fewer than the three kept, or than stood plus the one made under three, the removed the oldest beyond
+            the three; a copy ended while it waited leaves its start with no end and the next copy names the copy
+            removed by hand as missing once and not again; and the surface reads a start with no end as waiting at a
+            copy's longest wait and an hour exactly and as ended a second past them, names the copies gone, and the
+            checklist's two items hold, fail and read nothing as worked by hand. Two tests changed to read the ending
+            row where a run now holds two.
+Claims:     1036, from 1032: the checklist's two items and section 18's two rows, each named beside phase 16's pair as
+            rows after its report, since the correction belongs to 13.10 and no phase's pair counts it.
+Pins:       none moved; the copy, its reader and its renderer are in no pin list. `store-never-deleted` holds the copy's
+            two removal sites as they stood.
+Mutated:    the rule, stated before the run: the property the operator asked for broken alone, then each of the two the
+            correction adds, made on the branch in this checkout, filtered to the copy's tests and reverted.
+            C1 rotation keeping two, `Skip(StoreCopies.Kept)` read as `Skip(StoreCopies.Kept - 1)`: predicted red at
+            the rotation test from three standing on, and at the four nights' test.
+            C2 the start's row left out: predicted red at the copy's first test, which counts two rows, and at the
+            ended copy's test, which finds its start.
+            C3 the surface reading a start as ended at its wait and hour exactly, `>` read as `>=`: predicted red at the
+            surface's hand-worked test alone, the waiting start read as gone.
+            Results: C1 red at the rotation test, three standing leaving two, at the four nights' test, two kept of
+            four, and at the other store's copies' test as well, two kept where three were predicted there too; C2 red
+            at the two tests predicted, the first counting one row of two and the ended copy's finding no start; C3
+            red at the surface's test alone, the start at its wait and hour read as gone. Each reverted, and the nine
+            copy tests green over the reverted tree, filtered to them.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN, the pull request's last commit.
+            `tools/ci.ps1`: FILLED FROM THE RUN.
+            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Carried:    the folder back at three copies by tonight's copy; why the two went, which the machine's antivirus history
+            may say and this repository cannot; and the night of 2026-10-07's copy, whose start wrote no row since it
+            ran the code before this, which the run page will draw from its ending row alone.

@@ -2611,11 +2611,12 @@ public sealed class ReadApi : IComponent
     ";
 
     // The store's copies, each attempt's own row, newest first.
+    // The copies' own rows, each copy's start and its end, newest first.
     const string StoreBackupRows = @"
         SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
-        WHERE stage = $stage
+        WHERE stage IN ($stage, $start)
         ORDER BY rowid DESC
-        LIMIT 20;
+        LIMIT 40;
     ";
 
     // The news labeller's own row of each of its runs, newest first; the night each labelled is in its detail.
@@ -2710,7 +2711,7 @@ public sealed class ReadApi : IComponent
     }
 
     // The store's copies as their own rows record them, newest first.
-    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+    // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     public async Task<IReadOnlyList<StoreBackupRow>> StoreBackupsAsync()
     {
         await using var connection = Open();
@@ -2718,6 +2719,7 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = StoreBackupRows;
         command.Parameters.AddWithValue("$stage", EquityBrief.Core.Configuration.StoreCopies.Stage);
+        command.Parameters.AddWithValue("$start", EquityBrief.Core.Configuration.StoreCopies.StartStage);
 
         var rows = new List<StoreBackupRow>();
 

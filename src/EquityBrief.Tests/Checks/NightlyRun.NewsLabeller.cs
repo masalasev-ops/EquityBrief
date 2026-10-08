@@ -7,7 +7,7 @@ namespace EquityBrief.Tests.Checks;
 // through the launcher it was handed, with no model call on its own row, and starts none for a night run again
 // for an earlier session or a night handed nothing to start one with; and, from the operator's ruling of
 // 2026-10-02, the store's copy last, waiting for the labeller where the night started one.
-// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
 public partial class NightlyRun
 {
