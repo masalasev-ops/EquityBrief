@@ -180,5 +180,15 @@ public partial class FixtureExpectations
         // No industry leading buys nothing, and a window reaching before the history buys nothing.
         Assert.Empty(HeavyweightSix.ReadB(tape, first, baseB, (_, _) => [], IndustryOf, SectorOf, Clears).Buys);
         Assert.Empty(HeavyweightSix.ReadB(tape, HeavyweightSix.BaseWindow - 1, baseB, Leading, IndustryOf, SectorOf, Clears).Buys);
+
+        // A session no member holds a bar on is laid with no candidates, so a reading handed it finds it and reads
+        // nothing rather than finding it missing: the first session with both names' bars starting on the second.
+        var later = new SweepHistoryInputs(calendar[^1], calendar, [Name("A", A) with { Bars = Name("A", A).Bars[1..] }, Name("B", B) with { Bars = Name("B", B).Bars[1..] }], 0, 0, 0, 0, "constructed");
+        var (_, laidLater) = HeavyweightSweep.Lay(later, history, null, new HashSet<int> { 0, first }, first);
+
+        Assert.Equal([0, first], laidLater.Keys.Order());
+        Assert.Empty(laidLater[0].Members);
+        Assert.Equal(2, laidLater[first].Members.Count);
+        Assert.Empty(HeavyweightSweep.Read(laidLater[0], IndexHeavyweights.Provisional, names).Buys);
     }
 }

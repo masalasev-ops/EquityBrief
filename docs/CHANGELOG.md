@@ -12271,3 +12271,15 @@ Was:
 Now:
 > the other index's fund over SPY up over 126 and over 252 sessions, and an entry on the first session within 10 after the reaction
 Why: the pinned figures' restatement reader reads "or 252 sessions" as the setup cap's figure, so the row says the two windows as the readings row does.
+
+### 2026-10-08 - BUILD_PLAN.md - 17.1's facts pull narrowed to the revenue, the other five kinds moved to 17.3
+Authorised by: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing
+Was:
+> The second, the searches: the SEC company facts pulled for every filer the history holds, storing revenue, gross profit, operating income, operating cash flow, net income and interest expense as first filed with their accession numbers and filing dates, and the index funds pulled again; then the five searches as the plan states them,
+>
+> ... the roster's clauses, `SCHEMA.md` for the facts' and the holdings' columns, and the 15.3 correction's decision ...
+Now:
+> The second, the searches: the SEC's revenue facts pulled for every filer the history holds, each figure as first filed with its accession number and filing date, the other five kinds the ledger reads, gross profit, operating income, operating cash flow, net income and interest expense, pulled once into their own table at 17.3 with the night step that refreshes it, where their first reader is; the index funds pulled again; then the five searches as the plan states them,
+>
+> ... the roster's clauses, `SCHEMA.md` for the holdings' columns, and the 15.3 correction's decision ...
+Why: the drift's revenue dial is the one reader of the facts before the ledger, and the revenue pull of 14.2 already stores every revenue concept as first filed for every filer the companies pull names, 2,102 on 2026-10-08; a table of six kinds nothing reads for two checkpoints is built where its reader and its nightly refresh are, 17.3, whose text already names the SEC's facts as first filed in a table of their own.

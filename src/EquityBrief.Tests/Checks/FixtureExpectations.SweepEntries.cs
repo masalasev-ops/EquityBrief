@@ -24,6 +24,28 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TheLastTwoYearsEdgeIsEachYearsWeightedByItsTradesAndAYearWithNoneCountsInNeither()
+    {
+        // Eight years, the last two 10 trades at 0.1 and 20 at -0.02: 1.0 less 0.4 over 30, 0.02; the sixth year's 100
+        // trades at -5 are not read.
+        int[] trades = [5, 5, 5, 5, 5, 100, 10, 20];
+        double?[] edges = [1, 1, 1, 1, 1, -5, 0.1, -0.02];
+
+        Assert.Equal(0.02, IndexSweepRunner.LastTwoYears(trades, edges)!.Value, 12);
+
+        // The last year with no trades counts in neither the sum nor the count, so the edge is the seventh's alone, and
+        // both empty read none.
+        trades[7] = 0;
+        edges[7] = null;
+
+        Assert.Equal(0.1, IndexSweepRunner.LastTwoYears(trades, edges)!.Value, 12);
+
+        trades[6] = 0;
+
+        Assert.Null(IndexSweepRunner.LastTwoYears(trades, edges));
+    }
+
+    [Fact]
     public void ABreakoutsFirstPullbackToItsLevelWithinTenSessionsIsBoughtAtItsClose()
     {
         // Three members over the weekdays from 2018, a point either side of each close and rising a hundredth a session;
