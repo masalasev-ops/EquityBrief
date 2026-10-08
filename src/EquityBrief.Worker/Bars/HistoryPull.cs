@@ -374,19 +374,20 @@ public sealed class HistoryPull(
             return await MarketAsync(from, market, clock, databaseFile, output, error);
         }
 
-        // The codes a pull is narrowed to, none where it asks every name.
+        // The codes a pull is narrowed to, none where it asks every name; and the operator's word to go past the stop.
         IReadOnlyCollection<string>? only = VerbArguments.Value(args, "--names") is { } listed
             ? [.. listed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]
             : null;
+        var pastTheStop = VerbArguments.Has(args, ProviderStop.PastTheStop);
 
         if (VerbArguments.Has(args, "--companies"))
         {
-            return await CompaniesAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", companies, clock, databaseFile, output, error, only);
+            return await CompaniesAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", companies, clock, databaseFile, output, error, only, pastTheStop);
         }
 
         if (VerbArguments.Has(args, "--splits"))
         {
-            return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error, only);
+            return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error, only, pastTheStop);
         }
 
         NightFeeds resolved;
@@ -432,7 +433,7 @@ public sealed class HistoryPull(
 
             if (VerbArguments.Has(args, "--surprises"))
             {
-                var surprises = await puller.PullSurprisesAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only);
+                var surprises = await puller.PullSurprisesAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only, pastTheStop: pastTheStop);
 
                 output.WriteLine("pull " + runId);
                 output.WriteLine(Detail(surprises));
@@ -440,7 +441,7 @@ public sealed class HistoryPull(
                 return 0;
             }
 
-            var outcome = await puller.PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only);
+            var outcome = await puller.PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only, pastTheStop: pastTheStop);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(outcome));
@@ -456,14 +457,16 @@ public sealed class HistoryPull(
     }
 
     // Pulls every name the index held from a date to tonight, and the earnings prints over the same
-    // span. A date on or after tonight's session asks for nothing and is refused before any request.
+    // span. A date on or after tonight's session asks for nothing and is refused before any request, as is a
+    // statement of calls past the stop unless the operator said to go past it.
     public async Task<HistoryPullOutcome> PullAsync(
         string indexCode,
         DateOnly from,
         string runId,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -480,6 +483,15 @@ public sealed class HistoryPull(
 
         var names = await NamesAsync(connection, indexCode, from, through, cancellation, only);
         var requestsBefore = bars.Requests + earnings.Requests;
+        var months = MonthsOf(from, through);
+
+        // Stated before the first request: a year a name at the historical weight and the earnings calendar's months.
+        // see: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+        var stated = (names.Count * ProviderWeights.HistoricalPerTicker) + (months.Count * ProviderWeights.EarningsCalendar);
+        var what = FormattableString.Invariant($"{names.Count:N0} name(s) and {ProviderStop.Months(months.Count)} month(s) of the earnings calendar");
+
+        progress?.Invoke(ProviderStop.Stated(what, stated));
+        ProviderStop.Hold(what, stated, pastTheStop);
 
         // Fetched before anything is stored, so the calendar the holes are read against is the whole
         // set rather than whichever names happened to arrive first.
@@ -526,7 +538,6 @@ public sealed class HistoryPull(
         var held = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var prints = new Dictionary<(string Ticker, DateOnly Date), CalendarEvent>();
         var monthsUnanswered = new List<string>();
-        var months = MonthsOf(from, through);
 
         foreach (var (first, last) in months)
         {
@@ -647,7 +658,8 @@ public sealed class HistoryPull(
         string runId,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -669,6 +681,14 @@ public sealed class HistoryPull(
         var monthsUnanswered = new List<string>();
         var months = MonthsOf(from, through);
         var asked = 0;
+
+        // Stated before the first request: the earnings calendar's months, whatever the names, since the calendar is
+        // asked a month at a time and filtered to them.
+        // see: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+        var what = FormattableString.Invariant($"{ProviderStop.Months(months.Count)} month(s) of the earnings calendar for {names.Count:N0} name(s)");
+
+        progress?.Invoke(ProviderStop.Stated(what, months.Count * ProviderWeights.EarningsCalendar));
+        ProviderStop.Hold(what, months.Count * ProviderWeights.EarningsCalendar, pastTheStop);
 
         foreach (var (first, last) in months)
         {
@@ -918,7 +938,8 @@ public sealed class HistoryPull(
         string databaseFile,
         TextWriter output,
         TextWriter error,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         if (Resolved(companies, "company", error) is not { } feed)
         {
@@ -929,7 +950,7 @@ public sealed class HistoryPull(
 
         try
         {
-            var pulled = await PullCompaniesAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only);
+            var pulled = await PullCompaniesAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only, pastTheStop: pastTheStop);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(pulled));
@@ -953,7 +974,8 @@ public sealed class HistoryPull(
         string databaseFile,
         TextWriter output,
         TextWriter error,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         if (Resolved(splits, "splits", error) is not { } feed)
         {
@@ -964,7 +986,7 @@ public sealed class HistoryPull(
 
         try
         {
-            var pulled = await PullSplitsAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only);
+            var pulled = await PullSplitsAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only, pastTheStop: pastTheStop);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(pulled));
@@ -1880,7 +1902,8 @@ public sealed class HistoryPull(
         string runId,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -1894,6 +1917,13 @@ public sealed class HistoryPull(
         var requestsBefore = companies.Requests;
         var answered = new List<CompanyAnswer>();
         var unanswered = new List<string>();
+
+        // Stated before the first request: one fundamentals request a name, at that endpoint's weight.
+        // see: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+        var what = FormattableString.Invariant($"{names.Count:N0} name(s) at the fundamentals weight of {ProviderWeights.Fundamentals}");
+
+        progress?.Invoke(ProviderStop.Stated(what, names.Count * ProviderWeights.Fundamentals));
+        ProviderStop.Hold(what, names.Count * ProviderWeights.Fundamentals, pastTheStop);
 
         foreach (var ticker in names)
         {
@@ -2085,7 +2115,8 @@ public sealed class HistoryPull(
         string runId,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        IReadOnlyCollection<string>? only = null)
+        IReadOnlyCollection<string>? only = null,
+        bool pastTheStop = false)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -2099,6 +2130,13 @@ public sealed class HistoryPull(
         var requestsBefore = splits.Requests;
         var answered = new List<(string Ticker, IReadOnlyList<SplitAnswer> Splits)>();
         var unanswered = new List<string>();
+
+        // Stated before the first request: one request a name at the historical weight.
+        // see: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+        var what = FormattableString.Invariant($"{names.Count:N0} name(s), one request each");
+
+        progress?.Invoke(ProviderStop.Stated(what, names.Count * ProviderWeights.HistoricalPerTicker));
+        ProviderStop.Hold(what, names.Count * ProviderWeights.HistoricalPerTicker, pastTheStop);
 
         foreach (var ticker in names)
         {

@@ -122,6 +122,64 @@ public class HistoryPullTests
     ];
 
     [Fact]
+    public async Task APullStatesItsWeightedCallsBeforeItsFirstRequestAndOnePastTheStopIsRefusedWithNothingAsked()
+    {
+        // The stop is a quarter of the day's allowance, 25,000 weighted calls; a statement at it goes and one past it is
+        // refused, in words naming the count, the stop and the word that goes past it.
+        Assert.Equal(25_000, ProviderStop.WeightedCalls);
+        Assert.Equal(ProviderWeights.DailyAllowance / 4, ProviderStop.WeightedCalls);
+        ProviderStop.Hold("constructed", 25_000, false);
+
+        var refusal = Assert.Throws<ArgumentException>(() => ProviderStop.Hold("constructed", 25_001, false));
+
+        Assert.Contains("25,001 weighted calls", refusal.Message, StringComparison.Ordinal);
+        Assert.Contains("past the stop of 25,000", refusal.Message, StringComparison.Ordinal);
+        Assert.Contains("'--past-the-stop'", refusal.Message, StringComparison.Ordinal);
+        ProviderStop.Hold("constructed", 25_001, true);
+
+        // The bars pull states its names at the historical weight and the calendar's months before its first request:
+        // three names and three months, 6 weighted calls, the statement the first line the pull prints.
+        using var store = Seeded();
+        var bars = new ConstructedBars(new Dictionary<string, IReadOnlyList<DateOnly>> { ["AAA"] = Sessions(From, Tonight), ["BBB"] = Sessions(From, Tonight), ["CCC"] = Sessions(From, Tonight) });
+        var lines = new List<string>();
+
+        await new HistoryPull(bars, new ConstructedPrints(Prints), Clock(), store.DatabaseFile).PullAsync(Index, From, "history-pull-stated", lines.Add);
+
+        Assert.Equal(ProviderStop.Stated("3 name(s) and 3 month(s) of the earnings calendar", 6), lines[0]);
+        Assert.StartsWith("asks about 6 weighted call(s) of the provider's 100,000 a day", lines[0], StringComparison.Ordinal);
+
+        // The surprises pull states the calendar's months whatever the names, and the companies pull its names at the
+        // fundamentals weight; a companies pull of 2,501 names states 25,010 and is refused before any request.
+        var surpriseLines = new List<string>();
+
+        await new HistoryPull(bars, new ConstructedPrints(Prints), Clock(), store.DatabaseFile).PullSurprisesAsync(Index, From, "history-pull-surprises", surpriseLines.Add);
+
+        Assert.Equal(ProviderStop.Stated("3 month(s) of the earnings calendar for 3 name(s)", 3), surpriseLines[0]);
+
+        using var wide = Seeded([.. Enumerable.Range(0, 2_498).Select(at => "N" + at.ToString("0000", CultureInfo.InvariantCulture))]);
+        var companies = new CountingCompanies();
+        var companyLines = new List<string>();
+        var held = await Assert.ThrowsAsync<ArgumentException>(() => HistoryPull.PullCompaniesAsync(companies, Clock(), wide.DatabaseFile, Index, From, "history-pull-companies", companyLines.Add));
+
+        Assert.Equal(ProviderStop.Stated("2,501 name(s) at the fundamentals weight of 10", 25_010), companyLines[0]);
+        Assert.Contains("25,010 weighted calls", held.Message, StringComparison.Ordinal);
+        Assert.Equal(0, companies.Requests);
+        Assert.Empty(Rows(wide, "SELECT * FROM pulled_company;"));
+    }
+
+    sealed class CountingCompanies : ICompanyFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<CompanyAnswer> CompanyAsync(string ticker, CancellationToken cancellationToken = default)
+        {
+            Requests++;
+
+            throw new InvalidOperationException("No company is asked for past the stop.");
+        }
+    }
+
+    [Fact]
     public async Task APullAsksEveryNameTheIndexHeldOverTheSpanOnceAndStoresEachRowMarkedByItsRunAndNothingElse()
     {
         using var store = Seeded();

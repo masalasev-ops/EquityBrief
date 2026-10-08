@@ -12239,3 +12239,27 @@ Was:
 Now:
 > where the depth runs into a grid end on a dial of three or more values that dial is looked beyond by up to 2 values, the refinement run again with them open, and a dial that cannot be extended or whose end still bounds the depth named as a limit, an index sweep's search looking beyond such an end a second time, the depth's high end reaching 16 typical moves and the freshness 21 sessions at most, and each setting its report reads stating its depth and the dial binding it;
 Why: the operator's brief of 2026-10-08 asked the S&P 600 pullback's depth high and freshness extended past their grid ends and its depth measured again (see: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth).
+
+### 2026-10-08 - ARCHITECTURE.html - the five searches' paragraph, five limits rows and the pull's stop row added to sections 13, 17 and 18
+Authorised by: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
+Was:
+> (no prior text: the paragraph after the one on a sweep run's answer, the limits rows after the heavyweights' sweep grid and after the weighted-call budget, and the failure row after the holding matched to no code are new)
+Now:
+> a paragraph on the five searches of 17.1, each read-only and after costs and nothing frozen; limits rows "Heavyweights' six settings a design", "Index second stage's added levels", "Mid cap drift's last two years", "Mid cap pullback's half steps" and "Provider stop of a pull"; and the failure row "A pull whose stated calls pass the provider stop"
+Why: 17.1's second pull request builds the searches the operator's brief of 2026-10-08 named, each needing the limit it reads stated where every other limit is (see: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage) (see: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing) (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits) (see: The S&P 400's and 600's pullbacks are searched together for a shared setting and confirmed on each alone) (see: Every pull states its provider calls before it runs and stops for the operator at the day's cap).
+
+### 2026-10-08 - RUNBOOK.md - the four search families of 17.1 and the pulls' provider statement
+Authorised by: Every pull states its provider calls before it runs and stops for the operator at the day's cap
+Was:
+> Before any pull, the provider's own count of the day's calls is read off its user endpoint, and a pull is run on a day's allowance no night is drawing on.
+Now:
+> the sentence followed by the pulls' statement as their first line, the stop at 25,000 and `--past-the-stop`; and, after the index sweep's paragraph on a run where none passes, a paragraph on `heavyweights-six`, `heavyweights-b-six`, `pullback-neighbours` and `pullback-joint` with the breakout's, the drift's and the pullback search's additions, and their four command lines
+Why: the runbook is where every verb is run from, and 17.1 adds four families to one and a word to another (see: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run).
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations states the searches' tests and the pull's statement
+Authorised by: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
+Was:
+> ... and a dial's level is kept on a setting where it is higher in six of the eight years with two of the last three and survives on six of the ten; and the answer a run states is recorded by the command run after it, ...
+Now:
+> the clause followed by "and from 17.1 the sector heavyweights' six settings a design are the ones the ruling registered, ... and a companies pull past the stop refused with no request and no row;" before "and the answer a run states"
+Why: the roster is where a check states what it asserts, and 17.1 adds seven tests to the check (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits).
