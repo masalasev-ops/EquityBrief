@@ -62,7 +62,7 @@ internal static class ComponentVocabulary
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
-        ("Bars", [DataStore.Bar, DataStore.MarketBar]),
+        ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
@@ -163,6 +163,7 @@ internal static class ComponentVocabulary
     static readonly Dictionary<string, DataStore> Aliases = new(StringComparer.OrdinalIgnoreCase)
     {
         ["bar store"] = DataStore.Bar,
+        ["kept bars"] = DataStore.KeptBar,
         ["run log"] = DataStore.RunLog,
         ["news pulse"] = DataStore.NewsPulse,
         ["news articles"] = DataStore.NewsArticle,

@@ -34,6 +34,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+| `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
@@ -202,6 +203,24 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### kept_bar
+Grain: one row per ticker and session the fetcher dropped as it fell out of the year it keeps.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | date |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, the bar's adjusted set as it stood when dropped |
+| `volume` | INTEGER | |
+| `source` | TEXT | which endpoint delivered the bar |
+| `observed_at` | TEXT | UTC instant the bar was stored |
+| `raw_close` | TEXT | decimal in code, the provider's unadjusted close, null where the bar carried none |
+| `kept_on` | TEXT | the night whose drop kept it |
+
+Primary key: `ticker`, `session_date`.
+
+**The fetcher writes it in the transaction that drops the bars, and nothing updates or deletes it.** A session already kept is left as it was. No night reads it: it is a setup's path, replayed from the anchor the setup stores (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor).
 
 ### market_bar
 Grain: one row per series per session a night stored.

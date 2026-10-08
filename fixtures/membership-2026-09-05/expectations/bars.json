@@ -3,8 +3,10 @@
  "derivation": "derived",
  "derivedFrom": "the trading calendar, not a run. Sessions are the weekdays in the window less the nine United States market closures that fall inside it, each named below. This figure is computed from the rules rather than frozen from what the backfill happened to write, which is what makes it an expectation rather than a regression baseline: a backfill that stored the wrong window would still agree with a frozen count taken from itself.",
  "tables": [
-  "bar"
+  "bar",
+  "kept_bar"
  ],
+ "keptBars": "from 17.3 the sessions the fetcher drops as they fall out of the year land in kept_bar in the drop's own transaction, each row as it stood with the night that kept it; worked over constructed sessions before the boundary in the suite, since the figure is the bar itself",
  "window": {
   "from": "2025-09-05",
   "to": "2026-09-05",

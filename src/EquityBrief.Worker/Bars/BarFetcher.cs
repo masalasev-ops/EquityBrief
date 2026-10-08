@@ -56,6 +56,7 @@ public sealed class BarFetcher : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.KeptBar, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.BulkPrice]);
@@ -117,6 +118,18 @@ public sealed class BarFetcher : IComponent
     // thing the append-only rule is about.
     const string DropOlderThan = @"
         DELETE FROM bar WHERE session_date < $oldest;
+    ";
+
+    // The sessions the drop takes, copied whole into the kept bars first, in the drop's own transaction, stamped with
+    // the night that kept them; a session already kept is left as it was. No night reads them: they are a setup's
+    // path, replayed from the anchor the setup stores.
+    // see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+    const string KeepOlderThan = @"
+        INSERT INTO kept_bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close, kept_on)
+        SELECT ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close, $kept_on
+        FROM bar
+        WHERE session_date < $oldest
+        ON CONFLICT (ticker, session_date) DO NOTHING;
     ";
 
     const string BarCount = "SELECT COUNT(*) FROM bar;";
@@ -220,6 +233,15 @@ public sealed class BarFetcher : IComponent
         // property of what the provider happened to send: a payload for an older
         // session would have moved it backwards and kept sessions the night
         // should have dropped.
+        await using (var keep = connection.CreateCommand())
+        {
+            keep.CommandText = KeepOlderThan;
+            keep.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            keep.Parameters.AddWithValue("$kept_on", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await keep.ExecuteNonQueryAsync();
+        }
+
         await using (var drop = connection.CreateCommand())
         {
             drop.CommandText = DropOlderThan;

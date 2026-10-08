@@ -12366,3 +12366,19 @@ Now:
 > ### 17.5 The trade autopsy and the engines' hooks
 > The sector heavyweights' card on each index gains the selector the swing cards carry, a registered rule's own book drawn when chosen under the same band (owes: The sector heavyweights' card's selector). From the finished setups' paths replayed from bars,
 Why: 17.2 gave the three swing cards their selector and carried the heavyweights' card's, which is drawn from a book and not from a list, to the checkpoint that next changes the night's code and moves the families' pins; the carried obligation's row names it.
+
+### 2026-10-08 - ARCHITECTURE.html - the bar fetcher keeps the sessions it drops
+Authorised by: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+Was:
+> <td>bulk price feed, membership, bar store</td><td>bar store</td><td>stores the day's bars for current members, refuses to store a series with a gap (see: Bars are never interpolated), keeps one year and drops what is older</td></tr>
+Now:
+> <td>bulk price feed, membership, bar store</td><td>bar store, kept bars</td><td>stores the day's bars for current members, refuses to store a series with a gap (see: Bars are never interpolated), keeps one year and drops what is older, copying each dropped session into the kept bars in the drop's own transaction (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor)</td></tr>
+Why: 17.3's ledger replays a setup's path from bars, and from late 2027 no path older than a year could be rebuilt from the bar store alone.
+
+### 2026-10-08 - CLAUDE.md - the bar rule names the kept bars beside the pulled history
+Authorised by: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+Was:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+Now:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull). The sessions the fetcher drops are copied into a table of their own in the drop's own transaction, append-only and read by no night, from 17.3 (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor).
+Why: a second table holding bars that is not the bar store is the shape the append-only rule and its check are about, so the rule names it where it names the pulled history.

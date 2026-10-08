@@ -696,7 +696,28 @@ public static class SchemaMigrations
         new Migration(73, "add index_heavyweight_rule_holding.lead", AddIndexRuleHoldingLead),
         new Migration(74, "add pulled_holding's shares and value", AddPulledHoldingValue),
         new Migration(75, "create rule_night, rule_pick and forming_row", CreateRuleCards),
+        new Migration(76, "create kept_bar", CreateKeptBar),
     ];
+
+    // The bars the fetcher drops as they fall out of the year it keeps, copied here in the transaction that drops them
+    // and never read by a night: a setup's path, replayed from them under any exit from the anchor the setup stores.
+    // see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+    const string CreateKeptBar = @"
+        CREATE TABLE kept_bar (
+            ticker        TEXT    NOT NULL,
+            session_date  TEXT    NOT NULL,
+            open          TEXT    NOT NULL,
+            high          TEXT    NOT NULL,
+            low           TEXT    NOT NULL,
+            close         TEXT    NOT NULL,
+            volume        INTEGER NOT NULL,
+            source        TEXT    NOT NULL,
+            observed_at   TEXT    NOT NULL,
+            raw_close     TEXT,
+            kept_on       TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
 
     // The cards' rule rows: one row a standing rule, index and night, live or variant, with whether the night
     // evaluated it, how many it listed with zeros, how many members passed each of its gates and every gate before,

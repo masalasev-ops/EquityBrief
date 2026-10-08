@@ -326,9 +326,9 @@ public partial class ArchitectureConformance
         // ended before it finished and on copies gone, and 1042 from 17.1, section 17's five rows on the searches and
         // the pulls' provider stop and section 18's row on a pull past it, and 1066 from 17.2, the rule cards' catalogue
         // and matrix rows, its three stores, section 17's two rows, section 18's two, the card's rule row as its fourteen
-        // parts and the checklist's item on a live rule past its mark.
+        // parts and the checklist's item on a live rule past its mark, and 1067 from 17.3's kept bars.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1066),
+            (789, 853, 6, 4, 855, 876, 1067),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

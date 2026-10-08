@@ -75,6 +75,7 @@ public enum Store
     RuleNight,
     RulePick,
     FormingRow,
+    KeptBar,
     TakenTrade,
     TakenRecord,
     DividendReading,

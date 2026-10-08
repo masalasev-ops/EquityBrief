@@ -24,6 +24,11 @@ $previousLocation = Get-Location
 # edit or a stray file, or is no repository. Read before the build and again
 # after the suite, because the suite runs what the build compiled.
 function CleanCommit {
+    # Continue inside this function alone: under a redirected host Windows PowerShell turns a native command's
+    # stderr into error records, and a git warning would otherwise end the reading under the Stop preference and
+    # leave the stamp empty over a clean tree. The exit code is what decides here.
+    $ErrorActionPreference = 'Continue'
+
     try {
         $changes = @(git status --porcelain)
 
