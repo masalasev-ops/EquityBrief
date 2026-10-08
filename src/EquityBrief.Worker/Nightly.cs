@@ -99,7 +99,8 @@ public static class Nightly
         bool askForTheFirstName = true,
         TryPlan? tries = null,
         Build? build = null,
-        CardSettings? cards = null)
+        CardSettings? cards = null,
+        FormingSettings? forming = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -127,7 +128,8 @@ public static class Nightly
             askForTheFirstName,
             tries,
             build: build,
-            cards: cards);
+            cards: cards,
+            forming: forming);
     }
 
     // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
@@ -149,7 +151,8 @@ public static class Nightly
         int tryNumber = 1,
         bool resume = false,
         Build? build = null,
-        CardSettings? cards = null)
+        CardSettings? cards = null,
+        FormingSettings? forming = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -443,6 +446,14 @@ public static class Nightly
                 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
                 var decisionCards = await new DecisionCards(clock, store.DatabaseFile, cards).RunAsync(runId, night.Token);
 
+                // Every standing rule's night on every index, live or variant: its listed count, its funnel, its empty
+                // stretch against its mark, the picks a variant keeps where no other table does, and the members forming a
+                // breakout under each breakout rule. A failure in an index's part is named on the stage's row, and the
+                // step goes on.
+                // see: A variant's picks are shown on its card when chosen and its results only under its tests
+                // see: The forming list advises and never lists a stock
+                var ruleCards = await new RuleCards(clock, store.DatabaseFile, forming).RunAsync(runId, register, nightStartedAt, night.Token);
+
                 // Each trade the operator took followed to the night under its rule's own management, and their record. A
                 // failure is named on its own row, and the step goes on.
                 // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
@@ -459,8 +470,10 @@ public static class Nightly
                     $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
                     $"; {decisionCards.Cards} decision card(s)" +
                     (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty) +
+                    $"; {ruleCards.Rules} rule row(s), {ruleCards.Picks} variant pick(s) and {ruleCards.Forming} forming" +
+                    (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, TakenFollower.Stage]),
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, RuleCards.Stage, TakenFollower.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.
