@@ -40229,6 +40229,11 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             sector key over a design (b) book. Each restored from the file's own text, the tree's diff the same after as
             before.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the one above:
-            FILLED FROM THE RUN.
+            770b5f78, the pull request's last commit, merged as 57b3c22b before the two finished, its tree the same.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1996 of 1996 tests ran with none failed, migrations 0
+            to 73 with none pending, schema version 73, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1996 of 1996 tests ran.
 Carried:    the 15.1 correction's remedy, then the surface's Release build started again; phase 15's sign-off, by a
             session that committed none of this code.
