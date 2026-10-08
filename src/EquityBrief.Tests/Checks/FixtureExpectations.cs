@@ -113,6 +113,8 @@ public partial class FixtureExpectations
             .. ContextClaims,
             // 14.5, the heavyweights' sweep: section 17's row and section 18's two.
             .. HeavyweightSweepClaims,
+            // 17.1, the five searches and the pulls' provider stop: section 17's five rows and section 18's one.
+            .. SearchClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

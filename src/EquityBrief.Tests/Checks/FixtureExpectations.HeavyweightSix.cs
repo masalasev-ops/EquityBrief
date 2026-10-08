@@ -1,5 +1,6 @@
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Sweep;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Sweep;
 
@@ -12,6 +13,17 @@ namespace EquityBrief.Tests.Checks;
 // see: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
 public partial class FixtureExpectations
 {
+    // The rows 17.1's searches add that this check reaches: section 17's five rows and section 18's one.
+    internal static readonly string[] SearchClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Heavyweights' six settings a design"),
+        CheckReach.Key(Scope.LimitsTable, "Index second stage's added levels"),
+        CheckReach.Key(Scope.LimitsTable, "Mid cap drift's last two years"),
+        CheckReach.Key(Scope.LimitsTable, "Mid cap pullback's half steps"),
+        CheckReach.Key(Scope.LimitsTable, "Provider stop of a pull"),
+        CheckReach.Key(Scope.FailureTable, "A pull whose stated calls pass the provider stop"),
+    ];
+
     [Fact]
     public void TheHeavyweightsSixAreTheRegisteredSettingsAndLuckPassesAboutOneOfThem()
     {

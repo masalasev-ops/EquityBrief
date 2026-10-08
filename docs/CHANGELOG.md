@@ -12263,3 +12263,11 @@ Was:
 Now:
 > the clause followed by "and from 17.1 the sector heavyweights' six settings a design are the ones the ruling registered, ... and a companies pull past the stop refused with no request and no row;" before "and the answer a run states"
 Why: the roster is where a check states what it asserts, and 17.1 adds seven tests to the check (see: The S&P 400 pullback with profit and cover is read at half steps about the setting the brief names and its trades under three exits).
+
+### 2026-10-08 - ARCHITECTURE.html - the added levels row reads the other fund's two windows with "and over"
+Authorised by: The S&P 400's and 600's breakouts and drift read an entry on the first pullback within ten sessions as a level of their second stage
+Was:
+> the other index's fund over SPY up over 126 or 252 sessions, and an entry on the first session within 10 after the reaction
+Now:
+> the other index's fund over SPY up over 126 and over 252 sessions, and an entry on the first session within 10 after the reaction
+Why: the pinned figures' restatement reader reads "or 252 sessions" as the setup cap's figure, so the row says the two windows as the readings row does.
