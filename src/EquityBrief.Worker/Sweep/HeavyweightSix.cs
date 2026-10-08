@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Worker.Indices;
 
 namespace EquityBrief.Worker.Sweep;
@@ -17,10 +18,11 @@ public sealed record HeavyweightSixSetting(int Place, string Words, bool TwelveO
 // see: The S&P 400's and 600's sector heavyweights are searched over six settings a design registered before the run
 public static class HeavyweightSix
 {
-    // Twelve months' strength skipping the latest: the return from this many sessions back to the newer one.
-    public const int TwelveMonths = 252;
+    // Twelve months' strength skipping the latest: the return from this many sessions back to the newer one, the
+    // sweep's own twelve months less one.
+    public const int TwelveMonths = SweepAxes.TwelveMonthSessions;
 
-    public const int SkippedMonth = 21;
+    public const int SkippedMonth = SweepAxes.LatestMonthSessions;
 
     // Design (b)'s base: the window an industry's lead and a member's own return are read over, and the industries kept.
     public const int BaseWindow = 63;

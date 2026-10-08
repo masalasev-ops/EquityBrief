@@ -210,7 +210,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         // strongest settings of the grid, the highest edges among those holding the trade floor and the rest after by
         // their trades, and then the levels that survive crossed.
         var industries = await history.IndustriesAsync(cancellation);
-        var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], "HYG"], through, cancellation);
+        var otherFund = IndexFunds.Single(pair => pair.Key != indexCode).Value;
+        var market = await history.SeriesOfAsync(["SPY", IndexFunds[indexCode], otherFund, "HYG"], through, cancellation);
 
         output.WriteLine("reading the S&P 500 as it stood for its industries, its breadth and its reports");
 
@@ -280,6 +281,41 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             return MemberReadings.ValueWeighted(peers) is > 0;
         }
 
+        // The level a breakout broke: the highest high of the sessions before its listing that the setting reads, read
+        // once a name and a window.
+        var highs = new System.Collections.Concurrent.ConcurrentDictionary<(int Name, int Sessions), double[]>();
+
+        double HighOf(FamilyListing listing, int[] setting)
+        {
+            var back = BreakoutSweep.Grid.Value(setting, 0) >= BreakoutRule.ProvisionalHighSessions ? BreakoutRule.ProvisionalHighSessions : BreakoutSweep.ShortHighSessions;
+
+            return highs.GetOrAdd((listing.Name, back), key => BreakoutSweep.HighsBefore(series[key.Name].Bars, key.Sessions))[listing.Bar];
+        }
+
+        // A drift print's revenue growth as first filed, its quarter's revenue against the same quarter a year before,
+        // known from the report whatever day the filing came; none where its filer stated none the reading finds.
+        // see: A drift print's revenue growth is its quarter's revenue as first filed against the same quarter a year before
+        var revenue = isDrift ? await history.RevenueAsync(through, cancellation) : new Dictionary<string, IReadOnlyList<FiledRevenue>>(StringComparer.Ordinal);
+        var quartersOf = new System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<QuarterRevenue>>(StringComparer.Ordinal);
+
+        PrintRevenue? RevenueOf(FamilyListing listing)
+        {
+            var one = series[listing.Name];
+            var newest = one.NewestSurprise[listing.Bar];
+
+            return newest >= 0 && revenue.TryGetValue(one.Name.Ticker, out var facts)
+                ? RevenueGrowth.Of(one.Name.Surprises[newest].EventDate, quartersOf.GetOrAdd(one.Name.Ticker, _ => FirstFiledRevenue.Quarters(facts)))
+                : null;
+        }
+
+        bool? RevenueGrew(FamilyListing listing) => RevenueOf(listing) is { } read ? read.Growth > 0 : null;
+
+        var otherSwitches = new SweepSwitches(calendar, market, otherFund);
+
+        // The sessions an entry moved to a later one reads the market check on: the index's own breadth, or the S&P 500's
+        // where a level crossed beside it reads that in place of the index's.
+        var entrySessions = sessions;
+
         var levels = new List<DialLevel<FamilyListing>>
         {
             new("dollar volume floor", "half the provisional", Floors: DollarVolumeHalf),
@@ -306,18 +342,33 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             levels.Add(new("recency of the year's high", "within 63 sessions", Keep: listing => YearHigh(listing).Since <= RecentHighSessions));
             levels.Add(new("recency of the year's high", "older than 63 sessions", Keep: listing => YearHigh(listing).Since > RecentHighSessions));
             levels.Add(new("volume multiple", "3.0", Keep: listing => listing.Order >= HighestVolume));
+            levels.Add(new("the breakout day's close", "in the top quarter of its range", Keep: listing => SweepEntries.InTheTopQuarter(series[listing.Name].Bars[listing.Bar])));
+            levels.Add(new("entry", $"the first pullback to the level within {SweepEntries.PullbackSessions} sessions", Instead: (listing, setting) =>
+                SweepEntries.BreakoutPullback(listing, series[listing.Name], HighOf(listing, setting), BreakoutSweep.Grid.Value(setting, 3), entrySessions)));
         }
 
         if (isDrift)
         {
             levels.Add(new("window", $"{DriftWideWindow} sessions", Window: DriftWideWindow));
             levels.Add(new("peer version", "on", Keep: PeersBeat));
+            levels.Add(new("hold", "10 sessions", Hold: 10));
+            levels.Add(new("surprise", "at least 5 per cent", Keep: listing => listing.Order >= LeastSurprise));
+            levels.Add(new("surprise", "at least 10 per cent", Keep: listing => listing.Order >= LargeSurprise));
+            levels.Add(new("revenue", "grew on the quarter a year before, both as first filed", Keep: listing => RevenueGrew(listing) is true));
+            levels.Add(new("entry", $"the first pullback after the reaction within {SweepEntries.PullbackSessions} sessions", Instead: (listing, setting) =>
+                backOf.TryGetValue((listing.Name, listing.Bar), out var back)
+                    ? SweepEntries.DriftPullback(listing, series[listing.Name], listing.Bar - back, DriftSweep.Grid.Value(setting, 3), entrySessions)
+                    : []));
+            levels.Add(new("small against large", $"{otherFund} over SPY up over 126 sessions", Switch: true, Keep: listing => otherSwitches.SmallLeads(listing.Session, 126)));
+            levels.Add(new("small against large", $"{otherFund} over SPY up over 252 sessions", Switch: true, Keep: listing => otherSwitches.SmallLeads(listing.Session, 252)));
         }
 
         levels.AddRange(Switches<FamilyListing>(indexCode, switches, listing => listing.Session));
 
         // The trades a setting makes under a set of levels together, after costs: the provisional floors, gate, hold and
         // window where none of them sets its own, and the S&P 500's breadth closing the market check where one asks it.
+        // Every level's test reads the listing as the rule made it; an entry moved to a later session is bought there,
+        // read against the floors and the gate on that session, and held from it.
         IReadOnlyList<FamilyTrade> TradesUnder(int[] setting, IReadOnlyList<DialLevel<FamilyListing>> together)
         {
             var quality = together.Select(level => level.Quality).OfType<IndexQuality>().DefaultIfEmpty(IndexQuality.Profit).First();
@@ -325,12 +376,18 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             var hold = together.Select(level => level.Hold).OfType<int>().DefaultIfEmpty(0).First();
             var window = together.Select(level => level.Window).OfType<int>().DefaultIfEmpty(0).First();
             var instead = together.Any(level => level.LargeBreadth);
+            var entry = together.Select(level => level.Instead).OfType<Func<FamilyListing, int[], IEnumerable<FamilyListing>>>().FirstOrDefault();
             var listings = window > 0 && isDrift
                 ? DriftSweep.Listings(instead ? wideReadingsLarge : wideReadings, setting, floored ? stopFloor : 0, window)
                 : (instead ? largeAdapter : adapter).Listings(setting);
+
+            entrySessions = instead ? breadthInstead : sessions;
+
             var kept = listings
-                .Where(listing => Clears(indexCode, series[listing.Name], listing.Bar, income.GetValueOrDefault(tickers[listing.Name]) ?? [], quality, floors, companies.Companies.GetValueOrDefault(tickers[listing.Name]).Sector)
-                    && together.All(level => level.Keep is not { } keep || keep(listing)))
+                .Where(listing => together.All(level => level.Keep is not { } keep || keep(listing)))
+                .SelectMany(listing => entry is null ? new[] { listing } : entry(listing, setting))
+                .DistinctBy(listing => (listing.Name, listing.Session))
+                .Where(listing => Clears(indexCode, series[listing.Name], listing.Bar, income.GetValueOrDefault(tickers[listing.Name]) ?? [], quality, floors, companies.Companies.GetValueOrDefault(tickers[listing.Name]).Sector))
                 .Select(listing => hold > 0 ? listing with { Cap = hold } : listing)
                 .ToArray();
 
@@ -365,8 +422,22 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             [.. crossedLevels.Select(level => level.Dial + ", " + level.Name)],
             crossed,
             isDrift
-                ? "The holds are read at 21, 42 and 63 sessions beside the drift's own 60, its window at 20 sessions beside the grid's, and its peer reading over the 20 sessions before the reaction; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it."
-                : "The holds are read at 21 and 42 sessions beside the family's own 63, and the year's high over the 251 sessions before the listing; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it.");
+                ? "The holds are read at 10, 21, 42 and 63 sessions beside the drift's own 60, its window at 20 sessions beside the grid's, its peer reading over the 20 sessions before the reaction, its print's revenue growth as first filed and known from the report, and an entry on the first session within 10 after the reaction closing below the close before it, its stop still the reaction's low; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it."
+                : "The holds are read at 21 and 42 sessions beside the family's own 63, the year's high over the 251 sessions before the listing, the breakout day's close in the top quarter of its range, and an entry on the first session within 10 after the listing whose low reaches the level it broke and whose close stands above it, its stop and trail the setting's typical moves in that session's own; the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it.");
+        var lastTwo = isDrift && indexCode == DriftLastTwoYearsIndex;
+
+        bool Passes(FamilyFigures figures) => figures.MeetsFloors && (!lastTwo || LastTwoYears(figures.YearTrades, figures.YearEdge) > 0);
+
+        bool PassesCrossed(SweepMeasures measures) => MeetsTheFloors(measures) && (!lastTwo || LastTwoYears(measures.YearScored, measures.YearEdge) > 0);
+
+        var provisionalListings = adapter.Listings([.. adapter.Grid.Provisional]).ToArray();
+        var withRevenue = isDrift ? provisionalListings.Select(listing => (Listing: listing, Read: RevenueOf(listing))).Where(one => one.Read is not null).ToArray() : [];
+        var filedAfter = withRevenue.Count(one => one.Read!.Quarter.Filed > calendar[one.Listing.Session] || one.Read.YearBefore.Filed > calendar[one.Listing.Session]);
+        var extra = (isDrift
+                ? FormattableString.Invariant($"<p class=\"revenue\" data-listings=\"{provisionalListings.Length}\" data-read=\"{withRevenue.Length}\" data-filed-after=\"{filedAfter}\">Of the {provisionalListings.Length:N0} listings the provisional setting makes, {withRevenue.Length:N0} read their print's revenue growth, each quarter as first filed and known from the report; {filedAfter:N0} of them read a quarter first filed after the listing's session, which a reading by the filing date would read as none. The rest read none, their filer stating no revenue the reading finds.</p>")
+                : string.Empty)
+            + (lastTwo ? LastTwoYearsSection(read, [.. ten.Select(setting => adapter.Grid.Key(setting))], crossed) : string.Empty)
+            + Luck(read.Count, dialsRead.Count);
         var note = FormattableString.Invariant(
             $"{Membership(named, inputs)} A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings every setting made together cleared them, and {withIncome:N0} of the {inputs.Names.Count:N0} members hold quarters of income. Every edge on this page is after each trade's cost at the published table's value, and the table below sets the edge before costs and at double the cost beside it.");
         var run = new FamilySweepRun(family, $"{named} {words}", calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, floored ? note + FormattableString.Invariant($" The stop is held at least {stopFloor:0.##} typical moves under the buy where the reaction's low sits nearer, as the drift's stop floor variant holds it.") : note);
@@ -384,7 +455,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         var report = WriteRun(
             folder,
-            FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled) + stage,
+            FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled) + stage + extra,
             new
             {
                 index = indexCode,
@@ -400,8 +471,11 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
                 crossed = crossed.Select((measures, at) => new { setting = adapter.Grid.Key(ten[at]), after = measures }),
+                revenue = isDrift ? new { listings = provisionalListings.Length, read = withRevenue.Length, filedAfter } : null,
+                lastTwoYears = lastTwo ? new { settings = read.Count(one => Passes(one.Figures)), crossed = crossed.Count(PassesCrossed) } : null,
+                luck = new { settings = HeavyweightSweep.Luck(read.Count), levels = dialsRead.Count * SweepDials.LuckOfALevel },
             },
-            new SweepAnswer(indexCode, family, null, proposal.Proposed is not null || crossed.Any(MeetsTheFloors)));
+            new SweepAnswer(indexCode, family, null, lastTwo ? read.Any(one => Passes(one.Figures)) || crossed.Any(PassesCrossed) : proposal.Proposed is not null || crossed.Any(MeetsTheFloors)));
 
         output.WriteLine(proposal.Proposed is { } shownProposal
             ? FormattableString.Invariant($"proposed {shownProposal.Key}, edge after costs {FamilySweepReport.Number(shownProposal.Edge)} over {shownProposal.Trades} trades, before costs {FamilySweepReport.Number(before[shownProposal.Key].Edge)}, at double {FamilySweepReport.Number(doubled[shownProposal.Key].Edge)}")
@@ -869,6 +943,16 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
     public const int PeerSessions = MemberReadings.PeerSessions;
 
+    // The drift's least surprises a level reads, in per cent of the estimate.
+    public const double LeastSurprise = 5;
+
+    public const double LargeSurprise = 10;
+
+    // The index whose drift a setting passes only where its edge after costs over the last two years of the history
+    // together stands above nothing, beside the floors.
+    // see: The S&P 400's drift passes a search only where its edge over 2025 and 2026 together stands above nothing
+    public const string DriftLastTwoYearsIndex = "MID";
+
     // The breakout's levels: the sessions before a listing its year's high is read over, the nearness to it, the
     // sessions within which it is recent and the highest volume multiple.
     public const int BreakoutYearSessions = MemberReadings.YearSessions;
@@ -926,6 +1010,53 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         return page.Append("</tbody></table></div>").ToString();
     }
+
+    // The edge over the history's last two years together, each year's edge weighted by its trades, none where neither
+    // holds one.
+    public static double? LastTwoYears(int[] trades, double?[] edges)
+    {
+        var (sum, count) = (0.0, 0);
+
+        for (var year = SweepFigures.Years - 2; year < SweepFigures.Years; year++)
+        {
+            if (edges[year] is { } edge && trades[year] > 0)
+            {
+                sum += edge * trades[year];
+                count += trades[year];
+            }
+        }
+
+        return count > 0 ? sum / count : null;
+    }
+
+    // The drift's section on its last two years: every setting of the grid meeting the floors with its edge over 2025
+    // and 2026 together, the strongest first, and each crossing on the ten strongest, and how many meet both.
+    static string LastTwoYearsSection(IReadOnlyList<(int[] Setting, FamilyFigures Figures)> read, IReadOnlyList<string> settings, IReadOnlyList<SweepMeasures> crossed)
+    {
+        var meeting = read.Select(one => one.Figures).Where(figures => figures.MeetsFloors).OrderByDescending(figures => figures.Edge ?? double.MinValue).ThenBy(figures => figures.Key, StringComparer.Ordinal).ToArray();
+        var both = meeting.Count(figures => LastTwoYears(figures.YearTrades, figures.YearEdge) > 0);
+        var crossedBoth = crossed.Count(measures => MeetsTheFloors(measures) && LastTwoYears(measures.YearScored, measures.YearEdge) > 0);
+        var page = new StringBuilder(FormattableString.Invariant($"<h3>The last two years together</h3><p class=\"last-two\" data-meeting=\"{meeting.Length}\" data-both=\"{both}\" data-crossed-both=\"{crossedBoth}\">On this index a setting passes only where its edge after costs over {SweepColumns.FirstScored.Year + SweepFigures.Years - 2} and {SweepColumns.FirstScored.Year + SweepFigures.Years - 1} together, each year weighted by its trades, stands above nothing beside the floors: {both} of the grid's {meeting.Length} settings meeting the floors do, and {crossedBoth} of the {crossed.Count} crossings.</p>"));
+
+        page.Append("<div class=\"table\"><table class=\"last-two\"><thead><tr><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>The last two years</th></tr></thead><tbody>");
+
+        foreach (var figures in meeting)
+        {
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(figures.Key)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{FamilySweepReport.Number(figures.Edge)}</td><td class=\"num\">{figures.YearsBeating} of 8</td><td class=\"num\">{FamilySweepReport.Number(LastTwoYears(figures.YearTrades, figures.YearEdge))}</td></tr>"));
+        }
+
+        for (var at = 0; at < crossed.Count; at++)
+        {
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(settings[at])}, crossed</td><td class=\"num\">{crossed[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(crossed[at].Edge)}</td><td class=\"num\">{YearsAbove(crossed[at])} of 8</td><td class=\"num\">{FamilySweepReport.Number(LastTwoYears(crossed[at].YearScored, crossed[at].YearEdge))}</td></tr>"));
+        }
+
+        return page.Append("</tbody></table></div>").ToString();
+    }
+
+    // What luck alone passes of a search's tries, were they independent: the grid's settings standing above nothing in
+    // six of the eight years, and the second stage's levels kept on six of the ten strongest settings.
+    static string Luck(int settings, int levels) =>
+        FormattableString.Invariant($"<p class=\"luck\" data-settings=\"{settings}\" data-levels=\"{levels}\">Were they independent, luck alone would put about {HeavyweightSweep.Luck(settings):0.0} of the grid's {settings} settings above nothing in six of the eight years, and keep about {levels * SweepDials.LuckOfALevel:0.000} of the {levels} levels on six of the ten strongest settings. The settings read neighbours of each other, so their passes rise and fall together and the figure is a guide rather than a bound.</p>");
 
     // A run's folder is named by the second it started, and a run started in a second another run's folder already
     // holds takes the next second free: the index sweeps run side by side, and a second run writing into the first's
