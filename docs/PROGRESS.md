@@ -40776,12 +40776,12 @@ Pins:       none moved.
 Mutated:    the rule, stated before the run: the correction's own test removed, the type asked after the switches
             again. Predicted red at the new test on the filter's row's missing key; red as predicted, the same
             exception the remedy threw. Reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e593e34a, the
             entry's commit, the second reading the first's suite result.
-            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2025 of 2025 tests ran with none failed, migrations 0 to
             75 with none pending, schema version 75, against `data-ci` and never `data`.
-            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            `tools/verify-phase.ps1`: 45 tables, 1066 claims, 1066 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1077
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
-            carried and 43 passed, <n> of <n> tests ran.
+            carried and 43 passed, 2025 of 2025 tests ran.
 Carried:    17.2's remedy run again after this merges, `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`,
             migration 75 already applied to the store at 19:58 UTC; 17.2's other carried items stand.
