@@ -40600,12 +40600,15 @@ Results:    (e) the S&P 400: none of six meets the floors in either design, desi
             8 years; 4 of 17 half steps fall under the floors, the reward to risk either way, 1.75 at 700 trades and
             0.126 in 5 years and 2.25 at 438 and 0.158 in 5, the strength higher at 0.80, 430 trades in 5 years, and
             the stop's low end at 1, 299 trades in 4; the exits over its 558 to 560 trades: fixed 0.218 in 6 of 8,
-            break-even 0.240 in 5, the trail 0.222 in 5. The joint search: FILLED IN AFTER THE SWEEP. (c) the S&P 600
+            break-even 0.240 in 5, the trail 0.222 in 5. The joint search: no setting meets the floors over both
+            indices and on each alone; its proposal 3,131 trades at 0.110 in 6 of 8 years over both, 7 of 8 on the S&P
+            600 at 1,601 trades and 0.138, 5 of 8 on the S&P 400 at 1,530 and 0.080, and each of the five strongest
+            settings 7 of 8 over both on about 310 trades at 0.42, the S&P 400's 125 to 128 trades holding 4 of 8. (c) the S&P 600
             search looked beyond its depth high at 10 and 12 and its freshness at 11 and 14, as before, and its
             proposal's depth stayed 0, bound by the reward to risk going higher, within the grid, so no second look
             was owed; the proposal 2,771 trades at 0.085 in 7 of 8 years, the base 1,778 at 0.063 in 6, and the five
             strongest settings each at 314 to 317 trades and about 0.40, each bound at a grid end.
-Tests:      FILLED IN AFTER THE SWEEP; nine more: the six as registered with luck and the floors, twelve months'
+Tests:      2010, ten more: the six as registered with luck and the floors, twelve months'
             strength and the quarter's sessions, each design's leaders over a constructed sector and a session laid
             with no candidates, the top quarter at its edge, each entry's first session, the last two years' edge,
             the half steps worked by hand, each exit at its edge, and the pulls' statement and stop.
@@ -40630,8 +40633,15 @@ Departed:   the facts' other five kinds, gross profit, operating income, operati
             the run stands in its folder, void, and the floored run is the one read.
 Discharged: (i3), carried by the phase 14 sign-off: `Lay` handed a session no member holds a bar on lays it with no
             candidates, asserted in the designs test over the constructed sector.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED IN
-            AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ca0cc042, the
+            pull request's last commit but its fill. The entry's commit was followed by two, the widened grid moved to a
+            grid of the index searches' own and the index pullback evaluator's version raised, each a repair the first
+            run found, and the gates ran over the tree with both.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2010 of 2010 tests ran with none failed, migrations 0
+            to 74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1042 claims, 1042 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1053
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2010 of 2010 tests ran.
 Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
             tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; the operator's
             reading of each search's report, the S&P 400 pullback's answer first; the S&P 600 heavyweights' two
