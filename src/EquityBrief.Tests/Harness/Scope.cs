@@ -3104,6 +3104,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Kept bars")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(LimitsTable, "Forming list thresholds")] = new Scoped(
             Verdict.Pass,
             "a member half a move under its look-back high forming with its price and the volume the rule needs and absent the night it closes above the high, two moves under not, the market check closed not, and the nearest misses ordered first, over constructed bars; the figures read off the document against the constants",

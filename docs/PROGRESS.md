@@ -40785,3 +40785,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2025 of 2025 tests ran.
 Carried:    17.2's remedy run again after this merges, `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`,
             migration 75 already applied to the store at 19:58 UTC; 17.2's other carried items stand.
+
+### 17.3 - the kept bars: the sessions the fetcher drops kept in a table of their own in the drop's own transaction, the first of 17.3's pull requests   2026-10-08
+
+Built:      migration 76 creates `kept_bar`, and the bar fetcher copies every session its retention drop takes into it,
+            each row as it stood with its raw close and the night that kept it, in the transaction that drops them and
+            stores the night's bars, a session already kept left as it was; nothing updates or deletes it and no night
+            reads it. The decision the plan asked for, the schema's table and ownership row, the architecture's store
+            row and the fetcher's catalogue row, and CLAUDE.md's bar rule naming the kept bars beside the pulled history.
+            The rest of 17.3, the setup ledger, its readings, the history build, the night's ledger step, the filings
+            step and the Ledger page, follows in further pull requests; the filings step's place in the night waits on
+            the operator's ruling among C5's options.
+Tests:      2027, two more: over the fixture's replayed store with two constructed sessions before the boundary, the
+            fetch at 2026-09-08 keeps every session before 2025-09-08 whole with the night that kept it and drops them
+            from the bars, the boundary session staying, and a fetch again leaves a kept session as it was; and a drop
+            the store refuses, through a trigger, keeps no bar and stores none of the night's, the copy and the drop
+            being one transaction with the night's bars.
+Claims:     1067, from 1066: the kept bars' store row.
+Pins:       none moved; the fetcher is in no pin list.
+Mutated:    the rule, stated before the run: the property the done condition names, a dropped bar landing in the kept
+            bars, broken alone by removing the copy before the drop. Predicted red at the kept bars holding the dropped
+            sessions; red as predicted, the kept bars empty. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+            76 with none pending, schema version 76, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, <n> of <n> tests ran.
+Carried:    this pull request changes the night's code, so it merges after 17.2's first night, 2026-10-08, is read the
+            morning after, with `tools/migrate.ps1` run on the store after the merge; the kept bars fill from the night
+            after that as the fetcher drops its sessions, an operating fact the 17.3 entry records. Then the ledger.
