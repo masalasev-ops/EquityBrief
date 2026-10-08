@@ -40029,3 +40029,90 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 1992 of 1992 tests ran.
 Carried:    5152 restarted from main's Release build after the merge, and the phase 14 sign-off handoff, for a fresh
             session.
+
+### Phase 14 sign-off                                                        2026-10-08
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a
+            document, so the fresh session rule permits it. This is the third review of phase 14. The first, over
+            887ca6f3, signed nothing and handed back two findings, which PRs 389 to 391 corrected; the second, over
+            d9360729, signed nothing and handed back three, which PRs 392 to 394 corrected. This review read
+            d9360729..37fba01b, 17 files, +425 -26, and signs over 37fba01b.
+Verified:   by re-running both gates on `main` at 37fba01b before this entry: `tools/ci.ps1` green end to end, all
+            six steps, 0 warnings, 0 errors, 1992 of 1992 tests passing inside it, migrations 0 to 71 applied
+            against `data-ci/` and then none pending at schema version 71, exit 0; `tools/verify-phase.ps1` green at
+            45 tables, 1032 claims, 1032 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1043 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names, 43
+            checks on the roster, 43 carried and 43 passed, none failed or unrun, the suite 1992 of 1992. Over the
+            tree carrying this entry, a record entry alone, the checks that read the record ran filtered in place
+            of the full script, on the operator's standing ruling: 142 of 142 tests passing.
+            Hosted CI for PRs 392 to 394: 11 runs over every head of both events and main's three pushes, 22 jobs,
+            case-sensitivity and macOS on each, all green. PR 393 merged at 19:45:45 UTC, before its head's two
+            jobs finished at 19:47:36 and 19:55:05 UTC; both went green.
+Plan:       checkpoints 14.0 to 14.8 are in `BUILD_PLAN.md` and recorded above with their rulings and corrections,
+            the last the 14.6 correction of PR 393. The carried obligations hold 103 rows, 81 discharged, 22
+            operating and none open, and phase 14 opened no operating row, as its report says.
+Store:      read-only. `candidate_register` holds 231 rows; rows 220 to 223, the four heavyweights rules frozen at
+            dc6589c2124b, are retired by 224 to 227 and registered again as 228 to 231 at b43f2a67cd18, all at
+            2026-10-07T14:17:59Z, the four keeping the rule text "on the first session of each month", which no
+            page draws: the read surface's register query leaves the column out. Before the night of 2026-10-07
+            `heavyweight_rule_night` held 829 rows of 2026-10-05, none with a lead, and no rule holding; the page's
+            book 110 rows of 2026-10-02 with 5 leaders and 5 holdings open. The S&P 500 members holding fewer than
+            252 closes are VYLR 4, HONA 79, FDXF 93 and Q 237.
+Night:      2026-10-07, `night-20261007T233013Z`, built from 37fba01b, the first to read October for the four
+            books under the 14.6 correction, its year holding 252 closes. Read read-only after its heavyweights step
+            at 23:55:46 UTC: the step's row ok, 862 rows written. Each of the four read its rebalance:
+            `heavyweight_rule_night` holds 110, 497, 110 and 110 rows of 2026-10-07, every one of the ten-largest
+            books' reading a lead and a beta, and the every-company book's 494 of 497, its three reading none HONA,
+            FDXF and Q, ranked beside the rest as the guard now allows. The books bought 8, 11, 8 and 8, entered
+            2026-10-07 in `heavyweight_rule_holding`; the live rule and the two others at the ten largest GOOGL,
+            META, AMZN, GEV, ETN, MU, AMD and FCX. Recomputed from the stored rows, each book's leaders are in every
+            sector the two largest leads above nothing among the companies passing the trend gate and the beta,
+            five books, eleven sectors each, no difference, and each rule book's holdings are its leaders. The page's
+            book read no rebalance, October read on 2026-10-02 with leads, and carries its 5, CAT, GEV, MU, AMD and
+            FCX; the S&P 400's and 600's books carried, 7 held each. The 2026-10-05 rows stay, none with a lead.
+            The night's own steps ended at 00:56:54 UTC. Its drain, labeller and store copy, waiting out the
+            research model's peak window, were ended at 01:46 UTC on the operator's word with no request being
+            written, 4 outstanding, and started again from the same build by a one-off scheduled run at 04:00 UTC.
+Read:       the diffs of PRs 392 to 394. On 5152, the Release build of 37fba01b, Tonight and Past picks on the S&P
+            500 and the S&P 400 draw the rule's sentence opening on "each month's first session, or the first
+            after it whose stored year holds the closes its readings need", every sale "at the close of a later
+            month's rebalance", and no "month's first close" on any of the four, read before the night and again
+            after its heavyweights step. Tonight for 2026-10-07 draws the S&P 500's card "Live rule since
+            2026-10-07", the register read as of the night, with 5 holdings, 3 variants, last rebalance 2026-10-02
+            and next 2026-11-03, the 2nd being a Monday whose year holds 251; the S&P 400's card provisional with 7
+            holdings and the same two dates.
+Swept:      19 mutations, each predicted before its run, made on this branch in this checkout over the file's own
+            text and restored from it, the tree's diff the same after each as before. Each ran filtered to 68
+            tests, the 67 of the 11 test files that reach the code mutated and the evaluators' pin test, which
+            reddens on any edit to a pinned file and is discounted; the two that survived the filter then ran
+            over the whole suite.
+            The handoff's ten: (b) the guard's lead half from any to all: red in the late member's lead test and
+            the guard's direct test. (hg) its beta half: red in the late member's beta test and the direct test.
+            (f) the index's no-close return giving no wait: red in the S&P 400 no-close test alone. (w1) the
+            cards' sale clause back to a month's first close: red in both Tonight tests and the rule sentence
+            test. (w2) the management line: red in the management test alone. (w3) the S&P 400's Past picks key:
+            red in its Past picks test alone. (w4) the S&P 500's Tonight key: red in the S&P 500 card test alone.
+            (x1) the registration's text: red in the freeze test alone. (x2) the either-exit sale clause and (x3)
+            the opening's period fixed to a month: each red in the rule sentence test alone.
+            The handoff's independent four: (i1) the guard reading only the first sector's ranked companies: red
+            in the direct test. (i2) the no-close return deleted outright, leaving `Lay` handed session -1: red in
+            the S&P 400 no-close test. (i3) `Lay` skipping a session with no candidates: green in the filter but
+            for the pin test, and over the whole suite red in the pin test alone, 1 of 1992. (i4) the "break"
+            exit's sentence deleted, so that exit draws the hold-while-leading sentence: red in the rule sentence
+            test.
+            This review's own five, each remaining reworded place back to its old words: (o1) the opening's
+            clause on the stored year: red in both Tonight tests and the rule sentence test. (o2) the S&P 400's
+            Tonight key: red in its Tonight test alone. (o3) the S&P 500's Past picks key: red in its Past picks
+            test alone. (o4) the card's Plan key: red in both Tonight tests. (o5) `SetupFamilies`' words: green over
+            the whole suite, 1992 of 1992, as predicted, `SectorHeavyweights.Rule` being read by no shipped code.
+Found:      no defect in shipped code. One test defect, carried below: (i3) survives as an unreachable boundary.
+            The sweep's constructed history test asserts every session handed to `Lay` is laid over a history
+            whose every session holds candidates, so a session holding none is never handed in. Under it no caller
+            gives a wrong result: the sweep, the sweep's index runs and the replay index `Lay`'s sessions directly
+            and would throw, and the index books' reading falls to its second no-close return, which waits with
+            words that are then true. The 14.6 correction's judgement to keep that return stands.
+            The judgement calls the handoff named are kept: the second return; rows 228 to 231 keeping their text,
+            since registering again restarts the four records and no page draws the text; the build plan's phase
+            14 and 16 paragraphs as planned; and `SetupFamilies`' words reworded though unread.
+Carried:    (i3), the sweep's constructed history asserting `Lay` lays a session holding no candidates, owed by the
+            next change to `HeavyweightSweep`; the operator's question of weekly heavyweights; and phases 15 and
+            16, signed after this one, one session at a time.
