@@ -54,6 +54,8 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         [Followers] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
         [HeavyweightsSix] = "sector heavyweights'",
         [FollowersSix] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
+        [PullbackNeighbours] = "pullback with profit and cover, at half steps",
+        [PullbackJoint] = "pullback's nine dials with profit and cover, searched with the other index's",
     };
 
     public const string Pullback = "pullback";
@@ -162,6 +164,16 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         if (family is HeavyweightsSix or FollowersSix)
         {
             return await HeavyweightsSixAsync(indexCode, named, words, family == HeavyweightsSix, history, through, inputs, companies, income, folder, cancellation);
+        }
+
+        if (family == PullbackNeighbours)
+        {
+            return await PullbackNeighboursAsync(indexCode, named, history, through, folder, started, cancellation);
+        }
+
+        if (family == PullbackJoint)
+        {
+            return await PullbackJointAsync(indexCode, history, through, folder, started, cancellation);
         }
 
         var calendar = inputs.Sessions;
