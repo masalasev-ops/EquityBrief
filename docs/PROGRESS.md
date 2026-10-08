@@ -40520,3 +40520,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2000 of 2000 tests ran.
 Carried:    the surprises pull for RGS and LESLQ and the two record replays after it, `tools/remedy.ps1
             tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; then 17.1b.
+
+### 17.1 ruling - the sector heavyweights' six settings a design on the S&P 400 and 600, pre-registered before their run   2026-10-08
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator's brief of 2026-10-08, approved with the plan that day: "at most six settings per design,
+            pre-registered in the entry before the run, each justified from the evidence ... and only those tested,
+            so the luck figure stays near one." Committed before either index's run; the same six read on both.
+Design (a): leaders within the index, each sector's return its members' mean, scored against the size cut it was
+            chosen from after each holding's round trip.
+            1. The provisional book: the ten largest a sector, the return over 251 sessions, two leaders, a beta of at
+               least 1 against IJH or IJR, rebalanced monthly and sold on no longer leading, the profit gate and the
+               dollar volume floor once. The S&P 500's frozen setting, read within the index.
+            2. Twelve months' strength skipping the latest: the return from 252 sessions back to 21 back. Evidence:
+               Jegadeesh and Titman 1993; Asness, Moskowitz and Pedersen 2013.
+            3. The profit gate and the interest cover. Evidence: Novy-Marx 2013; Asness, Frazzini and Pedersen 2019.
+            4. Rebalanced on the first session of January, April, July and October. Evidence: Novy-Marx and Velikov
+               2016 on what turnover costs; the quarter is judgement.
+            5. The beta floor off. Evidence: Frazzini and Pedersen 2014, the operator's words of 2026-10-03.
+            6. 2, 3 and 4 together.
+Design (b): followers of the S&P 500's industry leaders, scored against the equal-weighted members of the holding's
+            sector in the index after each holding's round trip.
+            1. The base: the 10 industries whose S&P 500 members' value-weighted return leads SPY's most over 63
+               sessions, one member an industry by its own return over the window, the profit gate and the floor
+               once, rebalanced monthly and sold where not bought. Judgement: the design holds no provisional book,
+               so its grid's longer window and middle count.
+            2. Twelve months' strength skipping the latest, for the industries' lead and the member's own return.
+               Evidence: Moskowitz and Grinblatt 1999; Jegadeesh and Titman 1993.
+            3. The profit gate and the interest cover, as (a)'s third.
+            4. Rebalanced quarterly, as (a)'s fourth.
+            5. Two members an industry. Judgement: the plan's two leaders a sector, in this design's terms.
+            6. 2, 3 and 4 together.
+Read:       each setting's holdings, edge after costs and years above nothing; the floors, 300 holdings and an edge
+            above nothing in 6 of the 8 years; luck, six tries a design each passing the years by chance 37 times in
+            256, about 0.87 a design. A setting meeting the floors passes; nothing is frozen and no answer recorded
+            before the operator reads it.
+Departed:   the plan's fifth setting, two leaders a sector, is design (a)'s provisional book already, so (a)'s fifth
+            reads the beta floor off.
+Queue:      done, C1 PR 398, 17.0 PR 399, the 15.2 correction PR 400, 17.1's first pull request PR 401; in progress,
+            17.1's second; next, 17.2, 17.2a once the growth proposal is approved, and 17.3 to 17.10.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED IN AFTER THE RUN.
