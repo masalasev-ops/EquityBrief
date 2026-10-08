@@ -129,6 +129,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
+        "src/EquityBrief.Core/Providers/OpenFigiMappingFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
     ];
 
@@ -300,12 +301,13 @@ public partial class NightlyCost
         // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does,
         // sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night, and eighteen
         // from 15.3, the funds' quarter-end filings at the archive and the provider's symbol lists, which the history
-        // pull asks by hand and no night does, and nineteen from 16.3, the dividend calendar, one request a session for
-        // the 21 sessions after the night.
+        // pull asks by hand and no night does, nineteen from 16.3, the dividend calendar, one request a session for
+        // the 21 sessions after the night, and twenty from 17.1, OpenFIGI's mapping of a holding's identifier to the
+        // tickers it traded under, which the holdings pull asks by hand and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 19,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are nineteen feed " +
-            "implementations. A twentieth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 20,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty feed " +
+            "implementations. A twenty-first is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

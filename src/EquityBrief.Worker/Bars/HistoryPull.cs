@@ -62,7 +62,7 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledHolding, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.IndexMembership, Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
+        Feeds: [Feed.IndexMembership, Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive, Feed.IdentifierMapping]);
 
     public const string Stage = "history-pull";
     public const string PurgeStage = "history-purge";
@@ -214,22 +214,24 @@ public sealed class HistoryPull(
 
     // A holding of common stock with the code it matched and the key it matched by.
     const string InsertHolding = @"
-        INSERT INTO pulled_holding (index_code, period, holding, name, cusip, isin, ticker, matched_by, pull)
-        VALUES ($index_code, $period, $holding, $name, $cusip, $isin, $ticker, $matched_by, $pull)
+        INSERT INTO pulled_holding (index_code, period, holding, name, cusip, isin, ticker, matched_by, pull, shares, value_usd)
+        VALUES ($index_code, $period, $holding, $name, $cusip, $isin, $ticker, $matched_by, $pull, $shares, $value_usd)
         ON CONFLICT (index_code, period, holding) DO NOTHING;
     ";
 
-    // What an earlier pull stored for a quarter's holdings, which a pull reading the quarter again matches again.
+    // What an earlier pull stored for a quarter's holdings, which a pull reading the quarter again matches again, and
+    // whether it stored the shares and the value, which a pull before the columns were did not.
     const string StoredHoldings = @"
-        SELECT holding, ticker, matched_by FROM pulled_holding
+        SELECT holding, ticker, matched_by, value_usd IS NOT NULL FROM pulled_holding
         WHERE index_code = $index_code AND period = $period;
     ";
 
-    // A holding an earlier pull stored, matched again under the rule as it stands: its code and its key alone, the
-    // holding, its name, its identifiers and the pull that stored it kept as first written.
+    // A holding an earlier pull stored, matched again under the rule as it stands: its code and its key, and the shares and
+    // the value as the filing states them where the row stored none, the holding, its name, its identifiers and the pull
+    // that stored it kept as first written.
     // see: A holding matched by name is kept only where its code traded at the quarter's end
     const string MatchAgain = @"
-        UPDATE pulled_holding SET ticker = $ticker, matched_by = $matched_by
+        UPDATE pulled_holding SET ticker = $ticker, matched_by = $matched_by, shares = $shares, value_usd = $value_usd
         WHERE index_code = $index_code AND period = $period AND holding = $holding;
     ";
 
@@ -323,7 +325,8 @@ public sealed class HistoryPull(
         Func<IFiledRevenueFeed>? revenue = null,
         Func<IIndexComponentsFeed>? members = null,
         Func<IFundSnapshotFeed>? snapshots = null,
-        Func<ISymbolListFeed>? symbols = null)
+        Func<ISymbolListFeed>? symbols = null,
+        Func<IOpenFigiMappingFeed>? mappings = null)
     {
         if (VerbArguments.Value(args, "--purge") is { } pull)
         {
@@ -355,7 +358,7 @@ public sealed class HistoryPull(
 
         if (VerbArguments.Has(args, "--holdings"))
         {
-            return await HoldingsAsync(VerbArguments.Value(args, "--index"), snapshots, symbols, feeds, clock, databaseFile, output, error);
+            return await HoldingsAsync(VerbArguments.Value(args, "--index"), snapshots, symbols, mappings, feeds, clock, databaseFile, output, error);
         }
 
         if (VerbArguments.Value(args, "--from") is not { } given
@@ -1127,6 +1130,7 @@ public sealed class HistoryPull(
         string? indexCode,
         Func<IFundSnapshotFeed>? snapshots,
         Func<ISymbolListFeed>? symbols,
+        Func<IOpenFigiMappingFeed>? mappings,
         Func<NightFeeds> feeds,
         IClock clock,
         string databaseFile,
@@ -1146,7 +1150,7 @@ public sealed class HistoryPull(
         }
 
         var runId = RunIdAt(RunPrefix, clock.UtcNow);
-        var pulled = await PullHoldingsAsync(filings, listed, clock, databaseFile, indexCode, runId, error.WriteLine, prices: feeds().Historical);
+        var pulled = await PullHoldingsAsync(filings, listed, clock, databaseFile, indexCode, runId, error.WriteLine, prices: feeds().Historical, mappings: mappings?.Invoke());
 
         output.WriteLine("pull " + runId);
         output.WriteLine(Detail(pulled));
@@ -1163,16 +1167,21 @@ public sealed class HistoryPull(
     // end, read off a pulled bar in the days to it or, where the store holds none and the provider's prices are handed in,
     // off the provider's own daily prices for those days, asked once a code a quarter. Every code a holding matched is
     // then read over the quarters it matched and kept only where its closes move in step with the fund's values a share,
-    // the holding's codes by name read in place of one that does not; and a holding still matched to none at two quarters
-    // or more is read against the codes its fund held by ISIN within a year. A quarter an earlier pull stored is matched
-    // again, each holding kept as first stored and its code and key changed where the rule as it stands reads another. A
-    // filing that cannot be read or is for another series is named and the others stored; a filing list or a symbol list
-    // that cannot be read stores nothing and says why.
+    // the holding's codes by name read in place of one that does not; a holding still matched to none whose identifier
+    // the symbol lists carry under no code is mapped through OpenFIGI, where a mapping feed is handed in, to the tickers
+    // it traded under on the US venues, each read under the same checks; and a holding still matched to none at two
+    // quarters or more is read against the codes its fund held by ISIN within a year. A quarter an earlier pull stored is
+    // matched again, each holding kept as first stored and its code and key changed where the rule as it stands reads
+    // another. A filing that cannot be read or is for another series is named and the others stored; a filing list or a
+    // symbol list that cannot be read stores nothing and says why.
     // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
     // see: A holding matched by name is kept only where its code traded at the quarter's end
     // see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31
-    // see: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+    // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
     // see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
+    // see: A code the fund held by ISIN beside a holding at one quarter end is another holding and never that holding renamed
+    // see: A holding of a schedule filed with no identifier carries the code the next coded quarter's holding of the identical name matched, where the closes move in step across them
+    // see: A holding the symbol lists carry under no code is mapped to the tickers it traded under through OpenFIGI, each held to the checks a name's code is
     public static async Task<HistoryHoldingOutcome> PullHoldingsAsync(
         IFundSnapshotFeed feed,
         ISymbolListFeed symbols,
@@ -1182,7 +1191,8 @@ public sealed class HistoryPull(
         string runId,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        IHistoricalBarFeed? prices = null)
+        IHistoricalBarFeed? prices = null,
+        IOpenFigiMappingFeed? mappings = null)
     {
         if (!WiderIndices.Contains(indexCode, StringComparer.Ordinal))
         {
@@ -1288,7 +1298,7 @@ public sealed class HistoryPull(
             matcher = new HoldingMatcher(listed, filed);
         }
 
-        var (stored, equity, byIsin, byName, between, again, asked, widely, byHeld) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
+        var (stored, equity, byIsin, byName, between, again, asked, widely, byHeld, carried, byMapping, mapped) = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         var unmatched = new List<string>();
         var unanswered = new List<string>();
         var pricedOut = new List<string>();
@@ -1429,7 +1439,7 @@ public sealed class HistoryPull(
 
             // Then each holding over every quarter it was held: each code it matched kept only where its closes move in step
             // with the fund's values a share over the quarters it matched, and matched to none at them where they do not.
-            // see: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+            // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
             var byHolding = quarters
                 .GroupBy(one => one.Key, StringComparer.Ordinal)
                 .Select(group => group.OrderBy(one => one.Period).ToArray())
@@ -1462,12 +1472,46 @@ public sealed class HistoryPull(
                 }
             }
 
-            // The codes the fund held by ISIN at each quarter end, those not in step set aside.
+            // The codes the fund held by ISIN at each quarter end, those not in step set aside, each with the holding it was.
             var heldByIsin = quarters
                 .Where(one => one.Match.By == HoldingMatcher.ByIsin && one.Match.Ticker is not null)
-                .GroupBy(one => one.Period)
-                .Select(group => (Quarter: group.Key, Codes: group.Select(one => one.Match.Ticker!).Distinct(StringComparer.Ordinal).ToArray()))
+                .Select(one => (Quarter: one.Period, Code: one.Match.Ticker!, one.Key))
+                .Distinct()
                 .ToArray();
+
+            // A code read against a holding's quarters matched to none: asked of the provider at each, and kept at the
+            // quarters it holds a close at where it moves in step over them and sits at the level at each of them, as a
+            // match by name at one quarter is, since a steady ratio off the level is another security's price moving with
+            // the holding's, or where it stands at one ratio at every one of them, which is the provider's own closes
+            // divided by a factor.
+            // see: A holding's code is kept only where its closes move in step with the fund's values a share, and a match by name is held to the level at each quarter end as well
+            async Task KeepWhereItTracksAsync(string code, List<HeldQuarter> none, string by)
+            {
+                foreach (var one in none)
+                {
+                    await AskAboutAsync([code], one.Period);
+                }
+
+                var priced = none.Where(one => CloseOn(code, one.Period) is not null).ToArray();
+                (decimal, QuarterEndClose)[] read =
+                [
+                    .. priced
+                        .Where(one => one.Holding.ValuePerShare is not null)
+                        .Select(one => (one.Holding.ValuePerShare!.Value, CloseOn(code, one.Period)!)),
+                ];
+
+                if (priced.Length > 0
+                    && InStep(code, priced) is true
+                    && (read.All(pair => HoldingMatcher.AtTheLevel(pair.Item1, pair.Item2)) || HoldingMatcher.OneRatio(read)))
+                {
+                    foreach (var one in priced)
+                    {
+                        one.Match = new HoldingMatch(code, by, [code]);
+                    }
+
+                    none.RemoveAll(one => one.Match.Ticker is not null);
+                }
+            }
 
             foreach (var holding in byHolding)
             {
@@ -1489,38 +1533,94 @@ public sealed class HistoryPull(
                         break;
                     }
 
-                    foreach (var one in none)
+                    await KeepWhereItTracksAsync(code, none, HoldingMatcher.ByName);
+                }
+            }
+
+            // Then the holdings still matched to none whose identifier the symbol lists carry under no code, mapped through
+            // OpenFIGI, ten identifiers a request at the keyless pace, to the tickers each traded under on the US venues,
+            // every one read against the holding's quarters under the same checks a name's code is; a code set aside as not
+            // in step is not read again.
+            // see: A holding the symbol lists carry under no code is mapped to the tickers it traded under through OpenFIGI, each held to the checks a name's code is
+            if (mappings is not null)
+            {
+                var unmapped = byHolding
+                    .Where(holding => holding.Any(one => one.Match.Ticker is null) && (FundSnapshots.IsinOf(holding[0].Holding) ?? holding[0].Holding.Cusip) is not null)
+                    .Select(holding => (Isin: FundSnapshots.IsinOf(holding[0].Holding) ?? holding[0].Holding.Cusip!, Holding: holding))
+                    .GroupBy(pair => pair.Isin, StringComparer.Ordinal)
+                    .ToDictionary(group => group.Key, group => group.Select(pair => pair.Holding).ToArray(), StringComparer.Ordinal);
+                var isins = unmapped.Keys.Order(StringComparer.Ordinal).ToArray();
+
+                for (var at = 0; at < isins.Length; at += OpenFigiMappings.IdentifiersARequest)
+                {
+                    if (at > 0)
                     {
-                        await AskAboutAsync([code], one.Period);
+                        await Task.Delay(TimeSpan.FromSeconds(60.0 / OpenFigiMappings.RequestsAMinute), cancellation);
                     }
 
-                    var priced = none.Where(one => CloseOn(code, one.Period) is not null).ToArray();
+                    var batch = isins[at..Math.Min(at + OpenFigiMappings.IdentifiersARequest, isins.Length)];
+                    IReadOnlyList<IdentifierMapping> answered;
 
-                    if (priced.Length > 0 && InStep(code, priced) is true)
+                    try
                     {
-                        foreach (var one in priced)
-                        {
-                            one.Match = new HoldingMatch(code, HoldingMatcher.ByName, [code]);
-                        }
+                        answered = OpenFigiMappings.Parse(await mappings.MapAsync(batch, cancellation), batch);
+                    }
+                    catch (Exception failure) when (failure is ProviderRefusal or FormatException)
+                    {
+                        unanswered.Add(FormattableString.Invariant($"OpenFIGI for {string.Join(", ", batch)}: {failure.Message}"));
+                        continue;
+                    }
 
-                        none.RemoveAll(one => one.Match.Ticker is not null);
+                    mapped += batch.Length;
+
+                    foreach (var mapping in answered)
+                    {
+                        foreach (var holding in unmapped[mapping.Identifier])
+                        {
+                            var none = holding.Where(one => one.Match.Ticker is null).ToList();
+                            var aside = setAside.GetValueOrDefault(holding[0].Key) ?? [];
+
+                            foreach (var code in mapping.Tickers.Where(code => !aside.Contains(code)))
+                            {
+                                if (none.Count == 0)
+                                {
+                                    break;
+                                }
+
+                                await KeepWhereItTracksAsync(code, none, HoldingMatcher.ByMapping);
+                            }
+                        }
                     }
                 }
+            }
+
+            foreach (var holding in byHolding)
+            {
+                var none = holding.Where(one => one.Match.Ticker is null).ToList();
+                var aside = setAside.GetValueOrDefault(holding[0].Key) ?? [];
 
                 // Then a company renamed since: a code the fund held by ISIN within a year of a quarter still matched to none,
                 // read off the pulled history alone, kept where its close equals the value a share to the cent at two of
-                // those quarter ends or more and it moves in step over every one it holds a close at.
+                // those quarter ends or more and it moves in step over every one it holds a close at. A code the fund held
+                // by ISIN as another holding at a quarter end this holding was held at is that other holding and not this
+                // one renamed, so it is not read.
                 // see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
+                // see: A code the fund held by ISIN beside a holding at one quarter end is another holding and never that holding renamed
                 if (none.Count < HoldingMatcher.CentQuarters)
                 {
                     continue;
                 }
 
+                var beside = heldByIsin
+                    .Where(held => held.Key != holding[0].Key && holding.Any(one => one.Period == held.Quarter))
+                    .Select(held => held.Code)
+                    .ToHashSet(StringComparer.Ordinal);
+
                 foreach (var code in heldByIsin
-                    .Where(pair => none.Any(one => Math.Abs(pair.Quarter.DayNumber - one.Period.DayNumber) <= HoldingMatcher.HeldWithinDays))
-                    .SelectMany(pair => pair.Codes)
+                    .Where(held => none.Any(one => Math.Abs(held.Quarter.DayNumber - one.Period.DayNumber) <= HoldingMatcher.HeldWithinDays))
+                    .Select(held => held.Code)
                     .Distinct(StringComparer.Ordinal)
-                    .Where(code => !aside.Contains(code))
+                    .Where(code => !aside.Contains(code) && !beside.Contains(code))
                     .Order(StringComparer.Ordinal)
                     .ToArray())
                 {
@@ -1539,11 +1639,45 @@ public sealed class HistoryPull(
                 }
             }
 
+            // Then the schedules filed with no identifier, whose holdings are keyed by their names and so never meet the
+            // same company's rows keyed by ISIN: a quarter still matched to none carries the code the next coded quarter's
+            // holding of the identical name matched, where the closes move in step across the joined quarters and the
+            // join itself holds the ratio, the schedule's quarter in step with the first coded quarter alone, since the
+            // step the in-step reading allows would otherwise let a schedule's quarter at any ratio join a later company
+            // that took the name.
+            // see: A holding of a schedule filed with no identifier carries the code the next coded quarter's holding of the identical name matched, where the closes move in step across them
+            var coded = quarters
+                .Where(one => one.Match.Ticker is not null && (FundSnapshots.IsinOf(one.Holding) ?? one.Holding.Cusip) is not null)
+                .GroupBy(one => HoldingMatcher.NameKey(one.Holding.Name), StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.OrderBy(one => one.Period).ToArray(), StringComparer.Ordinal);
+
+            foreach (var one in quarters.Where(one => one.Match.Ticker is null && FundSnapshots.IsinOf(one.Holding) is null && one.Holding.Cusip is null))
+            {
+                if (!coded.TryGetValue(HoldingMatcher.NameKey(one.Holding.Name), out var later)
+                    || later.FirstOrDefault(next => next.Period > one.Period) is not { } next)
+                {
+                    continue;
+                }
+
+                // The quarters joined are the next coded quarter's own security's, read by its key across any later rename,
+                // as the in-step reading over the coded quarters reads them, and not the name's, which a rename cuts short.
+                var code = next.Match.Ticker!;
+                var joined = quarters.Where(held => held.Key == next.Key && held.Match.Ticker == code).Prepend(one).OrderBy(held => held.Period).ToArray();
+
+                await AskAboutAsync([code], one.Period);
+
+                if (CloseOn(code, one.Period) is not null && InStep(code, [one, next]) is true && InStep(code, joined) is true)
+                {
+                    one.Match = new HoldingMatch(code, HoldingMatcher.ByCarried, [code]);
+                    carried++;
+                }
+            }
+
             // Each holding then stored, or matched again where an earlier pull stored its quarter.
             foreach (var group in quarters.GroupBy(one => one.Period))
             {
                 var period = group.Key.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-                var earlier = new Dictionary<string, (string? Ticker, string? By)>(StringComparer.Ordinal);
+                var earlier = new Dictionary<string, (string? Ticker, string? By, bool Valued)>(StringComparer.Ordinal);
 
                 await using (var read = connection.CreateCommand())
                 {
@@ -1555,7 +1689,7 @@ public sealed class HistoryPull(
 
                     while (await rows.ReadAsync(cancellation))
                     {
-                        earlier[rows.GetString(0)] = (rows.IsDBNull(1) ? null : rows.GetString(1), rows.IsDBNull(2) ? null : rows.GetString(2));
+                        earlier[rows.GetString(0)] = (rows.IsDBNull(1) ? null : rows.GetString(1), rows.IsDBNull(2) ? null : rows.GetString(2), rows.GetInt64(3) == 1);
                     }
                 }
 
@@ -1565,6 +1699,7 @@ public sealed class HistoryPull(
                     byIsin += match.By == HoldingMatcher.ByIsin ? 1 : 0;
                     byName += match.By == HoldingMatcher.ByName ? 1 : 0;
                     byHeld += match.By == HoldingMatcher.ByHeld ? 1 : 0;
+                    byMapping += match.By == HoldingMatcher.ByMapping ? 1 : 0;
                     between += match.Between.Count > 1 ? 1 : 0;
                     widely += match.Wider ? 1 : 0;
 
@@ -1578,9 +1713,12 @@ public sealed class HistoryPull(
                         }
                     }
 
+                    var shares = holding.Shares is { } count ? (object)count.ToString(CultureInfo.InvariantCulture) : DBNull.Value;
+                    var value = holding.Value is { } worth ? (object)worth.ToString(CultureInfo.InvariantCulture) : DBNull.Value;
+
                     if (earlier.TryGetValue(key, out var was))
                     {
-                        if (was.Ticker == match.Ticker && was.By == match.By)
+                        if (was.Ticker == match.Ticker && was.By == match.By && (was.Valued || holding.Value is null))
                         {
                             continue;
                         }
@@ -1592,6 +1730,8 @@ public sealed class HistoryPull(
                         update.Parameters.AddWithValue("$holding", key);
                         update.Parameters.AddWithValue("$ticker", (object?)match.Ticker ?? DBNull.Value);
                         update.Parameters.AddWithValue("$matched_by", (object?)match.By ?? DBNull.Value);
+                        update.Parameters.AddWithValue("$shares", shares);
+                        update.Parameters.AddWithValue("$value_usd", value);
 
                         again += await update.ExecuteNonQueryAsync(cancellation);
 
@@ -1609,6 +1749,8 @@ public sealed class HistoryPull(
                     insert.Parameters.AddWithValue("$ticker", (object?)match.Ticker ?? DBNull.Value);
                     insert.Parameters.AddWithValue("$matched_by", (object?)match.By ?? DBNull.Value);
                     insert.Parameters.AddWithValue("$pull", runId);
+                    insert.Parameters.AddWithValue("$shares", shares);
+                    insert.Parameters.AddWithValue("$value_usd", value);
 
                     await insert.ExecuteNonQueryAsync(cancellation);
                 }
@@ -1626,19 +1768,23 @@ public sealed class HistoryPull(
             equity,
             byIsin,
             byName,
-            equity - byIsin - byName - byHeld,
+            equity - byIsin - byName - byHeld - carried - byMapping,
             between,
             unmatched,
             unread,
             refused,
-            feed.Requests + symbols.Requests - requestsBefore + asked,
+            feed.Requests + symbols.Requests - requestsBefore + asked + (mappings?.Requests ?? 0),
             again,
             asked,
             unanswered,
             widely,
             pricedOut,
             byHeld,
-            notInStep);
+            notInStep,
+            carried,
+            byMapping,
+            mapped,
+            mappings?.Requests ?? 0);
 
         await AppendAsync(
             connection,
@@ -1666,7 +1812,8 @@ public sealed class HistoryPull(
     public static string Detail(HistoryHoldingOutcome outcome) =>
         outcome.Refused is { } why
             ? FormattableString.Invariant($"{outcome.Index}: nothing was stored, {why}; {outcome.Requests} request(s)")
-            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone, {outcome.Widely} of them by its wider reading, {outcome.Held} by a code its fund held by ISIN within a year, and {outcome.Unmatched} by none, {(outcome.PricedOut ?? []).Count} of them because each code its name reads traded at a close the fund's value a share stood more than {HoldingMatcher.ValueTolerance * 100:0}% from, {(outcome.NotInStep ?? []).Count} code(s) matched to none at a holding's quarters because their closes did not move in step with the fund's values a share, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
+            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone, {outcome.Widely} of them by its wider reading, {outcome.Held} by a code its fund held by ISIN within a year, {outcome.Carried} carried from the next coded quarter's holding of the identical name, and {outcome.Unmatched} by none, {(outcome.PricedOut ?? []).Count} of them because each code its name reads traded at a close the fund's value a share stood more than {HoldingMatcher.ValueTolerance * 100:0}% from, {(outcome.NotInStep ?? []).Count} code(s) matched to none at a holding's quarters because their closes did not move in step with the fund's values a share, {outcome.Between} standing between codes, {outcome.Again} holding(s) of quarters an earlier pull stored matched again to another code or to none, {outcome.Asked} code(s) asked of the provider whether they traded at a quarter's end; {outcome.Requests} request(s)")
+              + (outcome.Mapped == 0 && outcome.MappingRequests == 0 ? string.Empty : FormattableString.Invariant($"; {outcome.Mapped} identifier(s) mapped through OpenFIGI in {outcome.MappingRequests} request(s), {outcome.ByMapping} holding(s) matched by a ticker it answered"))
               + (outcome.Unread.Count == 0 ? string.Empty : "; not read: " + string.Join("; ", outcome.Unread))
               + ((outcome.NotInStep ?? []).Count == 0 ? string.Empty : "; not in step: " + string.Join("; ", outcome.NotInStep!.Take(HoldingsNamed)) + (outcome.NotInStep!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.NotInStep.Count - HoldingsNamed} more") : string.Empty))
               + ((outcome.PricedOut ?? []).Count == 0 ? string.Empty : "; at another price: " + string.Join("; ", outcome.PricedOut!.Take(HoldingsNamed)) + (outcome.PricedOut!.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.PricedOut.Count - HoldingsNamed} more") : string.Empty))
@@ -2745,7 +2892,15 @@ public sealed record HistoryHoldingOutcome(
     // The holdings matched to a code their fund held by ISIN within a year, and each code matched to none at a holding's
     // quarters because its closes did not move in step with the fund's values a share, with the holding and its count.
     int Held = 0,
-    IReadOnlyList<string>? NotInStep = null);
+    IReadOnlyList<string>? NotInStep = null,
+    // The holdings of a schedule filed with no identifier that carry the code the next coded quarter's holding of the
+    // identical name matched, the closes in step across the joined quarters.
+    int Carried = 0,
+    // The holdings matched to a ticker OpenFIGI mapped their identifier to, the identifiers it was asked for and the
+    // requests that took.
+    int ByMapping = 0,
+    int Mapped = 0,
+    int MappingRequests = 0);
 
 // What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
 // those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.

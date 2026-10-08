@@ -1364,6 +1364,48 @@
       "query": "POST http://127.0.0.1:1234/v1/chat/completions with a one-sentence system instruction and a one-sentence question, temperature 0, max_tokens 1024 and reasoning_effort none, as the lane sends a section, against the model loaded at a context of 50,176 tokens",
       "fetchedAt": "2026-10-06T16:14:48Z",
       "trimmedTo": "nothing. The whole answer: reasoning_effort none turns this model's reasoning off as it does the earlier model's, an empty reasoning_content and no reasoning tokens, and the answer stops on stop. A call naming the model while it was not loaded loaded it on demand at the runtime's own context of 32,000 tokens and answered in 19.8 seconds, which is why the lane loads the model itself at its profile's context before calling it."
+    },
+    {
+      "file": "openfigi-mapping-composite-1.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with ten jobs of idType ID_ISIN and exchCode US: US0025353006, US1276861036, US1924791031, US21870Q1058, US4001101025, US6907684038, US00508X2036, US232CNT0145, US12709P1030, US12739A1007, the first ten of the 27 identifiers the live store's holdings matched to none carried on 2026-10-08",
+      "fetchedAt": "2026-10-08T12:07:42Z",
+      "trimmedTo": "nothing. The whole answer: ten warnings of No identifier found, one an identifier, which is why the pull asks with includeUnlistedEquities and no exchange code instead. The rate limit headers said 25 requests a minute."
+    },
+    {
+      "file": "openfigi-mapping-composite-2.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with ten jobs of idType ID_ISIN and exchCode US: US2539221083, US2836778546, KYG3402M1024, GB00BN4HT335, US4883602074, US5270641096, US5290431015, US63935N1072, US68218J2024, US68218J3014",
+      "fetchedAt": "2026-10-08T12:07:46Z",
+      "trimmedTo": "nothing. The whole answer: ten warnings of No identifier found."
+    },
+    {
+      "file": "openfigi-mapping-composite-3.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with seven jobs of idType ID_ISIN and exchCode US: US74051N1028, US74971D1019, US7589321071, US78645L1008, US808CVR1040, US98421B1008, US98390M1036",
+      "fetchedAt": "2026-10-08T12:07:49Z",
+      "trimmedTo": "nothing. The whole answer: seven warnings of No identifier found."
+    },
+    {
+      "file": "openfigi-mapping-unlisted-1.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with ten jobs of idType ID_ISIN and includeUnlistedEquities true, no exchange code: US0025353006, US1276861036, US1924791031, US21870Q1058, US4001101025, US6907684038, US00508X2036, US232CNT0145, US12709P1030, US12739A1007",
+      "fetchedAt": "2026-10-08T12:08:56Z",
+      "trimmedTo": "nothing. The whole answer, one entry an identifier in the order asked: every listing of each security on every venue, a delisted security given a placeholder ticker of digits and a D on the composite and some venues and the ticker it traded under on the others, as COHR for Coherent Inc and COR for CoreSite, and the contra line US232CNT0145 answered No identifier found."
+    },
+    {
+      "file": "openfigi-mapping-unlisted-2.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with ten jobs of idType ID_ISIN and includeUnlistedEquities true, no exchange code: US2539221083, US2836778546, KYG3402M1024, GB00BN4HT335, US4883602074, US5270641096, US5290431015, US63935N1072, US68218J2024, US68218J3014",
+      "fetchedAt": "2026-10-08T12:08:59Z",
+      "trimmedTo": "nothing. The whole answer: Leslie's US5270641096 answered No identifier found, Indivior's GB ISIN answered INDV on the US venues beside its London listing, and OmniAb's two identifiers answered as earn-out rights under placeholder tickers."
+    },
+    {
+      "file": "openfigi-mapping-unlisted-3.json",
+      "endpoint": "OpenFIGI's v3 mapping, keyless",
+      "query": "POST https://api.openfigi.com/v3/mapping with seven jobs of idType ID_ISIN and includeUnlistedEquities true, no exchange code: US74051N1028, US74971D1019, US7589321071, US78645L1008, US808CVR1040, US98421B1008, US98390M1036",
+      "fetchedAt": "2026-10-08T12:09:03Z",
+      "trimmedTo": "nothing. The whole answer: the contra line US808CVR1040 and Xperi Holding's US98390M1036 answered No identifier found, RPT Realty answered RPT on every venue the composite included, and Regis answered RGS on the Nasdaq venues alone."
     }
   ]
 }

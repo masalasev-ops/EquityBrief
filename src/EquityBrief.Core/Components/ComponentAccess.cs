@@ -122,6 +122,9 @@ public enum Feed
     ResearchModel,
     LocalModel,
     SearchTool,
+    // OpenFIGI's mapping of a security's identifier to the tickers it traded under, keyless, asked by the history
+    // pull alone for the holdings the provider's symbol lists carry under no code.
+    IdentifierMapping,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);
