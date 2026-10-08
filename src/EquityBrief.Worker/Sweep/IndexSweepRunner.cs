@@ -29,7 +29,7 @@ public enum IndexQuality
 // see: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
 // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
 // see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing
-public sealed class IndexSweepRunner(IClock clock, string databaseFile, string dataRoot, string? configuredFolder, TextWriter output)
+public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, string dataRoot, string? configuredFolder, TextWriter output)
 {
     public const string Verb = "sweep-index";
 
@@ -52,6 +52,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         [DriftRule.Name] = "earnings drift's",
         [Heavyweights] = "sector heavyweights'",
         [Followers] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
+        [HeavyweightsSix] = "sector heavyweights'",
+        [FollowersSix] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
     };
 
     public const string Pullback = "pullback";
@@ -155,6 +157,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         if (family == Followers)
         {
             return await FollowersAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
+        }
+
+        if (family is HeavyweightsSix or FollowersSix)
+        {
+            return await HeavyweightsSixAsync(indexCode, named, words, family == HeavyweightsSix, history, through, inputs, companies, income, folder, cancellation);
         }
 
         var calendar = inputs.Sessions;
