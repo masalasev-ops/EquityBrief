@@ -371,8 +371,8 @@ public static class SweepStages
 
     // One setting of one design read directly over its candidates: the figures the report states for a starting
     // point, its variants and the live rule.
-    public static SweepMeasures Direct(IReadOnlyList<SweepCandidate> candidates, SweepDesign design, DialSetting setting, in ConditionSetting conditions, int nights, HashSet<(int Name, int Session)>? kept = null) =>
-        Measures(Picks(candidates, design), design, setting, conditions, nights, kept);
+    public static SweepMeasures Direct(IReadOnlyList<SweepCandidate> candidates, SweepDesign design, DialSetting setting, in ConditionSetting conditions, int nights, HashSet<(int Name, int Session)>? kept = null, SweepGrid? grid = null) =>
+        Measures(Picks(candidates, design, grid), design, setting, conditions, nights, kept);
 
     // Stage 1 for one selection design: every exit of it over every coarse setting, with the conditions off.
     public static IReadOnlyList<SweepDesignRank> Rank(IReadOnlyList<SweepCandidate> candidates, SweepDesign selection, int nights) =>

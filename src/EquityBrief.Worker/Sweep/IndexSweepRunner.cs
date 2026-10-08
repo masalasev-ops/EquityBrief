@@ -669,14 +669,17 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             }
         }
 
+        // The search reads the widened grid, two values past the depth's high end and the freshness's, and every pick
+        // is placed on it.
         var design = SweepDesign.Live;
-        var space = SweepSpace.For(ConditionSetting.Off.On);
-        var baseSetting = SweepGrid.Extended.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+        var grid = SweepGrid.Widened;
+        var space = SweepSpace.For(ConditionSetting.Off.On, grid);
+        var baseSetting = grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
 
         Charge(1);
 
-        var live = SweepStages.Direct(candidates, design, baseSetting, ConditionSetting.Off, nights);
-        var picks = SweepStages.Picks(candidates, design);
+        var live = SweepStages.Direct(candidates, design, baseSetting, ConditionSetting.Off, nights, grid: grid);
+        var picks = SweepStages.Picks(candidates, design, grid);
         var search = new SweepDesignSearch(design, picks, nights, space);
 
         output.WriteLine(FormattableString.Invariant($"{candidates.Length:N0} of {all.Length:N0} candidates clear the floors and the gate; searching the live design's grid for up to {SearchBudget.TotalHours:0} hours"));
@@ -708,7 +711,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         shown.AddRange(strongest.Select((point, at) => (FormattableString.Invariant($"the strongest setting read, {at + 1}"), point)));
 
-        SweepMeasures MeasuresOf(int[] point) => SweepStages.Direct(candidates, design, space.Setting(point), space.Conditions(point), nights);
+        SweepMeasures MeasuresOf(int[] point) => SweepStages.Direct(candidates, design, space.Setting(point), space.Conditions(point), nights, grid: grid);
 
         var after = shown.Select(one => MeasuresOf(one.Point)).ToArray();
 
@@ -771,7 +774,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
             try
             {
-                var levelPicks = SweepStages.Picks(kept, held);
+                var levelPicks = SweepStages.Picks(kept, held, grid);
 
                 return [.. ten.Select(point => SweepStages.Measures(levelPicks, held, space.Setting(point), space.Conditions(point), nights))];
             }
@@ -824,7 +827,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
         for (var at = 0; at < shown.Count; at++)
         {
-            var trimmed = SweepStages.WithoutTheLargest(SweepStages.Picks(candidates, design), design, space.Setting(shown[at].Point), space.Conditions(shown[at].Point));
+            var trimmed = SweepStages.WithoutTheLargest(picks, design, space.Setting(shown[at].Point), space.Conditions(shown[at].Point));
 
             page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td><td>{WebUtility.HtmlEncode(space.Describe(shown[at].Point))}</td><td class=\"num\">{after[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(after[at].Edge)}</td><td class=\"num\">{YearsAbove(after[at])} of 8</td><td class=\"num\">{FamilySweepReport.Number(before[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(doubled[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(trimmed.Edge)}</td><td class=\"depth\">{WebUtility.HtmlEncode(depths[at])}</td></tr>"));
         }

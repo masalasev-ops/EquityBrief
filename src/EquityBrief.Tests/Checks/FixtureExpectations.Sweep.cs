@@ -564,7 +564,16 @@ public partial class FixtureExpectations
         foreach (var value in SweepGrid.Fine.Freshness) Assert.Contains(value, SweepGrid.Extended.Freshness);
         Assert.Equal([0.95, 1.0], SweepGrid.Extended.StrengthBars.TakeLast(2));
         Assert.Equal(14, SweepGrid.Extended.Freshness[^1]);
-        Assert.Equal(SweepColumns.LongestWindow, SweepGrid.Extended.Freshness[^1]);
+
+        // The widened grid an index's search reads holds two values more past the depth's high end and the freshness's,
+        // every other dial the extended grid's own and each value's place the same, and the arrival window reads as far
+        // back as its widest freshness.
+        Assert.Equal([14, 16], SweepGrid.Widened.DepthHighs.TakeLast(2));
+        Assert.Equal([17, 21], SweepGrid.Widened.Freshness.TakeLast(2));
+        Assert.Equal(SweepGrid.Extended.DepthHighs, SweepGrid.Widened.DepthHighs.Take(SweepGrid.Extended.DepthHighs.Count));
+        Assert.Equal(SweepGrid.Extended.Freshness, SweepGrid.Widened.Freshness.Take(SweepGrid.Extended.Freshness.Count));
+        Assert.Equal(SweepGrid.Extended with { DepthHighs = SweepGrid.Widened.DepthHighs, Freshness = SweepGrid.Widened.Freshness }, SweepGrid.Widened);
+        Assert.Equal(SweepColumns.LongestWindow, SweepGrid.Widened.Freshness[^1]);
 
         // The live rule's settings on every grid, read as the live filter's own values.
         Assert.Equal("strength 0.5, depth 1 to 5, dry-up under 1.5, fresh within 3, reward to risk 1.5, stop 0.5 to 4, market 45%, band strength 0", DialSetting.LiveOnCoarse.Describe(SweepGrid.Coarse));

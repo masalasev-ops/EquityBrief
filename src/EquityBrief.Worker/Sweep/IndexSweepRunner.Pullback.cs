@@ -214,12 +214,13 @@ public sealed partial class IndexSweepRunner
 
         var joint = midCandidates.Concat(smlCandidates).OrderBy(candidate => candidate.Session).ThenBy(candidate => candidate.Name).ToArray();
         var design = SweepDesign.Live;
-        var space = SweepSpace.For(ConditionSetting.Off.On);
+        var grid = SweepGrid.Widened;
+        var space = SweepSpace.For(ConditionSetting.Off.On, grid);
         var nights = mid.Nights;
         var parallelism = Environment.ProcessorCount;
-        var baseSetting = SweepGrid.Extended.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
-        var live = SweepStages.Direct(joint, design, baseSetting, ConditionSetting.Off, nights);
-        var search = new SweepDesignSearch(design, SweepStages.Picks(joint, design), nights, space);
+        var baseSetting = grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+        var live = SweepStages.Direct(joint, design, baseSetting, ConditionSetting.Off, nights, grid: grid);
+        var search = new SweepDesignSearch(design, SweepStages.Picks(joint, design, grid), nights, space);
 
         output.WriteLine(FormattableString.Invariant($"{midCandidates.Length:N0} S&P 400 and {smlCandidates.Length:N0} S&P 600 candidates clear their floors, gate and cover; searching the live design's grid over both for up to {SearchBudget.TotalHours:0} hours"));
         search.EvaluateCoarse(ConditionSetting.Off, parallelism);
@@ -249,7 +250,7 @@ public sealed partial class IndexSweepRunner
 
         shown.AddRange(search.Strongest(StrongestRead).Select((point, at) => (FormattableString.Invariant($"the strongest setting read, {at + 1}"), point)));
 
-        SweepMeasures On(SweepCandidate[] candidates, int[] point) => SweepStages.Direct(candidates, design, space.Setting(point), space.Conditions(point), nights);
+        SweepMeasures On(SweepCandidate[] candidates, int[] point) => SweepStages.Direct(candidates, design, space.Setting(point), space.Conditions(point), nights, grid: grid);
 
         var read = shown.Select(one => (one.Label, one.Point, Joint: On(joint, one.Point), Mid: On(midCandidates, one.Point), Small: On(smlCandidates, one.Point), Depth: DepthWords(search, space, one.Point))).ToArray();
         var confirmed = read.Where(one => MeetsTheFloors(one.Joint) && MeetsTheFloors(one.Mid) && MeetsTheFloors(one.Small)).ToArray();

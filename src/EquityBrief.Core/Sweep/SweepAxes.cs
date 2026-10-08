@@ -243,20 +243,28 @@ public sealed record SweepGrid(
     // The fine grid with up to two values beyond each end the rule allows, at the spacing of the last two tested,
     // for the search to look beyond a grid end the proposal's depth runs into: a strength place is at most 1, no
     // depth is shallower than half a move, a trigger cannot be fresher than tonight, a band's least strength has
-    // no value under nought, and the dry-up's and the market's other ends are off. The depth's high end and the
-    // freshness hold two values more, to 16 moves and 21 sessions, which an index's search looks at a second time
-    // beyond. The stop's two bounds hold two values each and are not extended. The tested range of each dial is the
-    // fine grid's own.
+    // no value under nought, and the dry-up's and the market's other ends are off. The stop's two bounds hold
+    // two values each and are not extended. The tested range of each dial is the fine grid's own.
     public static SweepGrid Extended { get; } = new(
         [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.67, 0.75, 0.85, 0.95, 1.0],
         [0.5, 1, 1.5, 2, 2.5, 3],
-        [2, 3, 4, 5, 6, 8, 10, 12, 14, 16],
+        [2, 3, 4, 5, 6, 8, 10, 12],
         [0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, Off],
-        [1, 2, 3, 5, 8, 11, 14, 17, 21],
+        [1, 2, 3, 5, 8, 11, 14],
         [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
         [(0.5, 4), (1, 2.5), (0.5, 2.5), (1, 4)],
         [MarketOff, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65],
         [0, 2, 4, 6, 8, 10]);
+
+    // The extended grid with two values more past the depth's high end and the freshness's, to 16 moves and 21
+    // sessions at the spacing of the last two, which an index's search looks at a second time beyond; every other
+    // dial the extended grid's own, and every value's place on it the same, so a setting read on one reads on the
+    // other.
+    public static SweepGrid Widened { get; } = Extended with
+    {
+        DepthHighs = [.. Extended.DepthHighs, 14, 16],
+        Freshness = [.. Extended.Freshness, 17, 21],
+    };
 
     // The dials a cumulative table runs over besides the stop bounds, whose options it is read at one by one.
     public const int OrderedDials = 8;

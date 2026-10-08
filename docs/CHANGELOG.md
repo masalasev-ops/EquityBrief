@@ -12283,3 +12283,11 @@ Now:
 >
 > ... the roster's clauses, `SCHEMA.md` for the holdings' columns, and the 15.3 correction's decision ...
 Why: the drift's revenue dial is the one reader of the facts before the ledger, and the revenue pull of 14.2 already stores every revenue concept as first filed for every filer the companies pull names, 2,102 on 2026-10-08; a table of six kinds nothing reads for two checkpoints is built where its reader and its nightly refresh are, 17.3, whose text already names the SEC's facts as first filed in a table of their own.
+
+### 2026-10-08 - ARCHITECTURE.html - the sweep search's limits row: the extended grid's freshness of 14 kept, the widened grid the index's search reads
+Authorised by: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth
+Was:
+> named as a limit, an index sweep's search looking beyond such an end a second time, the depth's high end reaching 16 typical moves and the freshness 21 sessions at most, and each setting its report reads stating its depth and the dial binding it
+Now:
+> named as a limit, the freshness reaching 14 sessions at most; an index sweep's search reading a widened grid, the depth's high end reaching 16 typical moves and the freshness 21 sessions, looking beyond such an end a second time, and each setting its report reads stating its depth and the dial binding it
+Why: the two values more were first put on the extended grid every search reads, which moved what the S&P 500's search names as a dial's own end; a widened grid of the index searches' own keeps the S&P 500's as it was, as the decision says.
