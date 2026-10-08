@@ -12173,3 +12173,19 @@ Now:
 > ... opened and read against the store with its ending row naming the folder relative to the data root and no path a machine roots, ... and from the 13.10 correction of 2026-10-08 the copy writes a row as it starts under a stage of its own, stamped with its start at both ends, and one as it ends and no more, a copy ended while it waited leaving its start with no end, its ending row names each copy the newest ending row before it kept that is gone from the folder, removed by no copy, once and on no later row, counting it among neither the kept nor the removed, and one more copy over none to five standing before it leaves never fewer than the three kept, or than stood plus the one made under three, the removed the oldest beyond the three, and the copy waits for the night, ...
 > ... and that none is recorded where no copy's row is, and from the 13.10 correction of 2026-10-08 a copy started since that has written no end, waiting or copying within a copy's longest wait and an hour of its start and ended before it finished a second past them, the copies the newest copy found gone from its folder that no copy removed, each named, and the checklist's two items on the copies, ... each worked by hand over constructed rows and the two read off the rendered page;
 Why: the roster is where a check states what it asserts.
+
+### 2026-10-08 - SCHEMA.md - the switch readings are aligned on the funds' own sessions
+Authorised by: The night's switches are aligned on the funds' own sessions, so a year's window is read from closes the members' year of bars never reaches
+Was:
+> **The member reader writes it with the members' readings and is its own deleter.** A switch reads open where its reading is above one, as the sweeps read it. Kept forever.
+Now:
+> **The member reader writes it with the members' readings and is its own deleter.** A switch reads open where its reading is above one, as the sweeps read it. The closes are aligned on the funds' own sessions in `market_bar` and not the members' bars, so a year's window is read once the funds hold 253 sessions (see: ...). Kept forever.
+Why: the 15.2 correction of 2026-10-08; the year's switches were null on every night under the members' one-year calendar.
+
+### 2026-10-08 - .claude/rules/checks.md - fixture-expectations states the switches aligned on the funds' sessions
+Authorised by: The night's switches are aligned on the funds' own sessions, so a year's window is read from closes the members' year of bars never reaches
+Was:
+> the switches read on the store's own sessions at their windows' edges and none where a fund's close is missing;
+Now:
+> the switches read on the funds' own sessions at their windows' edges and none where a fund's close is missing, and from the 15.2 correction of 2026-10-08 a member holding sixty bars reading the year's switches from the funds' 253 sessions and none at 252;
+Why: the roster is where a check states what it asserts.

@@ -312,6 +312,45 @@ public partial class FixtureExpectations
                 "SELECT printf('%.10f|%.10f|%.10f', ijh_half_year, ijh_year, ijr_half_year) || '|' || IFNULL(ijr_year, '') || '|' || IFNULL(hyg_average, '') || '|' || " +
                 "(hyg_average IS NULL) || '|' || printf('%.10f', hyg_change) " +
                 $"FROM switch_reading WHERE session_date = '{Day(night)}';"));
+
+        // The 15.2 correction of 2026-10-08: the switches are aligned on the funds' own sessions and not the members' bars.
+        // A member holding bars for the last 60 sessions alone, as the bar store's year never reaches a year's window,
+        // reads both year switches from the funds' 253 sessions; with the funds' first session gone, 252 left, the year's
+        // window reads none and the half year's still reads.
+        using (var shorter = new TemporaryStore().Migrated())
+        {
+            ReadMember(shorter, "GSPC", "Z");
+            ReadBars(shorter, "Z", sessions.Skip(sessions.Count - 60).ToList(), _ => 10m);
+
+            foreach (var fund in new[] { "SPY", "IJH", "IJR", "HYG" })
+            {
+                Insert(
+                    shorter,
+                    "INSERT INTO market_bar (series, session_date, open, high, low, close, run_id) VALUES " +
+                    string.Join(", ", Enumerable.Range(0, sessions.Count).Select(bar => FormattableString.Invariant(
+                        $"('{fund}', '{Day(sessions[bar])}', '{Fund(fund, bar)}', '{Fund(fund, bar)}', '{Fund(fund, bar)}', '{Fund(fund, bar)}', 'test')"))) + ";");
+            }
+
+            await new MemberReader(clock, shorter.DatabaseFile).RunAsync("GSPC", "switches-short-bars");
+
+            Assert.Equal(
+                [Read(72.0 / 121.0 / (60.0 / 110.0), 72.0 / 121.0 / (50.0 / 100.0), 70.0 / 121.0 / (70.0 / 110.0), 70.0 / 121.0 / (80.0 / 100.0), 85.0 / 82.55, 85.0 / 80.0)],
+                Query(
+                    shorter,
+                    "SELECT printf('%.10f|%.10f|%.10f|%.10f|%.10f|%.10f', ijh_half_year, ijh_year, ijr_half_year, ijr_year, hyg_average, hyg_change) " +
+                    $"FROM switch_reading WHERE session_date = '{Day(night)}';"));
+
+            Insert(shorter, $"DELETE FROM market_bar WHERE session_date = '{Day(sessions[0])}';");
+
+            await new MemberReader(clock, shorter.DatabaseFile).RunAsync("GSPC", "switches-252");
+
+            Assert.Equal(
+                [Read(72.0 / 121.0 / (60.0 / 110.0), 70.0 / 121.0 / (70.0 / 110.0)) + "|1|1"],
+                Query(
+                    shorter,
+                    "SELECT printf('%.10f|%.10f', ijh_half_year, ijr_half_year) || '|' || (ijh_year IS NULL) || '|' || (ijr_year IS NULL) " +
+                    $"FROM switch_reading WHERE session_date = '{Day(night)}';"));
+        }
     }
 
     [Fact]

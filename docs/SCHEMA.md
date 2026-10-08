@@ -1461,7 +1461,7 @@ Grain: one row per session the night read.
 
 Primary key: `session_date`.
 
-**The member reader writes it with the members' readings and is its own deleter.** A switch reads open where its reading is above one, as the sweeps read it. Kept forever.
+**The member reader writes it with the members' readings and is its own deleter.** A switch reads open where its reading is above one, as the sweeps read it. The closes are aligned on the funds' own sessions in `market_bar` and not the members' bars, so a year's window is read once the funds hold 253 sessions (see: The night's switches are aligned on the funds' own sessions, so a year's window is read from closes the members' year of bars never reaches). Kept forever.
 
 ### estimate_reading
 Grain: one row per ticker per night the night asked for its estimates.
