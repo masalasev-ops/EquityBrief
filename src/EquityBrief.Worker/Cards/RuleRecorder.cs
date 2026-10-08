@@ -215,6 +215,13 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
 
         foreach (var row in standing)
         {
+            // The breakout's and the drift's rows alone, read before their parameters are, since the swing filter's and
+            // the heavyweights' state no market switch and the reading throws on a key they lack.
+            if (CandidateEvaluators.Find(row.Evaluator) is not (BreakoutCandidate or DriftCandidate))
+            {
+                continue;
+            }
+
             var parameters = CandidateEvaluator.Read(row.Parameters);
 
             if (MarketSwitches.Of(parameters).Any)
