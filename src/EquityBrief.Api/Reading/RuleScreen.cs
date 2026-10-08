@@ -126,19 +126,27 @@ public static class RuleScreen
             _ => false,
         };
 
-    // A registered rule's words, written by code from its parameters as the card writes the live rule's.
+    // A registered rule's words, written by code from its parameters as the card writes the live rule's; none for a
+    // rule whose parameters do not state what its words need, which is then named by its registration alone.
     static string? Words(string family, CandidateRow row)
     {
-        var parameters = CandidateEvaluator.Read(row.Parameters);
-
-        return CandidateEvaluators.Find(row.Evaluator) switch
+        try
         {
-            SwingFilterRule => RuleWords.Pullback(SwingFilterRule.SettingsOf(parameters)),
-            BreakoutCandidate => RuleWords.Breakout(BreakoutCandidate.SettingsOf(parameters)),
-            DriftCandidate => RuleWords.Drift(DriftCandidate.SettingsOf(parameters)),
-            BookEvaluator book => RuleWords.Heavyweights(book.SettingsOf(parameters)),
-            _ => null,
-        };
+            var parameters = CandidateEvaluator.Read(row.Parameters);
+
+            return CandidateEvaluators.Find(row.Evaluator) switch
+            {
+                SwingFilterRule => RuleWords.Pullback(SwingFilterRule.SettingsOf(parameters)),
+                BreakoutCandidate => RuleWords.Breakout(BreakoutCandidate.SettingsOf(parameters)),
+                DriftCandidate => RuleWords.Drift(DriftCandidate.SettingsOf(parameters)),
+                BookEvaluator book => RuleWords.Heavyweights(book.SettingsOf(parameters)),
+                _ => null,
+            };
+        }
+        catch (Exception failure) when (failure is KeyNotFoundException or ArgumentException or JsonException or InvalidCastException)
+        {
+            return null;
+        }
     }
 
     // A rule's words as clauses, each marked where the live rule's words do not carry it, so the lines that differ

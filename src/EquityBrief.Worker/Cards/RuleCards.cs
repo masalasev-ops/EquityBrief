@@ -375,7 +375,13 @@ public sealed class RuleCards : IComponent
     // rule's own list, each book's buys, and the breakout's forming members at the rule drawing the list.
     async Task<RuleCardsIndex> IndexAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation)
     {
-        var (fault, open) = await IndexNightAsync(connection, transaction, index, night, cancellation);
+        // An index the night did not read at all, holding no night row, has no rules' night to write; one whose part
+        // failed has its rows written as not evaluated, which its cards say.
+        if (await IndexNightAsync(connection, transaction, index, night, cancellation) is not var (fault, open))
+        {
+            return new RuleCardsIndex(index, 0, 0, 0);
+        }
+
         var computed = fault is null;
         var answers = computed ? await AnswersAsync(connection, transaction, index, night, cancellation) : [];
         var listed = await CountsAsync(connection, transaction, IndexListed, [("$index", index), ("$night", Stamp(night))], cancellation);
@@ -791,14 +797,14 @@ public sealed class RuleCards : IComponent
 
     static decimal? Price(SqliteDataReader reader, int column) => reader.IsDBNull(column) ? null : Money.FromStorage(reader.GetString(column));
 
-    async Task<(string? Fault, bool Open)> IndexNightAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
+    async Task<(string? Fault, bool Open)?> IndexNightAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
         await using var command = Command(connection, transaction, IndexNightRow, [("$index", index), ("$night", Stamp(night))]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         if (!await reader.ReadAsync(cancellation))
         {
-            return ("no night row was stored for the index", false);
+            return null;
         }
 
         return (reader.IsDBNull(0) ? null : reader.GetString(0), !reader.IsDBNull(1) && reader.GetInt32(1) == 1);
