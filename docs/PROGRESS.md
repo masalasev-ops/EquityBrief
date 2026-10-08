@@ -40646,3 +40646,39 @@ Carried:    the surprises pull for RGS and LESLQ and the two record replays afte
             tools/remedies/2026-10-08-17.1-the-membership.txt --from 6`, on 2026-10-09's allowance; the operator's
             reading of each search's report, the S&P 400 pullback's answer first; the S&P 600 heavyweights' two
             passing settings for the operator's ruling; then 17.2.
+
+### 0.7 - correction: the phase report reads the checkpoint script's suite result over the same commit and a clean tree, where the two gates each ran the whole suite over one tree   2026-10-08
+
+Corrects:   0.7's phase report script, which ran the suite itself and then the report, so a pull request changing code,
+            which runs `tools/ci.ps1` and then `tools/verify-phase.ps1`, ran the whole suite twice over one tree, ten
+            and a half minutes each of the twenty-six the two gates took together.
+Found:      by the operator on 2026-10-08: "This CI has become way too long. Cannot be waiting for an hour to finish
+            a PR", read against the gates' own times over 17.1's pull requests.
+Built:      `tools/ci.sh` and `tools/ci.ps1` write the suite's result to `artifacts/suite.trx` and beside it the stamp
+            `artifacts/suite.commit`, the commit where the tracked tree stood clean at it before the build and still
+            did after the suite and empty otherwise, both written by the suite step whether the suite passed or
+            failed; `tools/verify-phase` reads the result where the stamp names the commit its tree stands at, the tree
+            is clean and the result is there, saying so on its first line, and otherwise runs the suite itself as
+            before, removing the stamp with the result. The decision, `scripts.md`'s paragraph and CLAUDE.md's
+            artifacts line, their prior text in CHANGELOG.
+Tests:      2013, three more: the bash checkpoint script's stamp over a clean tree, a failing suite and a stray file,
+            the Windows script's the same way with no carriage return, and the phase report script's five cases, each
+            run over a temporary repository with a dotnet of the test's own on the path that records its asks and runs
+            nothing.
+Claims:     1042, unchanged: no row of the architecture moved.
+Pins:       none moved; the scripts and the suite are in no pin list. `store-never-deleted`'s stated list of the
+            scripts' removals carries `verify-phase`'s two lines in place of its one, and `ci-parity` reads the same
+            six step names.
+Mutated:    the rule, stated before the run: the condition the operator's wait turns on, the clean-tree test, removed
+            from `tools/verify-phase` alone. Predicted: the phase report's test red at its stray-file case, the script
+            reading the stamped result over an edited tree. Result: red as predicted, "Not found: verify-phase:
+            running the suite"; the three tests green with the condition back. Made on this branch and reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
+            entry's commit, the second gate reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+            74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, reading the suite result `tools/ci.ps1` wrote over <sha>, <n> of <n> tests ran.
+Carried:    nothing new; 17.1's carried items stand, then 17.2.

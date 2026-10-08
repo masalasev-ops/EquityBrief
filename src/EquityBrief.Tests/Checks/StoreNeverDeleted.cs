@@ -183,7 +183,8 @@ public class StoreNeverDeleted
 
         // The store `tools/ci.*` created and drops is `data-ci`, never the data root. The night's script
         // removes its own refusal note, a partial or stale build copy under the data root's folder of
-        // nights, and copies older than a week; the phase report removes its own artifacts.
+        // nights, and copies older than a week; the phase report removes its own artifacts, the suite's
+        // result and its stamp among them only where it runs the suite itself.
         Assert.Equal(
             [
                 "ci.ps1: Step \"drop the store\"  { if (Test-Path data-ci) { Remove-Item -Recurse -Force data-ci } }",
@@ -193,7 +194,8 @@ public class StoreNeverDeleted
                 "nightly: rm -rf \"$copy\" \"$copy.partial\"",
                 "nightly: mv \"$copy.partial\" \"$copy\"",
                 "nightly: find \"$copies\" -mindepth 1 -maxdepth 1 -type d -mtime +7 ! -path \"$copy\" -exec rm -rf {} + 2>/dev/null || true",
-                "verify-phase: rm -f artifacts/suite.trx artifacts/phase-report.html artifacts/phase-report.json",
+                "verify-phase: rm -f artifacts/phase-report.html artifacts/phase-report.json",
+                "verify-phase: rm -f artifacts/suite.trx artifacts/suite.commit artifacts/phase-report.html artifacts/phase-report.json",
             ],
             removals);
 

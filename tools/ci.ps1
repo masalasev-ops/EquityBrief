@@ -20,6 +20,67 @@ $ErrorActionPreference = 'Stop'
 $previousRoot = $env:EquityBrief__DataRoot
 $previousLocation = Get-Location
 
+# The commit the tracked tree stands at, and nothing where the tree holds an
+# edit or a stray file, or is no repository. Read before the build and again
+# after the suite, because the suite runs what the build compiled.
+function CleanCommit {
+    try {
+        $changes = @(git status --porcelain)
+
+        if ($LASTEXITCODE -ne 0 -or $changes.Count -gt 0) {
+            return $null
+        }
+
+        $commit = git rev-parse HEAD
+
+        if ($LASTEXITCODE -ne 0) {
+            return $null
+        }
+
+        return $commit
+    }
+    catch {
+        return $null
+    }
+}
+
+# The suite's result is written where tools/verify-phase reads it, with a stamp
+# beside it naming the commit it is the result of: the commit the tree stood
+# clean at before the build and still stands clean at after the suite. The
+# stamp is emptied otherwise, and an empty stamp names no commit, so the report
+# runs the suite itself over a tree that was edited or is no commit's. Both are
+# written by the suite step whether the suite passed or failed, so the pair is
+# always of one run. The stamp ends in one line feed and no carriage return,
+# since tools/verify-phase reads it under bash.
+# see: The phase report reads the checkpoint script's suite result over the same commit and a clean tree
+function StampTheSuite {
+    param([string] $Started)
+
+    $stamp = Join-Path 'artifacts' 'suite.commit'
+
+    if ($Started -and $Started -eq (CleanCommit)) {
+        Set-Content -Path $stamp -Value "$Started`n" -NoNewline -Encoding Ascii
+    }
+    else {
+        Set-Content -Path $stamp -Value '' -NoNewline -Encoding Ascii
+    }
+}
+
+# The suite step. The exit code the suite left is the step's, read back after
+# the stamp's own commands have moved it.
+function RunTheSuite {
+    param([string] $Started)
+
+    New-Item -ItemType Directory -Force artifacts | Out-Null
+    Set-Content -Path (Join-Path 'artifacts' 'suite.commit') -Value '' -NoNewline -Encoding Ascii
+
+    dotnet test EquityBrief.slnx --no-build --results-directory artifacts --logger "trx;LogFileName=suite.trx"
+    $code = $LASTEXITCODE
+
+    StampTheSuite $Started
+    $global:LASTEXITCODE = $code
+}
+
 function Step {
     param(
         [Parameter(Mandatory)][string] $Name,
@@ -62,10 +123,12 @@ try {
     # tools/ci.sh states at the same point.
     $env:EquityBrief__DataRoot = Join-Path (Get-Location) 'data-ci'
 
+    $started = CleanCommit
+
     Step "drop the store"  { if (Test-Path data-ci) { Remove-Item -Recurse -Force data-ci } }
     Step "restore"         { dotnet restore EquityBrief.slnx }
     Step "build"           { dotnet build EquityBrief.slnx --no-restore }
-    Step "suite"           { dotnet test EquityBrief.slnx --no-build }
+    Step "suite"           { RunTheSuite $started }
     Step "migrate"         { & (Join-Path $PSScriptRoot 'migrate.ps1') }
     Step "migrate again"   { & (Join-Path $PSScriptRoot 'migrate.ps1') }
 
