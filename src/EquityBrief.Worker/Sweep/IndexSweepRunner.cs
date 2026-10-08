@@ -683,7 +683,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         if (proposal is not null)
         {
             proposal = search.Refine(proposal, live, refinement);
-            proposal = search.Extend(proposal, live, refinement, extensions, limits);
+            proposal = search.Extend(proposal, live, refinement, extensions, limits, LooksBeyond);
         }
 
         var strongest = search.Strongest(StrongestRead);
@@ -795,13 +795,26 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
         page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)}, searched on its own members</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p>"));
         page.Append(FormattableString.Invariant($"<p>The pullback sweep's second stage over the live design: {sampleSize:N0} settings sampled of {gridSize:N0} on its grid at {perPoint * 1000:0.00} ms each, {search.Evaluations:N0} read in all; the best edge {FamilySweepReport.Number(search.BestEdge)}, the plateau's line {FamilySweepReport.Number(search.Line)}, {leaders.Count} leader(s) meeting the sweep's own floors, {trailing} trailing the provisional base in a recent year.</p>"));
         page.Append(FormattableString.Invariant($"<p class=\"floors\">{(proposed ? "The proposal meets the floors after costs" : proposal is null ? "The search proposes nothing" : "The search's proposal falls short of the floors after costs")}: at least {FamilySweep.TradeFloor} trades and an edge above nothing in at least {FamilySweep.YearsBeating} of the 8 years.</p>"));
-        page.Append("<div class=\"table\"><table><thead><tr><th>Read</th><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Before costs</th><th>At double the cost</th><th>Without the five largest</th></tr></thead><tbody>");
+        // A setting's depth on the plateau and the dial that binds it, the direction a step leaves the plateau or meets
+        // a grid end.
+        string DepthOf(int[] point)
+        {
+            var depth = search.Depth(point);
+
+            return depth.Dial < 0
+                ? FormattableString.Invariant($"{depth.Depth}, no dial binding it")
+                : FormattableString.Invariant($"{depth.Depth}, bound by the {space.Dials[depth.Dial].Name} going {(depth.Direction < 0 ? "lower" : "higher")}{(depth.AtAGridEnd ? " at a grid end" : string.Empty)}");
+        }
+
+        var depths = shown.Select(one => DepthOf(one.Point)).ToArray();
+
+        page.Append("<div class=\"table\"><table><thead><tr><th>Read</th><th>Setting</th><th>Trades</th><th>Edge after costs</th><th>Years above nothing</th><th>Before costs</th><th>At double the cost</th><th>Without the five largest</th><th>Depth</th></tr></thead><tbody>");
 
         for (var at = 0; at < shown.Count; at++)
         {
             var trimmed = SweepStages.WithoutTheLargest(SweepStages.Picks(candidates, design), design, space.Setting(shown[at].Point), space.Conditions(shown[at].Point));
 
-            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td><td>{WebUtility.HtmlEncode(space.Describe(shown[at].Point))}</td><td class=\"num\">{after[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(after[at].Edge)}</td><td class=\"num\">{YearsAbove(after[at])} of 8</td><td class=\"num\">{FamilySweepReport.Number(before[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(doubled[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(trimmed.Edge)}</td></tr>"));
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(shown[at].Label)}</td><td>{WebUtility.HtmlEncode(space.Describe(shown[at].Point))}</td><td class=\"num\">{after[at].Scored:N0}</td><td class=\"num\">{FamilySweepReport.Number(after[at].Edge)}</td><td class=\"num\">{YearsAbove(after[at])} of 8</td><td class=\"num\">{FamilySweepReport.Number(before[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(doubled[at].Edge)}</td><td class=\"num\">{FamilySweepReport.Number(trimmed.Edge)}</td><td class=\"depth\">{WebUtility.HtmlEncode(depths[at])}</td></tr>"));
         }
 
         page.Append("</tbody></table></div>");
@@ -834,6 +847,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             [.. crossedLevels.Select(level => level.Dial + ", " + level.Name)],
             crossed,
             "The holds are read at 20, 40 and 63 sessions, the holds the candidates' exits carry, where the plan named 21, 42 and 63, and the quality's fourth level, the state the reported quarters read, is not read, since the history holds no quarters as they stood for it."));
+        page.Append(Luck(search.Evaluations, dialsRead.Count));
 
         if (refinement.Count + extensions.Count + limits.Count > 0)
         {
@@ -882,7 +896,9 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
                 leaders = leaders.Count,
                 proposed,
                 started,
-                read = shown.Select((one, at) => new { one.Label, setting = space.Describe(one.Point), after = after[at], before = before[at], doubled = doubled[at] }),
+                read = shown.Select((one, at) => new { one.Label, setting = space.Describe(one.Point), after = after[at], before = before[at], doubled = doubled[at], depth = depths[at] }),
+                extensions,
+                limits,
                 strongestTen = ten.Select((point, at) => new { setting = space.Describe(point), after = withoutDials[at] }),
                 dials = dialsRead,
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
@@ -892,7 +908,7 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
             new SweepAnswer(indexCode, SetupFamilies.Pullback, null, proposed || crossed.Any(MeetsTheFloors)));
 
         output.WriteLine(proposed
-            ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}")
+            ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}, depth {depths[1]}")
             : FormattableString.Invariant($"none passed: the provisional base reads {FamilySweepReport.Number(after[0].Edge)} after costs over {after[0].Scored:N0} trades; the report states the strongest settings and what could be tried next"));
         output.WriteLine(crossedLevels.Length == 0
             ? FormattableString.Invariant($"second stage: no level of {levels.Count} survives on {SweepDials.KeptOn} of the {ten.Count} strongest settings")
@@ -904,6 +920,11 @@ public sealed partial class IndexSweepRunner(IClock clock, string databaseFile, 
 
     // How many of the search's strongest settings a report reads in full.
     const int StrongestRead = 5;
+
+    // How many times an index's pullback search looks beyond a grid end its proposal's depth runs into, each time by up
+    // to two values, the depth's high end reaching 16 typical moves and the freshness 21 sessions.
+    // see: An index's pullback search looks a second time beyond a grid end and names the dial that binds its depth
+    public const int LooksBeyond = 2;
 
     // The file a run creates in its folder to hold it, created only where none is.
     public const string ClaimFile = "run.claim";
