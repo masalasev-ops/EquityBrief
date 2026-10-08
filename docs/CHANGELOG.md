@@ -12356,3 +12356,13 @@ Was:
 Now:
 > and Past picks draws the operator's trades on the chosen index, open ones first with their exit press, and says so where the index holds none; and from 17.2 each setup card's selector lists the live rule and each registered variant by its number, a variant chosen in the link redraws the card under the band from that rule's rows with the clauses the live rule's words lack marked and its own picks, one the live rule did not list among them, read back off the rendered card, the default and a link naming no standing rule returning to the live rule with no band, the shell's script merging a card's key into the link's own query and a row's link merging the keys the link holds, the funnel and the stretch line read back off the card, flagged past its mark with the live rule named among the things to worry about, and the S&P 400's selector listing the provisional rule alone with the line that no variant is registered before its freeze, its funnel off the rule's parts and the breakouts forming beneath it with each row's price, volume needed, gates still failing and next report under the closing line |
 Why: the same, for the check reading the pages.
+
+### 2026-10-08 - BUILD_PLAN.md - 17.5 owes the sector heavyweights' card its selector
+Authorised by: A variant's picks are shown on its card when chosen and its results only under its tests
+Was:
+> ### 17.5 The trade autopsy and the engines' hooks
+> From the finished setups' paths replayed from bars,
+Now:
+> ### 17.5 The trade autopsy and the engines' hooks
+> The sector heavyweights' card on each index gains the selector the swing cards carry, a registered rule's own book drawn when chosen under the same band (owes: The sector heavyweights' card's selector). From the finished setups' paths replayed from bars,
+Why: 17.2 gave the three swing cards their selector and carried the heavyweights' card's, which is drawn from a book and not from a list, to the checkpoint that next changes the night's code and moves the families' pins; the carried obligation's row names it.

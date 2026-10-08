@@ -112,7 +112,7 @@ public static class FormingList
         var close = inputs.Bars[^1].Close;
         var under = Statistic.FromPrice(high - close) / move;
 
-        if (!(under >= 0) || under > settings.WithinMoves || ratio > settings.RangeCeiling)
+        if (under > settings.WithinMoves || ratio > settings.RangeCeiling)
         {
             return null;
         }
