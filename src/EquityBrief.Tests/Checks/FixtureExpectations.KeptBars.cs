@@ -16,6 +16,9 @@ public partial class FixtureExpectations
     [Fact]
     public async Task TheSessionsTheFetcherDropsLandInTheKeptBarsInItsOwnTransactionWithTheNightThatKeptThem()
     {
+        // The bars expectation names the kept bars among the tables the fetch writes, and says they are worked here.
+        Assert.StartsWith("from 17.3 the sessions the fetcher drops", Expected("bars").GetProperty("keptBars").GetString(), StringComparison.Ordinal);
+
         using var store = await Replayed();
 
         // Two sessions older than the year the night of 2026-09-08 keeps, which the backfill's year does not reach,
