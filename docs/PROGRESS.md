@@ -40683,3 +40683,75 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, reading the suite result `tools/ci.ps1` wrote over ad08c36b, 2013 of 2013 tests ran.
 Carried:    nothing new; 17.1's carried items stand, then 17.2.
+
+### 17.2 - the cards' variant selector, the empty-stretch line and the breakouts forming   2026-10-08
+
+Built:      the rule cards stage, in the swing filter's step after the decision cards, writing for every rule standing
+            on each index when the night started, live or variant, the rule's night: whether the night evaluated it, how
+            many it listed with zeros, how many members passed each gate and every gate before, and its empty stretch
+            against the mark its own past empty nights set; the swing filter's variants' own picks, five a night in the
+            list's own order with one open trade a stock, walked on the closes since by the family's walk; and under each
+            breakout rule the members forming a breakout, at most ten with the whole count, the nearest misses first,
+            each with the price it must close above, the volume the rule would need, its ranges' ratio, the gates it
+            still fails and its next report within twenty sessions; every threshold in `EquityBrief:Forming`. The
+            record command's `--nights` form replays each standing rule's listed count on every scored session since
+            2019, the live rules and the breakout's and the drift's variants at their grid settings, and writes it as the
+            rule's history through the stage. Every card on every index draws the selector, the live or provisional rule
+            first and each variant by its number, the choice kept in the link under the family's key by a handler
+            merging the key into the query, which also keeps the index on a row's link; a variant chosen redraws the
+            card under the band from its own rows, its words from the register's parameters with the differing clauses
+            marked, its own picks, its funnel and its stretch line; the live rule's funnel, stretch line and, under the
+            breakout card, forming list stand beneath its picks; the S&P 400's and 600's selectors list the provisional
+            rule alone with the line that no variant is registered before its freeze; and a live rule past its mark
+            stands among the things to worry about on the S&P 500's Run page and in one line on the others'. Migration
+            75 creates `rule_night`, `rule_pick` and `forming_row`. Three decisions, the roster, the runbook, the guide
+            and the remedy `tools/remedies/2026-10-08-17.2-the-cards.txt`.
+Departed:   the sector heavyweights' card carries no selector in this pull request; its registered rules keep books of
+            their own the Run page records, and the selector over them is carried to 17.5 as a named obligation, since
+            that card is drawn from a book and not from a list. The stretch history is replayed for the live rules and
+            the breakout's and the drift's grid variants; the swing filter's variants, a variant off the grid and one
+            reading a market switch start their history at their registration, which the line says until the floors
+            are met. A rule_night row is keyed by family as well as rule, since the provisional rule of each family on
+            an index shares a name.
+Measured:   the stage's computation over the live store, read-only, on this disk on 2026-10-08: the S&P 500's inputs
+            read in 8.5 seconds for 503 members and eight breakout rules with their forming lists and eight drift rules
+            evaluated over them in 0.3; the S&P 400's inputs read in 2.4 and prepared with its forming list in 1.0 over
+            400 held, 7 forming; the S&P 600's in 1.5 and 0.5 over 600 held, 10 forming. About 15 seconds a night with
+            its writes, against the night's 2,400. The three-index night reached its close in 1,588 to 2,109 seconds
+            over 2026-10-05 to 2026-10-07, so with the cards about 1,603 to 2,124; with 17.3's ledger at the 60 seconds
+            proposed and the filings' refresh at the 200 proposed beside it, 1,863 to 2,384, past 2,160 on the slowest
+            night. The options for the operator, C5, are in this entry's report: the filings' refresh run after the
+            close under a deadline of its own as the quarters fetch is, which keeps the arithmetic's path at 1,663 to
+            2,184; the indicators, levels, moves and volume profile, nine tenths of the night, made faster; or a limit of
+            3,000 seconds with the deadline moved with it.
+Tests:      2024, eleven more: the stretch mark worked by hand one night either side of it and shown to differ from one
+            counted a stretch at a time, the floors at twenty-nine and thirty stretches and at 503 and 504 sessions, each
+            night's reading in turn; a member half a move under its high forming with its price and volume needed and
+            absent the night it breaks out, two moves under not, the market check closed not, the nearest misses first;
+            the funnels, a variant's five in the list's order with a held stock off, and the earnings window; the stage
+            over a constructed store; the card read back with a variant chosen and by default, the stretch line flagged
+            with the Run page's item, and the S&P 400's selector with its line and forming list.
+Claims:     1066, from 1042: the rule cards' catalogue and matrix rows, three stores, section 17's two rows, section
+            18's two, 15.7's row for a card's rule as its fourteen parts and the checklist's item.
+Pins:       none moved; the stage, the core's stretch and forming arithmetic, the record command, the read surface and
+            the renderer are in no pin list.
+Mutated:    the rule, stated before the run: the property each of the two done conditions worked by hand turns on,
+            broken alone. First, the forming read's test that a member closing above its high is not forming, removed:
+            predicted red at the member one session before its breakout being absent the night it breaks out. It
+            survived, because the distance under the high refused a close above it as well, a second guard for one
+            property; the second guard was removed so the gate's own verdict is the one, and the mutation made again
+            went red as predicted. Second, the stretch mark counting tonight among its own past empty nights: predicted
+            red at the stretch one night past its mark, and red as predicted, the 89th night reading a mark of 89 and
+            not flagged. Each made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
+            75 with none pending, schema version 75, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, <n> of <n> tests ran.
+Carried:    the remedy after the merge, outside the night's window and more than two hours before it, `tools/migrate.ps1`
+            then `tools/remedy.ps1 tools/remedies/2026-10-08-17.2-the-cards.txt`, about two hours, asking for nothing;
+            the first night under the stage read the morning after before the next night-code checkpoint merges; the
+            operator's choice among C5's options before 17.3; the sector heavyweights' card's selector, owed by 17.5;
+            then 17.2a once the growth proposal is approved, and 17.3.
