@@ -40409,8 +40409,11 @@ Mutated:    the rule, stated before the run: the property the correction adds br
             switches' test alone, both year switches null at 253.
             Results: S1 red at the switches' test alone, the two other member readings' tests green; reverted, and
             the three green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN, the pull request's last commit but its fill.
-            `tools/ci.ps1`: FILLED FROM THE RUN.
-            `tools/verify-phase.ps1`: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 17c7b280, the
+            pull request's last commit but its fill.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1999 of 1999 tests ran with none failed, migrations 0
+            to 73 with none pending, schema version 73, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1036 claims, 1036 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1047
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1999 of 1999 tests ran.
 Carried:    the night of 2026-10-08 read the morning after for the two year switches filled; then 17.1a.
