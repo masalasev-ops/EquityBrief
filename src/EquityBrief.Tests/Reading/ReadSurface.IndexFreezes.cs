@@ -163,14 +163,16 @@ public partial class ReadSurface
         Assert.DoesNotContain("family-records", await plain.CreateClient().GetStringAsync($"/screens/run/{IndexNight}?universe=400"), StringComparison.Ordinal);
     }
 
-    // The S&P 400's heavyweights frozen at the index's own book's settings with one variant, one leader a sector, and the
-    // live rule's own book: its rebalance on the night bought M1 and sold M3, bought a month before, at no longer leading,
-    // M3 making 5 per cent less a round trip of 0.2 against its size cut's 1, an edge of 3.8 points; the night reading the
-    // family by its live rule where it did. The live rule's name returned.
-    static string FreezeTheHeavyweights(TemporaryStore store, bool readByIt, string at = "2026-10-02T12:00:00Z")
+    // The S&P 400's heavyweights frozen at the index's own book's settings with one variant, one leader a sector, or at the
+    // settings given with none, and the live rule's own book: its rebalance on the night bought M1 and sold M3, bought a
+    // month before, at no longer leading, M3 making 5 per cent less a round trip of 0.2 against its size cut's 1, an edge
+    // of 3.8 points; the night reading the family by its live rule where it did. The live rule's name returned.
+    static string FreezeTheHeavyweights(TemporaryStore store, bool readByIt, string at = "2026-10-02T12:00:00Z", IReadOnlyDictionary<string, double>? settings = null)
     {
         var heavyweights = (IndexRuleCandidate)CandidateEvaluators.Find("heavyweight-400")!;
-        var (registrations, refusal) = IndexRules.Freeze("heavyweight", "MID", IndexRules.Provisional(heavyweights), [new Dictionary<string, double> { [IndexHeavyweightCandidate.LeadersParameter] = 1 }], [], new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero));
+        var (registrations, refusal) = settings is null
+            ? IndexRules.Freeze("heavyweight", "MID", IndexRules.Provisional(heavyweights), [new Dictionary<string, double> { [IndexHeavyweightCandidate.LeadersParameter] = 1 }], [], new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero))
+            : IndexRules.Freeze("heavyweight", "MID", settings, [], [], new DateTimeOffset(2026, 10, 2, 12, 0, 0, TimeSpan.Zero));
 
         Assert.Null(refusal);
 
@@ -259,5 +261,58 @@ public partial class ReadSurface
 
         Assert.Contains("data-state=\"provisional\"", later, StringComparison.Ordinal);
         Assert.Contains(SweepLineDrawn, later, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AnSAndP400HeavyweightsLiveRuleDrawsItsCardAtItsOwnLookBackBetaAndDesign()
+    {
+        // The S&P 400's heavyweights frozen live at the settings given and read by the night, M1's lead as its book stored it.
+        async Task<string> CardFrozenAt(IReadOnlyDictionary<string, double> settings, double? lead)
+        {
+            using var store = UniversesStore();
+
+            FreezeTheHeavyweights(store, readByIt: true, settings: settings);
+            store.Execute(FormattableString.Invariant($"UPDATE index_heavyweight_rule_holding SET lead = {(lead is { } stored ? stored.ToString("R", CultureInfo.InvariantCulture) : "NULL")} WHERE ticker = 'M1';"));
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            return HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
+        }
+
+        var provisional = IndexRules.Provisional((IndexRuleCandidate)CandidateEvaluators.Find("heavyweight-400")!);
+
+        // Design (a) over 126 sessions with no beta: its rebalance needs 127 closes, which November's first session's year
+        // holds, where the index's own book needs 252 and reads the session after; M1's lead is read over its 126.
+        var shorter = await CardFrozenAt(
+            new Dictionary<string, double>(provisional) { [IndexHeavyweightCandidate.LookBackParameter] = 126, [IndexHeavyweightCandidate.BetaParameter] = 0 },
+            0.05);
+
+        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"0\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\" data-look-back=\"126\"", shorter, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\">+5.0 points over 126 sessions, at 2026-10-02</td>", shorter, StringComparison.Ordinal);
+
+        // Design (b) at a month's window: its rebalance needs 22 closes; it reads no lead over a sector, and the card's
+        // keys and M1's row say so in design (b)'s words.
+        var followers = await CardFrozenAt(
+            new Dictionary<string, double>(provisional)
+            {
+                [IndexHeavyweightCandidate.DesignParameter] = IndexHeavyweightCandidate.DesignB,
+                [IndexHeavyweightCandidate.LargestParameter] = 0,
+                [IndexHeavyweightCandidate.LookBackParameter] = 0,
+                [IndexHeavyweightCandidate.LeadersParameter] = 0,
+                [IndexHeavyweightCandidate.BetaParameter] = 0,
+                [IndexHeavyweightCandidate.LeadingExitParameter] = 0,
+                [IndexHeavyweightCandidate.AverageExitParameter] = 0,
+                [IndexHeavyweightCandidate.WindowParameter] = 21,
+                [IndexHeavyweightCandidate.IndustriesParameter] = 5,
+                [IndexHeavyweightCandidate.MembersParameter] = 1,
+            },
+            null);
+
+        Assert.Contains("data-next-rebalance=\"2026-11-02\" data-look-back=\"21\"", followers, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"degraded\">none: design (b) reads no lead over a sector</span></td>", followers, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"head-tip\" role=\"tooltip\">The sector its company files, or none where it files none: design (b) buys a member of an industry leading the S&P 500, not a sector's leader.</span>", followers, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"head-tip\" role=\"tooltip\">Design (b) buys the strongest members of the industries whose S&P 500 members lead the S&P 500 over its window, and reads no lead over a sector.</span>", followers, StringComparison.Ordinal);
+        Assert.DoesNotContain("bought before its book stored a lead", followers, StringComparison.Ordinal);
     }
 }

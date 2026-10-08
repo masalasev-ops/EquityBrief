@@ -3,8 +3,8 @@ using System.Text;
 namespace EquityBrief.Web.Marks;
 
 // One holding on the sector heavyweights' card: the stock and its company, its sector, the session it was bought on,
-// its lead over its sector at the last rebalance that read it, and tonight's close beside its 200-session average with
-// whether the book's own rule reads the close as under it.
+// its lead over its sector at the last rebalance that read it, or the words saying why none is drawn, and tonight's close
+// beside its 200-session average with whether the book's own rule reads the close as under it.
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public sealed record HeavyweightHoldingCell(
     string Ticker,
@@ -16,7 +16,8 @@ public sealed record HeavyweightHoldingCell(
     decimal? Close,
     double? Average200,
     bool Under,
-    DecisionCardView? Card = null);
+    DecisionCardView? Card = null,
+    string? NoLead = null);
 
 // A holding the book ended, as the card names it: the stock, the session it ended on and why.
 public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, string Reason);
@@ -24,8 +25,9 @@ public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, strin
 // The sector heavyweights' card on a night: the family's words, the sessions its returns are read over, its last
 // rebalance on or before the night and the next one, the holdings open at the night's close in sector order, what the
 // last rebalance bought, what ended at it or since, why it holds nothing where it holds nothing, the day its live
-// rule registered with the variants standing beside it, none where no freeze has registered it, and why the month's
-// rebalance waits where it has not been read.
+// rule registered with the variants standing beside it, none where no freeze has registered it, why the month's
+// rebalance waits where it has not been read, and what a column's key says, by its heading, where the card's book reads
+// that column otherwise than the S&P 500's.
 public sealed record HeavyweightCardView(
     string Heading,
     string Eyebrow,
@@ -40,7 +42,8 @@ public sealed record HeavyweightCardView(
     DateOnly? LiveSince = null,
     int Variants = 0,
     bool SweepFoundNone = false,
-    string? Waits = null);
+    string? Waits = null,
+    IReadOnlyDictionary<string, string>? Says = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -58,14 +61,19 @@ public sealed record HeavyweightPickCell(
 
 public sealed partial class MarkRenderer
 {
+    // The headings of the columns drawing a holding's sector and its lead, whose keys a card may state in its own words.
+    public const string SectorHeading = "Sector";
+
+    public const string LeadHeading = "Lead over its sector";
+
     // What each column of the sector heavyweights' card holds, in the order the columns are drawn.
     public static IReadOnlyList<(string Heading, string Says)> HeavyweightHeadings { get; } =
     [
         ("#", "The holding's place on the card, the sectors in alphabetical order."),
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
-        ("Sector", "The sector the stock was bought as the leader of."),
+        (SectorHeading, "The sector the stock was bought as the leader of."),
         ("Held since", "The session the book bought it on, at that session's close."),
-        ("Lead over its sector", "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it."),
+        (LeadHeading, "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it."),
         ("Close against its 200-day", "Tonight's close beside its 200-day average, which the trend gate read at the rebalance. A close under it sells nothing on its own."),
         ("Plan", "Held while it leads: no stop and no target. It is sold at the close of a later month's rebalance where it no longer leads, or at its last close as a member."),
     ];
@@ -109,10 +117,10 @@ public sealed partial class MarkRenderer
 
             foreach (var (heading, says) in HeavyweightHeadings)
             {
-                body.Append(TippedHeading(heading, says, heading switch
+                body.Append(TippedHeading(heading, card.Says?.GetValueOrDefault(heading) ?? says, heading switch
                 {
                     "#" => "place",
-                    "Lead over its sector" => "r",
+                    LeadHeading => "r",
                     _ => null,
                 }));
             }
@@ -166,7 +174,7 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"<td>{DayOf(holding.HeldSince)}</td>");
         cells.Append(holding.Lead is { } lead
             ? Formatted($"<td class=\"r num heavyweight-lead\">{lead * 100:+0.0;-0.0;0.0} points over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at {DayOf(on)}") : string.Empty)}</td>")
-            : "<td class=\"r num heavyweight-lead\"><span class=\"degraded\">not read</span></td>");
+            : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(holding.NoLead ?? "not read")}</span></td>"));
         cells.Append(holding.Close is { } shut && holding.Average200 is { } line
             ? Formatted($"<td class=\"heavyweight-average\" data-under=\"{Flag(holding.Under)}\">{Figures.Price(shut)}, {(holding.Under ? "under" : "at or above")} its 200-day average of {line.ToString("#,##0.00", Invariant)}</td>")
             : "<td class=\"heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>");

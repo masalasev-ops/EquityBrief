@@ -1,0 +1,9 @@
+# The remedy of the 15.1 correction (the S&P 400's and 600's books price each trade and holding at its company's value,
+# store each holding's lead and sell a holding leaving the index at its last close as a member), as its PROGRESS entry
+# prints it: the migration adds each holding's lead, which the index's Tonight reads, so it runs before the surface is
+# started again; then each holding the books sold on leaving the index at a close other than its stock's on the session
+# it was sold is written again at that close with its round trip from it, the S&P 600's FORM, sold on 2026-10-05 at its
+# buy of 149.15 where it closed at 147.99. Nothing asks the provider and nothing calls a model. Run after the merge and
+# before the night, when no night, queue, report pass or labeller is running.
+migrate
+index-families --leavers

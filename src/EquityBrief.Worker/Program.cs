@@ -40,7 +40,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
     "members" => await MembersRun(args),
-    "index-families" => await IndexFamiliesRun(),
+    "index-families" => await IndexFamiliesRun(args),
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
@@ -98,7 +98,9 @@ static int NoVerb()
         "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
         "from their funds' files beside the index's and each member holding no bar asked for its year, " +
         "'index-families' runs the night's index families step by hand over the newest session the store holds, the S&P " +
-        "400's and 600's provisional rules read by the sweep's own code into their tables and asking for nothing, " +
+        "400's and 600's provisional rules read by the sweep's own code into their tables and asking for nothing, with " +
+        "'--leavers' instead selling again each holding the books sold on leaving the index at its stock's stored close on " +
+        "the session it was sold, its round trip from that close, " +
         "'history-pull --index-funds' pulls SPY's, IJH's, IJR's and HYG's daily series, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
@@ -420,13 +422,22 @@ static async Task<int> MembersRun(string[] args)
 // 400's and 600's provisional rules read by the sweep's own code into their tables as the night reads them, asking the
 // provider for nothing.
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
-static async Task<int> IndexFamiliesRun()
+static async Task<int> IndexFamiliesRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     IClock clock = SystemClock.ForUnitedStatesSessions();
     var startedAt = clock.UtcNow;
     var runId = FormattableString.Invariant($"{IndexFamilies.ByHandPrefix}{startedAt:yyyyMMddTHHmmss.fffffffZ}");
+
+    // The holdings the books sold on leaving the index, sold again at their stocks' closes and nothing else read.
+    // see: A heavyweight leaving the index is sold at its last session's close as a member
+    if (VerbArguments.Has(args, "--leavers"))
+    {
+        Console.Out.WriteLine("index-families: " + await new IndexFamilies(clock, store.DatabaseFile).SellLeaversAgainAsync(runId));
+
+        return 0;
+    }
 
     // The index rules standing when the run started, as a night reads them.
     var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync();
