@@ -40674,11 +40674,12 @@ Mutated:    the rule, stated before the run: the condition the operator's wait t
             reading the stamped result over an edited tree. Result: red as predicted, "Not found: verify-phase:
             running the suite"; the three tests green with the condition back. Made on this branch and reverted
             before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: <sha>, the
-            entry's commit, the second gate reading the first's suite result.
-            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, <n> of <n> tests ran with none failed, migrations 0 to
-            74 with none pending, schema version 74, against `data-ci` and never `data`.
-            `tools/verify-phase.ps1`: <t> tables, <c> claims, <c> PASS, 0 FAIL, 0 out of scope, 0 unexamined, <p>
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ad08c36b, the
+            entry's commit, the second gate reading the first's suite result and green in three seconds where it took
+            thirteen minutes the run before.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2013 of 2013 tests ran with none failed in 10 minutes
+            42 seconds, migrations 0 to 74 with none pending, schema version 74, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1042 claims, 1042 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1053
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
-            carried and 43 passed, reading the suite result `tools/ci.ps1` wrote over <sha>, <n> of <n> tests ran.
+            carried and 43 passed, reading the suite result `tools/ci.ps1` wrote over ad08c36b, 2013 of 2013 tests ran.
 Carried:    nothing new; 17.1's carried items stand, then 17.2.
