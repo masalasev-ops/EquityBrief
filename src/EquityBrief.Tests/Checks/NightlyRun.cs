@@ -61,6 +61,10 @@ public partial class NightlyRun
             // 5.4, tonight's list.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
 
+            // 17.3, the setup ledger's step and the index its part failed on.
+            CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood)."),
+            CheckReach.Key(Scope.FailureTable, "An index's setups the ledger could not compute"),
+
             // 5.3, the facts file.
             CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
 

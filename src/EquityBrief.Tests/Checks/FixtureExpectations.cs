@@ -117,6 +117,8 @@ public partial class FixtureExpectations
             .. SearchClaims,
             // 17.2, the cards: section 17's two rows and section 18's two.
             .. RuleCardsClaims,
+            // 17.3, the setup ledger: section 17's two rows and section 18's one.
+            .. LedgerClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

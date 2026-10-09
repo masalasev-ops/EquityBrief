@@ -1,0 +1,10 @@
+{
+  "stage": "ledger",
+  "derivation": "derived",
+  "derivedFrom": "the three swing families and the index the night reads, not a run: the ledger's step writes one setup_night row a family an index on the night, and every setup row it writes sits inside its family's loose gates, which the suite reads back off the rows' own readings against the gates' constants",
+  "tables": ["setup_night"],
+  "setupTable": "setup is the step's other table and is not named above, since over the fixture's four names and one night no family's loose gates pass, so the replay leaves it empty; the constructed-store test of the step writes and reads it",
+  "families": ["pullback", "breakout", "drift"],
+  "setupNightsAnIndex": 3,
+  "setups": "every setup row's family is one of the three, its session the night's, its source the night's, its pin the readings' version, its path open on the night it is written, and its readings inside its family's loose gates; how many there are depends on the fixture's bars and is not stated"
+}

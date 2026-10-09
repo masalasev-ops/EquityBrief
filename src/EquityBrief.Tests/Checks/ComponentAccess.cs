@@ -149,6 +149,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Rule cards"),
             CheckReach.Key(Scope.MatrixTable, "Rule cards"),
             CheckReach.Key(Scope.CatalogueTable, "Rule recorder"),
+
+            // 17.3, the setup ledger.
+            CheckReach.Key(Scope.CatalogueTable, "Setup ledger"),
+            CheckReach.Key(Scope.MatrixTable, "Setup ledger"),
             CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
 
             // 16.3, the taken trades' follower.

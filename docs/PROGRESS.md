@@ -40820,3 +40820,54 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    this pull request changes the night's code, so it merges after 17.2's first night, 2026-10-08, is read the
             morning after, with `tools/migrate.ps1` run on the store after the merge; the kept bars fill from the night
             after that as the fetcher drops its sessions, an operating fact the 17.3 entry records. Then the ledger.
+
+### 17.3 - the ledger: the setup tables, forty readings defined once and read as they stood, and the night's step appending the setups and closing their windows, the second of 17.3's pull requests   2026-10-09
+
+Built:      migration 77 creates `setup` and `setup_night`. `SetupLedger`, the one writer, runs as the night's step after
+            the swing filter's, section 14's sixteenth, and appends on each index every member-session a family's loose
+            gates pass, the pullback's through the sweep's own candidates, the breakout's through its sweep's highs and
+            ranges and the drift's through its reaction, each with the live rule's own setting's pass, the night's pick
+            and the member's cost in risks beside it, its plan as prices and as an anchor, and forty readings each
+            defined once in `LedgerReadings` and filled by `LedgerSetups` from the bars to the session, the market
+            series to the session's day and the quarters filed before it; it replays each path from bars through
+            `SetupReplay`, benchmarks it by the same plan on every member through `SetupBenchmark`, settled only once
+            every member's path has ended, and closes the windows of the setups stored before as their paths end. The
+            `ledger-build` verb writes the history for one index over a span, a quarter of sessions a transaction. The
+            loose gates and the history budget sit in `SetupGates`; the decision on what a setup is; section 13.10; the
+            catalogue, matrix and stores rows; the night's step, the arithmetic now steps 1 to 22; section 17's two
+            rows and section 18's two; SCHEMA, the runbook, the roster's three clauses, the guide's paragraph and the
+            changelog. Forty readings against the plan's 36, each stated in the catalogue. Left for 17.3's later pull
+            requests: the heavyweights' setups, the business readings from the SEC's facts, the Ledger page, the history
+            build run from a clean copy of main's commit with its waits and the drain's lock, the point-in-time rebuild
+            over a scratch store, and the filings step, whose place in the night waits on the operator's C5 ruling.
+            PR 406, the kept bars, was merged by the operator on 2026-10-08 before 17.2's first night was read, their
+            call; that night, 2026-10-08, then ran clean from main with both, the cards' stage in 6 s writing 37 rule
+            rows, 7 variant picks and 90 forming rows across the three indices, and the fetcher keeping the 1,498 bars
+            it dropped for 2025-10-07, in 1,592 s to the close.
+Tests:      filled from the run, seven more: each market series reading worked by hand at its window's edge over the
+            series' own sessions; each loose gate on both sides of its threshold and at it with the floors; a setup's
+            edge against the same plan on three constructed members with the benchmark settled only once every path has
+            ended; the readings of a session read the same over a series cut there and over the whole and differing
+            from the session after's, the close over its average, the weekdays to a print, the VIX and its change worked
+            by hand; the readings' version the pin of the catalogue and the filling source; the fixture's night writing
+            one setup night row a family over the same members and every setup inside its family's gates; and the
+            night's step over a constructed store appending a breakout and a drift setup with the pass, the pick and the
+            cost, a reading the bars do not reach stored as null, both windows closed at their stops the night after
+            with the benchmark unsettled, and a run again replacing its rows.
+Claims:     1076, from 1067: the setup ledger's catalogue and matrix rows, its two stores, section 17's two rows,
+            section 18's two and the night's step.
+Pins:       none moved; the readings carry a pin of their own, `LedgerReadings.Version`, held by a test to the two files.
+Mutated:    the rule, stated before the run: the property the done condition names, a reading read as it stood and one
+            session ahead refused, broken alone by reading the VIX's close on the day after the setup's session in
+            `LedgerSetups.Readings`. Predicted red at the readings of a session read the same whatever the series holds
+            after it, since the cut series holds no day after, and at the VIX's close worked by hand. Red as predicted:
+            the VIX read 75 over the series cut at the session and 76 over the whole, the session after's close. Reverted
+            before anything was committed. Not mutated: the loose gates, the benchmark's settling and the night's window
+            closing, each held by its own test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    this pull request changes the night's code, so it merges outside the night's window with `tools/migrate.ps1`
+            run on the store after the merge; its first night is read the morning after. The night step's time on the
+            live store is read off that night's run page against the plan's 60 s, and the history build is run and its
+            setup count a family an index, its time and its size against the budget are recorded by the pull request
+            that runs it from a clean copy. 17.1's remedy, `--from 6`, is the operator's to run after the night of
+            2026-10-08's drain and copy have ended.

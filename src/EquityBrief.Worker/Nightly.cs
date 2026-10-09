@@ -474,7 +474,18 @@ public static class Nightly
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
             }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, RuleCards.Stage, TakenFollower.Stage]),
-            // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
+            // Section 14's step 16. The setup ledger, after the families have drawn every index's list, since it
+            // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
+            // on each index and closes the windows of the setups stored before that ended on tonight's close. A
+            // failure in an index's part is named on its row, and the step goes on.
+            // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+            new("ledger", async () =>
+            {
+                var outcome = await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).NightAsync(runId, night.Token);
+
+                return EquityBrief.Worker.Ledger.SetupLedger.Detail(outcome.Indices);
+            }, [EquityBrief.Worker.Ledger.SetupLedger.Stage]),
+            // Section 14's step 17. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.
             new("shape-proposal", async () =>
@@ -486,7 +497,7 @@ public static class Nightly
                     ? $"proposal {written} written for filter version {outcome.Version} over {outcome.Ordinary} ordinary night(s)"
                     : $"{outcome.Ordinary} ordinary night(s) under filter version {outcome.Version}, {(outcome.Crossed ? "a proposal already stands" : "nothing proposed")}";
             }),
-            // Section 14's step 17. The facts file and the change list are one
+            // Section 14's step 18. The facts file and the change list are one
             // stage rather than two, because the detector compares tonight's
             // payload against the last stored one and there is nothing for it
             // to read until the assembler has written tonight's.
@@ -503,7 +514,7 @@ public static class Nightly
                     $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s), " +
                     $"{(changes.NotCompared ?? []).Count} not compared, {changes.PayloadsEmptied} payload(s) emptied";
             }, [FactsAssembler.Stage, ChangeDetector.Stage]),
-            // Section 14's step 18. Once per night rather than per name,
+            // Section 14's step 19. Once per night rather than per name,
             // because the base rate is a figure over the whole population and a
             // per-name pass would compute it once per name from the same rows.
             new("forward-returns", async () =>
@@ -514,7 +525,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} row(s) written over {outcome.ListingsExamined} listing(s) and {outcome.PlansExamined} swing plan(s), {outcome.Kept} kept as decided, " +
                     $"{outcome.Matured} newly matured, {outcome.Immature} not yet matured, {outcome.PlansNotScorable} swing plan(s) not scorable from the night's close";
             }),
-            // Section 14's step 19. One dated query, paged until the day is
+            // Section 14's step 20. One dated query, paged until the day is
             // covered, fanned out to names in code.
             new("news-pulse", async () =>
             {
@@ -525,7 +536,7 @@ public static class Nightly
                     $"{outcome.RowsWritten} row(s), {outcome.NamesCounted} name(s) with news, " +
                     $"{outcome.RowsDropped} dropped";
             }),
-            // Section 14's step 20, from 8.6. Counterfactual and free: the bars
+            // Section 14's step 21, from 8.6. Counterfactual and free: the bars
             // are already stored, so scoring a version costs the ladder stage run
             // again per version and the level stage as well for a version of the
             // merge distance, and never a request. It runs after the arithmetic
@@ -544,7 +555,7 @@ public static class Nightly
                 return $"{outcome.Versions} open version(s), {outcome.Replayed} replayed with {outcome.ReplayedMergeDistance} of the merge distance, " +
                     $"{outcome.RowsWritten} score(s) over {outcome.NamesScored} name(s), {outcome.NamesNotComputed} left out, {outcome.RowsDropped} dropped";
             }),
-            // Section 14's step 21, which closes the arithmetic and records its
+            // Section 14's step 22, which closes the arithmetic and records its
             // counts. It computes nothing: every figure is counted off the
             // store the night has just written, which is what makes it a record
             // of what happened rather than of what each stage intended.
@@ -557,7 +568,7 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
-            // Section 14's step 22, after the arithmetic has closed and before the overnight queue. The
+            // Section 14's step 23, after the arithmetic has closed and before the overnight queue. The
             // reported quarters of the members due, one request for a member's fundamentals and one for
             // its closes where the answer is stored, the fourth carve-out the nightly rule names. It is
             // handed no token from the night's deadline, which bounds the arithmetic: it is bounded by its
@@ -577,7 +588,7 @@ public static class Nightly
 
                 return QuarterFetcher.Detail(outcome);
             }),
-            // Section 14's step 23, after the arithmetic has closed and recorded its
+            // Section 14's step 24, after the arithmetic has closed and recorded its
             // counts. It calls the local model and nothing else, and no figure above it
             // moves whether it ran. It is handed no token from the night's deadline: that
             // deadline bounds the arithmetic, and the queue is bounded by its own limit,
@@ -603,7 +614,7 @@ public static class Nightly
                     $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
                     $"{outcome.Outcome}, {outcome.Awake}";
             }, [OvernightQueue.Stage]),
-            // Section 14's step 24, after the overnight queue, which writes the first name's key
+            // Section 14's step 25, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
             // name. The night asks for six reports taken in turn across the S&P 500's, 400's and
             // 600's pages and starts the drain as a press does: it writes a row a name and starts

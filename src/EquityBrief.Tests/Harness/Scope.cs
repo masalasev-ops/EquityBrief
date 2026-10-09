@@ -3124,6 +3124,44 @@ internal static class Scope
             Verdict.Pass,
             "a member under its high with the market check closed is not forming, and the forming list drawn with the check closed says so above its rows",
             ByExpectations),
+        // 17.3, the setup ledger: its catalogue and matrix rows, its two stores, section 17's two rows, section 18's two
+        // and the night's step.
+        [CheckReach.Key(CatalogueTable, "Setup ledger")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, market series, calendar, the pulled history's tables, reported quarters, companies, member readings, family picks, index family picks and setups it reads, and the setups and setup nights it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Setup ledger")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Setups")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Setup nights")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Setup ledger's loose gates")] = new Scoped(
+            Verdict.Pass,
+            "each loose gate worked by hand on both sides of its threshold and at it, the floors at $5 and half the index's floor on both sides, and the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Setup ledger's history budget")] = new Scoped(
+            Verdict.Pass,
+            "the figure read off the document against the constant; the build's size against it is a measurement the record carries",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A reading the ledger cannot read")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed series the readings its inputs do not reach, the 200-session average's and the index series' among them, are stored as none, and a gate reading one not available fails",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An index's setups the ledger could not compute")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store an index holding no member on the night writes no row while the index read writes its three, and a failure in an index's part is named on the step's row by the stage's own words",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood).")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the step appends a breakout and a drift setup with the live rule's pass, the pick and the cost, writes one row a family over the members read, closes both windows at their stops the night after with the benchmark unsettled, and run again replaces its own rows; and the night runs it after the swing filter's step and before the shape proposal",
+            ByNight),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4316,6 +4354,9 @@ internal static class Scope
         // and the row's own Asserted by column names a fixture search. That
         // arrives with the research pass at 6.1.
         ["Source lists"] = "6.9",
+        // 4.7's text says the forward returns resolve "setups", the ladder's, four phases before the setup
+        // ledger's store of that name exists; the store lands with the ledger at 17.3, whose text names it too.
+        ["Setups"] = "17.3",
 
         // 1.2 builds the backfill, and this row is the limit on it rather than
         // the component. Its own Asserted by column names the run log's request
@@ -4460,6 +4501,9 @@ internal static class Scope
         ["Rule nights"] = "17.2",
         ["Rule picks"] = "17.2",
         ["Forming rows"] = "17.2",
+        // 17.3's two, the setups and the ledger's rows a family a night.
+        ["Setups"] = "17.3",
+        ["Setup nights"] = "17.3",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5779,6 +5823,9 @@ internal static class Scope
         ["The local lane's settings flag no model as the default or more than one"] = "16.1",
         // The cards' rule rows, 17.2; the rule the night did not evaluate is named by the plan's own text and derives from it.
         ["A forming list on a night the market check closed"] = "17.2",
+        // The setup ledger, 17.3.
+        ["A reading the ledger cannot read"] = "17.3",
+        ["An index's setups the ledger could not compute"] = "17.3",
         // The market switches, the operator's ruling of 2026-10-03.
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // The 9.2 correction of 2026-10-03, a drain that stops on an error.
@@ -5985,6 +6032,9 @@ internal static class Scope
         ["Provider stop of a pull"] = "17.1",
         // The cards' thresholds, 17.2; the stretch mark is named by the plan's own text and derives from it.
         ["Forming list thresholds"] = "17.2",
+        // The setup ledger's gates and its budget, 17.3.
+        ["Setup ledger's loose gates"] = "17.3",
+        ["Setup ledger's history budget"] = "17.3",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
@@ -6038,6 +6088,8 @@ internal static class Scope
         ["Read the reported quarters of every member"] = "12.2",
         ["Ask the provider for the reported quarters"] = "12.2",
         ["Evaluate every member through the swing filter"] = "12.2",
+        // 17.3's step, the setup ledger after the swing filter's.
+        ["Append tonight's setups to the ledger"] = "17.3",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",

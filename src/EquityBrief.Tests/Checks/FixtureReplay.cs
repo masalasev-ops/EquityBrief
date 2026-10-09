@@ -106,6 +106,7 @@ public class FixtureReplay
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
         await new SwingFilter(night, store.DatabaseFile).RunAsync(Index, "replay-swing-filter");
+        await new EquityBrief.Worker.Ledger.SetupLedger(night, store.DatabaseFile).NightAsync("replay-ledger");
 
         // The detector again, in the order the night takes: the shortlist is
         // written before the facts file, and the detector's retention reads the

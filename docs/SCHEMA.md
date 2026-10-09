@@ -85,6 +85,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `rule_night` | RuleCards | none | RuleCards |
 | `rule_pick` | RuleCards | RuleCards | RuleCards |
 | `forming_row` | RuleCards | none | RuleCards |
+| `setup` | SetupLedger | SetupLedger | SetupLedger |
+| `setup_night` | SetupLedger | none | SetupLedger |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1241,6 +1243,97 @@ Grain: one row per index, night, breakout rule and place a member forming a brea
 Primary key: `index_code`, `session_date`, `rule`, `place`.
 
 **The rule cards stage writes them and is its own deleter: a night run again replaces its own rows** (see: The forming list advises and never lists a stock).
+
+### setup
+Grain: one row per index, family, stock and session a family's loose gates passed the stock on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
+| `rule` | TEXT | the words of the live rule's setting the pass beside it was read at: the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting |
+| `live_pass` | INTEGER | 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not |
+| `picked` | INTEGER | 1 where the night's own list held the stock under the family, 0 where the night listed and did not, null on a row the history build wrote |
+| `entry` | TEXT | decimal in code, the close the setup is bought at |
+| `stop` | TEXT | decimal in code, the plan's stop |
+| `target` | TEXT | decimal in code, the plan's target, null where the stop trails |
+| `trail` | TEXT | decimal in code, the distance the stop follows the highest close by, null where it does not |
+| `cap` | INTEGER | the sessions the trade is given before its last close ends it |
+| `risk_moves` | REAL | the stop's distance under the buy in the member's typical moves |
+| `close_over_twenty` | REAL | the first of the forty readings, each as the catalogue in the core defines it and as it stood on the session, null where the inputs do not reach it and never nought: the close over its 20-session average |
+| `close_over_fifty` | REAL | the close over its 50-session average |
+| `close_over_long` | REAL | the close over its 200-session average |
+| `fifty_over_long` | REAL | the 50-session average over the 200-session average |
+| `move_share` | REAL | the typical move over the close |
+| `rsi` | REAL | the relative strength index on the session |
+| `rsi_up` | REAL | 1 where the relative strength index rose on the session, 0 where it did not |
+| `volume_ratio` | REAL | the session's volume over the mean of the 50 sessions before it |
+| `return_quarter` | REAL | the return over 63 sessions |
+| `return_half_year` | REAL | the return over 126 sessions |
+| `return_twelve_less_one` | REAL | the return over the 231 sessions ending 21 sessions before |
+| `strength` | REAL | the mean of the member's places among the members' returns over 63 and 126 sessions |
+| `strength_twelve_less_one` | REAL | the member's place among the members' returns over the 231 sessions ending 21 sessions before |
+| `high_ratio` | REAL | the close over the highest high of the 252 sessions ending on the session |
+| `since_high` | REAL | the sessions since the highest high of the 20 sessions before |
+| `depth` | REAL | the pullback from that high in typical moves |
+| `dry_up` | REAL | the volume while it came down over the 50-session average |
+| `gap_down` | REAL | the largest gap down inside that pullback in typical moves |
+| `rsi_low` | REAL | the lowest relative strength index since that high |
+| `tightness` | REAL | the mean daily range of the 20 sessions before over that of the 20 before them |
+| `liquidity` | REAL | the base-10 logarithm of the mean of close times volume over the 50 sessions to the session |
+| `earnings_sessions` | REAL | the weekdays to the next report on file, the report's day counted |
+| `surprise_sessions` | REAL | the sessions since the newest surprise's reaction session |
+| `surprise_percent` | REAL | that surprise in per cent |
+| `reward_to_risk` | REAL | the plan's target distance over its stop distance |
+| `freshness` | REAL | for a pullback the sessions since its trigger first fired, for a drift the sessions since its reaction |
+| `band_strength` | REAL | for a pullback the strength of the band holding the close |
+| `volume_multiple` | REAL | for a breakout the session's volume over its 50-session average, for a drift the reaction session's |
+| `range_ratio` | REAL | for a breakout the mean range of the 20 sessions before over that of the 20 before them |
+| `reaction_moves` | REAL | for a drift the reaction session's rise in typical moves |
+| `breadth` | REAL | the share of the index's members closing above their 200-session average |
+| `highs_less_lows` | REAL | the members at a 252-session high less those at a 252-session low, over the members held |
+| `index_over_long` | REAL | the index's own series' close over its 200-session average, the S&P 500 by its index and the 400 and 600 by their funds |
+| `vix` | REAL | the VIX's close |
+| `vix_change` | REAL | the VIX's close over its close 10 sessions before |
+| `mid_over_large` | REAL | IJH's return over SPY's across 63 sessions |
+| `small_over_large` | REAL | IJR's return over SPY's across 63 sessions |
+| `credit_over_fifty` | REAL | HYG's close over its 50-session average |
+| `profit` | REAL | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
+| `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty |
+| `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open |
+| `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended |
+| `cost` | REAL | the round trip in risks at the member's own cost on the night, null where the night stored none and on a history row |
+| `edge` | REAL | the result less the benchmark, null until both are read |
+| `edge_after_cost` | REAL | the edge less the cost, null where either is |
+| `sessions` | INTEGER | the sessions held, to the close that ended it or the last held while open |
+| `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap` or `none`, the last for an anchor placing no trade |
+| `ended_on` | TEXT | the session the path ended on, null while open |
+| `settled` | INTEGER | 1 once the result and the benchmark are both final, 0 before |
+| `source` | TEXT | `night` for a row the night's step wrote, `history` for one the build wrote |
+| `pin` | TEXT | the readings' version, the pin of their catalogue and the source that fills them |
+
+Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
+
+**The setup ledger writes it in the night after the families, and by hand over the history, and is its own updater and deleter: a night run again replaces its own rows, the build replaces the span's, and the step closes a window by updating its row once its path ended or its benchmark settled** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). Every price is TEXT and every reading REAL, because a reading is a statistic and a plan is money.
+
+### setup_night
+Grain: one row per index, family and session the ledger read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `session_date` | TEXT | the session |
+| `members` | INTEGER | the members the gates were read over, those holding a bar on the session with no gap |
+| `setups` | INTEGER | how many of them the family's loose gates passed |
+| `live_passes` | INTEGER | how many of those the live rule's own setting passes |
+| `source` | TEXT | `night` or `history`, as `setup` carries it |
+
+Primary key: `index_code`, `family`, `session_date`.
+
+**The setup ledger writes it beside the setups and is its own deleter** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). An index the night held no member of on the session has no row.
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.

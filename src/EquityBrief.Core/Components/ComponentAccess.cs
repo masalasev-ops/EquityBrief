@@ -76,6 +76,8 @@ public enum Store
     RulePick,
     FormingRow,
     KeptBar,
+    Setup,
+    SetupNight,
     TakenTrade,
     TakenRecord,
     DividendReading,

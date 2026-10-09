@@ -618,8 +618,9 @@ public class HistoryPullTests
             .ToArray();
 
         // The rule recorder declares the pulled tables its replay reads through the sweep's history, by hand and never on
-        // the night.
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // the night; the setup ledger reads the pulled market series and companies in its history build, by hand, and on
+        // the night the night's own tables.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.
