@@ -45,10 +45,6 @@ public sealed partial class ReadApi
         WHERE e.decision = 'declined' AND e.index_code = $index AND e.family = $family AND e.proposal = $proposal AND e.run_id <> $run_id
             AND COALESCE(q.change, '') = COALESCE($change, '');";
 
-    const string InsertDecision = @"
-        INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
-        VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";
-
     const string NewestSettingOf = "SELECT id FROM provisional_setting WHERE index_code = $index AND family = $family ORDER BY id DESC LIMIT 1;";
 
     const string NewestPeriodOf = "SELECT flagged FROM loop_alarm WHERE index_code = $index AND family = $family ORDER BY period DESC LIMIT 1;";
