@@ -1958,11 +1958,11 @@ app.MapGet("/screens/run/{night?}", async (
         "text/html; charset=utf-8");
 });
 
-// One run log row for the surface coming up, which is the grain SCHEMA declares
+// One run log row for each start of the surface, which is the grain SCHEMA declares
 // and what section 15.10's run page reads. Written after the host is built so a
 // store that cannot be opened fails the start rather than a request.
 await app.Services.GetRequiredService<ReadApi>().RecordStartAsync(
-    FormattableString.Invariant($"read-api-{app.Services.GetRequiredService<IClock>().UtcNow:yyyyMMddTHHmmssZ}"),
+    ReadApi.StartRunId(app.Services.GetRequiredService<IClock>().UtcNow),
     "the read surface started");
 
 app.Run();
