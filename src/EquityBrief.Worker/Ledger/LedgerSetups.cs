@@ -57,12 +57,26 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
 }
 
 // What the ledger reads of one index on one session besides its series: each member's quarters as filed, its sector as
-// filed, and the members at a new high and a new low on each session.
+// filed, the members at a new high and a new low on each session, and each member's filer's facts as first filed, read
+// for a session from those filed before it. The business readings change only when a fact is filed, so they are kept
+// for a member by how many of its facts were filed before the session.
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
     int[] Highs,
-    int[] Lows);
+    int[] Lows,
+    IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>? Facts = null)
+{
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), BusinessReading> business = new();
+
+    public BusinessReading Business(string ticker, DateOnly session)
+    {
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+
+        return business.GetOrAdd((ticker, filed), _ => FiledFacts.Read(facts, session));
+    }
+}
 
 // The setups of one index on one session, family by family, through the sweep's own readings of the series: the
 // pullback's candidates as the sweep reads them, the breakout's highs and ranges as its sweep reads them, and the
@@ -399,6 +413,14 @@ public static class LedgerSetups
         Set("credit_over_fifty", credit is null ? null : SeriesReadings.OverAverage(credit, day, LedgerReadings.CreditAverageSessions));
         Set("profit", LedgerReadings.Flag(MemberReadings.Profit(income, day)));
         Set("coverage", LedgerReadings.Flag(MemberReadings.Coverage(income, day, sector)));
+
+        var business = context.Business(ticker, day);
+
+        Set("revenue_growth", business.RevenueGrowth);
+        Set("growth_change", business.GrowthChange);
+        Set("gross_margin_change", business.GrossMarginChange);
+        Set("operating_margin_change", business.OperatingMarginChange);
+        Set("cash_over_income", business.CashOverIncome);
 
         return readings;
     }

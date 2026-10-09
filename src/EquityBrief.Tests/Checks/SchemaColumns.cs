@@ -68,6 +68,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Kept bars"),
             CheckReach.Key(Scope.StoresTable, "Setups"),
             CheckReach.Key(Scope.StoresTable, "Setup nights"),
+            CheckReach.Key(Scope.StoresTable, "Filed facts"),
+            CheckReach.Key(Scope.StoresTable, "Facts pulls"),
+            CheckReach.Key(Scope.StoresTable, "Filing days"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

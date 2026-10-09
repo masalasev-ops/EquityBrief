@@ -14,7 +14,7 @@ public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "59aeb6e277f2";
+    public const string Version = "38a5dfda1bd3";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -70,6 +70,11 @@ public static class LedgerReadings
         new("credit_over_fifty", "HYG's close over its 50-session average"),
         new("profit", "1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise"),
         new("coverage", "1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise"),
+        new("revenue_growth", "the newest quarter's revenue as first filed before the session over the same quarter's a year before, less one"),
+        new("growth_change", "that growth less the quarter before's growth on its own year before"),
+        new("gross_margin_change", "the newest quarter's gross profit over its revenue less the same quarter's a year before"),
+        new("operating_margin_change", "the newest quarter's operating income over its revenue less the same quarter's a year before"),
+        new("cash_over_income", "the newest fiscal year's cash from operations over its net income, both as first filed before the session, where that income is above nothing"),
     ];
 
     public static int Count => All.Count;

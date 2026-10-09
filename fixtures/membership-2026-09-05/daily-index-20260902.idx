@@ -1,0 +1,16 @@
+Description:           Daily Index of EDGAR Dissemination Feed
+Last Data Received:    Sep 2, 2026
+Comments:              webmaster@sec.gov
+Anonymous FTP:         ftp://ftp.sec.gov/edgar/
+
+CIK|Company Name|Form Type|Date Filed|File Name
+--------------------------------------------------------------------------------
+1000275|ROYAL BANK OF CANADA|424B2|20260902|edgar/data/1000275/0000950103-26-013389.txt
+1002047|NetApp, Inc.|10-Q|20260902|edgar/data/1002047/0001193125-26-380207.txt
+1002047|NetApp, Inc.|8-K|20260902|edgar/data/1002047/0001002047-26-000003.txt
+100591|ARGAN INC|10-Q|20260902|edgar/data/100591/0001104659-26-104745.txt
+1065280|NETFLIX INC|4|20260902|edgar/data/1065280/0001065280-26-000259.txt
+1065280|NETFLIX INC|4|20260902|edgar/data/1065280/0001104659-26-104794.txt
+1601046|Keysight Technologies, Inc.|10-Q|20260902|edgar/data/1601046/0001601046-26-000036.txt
+789019|MICROSOFT CORP|4|20260902|edgar/data/789019/0000789019-26-000161.txt
+789019|MICROSOFT CORP|8-K|20260902|edgar/data/789019/0001193125-26-380280.txt

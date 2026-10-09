@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
@@ -59,6 +60,7 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
@@ -93,6 +95,21 @@ public sealed class SetupLedger : IComponent
     const string Sectors = "SELECT ticker, sector FROM company WHERE sector IS NOT NULL ORDER BY fetched_at;";
 
     const string PulledSectors = "SELECT ticker, sector FROM pulled_company WHERE sector IS NOT NULL;";
+
+    // Each ticker's filer: the newest the quarters step filed for it, and the companies pull's beneath it for the
+    // history, read in that order so the night's own replaces the pull's.
+    const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
+
+    const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
+
+    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik;";
+
+    const string BusinessAgain = @"
+        UPDATE setup
+        SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
+            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income
+        WHERE ticker = $ticker AND session_date = $session AND source = $source;
+    ";
 
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.
     const string Costs = "SELECT ticker, cost FROM member_reading WHERE index_code = $index AND session_date = $night AND cost IS NOT NULL;";
@@ -212,6 +229,7 @@ public sealed class SetupLedger : IComponent
         var costs = await CostsAsync(connection, index, night, cancellation);
         var picks = await PicksAsync(connection, index, night, cancellation);
         var open = await OpenAsync(connection, index, night, cancellation);
+        var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -230,7 +248,7 @@ public sealed class SetupLedger : IComponent
             {
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, new LedgerContext(income, sectors, highs, lows));
+                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, new LedgerContext(income, sectors, highs, lows, facts));
 
                 foreach (var family in families)
                 {
@@ -392,7 +410,8 @@ public sealed class SetupLedger : IComponent
 
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
-        var context = new LedgerContext(income, sectors, highs, lows);
+        var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var context = new LedgerContext(income, sectors, highs, lows, facts);
         var first = Array.FindIndex(calendar, session => session >= from);
         var last = Array.FindLastIndex(calendar, session => session <= through);
 
@@ -688,6 +707,108 @@ public sealed class SetupLedger : IComponent
         }
 
         return sectors;
+    }
+
+    // Each ticker's filer's facts as first filed, the filer read off the companies the query names, a later row of one
+    // ticker's filer replacing an earlier one.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>> FactsAsync(
+        SqliteConnection connection,
+        IReadOnlyList<string> filerQueries,
+        IEnumerable<string> tickers,
+        CancellationToken cancellation)
+    {
+        var filerOf = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var sql in filerQueries)
+        {
+            await using var command = Command(connection, null, sql, []);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                filerOf[reader.GetString(0)] = SecEdgarArchive.Padded(reader.GetString(1));
+            }
+        }
+
+        var byFiler = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+        var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            if (!filerOf.TryGetValue(ticker, out var cik))
+            {
+                continue;
+            }
+
+            if (!byFiler.TryGetValue(cik, out var rows))
+            {
+                var read = new List<FiledFactRow>();
+
+                await using var command = Command(connection, null, FactsOfFiler, [("$cik", cik)]);
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    read.Add(new FiledFactRow(
+                        reader.GetString(0),
+                        DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        Money.FromStorage(reader.GetString(3)),
+                        DateOnly.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        reader.GetString(5),
+                        reader.GetString(6)));
+                }
+
+                rows = read;
+                byFiler[cik] = rows;
+            }
+
+            facts[ticker] = rows;
+        }
+
+        return facts;
+    }
+
+    // The business readings of the night's setups read again for the tickers given, once the filings refresh has
+    // stored what the archive posted before the session; the night's rows alone, each from the facts filed before
+    // the setup's session. It returns how many rows it read again.
+    public async Task<int> BusinessAgainAsync(DateOnly session, IReadOnlyList<string> tickers, CancellationToken cancellation = default)
+    {
+        if (tickers.Count == 0)
+        {
+            return 0;
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
+        var read = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            var business = FiledFacts.Read(facts.GetValueOrDefault(ticker) ?? [], session);
+
+            await using var command = Command(connection, transaction, BusinessAgain,
+            [
+                ("$ticker", ticker),
+                ("$session", Stamp(session)),
+                ("$source", NightSource),
+                ("$revenue_growth", (object?)business.RevenueGrowth ?? DBNull.Value),
+                ("$growth_change", (object?)business.GrowthChange ?? DBNull.Value),
+                ("$gross_margin_change", (object?)business.GrossMarginChange ?? DBNull.Value),
+                ("$operating_margin_change", (object?)business.OperatingMarginChange ?? DBNull.Value),
+                ("$cash_over_income", (object?)business.CashOverIncome ?? DBNull.Value),
+            ]);
+
+            read += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return read;
     }
 
     static async Task<IReadOnlyDictionary<string, double>> CostsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)

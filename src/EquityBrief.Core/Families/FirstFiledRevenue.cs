@@ -43,14 +43,18 @@ public static class FirstFiledRevenue
 
     // Every quarter the facts state or give as a year less its nine months, one a period, each as first filed: the
     // earliest filing, a quarter stated before one worked out on the same day, then the concept's place in the order.
-    public static IReadOnlyList<QuarterRevenue> Quarters(IEnumerable<FiledRevenue> facts)
+    public static IReadOnlyList<QuarterRevenue> Quarters(IEnumerable<FiledRevenue> facts) => Quarters(facts, Concepts);
+
+    // The same rule over another measure's concepts, in that measure's order: the setup ledger reads gross profit,
+    // operating income and the rest of a filer's quarters by it, each as first filed.
+    public static IReadOnlyList<QuarterRevenue> Quarters(IEnumerable<FiledRevenue> facts, IReadOnlyList<string> order)
     {
-        var read = facts.Where(fact => Place(fact.Concept) >= 0).ToArray();
+        var read = facts.Where(fact => Place(fact.Concept, order) >= 0).ToArray();
         var candidates = new List<QuarterRevenue>();
 
         foreach (var period in read.Where(fact => Spans(fact, QuarterFewest, QuarterMost)).GroupBy(fact => (fact.Start, fact.End)))
         {
-            var first = FirstOf(period);
+            var first = FirstOf(period, order);
 
             candidates.Add(new QuarterRevenue(period.Key.Start, period.Key.End, first.Value, first.Filed, first.Concept, false));
         }
@@ -60,10 +64,10 @@ public static class FirstFiledRevenue
             var nines = concept
                 .Where(fact => Spans(fact, NineMonthsFewest, NineMonthsMost))
                 .GroupBy(fact => (fact.Start, fact.End))
-                .Select(FirstOf)
+                .Select(period => FirstOf(period, order))
                 .ToArray();
 
-            foreach (var year in concept.Where(fact => Spans(fact, YearFewest, YearMost)).GroupBy(fact => (fact.Start, fact.End)).Select(FirstOf))
+            foreach (var year in concept.Where(fact => Spans(fact, YearFewest, YearMost)).GroupBy(fact => (fact.Start, fact.End)).Select(period => FirstOf(period, order)))
             {
                 var nine = nines
                     .Where(fact => fact.Start == year.Start && fact.End < year.End)
@@ -90,17 +94,17 @@ public static class FirstFiledRevenue
                 .Select(period => period
                     .OrderBy(quarter => quarter.Filed)
                     .ThenBy(quarter => quarter.YearLessNineMonths)
-                    .ThenBy(quarter => Place(quarter.Concept))
+                    .ThenBy(quarter => Place(quarter.Concept, order))
                     .First())
                 .OrderBy(quarter => quarter.End),
         ];
     }
 
-    static int Place(string concept)
+    static int Place(string concept, IReadOnlyList<string> order)
     {
-        for (var at = 0; at < Concepts.Count; at++)
+        for (var at = 0; at < order.Count; at++)
         {
-            if (string.Equals(Concepts[at], concept, StringComparison.Ordinal))
+            if (string.Equals(order[at], concept, StringComparison.Ordinal))
             {
                 return at;
             }
@@ -109,12 +113,12 @@ public static class FirstFiledRevenue
         return -1;
     }
 
-    static bool Spans(FiledRevenue fact, int fewest, int most) => Days(fact.Start, fact.End) is var days && days >= fewest && days <= most;
+    public static bool Spans(FiledRevenue fact, int fewest, int most) => Days(fact.Start, fact.End) is var days && days >= fewest && days <= most;
 
-    static FiledRevenue FirstOf(IEnumerable<FiledRevenue> period) =>
+    static FiledRevenue FirstOf(IEnumerable<FiledRevenue> period, IReadOnlyList<string> order) =>
         period
             .OrderBy(fact => fact.Filed)
-            .ThenBy(fact => Place(fact.Concept))
+            .ThenBy(fact => Place(fact.Concept, order))
             .ThenBy(fact => fact.Accession, StringComparer.Ordinal)
             .First();
 }

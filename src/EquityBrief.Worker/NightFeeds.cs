@@ -48,6 +48,13 @@ public sealed record NightFeeds(
     // see: The night asks the dividend calendar for each of the next 21 sessions, one request a session
     public IDividendCalendarFeed Dividends { get; init; } = RecordedDividendCalendarFeed.None;
 
+    // The eleventh is the SEC's archive, which the filings refresh after the close asks for the days of its daily
+    // index since its last read and the facts of the members that filed, free and keyless, its documents counted on
+    // its own row apart from the provider's requests and so in neither figure below. A set of feeds built without it
+    // refreshes nothing, and the step's row says so.
+    // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+    public IFilingsRefreshFeed? Filings { get; init; }
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
@@ -84,6 +91,7 @@ public sealed record NightFeeds(
         {
             Funds = RecordedFundHoldingsFeed.FromFolder(folder),
             Dividends = RecordedDividendCalendarFeed.FromFolder(folder),
+            Filings = RecordedFilingsRefreshFeed.Holds(folder) ? RecordedFilingsRefreshFeed.FromFolder(folder) : null,
         };
 
     // The live bulk feed, from the two settings, or a refusal naming the one
@@ -152,16 +160,24 @@ public sealed record NightFeeds(
     // allowance and store live bars where a replay was meant. A live source with
     // no key must not resolve to a capture, because a night that quietly
     // replayed yesterday would look exactly like a night that ran.
+    //
+    // The archive's contact is the filings refresh's alone: a live night without one refreshes no filings and its
+    // step's row says why, since the refresh is bounded apart from the arithmetic and a missing contact is no reason
+    // to stop the night.
     public static NightFeeds Resolve(
         string? source,
         string? fixtureFolder,
         string? baseAddress,
-        string? apiKey) =>
+        string? apiKey,
+        string? archiveContact = null) =>
         FeedSource.Resolve(
             source,
             fixtureFolder,
             FromFixture,
-            () => Live(baseAddress, apiKey),
+            () => Live(baseAddress, apiKey) with
+            {
+                Filings = string.IsNullOrWhiteSpace(archiveContact) ? null : SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(archiveContact)),
+            },
             "a night");
 
     // Whether a set of feeds can reach the network at all, asked of the objects
@@ -188,5 +204,6 @@ public sealed record NightFeeds(
         || Fundamentals is not RecordedFundamentalsFeed
         || Market is not RecordedMarketSeriesFeed
         || Funds is not RecordedFundHoldingsFeed
-        || Dividends is not RecordedDividendCalendarFeed;
+        || Dividends is not RecordedDividendCalendarFeed
+        || Filings is not (null or RecordedFilingsRefreshFeed);
 }

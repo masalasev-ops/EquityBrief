@@ -698,7 +698,53 @@ public static class SchemaMigrations
         new Migration(75, "create rule_night, rule_pick and forming_row", CreateRuleCards),
         new Migration(76, "create kept_bar", CreateKeptBar),
         new Migration(77, "create setup and setup_night", CreateLedger),
+        new Migration(78, "create filed_fact, filed_fact_pull and filing_day, and add setup's business readings", CreateFiledFacts),
     ];
+
+    // The SEC's facts as first filed, one row a filer, concept and period, which the night's filings refresh and the
+    // whole refresh write and the ledger reads; one row a filer each time its facts were asked for; one row a day of
+    // the archive's daily index the refresh has read; and the five business readings a setup reads from the facts.
+    // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
+    // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+    const string CreateFiledFacts = @"
+        CREATE TABLE filed_fact (
+            cik           TEXT NOT NULL,
+            concept       TEXT NOT NULL,
+            period_start  TEXT NOT NULL,
+            period_end    TEXT NOT NULL,
+            dollars       TEXT NOT NULL,
+            filed         TEXT NOT NULL,
+            form          TEXT NOT NULL,
+            accession     TEXT NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (cik, concept, period_start, period_end)
+        ) STRICT;
+
+        CREATE TABLE filed_fact_pull (
+            cik        TEXT    NOT NULL,
+            pulled_at  TEXT    NOT NULL,
+            run_id     TEXT    NOT NULL,
+            accession  TEXT,
+            stored     INTEGER NOT NULL,
+            PRIMARY KEY (cik, pulled_at)
+        ) STRICT;
+
+        CREATE TABLE filing_day (
+            day        TEXT    NOT NULL PRIMARY KEY,
+            run_id     TEXT    NOT NULL,
+            read_at    TEXT    NOT NULL,
+            posted     INTEGER NOT NULL,
+            filings    INTEGER NOT NULL,
+            members    INTEGER NOT NULL,
+            refreshed  INTEGER NOT NULL
+        ) STRICT;
+
+        ALTER TABLE setup ADD COLUMN revenue_growth REAL;
+        ALTER TABLE setup ADD COLUMN growth_change REAL;
+        ALTER TABLE setup ADD COLUMN gross_margin_change REAL;
+        ALTER TABLE setup ADD COLUMN operating_margin_change REAL;
+        ALTER TABLE setup ADD COLUMN cash_over_income REAL;
+    ";
 
     // The setup ledger: one row a member-session a family's loose gates pass on an index, with the live rule's own
     // pass beside it, its plan as prices, its readings as they stood, and what its path came to under the plan's exit

@@ -48,6 +48,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-answer" => await SweepAnswerRun(args),
     "rule-record" => await RuleRecordRun(args),
     "ledger-build" => await LedgerBuildRun(args),
+    "filings" => await FilingsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -61,7 +62,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 28 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 29 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -136,6 +137,10 @@ static int NoVerb()
         "merged with the store's, each replayed to its end, a chunk of sessions at a time, going on from the sessions " +
         "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
         "the span again, " +
+        "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
+        "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
+        "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
+        "not yet stored as first filed, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -564,6 +569,47 @@ static async Task<int> LedgerBuildRun(string[] args)
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
         .BuildAsync(store.DataRoot, index, fromDay, throughDay, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
+}
+
+// The filings refresh by hand: the night's step over the three indices' members, or with '--whole' every filer the
+// store knows asked once, over the archive through the configured contact. A run without a contact is refused before
+// any request, as the archive refuses a request that names none.
+// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+static async Task<int> FilingsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var contact = configuration[ArchiveAgent.ContactName];
+
+    if (string.IsNullOrWhiteSpace(contact))
+    {
+        Console.Error.WriteLine($"filings: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+        return 1;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var refresher = new EquityBrief.Worker.Ledger.FilingsRefresher(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile);
+    var runId = FormattableString.Invariant($"filings-by-hand-{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}");
+
+    if (args.Contains("--whole", StringComparer.Ordinal))
+    {
+        var whole = await refresher.WholeAsync(runId, Console.Out);
+
+        Console.WriteLine(FormattableString.Invariant($"filings: {whole.FactsAsked} filer(s) asked, {whole.Facts} fact(s) stored in {whole.Seconds:0} s")
+            + (whole.Refusal is null ? string.Empty : "; stopped on the archive's refusal: " + whole.Refusal));
+
+        return whole.Refusal is null ? 0 : 1;
+    }
+
+    var outcome = await refresher.NightAsync(
+        EquityBrief.Worker.Indices.IndexFamilies.LargeIndex,
+        runId,
+        [.. EquityBrief.Worker.Indices.IndexFamilies.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)]);
+
+    Console.WriteLine("filings: " + EquityBrief.Worker.Ledger.FilingsRefresher.Detail(outcome));
+
+    return outcome.Refusal is null ? 0 : 1;
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule
@@ -1171,7 +1217,8 @@ static async Task<int> NightlyRun(string[] args)
             source,
             fixture,
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
-            configuration[ProviderCredentials.ApiKeyName]);
+            configuration[ProviderCredentials.ApiKeyName],
+            configuration[ArchiveAgent.ContactName]);
 
         // The overnight queue's local model, from the night's own source, with the lane, the limit
         // and the hold. Resolved here with the feeds rather than at the queue's own step, so a lane

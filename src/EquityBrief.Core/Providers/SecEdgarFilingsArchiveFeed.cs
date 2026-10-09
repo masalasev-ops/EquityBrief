@@ -27,10 +27,14 @@ namespace EquityBrief.Core.Providers;
 //
 // The history pull asks the archive for each filer's whole facts through the
 // same agent, one document a request, read by `ConceptAnswers.FromFacts`.
+//
+// The night's filings refresh asks it for a day's index, an 8-K's own index page and a filer's facts, each one
+// document through the same agent and the same transport.
+// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,
-    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed
+    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed, IFilingsRefreshFeed
 {
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -97,6 +101,26 @@ public sealed class SecEdgarFilingsArchiveFeed(
             : ConceptAnswers.FromFacts(body, padded, concepts);
     }
 
+    public Task<string?> DailyIndexAsync(DateOnly day, CancellationToken cancellation = default) =>
+        FetchAsync(new ArchiveRequest(ArchiveDocument.DailyIndex, SecEdgarArchive.DocumentHost, SecEdgarDailyIndex.PathOf(day)), cancellation);
+
+    public Task<string?> FilingPageAsync(string cik, string accession, CancellationToken cancellation = default) =>
+        FetchAsync(
+            SecEdgarArchive.Request(ArchiveDocument.FilingIndex, SecEdgarArchive.Padded(cik), accession, accession + "-index.htm"),
+            cancellation);
+
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>?> FactsAsync(
+        string cik,
+        IReadOnlyList<string> concepts,
+        CancellationToken cancellation = default)
+    {
+        var padded = SecEdgarArchive.Padded(cik);
+        var body = await FetchAsync(SecEdgarArchive.Request(ArchiveDocument.CompanyFacts, padded), cancellation)
+            .ConfigureAwait(false);
+
+        return body is null ? null : ConceptAnswers.FromFacts(body, padded, concepts);
+    }
+
     async Task<string?> FetchAsync(ArchiveRequest wanted, CancellationToken cancellation)
     {
         Documents++;
@@ -132,6 +156,15 @@ public sealed class SecEdgarFilingsArchiveFeed(
             // carried and not a failure. A filing without rendered reports and a
             // company without filed facts are both ordinary.
             if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            // A day the archive posted no index for is answered 403 with its storage's own refusal, where a request
+            // the archive refuses is answered 403 with a page of its own, so the body tells the two apart.
+            if (response.StatusCode == HttpStatusCode.Forbidden
+                && wanted.Document == ArchiveDocument.DailyIndex
+                && SecEdgarDailyIndex.NonePosted(await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false)))
             {
                 return null;
             }

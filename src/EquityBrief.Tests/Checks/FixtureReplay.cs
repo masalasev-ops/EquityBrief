@@ -130,6 +130,18 @@ public class FixtureReplay
             night,
             store.DatabaseFile).RunAsync(Index, "replay-quarters");
 
+        // The filings refresh, after the quarters fetch as the night runs it, over the archive's daily indexes of the
+        // week before the night and the filings they set off, from 17.3; then the ledger's business readings of the
+        // night's setups read again for the members it refreshed.
+        var filings = await new EquityBrief.Worker.Ledger.FilingsRefresher(
+            RecordedFilingsRefreshFeed.FromFolder(Folder()),
+            night,
+            store.DatabaseFile,
+            pause: (_, _) => Task.CompletedTask).NightAsync(Index, "replay-filings");
+
+        await new EquityBrief.Worker.Ledger.SetupLedger(night, store.DatabaseFile)
+            .BusinessAgainAsync(new DateOnly(2026, 9, 8), filings.Refreshed);
+
         // The one stage here that is not the night's. The fundamentals fetcher runs
         // when a name is opened, so it is replayed after the night rather than
         // inside it, and it is replayed at all because a table nothing populates is

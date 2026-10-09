@@ -3162,6 +3162,44 @@ internal static class Scope
             Verdict.Pass,
             "over a constructed store the step appends a breakout and a drift setup with the live rule's pass, the pick and the cost, writes one row a family over the members read, closes both windows at their stops the night after with the benchmark unsettled, and run again replaces its own rows; and the night runs it after the swing filter's step and before the shape proposal",
             ByNight),
+        // 17.3, the filings refresh: its catalogue and matrix rows, its three stores, section 17's row, section 18's two
+        // and the night's step.
+        [CheckReach.Key(CatalogueTable, "Filings refresher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the filings archive, the membership, companies, pulled companies, filed facts and filing days it reads, and the filed facts, facts pulls and filing days it writes",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Filings refresher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Filed facts")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Facts pulls")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Filing days")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Filings refresh")] = new Scoped(
+            Verdict.Pass,
+            "over constructed nights the days read are worked by hand from the week before the session and from the day after the last read, ten at most, a member that filed is refreshed and one that did not is never asked, and a step past its limit asks the archive for nothing; the figures read off the document against the constants",
+            ByCost),
+        [CheckReach.Key(FailureTable, "The archive refuses or does not answer the filings refresh")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store an archive refusing every document leaves the stored facts as they were and no day read, and the step's row says partial and names the refusal",
+            ByCost),
+        [CheckReach.Key(FailureTable, "The archive has not posted a day's index")] = new Scoped(
+            Verdict.Pass,
+            "over constructed nights a weekday before the session the archive holds no index for is written as none posted and the session's own stops the read, read on the next night",
+            ByCost),
+        [CheckReach.Key(NightlyRunSteps.Heading, EquityBrief.Tests.Checks.NightlyCost.FilingsStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs the refresh after the quarters step and before the queue, on its output and its run log's order, and over the fixture's week it refreshes the one member that filed a report and asks nothing for the others",
+            ByNight),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4430,6 +4468,8 @@ internal static class Scope
         ["Taken follower"] = "16.3",
         // 17.2's stage, which the plan describes by the rows it writes for every standing rule.
         ["Rule cards"] = "17.2",
+        // 17.3's, which the plan describes as the night step refreshing the members' filed facts.
+        ["Filings refresher"] = "17.3",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4504,6 +4544,10 @@ internal static class Scope
         // 17.3's two, the setups and the ledger's rows a family a night.
         ["Setups"] = "17.3",
         ["Setup nights"] = "17.3",
+        // 17.3's three, the SEC's facts as first filed, each ask for them and each day of the archive's index read.
+        ["Filed facts"] = "17.3",
+        ["Facts pulls"] = "17.3",
+        ["Filing days"] = "17.3",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5826,6 +5870,9 @@ internal static class Scope
         // The setup ledger, 17.3.
         ["A reading the ledger cannot read"] = "17.3",
         ["An index's setups the ledger could not compute"] = "17.3",
+        // The filings refresh, 17.3.
+        ["The archive refuses or does not answer the filings refresh"] = "17.3",
+        ["The archive has not posted a day's index"] = "17.3",
         // The market switches, the operator's ruling of 2026-10-03.
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // The 9.2 correction of 2026-10-03, a drain that stops on an error.
@@ -6035,6 +6082,8 @@ internal static class Scope
         // The setup ledger's gates and its budget, 17.3.
         ["Setup ledger's loose gates"] = "17.3",
         ["Setup ledger's history budget"] = "17.3",
+        // The filings refresh's limit, its days, its first read, its pace and its first period, 17.3.
+        ["Filings refresh"] = "17.3",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
@@ -6090,6 +6139,8 @@ internal static class Scope
         ["Evaluate every member through the swing filter"] = "12.2",
         // 17.3's step, the setup ledger after the swing filter's.
         ["Append tonight's setups to the ledger"] = "17.3",
+        // 17.3's step, the filings refresh after the quarters fetch.
+        ["Read the archive's daily index"] = "17.3",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",

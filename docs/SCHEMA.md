@@ -87,6 +87,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `forming_row` | RuleCards | none | RuleCards |
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
+| `filed_fact` | FilingsRefresher | none | none |
+| `filed_fact_pull` | FilingsRefresher | none | none |
+| `filing_day` | FilingsRefresher | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1301,7 +1304,7 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `small_over_large` | REAL | IJR's return over SPY's across 63 sessions |
 | `credit_over_fifty` | REAL | HYG's close over its 50-session average |
 | `profit` | REAL | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
-| `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty |
+| `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty readings migration 77 created |
 | `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open |
 | `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended |
 | `cost` | REAL | the round trip in risks at the member's own cost on the night, null where the night stored none and on a history row |
@@ -1313,8 +1316,15 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `settled` | INTEGER | 1 once the result and the benchmark are both final, 0 before |
 | `source` | TEXT | `night` for a row the night's step wrote, `history` for one the build wrote |
 | `pin` | TEXT | the readings' version, the pin of their catalogue and the source that fills them |
+| `revenue_growth` | REAL | from migration 78, the first of the five business readings, all from the facts filed before the session: the newest quarter's revenue as first filed over the same quarter's a year before, less one |
+| `growth_change` | REAL | that growth less the quarter before's growth on its own year before |
+| `gross_margin_change` | REAL | the newest quarter's gross profit over its revenue less the same quarter's a year before |
+| `operating_margin_change` | REAL | the newest quarter's operating income over its revenue less the same quarter's a year before |
+| `cash_over_income` | REAL | the newest fiscal year's cash from operations over its net income, null where that income is not above nothing |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
+
+**The five business readings sit last because migration 78 adds them to the table migration 77 created.** The night's step writes them from the facts the store held when it ran, and the filings refresh, after the close, has the ledger read them again for the members it refreshed, so a night's row reads every filing the archive posted before its session (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session).
 
 **The setup ledger writes it in the night after the families, and by hand over the history, and is its own updater and deleter: a night run again replaces its own rows, the build replaces the span's, and the step closes a window by updating its row once its path ended or its benchmark settled** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). Every price is TEXT and every reading REAL, because a reading is a statistic and a plan is money.
 
@@ -1334,6 +1344,57 @@ Grain: one row per index, family and session the ledger read.
 Primary key: `index_code`, `family`, `session_date`.
 
 **The setup ledger writes it beside the setups and is its own deleter** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). An index the night held no member of on the session has no row.
+
+### filed_fact
+Grain: one row per filer, concept and period, as first filed.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the filer's CIK padded to ten digits |
+| `concept` | TEXT | the archive's concept the figure was filed under, one of the six measures' |
+| `period_start` | TEXT | the first day of the period, a quarter, nine months or a year |
+| `period_end` | TEXT | the last day of the period, on or after 2015-01-01 |
+| `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it |
+| `filed` | TEXT | the day that filing was made |
+| `form` | TEXT | its form, as the archive names it |
+| `accession` | TEXT | its accession number |
+| `run_id` | TEXT | the refresh that stored the row |
+
+Primary key: `cik`, `concept`, `period_start`, `period_end`.
+
+**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
+
+### filed_fact_pull
+Grain: one row per filer each time the refresh asked for its facts.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the filer's CIK padded to ten digits |
+| `pulled_at` | TEXT | UTC instant of the ask |
+| `run_id` | TEXT | the refresh that asked |
+| `accession` | TEXT | the filing that set the night's ask off, null for the whole refresh |
+| `stored` | INTEGER | the facts the answer added that were not stored before |
+
+Primary key: `cik`, `pulled_at`.
+
+**What each refresh asked the archive for and what it added**, append-only, which is how a member's facts are known to have been asked after a filing.
+
+### filing_day
+Grain: one row per day of the archive's daily index the refresh read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `day` | TEXT | the day the index covers |
+| `run_id` | TEXT | the refresh that read it |
+| `read_at` | TEXT | UTC instant of the read |
+| `posted` | INTEGER | 1 where the archive posted an index for the day, 0 where it holds none, a weekday it was closed |
+| `filings` | INTEGER | the filings the index lists |
+| `members` | INTEGER | the member filers whose filing set a refresh off |
+| `refreshed` | INTEGER | how many of them were refreshed |
+
+Primary key: `day`.
+
+**The days the refresh has read, the newest of which it starts the next night's read after** (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit). A day is written only once every member it set off was refreshed, so a refusal or the step's limit leaves the day to be read again; the night's own session, not yet posted when the night runs, is never written by that night.
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
