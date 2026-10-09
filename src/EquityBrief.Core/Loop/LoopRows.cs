@@ -37,6 +37,13 @@ public sealed record LoopFindingRow(string Family, string Figure, double? Value,
 // among them, each side's median and the mean edge of each tenth in the reading's order.
 public sealed record LoopReadingRow(string Family, string Reading, int Units, int Winners, int Losers, double? WinnersMedian, double? LosersMedian, IReadOnlyList<double?> Deciles);
 
+// A family's learned score as a run stored it, the one fitted on all finished data: the setups ended before the session
+// it was cut at, how many it was fitted over, its hash and its weight in words.
+public sealed record LoopModelRow(string Family, DateOnly LearnedBefore, int Setups, string Hash, string Words);
+
+// A card's rank under its index's learned score as the night stored it, none until the score passed on the index.
+public sealed record LoopRankRow(string Family, string Ticker, int? Rank);
+
 // A proposal's test year as the run stored it: the setting the fold's learning years chose or none, and each side's
 // units and total edge after costs.
 public sealed record LoopTestRow(

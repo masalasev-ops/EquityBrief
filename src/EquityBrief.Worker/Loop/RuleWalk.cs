@@ -16,17 +16,20 @@ public sealed record RuleListing(int Name, int Bar, int Session, int? Exit, doub
 
 // One family's rule on an index read once for every engine: its words, its closes, the sessions a trade is given,
 // every listing it makes over the whole history, and its walk, five a night with one open trade a stock, under its own
-// exit or one of the menu's, over every listing or over those a filter keeps, each trade after its round trip and
-// against the same plan under the same exit on every member that session.
+// exit or one of the menu's, over every listing, over those a filter keeps or over each night's listings as a rule's
+// hooks order and keep them, each trade after its round trip and against the same plan under the same exit on every
+// member that session.
 // see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
 // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+// see: A fitted statistical model is a rule
 public sealed class RuleWalk(
     string family,
     string current,
     double[][] closes,
     int cap,
     IReadOnlyList<RuleListing> listings,
-    Func<ExitChoice?, Func<int, bool>?, IReadOnlyList<ExitProcedures.Walked>> walk)
+    Func<ExitChoice?, Func<int, bool>?, IReadOnlyList<ExitProcedures.Walked>> walk,
+    Func<Func<IReadOnlyList<int>, IReadOnlyList<int>>, IReadOnlyList<ExitProcedures.Walked>> arranged)
 {
     IReadOnlyList<ExitProcedures.Walked>? own;
 
@@ -46,6 +49,16 @@ public sealed class RuleWalk(
 
     // The rule's own walk over the listings a filter keeps, by each listing's place in the listings.
     public IReadOnlyList<ExitProcedures.Walked> Keeping(Func<int, bool> keep) => walk(null, keep);
+
+    // The rule's own walk under its own exit over each night's listings as an arrangement orders and keeps them: handed
+    // a night's listings in the rule's own order, by their places in the listings, it returns those kept in the order
+    // the walk takes them.
+    public IReadOnlyList<ExitProcedures.Walked> Arranged(Func<IReadOnlyList<int>, IReadOnlyList<int>> arrange) => arranged(arrange);
+
+    // The rule's own walk with its hooks set as a registration would set them: each night's listings kept and ordered by
+    // the hooks exactly as the night keeps and orders a hooked rule's candidates, a listing's readings read by its place.
+    public IReadOnlyList<ExitProcedures.Walked> Hooked(RuleHooks hooks, Func<int, IReadOnlyList<double?>> readingsOf) =>
+        arranged(night => hooks.Order(night, readingsOf));
 
     static double[][] ClosesOf(IReadOnlyList<SweepSeries> series) =>
         [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray())];
@@ -76,13 +89,34 @@ public sealed class RuleWalk(
             return new RuleListing(listing.Name, listing.Bar, listing.Session, result is null ? null : listing.Session + sessions, edge);
         }
 
+        // Each night's listings in the family's own order handed to the arrangement, and each it keeps carrying its place
+        // in the arrangement as its order, so the walk takes them as the arrangement ordered them.
+        IReadOnlyList<ExitProcedures.Walked> Arranged(Func<IReadOnlyList<int>, IReadOnlyList<int>> arrange)
+        {
+            var ordered = new List<FamilyListing>();
+
+            foreach (var night in Enumerable.Range(0, listed.Length).GroupBy(at => listed[at].Session).OrderBy(group => group.Key))
+            {
+                int[] own = [.. night.OrderByDescending(at => listed[at].Order).ThenByDescending(at => listed[at].ThenBy).ThenBy(at => tickers[listed[at].Name], StringComparer.Ordinal)];
+                var kept = arrange(own);
+
+                for (var place = 0; place < kept.Count; place++)
+                {
+                    ordered.Add(listed[kept[place]] with { Order = kept.Count - place, ThenBy = 0 });
+                }
+            }
+
+            return ExitProcedures.Walk(read, adapter, closes, ordered, null);
+        }
+
         return new RuleWalk(
             family,
             RuleReplay.SwingWords(family, setting),
             closes,
             listed.Select(one => one.Cap).DefaultIfEmpty(0).Max(),
             [.. listed.Select(Unit)],
-            (exit, keep) => ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], exit));
+            (exit, keep) => ExitProcedures.Walk(read, adapter, closes, keep is null ? listed : [.. listed.Where((_, at) => keep(at))], exit),
+            Arranged);
     }
 
     // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one
@@ -178,8 +212,36 @@ public sealed class RuleWalk(
             ];
         }
 
+        // Each night's listings in the walk's own order handed to the arrangement, and each it keeps carrying its place in
+        // the arrangement in the order the walk reads first, so the walk takes them as the arrangement ordered them.
+        IReadOnlyList<ExitProcedures.Walked> Arranged(Func<IReadOnlyList<int>, IReadOnlyList<int>> arrange)
+        {
+            var ordered = new List<IdeaListing>();
+
+            foreach (var night in Enumerable.Range(0, listings.Count).GroupBy(at => listings[at].Session).OrderBy(group => group.Key))
+            {
+                int[] own =
+                [
+                    .. night
+                        .OrderByDescending(at => rule.Order == IdeaOrder.RsiFall ? (double.IsNaN(listings[at].RsiFall) ? double.NegativeInfinity : listings[at].RsiFall) : 0.0)
+                        .ThenByDescending(at => listings[at].RewardToRisk)
+                        .ThenByDescending(at => listings[at].Strength)
+                        .ThenByDescending(at => listings[at].Band)
+                        .ThenBy(at => tickers[listings[at].Name], StringComparer.Ordinal),
+                ];
+                var kept = arrange(own);
+
+                for (var place = 0; place < kept.Count; place++)
+                {
+                    ordered.Add(listings[kept[place]] with { RsiFall = kept.Count - place });
+                }
+            }
+
+            return [.. SweepIdeas.Walk(ordered, tickers, rule.PerNight, OwnExit, IdeaOrder.RsiFall).Select(trade => Of(trade, trade.Listing.Plan.Ends[ownExit], string.Empty))];
+        }
+
         progress(FormattableString.Invariant($"read the pullback's {listings.Count} listing(s) on the {DecisionCards.NameOf(read.Index)}"));
 
-        return new RuleWalk(SetupFamilies.Pullback, RuleReplay.PullbackWords, closes, SweepIdeas.Cap, [.. listings.Select(Unit)], Walk);
+        return new RuleWalk(SetupFamilies.Pullback, RuleReplay.PullbackWords, closes, SweepIdeas.Cap, [.. listings.Select(Unit)], Walk, Arranged);
     }
 }

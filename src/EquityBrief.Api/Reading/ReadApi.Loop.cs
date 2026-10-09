@@ -62,6 +62,63 @@ public sealed partial class ReadApi
         return rows;
     }
 
+    // Each family's learned score a run stored, the one fitted on all finished data, cut after the run's last session.
+    const string LoopModelsOf = @"
+        SELECT m.family, m.learned_before, m.setups, m.hash, m.words
+        FROM loop_model m JOIN loop_run r ON r.run_id = m.run_id
+        WHERE m.run_id = $run_id AND m.learned_before > r.through ORDER BY m.family;";
+
+    public async Task<IReadOnlyList<LoopModelRow>> LoopModelsAsync(LoopRunRow run)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LoopModelsOf;
+        command.Parameters.AddWithValue("$run_id", run.RunId);
+
+        var rows = new List<LoopModelRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LoopModelRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(2),
+                reader.GetString(3),
+                reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // Each card a night stored on an index for a family a score reaches, with its rank, none until the score passed.
+    const string LoopRanksOf = @"
+        SELECT family, ticker, score_rank FROM decision_card
+        WHERE index_code = $index AND session_date = $night AND similar IS NOT NULL ORDER BY family, place, ticker;";
+
+    public async Task<IReadOnlyList<LoopRankRow>> LoopRanksAsync(string index, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LoopRanksOf;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<LoopRankRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LoopRankRow(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetInt32(2)));
+        }
+
+        return rows;
+    }
+
     public async Task<IReadOnlyList<string>> LoopMonthsAsync(string index)
     {
         await using var connection = Open();

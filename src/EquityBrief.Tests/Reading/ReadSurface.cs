@@ -330,6 +330,11 @@ public partial class ReadSurface
             // 17.4's Loop page under Universe.
             .. LoopPageClaims,
 
+            // 17.7's learned score on the card and the Loop page, and section 18's two rows a reader sees on a card.
+            .. ScorePageClaims,
+            CheckReach.Key(Scope.FailureTable, "A model that cannot load"),
+            CheckReach.Key(Scope.FailureTable, "A score the tester has not passed"),
+
             // The 12.2 correction's one open trade per stock on the pages: Still open on tonight's page, the
             // two marks on Past picks and section 18's row for a still open trade with no outcome row.
             .. OpenTradeClaims,

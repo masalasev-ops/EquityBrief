@@ -702,7 +702,34 @@ public static class SchemaMigrations
         new Migration(79, "create loop_run, loop_proposal and loop_test", CreateLoopTests),
         new Migration(80, "add family_trade.exit, index_rule_trade.exit and loop_proposal.finding, and create loop_finding", CreateLoopFindings),
         new Migration(81, "create loop_reading", CreateLoopReadings),
+        new Migration(82, "create loop_model, and add decision_card's score_rank and similar", CreateLoopModels),
     ];
+
+    // Each learned score a tester run fits, a family and a fold's year a row, its parameters whole with their hash, the
+    // window it learned on and the pin of the code that fitted it; and a card's rank under its index's score and its part
+    // of setups like the pick.
+    // see: A fitted statistical model is a rule
+    // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    const string CreateLoopModels = @"
+        CREATE TABLE loop_model (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            learned_from    TEXT    NOT NULL,
+            learned_before  TEXT    NOT NULL,
+            setups          INTEGER NOT NULL,
+            readings        TEXT    NOT NULL,
+            parameters      TEXT    NOT NULL,
+            hash            TEXT    NOT NULL,
+            pin             TEXT    NOT NULL,
+            words           TEXT    NOT NULL,
+            PRIMARY KEY (run_id, family, year)
+        ) STRICT;
+
+        ALTER TABLE decision_card ADD COLUMN score_rank INTEGER;
+        ALTER TABLE decision_card ADD COLUMN similar TEXT;
+    ";
 
     // Each reading's spread over a family's finished listings in a tester run: the units holding it, the winners and the
     // losers among them, each side's median and the mean edge of each tenth in the reading's order.

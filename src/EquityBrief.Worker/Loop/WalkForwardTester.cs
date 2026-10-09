@@ -13,11 +13,14 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Loop;
 
-// The walk-forward tester by hand on one index: Part 0's procedures, each run inside every fold on the years before its
-// test year and scored on that year against the index's current rule, the proposals tested for one rule read together by
-// the gate's step-down and each by its three screens; then the run, each proposal and each fold's test year written in
-// one transaction under the drain's lock. It reads the pulled history as the sweeps read it and writes only its own
-// tables; it waits for no night but refuses to start inside the night's window or while a night holds the store.
+// The walk-forward tester by hand on one index: Part 0's procedures and the engines, each run inside every fold on the
+// years before its test year and scored on that year against the index's current rule, the learned score alone learning
+// on the ledger's setups of all three indices and tested on the index's own year, the proposals tested for one rule read
+// together by the gate's step-down and each by its three screens; then the run, each proposal and each fold's test year
+// written in one transaction under the drain's lock with every score it fitted. It reads the pulled history as the sweeps
+// read it and writes only its own tables; it waits for no night but refuses to start inside the night's window or while a
+// night holds the store.
+// see: A fitted statistical model is a rule
 // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
 // see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone
@@ -45,11 +48,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Insert),
             new StoreTouch(Store.LoopProposal, Touch.Insert),
             new StoreTouch(Store.LoopTest, Touch.Insert),
             new StoreTouch(Store.LoopFinding, Touch.Insert),
             new StoreTouch(Store.LoopReading, Touch.Insert),
+            new StoreTouch(Store.LoopModel, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -86,6 +91,20 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         INSERT INTO loop_reading (run_id, index_code, family, reading, units, winners, losers, winners_median, losers_median, deciles)
         VALUES ($run_id, $index_code, $family, $reading, $units, $winners, $losers, $winners_median, $losers_median, $deciles);
     ";
+
+    const string InsertModel = @"
+        INSERT INTO loop_model (run_id, index_code, family, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words)
+        VALUES ($run_id, $index_code, $family, $year, $learned_from, $learned_before, $setups, $readings, $parameters, $hash, $pin, $words);
+    ";
+
+    // A family's finished setups on all three indices, each with the session its path ended on, its edge in risks, the
+    // stop's distance in typical moves and every reading, in the ledger's own key order.
+    static readonly string FinishedSetups =
+        "SELECT index_code, session_date, ended_on, edge, risk_moves, " + string.Join(", ", EquityBrief.Core.Ledger.LedgerReadings.All.Select(reading => reading.Column))
+        + " FROM setup WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND risk_moves IS NOT NULL AND ended_on IS NOT NULL"
+        + " ORDER BY index_code, ticker, session_date;";
+
+    const string FinishedCount = "SELECT COUNT(*) FROM setup WHERE family = $family AND settled = 1 AND edge IS NOT NULL AND risk_moves IS NOT NULL AND ended_on IS NOT NULL;";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -159,9 +178,10 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         }
 
         // Part 0's procedures on the S&P 400 and 600; then each family a rule's hooks reach, the S&P 400's and 600's
-        // provisional pullback and the breakout and the drift on every index, read once and handed to the autopsy's exits
-        // and to winners against losers; then the sector heavyweights' two exits on every index; each family's proposals
-        // read together by the step-down.
+        // provisional pullback and the breakout and the drift on every index, read once and handed to the autopsy's exits,
+        // to winners against losers and to the learned score, fitted on the family's finished setups of all three
+        // indices; then the sector heavyweights' two exits on every index; each family's proposals read together by the
+        // step-down.
         var proposals = new List<LoopProposalRead>();
         var findings = new Dictionary<string, IReadOnlyList<AutopsyFigure>>(StringComparer.Ordinal);
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
@@ -185,14 +205,18 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         rules.Add(RuleWalk.Swing(read, DriftRule.Name, large));
 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
+        var scores = new List<FittedScore>();
 
         foreach (var rule in rules)
         {
             var (exits, figures) = ExitProcedures.Autopsy(read, rule, output.WriteLine);
             var (conditions, spread) = ConditionProcedures.Run(read, rule, readings, output.WriteLine);
+            var (scored, fitted) = ScoreProcedures.Run(read, rule, readings, await FinishedAsync(databaseFile, rule.Family, cancellation), output.WriteLine);
 
             proposals.AddRange(exits);
             proposals.AddRange(conditions);
+            proposals.AddRange(scored);
+            scores.AddRange(fitted);
             findings[rule.Family] = figures;
             spreads[rule.Family] = spread;
         }
@@ -204,12 +228,17 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
 
         if (!print)
         {
-            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation, findings, spreads);
+            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation, findings, spreads, scores);
         }
 
         foreach (var (family, figures) in findings)
         {
             output.WriteLine($"the autopsy of the {family}: " + string.Join("; ", figures.Select(figure => figure.Words)));
+        }
+
+        foreach (var score in scores)
+        {
+            output.WriteLine(ScoreProcedures.Line(score));
         }
 
         foreach (var one in tested)
@@ -229,6 +258,47 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             : FormattableString.Invariant($"{Verb}: run {runId}, {tested.Count(one => one.Passed)} of {tested.Count} proposal(s) passed, for {runMonth}"));
 
         return 0;
+    }
+
+    // A family's finished setups on all three indices as the learned score learns on them, none on a store whose ledger
+    // holds none.
+    public static async Task<ScoreRows> FinishedAsync(string databaseFile, string family, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var count = connection.CreateCommand();
+
+        count.CommandText = FinishedCount;
+        count.Parameters.AddWithValue("$family", family);
+
+        var rows = new ScoreRows(Convert.ToInt32(await count.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture));
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FinishedSetups;
+        command.Parameters.AddWithValue("$family", family);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+        var readings = new double?[EquityBrief.Core.Ledger.LedgerReadings.Count];
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            for (var at = 0; at < readings.Length; at++)
+            {
+                readings[at] = reader.IsDBNull(5 + at) ? null : reader.GetDouble(5 + at);
+            }
+
+            rows.Add(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                readings,
+                reader.GetDouble(3),
+                reader.GetDouble(4));
+        }
+
+        return rows;
     }
 
     // The history an index's procedures are run over.
@@ -286,7 +356,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         IReadOnlyList<Tested> tested,
         CancellationToken cancellation = default,
         IReadOnlyDictionary<string, IReadOnlyList<AutopsyFigure>>? findings = null,
-        IReadOnlyDictionary<string, IReadOnlyList<ReadingSpread>>? spreads = null)
+        IReadOnlyDictionary<string, IReadOnlyList<ReadingSpread>>? spreads = null,
+        IReadOnlyList<FittedScore>? scores = null)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -390,6 +461,25 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             }
         }
 
+        foreach (var score in scores ?? [])
+        {
+            await ExecuteAsync(connection, transaction, InsertModel,
+            [
+                ("$run_id", runId),
+                ("$index_code", index),
+                ("$family", score.Family),
+                ("$year", score.Year),
+                ("$learned_from", score.LearnedFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                ("$learned_before", score.LearnedBefore.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                ("$setups", score.Model.Rows),
+                ("$readings", string.Join(",", score.Model.Readings.Select(reading => EquityBrief.Core.Ledger.LedgerReadings.All[reading].Column))),
+                ("$parameters", score.Model.Canonical()),
+                ("$hash", score.Model.Hash),
+                ("$pin", RidgeScore.Version),
+                ("$words", RidgeScore.Words(score.Model)),
+            ], cancellation);
+        }
+
         await ExecuteAsync(connection, transaction, AppendRun,
         [
             ("$run_id", runId),
@@ -410,7 +500,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var gate = verdict.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}");
 
         return FormattableString.Invariant(
-            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}; {proposal.StableFolds} of {proposal.Folds.Count} folds within a step");
+            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}; {proposal.StableFolds} of {proposal.Folds.Count} folds {(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) ? "fitted a score" : "within a step")}");
     }
 
     static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, CancellationToken cancellation)

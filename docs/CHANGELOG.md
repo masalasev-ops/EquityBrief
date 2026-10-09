@@ -25,6 +25,58 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - CLAUDE.md - the nightly rule's model call is a language model's, and a pick's card draws the setups like it beneath the rule's record
+Authorised by: A fitted statistical model is a rule
+Was:
+> **The nightly run makes no model call and no per-name network request.** Bars arrive in one bulk request, [...]
+> **A rule's measured record is shown under the rule's own heading and never as the stock's own.** Beside its reason, or on a pick's card naming the rule and its index and saying it is the rule's record over every stock it bought and not this stock's chance. Below the minimum, only the resolved count against the minimum is shown. (see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own)
+Now:
+> **The nightly run makes no language model call and no per-name network request.** A score fitted by code to the ledger is a rule, and scoring a member with it is arithmetic and no model call (see: A fitted statistical model is a rule). Bars arrive in one bulk request, [...]
+> **A rule's measured record is shown under the rule's own heading and never as the stock's own.** [...] Below the minimum, only the resolved count against the minimum is shown. Beneath it on a pick's card, the setups like the pick under the same rule on the same index are drawn under the rule's heading as those setups' record, saying they are not this stock's chance. (see: [...]) (see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index)
+Why: 17.7's learned score is a statistical model fitted by code, which the word model in the nightly rule read as barred with a language model, and the card's new part is a record that must be drawn as the rule's and never the stock's.
+
+### 2026-10-09 - ARCHITECTURE.html - the learned score: section 13.14, the tester's and the cards' rows, the models' store, three limits, two failure rows, the card's part and the Loop page's score
+Authorised by: A fitted statistical model is a rule
+Was:
+> <p><b>Rules choose the stocks, and the AI writes the reports.</b> Every stock a list draws, [...] and no model's output decides, filters, ranks or orders a pick, [...]. A model writes the research reports, [...] where a model's judgment can be neither replayed as it stood nor reproduced. (see: Rules choose the stocks, and the AI writes the reports)</p>
+> [8.1] [...] since it is the same length every night. (see: Tonight's list is built from stated conditions, not a score)</p>
+> [Decision cards] [...] index heavyweight holdings, rule records, earnings reactions, indicators, dividend readings | decision cards | [...] (see: A pick's card advises on the trade and removes no pick, and code computes every figure on it)
+> [Walk-forward tester] [...] companies, filed facts | loop runs, loop proposals, loop tests, loop findings, loop readings, run log | runs each of Part 0's procedures on the S&amp;P 400 and 600 and the trade autopsy's exits and winners against losers on every index inside every fold, [...] each family's autopsy figures and each reading's spread, in one transaction under the drain's lock; [...]
+> [the tester's matrix row] [...] | R | W | (Facts) | R | [...]
+> [Decision cards' store] [...] its checklist's lines each with its verdict and words, and the rule's record as the card read it | [...]
+> [15.20 Reads] [...] from 17.6 each reading's spread, and the months the index's runs are for. [...]
+Now:
+> <p><b>Rules choose the stocks, and a language model writes only the reports.</b> [...] no language model's output decides, [...] A statistical model fitted by code to the ledger passes that test, so it is a rule, and it orders a list only as a rule's registered setting the operator approved (see: Rules choose the stocks, and a language model writes only the reports) (see: A fitted statistical model is a rule)</p>
+> [8.1] [...] (see: Tonight's list is built from stated conditions, and a score orders it only as a rule's setting)</p>
+> [Decision cards] [...] dividend readings, market series, filed facts, setups, setup nights, loop runs, loop proposals, loop models | decision cards | [...]; and from 17.7, for a family a learned score reaches, the setups like the pick under its rule [...] and the pick's rank under that score only where one of its proposals passed the tester on the index, a part it cannot read named on the card (see: [...])
+> [Walk-forward tester] [...] companies, filed facts, setups | [...] loop readings, loop models, run log | [...] the trade autopsy's exits, winners against losers and the learned score on every index inside every fold, the score fitted on the ledger's finished setups of all three indices that ended before the fold's year (see: A fitted statistical model is a rule), [...] each reading's spread and every score it fitted with its parameters and their hash, [...]
+> [the tester's matrix row] [...] | R | R W | (Facts) | R | [...]
+> [Decision cards' store] [...] the rule's record as the card read it, and from 17.7 the pick's rank under its index's learned score where the score passed there and its part of setups like the pick or why none were matched | [...]
+> [15.20 Reads] [...] from 17.6 each reading's spread, from 17.7 each family's learned score and the ranks tonight's cards carry under it, and the months the index's runs are for. [...]
+> Section 13.14, a paragraph and a table of one region in 15.18, 15.20's row for the learned score, the store row for the loop models, section 17's rows for the score's fit, its proposals and the setups like a pick, and section 18's rows for a model that cannot load and a score the tester has not passed, each added.
+Why: 17.7 builds the learned score inside the tester, stores every fit, and draws the score's part on the card and the score on the Loop page.
+
+### 2026-10-09 - BUILD_PLAN.md, SCHEMA.md, RUNBOOK.md and .claude/rules/checks.md - the learned score in the tester, its store, the card's part and the check over the fitted model's store
+Authorised by: A fitted statistical model is a rule
+Was:
+> [BUILD_PLAN phase 14] [...] and models write the reports (see: Rules choose the stocks, and the AI writes the reports).
+> [BUILD_PLAN 17.7] Ridge regression in the core as the default and FastTree as the challenger, trained each month on the setups ended before the month began with the look-ahead readings left out, pooled across the indices with the index a reading, the parameters stored in the store with their hash, seed, window, readings and code pin; [...] the roster with the fitted-model store joining `rules-choose-the-stocks`, and the runbook.
+> [BUILD_PLAN 17.7] **Done when** the score is reproduced from its stored parameters and seed, identical on one platform and within a stated tolerance across the two; [...]
+> [RUNBOOK] [...] the run stops on it: migrate first. | A run [...] writes `loop_run`, `loop_proposal`, `loop_test`, `loop_finding` and `loop_reading` in one transaction under the drain's lock; [...] | [...] and beneath them each reading's spread, folded shut. Nothing is applied from the page: approval comes with 17.9.
+> [checks.md, rules-choose-the-stocks] [...] (see: Rules choose the stocks, and the AI writes the reports); [...] and from 17.4 the walk-forward tester and its folders |
+> [checks.md, fixture-expectations] [...] and a condition stated as the hooks a registration reads and read back by them |
+> [checks.md, read-surface] [...] a reading no listing holds drawing none and a family with no spread drawing nothing |
+Now:
+> [BUILD_PLAN phase 14] [...] (see: Rules choose the stocks, and a language model writes only the reports).
+> [BUILD_PLAN 17.7] Ridge regression in the core, trained each month on the setups ended before the month began with the look-ahead reading left out, [...] the parameters stored in the store with their hash, window, readings and code pin, the fit drawing nothing at random and so carrying no seed; [...] and the runbook. FastTree, ruled as the challenger, is not built here: [...] and the challenger waits on the operator's word (see: A fitted statistical model is a rule).
+> [BUILD_PLAN 17.7] **Done when** the score is reproduced from its stored parameters, identical on one platform and within a stated tolerance across the two; [...]
+> [RUNBOOK] [...] migrate first. From 17.7 the learned score runs over the same families in the same run [...] | [...] `loop_reading` and `loop_model` [...] | [...] folded shut, and the learned score with its weight in words and its hash. [...] From 17.7 a pick's card on a family a score reaches draws, beneath the rule's record, the setups like the pick [...]
+> [checks.md, rules-choose-the-stocks] [...] (see: Rules choose the stocks, and a language model writes only the reports); [...] and from 17.4 the walk-forward tester and its folders; and from 17.7 the fitted model's store joins them: [...] |
+> [checks.md, fixture-expectations] [...] read back by them; and from 17.7 the learned score worked by hand over constructed setups, [...] |
+> [checks.md, read-surface] [...] drawing nothing; and from 17.7 a pick's card on a family a learned score reaches draws beneath the rule's record [...] |
+> [SCHEMA] `loop_model`, its row in the ownership table, and `decision_card`'s `score_rank` and `similar`, each added.
+Why: 17.7 builds ridge alone, since no hook carries a tree, and the checkpoint's text and its done condition say so rather than name a seed the fit does not draw; the runbook, the schema and the roster follow what it built.
+
 ### 2026-10-09 - ARCHITECTURE.html - winners against losers in the tester, its store, its two limits, its failure row and the Loop page's readings
 Authorised by: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
 Was:

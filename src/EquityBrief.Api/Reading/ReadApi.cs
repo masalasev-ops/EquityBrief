@@ -511,7 +511,9 @@ public sealed record DecisionCardRow(
     int? Cap = null,
     decimal? RoundTrip = null,
     int? BookHoldings = null,
-    string? Hits = null);
+    string? Hits = null,
+    int? ScoreRank = null,
+    string? Similar = null);
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -802,6 +804,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopTest, Touch.Read),
             new StoreTouch(Store.LoopFinding, Touch.Read),
             new StoreTouch(Store.LoopReading, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3319,7 +3322,7 @@ public sealed partial class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -3385,7 +3388,9 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(14) ? null : reader.GetInt32(14),
                 Price(15),
                 reader.IsDBNull(16) ? null : reader.GetInt32(16),
-                reader.IsDBNull(17) ? null : reader.GetString(17)));
+                reader.IsDBNull(17) ? null : reader.GetString(17),
+                reader.IsDBNull(18) ? null : reader.GetInt32(18),
+                reader.IsDBNull(19) ? null : reader.GetString(19)));
         }
 
         return rows;

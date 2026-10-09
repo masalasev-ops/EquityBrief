@@ -62,6 +62,11 @@ internal static class Scope
     internal const string LoopReadings = "The readings, winners against losers";
     internal const string LoopVerdict = "A proposal's verdict";
     internal const string LoopTestYears = "A proposal's test years";
+    internal const string LoopScore = "The learned score";
+
+    // Section 15.18's heading and its one region, the learned score's part of a pick's card.
+    internal const string CardPage = "15.18 The decision card";
+    internal const string CardScorePart = "The score's part";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
     const string ByAdmissibility = "claim-admissibility";
@@ -3342,6 +3347,40 @@ internal static class Scope
             Verdict.Pass,
             "each reading's spread beneath a family's proposals, folded shut, its listings, winners and losers, medians and edge by tenth read back off the rendered page against the stored rows, a reading no listing holds drawing none and a family with no spread drawing nothing",
             ByReadSurface),
+        // 17.7, the learned score: its store, section 17's fit, proposals and match, section 18's model that cannot load
+        // and score the tester has not passed, the card's part and the Loop page's score.
+        [CheckReach.Key(StoresTable, "Loop models")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The learned score's fit")] = new Scoped(
+            Verdict.Pass,
+            "the score worked by hand over four hundred constructed setups and over eight hundred on two indices, a reading one row short of the share not weighed, a row missing a weighed reading left out, the reading that reads ahead never weighed and a fit short of the floor refused; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The learned score's proposals")] = new Scoped(
+            Verdict.Pass,
+            "the hooks a fitted score's registration would set ordering a constructed night by its score and leaving the lowest two fifths' floor off, its rank and both floors read off its hundredths; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Setups like a pick")] = new Scoped(
+            Verdict.Pass,
+            "the part worked by hand over a thousand constructed setups on both sides of its sentence, the pick's own stock never matched, a stock matched once within its run of sessions and one short of the floor drawing none; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A model that cannot load")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store a card with no score fitted saying so and one whose stored score cannot be read naming the failure, each written with its lines and no rank, read back off the rendered card",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A score the tester has not passed")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the newest run's score with no proposal passed drawing no rank and the words on the card on Tonight, on the stock's page and on the Loop page, and a newer run's passed drawing the rank on all three",
+            ByReadSurface),
+        [CheckReach.Key(CardPage, CardScorePart)] = new Scoped(
+            Verdict.Pass,
+            "the setups like the pick and the rank or the words read back off the rendered card on Tonight and on the stock's page over a constructed store the night matched from the ledger, on both sides of the sentence that they are not distinguishable from the rule's record",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, LoopScore)] = new Scoped(
+            Verdict.Pass,
+            "the score's weight in words and its hash beneath a family's proposals, the words saying it is not yet validated before a proposal passed and the rank tonight's card carries after, read back off the rendered page",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4700,6 +4739,8 @@ internal static class Scope
         ["Loop findings"] = "17.5",
         // 17.6's one, each reading's spread, which the plan names as each reading's distribution.
         ["Loop readings"] = "17.6",
+        // 17.7's one, every score the tester fits, which the plan names as the model's store.
+        ["Loop models"] = "17.7",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4739,6 +4780,9 @@ internal static class Scope
         [CheckReach.Key(LoopPage, LoopTestYears)] = "17.4",
         [CheckReach.Key(LoopPage, LoopFindings)] = "17.5",
         [CheckReach.Key(LoopPage, LoopReadings)] = "17.6",
+        // 17.7's learned score beneath a family's proposals, and the card's part beneath the rule's record.
+        [CheckReach.Key(LoopPage, LoopScore)] = "17.7",
+        [CheckReach.Key(CardPage, CardScorePart)] = "17.7",
         // The sector heavyweights' card's selector, 17.5, which the plan owes the card.
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card's rule")] = "17.5",
         // The parts of the rows the fifth phase 5 sign-off review decomposed.
@@ -5890,6 +5934,7 @@ internal static class Scope
         "15.15 Queue",
         "15.16 Watch list",
         "15.17 Past picks",
+        "15.18 The decision card",
         "15.19 The setup ledger",
         "15.20 The Loop page",
         "15.11 How a reason's record is displayed",

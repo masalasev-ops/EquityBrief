@@ -1632,8 +1632,10 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var tests = run is null ? [] : await read.LoopTestsAsync(run);
     var findings = run is null ? [] : await read.LoopFindingsAsync(run);
     var spreads = run is null ? [] : await read.LoopReadingsAsync(run);
+    var models = run is null ? [] : await read.LoopModelsAsync(run);
+    var ranks = night is { } ranked ? await read.LoopRanksAsync(reading.Code, ranked) : [];
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads), "text/html; charset=utf-8");
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>

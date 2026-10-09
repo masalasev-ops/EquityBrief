@@ -102,6 +102,7 @@ internal static class PhaseReport
         "15.15 Queue",
         "15.16 Watch list",
         "15.17 Past picks",
+        "15.18 The decision card",
         "15.19 The setup ledger",
         "15.20 The Loop page",
         "15.11 How a reason's record is displayed",

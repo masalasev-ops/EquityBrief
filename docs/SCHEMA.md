@@ -93,6 +93,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_test` | WalkForwardTester | none | none |
 | `loop_finding` | WalkForwardTester | none | none |
 | `loop_reading` | WalkForwardTester | none | none |
+| `loop_model` | WalkForwardTester | none | none |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -1154,6 +1155,8 @@ Grain: one row per index, night, family and stock the family listed or the index
 | `round_trip` | TEXT | decimal in code, the round trip a share at the published table, bought and sold at the buy; null where the plan states no buy |
 | `book_holdings` | INTEGER | for a book's buy, the most holdings the book can hold, its leaders in each of the eleven sectors, over which a holding with no stop is sized; null for a family's pick |
 | `hits` | TEXT | JSON: what could hit the trade, the hold's last session, the stock's stored reactions in typical moves and in the plan's risks with how many passed the stop's distance, the next ex-dividend date inside the hold, declared or estimated, with its payment, and the market events inside the hold with each kind whose table ends first; null on a card written before 16.3 |
+| `score_rank` | INTEGER | from migration 82, the pick's place in hundredths among the setups its index's newest learned score learned on there, null until one of that score's proposals passed the tester on the index, and for a family no score reaches |
+| `similar` | TEXT | JSON: the setups like the pick under its rule on its index, the readings matched on, how many were matched of how many and their median distance, their mean edge with its interval's two ends and the rule's own mean, or why none were matched; null for a family no learned score reaches and on a card written before 17.7 |
 
 Primary key: `index_code`, `session_date`, `family`, `ticker`.
 
@@ -1480,6 +1483,28 @@ Grain: one row per run, family and reading of the ledger's catalogue.
 Primary key: `run_id`, `index_code`, `family`, `reading`.
 
 **Written once by the walk-forward tester with its run**, from 17.6, over every listing the rule made that had finished by the history's end; context for the conditions winners against losers proposes and never a test of them (see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search).
+
+### loop_model
+Grain: one row per run, family and fold of the learned score, the score fitted on all finished data among them.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `year` | INTEGER | the year the fold tests, or for the score fitted on all finished data the year after the history's last session |
+| `learned_from` | TEXT | the first session of the setups it learned on |
+| `learned_before` | TEXT | the session it was cut at: it learned on the setups whose paths ended before it, the fold's first session or the day after the history's last |
+| `setups` | INTEGER | the finished setups it was fitted over, those holding every reading it weighs |
+| `readings` | TEXT | the readings it weighs, their columns in the catalogue's order joined by commas |
+| `parameters` | TEXT | the parameters whole as their canonical text: each reading's mean, spread and weight, each index's shift, the intercept, the label's clip, the penalty and each index's scores at each hundredth, every figure at its round trip |
+| `hash` | TEXT | the first sixteen hexadecimal characters of the SHA-256 of that text |
+| `pin` | TEXT | the version of the code that fitted it, the pin of its source |
+| `words` | TEXT | its weight in words: the readings weighing most, the business readings' share and the setups |
+
+Primary key: `run_id`, `family`, `year`.
+
+**Written once by the walk-forward tester with its run**, from 17.7, a row a fold and one for all finished data, each fitted on the ledger's finished setups of the family on all three indices whose paths ended before its cut. The decision cards read the newest run's score fitted on all finished data, the one cut after the run's last session, for the part a pick's card draws and its rank, and the Loop page draws it (see: A fitted statistical model is a rule).
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.

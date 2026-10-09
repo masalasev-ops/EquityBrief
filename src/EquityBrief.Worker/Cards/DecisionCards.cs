@@ -5,6 +5,8 @@ using EquityBrief.Core.Cards;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
@@ -12,6 +14,8 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Ledger;
+using EquityBrief.Worker.Loop;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Cards;
@@ -28,9 +32,11 @@ public sealed record DecisionCardsOutcome(DateOnly? Session, IReadOnlyList<Index
 // The decision cards. After every index's families and books are read, one card for each stock a family listed on the
 // night on each index and for each stock a sector heavyweights' book bought on it: the checklist's first five lines, each
 // a tick, a note or a warning with its reason in words, the plan's prices, the rule the card names and the rule's record
-// as the card read it, with the card's values it was read with. Read from stored rows alone, with no request and no
-// model; a night run again replaces its own cards. A failure in one index's cards undoes them, is named on the stage's
-// row and the next index is read, so the night goes on whatever became of its cards.
+// as the card read it, with the card's values it was read with; and for a family a learned score reaches, the setups
+// like the pick under its rule and its rank once the score passed on the index. Read from stored rows alone, with no
+// request and no language model; a night run again replaces its own cards. A failure in one index's cards undoes them,
+// is named on the stage's row and the next index is read, so the night goes on whatever became of its cards.
+// see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 // see: The nightly run is arithmetic only
 // see: Every computed table's writer is its own deleter
@@ -57,6 +63,13 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.DividendReading, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.SetupNight, Touch.Read),
+            new StoreTouch(Store.LoopRun, Touch.Read),
+            new StoreTouch(Store.LoopProposal, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -167,9 +180,33 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar);
     ";
+
+    // The newest tester run on an index; of it, a family's score fitted on all finished data, the one cut after the run's
+    // last session, and whether any of the score's proposals passed.
+    const string NewestLoopRun = "SELECT run_id FROM loop_run WHERE index_code = $index ORDER BY rowid DESC LIMIT 1;";
+
+    const string ScoreOf = @"
+        SELECT m.parameters FROM loop_model m JOIN loop_run r ON r.run_id = m.run_id
+        WHERE m.run_id = $run AND m.family = $family AND m.learned_before > r.through;
+    ";
+
+    const string ScorePassed = @"
+        SELECT COUNT(*) FROM loop_proposal
+        WHERE run_id = $run AND family = $family AND proposal LIKE $prefix AND passed = 1;
+    ";
+
+    // The sessions the ledger read a family on an index, by which one stock's setups are counted apart.
+    const string SessionsRead = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND family = $family ORDER BY session_date;";
+
+    // Every finished setup the rule's own setting passed on an index holding each reading matched on.
+    static string RulesSetups(IReadOnlyList<string> columns) =>
+        "SELECT ticker, session_date, edge, " + string.Join(", ", columns)
+        + " FROM setup WHERE index_code = $index AND family = $family AND live_pass = 1 AND settled = 1 AND edge IS NOT NULL"
+        + string.Concat(columns.Select(column => " AND " + column + " IS NOT NULL"))
+        + " ORDER BY session_date, ticker;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -271,6 +308,7 @@ public sealed class DecisionCards : IComponent
         var sectors = await SectorsAsync(connection, transaction, cancellation);
         var ranks = await RanksAsync(connection, transaction, index, night, sectors, cancellation);
         var (breadth, floor, indexSettings) = large ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
+        var scores = new IndexScores();
         var written = 0;
 
         foreach (var pick in picks)
@@ -281,8 +319,9 @@ public sealed class DecisionCards : IComponent
             var market = large
                 ? await LargeMarketAsync(connection, transaction, pick.Ticker, night, true, cancellation)
                 : new MarketReading(breadth, floor, true);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation);
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score);
         }
 
         var place = 0;
@@ -313,7 +352,7 @@ public sealed class DecisionCards : IComponent
 
     sealed record Bought(string Ticker, string Sector, decimal? Entry);
 
-    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation)
+    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null)
     {
         var named = NameOf(index);
         var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
@@ -359,9 +398,129 @@ public sealed class DecisionCards : IComponent
             ("$round_trip", Price(RoundTrip(value, plan.Entry))),
             ("$book_holdings", bookHoldings is { } most ? (object)most : DBNull.Value),
             ("$hits", HitsJson(await HitsAsync(connection, transaction, ticker, night, plan, cancellation))),
+            ("$score_rank", score?.Rank is { } rank ? (object)rank : DBNull.Value),
+            ("$similar", score?.Similar is { } similar ? similar.Json() : DBNull.Value),
         ], cancellation);
 
         return 1;
+    }
+
+    // A card's rank under its index's learned score, none until the score has passed the tester on the index, and its
+    // part of setups like the pick, none for a family no score reaches.
+    sealed record ScorePart(int? Rank, CardSimilar? Similar);
+
+    // What an index's cards read of the learned score, each read once an index a night: the newest run, each family's
+    // score and whether it passed, the members' readings tonight, and each family's finished setups the rule passed.
+    sealed class IndexScores
+    {
+        public bool RunRead;
+
+        public string? Run;
+
+        public Dictionary<string, (RidgeModel? Model, bool Passed)> Families { get; } = new(StringComparer.Ordinal);
+
+        public Func<string, IReadOnlyList<double?>?>? Readings;
+
+        public Dictionary<string, IReadOnlyList<SimilarSetup>> Setups { get; } = new(StringComparer.Ordinal);
+    }
+
+    // The score's part of a pick's card: where the score has passed the tester on the index, the pick's rank among the
+    // setups it learned on there; and the setups like the pick under its rule, matched on the readings weighing most in
+    // the index's current score, or why none were matched. A part that cannot be read is named on the card and the
+    // card is written regardless.
+    // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    async Task<ScorePart?> ScorePartAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string ticker, IndexScores scores, CancellationToken cancellation)
+    {
+        if (!ScoreProcedures.Reaches(index, family))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (!scores.RunRead)
+            {
+                scores.Run = await ScalarAsync(connection, NewestLoopRun, [("$index", index)], cancellation, transaction) as string;
+                scores.RunRead = true;
+            }
+
+            if (!scores.Families.TryGetValue(family, out var held))
+            {
+                var parameters = scores.Run is null ? null : await ScalarAsync(connection, ScoreOf, [("$run", scores.Run), ("$family", family)], cancellation, transaction) as string;
+                var passed = scores.Run is not null && Convert.ToInt64(await ScalarAsync(connection, ScorePassed, [("$run", scores.Run), ("$family", family), ("$prefix", ScoreProcedures.ProposalPrefix + "%")], cancellation, transaction), CultureInfo.InvariantCulture) > 0;
+
+                held = (parameters is null ? null : RidgeModel.Parse(parameters), passed);
+                scores.Families[family] = held;
+            }
+
+            if (held.Model is not { } model)
+            {
+                return new ScorePart(null, new CardSimilar(Unmatched: "no score has been fitted for this rule on this index yet; the walk-forward tester fits it"));
+            }
+
+            scores.Readings ??= await new SetupLedger(clock, databaseFile).ReadingsTonightAsync(index, cancellation);
+
+            if (scores.Readings(ticker) is not { } readings)
+            {
+                return new ScorePart(null, new CardSimilar(Unmatched: "the pick's readings could not be read tonight"));
+            }
+
+            int? rank = held.Passed && model.Score(readings) is { } value ? model.Rank(index, value) : null;
+            var matched = SimilarSetups.Readings(model);
+            string[] columns = [.. matched.Select(reading => LedgerReadings.All[reading].Column)];
+
+            if (matched.FirstOrDefault(reading => readings[reading] is null, -1) is var missing and >= 0)
+            {
+                return new ScorePart(rank, new CardSimilar(Unmatched: $"the pick holds no {LedgerReadings.All[missing].Column} reading tonight, which the match reads"));
+            }
+
+            if (!scores.Setups.TryGetValue(family, out var setups))
+            {
+                setups = await RulesSetupsAsync(connection, transaction, index, family, columns, cancellation);
+                scores.Setups[family] = setups;
+            }
+
+            return SimilarSetups.Match(setups, ticker, [.. matched.Select(reading => readings[reading]!.Value)], columns) is { } part
+                ? new ScorePart(rank, new CardSimilar(part.Readings, part.Count, part.MedianDistance, part.Mean, part.Low, part.High, part.RuleMean, part.RuleSetups))
+                : new ScorePart(rank, new CardSimilar(Unmatched: FormattableString.Invariant($"fewer than {SimilarSetups.Fewest} of the rule's {setups.Count} finished setups on this index could be matched")));
+        }
+        catch (Exception failure) when (!cancellation.IsCancellationRequested)
+        {
+            return new ScorePart(null, new CardSimilar(Unmatched: "the learned score could not be read tonight: " + IndexFamilies.Cause(failure)));
+        }
+    }
+
+    // Every finished setup the rule's own setting passed on an index, each with its session's place among the sessions
+    // the ledger read and the readings matched on.
+    static async Task<IReadOnlyList<SimilarSetup>> RulesSetupsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, IReadOnlyList<string> columns, CancellationToken cancellation)
+    {
+        var sessions = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        await using (var command = Command(connection, transaction, SessionsRead, [("$index", index), ("$family", family)]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                sessions[reader.GetString(0)] = sessions.Count;
+            }
+        }
+
+        var setups = new List<SimilarSetup>();
+
+        await using (var command = Command(connection, transaction, RulesSetups(columns), [("$index", index), ("$family", family)]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                setups.Add(new SimilarSetup(
+                    reader.GetString(0),
+                    sessions.TryGetValue(reader.GetString(1), out var place) ? place : -1,
+                    [.. Enumerable.Range(0, columns.Count).Select(at => reader.GetDouble(3 + at))],
+                    reader.GetDouble(2)));
+            }
+        }
+
+        return setups;
     }
 
     const string ReactionMoves = "SELECT move_pct FROM earnings_reaction WHERE ticker = $ticker AND reaction_session <= $night ORDER BY report_date;";
