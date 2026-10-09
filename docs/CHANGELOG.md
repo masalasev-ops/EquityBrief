@@ -25,6 +25,36 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - winners against losers in the tester, its store, its two limits, its failure row and the Loop page's readings
+Authorised by: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+Was:
+> <h3>13.13 The trade autopsy and the engines' hooks</h3>
+> [Walk-forward tester] [...] pulled snapshots, pulled holdings | loop runs, loop proposals, loop tests, loop findings, run log | runs each of Part 0's procedures on the S&amp;P 400 and 600 and the trade autopsy's exits on every index inside every fold, [...], and reads the autopsy's figures off each rule's own finished trades (see: [...]); [...] each fold's test year with the setting it chose and each family's autopsy figures, in one transaction under the drain's lock; [...]
+> [the tester's matrix row] [...] | W | (Facts) | (Fundamentals) | [...]
+> [15.20 Reads] [...] from 17.5 the autopsy's figures of each family, and the months the index's runs are for. [...]
+> [15.20, the closing paragraph] [...] and a proposal naming no change carries no finding.
+Now:
+> <h3>13.13 The trade autopsy, winners against losers and the engines' hooks</h3>, with a paragraph on winners against losers after the autopsy's
+> [Walk-forward tester] [...] pulled snapshots, pulled holdings, companies, filed facts | loop runs, loop proposals, loop tests, loop findings, loop readings, run log | runs each of Part 0's procedures on the S&amp;P 400 and 600 and the trade autopsy's exits and winners against losers on every index inside every fold, [...], reads the autopsy's figures off each rule's own finished trades (see: [...]), and reads each listing's readings through the ledger's catalogue for the conditions and each reading's spread (see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search); [...] each family's autopsy figures and each reading's spread, [...]
+> [the tester's matrix row] [...] | W | (Facts) | R | [...]
+> [15.20 Reads] [...] from 17.5 the autopsy's figures of each family, from 17.6 each reading's spread, and the months the index's runs are for. [...]
+> [15.20, the closing paragraph] [...] carries no finding. From 17.6 the conditions winners against losers proposes stand among the proposals, each with its finding, and beneath them each reading's spread is drawn in a section folded shut, a row a reading.
+Why: 17.6's engine runs inside the tester, reads the companies' sectors and the filed facts for every listing's readings, and stores each reading's spread for the Loop page.
+
+### 2026-10-09 - BUILD_PLAN.md, SCHEMA.md, RUNBOOK.md and .claude/rules/checks.md - winners against losers runs inside the tester and stores each reading's spread
+Authorised by: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+Was:
+> [BUILD_PLAN 17.6] [...] each a condition the rule's hook already reads. Writes section 13.13's rows, the engine's catalogue and matrix rows, section 17's null and seed, [...]
+> [RUNBOOK] [...] The S&P 500's pullback is the swing filter's walk and is proposed no exit. | [...] writes `loop_run`, `loop_proposal`, `loop_test` and `loop_finding` [...] | [...] its finding where the autopsy made it, [...] and how many folds chose within a grid step of it. Nothing is applied from the page: [...]
+> [checks.md, fixture-expectations] [...] and one whose trades end in the test year left unranked |
+> [checks.md, read-surface] [...] with the line that no variant is registered before its freeze |
+Now:
+> [BUILD_PLAN 17.6] [...] each a condition the rule's hook already reads. The engine runs inside the tester as the autopsy does, over every listing each rule makes with the readings the night hands a hooked rule, and each reading's distribution over the finished listings is stored with the run. Writes section 13.13's rows, the tester's catalogue and matrix rows for what the engine reads and writes, the readings' store, section 17's null and seed, [...]
+> [RUNBOOK] [...] proposed no exit. From 17.6 winners against losers runs over the same families in the same run [...] | [...] `loop_finding` and `loop_reading` [...] | [...] its finding where an engine made it, [...] and how many folds chose within a grid step of it; and beneath them each reading's spread, folded shut. [...]
+> [checks.md, fixture-expectations] [...] left unranked; and from 17.6 winners against losers worked by hand over constructed listings, [...] |
+> [checks.md, read-surface] [...] before its freeze; and from 17.6 the Loop page draws each reading's spread beneath a family's proposals, [...] |
+Why: the engine's proposals are tested where they are made, so it runs as the tester's procedure with the tester's rows, and its spreads are what the plan's distributions are stored as.
+
 ### 2026-10-09 - ARCHITECTURE.html - the tester runs the trade autopsy on every index, and the recorder and the index families read the engines' hooks
 Authorised by: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
 Was:

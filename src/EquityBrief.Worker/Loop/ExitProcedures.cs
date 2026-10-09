@@ -64,91 +64,16 @@ public static class ExitProcedures
         ];
     }
 
-    // The proposals and the autopsy's figures for the breakout or the drift on an index.
-    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<AutopsyFigure> Figures) Swing(LoopRead read, string family, bool large, Action<string> progress)
+    // The proposals and the autopsy's figures for one family's rule on an index: the breakout and the drift on every
+    // index and the S&P 400's and 600's provisional pullback. The S&P 500's pullback is the swing filter's, whose walk
+    // every S&P 500 evaluator pins, and no exit is proposed for it.
+    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<AutopsyFigure> Figures) Autopsy(LoopRead read, RuleWalk rule, Action<string> progress)
     {
-        var adapter = FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar);
-        int[] setting = family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
-        var closes = read.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
+        progress(FormattableString.Invariant($"walking the {rule.Family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
 
-        progress(FormattableString.Invariant($"walking the {family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
+        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(rule.Under)];
 
-        var own = Walk(read, adapter, setting, closes, large, null);
-        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(exit => Walk(read, adapter, setting, closes, large, exit))];
-
-        return Propose(read, family, RuleReplay.SwingWords(family, setting), closes, own, walks);
-    }
-
-    // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one
-    // open trade a stock over the listings clearing the index's floors and gate: walked under its own exit and under
-    // each exit of the menu, the plan bought at the close with its stop its typical moves under and its target its
-    // reward to risk, each result after its round trip and against the same plan under the same exit on every member.
-    // The S&P 500's pullback is the swing filter's, whose walk every S&P 500 evaluator pins, and no exit is proposed for it.
-    public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<AutopsyFigure> Figures) Pullback(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress)
-    {
-        var (replay, _) = SweepIdeasRunner.Read(read.Inputs, market, progress);
-        var series = replay.Series;
-        var tickers = series.Select(one => one.Name.Ticker).ToArray();
-        var closes = series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
-        var rule = SweepIdeas.BaseRule with { PerNight = SetupFamilies.ListedANight };
-        var ownExit = SweepAxes.ExitIndex(SweepIdeas.Cap, breakEven: false);
-
-        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(tickers[name]) ?? []);
-
-        var listings = replay.Listings(rule, Keeps);
-
-        progress(FormattableString.Invariant($"walking the pullback on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));
-
-        // A kept listing as the family's walk states one, its result after its round trip.
-        Walked Of(IdeaTrade trade, int sessions, string end)
-        {
-            var listing = trade.Listing;
-            var move = series[listing.Name].Atr[listing.Bar];
-            var entry = closes[listing.Name][listing.Bar];
-            var stop = entry - (listing.StopMoves * move);
-            var family = new FamilyListing(listing.Name, listing.Bar, listing.Session, listing.RewardToRisk, listing.Strength, entry, stop, entry + (listing.RewardToRisk * (entry - stop)), double.NaN, SweepIdeas.Cap, move);
-            double? costed = trade.Result is { } result ? result - IndexSweepRunner.CostInRisk(series[listing.Name], family, result, read.Companies, 1) : null;
-
-            return new Walked(listing.Session, trade.Result is null ? null : listing.Session + sessions, new FamilyTrade(family, listing.Year, costed, trade.Benchmark), end);
-        }
-
-        IReadOnlyList<Walked> Under(ExitChoice exit)
-        {
-            var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
-
-            (double? Result, int Sessions, double Benchmark) Exit(IdeaListing listing)
-            {
-                var (name, bar) = (listing.Name, listing.Bar);
-                var move = series[name].Atr[bar];
-                var entry = closes[name][bar];
-                var risk = listing.StopMoves * move;
-                var outcome = ExitMenu.Replay(closes[name], bar, new SetupAnchor(DateOnly.MinValue, entry, entry - risk, entry + (listing.RewardToRisk * risk), null, SweepIdeas.Cap, listing.StopMoves), move, exit);
-                var sessionAt = series[name].SessionAt;
-                var sessions = bar + outcome.Sessions < sessionAt.Length ? sessionAt[bar + outcome.Sessions] - sessionAt[bar] : outcome.Sessions;
-                var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit).Average;
-
-                ended[(name, listing.Session)] = (sessions, outcome.End);
-
-                return (outcome.Result, sessions, benchmark);
-            }
-
-            var trades = SweepIdeas.Walk(listings, tickers, rule.PerNight, Exit, rule.Order);
-
-            return
-            [
-                .. trades.Select(trade =>
-                {
-                    var (sessions, end) = ended[(trade.Listing.Name, trade.Listing.Session)];
-
-                    return Of(trade, sessions, end);
-                }),
-            ];
-        }
-
-        IReadOnlyList<Walked> own = [.. replay.Trades(rule, Keeps).Select(trade => Of(trade, trade.Listing.Plan.Ends[ownExit], string.Empty))];
-        IReadOnlyList<IReadOnlyList<Walked>> walks = [.. ExitMenu.Swing.Select(Under)];
-
-        return Propose(read, SetupFamilies.Pullback, RuleReplay.PullbackWords, closes, own, walks);
+        return Propose(read, rule.Family, rule.Current, rule.Closes, rule.Own, walks);
     }
 
     // Each fold's ranking of the menu's exits above the rule's own, the k-th proposal the k-th exit each fold ranks, and
@@ -268,10 +193,9 @@ public static class ExitProcedures
         return proposals;
     }
 
-    // The rule's trades over the whole history under an exit, or its own where none is given, each result after its
-    // round trip and against the same plan under the same exit on every member that session; a listing kept only where it
-    // clears the index's floors and gate, and on the S&P 500 every listing.
-    static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, int[] setting, double[][] closes, bool large, ExitChoice? exit)
+    // A rule's trades over the listings it is handed under an exit, or its own where none is given, each result after its
+    // round trip and against the same plan under the same exit on every member that session.
+    public static IReadOnlyList<Walked> Walk(LoopRead read, FamilySweepRunner.Adapter adapter, double[][] closes, IReadOnlyList<FamilyListing> listings, ExitChoice? exit)
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
@@ -313,9 +237,6 @@ public static class ExitProcedures
 
         int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var listings = adapter.Listings(setting)
-            .Where(listing => listing.Move > 0
-                && (large || IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? [])));
         var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, Benchmark);
 
         return

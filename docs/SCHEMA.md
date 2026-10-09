@@ -92,6 +92,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
 | `loop_finding` | WalkForwardTester | none | none |
+| `loop_reading` | WalkForwardTester | none | none |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -1459,6 +1460,26 @@ Grain: one row per run, family and figure of the trade autopsy.
 Primary key: `run_id`, `index_code`, `family`, `figure`.
 
 **Written once by the walk-forward tester with its run**, from 17.5, read off the rule's own finished trades over the whole history; context for the exits the autopsy proposes and never a test of them (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it).
+
+### loop_reading
+Grain: one row per run, family and reading of the ledger's catalogue.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `reading` | TEXT | the reading's column in the catalogue |
+| `units` | INTEGER | the finished listings holding the reading |
+| `winners` | INTEGER | of those, the listings whose edge after their round trip stood above nothing |
+| `losers` | INTEGER | the others |
+| `winners_median` | REAL | the reading's median among the winners; null where none holds it |
+| `losers_median` | REAL | the reading's median among the losers; null where none holds it |
+| `deciles` | TEXT | a JSON array of ten: the mean edge of each tenth of the listings in the reading's order, lowest first, null for a tenth holding none |
+
+Primary key: `run_id`, `index_code`, `family`, `reading`.
+
+**Written once by the walk-forward tester with its run**, from 17.6, over every listing the rule made that had finished by the history's end; context for the conditions winners against losers proposes and never a test of them (see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search).
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.

@@ -1405,7 +1405,8 @@ public partial class ArchitectureConformance
         // 134 at 17.3: the Ledger page's three regions.
         // 137 at 17.4: the Loop page's three regions.
         // 139 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
-        Assert.Equal(139, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 140 at 17.6: the Loop page's readings.
+        Assert.Equal(140, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1518,7 +1519,8 @@ public partial class ArchitectureConformance
         // 492 at 17.3: the Ledger page's three regions.
         // 495 at 17.4: the Loop page's three regions.
         // 497 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
-        Assert.Equal(497, inDocument.Length);
+        // 498 at 17.6: the Loop page's readings.
+        Assert.Equal(498, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

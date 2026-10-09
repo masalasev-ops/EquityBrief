@@ -28,6 +28,40 @@ public sealed partial class ReadApi
         SELECT family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total
         FROM loop_test WHERE run_id = $run_id AND index_code = $index ORDER BY family, proposal, year;";
 
+    // Each reading's spread a run stored, in the order it wrote them, which is the catalogue's.
+    const string LoopReadingsOf = @"
+        SELECT family, reading, units, winners, losers, winners_median, losers_median, deciles
+        FROM loop_reading WHERE run_id = $run_id AND index_code = $index ORDER BY family, rowid;";
+
+    public async Task<IReadOnlyList<LoopReadingRow>> LoopReadingsAsync(LoopRunRow run)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LoopReadingsOf;
+        command.Parameters.AddWithValue("$run_id", run.RunId);
+        command.Parameters.AddWithValue("$index", run.Index);
+
+        var rows = new List<LoopReadingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LoopReadingRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4),
+                Optional(reader, 5),
+                Optional(reader, 6),
+                System.Text.Json.JsonSerializer.Deserialize<double?[]>(reader.GetString(7)) ?? []));
+        }
+
+        return rows;
+    }
+
     public async Task<IReadOnlyList<string>> LoopMonthsAsync(string index)
     {
         await using var connection = Open();

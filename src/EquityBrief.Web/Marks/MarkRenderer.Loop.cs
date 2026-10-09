@@ -38,6 +38,45 @@ public sealed partial class MarkRenderer
                 + string.Concat(findings.Select(finding => $"<li data-figure=\"{Escaped(finding.Figure)}\" data-value=\"{(finding.Value is { } value ? value.ToString("R", Invariant) : "none")}\" data-trades=\"{finding.Trades}\">{Escaped(Capitalised(finding.Words))}.</li>"))
                 + "</ul></div>";
 
+    // Each reading's spread over a family's finished listings in the run, in a section folded shut, a row a reading;
+    // none where the run stored none for the family.
+    // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+    public string LoopReadings(string family, IReadOnlyList<LoopReadingRow> spreads)
+    {
+        if (spreads.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        static string Figure(double? value, string format) => value is { } held ? held.ToString(format, Invariant) : "none";
+
+        var html = new StringBuilder();
+
+        html.Append(Invariant, $"<details class=\"loop-readings\" data-family=\"{Escaped(family)}\" data-readings=\"{spreads.Count}\"><summary>Each reading, winners against losers</summary>");
+        html.Append("<div class=\"tbl-wrap\"><table class=\"loop-reading-table\"><thead><tr>");
+        html.Append(TippedHeading("Reading", "the reading of the ledger's catalogue, read on each listing's session as the night reads it"));
+        html.Append(TippedHeading("Listings", "the finished listings holding the reading, those that beat the same plan on every member that night and those that did not", "r"));
+        html.Append(TippedHeading("Winners' median", "the median of the reading among the listings that beat the same plan on every member", "r"));
+        html.Append(TippedHeading("Losers' median", "the median of the reading among the others", "r"));
+        html.Append(TippedHeading("Edge by tenth", "the mean edge after costs, in risks, of each tenth of the listings in the reading's order, lowest first"));
+        html.Append("</tr></thead><tbody>");
+
+        foreach (var spread in spreads)
+        {
+            var deciles = string.Join(" ", spread.Deciles.Select(decile => Figure(decile, "+0.00;-0.00;0.00")));
+
+            html.Append(Invariant, $"<tr data-reading=\"{Escaped(spread.Reading)}\" data-units=\"{spread.Units}\" data-winners=\"{spread.Winners}\" data-losers=\"{spread.Losers}\">");
+            html.Append(Invariant, $"<td>{Escaped(spread.Reading)}</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{spread.Units}: {spread.Winners} won, {spread.Losers} did not</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{Figure(spread.WinnersMedian, "0.####")}</td><td class=\"r num\">{Figure(spread.LosersMedian, "0.####")}</td>");
+            html.Append(Invariant, $"<td class=\"num\" data-deciles=\"{Escaped(deciles)}\">{Escaped(deciles)}</td></tr>");
+        }
+
+        html.Append("</tbody></table></div></details>");
+
+        return html.ToString();
+    }
+
     // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect.
     public string LoopProposal(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years)
     {
