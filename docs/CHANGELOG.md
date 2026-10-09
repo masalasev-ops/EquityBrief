@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - section 13.10 and the setup ledger's catalogue row state how the history build runs
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> the build by hand writes the history one index at a time over the pulled bars merged with the store's on membership as it stood, a quarter of sessions a transaction, and replaces what an earlier build wrote for the span.
+Now:
+> the build by hand writes the history [...] from a clean copy of the main checkout's own commit as the night is built and refused off main the same way [...], waiting for the night and holding the drain's lock, which the store's copy holds too, while it writes each chunk, and going on from the sessions it has not written, a span written again only when asked.
+Why: 17.3's second pull request built the history's writer as a verb over the working tree, and its third gives it the script, the waits, the lock and the resume the plan asked for; the catalogue row's description gains the same clause.
+
+### 2026-10-09 - RUNBOOK.md - the setup ledger's history is built through tools/ledger-build
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> dotnet run --project src/EquityBrief.Worker -- ledger-build --index GSPC --from 2019-01-02 --through 2026-10-05 [...] It reads the store directly and writes the ledger's two tables alone, replacing what an earlier build wrote for the span, and records one run log row under `ledger-build` with the setups written. [...] the Ledger page and the build's run from a clean copy of main's commit, waiting for the night and the copy, follow in 17.3's later pull requests.
+Now:
+> tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 [...] The script builds the main checkout's own commit from a clean copy under the data root's folder of nights [...]; `--again` writes the span again in place of what an earlier build wrote.
+Why: the verb run over the working tree was the second pull request's stopgap; the third lands the script and the waits, so the runbook names the script and what the worker waits for.
+
 ### 2026-10-09 - ARCHITECTURE.html - section 14's note counts the arithmetic to the ledger's step
 Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 Was:

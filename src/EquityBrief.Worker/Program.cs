@@ -133,7 +133,9 @@ static int NoVerb()
         "stretch lines, " +
         "'ledger-build --index <GSPC, MID or SML> --from <yyyy-MM-dd> --through <yyyy-MM-dd>' writes the setup ledger's " +
         "history for one index over the span, every member-session a family's loose gates pass over the pulled bars " +
-        "merged with the store's, each replayed to its end, a chunk of sessions at a time, " +
+        "merged with the store's, each replayed to its end, a chunk of sessions at a time, going on from the sessions " +
+        "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
+        "the span again, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -561,7 +563,7 @@ static async Task<int> LedgerBuildRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
-        .BuildAsync(index, fromDay, throughDay, Console.Out);
+        .BuildAsync(store.DataRoot, index, fromDay, throughDay, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule

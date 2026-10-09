@@ -719,11 +719,11 @@ It replays each index's live or provisional pullback, breakout and drift rule, a
 From 17.3 the night appends every member-session a family's loose gates pass on each index to the setup ledger, with the live rule's own pass and the night's pick beside it, and closes the windows of the setups stored before as their paths end. The history before the store's own nights is built by hand, one index over a span of sessions, over the pulled bars merged with the store's on membership as it stood, each setup replayed to its end where the history reaches it and written a quarter of sessions at a time (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood):
 
 ```
-dotnet run --project src/EquityBrief.Worker -- ledger-build --index GSPC --from 2019-01-02 --through 2026-10-05
-dotnet run --project src/EquityBrief.Worker -- ledger-build --index MID --from 2019-01-02 --through 2026-10-05
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05
+tools/ledger-build --index MID --from 2019-01-02 --through 2026-10-05
 ```
 
-It reads the store directly and writes the ledger's two tables alone, replacing what an earlier build wrote for the span, and records one run log row under `ledger-build` with the setups written. A row the build writes carries no pick and no cost, which the night alone stores; the Ledger page and the build's run from a clean copy of main's commit, waiting for the night and the copy, follow in 17.3's later pull requests.
+The script builds the main checkout's own commit from a clean copy under the data root's folder of nights, as `tools/nightly` builds a night, reusing the copy where a night built that commit already, and refuses a checkout off main or holding a commit origin/main lacks; `--check` prints what it would build and run and runs nothing. The worker then waits while a night holds its lock or a weekday's night window is near, holds the drain's lock, which the store's copy holds too, while it writes each chunk and for no longer, and goes on from the sessions of the span it has not written, so a build stopped part way is run again with the same span; `--again` writes the span again in place of what an earlier build wrote. It writes the ledger's two tables alone and records one run log row under `ledger-build` with the setups and the sessions written. A row the build writes carries no pick and no cost, which the night alone stores; the Ledger page follows in 17.3's later pull requests.
 
 ### The account and the trades taken from a card
 

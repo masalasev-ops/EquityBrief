@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -9,6 +10,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Sweep;
 using Microsoft.Data.Sqlite;
 
@@ -60,7 +62,7 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
-            new StoreTouch(Store.SetupNight, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -103,9 +105,7 @@ public sealed class SetupLedger : IComponent
 
     const string ClearTheNightsRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date = $night AND source = $source;";
 
-    const string ClearTheSpan = "DELETE FROM setup WHERE index_code = $index AND session_date >= $from AND session_date <= $through AND source = $source;";
-
-    const string ClearTheSpansRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date >= $from AND session_date <= $through AND source = $source;";
+    const string StoredHistory = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
 
     const string OpenSetups = @"
         SELECT family, ticker, session_date, entry, stop, target, trail, cap, risk_moves, cost, end
@@ -332,14 +332,45 @@ public sealed class SetupLedger : IComponent
         return closed;
     }
 
-    // The history, built by hand: every session of the span on one index, over the pulled bars merged with the store's
-    // on membership as it stood, each setup replayed to its end where the history reaches it, written a chunk of
-    // sessions at a time under a run of its own. Rows the span held from an earlier build are replaced.
-    public async Task<int> BuildAsync(string index, DateOnly from, DateOnly through, TextWriter output, CancellationToken cancellation = default)
+    // How often the build looks again while it waits for the night or the drain, and the hour a weekday's night
+    // window opens, as the sweep's own waits read them.
+    public static readonly TimeSpan Poll = SweepRunner.Poll;
+
+    // Whether a chunk about to take the given time must wait: while a night holds its lock, and inside a weekday's
+    // night window, which the chunk would run into.
+    public static bool MustWait(DateTimeOffset now, bool nightHeld, TimeSpan chunk) => nightHeld || SweepRunner.InTheNightsWindow(now, chunk);
+
+    // The sessions of the span the build writes: those between the span's ends the stored history does not hold, so a
+    // build stopped part way goes on from where it was, and a span written again is asked for by name.
+    public static IReadOnlyList<int> SessionsToWrite(IReadOnlyList<DateOnly> calendar, int first, int last, IReadOnlySet<DateOnly> stored, bool again)
+    {
+        var sessions = new List<int>();
+
+        for (var at = first; at <= last; at++)
+        {
+            if (again || !stored.Contains(calendar[at]))
+            {
+                sessions.Add(at);
+            }
+        }
+
+        return sessions;
+    }
+
+    // The history, built by hand from a clean copy of main's commit: every session of the span on one index the
+    // store does not hold a history row for, over the pulled bars merged with the store's on membership as it stood,
+    // each setup replayed to its end where the history reaches it, written a chunk of sessions at a time under a run
+    // of its own. The build waits for the night and holds the drain's lock, which the store's copy holds while it
+    // copies, for each chunk it writes and for no longer. Asked to write the span again, it replaces what an earlier
+    // build wrote for it.
+    public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
         var runId = FormattableString.Invariant($"{BuildStage}-{startedAt:yyyyMMddTHHmmssZ}");
         var history = new SweepHistory(databaseFile);
+        var pause = wait ?? Task.Delay;
+
+        await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
         output.WriteLine($"ledger-build: reading the {DecisionCards.NameOf(index)}'s history through {Stamp(through)}");
 
@@ -372,24 +403,44 @@ public sealed class SetupLedger : IComponent
             return 1;
         }
 
+        var stored = await StoredHistorySessionsAsync(connection, index, cancellation);
+        var sessionsToWrite = SessionsToWrite(calendar, first, last, stored, again);
+
+        if (sessionsToWrite.Count == 0)
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: every session of {Stamp(calendar[first])} to {Stamp(calendar[last])} is written already; --again writes the span again"));
+
+            return 0;
+        }
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
+
         var written = 0;
         var passes = 0;
 
-        for (var start = first; start <= last; start += ChunkSessions)
+        for (var taken = 0; taken < sessionsToWrite.Count; taken += ChunkSessions)
         {
-            var end = Math.Min(last, start + ChunkSessions - 1);
+            var chunkSessions = sessionsToWrite.Skip(taken).Take(ChunkSessions).ToArray();
+            var (start, end) = (chunkSessions[0], chunkSessions[^1]);
+
+            await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
+
             var watch = Stopwatch.StartNew();
 
+            using var held = await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation);
             await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-            foreach (var clear in new[] { ClearTheSpan, ClearTheSpansRows })
+            foreach (var at in chunkSessions)
             {
-                await ExecuteAsync(connection, transaction, clear, [("$index", index), ("$from", Stamp(calendar[start])), ("$through", Stamp(calendar[end])), ("$source", HistorySource)], cancellation);
+                foreach (var clear in new[] { ClearTheNight, ClearTheNightsRows })
+                {
+                    await ExecuteAsync(connection, transaction, clear, [("$index", index), ("$night", Stamp(calendar[at])), ("$source", HistorySource)], cancellation);
+                }
             }
 
             var chunk = 0;
 
-            for (var at = start; at <= end; at++)
+            foreach (var at in chunkSessions)
             {
                 var night = calendar[at];
                 var inputsOnTheNight = new IndexNightInputs(index, night, calendar, at, series, sessions, members, members.Names[at], income);
@@ -419,15 +470,48 @@ public sealed class SetupLedger : IComponent
             await transaction.CommitAsync(cancellation);
 
             written += chunk;
-            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(calendar[start])} to {Stamp(calendar[end])}, {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
+            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(calendar[start])} to {Stamp(calendar[end])}, {chunkSessions.Length} session(s), {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,
-            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {last - first + 1} session(s)"), cancellation);
+            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span"), cancellation);
 
-        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)}, {passes} passing the live rule"));
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)} over {sessionsToWrite.Count} session(s), {passes} passing the live rule"));
 
         return 0;
+    }
+
+    // Waiting for the night: while a night holds its lock under the data root, and inside a weekday's night window,
+    // looking again each poll and saying so once.
+    async Task WaitForTheNightAsync(string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
+    {
+        var said = false;
+
+        while (MustWait(clock.UtcNow, NightLock.Holder(dataRoot) is not null, TimeSpan.FromMinutes(10)))
+        {
+            if (!said)
+            {
+                output.WriteLine(NightLock.Holder(dataRoot) is { } holder ? $"ledger-build: waiting while {holder} holds the night's lock" : "ledger-build: pausing for the night's window");
+                said = true;
+            }
+
+            await pause(Poll, cancellation);
+        }
+    }
+
+    static async Task<IReadOnlySet<DateOnly>> StoredHistorySessionsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var stored = new HashSet<DateOnly>();
+
+        await using var command = Command(connection, null, StoredHistory, [("$index", index), ("$source", HistorySource)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            stored.Add(Date(reader.GetString(0)));
+        }
+
+        return stored;
     }
 
     static int NameOf(IReadOnlyList<SweepSeries> series, string ticker)

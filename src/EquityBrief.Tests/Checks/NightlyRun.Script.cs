@@ -24,6 +24,7 @@ public partial class NightlyRun
             Directory.CreateDirectory(Path.Combine(Root, "tools"));
             Directory.CreateDirectory(Path.Combine(Root, "src"));
             File.Copy(Repository.Tool("nightly"), Path.Combine(Root, "tools", "nightly"));
+            File.Copy(Repository.Tool("ledger-build"), Path.Combine(Root, "tools", "ledger-build"));
 
             Run("init", "-q", "-b", "main");
             Run("config", "user.email", "suite@example.invalid");
@@ -66,7 +67,11 @@ public partial class NightlyRun
         // The script's check mode: what a run would build and run, and nothing run. The data root is named
         // in the environment the script is handed, the repository's own unless the test names another, so
         // a root the suite's own environment carries, as the gates' scripts set one, never reaches the script.
-        public ShellResult Check(IReadOnlyDictionary<string, string>? environment = null, params string[] arguments)
+        public ShellResult Check(IReadOnlyDictionary<string, string>? environment = null, params string[] arguments) =>
+            CheckWith("nightly", environment, arguments);
+
+        // The same for another script built the night's way, the ledger's history build among them.
+        public ShellResult CheckWith(string script, IReadOnlyDictionary<string, string>? environment = null, params string[] arguments)
         {
             var handed = new Dictionary<string, string> { ["EquityBrief__DataRoot"] = Data.Replace('\\', '/') };
 
@@ -75,7 +80,7 @@ public partial class NightlyRun
                 handed[key] = value;
             }
 
-            return Shell.Run(Bash, [Path.Combine(Root, "tools", "nightly"), .. arguments, "--check"], Root, handed);
+            return Shell.Run(Bash, [Path.Combine(Root, "tools", script), .. arguments, "--check"], Root, handed);
         }
 
         public void Dispose()

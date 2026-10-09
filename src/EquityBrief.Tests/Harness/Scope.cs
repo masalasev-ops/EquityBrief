@@ -3128,7 +3128,7 @@ internal static class Scope
         // and the night's step.
         [CheckReach.Key(CatalogueTable, "Setup ledger")] = new Scoped(
             Verdict.Pass,
-            "the class declares the membership, bars, market series, calendar, the pulled history's tables, reported quarters, companies, member readings, family picks, index family picks and setups it reads, and the setups and setup nights it writes, each reconciled against the row",
+            "the class declares the membership, bars, market series, calendar, the pulled history's tables, reported quarters, companies, member readings, family picks, index family picks, setups and setup nights it reads, and the setups and setup nights it writes, each reconciled against the row",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Setup ledger")] = new Scoped(
             Verdict.Pass,
