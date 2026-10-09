@@ -322,6 +322,16 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written for {outcome.NamesComputed} name(s), " +
                     $"{outcome.NotAvailable} not available";
             }),
+            // The chart's averages over the sessions before the store's year, from the pulled history, which only the
+            // chart draws.
+            // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+            new(ChartAverager.Stage, async () =>
+            {
+                var outcome = await new ChartAverager(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return FormattableString.Invariant($"{outcome.NamesWarmed} name(s) read from a pull, {outcome.NamesWithout} with none, {outcome.RowsWritten} row(s)");
+            }),
             new("swings", async () =>
             {
                 var outcome = await new SwingFinder(clock, store.DatabaseFile)

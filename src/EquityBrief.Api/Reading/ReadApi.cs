@@ -44,6 +44,15 @@ public sealed record IndicatorRow(
     double? Value,
     int BarCount);
 
+// One of a name's chart averages over the sessions its indicator rows leave empty, as the night stored it: the values by
+// session, the pull the sessions before the year came from, and why none was read where none was.
+public sealed record ChartAverageRow(
+    string Name,
+    DateOnly Night,
+    IReadOnlyList<(DateOnly Session, double Value)> Values,
+    string? Pull,
+    string? Reason);
+
 // One stored level band, handed over exactly as the store holds it.
 //
 // The members arrive as the JSON string the column holds rather than parsed
@@ -764,6 +773,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.ChartAverage, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.VolumeProfile, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
@@ -1916,6 +1926,38 @@ public sealed partial class ReadApi : IComponent
                 reader.GetString(2),
                 await reader.IsDBNullAsync(3) ? null : reader.GetDouble(3),
                 reader.GetInt32(4)));
+        }
+
+        return rows;
+    }
+
+    // A name's chart averages over the sessions its indicator rows leave empty, each with the pull the sessions before
+    // its year were read from, or why none was.
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+    const string ChartAveragesOf = "SELECT name, night, sessions, pull, reason FROM chart_average WHERE ticker = $ticker ORDER BY name;";
+
+    public async Task<IReadOnlyList<ChartAverageRow>> ChartAveragesAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ChartAveragesOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var rows = new List<ChartAverageRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            using var sessions = System.Text.Json.JsonDocument.Parse(reader.GetString(2));
+
+            rows.Add(new ChartAverageRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                [.. sessions.RootElement.EnumerateArray().Select(pair => (DateOnly.ParseExact(pair[0].GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture), pair[1].GetDouble()))],
+                await reader.IsDBNullAsync(3) ? null : reader.GetString(3),
+                await reader.IsDBNullAsync(4) ? null : reader.GetString(4)));
         }
 
         return rows;

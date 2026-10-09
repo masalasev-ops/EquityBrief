@@ -420,7 +420,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         ratings: await read.RatingsAsync(ticker, on),
         decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
-        cardContext: export ? null : cardContext);
+        cardContext: export ? null : cardContext,
+        warmed: await read.ChartAveragesAsync(ticker));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

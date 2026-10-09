@@ -1130,7 +1130,9 @@ public static class NameScreen
         // The name's cards on the night, the family that listed it first in the page's order.
         IReadOnlyList<DecisionCardRow>? decisionCards = null,
         // The account and the taken trades its card draws, none for an export or an earlier night.
-        CardContext? cardContext = null)
+        CardContext? cardContext = null,
+        // The chart's averages over the sessions the indicator rows leave empty, read through the pulled history.
+        IReadOnlyList<ChartAverageRow>? warmed = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1168,11 +1170,22 @@ public static class NameScreen
                 group => group.Key,
                 group => group.ToDictionary(row => row.SessionDate, row => row.Value));
 
+        // A session the indicator rows leave empty draws the value the night read through the sessions before the
+        // store's year, where it read one; the rows themselves, and what the bands read, are left as stored.
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+        var before = (warmed ?? []).ToDictionary(
+            average => average.Name,
+            average => average.Values.ToDictionary(value => value.Session, value => value.Value),
+            StringComparer.Ordinal);
+
+        double? Drawn(string name, DateOnly session) =>
+            bySession[name].GetValueOrDefault(session) ?? (before.TryGetValue(name, out var filled) && filled.TryGetValue(session, out var value) ? value : null);
+
         var lines = Averages
             .Where(bySession.ContainsKey)
             .Select(name => new ChartAverage(
                 name,
-                [.. drawn.Select(bar => bySession[name].GetValueOrDefault(bar.SessionDate))]))
+                [.. drawn.Select(bar => Drawn(name, bar.SessionDate))]))
             .ToArray();
 
         var filings = fundamentals ?? [];
