@@ -1,0 +1,11 @@
+Description:           Daily Index of EDGAR Dissemination Feed
+Last Data Received:    Sep 4, 2026
+Comments:              webmaster@sec.gov
+Anonymous FTP:         ftp://ftp.sec.gov/edgar/
+
+CIK|Company Name|Form Type|Date Filed|File Name
+--------------------------------------------------------------------------------
+1000249|FIRST EAGLE VARIABLE FUNDS|497|20260904|edgar/data/1000249/0000930413-26-002820.txt
+100378|TWIN DISC INC|10-K|20260904|edgar/data/100378/0001437749-26-029700.txt
+1017655|PAID INC|8-K|20260904|edgar/data/1017655/0001437749-26-029708.txt
+1601046|Keysight Technologies, Inc.|144|20260904|edgar/data/1601046/0001959173-26-006729.txt

@@ -1,0 +1,13 @@
+{
+  "stage": "filings",
+  "derivation": "derived",
+  "derivedFrom": "the archive's four captured daily indexes of 2026-09-01 to 2026-09-04, its two captured 8-K pages and Keysight's captured facts, not a run: the night of 2026-09-08 has read no day before, so it reads the weekdays from 2026-09-01, finds the archive posted none for 2026-09-07, Labor Day, and stops at 2026-09-08, its own session, not yet posted; of the four names only Keysight filed a report, its 10-Q on 2026-09-02, while Apple's 8-K/A and Microsoft's 8-K carry no item 2.02 and Netflix filed neither, so Keysight alone is refreshed and its stored facts are each period of a quarter, nine months or a year ending on or after 2015-01-01 of the six measures' concepts the capture holds, as first filed, which the suite works out from the capture with its own reading",
+  "tables": ["filed_fact", "filed_fact_pull", "filing_day"],
+  "daysRead": ["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-07"],
+  "dayNotPosted": "2026-09-07",
+  "notYetPosted": "2026-09-08",
+  "pagesAsked": ["0001140361-26-035325", "0001193125-26-380280"],
+  "refreshed": ["KEYS"],
+  "notAskedFor": ["AAPL", "MSFT", "NFLX"],
+  "documents": 9
+}

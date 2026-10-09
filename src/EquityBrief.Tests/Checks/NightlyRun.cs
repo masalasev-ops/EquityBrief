@@ -65,6 +65,9 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood)."),
             CheckReach.Key(Scope.FailureTable, "An index's setups the ledger could not compute"),
 
+            // 17.3, the filings refresh after the quarters fetch.
+            CheckReach.Key(NightlyRunSteps.Heading, NightlyCost.FilingsStep),
+
             // 5.3, the facts file.
             CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
 
@@ -1322,12 +1325,14 @@ public partial class NightlyRun
     {
         // Section 14's order at the end of the night, read off the document, and the night
         // running it: the close records the arithmetic's counts, the quarters step asks for the
-        // members due after it, the queue runs after that, the night's own request after the queue and
-        // the labeller's start last, on the night's own output and on the run log's order.
+        // members due after it, the filings refresh after that, the queue after the refresh, the
+        // night's own request after the queue and the labeller's start last, on the night's own
+        // output and on the run log's order.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^7], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Run the overnight queue", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
@@ -1341,10 +1346,12 @@ public partial class NightlyRun
 
         var close = output.IndexOf("  close:", StringComparison.Ordinal);
         var quarters = output.IndexOf("  quarters:", StringComparison.Ordinal);
+        var filings = output.IndexOf("  filings:", StringComparison.Ordinal);
         var queue = output.IndexOf("  queue:", StringComparison.Ordinal);
 
         Assert.True(close >= 0 && quarters > close, $"The quarters step did not run after the close: {output}");
-        Assert.True(queue > quarters, $"The queue did not run after the quarters step: {output}");
+        Assert.True(filings > quarters, $"The filings refresh did not run after the quarters step: {output}");
+        Assert.True(queue > filings, $"The queue did not run after the filings refresh: {output}");
         Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > queue, $"The night's request did not run after the queue: {output}");
 
         var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
@@ -1353,8 +1360,9 @@ public partial class NightlyRun
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
         Assert.Equal(OvernightQueue.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^7]);
 
         // The night's last line states the queue's local calls apart from the arithmetic's,
         // read off the queue's own row.
@@ -1491,10 +1499,11 @@ public partial class NightlyRun
         var steps = NightlyRunSteps.In(architecture);
         var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
+        var filings = steps.ToList().FindIndex(step => step.StartsWith("Read the archive's daily index", StringComparison.Ordinal)) + 1;
         var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
         Assert.Equal(steps.Count - 3, queue);
-        Assert.Equal((close + 1, close + 2), (quarters, queue));
+        Assert.Equal((close + 1, close + 2, close + 3), (quarters, filings, queue));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -1503,7 +1512,7 @@ public partial class NightlyRun
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);
         var section = architecture[from..architecture.IndexOf("<h2>15.", from, StringComparison.Ordinal)];
 
-        Assert.Empty(NoteFaults(section, close, quarters, queue));
+        Assert.Empty(NoteFaults(section, close, quarters, filings, queue));
 
         // The night's own list: its steps in section 14's number, each comment naming a step
         // by its number sitting on that step.
@@ -1561,7 +1570,9 @@ public partial class NightlyRun
 
     // What section 14's note says of its steps against the list: the arithmetic ends at the
     // close, and the two steps carved out of it are the quarters step and then the queue.
-    static IReadOnlyList<string> NoteFaults(string section, int close, int quarters, int queue)
+    // The steps after the arithmetic the note names one at a time, in order: the quarters step, the filings refresh
+    // and the queue, each carved out of the night's rules by name.
+    static IReadOnlyList<string> NoteFaults(string section, int close, params int[] carvedSteps)
     {
         var note = Regex.Replace(section, "<ol>.*?</ol>", string.Empty, RegexOptions.Singleline);
         var ranges = Regex.Matches(note, @"steps [1] to (\d+)").ToArray();
@@ -1573,11 +1584,11 @@ public partial class NightlyRun
             faults.Add($"the note names the arithmetic as {string.Join(", ", ranges.Select(one => one.Value))} where the close is step {close}");
         }
 
-        string[] carved = [quarters.ToString(System.Globalization.CultureInfo.InvariantCulture), queue.ToString(System.Globalization.CultureInfo.InvariantCulture)];
+        string[] carved = [.. carvedSteps.Select(step => step.ToString(System.Globalization.CultureInfo.InvariantCulture))];
 
         if (!single.SequenceEqual(carved, StringComparer.Ordinal))
         {
-            faults.Add($"the note names step(s) {string.Join(", ", single)} where the quarters step is step {quarters} and the queue step {queue}");
+            faults.Add($"the note names step(s) {string.Join(", ", single)} where the steps carved out after the arithmetic are {string.Join(", ", carved)}");
         }
 
         return faults;
@@ -2278,7 +2289,7 @@ public partial class NightlyRun
         // from 16.3 the taken trades' follower asks whether a stock is a member of
         // any index on the night, which ends a trade whose stock has left them all.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "OvernightQueue", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "OvernightQueue", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

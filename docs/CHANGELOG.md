@@ -25,6 +25,124 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - the ledger's point-in-time check
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> [the setup ledger's catalogue row] [...] waiting for the night and holding the drain's lock while it writes each chunk and going on from the sessions not yet written; a night run again replaces its own rows,
+> [13.10] [...] a span written again only when asked. The vocabulary the loop's later sections use
+> [fixture-expectations] [...] its facts worked out from the capture by the test's own reading |
+Now:
+> [the catalogue row] [...] going on from the sessions not yet written, and checks by hand a seeded sample of its history setups against their readings rebuilt from the history cut at each one's session; a night run again replaces its own rows,
+> [13.10] [...] a span written again only when asked. The point-in-time check by hand takes a seeded sample of each year's history setups and rebuilds each one's readings from the history cut at its own session, [...]; a reading that read past its session differs, and is named. The vocabulary the loop's later sections use
+> [fixture-expectations] [...] its facts worked out from the capture by the test's own reading; and a heavyweights' setup's path worked by hand, [...]; and a setup's readings rebuilt from a constructed history cut at its session equal to those read off the whole, a stored reading taken from the session after named by its column with both figures |
+Why: the plan's point-in-time check, built as the `ledger-check` verb over the history cut in memory at each sampled setup's session rather than over a scratch file, the same inputs holding only what stood then.
+
+### 2026-10-09 - ARCHITECTURE.html and RUNBOOK.md - the Ledger page under Universe and its summary
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> Views are hash routes resolved in the browser: <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/watch</code>, <code>#/universe</code>, <code>#/picks</code>,
+> [the setup ledger's catalogue row, its writes] setups, setup nights
+> [RUNBOOK] A row the build writes carries no pick and no cost, which the night alone stores; the Ledger page follows in 17.3's later pull requests.
+Now:
+> Views are hash routes resolved in the browser: <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/watch</code>, <code>#/universe</code>, <code>#/ledger</code>, <code>#/picks</code>,
+> [the catalogue row, its writes] setups, setup nights, ledger summaries
+> [RUNBOOK] A row the build writes carries no pick and no cost, which the night alone stores. The build ends by rewriting the index's summary, which the Ledger page under Universe draws: [...]
+Why: 17.3's Ledger page, section 15.19, drawn from a summary the setup ledger rewrites after each night and each build, its store added to section 16.
+
+### 2026-10-09 - SCHEMA.md and ARCHITECTURE.html - the setup ledger's heavyweights
+Authorised by: A heavyweights' setup is each member of its sector's size cut on a rebalance of the S&P 500's book, held as the rule holds a buy
+Was:
+> | `family` | TEXT | `pullback`, `breakout` or `drift` |
+> | `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open |
+> | `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended |
+> | `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap` or `none`, the last for an anchor placing no trade |
+> [section 17, the setup ledger's loose gates] [...] each at a close of at least $5 and half the index's dollar floor (see: [...])</td><td>[...] the floors because a trade the index's rules would never take is no setup of theirs. <b>Judgement:</b> [...]
+> [the setups' store row] the plan as prices with the risk in typical moves, the forty-five readings as they stood,
+> [the setup ledger's catalogue row] [...] index family picks, setups, setup nights [...] while the night goes on; after the filings refresh [...]
+Now:
+> | `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
+> | `result` | REAL | [...]; a heavyweights' setup, which holds no stop and whose `stop` is nothing, its close at the end over the buy less one, a fraction of the buy |
+> | `benchmark` | REAL | [...]; a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction |
+> | `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap`, `rebalance` or `none`, [...] |
+> [section 17] [...] (see: [...]); and the heavyweights each member of a sector's size cut on a rebalance of the index's own book, held at most 252 sessions</td><td>[...]; the heavyweights' size cut because it is what the rule chooses its leaders from, and their cap a year of sessions (see: [...]). <b>Judgement:</b> [...]
+> [the setups' store row] the plan as prices with the risk in typical moves, a heavyweights' setup holding no stop, the forty-five readings as they stood,
+> [the catalogue row] [...] index family picks, heavyweight nights, setups, setup nights [...] while the night goes on; on a rebalance night of the S&amp;P 500's heavyweights' book each member of each sector's size cut the book stored is a setup, held as the rule holds a buy (see: [...]); after the filings refresh [...]
+Why: the ledger's fourth family, the S&P 500's heavyweights, which the plan made each member of its sector's size cut at each month's rebalance capped at 252 sessions; section 13.10 gains a paragraph on them.
+
+### 2026-10-09 - CLAUDE.md - the nightly hard rule names the filings refresh as its seventh carve-out
+Authorised by: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> Six carve-outs are named rather than left to be discovered, [...] rather than the index, on the operator's rulings of 2026-10-03 and 2026-10-04. (see: The nightly run is arithmetic only) [...] (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night)
+Now:
+> Seven carve-outs are named rather than left to be discovered, [...] on the operator's rulings of 2026-10-03 and 2026-10-04, and the filings refresh after the close, which reads the SEC archive's daily index, one free request a day since it last read one, and asks the archive for the facts of each member whose filer filed a quarterly or annual report, an amendment to one or a results announcement, so it follows the filings calendar rather than the index, free, from the SEC rather than the provider and bounded by its own limit, on the operator's ruling of 2026-10-09. [...] (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit)
+Why: the operator ruled C5 on 2026-10-09: the night refreshes only the companies that filed, read off the archive's daily index after the close under its own limit, in place of the plan's submissions feed asked once a member.
+
+### 2026-10-09 - BUILD_PLAN.md - 17.3's filings step reads the archive's daily index after the quarters fetch
+Authorised by: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> and the night step after the fetch asks the SEC's submissions feed once a member and the facts again for each whose newest filing moved, free, named as the seventh carve-out of the nightly hard rule with a decision written here, that the night refreshes each member's filed facts from the SEC where its filings moved, once a member a night.
+> a filing landing on a session is read on that session's night and not the night before;
+Now:
+> and, on the operator's ruling of 2026-10-09, the night step after the quarters fetch reads the archive's daily index for the days since it last read one and asks the facts of the members that filed a report, an amendment or a results announcement alone, free and under its own limit, named as the seventh carve-out of the nightly hard rule with a decision written here, that the night refreshes the facts of the members that filed since its last read of the archive's daily index.
+> a filing the archive's index lists for a session is refreshed on the next session's night and read by that night's readings, and a member that filed nothing is not asked for;
+Why: the operator ruled C5 on 2026-10-09; the archive posts a day's index at about 22:00 New York time, after the night starts, so a filing is refreshed on the next session's night, the first whose readings may read it. This amends 17.3's done condition, as its entry says in those words.
+
+### 2026-10-09 - .claude/rules/checks.md - the roster's nightly-cost, nightly-run and fixture-expectations clauses reach the filings refresh
+Authorised by: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> [nightly-cost] [...] their asks counted over constructed nights under `fixture-expectations` |
+> [nightly-run] [...] while the build's wait for the night and its going on from the sessions not yet written are each worked by hand |
+> [fixture-expectations] [...] and the fixture's night writing one setup night row a family on the index it read with every setup inside its family's gates |
+Now:
+> [nightly-cost] [...] under `fixture-expectations`; and from 17.3 the seventh carve-out, the filings refresh after the close, is asserted rather than exempted over constructed nights with an archive the test holds: [...] a refusal leaving the facts as they were and a step past its limit asking the archive for nothing |
+> [nightly-run] [...] each worked by hand; and the filings refresh runs after the quarters step and before the overnight queue, on the night's output and its run log's order |
+> [fixture-expectations] [...] with every setup inside its family's gates; and the archive's daily index and an 8-K's items are read as the archive sent them, [...] and the fixture's night refreshing the one member that filed a report and asking nothing for the others, its facts worked out from the capture by the test's own reading |
+Why: the filings refresh is the night's seventh carve-out and a step of its own, and the ledger's business readings and the refresh's reading of the archive are worked by hand under the fixture's check.
+
+### 2026-10-09 - ARCHITECTURE.html - the setup ledger reads the filed facts and forty-five readings
+Authorised by: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
+Was:
+> reported quarters, companies, member readings, family picks, index family picks, setups, setup nights [...] a night run again replaces its own rows, and a failure in an index's part is named on the stage's row while the night goes on (see: [...])
+> the plan as prices with the risk in typical moves, the forty readings as they stood, and the path's result,
+> Every reading is defined once, in the core's catalogue, and read as it stood: the forty readings of the stock and the market, from the bars to the session,
+Now:
+> reported quarters, companies, member readings, filed facts, family picks, index family picks, setups, setup nights [...] a night run again replaces its own rows, and a failure in an index's part is named on the stage's row while the night goes on; after the filings refresh it reads the business readings of the night's setups again for the members refreshed (see: [...])
+> the plan as prices with the risk in typical moves, the forty-five readings as they stood, and the path's result,
+> Every reading is defined once, in the core's catalogue, and read as it stood: the forty-five readings of the stock, its business and the market, from the bars to the session,
+Why: the ledger gains the five business readings from the SEC's facts as first filed, read by the catalogue row, the setups' store row and section 13.10, which gains a paragraph on them and on the night's filings refresh.
+
+### 2026-10-09 - SCHEMA.md - the setup table's coverage column no longer closes the table's readings
+Authorised by: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
+Was:
+> | `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty |
+Now:
+> | `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty readings migration 77 created |
+Why: migration 78 adds the five business readings after the table's last column, so coverage is the last of migration 77's forty and no longer the last reading.
+
+### 2026-10-09 - ARCHITECTURE.html - section 14's note numbers the filings refresh as step 24 and the overnight queue as step 25
+Authorised by: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> Step 24 is carved out of the first by name and calls the local model only
+Now:
+> Step 24 is carved out of the second by name and calls no model: it reads the archive's daily index, one request a day since it last read one, and asks the archive for the facts of the members whose filer filed, free and from the SEC rather than the provider, which the filings calendar sets rather than the index, and it is bounded by its own limit (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit). Step 25 is carved out of the first by name and calls the local model only
+Why: the filings refresh is the night's step after the quarters fetch and before the overnight queue, so the queue moves to step 25; the list gains the step's item.
+
+### 2026-10-09 - ARCHITECTURE.html - section 13.10 and the setup ledger's catalogue row state how the history build runs
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> the build by hand writes the history one index at a time over the pulled bars merged with the store's on membership as it stood, a quarter of sessions a transaction, and replaces what an earlier build wrote for the span.
+Now:
+> the build by hand writes the history [...] from a clean copy of the main checkout's own commit as the night is built and refused off main the same way [...], waiting for the night and holding the drain's lock, which the store's copy holds too, while it writes each chunk, and going on from the sessions it has not written, a span written again only when asked.
+Why: 17.3's ledger, PR 407, built the history's writer as a verb over the working tree, and the history build gives it the script, the waits, the lock and the resume the plan asked for; the catalogue row's description gains the same clause.
+
+### 2026-10-09 - RUNBOOK.md - the setup ledger's history is built through tools/ledger-build
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> dotnet run --project src/EquityBrief.Worker -- ledger-build --index GSPC --from 2019-01-02 --through 2026-10-05 [...] It reads the store directly and writes the ledger's two tables alone, replacing what an earlier build wrote for the span, and records one run log row under `ledger-build` with the setups written. [...] the Ledger page and the build's run from a clean copy of main's commit, waiting for the night and the copy, follow in 17.3's later pull requests.
+Now:
+> tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 [...] The script builds the main checkout's own commit from a clean copy under the data root's folder of nights [...]; `--again` writes the span again in place of what an earlier build wrote.
+Why: the verb run over the working tree was the second pull request's stopgap; the third lands the script and the waits, so the runbook names the script and what the worker waits for.
+
 ### 2026-10-09 - ARCHITECTURE.html - section 14's note counts the arithmetic to the ledger's step
 Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 Was:

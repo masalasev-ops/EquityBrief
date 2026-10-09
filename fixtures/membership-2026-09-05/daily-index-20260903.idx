@@ -1,0 +1,11 @@
+Description:           Daily Index of EDGAR Dissemination Feed
+Last Data Received:    Sep 3, 2026
+Comments:              webmaster@sec.gov
+Anonymous FTP:         ftp://ftp.sec.gov/edgar/
+
+CIK|Company Name|Form Type|Date Filed|File Name
+--------------------------------------------------------------------------------
+1000275|ROYAL BANK OF CANADA|424B2|20260903|edgar/data/1000275/0000950103-26-013516.txt
+100493|TYSON FOODS, INC.|8-K|20260903|edgar/data/100493/0000100493-26-000067.txt
+1037038|RALPH LAUREN CORP|8-K|20260903|edgar/data/1037038/0000950142-26-002493.txt
+320193|Apple Inc.|4|20260903|edgar/data/320193/0001140361-26-035636.txt

@@ -45,6 +45,8 @@ public partial class NightlyCost
             CheckReach.Key(Scope.LimitsTable, "Weighted calls a quarters ask"),
             CheckReach.Key(Scope.FailureTable, "The quarters step reaches its limit or the day's allowance"),
             CheckReach.Key(Scope.FailureTable, "The provider refuses a quarters ask"),
+            // 17.3, the filings refresh, the seventh carve-out: its limit and the two ways the archive stops it short.
+            .. FiledFactsClaims,
         ])
     {
         Held = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -562,6 +564,10 @@ public partial class NightlyCost
     [
         (nameof(QuarterFetcher), Feed.CompanyFinancials),
         (nameof(EquityBrief.Worker.Filter.EstimatesFetcher), Feed.CompanyFinancials),
+        // The seventh, the filings refresh after the close, which reads the archive's daily index and asks the facts
+        // of the members that filed, free and from the SEC rather than the provider, bounded by its own limit.
+        // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+        (nameof(EquityBrief.Worker.Ledger.FilingsRefresher), Feed.FilingsArchive),
     ];
 
     static string NightSource() =>

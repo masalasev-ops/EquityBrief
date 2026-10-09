@@ -15,6 +15,7 @@ using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Ledger;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.News;
@@ -588,7 +589,36 @@ public static class Nightly
 
                 return QuarterFetcher.Detail(outcome);
             }),
-            // Section 14's step 24, after the arithmetic has closed and recorded its
+            // Section 14's step 24, after the quarters fetch and before the overnight queue. The archive's daily index
+            // for each weekday since the refresh last read one, and the facts of the members whose filer filed a
+            // report, an amendment or a results announcement, the seventh carve-out the nightly rule names: free and
+            // from the SEC rather than the provider, its documents on its own row. It is handed no token from the
+            // night's deadline and is bounded by its own limit, so a slow or refused archive leaves the facts as they
+            // were and never touches the arithmetic. The ledger then reads the business readings of tonight's setups
+            // again for the members refreshed, so they read every filing the archive posted before the session. A
+            // night run again for an earlier session refreshes nothing, since the days it would read are today's.
+            // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+            new("filings", async () =>
+            {
+                if (!askForTheFirstName)
+                {
+                    return "no filings were refreshed, since this night was run again for an earlier session";
+                }
+
+                if (feeds.Filings is not { } archive)
+                {
+                    return "no filings were refreshed, since the night was given no archive feed: the archive's contact is not configured";
+                }
+
+                var outcome = await new FilingsRefresher(archive, clock, store.DatabaseFile)
+                    .NightAsync(indexCode, runId, wider);
+
+                var readAgain = await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile)
+                    .BusinessAgainAsync(clock.SessionDateAt(clock.UtcNow), outcome.Refreshed);
+
+                return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again");
+            }),
+            // Section 14's step 25, after the arithmetic has closed and recorded its
             // counts. It calls the local model and nothing else, and no figure above it
             // moves whether it ran. It is handed no token from the night's deadline: that
             // deadline bounds the arithmetic, and the queue is bounded by its own limit,
@@ -614,7 +644,7 @@ public static class Nightly
                     $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
                     $"{outcome.Outcome}, {outcome.Awake}";
             }, [OvernightQueue.Stage]),
-            // Section 14's step 25, after the overnight queue, which writes the first name's key
+            // Section 14's step 26, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
             // name. The night asks for six reports taken in turn across the S&P 500's, 400's and
             // 600's pages and starts the drain as a press does: it writes a row a name and starts

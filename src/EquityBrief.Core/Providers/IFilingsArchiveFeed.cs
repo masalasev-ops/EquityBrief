@@ -29,6 +29,9 @@ public enum ArchiveDocument
     // Every figure the archive holds for the company, under the concept each was
     // filed against.
     CompanyFacts,
+    // One day's index of every filing the archive disseminated, which the night's
+    // filings refresh reads to find the members that filed.
+    DailyIndex,
 }
 
 // One document the archive is asked for.

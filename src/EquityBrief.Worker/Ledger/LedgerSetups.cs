@@ -30,6 +30,10 @@ public sealed record FamilySetups(string Family, int Members, IReadOnlyList<Setu
     public int LivePasses => Rows.Count(row => row.LivePass);
 }
 
+// One sector's size cut on a rebalance as the heavyweights' rule read it: the sector, its largest companies' listings in
+// order of value, and the leaders the rule bought among them.
+public sealed record HeavyweightCut(string Sector, IReadOnlyList<string> Largest, IReadOnlySet<string> Leaders);
+
 // The market series the readings take, each over its own sessions: the index's own series, or its fund's on the S&P
 // 400 and 600, the VIX, SPY, IJH, IJR and HYG, any of them absent where the store holds none.
 public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>> Series)
@@ -57,12 +61,26 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
 }
 
 // What the ledger reads of one index on one session besides its series: each member's quarters as filed, its sector as
-// filed, and the members at a new high and a new low on each session.
+// filed, the members at a new high and a new low on each session, and each member's filer's facts as first filed, read
+// for a session from those filed before it. The business readings change only when a fact is filed, so they are kept
+// for a member by how many of its facts were filed before the session.
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
     int[] Highs,
-    int[] Lows);
+    int[] Lows,
+    IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>? Facts = null)
+{
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), BusinessReading> business = new();
+
+    public BusinessReading Business(string ticker, DateOnly session)
+    {
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+
+        return business.GetOrAdd((ticker, filed), _ => FiledFacts.Read(facts, session));
+    }
+}
 
 // The setups of one index on one session, family by family, through the sweep's own readings of the series: the
 // pullback's candidates as the sweep reads them, the breakout's highs and ranges as its sweep reads them, and the
@@ -90,6 +108,70 @@ public static class LedgerSetups
 
     static string Words(FamilyGrid grid, int[] setting) =>
         string.Join(", ", grid.Dials.Select((dial, at) => FormattableString.Invariant($"{dial.Dial} {grid.Value(setting, at)}")));
+
+    // The live heavyweights' setting in words, a setting a clause.
+    public static string HeavyweightWords { get; } = FormattableString.Invariant(
+        $"largest {HeavyweightRule.Live.Largest}, look-back {HeavyweightRule.Live.LookBack}, leaders {HeavyweightRule.Live.Leaders}, ")
+        + FormattableString.Invariant($"beta of at least one {HeavyweightRule.Live.HighBeta}, the sector's fund {HeavyweightRule.Live.FundReturn}, ")
+        + FormattableString.Invariant($"sold on no longer leading {HeavyweightRule.Live.SoldOnLeading}, sold under the average {HeavyweightRule.Live.SoldUnderAverage}");
+
+    // The heavyweights' setups of a rebalance session: each member of each sector's size cut, bought at the session's
+    // close and given the heavyweights' cap, its live pass whether the rule bought it, with the readings every family's
+    // setup carries. The rule places no stop, so the anchor's stop is nothing and its path is read by the heavyweights'
+    // own replay.
+    // see: A heavyweights' setup is each member of its sector's size cut on a rebalance of the S&P 500's book, held as the rule holds a buy
+    public static FamilySetups Heavyweights(
+        string indexCode,
+        IReadOnlyList<SweepSeries> series,
+        double[][] closes,
+        IReadOnlyList<SweepColumns.Session> sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        LedgerMarket market,
+        LedgerContext context,
+        IReadOnlyList<HeavyweightCut> cuts)
+    {
+        var names = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var name = 0; name < series.Count; name++)
+        {
+            names.TryAdd(series[name].Name.Ticker, name);
+        }
+
+        var rows = new List<SetupRow>();
+
+        foreach (var cut in cuts)
+        {
+            foreach (var ticker in cut.Largest)
+            {
+                if (!names.TryGetValue(ticker, out var name))
+                {
+                    continue;
+                }
+
+                var bar = IndexNightRead.BarOf(series[name], at);
+
+                if (bar < 0 || !(closes[name][bar] > 0))
+                {
+                    continue;
+                }
+
+                rows.Add(new SetupRow(
+                    indexCode,
+                    HeavyweightRule.Name,
+                    ticker,
+                    calendar[at],
+                    HeavyweightWords,
+                    cut.Leaders.Contains(ticker),
+                    new SetupAnchor(calendar[at], closes[name][bar], 0, null, null, HeavyweightPaths.Cap, null),
+                    new SetupPlan(0, null, null, HeavyweightPaths.Cap),
+                    Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context)));
+            }
+        }
+
+        return new FamilySetups(HeavyweightRule.Name, members.Names[at].Length, Ordered(rows));
+    }
 
     public static IReadOnlyList<FamilySetups> On(
         string indexCode,
@@ -399,6 +481,14 @@ public static class LedgerSetups
         Set("credit_over_fifty", credit is null ? null : SeriesReadings.OverAverage(credit, day, LedgerReadings.CreditAverageSessions));
         Set("profit", LedgerReadings.Flag(MemberReadings.Profit(income, day)));
         Set("coverage", LedgerReadings.Flag(MemberReadings.Coverage(income, day, sector)));
+
+        var business = context.Business(ticker, day);
+
+        Set("revenue_growth", business.RevenueGrowth);
+        Set("growth_change", business.GrowthChange);
+        Set("gross_margin_change", business.GrossMarginChange);
+        Set("operating_margin_change", business.OperatingMarginChange);
+        Set("cash_over_income", business.CashOverIncome);
 
         return readings;
     }

@@ -40880,3 +40880,87 @@ Carried:    this pull request changes the night's code, so it merges outside the
             setup count a family an index, its time and its size against the budget are recorded by the pull request
             that runs it from a clean copy. 17.1's remedy, `--from 6`, was run by the operator on 2026-10-09 from 02:13Z
             to 02:45Z, its surprises and both rule records ending ok.
+
+### 17.3 ruling - the filings refresh reads the archive's daily index and asks company facts for the members that filed alone, after the close under its own limit   2026-10-09
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-09, answering the C5 question, word for word in `prompts/`: "refresh only the
+            companies that filed. Each night, read EDGAR's daily filings index for the sessions since the last refresh
+            (one or a few free requests), pick the members whose CIK filed a 10-Q, 10-K, 8-K with results or an
+            amendment, and fetch company facts for those alone. State the requests and the time a night. Run it as its
+            own step after the close with its own time limit, as the quarters fetch does, so a slow or refused SEC feed
+            leaves facts as they were and never touches the night's main clock. The monthly run's full refresh stays as
+            the catch-all. Test: a member that filed on a session is refreshed that night, and one that did not is not
+            asked for."
+Replaces:   the plan's step after the fetch asking the submissions feed once a member, about 1,506 requests and 200 s a
+            night on the night's own clock.
+Read:       the archive's listing of the quarter's daily index on 2026-10-09 showed each day's index posted at about
+            22:00 New York time on the day it covers, after the night's start at 19:30, so the newest index a night
+            reads is the session before's. A filing is refreshed on the next session's night, the first night whose
+            readings may read it, since a quarter filed on a session is not read on that session.
+Queue:      done, C1 PR 398, 17.0 PR 399, the 15.2 correction PR 400, 17.1 PRs 401 and 402, the 0.7 correction PR 403,
+            17.2 PRs 404 and 405, and 17.3's kept bars and ledger, PRs 406 and 407; in progress, the rest of 17.3 on one
+            branch, going up as one pull request once the whole stage is built, on the operator's word of 2026-10-09;
+            next, 17.2a once the growth proposal is approved, and 17.4 to 17.10.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: the figures the stage's entry below records, the two
+            entries verified by one run.
+
+### 17.3 - the rest of the ledger: the history build from a clean copy, the filings refresh after the close, five business readings, the heavyweights' setups, the Ledger page and the point-in-time check   2026-10-09
+
+Built:      the history build: `tools/ledger-build` and its wrapper build the main checkout's own commit from a clean copy
+            into the night's folder of copies as `tools/nightly` does, refuse a checkout off main or ahead of
+            origin/main before any worker exists and print what would run under `--check`; the verb waits while a
+            night holds its lock or a weekday's night window is near, holds the drain's lock while it writes each
+            chunk, goes on from the sessions the history does not hold and writes the span again only under `--again`.
+            The filings refresh, on the operator's C5 ruling above: `FilingsRefresher`, the night's step after the
+            quarters fetch under its own limit of 10 minutes, reads the archive's daily index for each weekday since
+            its last read, at most 10 a night, and asks the facts of the members whose filer filed a 10-Q, a 10-K, an
+            amendment, or an 8-K whose own page carries item 2.02, storing each fact not yet stored as first filed in
+            `filed_fact`, with `filed_fact_pull` and `filing_day` beside it; `filings --whole` asks every filer once.
+            The archive posts a day's index at about 22:00 New York time, so a filing is refreshed on the next
+            session's night. The seventh carve-out is named in CLAUDE.md's hard rule with its prior text in the
+            changelog. Five business readings from the facts as first filed before a session, revenue growth and its
+            change, the gross and operating margins against the year before and the year's cash over its income, so
+            45 readings, read again for the members the refresh stored on the night it stored them. The S&P 500's
+            heavyweights' setups: each member of a sector's size cut on a rebalance of the book, held as the rule holds
+            a buy to the first later rebalance not buying it or 252 sessions, against its size cut. The Ledger page,
+            section 15.19, drawn from `ledger_summary`, which the ledger rewrites after each night and each build. The
+            point-in-time check, `ledger-check`, rebuilding a seeded 25 setups a year from the history cut in memory at
+            each one's session. Section 13.11 with figure 13.3, the loop's nightly half. Migration 78; three decisions;
+            SCHEMA, the runbook, the guide, the roster's clauses and the changelog.
+Departed:   this checkpoint amends its own done condition: a filing is read on the next session's night and not on its
+            own session's, since the archive posts its index after the night starts; the plan's text and the changelog
+            say so. The plan's valuation reading, earnings over value as a percentile of the company's last twelve
+            quarters, is not built: the night reads one year of bars and no pulled history, so it cannot be read as it
+            stood on the night, and the operator's word is owed on how it is read. The S&P 400's and 600's
+            heavyweights add no setup until a freeze registers their live rule, since their provisional books store no
+            size cut. The point-in-time check cuts the history in memory rather than writing a scratch store.
+Tests:      2050, fifteen more: the operator's test, a member that filed refreshed on the next session's night and
+            one that did not never asked, with an 8-K's results read off its page; the days read worked by hand; a
+            refused archive and a passed limit; the daily index and the 8-K pages read as captured; the facts stored as
+            first filed; the five readings worked by hand, a filing on the session not read; the fixture's night
+            refreshing Keysight alone, its facts worked out from the capture; the heavyweights' path and their night;
+            the Ledger page read back off the rendered page; the deciles by nearest rank; and the point-in-time rebuild.
+Claims:     1089, from 1076: the filings refresher's catalogue and matrix rows, its three stores, section 17's row,
+            section 18's two and the night's step, and the Ledger page's three regions and its summary's store.
+Pins:       no registered rule's pin moved; the readings' pin moved to 61029e708aa9 with the new readings and the
+            heavyweights, and the live store holds no setup row yet to carry the old one.
+Mutated:    the rule, stated before the run: the two properties the ruling and the plan name. A fact filed on a session
+            not read on that session, broken by reading facts filed on or before it: predicted red at the business
+            readings worked by hand, the filing day's growth read as 0.25 rather than 0.10; red as predicted. A member
+            that filed nothing setting a refresh off not asked for, broken by choosing every member filing whatever its
+            form: predicted red at the operator's test and at the fixture's night; both red as predicted. Each reverted
+            before anything was committed. Not mutated: the heavyweights' path, the summary and the cut, each held by
+            its own test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c19fb407, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2050 of 2050 tests ran with none failed, migrations 0 to
+            78 with none pending, schema version 78, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 47 tables, 1089 claims, 1089 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1100
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2050 of 2050 tests ran.
+Carried:    after the merge, from main: `filings --whole` once, then the history build one index at a time with its
+            setup count a family an index, its time and its size against the 0.5 gigabyte budget recorded, then
+            `ledger-check` on each index; migration 78 by the night's own first step; the night's ledger and filings
+            steps' times read over the five nights after; the valuation reading's ruling; the C5 ruling is above and
+            D4's approval still gates 17.2a.

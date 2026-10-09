@@ -1406,6 +1406,48 @@
       "query": "POST https://api.openfigi.com/v3/mapping with seven jobs of idType ID_ISIN and includeUnlistedEquities true, no exchange code: US74051N1028, US74971D1019, US7589321071, US78645L1008, US808CVR1040, US98421B1008, US98390M1036",
       "fetchedAt": "2026-10-08T12:09:03Z",
       "trimmedTo": "nothing. The whole answer: the contra line US808CVR1040 and Xperi Holding's US98390M1036 answered No identifier found, RPT Realty answered RPT on every venue the composite included, and Regis answered RGS on the Nasdaq venues alone."
+    },
+    {
+      "file": "daily-index-20260901.idx",
+      "endpoint": "Archives/edgar/daily-index/2026/QTR3/master.20260901.idx",
+      "query": "https://www.sec.gov/Archives/edgar/daily-index/2026/QTR3/master.20260901.idx",
+      "fetchedAt": "2026-10-09T03:47:12Z",
+      "trimmedTo": "the archive's five header lines, its column line and its line of dashes as sent, and 10 of the 5,200 filing lines: every line of the fixture's four names that day, Apple's 3, 4 and 8-K/A, Netflix's 144 and two of Microsoft's 4s beside its 144, and three other filers' first lines, so a reader keyed on the members finds the others to pass over. Posted at 22:03 New York time on the day it covers."
+    },
+    {
+      "file": "daily-index-20260902.idx",
+      "endpoint": "Archives/edgar/daily-index/2026/QTR3/master.20260902.idx",
+      "query": "https://www.sec.gov/Archives/edgar/daily-index/2026/QTR3/master.20260902.idx",
+      "fetchedAt": "2026-10-09T03:47:12Z",
+      "trimmedTo": "the header as sent and 9 of the 5,259 filing lines: Keysight's 10-Q for its quarter to 2026-07-31, the one filing of the week that sets off a refresh among the four names, Microsoft's 4 and its 8-K, two of Netflix's 4s, and NetApp's 10-Q and 8-K and Argan's 10-Q, reports by filers the fixture does not hold."
+    },
+    {
+      "file": "daily-index-20260903.idx",
+      "endpoint": "Archives/edgar/daily-index/2026/QTR3/master.20260903.idx",
+      "query": "https://www.sec.gov/Archives/edgar/daily-index/2026/QTR3/master.20260903.idx",
+      "fetchedAt": "2026-10-09T03:47:12Z",
+      "trimmedTo": "the header as sent and 4 of the 4,779 filing lines: Apple's 4, the one line of the four names that day, and three other filers' first lines."
+    },
+    {
+      "file": "daily-index-20260904.idx",
+      "endpoint": "Archives/edgar/daily-index/2026/QTR3/master.20260904.idx",
+      "query": "https://www.sec.gov/Archives/edgar/daily-index/2026/QTR3/master.20260904.idx",
+      "fetchedAt": "2026-10-09T03:47:12Z",
+      "trimmedTo": "the header as sent and 4 of the 3,987 filing lines: Keysight's 144, the one line of the four names that day, and Twin Disc's 10-K among three other filers' lines. The index for 2026-09-07, Labor Day, was asked the same night and answered 403 with the storage's AccessDenied in XML, which is the archive holding none, so no capture stands for it."
+    },
+    {
+      "file": "filing-page-0001193125-26-380280.htm",
+      "endpoint": "Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/789019/000119312526380280/0001193125-26-380280-index.htm",
+      "fetchedAt": "2026-10-09T03:52:30Z",
+      "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 363 lines: Microsoft's 8-K of 2026-09-02, whose items are 7.01 and 9.01 and carry no results. The page's navigation and its tables of documents and data files are cut."
+    },
+    {
+      "file": "filing-page-0001140361-26-035325.htm",
+      "endpoint": "Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
+      "fetchedAt": "2026-10-09T03:52:30Z",
+      "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 209 lines: Apple's 8-K/A of 2026-09-01, an amendment whose one item is 5.02 and carries no results. The page's navigation and its tables of documents and data files are cut."
     }
   ]
 }

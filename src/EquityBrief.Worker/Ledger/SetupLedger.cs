@@ -1,14 +1,18 @@
 using System.Diagnostics;
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Sweep;
 using Microsoft.Data.Sqlite;
 
@@ -57,10 +61,13 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
-            new StoreTouch(Store.SetupNight, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -92,6 +99,21 @@ public sealed class SetupLedger : IComponent
 
     const string PulledSectors = "SELECT ticker, sector FROM pulled_company WHERE sector IS NOT NULL;";
 
+    // Each ticker's filer: the newest the quarters step filed for it, and the companies pull's beneath it for the
+    // history, read in that order so the night's own replaces the pull's.
+    const string Filers = "SELECT ticker, cik FROM company WHERE cik IS NOT NULL ORDER BY fetched_at;";
+
+    const string PulledFilers = "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;";
+
+    const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik;";
+
+    const string BusinessAgain = @"
+        UPDATE setup
+        SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
+            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income
+        WHERE ticker = $ticker AND session_date = $session AND source = $source;
+    ";
+
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.
     const string Costs = "SELECT ticker, cost FROM member_reading WHERE index_code = $index AND session_date = $night AND cost IS NOT NULL;";
 
@@ -103,9 +125,7 @@ public sealed class SetupLedger : IComponent
 
     const string ClearTheNightsRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date = $night AND source = $source;";
 
-    const string ClearTheSpan = "DELETE FROM setup WHERE index_code = $index AND session_date >= $from AND session_date <= $through AND source = $source;";
-
-    const string ClearTheSpansRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date >= $from AND session_date <= $through AND source = $source;";
+    const string StoredHistory = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
 
     const string OpenSetups = @"
         SELECT family, ticker, session_date, entry, stop, target, trail, cap, risk_moves, cost, end
@@ -212,6 +232,14 @@ public sealed class SetupLedger : IComponent
         var costs = await CostsAsync(connection, index, night, cancellation);
         var picks = await PicksAsync(connection, index, night, cancellation);
         var open = await OpenAsync(connection, index, night, cancellation);
+        var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+
+        // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
+        // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
+        var since = open.Where(setup => setup.Family == HeavyweightRule.Name).Select(setup => setup.Session).DefaultIfEmpty(night).Min();
+        var rebalances = index == IndexFamilies.LargeIndex
+            ? await HeavyweightCutsAsync(connection, since, night, cancellation)
+            : new Dictionary<DateOnly, IReadOnlyList<HeavyweightCut>>();
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -230,7 +258,8 @@ public sealed class SetupLedger : IComponent
             {
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, new LedgerContext(income, sectors, highs, lows));
+                var context = new LedgerContext(income, sectors, highs, lows, facts);
+                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
 
                 foreach (var family in families)
                 {
@@ -256,10 +285,34 @@ public sealed class SetupLedger : IComponent
                     passes += family.LivePasses;
                 }
 
-                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, cancellation);
+                // A rebalance night of the S&P 500's book: each member of each sector's size cut, its pick whether the
+                // book bought it, its cost a fraction of the buy, its path open and its benchmark the size cut's.
+                if (rebalances.TryGetValue(night, out var tonight))
+                {
+                    var heavyweights = LedgerSetups.Heavyweights(index, inputs.Series, closes, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context, tonight);
+
+                    foreach (var row in heavyweights.Rows)
+                    {
+                        double? cost = costs.TryGetValue(row.Ticker, out var percent) ? percent / 100 : null;
+
+                        await InsertAsync(connection, transaction, row, row.LivePass, cost, (new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0)), inputs.Calendar, inputs.At, NightSource, cancellation);
+                    }
+
+                    await ExecuteAsync(connection, transaction, InsertNight,
+                    [
+                        ("$index", index), ("$family", heavyweights.Family), ("$session", Stamp(night)), ("$members", heavyweights.Members),
+                        ("$setups", heavyweights.Rows.Count), ("$live_passes", heavyweights.LivePasses), ("$source", NightSource),
+                    ], cancellation);
+
+                    setups += heavyweights.Rows.Count;
+                    passes += heavyweights.LivePasses;
+                }
+
+                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, rebalances, cancellation);
             }
 
             await transaction.CommitAsync(cancellation);
+            await RefreshSummaryAsync(connection, index, cancellation);
 
             return new LedgerIndex(index, setups, passes, closed, watch.Elapsed.TotalSeconds);
         }
@@ -292,7 +345,15 @@ public sealed class SetupLedger : IComponent
 
     // The stored setups of the index not yet settled, each replayed again over the closes to the night and its benchmark
     // read again, and written where its path ended or its benchmark settled.
-    async Task<int> SettleAsync(SqliteConnection connection, SqliteTransaction transaction, string index, IReadOnlyList<OpenSetup> open, IndexNightInputs inputs, double[][] closes, CancellationToken cancellation)
+    async Task<int> SettleAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string index,
+        IReadOnlyList<OpenSetup> open,
+        IndexNightInputs inputs,
+        double[][] closes,
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        CancellationToken cancellation)
     {
         var closed = 0;
         var names = inputs.Series.Select((one, name) => (one.Name.Ticker, name)).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
@@ -313,10 +374,24 @@ public sealed class SetupLedger : IComponent
                 continue;
             }
 
-            var move = inputs.Series[name].Atr[bar];
-            var anchor = setup.Anchor;
-            var plan = PlanOf(setup, move);
-            var (outcome, benchmark) = Outcome(closes, inputs, name, bar, anchor, plan);
+            (SetupOutcome Outcome, BenchmarkReading Benchmark) read;
+
+            if (setup.Family == HeavyweightRule.Name)
+            {
+                if (HeavyweightOutcome(setup, rebalances, inputs, closes, names, name, bar, at) is not { } heavyweight)
+                {
+                    continue;
+                }
+
+                read = heavyweight;
+            }
+            else
+            {
+                read = Outcome(closes, inputs, name, bar, setup.Anchor, PlanOf(setup, inputs.Series[name].Atr[bar]));
+            }
+
+            var (outcome, benchmark) = read;
+
             if (outcome.Result is null && !benchmark.Settled)
             {
                 continue;
@@ -332,14 +407,246 @@ public sealed class SetupLedger : IComponent
         return closed;
     }
 
-    // The history, built by hand: every session of the span on one index, over the pulled bars merged with the store's
-    // on membership as it stood, each setup replayed to its end where the history reaches it, written a chunk of
-    // sessions at a time under a run of its own. Rows the span held from an earlier build are replaced.
-    public async Task<int> BuildAsync(string index, DateOnly from, DateOnly through, TextWriter output, CancellationToken cancellation = default)
+    // A heavyweights' setup's path to the night, read off the rebalances the book stored: sold at the first later one
+    // whose buys leave the stock out, the benchmark its sector's size cut on its own session over the same sessions;
+    // none where the book's rows of its own session are not held.
+    static (SetupOutcome Outcome, BenchmarkReading Benchmark)? HeavyweightOutcome(
+        OpenSetup setup,
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        IndexNightInputs inputs,
+        double[][] closes,
+        IReadOnlyDictionary<string, int> names,
+        int name,
+        int bar,
+        int at)
+    {
+        if (!rebalances.TryGetValue(setup.Session, out var entered)
+            || entered.FirstOrDefault(cut => cut.Largest.Contains(setup.Ticker, StringComparer.Ordinal)) is not { } sector)
+        {
+            return null;
+        }
+
+        var notBought = rebalances
+            .Where(pair => pair.Key > setup.Session && !pair.Value.Any(cut => cut.Leaders.Contains(setup.Ticker)))
+            .Select(pair => Array.BinarySearch(inputs.Calendar, pair.Key))
+            .Where(session => session >= 0)
+            .Select(session => IndexNightRead.BarOf(inputs.Series[name], session))
+            .Where(held => held >= 0)
+            .ToArray();
+        var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
+        var cut = sector.Largest
+            .Where(names.ContainsKey)
+            .Select(ticker => (closes[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at)))
+            .ToArray();
+
+        return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
+    }
+
+    // The S&P 500's heavyweights' rebalances over the history, read by the sweep's own replay at the live setting: the
+    // first scored session of each month, each sector's size cut by value as it stood with the leaders the rule buys.
+    static async Task<IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>>> HeavyweightHistoryAsync(
+        SweepHistory history,
+        SweepHistoryInputs inputs,
+        DateOnly through,
+        TextWriter output,
+        CancellationToken cancellation)
+    {
+        var calendar = inputs.Sessions;
+        var first = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+
+        if (first < 0)
+        {
+            return new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
+        }
+
+        var months = HeavyweightSweep.Rebalances(calendar, first, HeavyweightPeriod.Month);
+        var pulled = await history.HeavyweightAsync(through, cancellation);
+        var market = await history.MarketAsync(through, cancellation);
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: reading the heavyweights' {months.Count} rebalance(s) by the sweep's own replay"));
+
+        var (_, laid) = HeavyweightSweep.Lay(inputs, pulled, market.FirstOrDefault(one => one.Series == LedgerMarket.Index), months.ToHashSet(), first);
+
+        return months
+            .Where(laid.ContainsKey)
+            .ToDictionary(
+                session => session,
+                session => (IReadOnlyList<HeavyweightCut>)
+                [
+                    .. HeavyweightSweep.Sectors(laid[session], HeavyweightSweep.Frozen).Select(sector => new HeavyweightCut(
+                        sector.Sector,
+                        [.. sector.Largest.Select(ranked => ranked.Ticker)],
+                        sector.Leaders.ToHashSet(StringComparer.Ordinal))),
+                ]);
+    }
+
+    const string ClearTheSummary = "DELETE FROM ledger_summary WHERE index_code = $index;";
+
+    const string SummaryCounts = @"
+        SELECT family, CAST(substr(session_date, 1, 4) AS INTEGER) AS year, COUNT(*), SUM(live_pass),
+            SUM(CASE WHEN picked IS NOT NULL THEN 1 ELSE 0 END), SUM(CASE WHEN picked = 1 THEN 1 ELSE 0 END), SUM(settled),
+            AVG(CASE WHEN settled = 1 THEN result END), AVG(CASE WHEN settled = 1 THEN edge END)
+        FROM setup WHERE index_code = $index GROUP BY family, year ORDER BY family, year;";
+
+    const string SettledFigures = "SELECT family, substr(session_date, 1, 4), result, edge FROM setup WHERE index_code = $index AND settled = 1;";
+
+    const string InsertSummary = @"
+        INSERT INTO ledger_summary (index_code, family, year, setups, live_passes, night_rows, picked, settled, result_mean, edge_mean, result_deciles, edge_deciles, refreshed_at)
+        VALUES ($index, $family, $year, $setups, $live_passes, $night_rows, $picked, $settled, $result_mean, $edge_mean, $result_deciles, $edge_deciles, $refreshed_at);";
+
+    // The Ledger page's summary of one index rewritten whole from its setups: each family's rows a year, those the live
+    // rule passes, those the night wrote and of them those its list picked, those settled, their mean result and edge
+    // and the cut points between the deciles of each.
+    async Task RefreshSummaryAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var counts = new List<(string Family, int Year, int Setups, int Passes, int NightRows, int Picked, int Settled, double? Result, double? Edge)>();
+
+        await using (var command = Command(connection, null, SummaryCounts, [("$index", index)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                counts.Add((
+                    reader.GetString(0),
+                    reader.GetInt32(1),
+                    reader.GetInt32(2),
+                    reader.GetInt32(3),
+                    reader.GetInt32(4),
+                    reader.GetInt32(5),
+                    reader.GetInt32(6),
+                    reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                    reader.IsDBNull(8) ? null : reader.GetDouble(8)));
+            }
+        }
+
+        var figures = new Dictionary<(string Family, int Year), (List<double> Results, List<double> Edges)>();
+
+        await using (var command = Command(connection, null, SettledFigures, [("$index", index)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var key = (reader.GetString(0), int.Parse(reader.GetString(1), CultureInfo.InvariantCulture));
+
+                if (!figures.TryGetValue(key, out var held))
+                {
+                    held = ([], []);
+                    figures[key] = held;
+                }
+
+                if (!reader.IsDBNull(2))
+                {
+                    held.Results.Add(reader.GetDouble(2));
+                }
+
+                if (!reader.IsDBNull(3))
+                {
+                    held.Edges.Add(reader.GetDouble(3));
+                }
+            }
+        }
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        await ExecuteAsync(connection, transaction, ClearTheSummary, [("$index", index)], cancellation);
+
+        foreach (var row in counts)
+        {
+            var settled = figures.TryGetValue((row.Family, row.Year), out var held) ? held : ([], []);
+            var results = LedgerSummaries.Deciles(settled.Results);
+            var edges = LedgerSummaries.Deciles(settled.Edges);
+
+            await ExecuteAsync(connection, transaction, InsertSummary,
+            [
+                ("$index", index), ("$family", row.Family), ("$year", row.Year), ("$setups", row.Setups), ("$live_passes", row.Passes),
+                ("$night_rows", row.NightRows), ("$picked", row.Picked), ("$settled", row.Settled),
+                ("$result_mean", (object?)row.Result ?? DBNull.Value), ("$edge_mean", (object?)row.Edge ?? DBNull.Value),
+                ("$result_deciles", results is null ? DBNull.Value : LedgerSummaries.Stored(results)),
+                ("$edge_deciles", edges is null ? DBNull.Value : LedgerSummaries.Stored(edges)),
+                ("$refreshed_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)),
+            ], cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+    }
+
+    // The rebalances the S&P 500's heavyweights' book stored between two sessions, each sector's size cut in order of
+    // value with the leaders it bought.
+    const string HeavyweightRebalances = @"
+        SELECT session_date, sector, ticker, leader FROM heavyweight_night
+        WHERE session_date >= $since AND session_date <= $night
+        ORDER BY session_date, sector, place;";
+
+    static async Task<IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>>> HeavyweightCutsAsync(SqliteConnection connection, DateOnly since, DateOnly night, CancellationToken cancellation)
+    {
+        var rows = new List<(DateOnly Session, string Sector, string Ticker, bool Leader)>();
+
+        await using (var command = Command(connection, null, HeavyweightRebalances, [("$since", Stamp(since)), ("$night", Stamp(night))]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                rows.Add((Date(reader.GetString(0)), reader.GetString(1), reader.GetString(2), reader.GetInt64(3) == 1));
+            }
+        }
+
+        return rows
+            .GroupBy(row => row.Session)
+            .ToDictionary(
+                session => session.Key,
+                session => (IReadOnlyList<HeavyweightCut>)
+                [
+                    .. session
+                        .GroupBy(row => row.Sector, StringComparer.Ordinal)
+                        .Select(sector => new HeavyweightCut(
+                            sector.Key,
+                            [.. sector.Select(row => row.Ticker)],
+                            sector.Where(row => row.Leader).Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal))),
+                ]);
+    }
+
+    // How often the build looks again while it waits for the night or the drain, and the hour a weekday's night
+    // window opens, as the sweep's own waits read them.
+    public static readonly TimeSpan Poll = SweepRunner.Poll;
+
+    // Whether a chunk about to take the given time must wait: while a night holds its lock, and inside a weekday's
+    // night window, which the chunk would run into.
+    public static bool MustWait(DateTimeOffset now, bool nightHeld, TimeSpan chunk) => nightHeld || SweepRunner.InTheNightsWindow(now, chunk);
+
+    // The sessions of the span the build writes: those between the span's ends the stored history does not hold, so a
+    // build stopped part way goes on from where it was, and a span written again is asked for by name.
+    public static IReadOnlyList<int> SessionsToWrite(IReadOnlyList<DateOnly> calendar, int first, int last, IReadOnlySet<DateOnly> stored, bool again)
+    {
+        var sessions = new List<int>();
+
+        for (var at = first; at <= last; at++)
+        {
+            if (again || !stored.Contains(calendar[at]))
+            {
+                sessions.Add(at);
+            }
+        }
+
+        return sessions;
+    }
+
+    // The history, built by hand from a clean copy of main's commit: every session of the span on one index the
+    // store does not hold a history row for, over the pulled bars merged with the store's on membership as it stood,
+    // each setup replayed to its end where the history reaches it, written a chunk of sessions at a time under a run
+    // of its own. The build waits for the night and holds the drain's lock, which the store's copy holds while it
+    // copies, for each chunk it writes and for no longer. Asked to write the span again, it replaces what an earlier
+    // build wrote for it.
+    public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
         var runId = FormattableString.Invariant($"{BuildStage}-{startedAt:yyyyMMddTHHmmssZ}");
         var history = new SweepHistory(databaseFile);
+        var pause = wait ?? Task.Delay;
+
+        await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
 
         output.WriteLine($"ledger-build: reading the {DecisionCards.NameOf(index)}'s history through {Stamp(through)}");
 
@@ -361,7 +668,18 @@ public sealed class SetupLedger : IComponent
 
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
-        var context = new LedgerContext(income, sectors, highs, lows);
+        var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var context = new LedgerContext(income, sectors, highs, lows, facts);
+        var heavyweights = index == IndexFamilies.LargeIndex
+            ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
+            : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
+        var nameOf = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var name = 0; name < series.Length; name++)
+        {
+            nameOf.TryAdd(series[name].Name.Ticker, name);
+        }
+
         var first = Array.FindIndex(calendar, session => session >= from);
         var last = Array.FindLastIndex(calendar, session => session <= through);
 
@@ -372,24 +690,44 @@ public sealed class SetupLedger : IComponent
             return 1;
         }
 
+        var stored = await StoredHistorySessionsAsync(connection, index, cancellation);
+        var sessionsToWrite = SessionsToWrite(calendar, first, last, stored, again);
+
+        if (sessionsToWrite.Count == 0)
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: every session of {Stamp(calendar[first])} to {Stamp(calendar[last])} is written already; --again writes the span again"));
+
+            return 0;
+        }
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
+
         var written = 0;
         var passes = 0;
 
-        for (var start = first; start <= last; start += ChunkSessions)
+        for (var taken = 0; taken < sessionsToWrite.Count; taken += ChunkSessions)
         {
-            var end = Math.Min(last, start + ChunkSessions - 1);
+            var chunkSessions = sessionsToWrite.Skip(taken).Take(ChunkSessions).ToArray();
+            var (start, end) = (chunkSessions[0], chunkSessions[^1]);
+
+            await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
+
             var watch = Stopwatch.StartNew();
 
+            using var held = await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation);
             await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-            foreach (var clear in new[] { ClearTheSpan, ClearTheSpansRows })
+            foreach (var at in chunkSessions)
             {
-                await ExecuteAsync(connection, transaction, clear, [("$index", index), ("$from", Stamp(calendar[start])), ("$through", Stamp(calendar[end])), ("$source", HistorySource)], cancellation);
+                foreach (var clear in new[] { ClearTheNight, ClearTheNightsRows })
+                {
+                    await ExecuteAsync(connection, transaction, clear, [("$index", index), ("$night", Stamp(calendar[at])), ("$source", HistorySource)], cancellation);
+                }
             }
 
             var chunk = 0;
 
-            for (var at = start; at <= end; at++)
+            foreach (var at in chunkSessions)
             {
                 var night = calendar[at];
                 var inputsOnTheNight = new IndexNightInputs(index, night, calendar, at, series, sessions, members, members.Names[at], income);
@@ -414,20 +752,196 @@ public sealed class SetupLedger : IComponent
                     chunk += family.Rows.Count;
                     passes += family.LivePasses;
                 }
+
+                // A rebalance of the S&P 500's heavyweights: each member of each sector's size cut held as the rule
+                // holds a buy, to the first later rebalance whose buys leave it out or its cap, against its size cut.
+                if (heavyweights.TryGetValue(at, out var cuts))
+                {
+                    var family = LedgerSetups.Heavyweights(index, series, closes, sessions, members, calendar, at, market, context, cuts);
+
+                    foreach (var row in family.Rows)
+                    {
+                        var name = nameOf[row.Ticker];
+                        var bar = IndexNightRead.BarOf(series[name], at);
+                        var notBought = heavyweights
+                            .Where(pair => pair.Key > at && !pair.Value.Any(cut => cut.Leaders.Contains(row.Ticker)))
+                            .Select(pair => IndexNightRead.BarOf(series[name], pair.Key))
+                            .Where(held => held >= 0)
+                            .ToArray();
+                        var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
+                        var cut = cuts
+                            .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
+                            .Where(nameOf.ContainsKey)
+                            .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at)))
+                            .ToArray();
+                        var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions);
+
+                        await InsertAsync(connection, transaction, row, null, null, (outcome, benchmark), calendar, at, HistorySource, cancellation);
+                    }
+
+                    await ExecuteAsync(connection, transaction, InsertNight,
+                    [
+                        ("$index", index), ("$family", family.Family), ("$session", Stamp(night)), ("$members", family.Members),
+                        ("$setups", family.Rows.Count), ("$live_passes", family.LivePasses), ("$source", HistorySource),
+                    ], cancellation);
+
+                    chunk += family.Rows.Count;
+                    passes += family.LivePasses;
+                }
             }
 
             await transaction.CommitAsync(cancellation);
 
             written += chunk;
-            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(calendar[start])} to {Stamp(calendar[end])}, {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
+            output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(calendar[start])} to {Stamp(calendar[end])}, {chunkSessions.Length} session(s), {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
+        }
+
+        using (await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation))
+        {
+            await RefreshSummaryAsync(connection, index, cancellation);
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,
-            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {last - first + 1} session(s)"), cancellation);
+            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span"), cancellation);
 
-        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)}, {passes} passing the live rule"));
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)} over {sessionsToWrite.Count} session(s), {passes} passing the live rule"));
 
         return 0;
+    }
+
+    public const string CheckStage = "ledger-check";
+
+    // The history setups a year the point-in-time check samples, and the seed it samples by, so a check run again
+    // over the same ledger reads the same setups.
+    public const int CheckPerYear = 25;
+
+    public const int CheckSeed = 17;
+
+    static readonly string HistoryReadings =
+        "SELECT family, ticker, session_date, " + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
+        + " FROM setup WHERE index_code = $index AND source = $source ORDER BY session_date, family, ticker;";
+
+    // The point-in-time check by hand: a seeded sample of each year's history setups on the index, each one's readings
+    // rebuilt from the history cut at its own session and held to the readings stored, every reading that differs named.
+    // It reads the store and writes its run log row alone.
+    public async Task<int> CheckAsync(string index, TextWriter output, int perYear = CheckPerYear, int seed = CheckSeed, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var runId = FormattableString.Invariant($"{CheckStage}-{startedAt:yyyyMMddTHHmmssZ}");
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var stored = new List<(string Family, string Ticker, DateOnly Session, double?[] Readings)>();
+
+        await using (var command = Command(connection, null, HistoryReadings, [("$index", index), ("$source", HistorySource)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var readings = new double?[LedgerReadings.Count];
+
+                for (var at = 0; at < readings.Length; at++)
+                {
+                    readings[at] = reader.IsDBNull(3 + at) ? null : reader.GetDouble(3 + at);
+                }
+
+                stored.Add((reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)), readings));
+            }
+        }
+
+        if (stored.Count == 0)
+        {
+            output.WriteLine($"ledger-check: the ledger holds no history setup on the {DecisionCards.NameOf(index)}, so nothing was checked");
+            await AppendAsync(connection, runId, CheckStage, startedAt, 0, Ok, "no history setup to check", cancellation);
+
+            return 0;
+        }
+
+        var random = new Random(seed);
+        var sample = stored
+            .GroupBy(row => row.Session.Year)
+            .OrderBy(year => year.Key)
+            .SelectMany(year => year.Select(row => (Row: row, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Row))
+            .ToArray();
+        var through = sample.Max(row => row.Session);
+        var history = new SweepHistory(databaseFile);
+        var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: index == IndexFamilies.LargeIndex ? null : index, asItStood: index != IndexFamilies.LargeIndex);
+        var income = await history.IncomeAsync(through, cancellation);
+        var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
+        var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
+        var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var findings = new List<string>();
+        var read = 0;
+
+        foreach (var session in sample.GroupBy(row => row.Session).OrderBy(group => group.Key))
+        {
+            var cut = LedgerPointInTime.Cut(inputs, session.Key);
+            var cutMarket = LedgerPointInTime.Cut(market, session.Key);
+
+            foreach (var row in session)
+            {
+                if (LedgerPointInTime.Rebuilt(index, cut, cutMarket, income, sectors, facts, row.Ticker) is not { } rebuilt)
+                {
+                    findings.Add($"{row.Family} {row.Ticker} {Stamp(row.Session)}: the cut history holds no bar of it on its session");
+
+                    continue;
+                }
+
+                read++;
+                findings.AddRange(LedgerPointInTime.Differences(row.Readings, rebuilt).Select(differ =>
+                    FormattableString.Invariant($"{row.Family} {row.Ticker} {Stamp(row.Session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt {Shown(differ.Rebuilt)}")));
+            }
+        }
+
+        foreach (var finding in findings)
+        {
+            output.WriteLine("ledger-check: " + finding);
+        }
+
+        var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history cut at each one's session, {perYear} a year by seed {seed}; ")
+            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
+
+        await AppendAsync(connection, runId, CheckStage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
+        output.WriteLine("ledger-check: " + detail);
+
+        return findings.Count == 0 ? 0 : 1;
+    }
+
+    static string Shown(double? reading) => reading is { } held ? held.ToString("R", CultureInfo.InvariantCulture) : "none";
+
+    // Waiting for the night: while a night holds its lock under the data root, and inside a weekday's night window,
+    // looking again each poll and saying so once.
+    async Task WaitForTheNightAsync(string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
+    {
+        var said = false;
+
+        while (MustWait(clock.UtcNow, NightLock.Holder(dataRoot) is not null, TimeSpan.FromMinutes(10)))
+        {
+            if (!said)
+            {
+                output.WriteLine(NightLock.Holder(dataRoot) is { } holder ? $"ledger-build: waiting while {holder} holds the night's lock" : "ledger-build: pausing for the night's window");
+                said = true;
+            }
+
+            await pause(Poll, cancellation);
+        }
+    }
+
+    static async Task<IReadOnlySet<DateOnly>> StoredHistorySessionsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var stored = new HashSet<DateOnly>();
+
+        await using var command = Command(connection, null, StoredHistory, [("$index", index), ("$source", HistorySource)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            stored.Add(Date(reader.GetString(0)));
+        }
+
+        return stored;
     }
 
     static int NameOf(IReadOnlyList<SweepSeries> series, string ticker)
@@ -604,6 +1118,108 @@ public sealed class SetupLedger : IComponent
         }
 
         return sectors;
+    }
+
+    // Each ticker's filer's facts as first filed, the filer read off the companies the query names, a later row of one
+    // ticker's filer replacing an earlier one.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>> FactsAsync(
+        SqliteConnection connection,
+        IReadOnlyList<string> filerQueries,
+        IEnumerable<string> tickers,
+        CancellationToken cancellation)
+    {
+        var filerOf = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var sql in filerQueries)
+        {
+            await using var command = Command(connection, null, sql, []);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                filerOf[reader.GetString(0)] = SecEdgarArchive.Padded(reader.GetString(1));
+            }
+        }
+
+        var byFiler = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+        var facts = new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            if (!filerOf.TryGetValue(ticker, out var cik))
+            {
+                continue;
+            }
+
+            if (!byFiler.TryGetValue(cik, out var rows))
+            {
+                var read = new List<FiledFactRow>();
+
+                await using var command = Command(connection, null, FactsOfFiler, [("$cik", cik)]);
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    read.Add(new FiledFactRow(
+                        reader.GetString(0),
+                        DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        Money.FromStorage(reader.GetString(3)),
+                        DateOnly.ParseExact(reader.GetString(4), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        reader.GetString(5),
+                        reader.GetString(6)));
+                }
+
+                rows = read;
+                byFiler[cik] = rows;
+            }
+
+            facts[ticker] = rows;
+        }
+
+        return facts;
+    }
+
+    // The business readings of the night's setups read again for the tickers given, once the filings refresh has
+    // stored what the archive posted before the session; the night's rows alone, each from the facts filed before
+    // the setup's session. It returns how many rows it read again.
+    public async Task<int> BusinessAgainAsync(DateOnly session, IReadOnlyList<string> tickers, CancellationToken cancellation = default)
+    {
+        if (tickers.Count == 0)
+        {
+            return 0;
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
+        var read = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            var business = FiledFacts.Read(facts.GetValueOrDefault(ticker) ?? [], session);
+
+            await using var command = Command(connection, transaction, BusinessAgain,
+            [
+                ("$ticker", ticker),
+                ("$session", Stamp(session)),
+                ("$source", NightSource),
+                ("$revenue_growth", (object?)business.RevenueGrowth ?? DBNull.Value),
+                ("$growth_change", (object?)business.GrowthChange ?? DBNull.Value),
+                ("$gross_margin_change", (object?)business.GrossMarginChange ?? DBNull.Value),
+                ("$operating_margin_change", (object?)business.OperatingMarginChange ?? DBNull.Value),
+                ("$cash_over_income", (object?)business.CashOverIncome ?? DBNull.Value),
+            ]);
+
+            read += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return read;
     }
 
     static async Task<IReadOnlyDictionary<string, double>> CostsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)

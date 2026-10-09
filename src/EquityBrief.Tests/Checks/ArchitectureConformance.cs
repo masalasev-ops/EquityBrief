@@ -1402,7 +1402,8 @@ public partial class ArchitectureConformance
         // 129 at 14.3, the sector heavyweights: tonight's card, the name page's line and Past picks' holdings.
         // 130 at 15.2's second pull request: the name page's member readings.
         // 131 at 17.2: a family's card's rule on Tonight.
-        Assert.Equal(131, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 134 at 17.3: the Ledger page's three regions.
+        Assert.Equal(134, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1512,7 +1513,8 @@ public partial class ArchitectureConformance
         // rule's edge after costs and what waits on a count stating the members holding four dated rating counts.
         // 474 at the 13.10 correction of 2026-10-08: the checklist's two items on the store's copies.
         // 489 at 17.2: a family's card's rule as its fourteen parts and the checklist's item on a live rule past its mark.
-        Assert.Equal(489, inDocument.Length);
+        // 492 at 17.3: the Ledger page's three regions.
+        Assert.Equal(492, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

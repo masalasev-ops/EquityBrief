@@ -84,7 +84,7 @@ public partial class FixtureExpectations
 
         // The catalogue names each column once.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(40, LedgerReadings.Count);
+        Assert.Equal(45, LedgerReadings.Count);
     }
 
     [Fact]

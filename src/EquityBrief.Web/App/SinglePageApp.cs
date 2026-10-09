@@ -78,6 +78,9 @@ public sealed class SinglePageApp : IComponent
     // thing.
     public const string UniverseRoute = "#/universe";
 
+    // The setup ledger's page, reached from the Universe page and drawn under it.
+    public const string LedgerRoute = "#/ledger";
+
     // Tonight's list, section 15.3's first route. `#/` resolves to the newest
     // night and `#/night/<date>` to an earlier one, which is the pair 15.7
     // names and which 15.3's own list lacked until 5.0.
@@ -246,6 +249,10 @@ public sealed class SinglePageApp : IComponent
             view = 'universe';
             const universe = await fetch('/screens/universe' + (query ? '?' + query : ''));
             screen.innerHTML = await universe.text();
+          } else if (path === '{{{LedgerRoute}}}') {
+            view = 'universe';
+            const ledger = await fetch('/screens/ledger' + (query ? '?' + query : ''));
+            screen.innerHTML = await ledger.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
             view = 'name';
             // A name alone is tonight's page for it, and a name and a date is that evening's.
@@ -1309,6 +1316,9 @@ public sealed class SinglePageApp : IComponent
             night is { } on ? Invariant($"Every {reading.Name} member on the night of {on:yyyy-MM-dd}") : Invariant($"Every {reading.Name} member")));
 
         region.Append(selector);
+
+        // The setup ledger of the same index, under Universe.
+        region.Append(Invariant($"<p class=\"ledger-link\"><a href=\"{LedgerRoute}?universe={reading.Word}\" data-ledger=\"{reading.Word}\">The setup ledger: every near-setup on the {Escaped(reading.Name)} and how it turned out</a></p>"));
 
         // The S&P 400's and 600's members are read by the stages every member's figures need, and not by the listings,
         // the ladder or the swing readings, which read the S&P 500's alone, so their rows say so where those draw.
@@ -2449,6 +2459,97 @@ public sealed class SinglePageApp : IComponent
     // open ones first in the order taken and then the ended newest first, each with its card's family and night, its
     // fill, where and why it ended with its result, and the exit press on an open one.
     // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
+    // The setup ledger's page under Universe: for the index chosen, each family's setups a year with the share the live
+    // rule passes and the share the night's list picked, and the cut points between the deciles of result and edge of
+    // its newest year holding settled setups; then one family's newest settled setups and the chosen one's closes with
+    // its plan's lines. The page draws the summary the ledger's writers refresh and computes nothing.
+    // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+    public string LedgerRegion(
+        MarkRenderer marks,
+        DateOnly? night,
+        UniverseChoice reading,
+        string selector,
+        IReadOnlyList<EquityBrief.Core.Ledger.LedgerYear> years,
+        string? family,
+        IReadOnlyList<EquityBrief.Core.Ledger.LedgerSetupRow> settled,
+        EquityBrief.Core.Ledger.LedgerPath? path)
+    {
+        static string Named(string word) => word switch
+        {
+            "pullback" => "Pullback",
+            "breakout" => "Breakout",
+            "drift" => "Earnings drift",
+            "heavyweight" => "Sector heavyweights",
+            _ => word,
+        };
+
+        var region = new StringBuilder();
+        var heading = "Setup ledger: " + reading.Name;
+        var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).ToArray();
+
+        region.Append(Invariant($"<section class=\"ledger\" data-universe=\"{reading.Word}\" data-families=\"{families.Length}\" data-family=\"{Escaped(family ?? "none")}\">"));
+        region.Append(Cards.Masthead(
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            night is { } on ? Invariant($"Every near-setup on the {reading.Name}, as of the close of {on:yyyy-MM-dd}") : "No night is stored yet"));
+        region.Append(selector);
+
+        if (years.Count == 0)
+        {
+            region.Append(Cards.Computed(
+                "Setup ledger",
+                "<p class=\"degraded\" data-ledger=\"none\">The ledger holds no setup on this index yet. Each night appends the setups its families' loose gates pass, and the history build writes the years before the store's own.</p>",
+                title: "Every near-setup",
+                stamp: Cards.Night(night),
+                region: "ledger-none"));
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
+        foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal))
+        {
+            var rows = group.OrderBy(year => year.Year).ToArray();
+            var newest = rows.LastOrDefault(year => year.Settled > 0);
+
+            region.Append(Cards.Computed(
+                "Setup ledger",
+                marks.LedgerYears(group.Key, rows)
+                    + Cards.Key(
+                        "Setups a year.",
+                        "Each row is a year of the family's setups on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones.",
+                        "A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid.")
+                    + marks.LedgerDeciles(newest)
+                    + Cards.Key(
+                        "The deciles.",
+                        newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The cut points between the tenths of {newest.Year}'s {newest.Settled} settled setups, result beside edge."),
+                        "A wide spread between the low and the high tenths is a family whose setups differ a great deal, which is what the loop's engines read."),
+                title: Escaped(Named(group.Key)) + " setups",
+                stamp: Cards.Night(night),
+                region: "ledger-" + group.Key));
+        }
+
+        var choose = string.Join(" · ", families.Select(word => word == family
+            ? $"<b data-family-chosen=\"{Escaped(word)}\">{Escaped(Named(word))}</b>"
+            : $"<a href=\"{LedgerRoute}?universe={reading.Word}&amp;family={Uri.EscapeDataString(word)}\" data-family-link=\"{Escaped(word)}\">{Escaped(Named(word))}</a>"));
+
+        region.Append(Cards.Computed(
+            "Setup ledger",
+            $"<p class=\"ledger-families\">{choose}</p>"
+                + marks.LedgerSettled(settled, reading.Word, LedgerRoute)
+                + marks.LedgerPath(path)
+                + Cards.Key(
+                    "A setup's path.",
+                    "The closes from about ten sessions before the setup to the session its path ended, with its buy, its stop and its target drawn across where the plan holds them, and the session it was bought on marked.",
+                    "The figures in the table above are this path's end against the same plan on every member that session."),
+            title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
+            stamp: Cards.Night(night),
+            region: "ledger-path"));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
     public string YourTradesRegion(string indexName, IReadOnlyList<YourTradeView> trades)
     {
         var body = new StringBuilder();

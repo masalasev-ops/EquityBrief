@@ -1,0 +1,17 @@
+Description:           Daily Index of EDGAR Dissemination Feed
+Last Data Received:    Sep 1, 2026
+Comments:              webmaster@sec.gov
+Anonymous FTP:         ftp://ftp.sec.gov/edgar/
+
+CIK|Company Name|Form Type|Date Filed|File Name
+--------------------------------------------------------------------------------
+1000275|ROYAL BANK OF CANADA|424B2|20260901|edgar/data/1000275/0000950103-26-013299.txt
+101382|UMB FINANCIAL CORP|8-K|20260901|edgar/data/101382/0001193125-26-378379.txt
+1040829|Ryman Hospitality Properties, Inc.|8-K|20260901|edgar/data/1040829/0001104659-26-104349.txt
+1065280|NETFLIX INC|144|20260901|edgar/data/1065280/0001628280-26-059826.txt
+320193|Apple Inc.|3|20260901|edgar/data/320193/0001140361-26-035359.txt
+320193|Apple Inc.|4|20260901|edgar/data/320193/0001140361-26-035362.txt
+320193|Apple Inc.|8-K/A|20260901|edgar/data/320193/0001140361-26-035325.txt
+789019|MICROSOFT CORP|144|20260901|edgar/data/789019/0001950047-26-008927.txt
+789019|MICROSOFT CORP|4|20260901|edgar/data/789019/0000789019-26-000153.txt
+789019|MICROSOFT CORP|4|20260901|edgar/data/789019/0000789019-26-000154.txt

@@ -102,6 +102,7 @@ internal static class PhaseReport
         "15.15 Queue",
         "15.16 Watch list",
         "15.17 Past picks",
+        "15.19 The setup ledger",
         "15.11 How a reason's record is displayed",
         "16. Data stores and the read and write matrix",
         "Read and write matrix",
@@ -265,6 +266,8 @@ internal static class PhaseReport
             "near-miss attribution with invented shares, illustrative and labelled so, whose rule section 15.10's near misses claim; a picture of claims placed elsewhere and none of its own"),
         ["Figure 13.2"] = new Placement(
             "the gate a candidate passes drawn end to end, whose steps section 13's subsections state and the register and verdict rows carry; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 13.3"] = new Placement(
+            "the loop's nightly half drawn from the night's lists to the Ledger page's summary, whose steps section 14's list claims and whose stores section 16's rows carry; a picture of claims placed elsewhere and none of its own"),
         // 16.4's: the card drawn with its parts numbered, its figures placeholders, and a key the conformance check
         // holds to name every part the figure draws.
         ["Figure 15.1"] = new Placement(
