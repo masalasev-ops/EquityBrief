@@ -41301,6 +41301,12 @@ Mutated:    the rule, stated before the run: the four properties the done condit
             tests green. The queue's and the requests' order, found held by no test after the code's commit, gained the
             two tests above, each then broken by reading no S&P 500 pick of the family: red at its own test, reverted.
             Not mutated: the night's order with the S&P 500 read first, held by the two index night tests.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ad8f9c7f, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2094 of 2094 tests ran with none failed, migrations 0 to
+            82 with none pending, schema version 82, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 52 tables, 1127 claims, 1127 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1138
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2094 of 2094 tests ran.
 Carried:    after the merges, from main: `filings --whole`, then `sweep-fundamentals` on each index, its report to the
             operator with no freeze; the S&P 500's Past picks and Run page drawing the family's S&P 500 trades.
