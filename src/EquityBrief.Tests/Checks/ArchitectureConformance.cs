@@ -1407,7 +1407,8 @@ public partial class ArchitectureConformance
         // 139 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
         // 140 at 17.6: the Loop page's readings.
         // 142 at 17.7: the decision card's score part and the Loop page's learned score.
-        Assert.Equal(142, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 143 at 17.8: the fundamentals-first family's card on Tonight.
+        Assert.Equal(143, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1522,7 +1523,8 @@ public partial class ArchitectureConformance
         // 497 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
         // 498 at 17.6: the Loop page's readings.
         // 500 at 17.7: the decision card's score part and the Loop page's learned score.
-        Assert.Equal(500, inDocument.Length);
+        // 501 at 17.8: the fundamentals-first family's card on Tonight.
+        Assert.Equal(501, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

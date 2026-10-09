@@ -45,10 +45,16 @@ public partial class NightlyRun
 
         Assert.Equal(1, stages.Count(stage => stage == EquityBrief.Worker.Indices.IndexFamilies.Stage));
         Assert.True(stages.IndexOf(EquityBrief.Worker.Families.HeavyweightBook.Stage) < stages.IndexOf(EquityBrief.Worker.Indices.IndexFamilies.Stage));
+        // From 17.8 the S&P 500's four members are read first, for the fundamentals-first family alone.
         Assert.Equal(
-            ["MID|0", "SML|0"],
+            ["GSPC|4", "MID|0", "SML|0"],
             Texts(store, "SELECT index_code || '|' || members FROM index_family_night ORDER BY index_code;"));
-        Assert.StartsWith("MID: 0 member(s) read, breadth not read, the market check closed", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single(), StringComparison.Ordinal);
+
+        var detail = Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single();
+
+        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
+        Assert.Contains(" passed by the fundamentals, ", detail, StringComparison.Ordinal);
+        Assert.Contains("; MID: 0 member(s) read, breadth not read, the market check closed", detail, StringComparison.Ordinal);
     }
 
     // An S&P 400 book that throws: a holding whose buy close is not a price, which the book reads first. The S&P 400's
@@ -83,10 +89,11 @@ public partial class NightlyRun
 
         var detail = Texts(store, $"SELECT detail FROM run_log WHERE {Night} AND stage = '{stage}';").Single();
 
-        Assert.StartsWith("MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
+        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
+        Assert.Contains("; MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
         Assert.Contains("; SML: 0 member(s) read, breadth not read", detail, StringComparison.Ordinal);
         Assert.Equal(
-            ["MID|0|FormatException", "SML|0|"],
+            ["GSPC|4|", "MID|0|FormatException", "SML|0|"],
             Texts(store, "SELECT index_code || '|' || members || '|' || COALESCE(substr(fault, 1, instr(fault, ':') - 1), '') FROM index_family_night ORDER BY index_code;"));
 
         // The book's holding left as it was, carried by nothing.

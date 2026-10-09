@@ -219,6 +219,13 @@ public sealed class OvernightQueue(
         var widerListed = new List<string>();
         var widerMembers = new List<string>();
 
+        // The fundamentals-first family's picks on the S&P 500 follow its own list, as its card follows its families'.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        if (wider is { Count: > 0 })
+        {
+            widerListed.AddRange(await TickersAsync(connection, IndexListedOnNight, EquityBrief.Worker.Indices.IndexFamilies.LargeIndex, night, cancellation));
+        }
+
         foreach (var index in wider ?? [])
         {
             widerListed.AddRange(await TickersAsync(connection, IndexListedOnNight, index, night, cancellation));

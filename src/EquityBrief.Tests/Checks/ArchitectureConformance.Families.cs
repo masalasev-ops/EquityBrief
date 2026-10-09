@@ -333,11 +333,12 @@ public partial class ArchitectureConformance
         // regions and its summary's store, 1104 from 17.4, the tester's catalogue and matrix rows, its three stores,
         // section 17's five rows, section 18's two and the Loop page's three regions, 1110 from 17.5, the autopsy's store,
         // section 17's two rows, section 18's one, the Loop page's findings and the heavyweights' card's rule, 1115 from
-        // 17.6, the readings' store, section 17's two rows, section 18's one and the Loop page's readings, and 1123 from
+        // 17.6, the readings' store, section 17's two rows, section 18's one and the Loop page's readings, 1123 from
         // 17.7, the models' store, section 17's three rows, section 18's two, the card's score part and the Loop page's
-        // learned score.
+        // learned score, and 1127 from 17.8, section 17's two rows on the fundamentals-first family and its search,
+        // section 18's one and the family's card on Tonight.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1123),
+            (789, 853, 6, 4, 855, 876, 1127),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

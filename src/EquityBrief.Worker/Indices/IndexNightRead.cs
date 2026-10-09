@@ -66,8 +66,11 @@ public sealed record IndexNightInputs(
 // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
 public static class IndexNightRead
 {
-    // The families in the page's order, the words they are stored under.
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
+    // The families in the page's order, the words they are stored under, the fundamentals-first family last; and the one
+    // the S&P 500 is read for here, its other families being the S&P 500's own.
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
+
+    public static IReadOnlyList<string> LargeFamilies { get; } = [FundamentalsRule.Name];
 
     // The parts of a rule a member fails, in the rule's order, the first the row names.
     public const string MarketClosed = "the market check closed";
@@ -137,8 +140,9 @@ public static class IndexNightRead
         return new IndexNightInputs(indexCode, night, calendar, at, series, sessions, members, held, income);
     }
 
-    // A family's provisional rule on the night.
-    public static IndexFamilyRead Provisional(IndexNightInputs inputs, string family)
+    // A family's provisional rule on the night; the fundamentals-first family reads the catalogue's readings of each
+    // member the pullback's base lists, and lists none on a night handed none.
+    public static IndexFamilyRead Provisional(IndexNightInputs inputs, string family, Func<string, IReadOnlyList<double?>?>? readings = null)
     {
         string? FailsOnProvisional(int name) => FailsOn(inputs, name, 1m, MemberReadings.LowestPrice, IndexQuality.Profit);
 
@@ -146,8 +150,31 @@ public static class IndexNightRead
         {
             SetupFamilies.Pullback => new(Pullbacks(inputs, SweepIdeas.BaseRule, PullbackCap, inputs.Sessions), inputs.Open, FailsOnProvisional),
             BreakoutRule.Name => new(Breakouts(inputs, BreakoutAsFrozen, inputs.Sessions), inputs.Open, FailsOnProvisional),
+            FundamentalsRule.Name => Fundamentals(inputs, FundamentalsRule.Provisional, readings),
             _ => new(Drifts(inputs, DriftAsFrozen, 0, null, inputs.Sessions), inputs.Open, FailsOnProvisional),
         };
+    }
+
+    // The fundamentals-first family at a setting: the pullback's base listings on the night, its trade the pullback's,
+    // each member held to the floors and then to the family's own parts, its profit in the index's own form among them.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    public static IndexFamilyRead Fundamentals(IndexNightInputs inputs, FundamentalsSetting setting, Func<string, IReadOnlyList<double?>?>? readings) =>
+        Fundamentals(inputs, setting, readings, Pullbacks(inputs, SweepIdeas.BaseRule, PullbackCap, inputs.Sessions));
+
+    // The family over the pullback listings handed to it.
+    public static IndexFamilyRead Fundamentals(IndexNightInputs inputs, FundamentalsSetting setting, Func<string, IReadOnlyList<double?>?>? readings, IReadOnlyList<(int Name, IndexTrade Trade)> pullbacks)
+    {
+        string? FailsOnFundamentals(int name)
+        {
+            var ticker = inputs.Series[name].Name.Ticker;
+
+            return FailsOn(inputs, name, 1m, MemberReadings.LowestPrice, IndexQuality.Off)
+                ?? (readings?.Invoke(ticker) is { } read
+                    ? FundamentalsRule.FailsOn(setting, read, inputs.Income.GetValueOrDefault(ticker) ?? [], inputs.Night)
+                    : FundamentalsRule.NoReadings);
+        }
+
+        return new(pullbacks, inputs.Open, FailsOnFundamentals);
     }
 
     // Every member's answer under one family, the passing ones placed in the family's own order and every other naming

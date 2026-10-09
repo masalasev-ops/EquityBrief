@@ -372,6 +372,21 @@ public sealed class RuleCards : IComponent
             rules.Add(new RuleNightRow(index, HeavyweightRule.Name, row.Candidate, true, bought.GetValueOrDefault(row.Candidate), null, null));
         }
 
+        // The fundamentals-first family's provisional rule, which the index families' step reads on the S&P 500 under its
+        // own rows: its listed count and its funnel off the parts of the rule its members failed, where that step read it.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        if (await IndexNightAsync(connection, transaction, index, night, cancellation) is var (fault, _))
+        {
+            var computed = fault is null;
+            var indexListed = await CountsAsync(connection, transaction, IndexListed, [("$index", index), ("$night", Stamp(night))], cancellation);
+            var answers = computed ? await AnswersAsync(connection, transaction, index, night, cancellation) : [];
+
+            foreach (var family in IndexNightRead.LargeFamilies)
+            {
+                rules.Add(new RuleNightRow(index, family, ProvisionalRule, computed, indexListed.GetValueOrDefault(family), computed ? IndexFunnel([.. answers.Where(answer => answer.Family == family)], family) : null, null));
+            }
+        }
+
         await InsertNightsAsync(connection, transaction, index, night, rules, cancellation);
 
         return new RuleCardsIndex(index, rules.Count, picks, formingRows);
@@ -404,7 +419,7 @@ public sealed class RuleCards : IComponent
             var drawnBy = live?.Candidate ?? ProvisionalRule;
             var reasons = answers.Where(answer => answer.Family == family).ToArray();
 
-            rules.Add(new RuleNightRow(index, family, drawnBy, computed, listed.GetValueOrDefault(family), computed ? IndexFunnel(reasons) : null, null));
+            rules.Add(new RuleNightRow(index, family, drawnBy, computed, listed.GetValueOrDefault(family), computed ? IndexFunnel(reasons, family) : null, null));
 
             foreach (var variant in own.Where(row => CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule && rule.SetupFamily == family && row != live))
             {
@@ -489,10 +504,13 @@ public sealed class RuleCards : IComponent
         return counts;
     }
 
-    // The members passing each part of an index rule and every part before, read off the first part each failed.
-    public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers)
+    // The members passing each part of an index rule and every part before, read off the first part each failed; the
+    // fundamentals-first family's parts its own, the business's after the floors.
+    public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null)
     {
-        string[] parts = [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
+        string[] parts = family == FundamentalsRule.Name
+            ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
+            : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
         var counts = new List<(string, int)>();
 
         foreach (var (part, at) in parts.Select((part, at) => (part, at)))

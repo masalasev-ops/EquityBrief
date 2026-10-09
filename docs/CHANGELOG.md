@@ -25,6 +25,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - the fundamentals-first family: section 13.15, the index families', cards', queue's and drain's rows, the night's step, the family's card on Tonight, section 17's two rows, section 18's row and four sources
+Authorised by: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+Was:
+> [Index families] nightly, once for each of the S&amp;P 400 and 600, in the swing filter's step after the S&amp;P 500's families | membership, bar store, market series, calendar, companies, reported quarters, gate results, [...] | [...] walks its trades and their benchmark under the exit of the menu it names (see: [...]); and keeps a book of its own for each registered heavyweights rule [...]
+> [Decision cards] [...] a part it cannot read named on the card (see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index)
+> [Rule cards] [...] at most the stated rows with the whole count, the nearest misses first; a night run again replaces its own rows, [...]
+> [Overnight queue] works through the names on tonight's list whose research is missing or stale, in the order the list is drawn in, then the S&amp;P 400's and the S&amp;P 600's lists each in its page's order, [...]
+> [Request drain] [...] one name at a time in that order and each page's own order across its families, the stocks each index's sector heavyweights bought that night after its swing families' picks [...]
+> [14, the swing filter's step] [...] then read the S&amp;P 400's and 600's provisional rules by the sweep's own code over each index's own members, its swing lists closed together on its own breadth, [...]
+> [23] src-jegadeesh-livnat-2006 [...] the context checks | src-sloan-1996 [...] the context checks | src-martineau-2022 [...] the 400's and 600's drift card | src-sp-profitability [...] the 400's and 600's profit gate
+Now:
+> [Index families] nightly, once for each of the S&amp;P 400 and 600, and from 17.8 once for the S&amp;P 500 first, in the swing filter's step after the S&amp;P 500's families | [...] reported quarters, filed facts, gate results, [...] | [...] (see: [...]); from 17.8 reads the fundamentals-first family on all three indices, the S&amp;P 500 for that family alone and under its own rows, over the pullback's base listings with the night's readings of the ledger's catalogue, the S&amp;P 500's list holding back a stock its own families listed that night (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point); and keeps a book of its own for each registered heavyweights rule [...]
+> [Decision cards] [...] (see: [...]); and from 17.8 a card for each stock the fundamentals-first family listed on the S&amp;P 500, read from the index families' rows there with the index's own breadth, its gates naming the profit check in the index's form and the business the family read (see: [...])
+> [Rule cards] [...] the nearest misses first; from 17.8 writes the fundamentals-first family's night on every index, on the S&amp;P 500 from the rows the index families' step writes there, its funnel counted off the family's own checks after the floors; a night run again replaces its own rows, [...]
+> [Overnight queue] [...] in the order the list is drawn in, then from 17.8 the S&amp;P 500's fundamentals-first picks, then the S&amp;P 400's and the S&amp;P 600's lists each in its page's order, [...]
+> [Request drain] [...] each page's own order across its families, the S&amp;P 500's fundamentals-first picks after its own families' from 17.8, the stocks each index's sector heavyweights bought that night [...]
+> [14, the swing filter's step] [...] then read the fundamentals-first family on the S&amp;P 500 alone, over the pullback's base listings with each member's readings as the ledger's catalogue reads them tonight, holding back a stock the S&amp;P 500's own families listed tonight (see: [...]); then read the S&amp;P 400's and 600's provisional rules by the sweep's own code over each index's own members, the fundamentals-first family's among them, its swing lists closed together on its own breadth, [...]
+> [23] [...] the context checks, the fundamentals-first family's revenue check | [...] the context checks, the fundamentals-first family's cash check | [...] the 400's and 600's drift card, the fundamentals-first family's buy | [...] the 400's and 600's profit gate, the fundamentals-first family's profit check
+> Section 13.15, 15.7's row for the family's card, section 17's rows for the family and its search, section 18's row for a member no filed fact reaches, and section 23's rows for Chan, Jegadeesh and Lakonishok (1996), Novy-Marx (2013), Asness, Frazzini and Pedersen (2019) and Green, Hand and Soliman (2011), each added.
+Why: 17.8 builds the fundamentals-first family on all three indices through the index families' step, which reads the S&amp;P 500 for this family alone, and draws its card, its pick's cards and its reports on each index.
+
+### 2026-10-09 - BUILD_PLAN.md, SCHEMA.md, RUNBOOK.md and .claude/rules/checks.md - 17.8's done condition read as the business readings read a filing, the index family tables' S&P 500 rows, the family's runbook section and its checks
+Authorised by: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+Was:
+> [BUILD_PLAN 17.8] **Done when** each gate is worked by hand on both sides of its threshold; a filing landing on a session changes the family's answer for that member on that session's night; the search's 27 settings stand in the entry before the run; and the cards are read back on every index.
+> [SCHEMA filed_fact] **The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: [...]). The night's refresh and the whole refresh by hand insert [...]
+> [SCHEMA index_family_night] Grain: one row per session and index the S&P 400's and 600's provisional rules were read for. | `index_code` [...] `MID` for the S&P 400 or `SML` for the S&P 600 | `settings` [...] the words each card's description is written from | `rebalanced` [...] the first night of a month the book reads, 0 otherwise
+> [SCHEMA index_family_result] `reason` [...] the dollar volume under the floor or the profit check; null on a row that passed
+> [SCHEMA index_family_pick] `held_index` [...] `GSPC` for the S&P 500's; null otherwise | [...] and a stock whose trade on any card of any index is still open listed by none. A night run again replaces its own rows.
+> [checks.md, fixture-expectations] [...] the pick's own stock never matched and a stock matched once within its run of sessions |
+> [checks.md, nightly-run] [...] and the filings refresh runs after the quarters step and before the overnight queue, on the night's output and its run log's order |
+> [checks.md, read-surface] [...] and the sentence that the part is not distinguishable from the rule's record drawn on one side of it and not on the other |
+Now:
+> [BUILD_PLAN 17.8] **Done when** each gate is worked by hand on both sides of its threshold; a filing stored before the night and filed before its session changes the family's answer for that member on that night, and one filed on the session is read from the next session's night, as every business reading reads a filing (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session); the search's 27 settings stand in the entry before the run; and the cards are read back on every index.
+> [SCHEMA filed_fact] [...] From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: [...]).
+> [SCHEMA index_family_night] [...] and from 17.8 the S&P 500's fundamentals-first family. | [...]; `GSPC` for the S&P 500, read for the fundamentals-first family alone | [...] the fundamentals-first family's setting with its words and its cap among them | [...] 0 otherwise and always on a `GSPC` row, whose book is the S&P 500's own
+> [SCHEMA index_family_result] [...] or the profit check, and for the fundamentals-first family after the floors no readings read tonight or its profit check in the index's form, its revenue, margin, cash or trend check; null on a row that passed
+> [SCHEMA index_family_pick] [...] `GSPC` for the S&P 500's, a `GSPC` row's stock the S&P 500's own families listed that night among them; null otherwise | [...] From 17.8 a `GSPC` row is the S&P 500's fundamentals-first family's, a stock the S&P 500's own families listed that night held back as an `open trade` naming that family and that night (see: [...]). A night run again replaces its own rows.
+> [RUNBOOK] a section on the fundamentals-first family and the `sweep-fundamentals` verb, added.
+> [checks.md, fixture-expectations] [...]; and from 17.8 each check of the fundamentals-first family worked by hand on both sides of its threshold, [...] while one filed on the session is read from the next |
+> [checks.md, nightly-run] [...]; and from 17.8 the swing filter's step reads the S&P 500 first for the fundamentals-first family alone, [...] beside the index's other rules |
+> [checks.md, read-surface] [...]; and from 17.8 the fundamentals-first family's card read back off the rendered page on every index, [...] drawn from the rows the index families' step writes there and saying so |
+Why: the done condition read a filing landing on a session on that session's own night, which the point-in-time rule every business reading keeps refuses, so 17.8 amends it to that rule; the rest records the family's rows, its verb and its checks.
+
 ### 2026-10-09 - CLAUDE.md - the nightly rule's model call is a language model's, and a pick's card draws the setups like it beneath the rule's record
 Authorised by: A fitted statistical model is a rule
 Was:
