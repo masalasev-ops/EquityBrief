@@ -41100,3 +41100,63 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2070 of 2070 tests ran.
 Carried:    after the merge, from main: the remedy, its sixteen replay lines read for every trade reproduced; and
             `loop-test` on each index to write the month's rows, the Loop page read back against them.
+
+### 17.6 - winners against losers: each reading cut at its deciles and the pair beneath the best, held to a within-night shuffle of its own search, and each reading's spread   2026-10-09
+
+Built:      winners against losers inside the tester, over the families a rule's hooks reach on each index: every
+            listing each rule makes over the history, kept or not, with its edge after its round trip had it been
+            taken and the ledger's readings of it read through the catalogue's own function, which a shared history
+            reader in the ledger feeds with the market series, the sectors and the filed facts. Each fold searches the
+            listings that ended before its year: each reading cut at its deciles either side, a condition keeping at
+            least the family floor in proportion and fewer than every listing holding it, scored by the mean edge it
+            keeps, and the pair beneath the strongest; held to a null that shuffles the edges within each night and
+            reads the search's best again, every arrangement up to 199 and 199 drawn at a fixed seed past it, a
+            condition going forward above its 95th percentile and the rule's own mean; the k-th proposal the k-th
+            condition each fold keeps, walked with the rule over the fold's year, at most five a family, stated as the
+            hooks a registration reads, each with its finding. Each reading's spread over the finished listings,
+            winners' and losers' medians and the edge a tenth, in `loop_reading`, migration 81, and on the Loop page
+            folded shut. The rule walk each engine reads, built once a family a run and shared by the autopsy and this
+            engine. Section 13.13's paragraph, the tester's catalogue and matrix rows, the readings' store, section 17's
+            search and null, section 18's reading no learning year holds, the Loop page's readings, the decision,
+            SCHEMA, the runbook, the guide, the roster's clauses and the changelog.
+Departed:   the engine runs inside the tester as the autopsy does, its proposals tested where they are made, so its
+            reads and writes are the tester's rows; the plan's text says so, its prior text in the changelog.
+Results:    the print form over the live store read-only, no request, its facts read as none for the run alone since
+            the store is at schema 76, before 17.3's facts table: a local change, reverted before anything was
+            committed. The S&P 500 in 45 seconds, over 1,475 breakout and 6,279 drift listings: the breakout passed no
+            null in any fold; the drift's pair, the typical move's share at or under 0.0186 and the close over its
+            200-session average at or under 1.1349, passed on all finished data, and the 2022 and 2026 folds chose
+            other pairs that kept 11 and 1 of their years' trades, the rest none, at an adjusted p-value of 1. The S&P
+            400 in about twelve minutes, the pullback's 1,703, the breakout's 867 and the drift's 4,415 listings: no
+            condition passed its null in any fold. The S&P 600 in sixteen minutes, the pullback's 1,976, the
+            breakout's 1,017 and the drift's 3,786 listings: some folds of the pullback and the breakout kept a
+            condition, none held on all finished data, the breakout's first at an adjusted p-value of 0.4961 over too
+            few trades. None passed, and nothing is proposed to the operator.
+Tests:      2076, six more: the search over constructed nights; the null over every arrangement of two nights, its mark
+            the best and nothing proposed, and of six, its mark two thirds and the winners' reading proposed, with 199
+            drawn past them; a reading the same within each night held level; a fold reading no listing of its year
+            and finding nothing where no learning listing holds a reading; the spreads by hand; a condition stated as the
+            hooks a registration reads and read back by them; and the Loop page's readings read back off the page.
+Claims:     1115, from 1110: the readings' store, section 17's search and null, section 18's reading no learning year
+            holds and the Loop page's readings.
+Pins:       none moved; the engine, the rule walk and the shared reader sit in files no rule pins.
+Mutated:    the rule, stated before the run: the three properties the done condition names, each broken alone. The null
+            shuffles within each night, broken by shuffling across every night as one: predicted red at the
+            constant-within-night test, the shuffles now moving the best and the condition passing, and at the
+            hand-worked null test, the two nights' arrangements past 199. A condition goes forward only above the mark,
+            broken by going forward at it: predicted red at the hand-worked null test, the two nights' best of 1
+            proposed at its mark of 1, and at the constant-within-night test. No condition reads a test year, broken by
+            reading every listing past the fold's view: predicted red at the fold test, a test year's listing read.
+            Results: the first red at both tests, 24 arrangements read for the two nights' 4, and the within-night
+            reading's mark falling to two thirds over 199; the second red at both, each condition at its mark proposed;
+            the third red at the fold test alone, a test year's listing read. Each reverted before anything was
+            committed and the tests green. Not mutated: the spreads and the page, each held by its own test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 95854269, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2076 of 2076 tests ran with none failed, migrations 0 to
+            81 with none pending, schema version 81, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 51 tables, 1115 claims, 1115 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1126
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2076 of 2076 tests ran.
+Carried:    after the merges of 17.3 to 17.5, from main: `loop-test` on each index over the facts as filed, its
+            conditions and spreads written and read back on the Loop page.

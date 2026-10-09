@@ -123,6 +123,8 @@ public partial class FixtureExpectations
             .. LoopClaims,
             // 17.5, the trade autopsy: section 17's two rows and section 18's one.
             .. AutopsyClaims,
+            // 17.6, winners against losers: section 17's two rows and section 18's one.
+            .. ConditionClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

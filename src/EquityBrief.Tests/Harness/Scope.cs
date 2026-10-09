@@ -55,10 +55,11 @@ internal static class Scope
     internal const string LedgerSettled = "Settled setups";
     internal const string LedgerPathDrawn = "A setup's path";
 
-    // Section 15.20's heading and its four regions, held as constants for the same reason.
+    // Section 15.20's heading and its five regions, held as constants for the same reason.
     internal const string LoopPage = "15.20 The Loop page";
     internal const string LoopRuleToday = "A family's rule today";
     internal const string LoopFindings = "The autopsy's findings";
+    internal const string LoopReadings = "The readings, winners against losers";
     internal const string LoopVerdict = "A proposal's verdict";
     internal const string LoopTestYears = "A proposal's test years";
     const string ByNight = "nightly-run";
@@ -3319,6 +3320,28 @@ internal static class Scope
             Verdict.Pass,
             "read back off the rendered card over a constructed store with a variant chosen in the link, by default and in a link naming no rule, its own book's holdings under the band with its words marked, and on the S&P 400 with no variant registered",
             ByReadSurface),
+        // 17.6, winners against losers: the readings' store, section 17's search and null, section 18's reading no
+        // learning year holds and the Loop page's readings.
+        [CheckReach.Key(StoresTable, "Loop readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The conditions' search")] = new Scoped(
+            Verdict.Pass,
+            "the search over constructed nights keeping the winners at one cut and the losers at the other, neither keeping every listing, and a reading no listing holds finding nothing; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The conditions' null")] = new Scoped(
+            Verdict.Pass,
+            "the null worked by hand over every arrangement of two nights and of six, its mark the best itself and two thirds, a reading the same for every listing of a night held level, and 199 drawn at the seed past them; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A reading no learning year holds")] = new Scoped(
+            Verdict.Pass,
+            "a fold whose learning listings hold no reading finds no condition and reads no null, and a listing of the fold's year or after it is never read",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, LoopReadings)] = new Scoped(
+            Verdict.Pass,
+            "each reading's spread beneath a family's proposals, folded shut, its listings, winners and losers, medians and edge by tenth read back off the rendered page against the stored rows, a reading no listing holds drawing none and a family with no spread drawing nothing",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4675,6 +4698,8 @@ internal static class Scope
         ["Loop tests"] = "17.4",
         // 17.5's one, the trade autopsy's figures, which the plan names as the proposals' store.
         ["Loop findings"] = "17.5",
+        // 17.6's one, each reading's spread, which the plan names as each reading's distribution.
+        ["Loop readings"] = "17.6",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4713,6 +4738,7 @@ internal static class Scope
         [CheckReach.Key(LoopPage, LoopVerdict)] = "17.4",
         [CheckReach.Key(LoopPage, LoopTestYears)] = "17.4",
         [CheckReach.Key(LoopPage, LoopFindings)] = "17.5",
+        [CheckReach.Key(LoopPage, LoopReadings)] = "17.6",
         // The sector heavyweights' card's selector, 17.5, which the plan owes the card.
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card's rule")] = "17.5",
         // The parts of the rows the fifth phase 5 sign-off review decomposed.
@@ -6232,6 +6258,9 @@ internal static class Scope
         ["The tester's floors"] = "17.4",
         // The autopsy's proposals, 17.5, which the plan names as its proposals; the exit menu derives from the plan.
         ["The autopsy's proposals"] = "17.5",
+        // The conditions' search and null, 17.6, which the plan names by their parts.
+        ["The conditions' search"] = "17.6",
+        ["The conditions' null"] = "17.6",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

@@ -33,6 +33,10 @@ public sealed record LoopProposalRow(
 // it was read over and its words.
 public sealed record LoopFindingRow(string Family, string Figure, double? Value, int Trades, string Words);
 
+// One reading's spread over a family's finished listings in a run: the listings holding it, the winners and the losers
+// among them, each side's median and the mean edge of each tenth in the reading's order.
+public sealed record LoopReadingRow(string Family, string Reading, int Units, int Winners, int Losers, double? WinnersMedian, double? LosersMedian, IReadOnlyList<double?> Deciles);
+
 // A proposal's test year as the run stored it: the setting the fold's learning years chose or none, and each side's
 // units and total edge after costs.
 public sealed record LoopTestRow(

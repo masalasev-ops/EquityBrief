@@ -17,7 +17,7 @@ namespace EquityBrief.Worker.Loop;
 // test year and scored on that year against the index's current rule, the proposals tested for one rule read together by
 // the gate's step-down and each by its three screens; then the run, each proposal and each fold's test year written in
 // one transaction under the drain's lock. It reads the pulled history as the sweeps read it and writes only its own
-// three tables; it waits for no night but refuses to start inside the night's window or while a night holds the store.
+// tables; it waits for no night but refuses to start inside the night's window or while a night holds the store.
 // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
 // see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone
@@ -43,10 +43,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.PulledHolding, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Insert),
             new StoreTouch(Store.LoopProposal, Touch.Insert),
             new StoreTouch(Store.LoopTest, Touch.Insert),
             new StoreTouch(Store.LoopFinding, Touch.Insert),
+            new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -77,6 +80,11 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     const string InsertFinding = @"
         INSERT INTO loop_finding (run_id, index_code, family, figure, value, trades, words)
         VALUES ($run_id, $index_code, $family, $figure, $value, $trades, $words);
+    ";
+
+    const string InsertReading = @"
+        INSERT INTO loop_reading (run_id, index_code, family, reading, units, winners, losers, winners_median, losers_median, deciles)
+        VALUES ($run_id, $index_code, $family, $reading, $units, $winners, $losers, $winners_median, $losers_median, $deciles);
     ";
 
     const string AppendRun = @"
@@ -150,11 +158,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             return 2;
         }
 
-        // Part 0's procedures on the S&P 400 and 600, then the autopsy's exits for their provisional pullback and for the
-        // breakout, the drift and the sector heavyweights on every index, each family's proposals read together by the
-        // step-down.
+        // Part 0's procedures on the S&P 400 and 600; then each family a rule's hooks reach, the S&P 400's and 600's
+        // provisional pullback and the breakout and the drift on every index, read once and handed to the autopsy's exits
+        // and to winners against losers; then the sector heavyweights' two exits on every index; each family's proposals
+        // read together by the step-down.
         var proposals = new List<LoopProposalRead>();
         var findings = new Dictionary<string, IReadOnlyList<AutopsyFigure>>(StringComparer.Ordinal);
+        var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
         if (!large)
@@ -164,20 +174,27 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
         }
 
+        var rules = new List<RuleWalk>();
+
         if (!large)
         {
-            var (exits, figures) = ExitProcedures.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine);
-
-            proposals.AddRange(exits);
-            findings[SetupFamilies.Pullback] = figures;
+            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine));
         }
 
-        foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
+        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large));
+        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large));
+
+        var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
+
+        foreach (var rule in rules)
         {
-            var (exits, figures) = ExitProcedures.Swing(read, family, large, output.WriteLine);
+            var (exits, figures) = ExitProcedures.Autopsy(read, rule, output.WriteLine);
+            var (conditions, spread) = ConditionProcedures.Run(read, rule, readings, output.WriteLine);
 
             proposals.AddRange(exits);
-            findings[family] = figures;
+            proposals.AddRange(conditions);
+            findings[rule.Family] = figures;
+            spreads[rule.Family] = spread;
         }
 
         proposals.AddRange(ExitProcedures.Heavyweights(read, lay, output.WriteLine));
@@ -187,7 +204,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
 
         if (!print)
         {
-            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation, findings);
+            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation, findings, spreads);
         }
 
         foreach (var (family, figures) in findings)
@@ -259,7 +276,17 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     }
 
     // The run, its proposals and their test years, in one transaction under the drain's lock.
-    public async Task WriteAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<Tested> tested, CancellationToken cancellation = default, IReadOnlyDictionary<string, IReadOnlyList<AutopsyFigure>>? findings = null)
+    public async Task WriteAsync(
+        string runId,
+        string month,
+        string index,
+        DateOnly through,
+        DateTimeOffset started,
+        int folds,
+        IReadOnlyList<Tested> tested,
+        CancellationToken cancellation = default,
+        IReadOnlyDictionary<string, IReadOnlyList<AutopsyFigure>>? findings = null,
+        IReadOnlyDictionary<string, IReadOnlyList<ReadingSpread>>? spreads = null)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -339,6 +366,26 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                     ("$value", (object?)figure.Value ?? DBNull.Value),
                     ("$trades", figure.Trades),
                     ("$words", figure.Words),
+                ], cancellation);
+            }
+        }
+
+        foreach (var (family, spread) in spreads ?? new Dictionary<string, IReadOnlyList<ReadingSpread>>())
+        {
+            foreach (var one in spread)
+            {
+                await ExecuteAsync(connection, transaction, InsertReading,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", family),
+                    ("$reading", one.Column),
+                    ("$units", one.Units),
+                    ("$winners", one.Winners),
+                    ("$losers", one.Losers),
+                    ("$winners_median", (object?)one.WinnersMedian ?? DBNull.Value),
+                    ("$losers_median", (object?)one.LosersMedian ?? DBNull.Value),
+                    ("$deciles", System.Text.Json.JsonSerializer.Serialize(one.Deciles)),
                 ], cancellation);
             }
         }

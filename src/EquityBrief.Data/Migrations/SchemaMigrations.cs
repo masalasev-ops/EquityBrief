@@ -701,7 +701,27 @@ public static class SchemaMigrations
         new Migration(78, "create filed_fact, filed_fact_pull, filing_day and ledger_summary, and add setup's business readings", CreateFiledFacts),
         new Migration(79, "create loop_run, loop_proposal and loop_test", CreateLoopTests),
         new Migration(80, "add family_trade.exit, index_rule_trade.exit and loop_proposal.finding, and create loop_finding", CreateLoopFindings),
+        new Migration(81, "create loop_reading", CreateLoopReadings),
     ];
+
+    // Each reading's spread over a family's finished listings in a tester run: the units holding it, the winners and the
+    // losers among them, each side's median and the mean edge of each tenth in the reading's order.
+    // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+    const string CreateLoopReadings = @"
+        CREATE TABLE loop_reading (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            reading         TEXT    NOT NULL,
+            units           INTEGER NOT NULL,
+            winners         INTEGER NOT NULL,
+            losers          INTEGER NOT NULL,
+            winners_median  REAL,
+            losers_median   REAL,
+            deciles         TEXT    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, reading)
+        ) STRICT;
+    ";
 
     // The exit a family rule's trade was kept under, none for the rule's own; the autopsy's finding a proposal states;
     // and the autopsy's figures of a family's finished trades, one row a run, family and figure.

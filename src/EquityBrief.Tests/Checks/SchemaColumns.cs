@@ -73,11 +73,13 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Facts pulls"),
             CheckReach.Key(Scope.StoresTable, "Filing days"),
 
-            // 17.4, the walk-forward tester's runs, proposals and test years, and 17.5 the trade autopsy's figures.
+            // 17.4, the walk-forward tester's runs, proposals and test years, 17.5 the trade autopsy's figures and 17.6 each
+            // reading's spread.
             CheckReach.Key(Scope.StoresTable, "Loop runs"),
             CheckReach.Key(Scope.StoresTable, "Loop proposals"),
             CheckReach.Key(Scope.StoresTable, "Loop tests"),
             CheckReach.Key(Scope.StoresTable, "Loop findings"),
+            CheckReach.Key(Scope.StoresTable, "Loop readings"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

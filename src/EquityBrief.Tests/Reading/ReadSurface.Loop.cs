@@ -21,6 +21,7 @@ public partial class ReadSurface
         CheckReach.Key(Scope.LoopPage, Scope.LoopVerdict),
         CheckReach.Key(Scope.LoopPage, Scope.LoopTestYears),
         CheckReach.Key(Scope.LoopPage, Scope.LoopFindings),
+        CheckReach.Key(Scope.LoopPage, Scope.LoopReadings),
     ];
 
     // Every row the Loop page adds, named after phase 16's report until phase 17's own pair is checked.
@@ -37,6 +38,44 @@ public partial class ReadSurface
         store.Execute(
             "INSERT INTO loop_finding (run_id, index_code, family, figure, value, trades, words) "
             + $"VALUES ('{OctoberRun}', 'MID', '{family}', '{figure.Replace("'", "''", StringComparison.Ordinal)}', {(value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "NULL")}, {trades}, '{words.Replace("'", "''", StringComparison.Ordinal)}');");
+
+    [Fact]
+    public async Task TheLoopPageDrawsEachReadingsSpreadBeneathAFamilysProposalsReadBackAgainstTheStore()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute($"INSERT INTO loop_run (run_id, month, index_code, through, started_at, ended_at, folds) VALUES ('{OctoberRun}', '2026-10', 'MID', '2026-10-08', '2026-10-09T12:00:00Z', '2026-10-09T12:01:00Z', 5);");
+
+        // The drift's first condition and two readings' spreads: the relative strength index held by 1,200 finished
+        // listings, and the weekdays to the next report held by none.
+        LoopProposalRow(store, "drift", "winners against losers, ranked 1", "also requires rsi at or above 61.5", "the drift rule today", "risks", 1200, "0.5", 0, 0, 4, 1, "1", 1, "0.09", 0, "rsi at or above 61.5 kept 300 of the 1200 finished listings");
+        store.Execute(
+            "INSERT INTO loop_reading (run_id, index_code, family, reading, units, winners, losers, winners_median, losers_median, deciles) VALUES " +
+            $"('{OctoberRun}', 'MID', 'drift', 'rsi', 1200, 560, 640, 63.1, 58.4, '[-0.2,-0.1,0,0.05,0.1,0.1,0.15,0.2,0.25,0.3]'), " +
+            $"('{OctoberRun}', 'MID', 'drift', 'earnings_sessions', 0, 0, 0, NULL, NULL, '[null,null,null,null,null,null,null,null,null,null]');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+
+        // Beneath the drift's proposals, folded shut: a row a reading, its listings, winners and losers, each side's
+        // median and the edge of each tenth; a reading no listing holds drawing none for each figure.
+        Assert.Contains("<details class=\"loop-readings\" data-family=\"drift\" data-readings=\"2\"><summary>Each reading, winners against losers</summary>", page, StringComparison.Ordinal);
+        Assert.Contains(
+            "<tr data-reading=\"rsi\" data-units=\"1200\" data-winners=\"560\" data-losers=\"640\"><td>rsi</td><td class=\"r num\">1200: 560 won, 640 did not</td><td class=\"r num\">63.1</td><td class=\"r num\">58.4</td>"
+            + "<td class=\"num\" data-deciles=\"-0.20 -0.10 0.00 +0.05 +0.10 +0.10 +0.15 +0.20 +0.25 +0.30\">",
+            page,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<tr data-reading=\"earnings_sessions\" data-units=\"0\" data-winners=\"0\" data-losers=\"0\"><td>earnings_sessions</td><td class=\"r num\">0: 0 won, 0 did not</td><td class=\"r num\">none</td><td class=\"r num\">none</td>",
+            page,
+            StringComparison.Ordinal);
+        Assert.True(page.IndexOf("data-proposal=\"winners against losers, ranked 1\"", StringComparison.Ordinal) < page.IndexOf("<details class=\"loop-readings\" data-family=\"drift\"", StringComparison.Ordinal));
+
+        // A family the run stored no spread for draws none.
+        Assert.DoesNotContain("<details class=\"loop-readings\" data-family=\"breakout\"", page, StringComparison.Ordinal);
+    }
 
     [Fact]
     public async Task TheLoopPageDrawsTheAutopsysFiguresBeneathAFamilysRuleAndEachExitProposalsFindingReadBackAgainstTheStore()

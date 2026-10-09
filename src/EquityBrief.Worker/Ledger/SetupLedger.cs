@@ -261,6 +261,31 @@ public sealed class SetupLedger : IComponent
         return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
     }
 
+    // What a history's readings read beside its series, as the build reads it: the pulled market series to the history's
+    // end, each name's sector and its filer's facts as first filed, and the members at a new high and a new low on each
+    // session; so the tester reads every listing's readings through the catalogue's own function.
+    // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
+    public static async Task<(LedgerMarket Market, LedgerContext Context)> HistoryReadingsAsync(
+        string databaseFile,
+        SweepHistoryInputs inputs,
+        IReadOnlyList<SweepSeries> series,
+        SweepBenchmark.Members members,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
+        DateOnly through,
+        CancellationToken cancellation = default)
+    {
+        var (highs, lows) = SweepIdeas.HighsAndLows(series, members, inputs.Sessions.Length);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
+        var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
+        var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+
+        return (market, new LedgerContext(income, sectors, highs, lows, facts));
+    }
+
     // The row states counts and no timing, so two nights over one fixture write the same row; the step's
     // time is the row's own started_at to ended_at, and an index's seconds stay on the outcome alone.
     public static string Detail(IReadOnlyList<LedgerIndex> indices) =>

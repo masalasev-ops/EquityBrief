@@ -2573,7 +2573,8 @@ public sealed class SinglePageApp : IComponent
         EquityBrief.Core.Loop.LoopRunRow? run,
         IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals,
         IReadOnlyList<EquityBrief.Core.Loop.LoopTestRow> tests,
-        IReadOnlyList<EquityBrief.Core.Loop.LoopFindingRow>? findings = null)
+        IReadOnlyList<EquityBrief.Core.Loop.LoopFindingRow>? findings = null,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null)
     {
         static string Named(string word) => word switch
         {
@@ -2605,7 +2606,7 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Loop",
-                "<p class=\"degraded\" data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on the S&amp;P 400 and 600, and each month in the monthly run.</p>",
+                "<p class=\"degraded\" data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on each index, and each month in the monthly run.</p>",
                 title: "The loop",
                 stamp: Cards.Night(night),
                 region: "loop-none"));
@@ -2625,6 +2626,8 @@ public sealed class SinglePageApp : IComponent
             {
                 body.Append(marks.LoopProposal(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)]));
             }
+
+            body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
 
             if (own.Length > 0)
             {
