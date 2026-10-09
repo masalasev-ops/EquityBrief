@@ -62,6 +62,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
@@ -121,7 +122,7 @@ public sealed class IndexFamilies : IComponent
     ";
 
     const string OpenIndexTrades = @"
-        SELECT family, ticker, session_date, entry, stop, target, trail, cap FROM index_family_trade
+        SELECT family, ticker, session_date, entry, stop, target, trail, cap, exit, risk_moves FROM index_family_trade
         WHERE index_code = $index AND ended_on IS NULL AND session_date < $night;
     ";
 
@@ -149,8 +150,8 @@ public sealed class IndexFamilies : IComponent
     ";
 
     const string InsertTrade = @"
-        INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap)
-        VALUES ($index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap);
+        INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, exit, risk_moves)
+        VALUES ($index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap, $exit, $risk_moves);
     ";
 
     const string EndTrade = @"
@@ -358,11 +359,17 @@ public sealed class IndexFamilies : IComponent
         // standing rule's hooks read where they state one.
         var tonight = inputs is not null && readingsOf is not null ? await readingsOf(index, cancellation) : null;
 
-        // A family whose live rule stands draws the index's page on that rule's settings, and every other on its
-        // provisional rule.
+        // The setting an approval stored for each family on the index, none on the S&P 500, whose approvals are refused.
+        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        var stored = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StoredSettingsAsync(connection, index, cancellation);
+
+        // A family whose live rule stands draws the index's page on that rule's settings, one an approval stored a setting
+        // for on that setting, and every other on its provisional rule.
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
-            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels) : IndexNightRead.Provisional(prepared, family, tonight);
+            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels)
+            : stored.TryGetValue(family, out var setting) ? IndexNightRead.Stored(prepared, family, setting, tonight)
+            : IndexNightRead.Provisional(prepared, family, tonight);
 
         var read = inputs is null
             ? new IndexNight(index, session, 0, null, false, [])
@@ -391,7 +398,7 @@ public sealed class IndexFamilies : IComponent
             : await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
         var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings);
 
-        await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
+        await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules, stored)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
 
         foreach (var answer in read.Answers)
         {
@@ -419,11 +426,19 @@ public sealed class IndexFamilies : IComponent
 
             if (pick.State == FamilyList.Listed && answers.TryGetValue((pick.Ticker, pick.Family), out var trade))
             {
+                // The exit an approved setting walks the trade under, and the stop's distance in the night's typical moves
+                // the menu reads it by.
+                var exit = stored.TryGetValue(pick.Family, out var approved) ? RuleHooks.Of(approved.Hooks).Exit : 0;
+                var name = inputs is null ? -1 : Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, pick.Ticker, StringComparison.Ordinal));
+                var move = name < 0 ? 0 : inputs!.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];
+                var risk = Statistic.FromPrice(trade.Entry!.Value - trade.Stop!.Value);
+
                 kept++;
                 await ExecuteAsync(connection, transaction, InsertTrade,
                 [
                     ("$index", index), ("$family", pick.Family), ("$ticker", pick.Ticker), ("$night", Stamp(session)), ("$place", pick.Place!.Value),
                     ("$entry", Stored(trade.Entry)), ("$stop", Stored(trade.Stop)), ("$target", Stored(trade.Target)), ("$trail", Stored(trade.Trail)), ("$cap", trade.Cap!.Value),
+                    ("$exit", exit == 0 ? DBNull.Value : exit), ("$risk_moves", move > 0 && risk > 0 ? risk / move : DBNull.Value),
                 ], cancellation);
             }
         }
@@ -467,15 +482,18 @@ public sealed class IndexFamilies : IComponent
     // floors, its gate and the cost its trades pay; and for each family whose live rule stands, that rule with the day it
     // was registered and its settings in words, the rule the night read the family's list by in the provisional rule's place.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    public static string Settings(string index, IReadOnlyList<IndexRule>? rules = null) => JsonSerializer.Serialize(new
+    public static string Settings(string index, IReadOnlyList<IndexRule>? rules = null, IReadOnlyDictionary<string, LoopChange>? stored = null) => JsonSerializer.Serialize(new
     {
         floors = new { price = MemberReadings.LowestPrice, dollarVolume = MemberReadings.DollarVolumeFloor(index), sessions = MemberReadings.DollarVolumeSessions },
         profitGate = new { quarters = MemberReadings.Quarters },
         costs = CostsPaid,
         marketFloor = FamilySweep.MarketFloor,
         pullback = new { setting = SweepIdeas.BaseRule.Setting.Describe(SweepGrid.Extended), cap = IndexNightRead.PullbackCap },
-        breakout = BreakoutSweep.Grid.Key(IndexNightRead.BreakoutAsFrozen),
-        drift = DriftSweep.Grid.Key(IndexNightRead.DriftAsFrozen),
+        breakout = BreakoutSweep.Grid.Key(StoredPlaces(stored, BreakoutRule.Name) ?? IndexNightRead.BreakoutAsFrozen),
+        drift = DriftSweep.Grid.Key(StoredPlaces(stored, DriftRule.Name) ?? IndexNightRead.DriftAsFrozen),
+        approved = (stored ?? new Dictionary<string, LoopChange>(StringComparer.Ordinal))
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .ToDictionary(pair => pair.Key, pair => pair.Value.Words(), StringComparer.Ordinal),
         heavyweights = IndexHeavyweights.Provisional.Key,
         fundamentals = new { setting = FundamentalsRule.Provisional.Key, words = FundamentalsRule.Provisional.Words, cap = IndexNightRead.PullbackCap },
         live = (rules ?? [])
@@ -489,6 +507,30 @@ public sealed class IndexFamilies : IComponent
             })
             .ToArray(),
     });
+
+    static int[]? StoredPlaces(IReadOnlyDictionary<string, LoopChange>? stored, string family) =>
+        stored is not null && stored.TryGetValue(family, out var setting) && setting.Places is { } places ? [.. places] : null;
+
+    // The newest setting an approval stored for each of an index's families.
+    const string StoredSettings = @"
+        SELECT s.family, s.change FROM provisional_setting s
+        WHERE s.index_code = $index AND s.id = (SELECT MAX(t.id) FROM provisional_setting t WHERE t.index_code = s.index_code AND t.family = s.family);
+    ";
+
+    public static async Task<IReadOnlyDictionary<string, LoopChange>> StoredSettingsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var stored = new Dictionary<string, LoopChange>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, StoredSettings, [("$index", index)], cancellation))
+        {
+            if (LoopChange.Read(row.GetString(1)) is { } setting)
+            {
+                stored[row.GetString(0)] = setting;
+            }
+        }
+
+        return stored;
+    }
 
     // The rules of the index's swing families standing registered at the night's start, each read at its registration's
     // settings; a rule whose evaluator moved since it was registered, or whose settings its sweep's grid does not hold, is
@@ -747,7 +789,7 @@ public sealed class IndexFamilies : IComponent
     // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
     async Task<int> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, CancellationToken cancellation)
     {
-        var open = new List<(string Family, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap)>();
+        var open = new List<(string Family, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, int Exit, double? RiskMoves)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -768,7 +810,9 @@ public sealed class IndexFamilies : IComponent
                     Money.FromStorage(reader.GetString(4)),
                     reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
                     reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
-                    reader.GetInt32(7)));
+                    reader.GetInt32(7),
+                    reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
+                    reader.IsDBNull(9) ? null : reader.GetDouble(9)));
             }
         }
 
@@ -807,7 +851,16 @@ public sealed class IndexFamilies : IComponent
             int sessions;
             double? result;
 
-            if (trade.Trail is { } trail)
+            // A trade kept under an approved setting's exit of the menu is walked under it, as a rule's own trade is.
+            // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+            if (ExitMenu.Of(trade.Exit) is { } exit)
+            {
+                var anchor = new SetupAnchor(trade.Session, entry, stop, trade.Trail is null ? Statistic.FromPrice(trade.Target ?? trade.Entry) * scale : null, trade.Trail is { } trailing ? Statistic.FromPrice(trailing) * scale : null, trade.Cap, trade.RiskMoves);
+                var outcome = ExitMenu.Replay(closes, 0, anchor, trade.RiskMoves is > 0 ? (entry - stop) / trade.RiskMoves.Value : double.NaN, exit);
+
+                (result, sessions) = (outcome.Result, outcome.Sessions);
+            }
+            else if (trade.Trail is { } trail)
             {
                 result = FamilyWalks.Trailing(closes, 0, entry, stop, Statistic.FromPrice(trail) * scale, trade.Cap, out sessions);
             }

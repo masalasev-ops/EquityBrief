@@ -72,6 +72,8 @@ public static class ConditionProcedures
                 LoopProcedures.Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one is null ? null : UnitsUnder(one))], own))
             {
                 Finding = named is null ? null : Finding(named, finished, spreads, finishedUnits.Count, ownEdge),
+                Change = named is null ? null : LoopChange.OfHooks(named.Parameters()),
+                Reference = LoopProcedures.Reference(read, own),
             });
         }
 

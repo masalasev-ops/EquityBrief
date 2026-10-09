@@ -703,7 +703,81 @@ public static class SchemaMigrations
         new Migration(80, "add family_trade.exit, index_rule_trade.exit and loop_proposal.finding, and create loop_finding", CreateLoopFindings),
         new Migration(81, "create loop_reading", CreateLoopReadings),
         new Migration(82, "create loop_model, and add decision_card's score_rank and similar", CreateLoopModels),
+        new Migration(83, "add loop_proposal.change and index_family_trade's exit and risk_moves, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
     ];
+
+    // What an approval reads and writes, and the alarm: the change each proposal makes in the form an approval applies;
+    // the rule today's trades over a run's test years, the alarm's reference; the operator's decisions, each once a
+    // proposal of a run; what the apply step did with each; the S&P 400's and 600's provisional settings an approval
+    // stands from, a row a change and never edited; each live rule's periods, each written once every trade that ended in
+    // it holds its edge and read against the reference of the tester run it names; and the exit an index page's trade is
+    // walked under with its stop's distance in typical moves.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+    const string CreateLoopApprovals = @"
+        ALTER TABLE loop_proposal ADD COLUMN change TEXT;
+        ALTER TABLE index_family_trade ADD COLUMN exit INTEGER;
+        ALTER TABLE index_family_trade ADD COLUMN risk_moves REAL;
+
+        CREATE TABLE loop_reference (
+            run_id      TEXT    NOT NULL,
+            index_code  TEXT    NOT NULL,
+            family      TEXT    NOT NULL,
+            place       INTEGER NOT NULL,
+            entered     TEXT    NOT NULL,
+            edge        REAL    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, place)
+        ) STRICT;
+
+        CREATE TABLE loop_decision (
+            run_id      TEXT NOT NULL,
+            index_code  TEXT NOT NULL,
+            family      TEXT NOT NULL,
+            proposal    TEXT NOT NULL,
+            decision    TEXT NOT NULL CHECK (decision IN ('approved', 'declined')),
+            reason      TEXT,
+            decided_at  TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, proposal)
+        ) STRICT;
+
+        CREATE TABLE loop_applied (
+            run_id      TEXT NOT NULL,
+            index_code  TEXT NOT NULL,
+            family      TEXT NOT NULL,
+            proposal    TEXT NOT NULL,
+            applied_at  TEXT NOT NULL,
+            outcome     TEXT NOT NULL CHECK (outcome IN ('applied', 'refused')),
+            words       TEXT NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, proposal)
+        ) STRICT;
+
+        CREATE TABLE provisional_setting (
+            id          INTEGER PRIMARY KEY,
+            index_code  TEXT NOT NULL,
+            family      TEXT NOT NULL,
+            change      TEXT NOT NULL,
+            words       TEXT NOT NULL,
+            set_at      TEXT NOT NULL,
+            run_id      TEXT NOT NULL,
+            proposal    TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE loop_alarm (
+            index_code  TEXT    NOT NULL,
+            family      TEXT    NOT NULL,
+            period      TEXT    NOT NULL,
+            trades      INTEGER NOT NULL,
+            edge        REAL,
+            low         REAL,
+            counted     INTEGER NOT NULL,
+            under       INTEGER NOT NULL,
+            streak      INTEGER NOT NULL,
+            flagged     INTEGER NOT NULL,
+            reference   TEXT    NOT NULL,
+            run_id      TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family, period)
+        ) STRICT;
+    ";
 
     // Each learned score a tester run fits, a family and a fold's year a row, its parameters whole with their hash, the
     // window it learned on and the pin of the code that fitted it; and a card's rank under its index's score and its part

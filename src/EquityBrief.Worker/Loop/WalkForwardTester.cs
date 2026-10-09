@@ -55,6 +55,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopFinding, Touch.Insert),
             new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.LoopModel, Touch.Insert),
+            new StoreTouch(Store.LoopReference, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -78,8 +79,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     ";
 
     const string InsertProposal = @"
-        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding)
-        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed, $finding);
+        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change)
+        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed, $finding, $change);
+    ";
+
+    const string InsertReference = @"
+        INSERT INTO loop_reference (run_id, index_code, family, place, entered, edge)
+        VALUES ($run_id, $index_code, $family, $place, $entered, $edge);
     ";
 
     const string InsertFinding = @"
@@ -401,6 +407,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                 ("$stable_folds", proposal.StableFolds),
                 ("$passed", verdict.Passes && proposal.Words is not null ? 1 : 0),
                 ("$finding", (object?)proposal.Finding ?? DBNull.Value),
+                ("$change", (object?)proposal.Change?.Json ?? DBNull.Value),
             ], cancellation);
 
             foreach (var (fold, chosen) in proposal.Folds)
@@ -420,6 +427,27 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                     ("$proposed_units", year.ProposedUnits),
                     ("$current_total", year.CurrentTotal),
                     ("$proposed_total", year.ProposedTotal),
+                ], cancellation);
+            }
+        }
+
+        // Each family's reference, the rule today's units over the test years, once a family: the first proposal of the
+        // family carrying one, every proposal of a family being tested against the same rule.
+        // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+        foreach (var family in tested.Select(one => one.Proposal).Where(one => one.Reference is not null).GroupBy(one => one.Family, StringComparer.Ordinal))
+        {
+            var place = 0;
+
+            foreach (var unit in family.First().Reference!.OrderBy(one => one.Entered))
+            {
+                await ExecuteAsync(connection, transaction, InsertReference,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", family.Key),
+                    ("$place", ++place),
+                    ("$entered", unit.Entered.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                    ("$edge", unit.Edge),
                 ], cancellation);
             }
         }

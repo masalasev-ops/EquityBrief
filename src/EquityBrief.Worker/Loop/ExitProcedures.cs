@@ -120,6 +120,8 @@ public static class ExitProcedures
                 LoopProcedures.Evidence(read.Folds, read.Calendar, [.. chosen.Select(exit => exit is null ? null : Units(walks[exit.Number - 1]))], Units(own)))
             {
                 Finding = named.Exit is null ? null : PathAutopsy.Finding(figures, named.Exit, ownFinished, named.Edge),
+                Change = named.Exit is null ? null : LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExitParameter] = named.Exit.Number }),
+                Reference = LoopProcedures.Reference(read, Units(own)),
             });
         }
 
@@ -187,6 +189,8 @@ public static class ExitProcedures
                 Finding = named is { } found
                     ? FormattableString.Invariant($"{books[found.At].Words} read {found.Edge * 100:+0.00;-0.00} points a holding on the years it learned on against the rule's own {ownFinished * 100:+0.00;-0.00}")
                     : null,
+                Change = named is { } kept ? new LoopChange(null, books[kept.At].Book.Setting.Key, null, LoopChange.NoHooks) : null,
+                Reference = LoopProcedures.Reference(read, own),
             });
         }
 

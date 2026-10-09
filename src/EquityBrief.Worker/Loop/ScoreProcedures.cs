@@ -89,6 +89,10 @@ public static class ScoreProcedures
                 LoopProcedures.Evidence(read.Folds, read.Calendar, [.. fitted.Select(Walked)], own))
             {
                 Finding = named is null ? null : RidgeScore.Words(named.Model),
+                Change = named is null || (share is { } least && named.Model.FloorAt(read.Index, least) is null)
+                    ? null
+                    : LoopChange.OfHooks(named.Model.HookParameters(share is { } left ? named.Model.FloorAt(read.Index, left) : null)),
+                Reference = LoopProcedures.Reference(read, own),
             });
         }
 
