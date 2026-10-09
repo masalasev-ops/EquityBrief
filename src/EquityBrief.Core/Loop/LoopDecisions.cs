@@ -37,6 +37,8 @@ public static class LoopDecisions
 
     public const string FamilyRefused = "the family has no setting an approval applies";
 
+    public const string FrozenRefused = "the family's live rule stands registered on the index and draws its page, and a registered rule changes only by a registration, which waits on the operator's ruling of how an approval registers one";
+
     // The swing families an approval changes on the S&P 400 and 600.
     public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
 

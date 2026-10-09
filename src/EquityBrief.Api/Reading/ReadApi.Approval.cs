@@ -26,7 +26,7 @@ public sealed partial class ReadApi
     const string LoopSettingsOf = "SELECT id, family, words, set_at, run_id, proposal FROM provisional_setting WHERE index_code = $index ORDER BY id DESC;";
 
     const string LoopAlarmsOf = @"
-        SELECT family, period, trades, edge, low, counted, under, streak, flagged, reference FROM loop_alarm
+        SELECT family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference FROM loop_alarm
         WHERE index_code = $index ORDER BY family, period;";
 
     // A proposal a decision names, whether it passed, its change and its blocks, beside the index's newest run.

@@ -770,7 +770,7 @@ public static class SchemaMigrations
             period      TEXT    NOT NULL,
             trades      INTEGER NOT NULL,
             edge        REAL,
-            low         REAL,
+            edge_floor  REAL,
             counted     INTEGER NOT NULL,
             under       INTEGER NOT NULL,
             streak      INTEGER NOT NULL,

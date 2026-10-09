@@ -93,7 +93,8 @@ public sealed record LoopChange(IReadOnlyList<int>? Places, string? Key, double?
 
         if (Key is { } key)
         {
-            parts.Add("the setting " + key + (StopFloor is { } floor ? FormattableString.Invariant($", its stop at least {floor.ToString("0.##", CultureInfo.InvariantCulture)} typical move under the buy") : string.Empty));
+            parts.Add("the setting " + key.Replace("|", ", ", StringComparison.Ordinal).Replace("=", " ", StringComparison.Ordinal)
+                + (StopFloor is { } floor ? FormattableString.Invariant($", its stop at least {floor.ToString("0.##", CultureInfo.InvariantCulture)} typical move under the buy") : string.Empty));
         }
 
         if (RuleHooks.Of(Hooks).Words() is { } hooked)

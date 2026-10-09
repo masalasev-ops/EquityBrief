@@ -33,6 +33,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read),
@@ -58,8 +59,9 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         ORDER BY d.decided_at, d.rowid;
     ";
 
-    // Each index's newest run's proposals that passed and hold no decision and no answer, with the blocks a decline of the
-    // same proposal on an earlier run read, which the automatic setting alone reads.
+    // Each index's newest run's proposals that passed and hold no decision, in families that hold no approval and no
+    // applied change in the run, the strongest by its adjusted p-value first, with the blocks a decline of the same
+    // proposal on an earlier run read, which the automatic setting alone reads.
     const string Undecided = @"
         SELECT p.run_id, p.index_code, p.family, p.proposal, p.change, p.blocks,
             (SELECT MAX(q.blocks) FROM loop_decision e
@@ -68,9 +70,9 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         FROM loop_proposal p
         WHERE p.passed = 1
             AND p.run_id = (SELECT r.run_id FROM loop_run r WHERE r.index_code = p.index_code ORDER BY r.rowid DESC LIMIT 1)
-            AND NOT EXISTS (SELECT 1 FROM loop_decision d WHERE d.run_id = p.run_id AND d.index_code = p.index_code AND d.family = p.family AND d.proposal = p.proposal)
-            AND NOT EXISTS (SELECT 1 FROM loop_applied a WHERE a.run_id = p.run_id AND a.index_code = p.index_code AND a.family = p.family AND a.proposal = p.proposal)
-        ORDER BY p.index_code, p.family, p.proposal;
+            AND NOT EXISTS (SELECT 1 FROM loop_decision d WHERE d.run_id = p.run_id AND d.index_code = p.index_code AND d.family = p.family AND (d.proposal = p.proposal OR d.decision = 'approved'))
+            AND NOT EXISTS (SELECT 1 FROM loop_applied a WHERE a.run_id = p.run_id AND a.index_code = p.index_code AND a.family = p.family AND (a.proposal = p.proposal OR a.outcome = 'applied'))
+        ORDER BY p.index_code, p.family, p.adjusted, p.proposal;
     ";
 
     // The settings a family has stood at, oldest first.
@@ -105,19 +107,33 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
             waiting.Add((row.GetString(0), row.GetString(1), row.GetString(2), row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4)));
         }
 
+        // On the automatic setting, the strongest of a family's undecided passing proposals in its index's newest run, one
+        // change a family a run as an approval is.
         if (mode == LoopDecisions.Automatic)
         {
             await foreach (var row in RowsAsync(connection, null, Undecided, [], cancellation))
             {
                 var declinedAt = row.IsDBNull(6) ? (int?)null : row.GetInt32(6);
+                var (run, index, family) = (row.GetString(0), row.GetString(1), row.GetString(2));
+
+                if (waiting.Any(one => one.Run == run && one.Index == index && one.Family == family))
+                {
+                    continue;
+                }
 
                 if (declinedAt is null || LoopDecisions.PutAgain(declinedAt.Value, row.GetInt32(5), passedNow: true))
                 {
-                    waiting.Add((row.GetString(0), row.GetString(1), row.GetString(2), row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4)));
+                    waiting.Add((run, index, family, row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4)));
                 }
             }
         }
 
+        // The families whose live rule stands registered on an index, which draw its page in the provisional rule's place.
+        var register = await new EquityBrief.Worker.Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation);
+        var frozen = EquityBrief.Worker.Indices.IndexFamilies.StandingRules(register, started).Rules
+            .Where(rule => rule.Live)
+            .Select(rule => (rule.Index, rule.Family))
+            .ToHashSet();
         var applications = new List<LoopApplication>();
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -131,7 +147,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
                 standing.Add((row.GetInt64(0), row.GetString(1)));
             }
 
-            var (applied, words, written) = Answer(run, index, family, proposal, change, standing);
+            var (applied, words, written) = frozen.Contains((index, family)) ? (false, LoopDecisions.FrozenRefused, null) : Answer(run, index, family, proposal, change, standing);
 
             if (written is { } setting)
             {

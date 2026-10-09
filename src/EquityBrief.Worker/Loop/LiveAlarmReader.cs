@@ -95,8 +95,8 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         WHERE index_code = $index AND ended_on IS NOT NULL AND result IS NOT NULL AND cut_return IS NOT NULL;";
 
     const string InsertPeriod = @"
-        INSERT INTO loop_alarm (index_code, family, period, trades, edge, low, counted, under, streak, flagged, reference, run_id)
-        VALUES ($index, $family, $period, $trades, $edge, $low, $counted, $under, $streak, $flagged, $reference, $run_id);";
+        INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id)
+        VALUES ($index, $family, $period, $trades, $edge, $edge_floor, $counted, $under, $streak, $flagged, $reference, $run_id);";
 
     const string AppendRun = @"
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
@@ -214,7 +214,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             await ExecuteAsync(connection, transaction, InsertPeriod,
             [
                 ("$index", index), ("$family", family), ("$period", Stamp(read.Start)), ("$trades", read.Units),
-                ("$edge", (object?)read.Edge ?? DBNull.Value), ("$low", (object?)read.Low ?? DBNull.Value),
+                ("$edge", (object?)read.Edge ?? DBNull.Value), ("$edge_floor", (object?)read.Low ?? DBNull.Value),
                 ("$counted", read.Counted ? 1 : 0), ("$under", read.Under ? 1 : 0), ("$streak", read.Streak), ("$flagged", read.Flagged ? 1 : 0),
                 ("$reference", run), ("$run_id", runId),
             ], cancellation);
