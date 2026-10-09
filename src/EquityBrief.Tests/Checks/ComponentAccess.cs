@@ -163,6 +163,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Live alarm reader"),
             CheckReach.Key(Scope.MatrixTable, "Live alarm reader"),
 
+            // 17.10, the monthly run.
+            CheckReach.Key(Scope.CatalogueTable, "Monthly run"),
+            CheckReach.Key(Scope.MatrixTable, "Monthly run"),
+
             // 17.4, the walk-forward tester.
             CheckReach.Key(Scope.CatalogueTable, "Walk-forward tester"),
             CheckReach.Key(Scope.MatrixTable, "Walk-forward tester"),

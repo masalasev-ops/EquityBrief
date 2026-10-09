@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# Runs the month's loop from a clean copy of the committed code, as tools/nightly
+# builds a night: the main checkout's own HEAD, read with no fetch, exported whole
+# with `git archive` into the data root's folder of nights, one folder a commit,
+# built once in Release and reused where a night built that commit already; the
+# data root and the secrets file are the checkout's, each named by absolute path,
+# so the copy never finds, creates or writes a store of its own. A checkout off
+# main, or holding a commit origin/main does not have, is refused before any
+# worker exists. The scheduler calls it on the first Saturday of the month.
+#
+# The worker then runs the month's steps in order, each index's point-in-time
+# check, the SEC's facts asked whole, each index's tester run and the month's
+# report, waiting for the night and for the store's copy and holding the drain's
+# lock while a step runs, and run again goes on from the first step no try of the
+# month held.
+#
+#   tools/monthly                     the month of today's session
+#   tools/monthly --month <yyyy-MM>   name the month
+#   tools/monthly ... --check         print what a run would build and run, and run nothing
+set -euo pipefail
+
+# The root in the form the platform's own tools read, as tools/nightly reads it.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+mkdir -p "$data"
+
+check=0
+pass=()
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        *) pass+=("$argument") ;;
+    esac
+done
+
+refuse() {
+    echo "monthly: refused before any worker exists: $1" >&2
+    exit 1
+}
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+
+if [ "$branch" != "main" ]; then
+    refuse "the checkout is on '${branch:-no branch}' and not on main, so no build was made from it"
+fi
+
+commit="$(git rev-parse HEAD)"
+short="${commit:0:12}"
+note="built from $short"
+
+if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
+    ahead="$(git rev-list --count origin/main..HEAD)"
+
+    if [ "$ahead" != 0 ]; then
+        refuse "the checkout holds $ahead commit(s) origin/main does not have, so no build was made from it"
+    fi
+
+    behind="$(git rev-list --count HEAD..origin/main)"
+
+    if [ "$behind" != 0 ]; then
+        note="$note, $behind commit(s) behind origin/main"
+    fi
+else
+    note="$note, with no origin/main to read against"
+fi
+
+copies="$data/nights"
+copy="$copies/$short"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+built="$(worker_in "$copy")"
+
+if [ "$check" = 1 ]; then
+    echo "monthly: would run $commit, $note"
+    echo "monthly: copy $copy, ${built:+built already}${built:-to build}"
+    echo "monthly: data root $data"
+    echo "monthly: secrets read from $secrets, none copied"
+    exit 0
+fi
+
+if [ -z "$built" ]; then
+    started=$SECONDS
+    rm -rf "$copy" "$copy.partial"
+    mkdir -p "$copy.partial"
+    git archive "$commit" | tar -x -C "$copy.partial"
+    dotnet build "$copy.partial/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    mv "$copy.partial" "$copy"
+    built="$(worker_in "$copy")"
+
+    if [ -z "$built" ]; then
+        echo "monthly: the build of $short left no worker assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, built in $((SECONDS - started)) s"
+else
+    note="$note, build reused"
+fi
+
+touch "$copy"
+
+echo "monthly: $note"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+exec dotnet "$built" loop-month "${pass[@]}"

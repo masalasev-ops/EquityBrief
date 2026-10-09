@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - CLAUDE.md and .claude/rules/checks.md - the monthly run in the layout and the Merge rule, and the roster's clauses for it
+Authorised by: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+Was:
+> Nothing is merged to `main`, [...] the news labeller the night starts included, or while the setup ledger's history build is writing from a copy of the checkout's commit; that it has finished [...]
+> [the roster's fixture-expectations row] [...] nothing over closes of nothing on every member, and none before its cap |
+> [the roster's nightly-run row] [...] and the overnight queue and the night's requests taking the S&P 500's picks of the family after its own families' |
+Now:
+> Nothing is merged to `main`, [...] the news labeller the night starts included, or while the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit; that it has finished [...]
+> [the roster's fixture-expectations row] [...] and none before its cap; and from 17.10 the monthly run's steps in order over constructed steps, [...] written into the month's folder and written again over it |
+> [the roster's nightly-run row] [...] after its own families'; and from 17.10 the monthly run's script, in its check mode over temporary repositories, [...] before any worker exists |
+Why: the monthly run writes the Loop page's rows from a clean copy of main's commit as the history build does, so a merge while it writes leaves it writing under code main no longer holds; and the layout gains `tools/monthly` and its wrapper beside the history build's.
+
 ### 2026-10-09 - ARCHITECTURE.html, RUNBOOK.md and .claude/rules/checks.md - the point-in-time check reads the history through the build's own end and rebuilds a swing setup's own readings by its family's gates
 Corrects: 17.3's point-in-time check, which named differences on every index when first run from main after the merges: it rebuilt the readings every setup carries and left a swing setup's six own readings as none, 1,571 of its differences, and it read the history through its newest sampled setup where the build read it through 2026-10-05, so the years the pull holds before the store's were priced at another median ratio and 16 readings differed in the sixth significant figure; found reading the check's output after the history build.
 Was:

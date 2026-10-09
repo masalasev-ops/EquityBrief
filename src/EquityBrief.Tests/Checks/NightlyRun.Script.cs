@@ -25,6 +25,7 @@ public partial class NightlyRun
             Directory.CreateDirectory(Path.Combine(Root, "src"));
             File.Copy(Repository.Tool("nightly"), Path.Combine(Root, "tools", "nightly"));
             File.Copy(Repository.Tool("ledger-build"), Path.Combine(Root, "tools", "ledger-build"));
+            File.Copy(Repository.Tool("monthly"), Path.Combine(Root, "tools", "monthly"));
 
             Run("init", "-q", "-b", "main");
             Run("config", "user.email", "suite@example.invalid");

@@ -52,6 +52,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-apply" => await LoopApplyRun(),
+    "loop-month" => await LoopMonthRun(args),
     "sweep-fundamentals" => await SweepFundamentalsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
@@ -66,7 +67,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 33 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 34 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -155,6 +156,10 @@ static int NoVerb()
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
         "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
         "stands at from the next night and every other refused with why, " +
+        "'loop-month' runs the month's steps in order, each index's point-in-time check, the SEC's facts asked whole, " +
+        "each index's tester run and the month's report naming the one proposal a family an index puts to you, with " +
+        "'--month <yyyy-MM>' naming the month, and run again goes on from the first step no try of the month held, as " +
+        "tools/monthly runs it from a clean copy of main's commit, " +
         "'sweep-fundamentals --index <GSPC, MID or SML>' searches the fundamentals-first family's 27 registered settings " +
         "over the pullback's listings on the index's history, each walked after its round trip, and prints each setting's " +
         "trades, edge and years against the family floors with what luck passes, writing nothing, " +
@@ -649,6 +654,58 @@ static async Task<int> LoopApplyRun()
     Console.Out.WriteLine(FormattableString.Invariant($"{EquityBrief.Worker.Loop.LoopApply.Verb}: {outcome.Applied} applied and {outcome.Refused} refused"));
 
     return 0;
+}
+
+// The monthly run, by hand or from tools/monthly on the first Saturday of the month: each index's point-in-time check,
+// the SEC's facts asked whole, each index's tester run and the month's report, a step at a time, going on from the
+// first step no try of the month held.
+// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+static async Task<int> LoopMonthRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var month = VerbArguments.Value(args, "--month") ?? EquityBrief.Worker.Loop.MonthlyRun.MonthOf(clock);
+    var contact = configuration[ArchiveAgent.ContactName];
+    EquityBrief.Worker.Loop.MonthlyRun? run = null;
+    var steps = new List<EquityBrief.Worker.Loop.MonthlyStep>();
+
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new("check-" + index, async (_, cancellation) =>
+            await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).CheckAsync(index, Console.Out, cancellation: cancellation) == 0
+                ? (true, "the point-in-time check named no difference")
+                : (false, "the point-in-time check named a difference, so the tester does not read the ledger this month")));
+    }
+
+    steps.Add(new("facts", async (runId, cancellation) =>
+    {
+        if (string.IsNullOrWhiteSpace(contact))
+        {
+            return (false, $"no archive contact: set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none");
+        }
+
+        var whole = await new EquityBrief.Worker.Ledger.FilingsRefresher(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile)
+            .WholeAsync(runId, Console.Out, cancellation);
+
+        return whole.Refusal is null
+            ? (true, FormattableString.Invariant($"{whole.FactsAsked} filer(s) asked and {whole.Facts} fact(s) stored in {whole.Seconds:0} s"))
+            : (false, "the archive refused: " + whole.Refusal);
+    }));
+
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new("test-" + index, async (_, cancellation) =>
+            await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index, month, cancellation) == 0
+                ? (true, $"the tester ran for {month}")
+                : (false, "the tester did not finish its run")));
+    }
+
+    steps.Add(new("report", (_, cancellation) => run!.ReportAsync(month, cancellation)));
+
+    run = new EquityBrief.Worker.Loop.MonthlyRun(clock, store.DatabaseFile, store.DataRoot, Console.Out, steps);
+
+    return (await run.RunAsync(month)).Stopped is null ? 0 : 1;
 }
 
 // The fundamentals-first family's search by hand on one index, its 27 settings registered before it ran, printed and

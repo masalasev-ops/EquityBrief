@@ -49,6 +49,14 @@ public static class LoopDecisions
         : Families.Contains(family, StringComparer.Ordinal) ? null
         : FamilyRefused;
 
+    // The one proposal of a family a run puts to the operator: of those that passed, the lowest adjusted p-value, a tie
+    // settled by the proposal's name; none where none passed.
+    public static LoopProposalRow? PutOf(IEnumerable<LoopProposalRow> family) =>
+        family.Where(proposal => proposal.Passed)
+            .OrderBy(proposal => proposal.Adjusted ?? double.PositiveInfinity)
+            .ThenBy(proposal => proposal.Proposal, StringComparer.Ordinal)
+            .FirstOrDefault();
+
     // Whether a declined proposal is put to the operator again: a later run read more complete blocks than the run it
     // was declined on, and it passed with them.
     public static bool PutAgain(int blocksDeclined, int blocksNow, bool passedNow) => passedNow && blocksNow > blocksDeclined;

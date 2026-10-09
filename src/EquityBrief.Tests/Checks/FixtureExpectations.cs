@@ -131,6 +131,8 @@ public partial class FixtureExpectations
             .. FundamentalsClaims,
             // 17.9, approval and the live alarm: section 17's two rows and section 18's two.
             .. ApprovalClaims,
+            // 17.10, the monthly run: section 17's row and section 18's.
+            .. MonthlyClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 
