@@ -119,6 +119,8 @@ public partial class FixtureExpectations
             .. RuleCardsClaims,
             // 17.3, the setup ledger: section 17's two rows and section 18's one.
             .. LedgerClaims,
+            // 17.4, the walk-forward tester: section 17's five rows and section 18's two.
+            .. LoopClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

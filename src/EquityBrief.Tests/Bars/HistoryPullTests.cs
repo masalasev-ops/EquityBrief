@@ -620,8 +620,9 @@ public class HistoryPullTests
         // The rule recorder declares the pulled tables its replay reads through the sweep's history, by hand and never on
         // the night; the setup ledger reads the pulled market series and companies in its history build, by hand, and on
         // the night the night's own tables; and the filings refresher reads the pulled companies' filers in its whole
-        // refresh by hand, and on the night the night's own companies.
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // refresh by hand, and on the night the night's own companies; and the walk-forward tester declares the pulled
+        // tables its procedures read through the sweep's history, by hand and never on the night.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

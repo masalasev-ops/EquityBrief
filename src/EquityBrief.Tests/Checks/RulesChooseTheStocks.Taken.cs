@@ -30,6 +30,8 @@ public partial class RulesChooseTheStocks
         // From 17.3 the setup ledger, which every engine reads, so a taken trade reaching it would reach them all.
         // see: The operator's taken trades never feed a pick, a rule, an engine or a test
         (nameof(EquityBrief.Worker.Ledger.SetupLedger), EquityBrief.Worker.Ledger.SetupLedger.Access),
+        // From 17.4 the walk-forward tester, which judges every proposal.
+        (nameof(EquityBrief.Worker.Loop.WalkForwardTester), EquityBrief.Worker.Loop.WalkForwardTester.Access),
     ];
 
     internal static IReadOnlyList<string> ReadsTheOperatorsOwn(string name, Declared access) =>
@@ -40,8 +42,8 @@ public partial class RulesChooseTheStocks
     {
         var components = PickMaking;
 
-        // The scope, in numbers: the deciding list and the four named beside it.
-        Assert.Equal(Deciding.Length + 4, components.Length);
+        // The scope, in numbers: the deciding list and the five named beside it.
+        Assert.Equal(Deciding.Length + 5, components.Length);
         Assert.Empty(components.SelectMany(component => ReadsTheOperatorsOwn(component.Name, component.Access)));
 
         var sources = Folders

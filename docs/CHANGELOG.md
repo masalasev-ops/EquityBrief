@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - the Loop page's route
+Authorised by: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
+Was:
+> [the single page app's routes] [...] <code>#/universe</code>, <code>#/ledger</code>, <code>#/picks</code>, [...]
+Now:
+> [the routes] [...] <code>#/universe</code>, <code>#/ledger</code>, <code>#/loop</code>, <code>#/picks</code>, [...]
+Why: 17.4's Loop page under Universe is reached by a route of its own, with the index and the month in the hash.
+
+### 2026-10-09 - BUILD_PLAN.md - 17.4 names the procedures it runs inside a fold
+Authorised by: A search run inside a fold reads the family floors in proportion to the years it learns on
+Was:
+> The first proposals tested are Part 0's procedures, run on each fold's learning years.
+Now:
+> The first proposals tested are Part 0's procedures that read a set of tries, the breakout's and the drift's grids and the sector heavyweights' six settings in each design on the S&P 400 and 600, run on each fold's learning years with the family floors in proportion to them; the pullback's searches are budgeted by the clock rather than by a set of tries, so a fold would read a different set of settings on another machine, and they are not run inside a fold.
+Why: the pullback's searches sample their grid for four hours rather than over a stated set of settings, so a fold could not repeat them on another machine; the plan's text now says which of Part 0's procedures the tester runs and with what floors.
+
+### 2026-10-09 - .claude/rules/checks.md - the roster states 17.4's tests
+Authorised by: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
+Was:
+> [fixture-expectations] [...] a stored reading taken from the session after named by its column with both figures |
+> [read-surface] [...] each row's price, volume needed, gates still failing and next report under the closing line |
+> [rules-choose-the-stocks] [...] and from 17.3 the setup ledger among those components and its folders among those scanned |
+Now:
+> [fixture-expectations] [...] named by its column with both figures; and from 17.4 the tester's windows and purge worked by hand on a constructed ledger, [...] and a run written whole by the tester and read back row for row |
+> [read-surface] [...] under the closing line; and from 17.4 the Loop page draws each family's rule today [...] and an index with no run saying so in one line |
+> [rules-choose-the-stocks] [...] and its folders among those scanned, and from 17.4 the walk-forward tester and its folders |
+Why: 17.4's tester and Loop page, each property its tests hold stated on the check that holds it.
+
 ### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - the ledger's point-in-time check
 Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 Was:

@@ -699,7 +699,61 @@ public static class SchemaMigrations
         new Migration(76, "create kept_bar", CreateKeptBar),
         new Migration(77, "create setup and setup_night", CreateLedger),
         new Migration(78, "create filed_fact, filed_fact_pull, filing_day and ledger_summary, and add setup's business readings", CreateFiledFacts),
+        new Migration(79, "create loop_run, loop_proposal and loop_test", CreateLoopTests),
     ];
+
+    // The walk-forward tester's record: one row a run on an index, one a proposal it tested with its verdict, and one a
+    // proposal's test year with the setting its fold chose and each side's units and total edge after costs.
+    // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
+    const string CreateLoopTests = @"
+        CREATE TABLE loop_run (
+            run_id      TEXT    NOT NULL PRIMARY KEY,
+            month       TEXT    NOT NULL,
+            index_code  TEXT    NOT NULL,
+            through     TEXT    NOT NULL,
+            started_at  TEXT    NOT NULL,
+            ended_at    TEXT    NOT NULL,
+            folds       INTEGER NOT NULL
+        ) STRICT;
+
+        CREATE TABLE loop_proposal (
+            run_id         TEXT    NOT NULL,
+            index_code     TEXT    NOT NULL,
+            family         TEXT    NOT NULL,
+            proposal       TEXT    NOT NULL,
+            words          TEXT,
+            current_words  TEXT    NOT NULL,
+            unit           TEXT    NOT NULL,
+            units          INTEGER NOT NULL,
+            blocks         INTEGER NOT NULL,
+            adjusted       REAL,
+            gate           INTEGER NOT NULL,
+            stable         INTEGER NOT NULL,
+            counted        INTEGER NOT NULL,
+            better         INTEGER NOT NULL,
+            trimmed        REAL,
+            counts         INTEGER NOT NULL,
+            detectable     REAL,
+            stable_folds   INTEGER NOT NULL,
+            passed         INTEGER NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, proposal)
+        ) STRICT;
+
+        CREATE TABLE loop_test (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            proposal        TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            complete        INTEGER NOT NULL,
+            chosen          TEXT,
+            current_units   INTEGER NOT NULL,
+            proposed_units  INTEGER NOT NULL,
+            current_total   REAL    NOT NULL,
+            proposed_total  REAL    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, proposal, year)
+        ) STRICT;
+    ";
 
     // The SEC's facts as first filed, one row a filer, concept and period, which the night's filings refresh and the
     // whole refresh write and the ledger reads; one row a filer each time its facts were asked for; one row a day of

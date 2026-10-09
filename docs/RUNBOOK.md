@@ -745,6 +745,19 @@ dotnet run --project src/EquityBrief.Worker -- filings --whole
 
 It records one run log row under `filings-whole`. Run without `--whole`, `filings` runs the night's refresh by hand over the three indices' members. The ledger's business readings read the facts filed before each setup's session (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session), so build the ledger's history after the whole refresh.
 
+### The walk-forward tester and the Loop page
+
+From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, one index a run:
+
+```
+dotnet run --project src/EquityBrief.Worker -- loop-test --index MID
+dotnet run --project src/EquityBrief.Worker -- loop-test --index SML --month 2026-10
+```
+
+Each test year from 2022 is a fold: the procedure, the breakout's or the drift's grid or the sector heavyweights' six settings in either design, chooses a setting from the trades that ended before the year began, with the family floors in proportion to those years, and the choice is scored on the year against the index's rule today (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year). The proposals for one rule are judged together by the gate's step-down, and each by its three screens (see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs). A run reads the pulled history as the sweeps read it, takes about a minute an index on this machine, makes no request, and writes `loop_run`, `loop_proposal` and `loop_test` in one transaction under the drain's lock; it refuses to start inside the night's window or while a night holds the store. `--month` names the month the run is for, the run's own month where it is left out, and `--print` prints each proposal's verdict and its test years and writes nothing. The pullback's searches run for a time rather than over a set of tries, so they are not run inside a fold; the pullback's first proposals come from the engines.
+
+The Loop page under Universe draws the newest run for the index and month chosen: each family's rule today in the words its run stored, and each proposal with its change or that it proposes none, its four parts each with its figure, its test years with the setting each fold chose, the difference the gate detects four times in five, and how many folds chose within a grid step of it. Nothing is applied from the page: approval comes with 17.9.
+
 ### The account and the trades taken from a card
 
 A pick's card sizes its plan from three settings kept on the Account page, reached from the masthead: the account's size, the risk a trade in per cent and the position cap as a share of the account, a fifth where none is entered (see: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none). The page writes them whole to `account.json` under the data root, beside the store and as untracked as it, by writing a file beside it and moving it into place, so a save that fails leaves the settings as they were (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold). Nothing else holds them: no store row, log line, run log row or exported report. Deleting the file unsets them, and every card then draws its plan in prices and risks with a line linking the page; a file that cannot be read is read the same way.
