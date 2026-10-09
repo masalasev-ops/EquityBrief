@@ -238,9 +238,10 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
                         ["properties"] = new JsonObject
                         {
                             ["sentence"] = new JsonObject { ["type"] = "string", ["description"] = "one sentence of the section, written without a document marker" },
-                            ["document"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document the sentence rests on: 1 for [D1], 2 for [D2]" },
+                            ["document"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document the sentence rests on: 1 for [D1], 2 for [D2], or 0 where it rests on figures listed under Facts alone" },
+                            ["facts"] = new JsonObject { ["type"] = "boolean", ["description"] = "true where the sentence states figures listed under Facts, which ends it with [N]" },
                         },
-                        ["required"] = new JsonArray("sentence", "document"),
+                        ["required"] = new JsonArray("sentence", "document", "facts"),
                         ["additionalProperties"] = false,
                     },
                 },
@@ -332,20 +333,30 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
                     .Where(one => one.ValueKind == JsonValueKind.Object && one.TryGetProperty("sentence", out var said) && said.ValueKind == JsonValueKind.String)
                     .Select(one => Cited(
                         AnswerText.Visible(Marker.Replace(one.GetProperty("sentence").GetString()!, string.Empty)),
-                        one.TryGetProperty("document", out var cited) && cited.ValueKind == JsonValueKind.Number ? cited.GetInt32() : null))
+                        one.TryGetProperty("document", out var cited) && cited.ValueKind == JsonValueKind.Number ? cited.GetInt32() : null,
+                        one.TryGetProperty("facts", out var stated) && stated.ValueKind == JsonValueKind.True))
                     .Where(sentence => sentence.Length > 0)))
                 .Where(paragraph => paragraph.Length > 0));
         }
     }
 
-    static string Cited(string sentence, int? document)
+    // A sentence's marks before its closing stop: the document's where it names one above nothing, and [N] where it
+    // states figures listed under Facts or names no document.
+    static string Cited(string sentence, int? document, bool facts = false)
     {
-        if (sentence.Length == 0 || document is not { } number)
+        if (sentence.Length == 0 || (document is null && !facts))
         {
             return sentence;
         }
 
-        var marker = " [D" + number.ToString(CultureInfo.InvariantCulture) + "]";
+        var marker = (document is > 0 and var number ? " [D" + number.ToString(CultureInfo.InvariantCulture) + "]" : string.Empty)
+            + (facts || document is 0 ? " " + EquityBrief.Core.Research.ClaimRules.NightMark : string.Empty);
+
+        if (marker.Length == 0)
+        {
+            return sentence;
+        }
+
         var end = sentence.Length;
 
         while (end > 0 && sentence[end - 1] is '"' or '\'' or ')' or '”' or '’')

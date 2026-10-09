@@ -191,16 +191,27 @@ public class ModelProfilesTests
         var listed = SectionPrompt.PaidRequest(settings.Identity, "KEYS", "The short version", [], [new PromptDocument("a-document", "A release", null, "The release's text.")]);
 
         // Where documents are listed: the answer's shape, paragraphs of sentences, each sentence with the
-        // number of the document it rests on, both required.
+        // number of the document it rests on and whether it states figures listed under Facts, all required.
         using (var sent = JsonDocument.Parse(AnthropicMessagesFeed.Body(listed, settings)))
         {
             var format = sent.RootElement.GetProperty(AnthropicMessagesFeed.OutputConfigField).GetProperty("format");
             var sentence = format.GetProperty("schema").GetProperty("properties").GetProperty("paragraphs").GetProperty("items").GetProperty("items");
 
             Assert.Equal("json_schema", format.GetProperty("type").GetString());
-            Assert.Equal(["sentence", "document"], sentence.GetProperty("required").EnumerateArray().Select(field => field.GetString()!).ToArray());
+            Assert.Equal(["sentence", "document", "facts"], sentence.GetProperty("required").EnumerateArray().Select(field => field.GetString()!).ToArray());
             Assert.Equal("integer", sentence.GetProperty("properties").GetProperty("document").GetProperty("type").GetString());
+            Assert.Equal("boolean", sentence.GetProperty("properties").GetProperty("facts").GetProperty("type").GetString());
         }
+
+        // A sentence stating the night's figures ends on [N], beside its document's marker or alone where it names
+        // document 0, and one naming a document alone ends on that document's marker.
+        // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+        Assert.Equal(
+            "The close was 205.15 [N]. Revenue was $67.2 billion [D2] [N]. It sells fuel [D1].",
+            AnthropicMessagesFeed.FromSentences(
+                "{\"paragraphs\":[[{\"sentence\":\"The close was 205.15.\",\"document\":0,\"facts\":true}," +
+                "{\"sentence\":\"Revenue was $67.2 billion.\",\"document\":2,\"facts\":true}," +
+                "{\"sentence\":\"It sells fuel.\",\"document\":1,\"facts\":false}]]}"));
 
         // Where none is listed there is nothing to name, and the answer is asked for as prose.
         using (var plain = JsonDocument.Parse(AnthropicMessagesFeed.Body(ResearchModelFeedTests.Recorded(settings), settings)))
