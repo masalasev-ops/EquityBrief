@@ -513,7 +513,8 @@ public sealed record DecisionCardRow(
     int? BookHoldings = null,
     string? Hits = null,
     int? ScoreRank = null,
-    string? Similar = null);
+    string? Similar = null,
+    string? Approved = null);
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -3322,7 +3323,7 @@ public sealed partial class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -3390,7 +3391,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(16) ? null : reader.GetInt32(16),
                 reader.IsDBNull(17) ? null : reader.GetString(17),
                 reader.IsDBNull(18) ? null : reader.GetInt32(18),
-                reader.IsDBNull(19) ? null : reader.GetString(19)));
+                reader.IsDBNull(19) ? null : reader.GetString(19),
+                reader.IsDBNull(20) ? null : reader.GetString(20)));
         }
 
         return rows;

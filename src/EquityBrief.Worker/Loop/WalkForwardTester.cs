@@ -56,6 +56,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.LoopModel, Touch.Insert),
             new StoreTouch(Store.LoopReference, Touch.Insert),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -193,24 +194,40 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
+        // Each family is tested against the rule as it stands: on the S&P 400 or 600 at the setting an approval stored
+        // for it where one did, and at its provisional setting otherwise; on the S&P 500, whose approvals are refused, at
+        // its own. A family an approval set hooks on is not searched on its grid, whose walk reads no hook.
+        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        var standing = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StandingAsync(databaseFile, index, cancellation);
+
         if (!large)
         {
-            proposals.Add(LoopProcedures.Swing(read, BreakoutRule.Name, output.WriteLine));
-            proposals.Add(LoopProcedures.Swing(read, DriftRule.Name, output.WriteLine));
+            foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
+            {
+                if (standing.TryGetValue(family, out var stood) && stood.Hooks.Count > 0)
+                {
+                    output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {stood.Words()} and the grid's walk reads no hook");
+
+                    continue;
+                }
+
+                proposals.Add(LoopProcedures.Swing(read, family, output.WriteLine, standing.GetValueOrDefault(family)));
+            }
+
             proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
         }
 
+        var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
         var rules = new List<RuleWalk>();
 
         if (!large)
         {
-            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine));
+            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings));
         }
 
-        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large));
-        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large));
+        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings));
+        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings));
 
-        var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
         var scores = new List<FittedScore>();
 
         foreach (var rule in rules)
@@ -264,6 +281,15 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             : FormattableString.Invariant($"{Verb}: run {runId}, {tested.Count(one => one.Passed)} of {tested.Count} proposal(s) passed, for {runMonth}"));
 
         return 0;
+    }
+
+    // The setting an approval stored for each family of an S&P 400 or 600, the newest a family.
+    static async Task<IReadOnlyDictionary<string, LoopChange>> StandingAsync(string databaseFile, string index, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await EquityBrief.Worker.Indices.IndexFamilies.StoredSettingsAsync(connection, index, cancellation);
     }
 
     // A family's finished setups on all three indices as the learned score learns on them, none on a store whose ledger

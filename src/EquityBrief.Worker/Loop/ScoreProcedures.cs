@@ -72,9 +72,7 @@ public static class ScoreProcedures
                     return null;
                 }
 
-                var hooks = RuleHooks.Of(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null));
-
-                return [.. rule.Hooked(hooks, ReadingsOf).Select(one => (one.Entry, one.Edge))];
+                return [.. rule.Hooked(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null), ReadingsOf).Select(one => (one.Entry, one.Edge))];
             }
 
             proposals.Add(new LoopProposalRead(

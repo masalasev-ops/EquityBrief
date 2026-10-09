@@ -27,7 +27,22 @@ public sealed record LoopProposalRow(
     double? Detectable,
     int StableFolds,
     bool Passed,
-    string? Finding = null);
+    string? Finding = null,
+    string? Change = null);
+
+// The operator's word on a proposal or on a restore as the read surface stored it, with what the apply step did with it
+// once it answered: the run, family and proposal, approved or declined, the reason given, when, the apply's outcome, its
+// words and when, none until it answers, and the blocks the proposal was tested over and its change.
+public sealed record LoopDecisionRow(string Run, string Family, string Proposal, string Decision, string? Reason, string DecidedAt, string? Outcome, string? Words, string? AppliedAt, int? Blocks, string? Change = null);
+
+// A setting an approval stored for a family on an index, a row a change: its id, family, words, when it was set and the
+// run and proposal it came from.
+public sealed record LoopSettingRow(long Id, string Family, string Words, string SetAt, string Run, string Proposal);
+
+// One period the live alarm read of a family's live rule: its first day, its units, their mean edge, the low it was read
+// against, whether it counted, stood under the low, the run of counted periods under it, whether the rule was flagged on
+// it, and the tester run whose reference it read.
+public sealed record LoopAlarmRow(string Family, DateOnly Period, int Units, double? Edge, double? Low, bool Counted, bool Under, int Streak, bool Flagged, string Reference);
 
 // One figure the autopsy stated of a family's finished trades in a run: the family, the figure, its value, the trades
 // it was read over and its words.

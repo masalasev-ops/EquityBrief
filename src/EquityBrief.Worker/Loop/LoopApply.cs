@@ -46,22 +46,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
 
     public const string Verb = "loop-apply";
 
-    // The proposal a restore's decision names, and the word its run carries in place of a tester run's.
-    public const string RestoreRun = "restore";
-
-    public static string RestoreProposal(long setting) => FormattableString.Invariant($"restore the setting before change {setting}");
-
-    // Why a change is not applied.
-    public const string LargeIndexRefused = "an S&P 500 rule's page is drawn by its family's own code, so an approved change there waits on the operator's ruling of how it reaches the page";
-
-    public const string BookRefused = "a sector heavyweights' book changes its setting only by a freeze, so an approved change to it is not applied";
-
     public const string NoChangeRefused = "the proposal states no change in the form an approval applies";
-
-    public const string FamilyRefused = "the family has no setting an approval applies";
-
-    // The swing families an approval changes on the S&P 400 and 600.
-    public static IReadOnlyList<string> Applies { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
 
     // Every approved decision the step has not answered, oldest first.
     const string Approved = @"
@@ -187,26 +172,16 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     // the setting it stands at; every other is refused with its reason.
     public static (bool Applied, string Words, LoopChange? Written) Answer(string run, string index, string family, string proposal, string? change, IReadOnlyList<(long Id, string Change)> standing)
     {
-        if (index == WalkForwardTester.LargeIndex)
+        if (LoopDecisions.Refusal(index, family) is { } refused)
         {
-            return (false, LargeIndexRefused, null);
-        }
-
-        if (family == HeavyweightRule.Name)
-        {
-            return (false, BookRefused, null);
-        }
-
-        if (!Applies.Contains(family, StringComparer.Ordinal))
-        {
-            return (false, FamilyRefused, null);
+            return (false, refused, null);
         }
 
         var current = standing.Count > 0 ? LoopChange.Read(standing[^1].Change) : null;
 
-        if (run == RestoreRun)
+        if (run == LoopDecisions.RestoreRun)
         {
-            var undone = standing.Select((row, at) => (row, at)).FirstOrDefault(one => RestoreProposal(one.row.Id) == proposal);
+            var undone = standing.Select((row, at) => (row, at)).FirstOrDefault(one => LoopDecisions.RestoreProposal(one.row.Id) == proposal);
 
             if (undone.row.Change is null)
             {

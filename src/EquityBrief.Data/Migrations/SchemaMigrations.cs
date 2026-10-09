@@ -703,21 +703,23 @@ public static class SchemaMigrations
         new Migration(80, "add family_trade.exit, index_rule_trade.exit and loop_proposal.finding, and create loop_finding", CreateLoopFindings),
         new Migration(81, "create loop_reading", CreateLoopReadings),
         new Migration(82, "create loop_model, and add decision_card's score_rank and similar", CreateLoopModels),
-        new Migration(83, "add loop_proposal.change and index_family_trade's exit and risk_moves, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
+        new Migration(83, "add loop_proposal.change, index_family_trade's exit and risk_moves and decision_card.approved, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
     ];
 
     // What an approval reads and writes, and the alarm: the change each proposal makes in the form an approval applies;
     // the rule today's trades over a run's test years, the alarm's reference; the operator's decisions, each once a
     // proposal of a run; what the apply step did with each; the S&P 400's and 600's provisional settings an approval
     // stands from, a row a change and never edited; each live rule's periods, each written once every trade that ended in
-    // it holds its edge and read against the reference of the tester run it names; and the exit an index page's trade is
-    // walked under with its stop's distance in typical moves.
+    // it holds its edge and read against the reference of the tester run it names; the exit an index page's trade is
+    // walked under with its stop's distance in typical moves; and the change a card's rule stands at where an approval
+    // set one.
     // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
     // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
     const string CreateLoopApprovals = @"
         ALTER TABLE loop_proposal ADD COLUMN change TEXT;
         ALTER TABLE index_family_trade ADD COLUMN exit INTEGER;
         ALTER TABLE index_family_trade ADD COLUMN risk_moves REAL;
+        ALTER TABLE decision_card ADD COLUMN approved TEXT;
 
         CREATE TABLE loop_reference (
             run_id      TEXT    NOT NULL,

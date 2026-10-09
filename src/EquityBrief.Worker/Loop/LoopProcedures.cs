@@ -119,15 +119,19 @@ public static class LoopProcedures
         return count > 0 ? sum / count : null;
     }
 
-    // The breakout's or the drift's grid on an index as a procedure.
-    public static LoopProposalRead Swing(LoopRead read, string family, Action<string> progress)
+    // The breakout's or the drift's grid on an index as a procedure, against the rule as it stands: its provisional
+    // setting, or the setting and stop floor an approval stored for it.
+    public static LoopProposalRead Swing(LoopRead read, string family, Action<string> progress, LoopChange? standing = null)
     {
         var drift = family == DriftRule.Name;
         var floor = drift ? DriftStopFloor : 0;
+        var currentFloor = standing?.StopFloor ?? 0;
         var lastTwo = drift && read.Index == IndexSweepRunner.DriftLastTwoYearsIndex;
         var adapter = FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, floor);
-        var currentAdapter = floor > 0 ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar) : adapter;
-        int[] provisional = family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
+        var currentAdapter = currentFloor == floor ? adapter
+            : currentFloor > 0 ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, currentFloor)
+            : FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar);
+        int[] provisional = standing?.Places is { } places ? [.. places] : family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
         var settings = adapter.Grid.Settings;
         var walked = new IReadOnlyList<Walked>[settings.Count];
 
@@ -163,14 +167,16 @@ public static class LoopProcedures
 
         static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<Walked> trades) => [.. trades.Select(one => (one.Entry, one.Edge))];
 
-        var floorWords = floor > 0 ? FormattableString.Invariant($", its stop held at least {floor:0.##} typical move under the buy") : string.Empty;
+        static string FloorWords(double held) => held > 0 ? FormattableString.Invariant($", its stop held at least {held:0.##} typical move under the buy") : string.Empty;
+
+        var floorWords = FloorWords(floor);
         var cap = walked.SelectMany(one => one).Concat(current).Select(one => one.Trade.Listing.Cap).DefaultIfEmpty(0).Max();
 
         return new LoopProposalRead(
             family,
             Grid,
             proposal is null ? null : RuleReplay.SwingWords(family, proposal) + floorWords,
-            RuleReplay.SwingWords(family, provisional),
+            RuleReplay.SwingWords(family, provisional) + FloorWords(currentFloor),
             Risks,
             cap,
             [.. chosen.Select(one => (one.Fold, one.Setting is null ? null : RuleReplay.SwingWords(family, one.Setting) + floorWords))],

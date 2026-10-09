@@ -83,11 +83,11 @@ public static class LiveAlarm
         return means[(int)Math.Ceiling(Quantile * Draws) - 1];
     }
 
-    // Every period read in order, each counted where it holds the fewest units or more and its reference gives a low.
-    public static IReadOnlyList<AlarmPeriod> Read(IReadOnlyList<(DateOnly Start, IReadOnlyList<double> Edges)> periods, IReadOnlyList<AlarmUnit> reference)
+    // Every period read in order, each counted where it holds the fewest units or more and its reference gives a low, the
+    // run of counted periods under the low carried on from the period read before them.
+    public static IReadOnlyList<AlarmPeriod> Read(IReadOnlyList<(DateOnly Start, IReadOnlyList<double> Edges)> periods, IReadOnlyList<AlarmUnit> reference, int streak = 0)
     {
         var read = new List<AlarmPeriod>();
-        var streak = 0;
 
         foreach (var (start, edges) in periods.OrderBy(period => period.Start))
         {

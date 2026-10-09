@@ -615,15 +615,23 @@ public sealed class IndexFamilies : IComponent
         WHERE s.index_code = $index AND s.id = (SELECT MAX(t.id) FROM provisional_setting t WHERE t.index_code = s.index_code AND t.family = s.family);
     ";
 
-    public static async Task<IReadOnlyDictionary<string, LoopChange>> StoredSettingsAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    public static async Task<IReadOnlyDictionary<string, LoopChange>> StoredSettingsAsync(SqliteConnection connection, string index, CancellationToken cancellation, SqliteTransaction? transaction = null)
     {
         var stored = new Dictionary<string, LoopChange>(StringComparer.Ordinal);
 
-        await foreach (var row in RowsAsync(connection, StoredSettings, [("$index", index)], cancellation))
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = StoredSettings;
+        command.Parameters.AddWithValue("$index", index);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
         {
-            if (LoopChange.Read(row.GetString(1)) is { } setting)
+            if (LoopChange.Read(reader.GetString(1)) is { } setting)
             {
-                stored[row.GetString(0)] = setting;
+                stored[reader.GetString(0)] = setting;
             }
         }
 

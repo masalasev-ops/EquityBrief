@@ -204,9 +204,6 @@ public static class ExitProcedures
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var ended = new Dictionary<(int Name, int Session), (int Sessions, string End)>();
 
-        static SetupAnchor Anchor(FamilyListing listing) =>
-            new(DateOnly.MinValue, listing.Entry, listing.Stop, listing.Trails ? null : listing.Target, listing.Trails ? listing.Trail : null, listing.Cap, listing.Move > 0 ? (listing.Entry - listing.Stop) / listing.Move : null);
-
         (double? Result, int Sessions) Exit(FamilyListing listing)
         {
             if (exit is null)
@@ -218,26 +215,14 @@ public static class ExitProcedures
                 return walked;
             }
 
-            var outcome = ExitMenu.Replay(closes[listing.Name], listing.Bar, Anchor(listing), listing.Move, exit);
+            var outcome = Replayed(closes, listing, exit);
 
             ended[(listing.Name, listing.Session)] = (outcome.Sessions, outcome.End);
 
             return (outcome.Result, outcome.Sessions);
         }
 
-        double Benchmark(FamilyListing listing) =>
-            exit is null
-                ? adapter.Benchmark(listing)
-                : ExitMenu.Benchmark(
-                    closes,
-                    read.Members.Names[listing.Session],
-                    read.Members.Bars[listing.Session],
-                    (name, bar) => read.Series[name].Atr[bar],
-                    (listing.Entry - listing.Stop) / listing.Move,
-                    listing.Trails ? null : (listing.Target - listing.Entry) / (listing.Entry - listing.Stop),
-                    listing.Trails ? listing.Trail / (listing.Entry - listing.Stop) : null,
-                    listing.Cap,
-                    exit).Average;
+        double Benchmark(FamilyListing listing) => exit is null ? adapter.Benchmark(listing) : MenuBenchmark(read, closes, listing, exit);
 
         int YearOf(int session) => read.Calendar[session].Year - SweepColumns.FirstScored.Year;
 
@@ -257,6 +242,28 @@ public static class ExitProcedures
             }),
         ];
     }
+
+    // A listing's trade replayed under an exit of the menu from its plan's own prices.
+    public static SetupOutcome Replayed(double[][] closes, FamilyListing listing, ExitChoice exit) =>
+        ExitMenu.Replay(
+            closes[listing.Name],
+            listing.Bar,
+            new SetupAnchor(DateOnly.MinValue, listing.Entry, listing.Stop, listing.Trails ? null : listing.Target, listing.Trails ? listing.Trail : null, listing.Cap, listing.Move > 0 ? (listing.Entry - listing.Stop) / listing.Move : null),
+            listing.Move,
+            exit);
+
+    // The same plan entered on every member that session under the same exit of the menu.
+    public static double MenuBenchmark(LoopRead read, double[][] closes, FamilyListing listing, ExitChoice exit) =>
+        ExitMenu.Benchmark(
+            closes,
+            read.Members.Names[listing.Session],
+            read.Members.Bars[listing.Session],
+            (name, bar) => read.Series[name].Atr[bar],
+            (listing.Entry - listing.Stop) / listing.Move,
+            listing.Trails ? null : (listing.Target - listing.Entry) / (listing.Entry - listing.Stop),
+            listing.Trails ? listing.Trail / (listing.Entry - listing.Stop) : null,
+            listing.Cap,
+            exit).Average;
 
     // A finished trade's closes from its buy to its end, its stop read as where it ended where the walk named none.
     static TradePath Path(LoopRead read, double[][] closes, Walked trade)
