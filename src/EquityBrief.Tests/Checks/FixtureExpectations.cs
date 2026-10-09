@@ -125,6 +125,8 @@ public partial class FixtureExpectations
             .. AutopsyClaims,
             // 17.6, winners against losers: section 17's two rows and section 18's one.
             .. ConditionClaims,
+            // 17.7, the learned score: section 17's three rows.
+            .. ScoreClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

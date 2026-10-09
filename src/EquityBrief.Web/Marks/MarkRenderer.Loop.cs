@@ -77,6 +77,46 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
+    // A family's learned score in the run, drawn only where the run brought the score's proposals for it: its weight in
+    // words with its hash, the words saying it has not passed the tester on this index until one of its proposals did,
+    // and from then the rank each of tonight's cards carries under it, read off the cards and never worked out here.
+    // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    public string LoopScore(string family, IReadOnlyList<LoopProposalRow> proposals, LoopModelRow? model, IReadOnlyList<LoopRankRow> ranks)
+    {
+        var scored = proposals.Where(proposal => proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)).ToArray();
+
+        if (scored.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var validated = scored.Any(proposal => proposal.Passed);
+        var html = new StringBuilder();
+
+        html.Append(Invariant, $"<div class=\"loop-score\" data-family=\"{Escaped(family)}\" data-validated=\"{(validated ? 1 : 0)}\" data-hash=\"{Escaped(model?.Hash ?? "none")}\">");
+        html.Append(model is { } held
+            ? Formatted($"<p class=\"loop-model\" data-setups=\"{held.Setups}\"><b>The learned score.</b> {Escaped(Capitalised(held.Words))}; {Escaped(held.Hash)}, fitted on the setups that ended before {held.LearnedBefore.ToString("yyyy-MM-dd", Invariant)}.</p>")
+            : "<p class=\"loop-model degraded\" data-setups=\"none\"><b>The learned score.</b> No score was fitted on all finished data in this run: too few of the ledger's finished setups held every reading it weighs.</p>");
+
+        if (!validated)
+        {
+            html.Append(Invariant, $"<p class=\"loop-rank degraded\" data-rank=\"none\">{Escaped(EquityBrief.Core.Cards.CardSimilar.NotValidated)}.</p></div>");
+
+            return html.ToString();
+        }
+
+        var ranked = ranks.Where(rank => rank.Rank is not null).ToArray();
+
+        html.Append(ranked.Length == 0
+            ? "<p class=\"loop-rank\" data-ranks=\"0\">Passed the tester on this index in this run; no card tonight carries a rank under it.</p>"
+            : Formatted($"<p class=\"loop-rank\" data-ranks=\"{ranked.Length}\">Passed the tester on this index in this run; tonight's cards rank at ")
+                + string.Join(", ", ranked.Select(rank => Formatted($"<span data-ticker=\"{Escaped(rank.Ticker)}\" data-rank=\"{rank.Rank}\">{Escaped(rank.Ticker)}, hundredth {rank.Rank}</span>")))
+                + ".</p>");
+        html.Append("</div>");
+
+        return html.ToString();
+    }
+
     // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect.
     public string LoopProposal(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years)
     {
@@ -130,7 +170,9 @@ public sealed partial class MarkRenderer
         html.Append(proposal.Detectable is { } detectable
             ? Formatted($"<p class=\"loop-power\" data-detectable=\"{detectable.ToString("R", Invariant)}\">At this bar the gate detects a difference of about {LoopFigure(proposal.Unit, detectable)} {(book ? "a month" : "a trade")} four times in five, read from the blocks' own scatter; a smaller true difference passes less often than that.</p>")
             : "<p class=\"loop-power degraded\" data-detectable=\"none\">The blocks are too few for the gate's power to be read.</p>");
-        html.Append(Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds chose {(book ? "the same setting as" : "within a grid step of")} the proposal on their own years before.</p>"));
+        html.Append(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)
+            ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds held enough finished setups to fit the score on their own years before.</p>")
+            : Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds chose {(book ? "the same setting as" : "within a grid step of")} the proposal on their own years before.</p>"));
         html.Append("</div>");
 
         return html.ToString();

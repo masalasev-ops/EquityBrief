@@ -2574,7 +2574,9 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals,
         IReadOnlyList<EquityBrief.Core.Loop.LoopTestRow> tests,
         IReadOnlyList<EquityBrief.Core.Loop.LoopFindingRow>? findings = null,
-        IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null)
+        IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopModelRow>? models = null,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null)
     {
         static string Named(string word) => word switch
         {
@@ -2628,6 +2630,7 @@ public sealed class SinglePageApp : IComponent
             }
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
+            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)]));
 
             if (own.Length > 0)
             {

@@ -60,10 +60,15 @@ public sealed record CardOperatorRecordView(string Unit, int Won, int Lost, int 
 // how many picks, won, lost and ended, and the average once enough have ended.
 public sealed record CardSameNightsView(int Nights, int Listed, int Won, int Lost, int Ended, double? Average);
 
+// The learned score's part of a pick's card as the night stored it: the pick's rank among the setups the score learned on
+// on the card's index, none until the score passed the tester there, and the setups like the pick under its rule.
+public sealed record CardScoreView(int? Rank, EquityBrief.Core.Cards.CardSimilar Similar);
+
 // A pick's card on a night: the index, the night, the family that listed it and the stock, the rule the card names, the
 // plan's prices, the checklist's lines and the rule's record, none where the rule has not been replayed; and, where the
 // page draws them, the plan in the operator's money or that the account is not set, the rule's management of the trade,
-// the trades taken from it and whether its presses are drawn, which an export never does.
+// the trades taken from it and whether its presses are drawn, which an export never does; and for a family a learned
+// score reaches, the score's part.
 public sealed record DecisionCardView(
     string Index,
     DateOnly Night,
@@ -81,7 +86,8 @@ public sealed record DecisionCardView(
     IReadOnlyList<CardTakenView>? Taken = null,
     bool Pressable = false,
     CardHitsView? Hits = null,
-    CardOperatorRecordView? OperatorRecord = null)
+    CardOperatorRecordView? OperatorRecord = null,
+    CardScoreView? Score = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -126,6 +132,7 @@ public sealed partial class MarkRenderer
         body.Append(PlanInMoney(card));
         body.Append(Hits(card));
         body.Append(RuleRecord(card));
+        body.Append(ScorePart(card));
         body.Append(OperatorRecord(card));
         body.Append(Taken(card));
         body.Append("</div>");
@@ -336,6 +343,51 @@ public sealed partial class MarkRenderer
             : Formatted($" {rule.Ended} of {mine.Minimum} ended: the average is drawn once {mine.Minimum} have.");
 
         return Formatted($"<p class=\"card-same-nights\" data-nights=\"{rule.Nights}\" data-listed=\"{rule.Listed}\" data-average=\"{(rule.Average is { } shown ? shown.ToString("0.00", Invariant) : "none")}\">The rule's own {rule.Listed} {picks} on the same {rule.Nights} {nights}, each bought at the plan's buy: {counts}.{average}</p>");
+    }
+
+    // The learned score's part beneath the rule's record, under the rule's heading and never as the stock's own: the pick's
+    // rank where the score passed the walk-forward tester on the card's index and the words saying it has not where it has
+    // not; and the setups like the pick under the rule with their mean edge, its interval and the rule's own mean, saying
+    // where the interval holds the rule's mean that the part is not told from the rule's record, or why none were matched.
+    // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
+    static string ScorePart(DecisionCardView card)
+    {
+        if (card.Score is not { } score)
+        {
+            return string.Empty;
+        }
+
+        var similar = score.Similar;
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<section class=\"card-score\" data-rank=\"{(score.Rank is { } held ? held.ToString(Invariant) : "none")}\">");
+        body.Append("<h5>Setups like this one</h5>");
+        body.Append(Invariant, $"<p class=\"card-caution\">{Escaped(EquityBrief.Core.Cards.CardSimilar.Heading(new IndexMembers(card.Index, 0).Named))}</p>");
+        body.Append(score.Rank is { } rank
+            ? Formatted($"<p class=\"card-rank\" data-rank=\"{rank}\">The learned score, which passed the walk-forward tester on this index, places it at hundredth {rank} of the setups it learned on here.</p>")
+            : $"<p class=\"card-rank degraded\" data-rank=\"none\">{Escaped(EquityBrief.Core.Cards.CardSimilar.NotValidated)}.</p>");
+
+        if (similar.Unmatched is { } why || similar.Count is not { } count || similar.Mean is not { } mean || similar.Low is not { } low || similar.High is not { } high || similar.RuleMean is not { } ruleMean)
+        {
+            body.Append(Invariant, $"<p class=\"degraded\" data-similar=\"none\">No setups matched: {Escaped(similar.Unmatched ?? "the part holds no figure")}.</p></section>");
+
+            return body.ToString();
+        }
+
+        body.Append("<dl class=\"card-figures\">");
+        body.Append(Formatted($"<dt>Matched</dt><dd data-similar=\"{count}\" data-distance=\"{(similar.Distance ?? 0).ToString("R", Invariant)}\">{count:N0} of the rule's {similar.RuleSetups ?? 0:N0} finished setups on this index, the nearest on {Escaped(string.Join(", ", similar.Readings ?? []))} by their places among them, a median distance of {(similar.Distance ?? 0).ToString("0.000", Invariant)}</dd>"));
+        body.Append(Formatted($"<dt>Their edge</dt><dd data-mean=\"{mean.ToString("R", Invariant)}\" data-low=\"{low.ToString("R", Invariant)}\" data-high=\"{high.ToString("R", Invariant)}\">a mean {mean.ToString("+0.00;-0.00;0.00", Invariant)} of the risk against the same plan on every member that session, before costs, ninety per cent between {low.ToString("+0.00;-0.00;0.00", Invariant)} and {high.ToString("+0.00;-0.00;0.00", Invariant)}</dd>"));
+        body.Append(Formatted($"<dt>The rule's</dt><dd data-rule-mean=\"{ruleMean.ToString("R", Invariant)}\">a mean {ruleMean.ToString("+0.00;-0.00;0.00", Invariant)} over every one of them</dd>"));
+        body.Append("</dl>");
+
+        if (!similar.Distinguishable)
+        {
+            body.Append(Invariant, $"<p class=\"card-verdict\" data-distinguishable=\"false\">{Escaped(EquityBrief.Core.Cards.CardSimilar.NotDistinguishable)}</p>");
+        }
+
+        body.Append("</section>");
+
+        return body.ToString();
     }
 
     static string RuleRecord(DecisionCardView card)

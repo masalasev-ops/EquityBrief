@@ -30,7 +30,7 @@ public sealed record ShortlistOutcome(int MembersConsidered, int RowsWritten, in
 // decision, which is contradiction L's resolution: what it reads is levels,
 // indicators, ladders, the calendar, the facts file and the bar store, being
 // tonight's close and today's volume, and four of the six reasons need those.
-// see: Tonight's list is built from stated conditions, not a score
+// see: Tonight's list is built from stated conditions, and a score orders it only as a rule's setting
 public sealed class ShortlistBuilder : IComponent
 {
     public static ComponentAccess Access => new(

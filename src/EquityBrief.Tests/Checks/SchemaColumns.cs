@@ -80,6 +80,8 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Loop tests"),
             CheckReach.Key(Scope.StoresTable, "Loop findings"),
             CheckReach.Key(Scope.StoresTable, "Loop readings"),
+            // 17.7, every score the tester fits.
+            CheckReach.Key(Scope.StoresTable, "Loop models"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

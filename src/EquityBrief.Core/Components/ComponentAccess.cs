@@ -87,6 +87,7 @@ public enum Store
     LoopTest,
     LoopFinding,
     LoopReading,
+    LoopModel,
     TakenTrade,
     TakenRecord,
     DividendReading,
