@@ -41697,7 +41697,13 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             correction replaced: predicted red at the three new tests and green at the four existing plan tests. Result:
             the three red and the four green, as predicted, made on this branch and reverted before anything was
             committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c1cf3da6, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2120 of 2120 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2120 of 2120 tests ran.
 Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, merging after the night of 2026-10-09 is read;
             in progress, this correction; next, the rest of Part A of the phase 18 plan the operator approved on
             2026-10-09, each its own pull request under the checkpoint that built the code: 6.1 the fact strip's high and
