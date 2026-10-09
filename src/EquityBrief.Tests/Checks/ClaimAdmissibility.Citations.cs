@@ -108,6 +108,28 @@ public partial class ClaimAdmissibility
     }
 
     [Fact]
+    public void ASectionCitingTheNightsFiguresListsThemAmongItsSourcesLinkedToTheCardDrawingThem()
+    {
+        var marks = new EquityBrief.Web.Marks.MarkRenderer();
+        var document = new EquityBrief.Web.Marks.SourceCell("r", "Results release", "https://www.sec.gov/Archives/edgar/data/93410/release.htm", new DateOnly(2026, 7, 31));
+
+        var cites = marks.WrittenSection(
+            "CVX",
+            new EquityBrief.Web.Marks.WrittenCell("The short version", "The close was 205.15 [N]. It sells fuel [D1].", new DateOnly(2026, 10, 9), "a writer", ["r"]),
+            [document]);
+
+        Assert.Contains("<ol class=\"section-sources\" data-cites=\"1\"><li data-marker=\"N\">[N] <a href=\"#numbers\">the figures the night stored</a>", cites, StringComparison.Ordinal);
+        Assert.Contains("<li data-marker=\"D1\" data-document=\"r\">[D1] ", cites, StringComparison.Ordinal);
+
+        // A section citing [N] alone still lists it, and one citing documents alone lists no [N].
+        Assert.Contains("data-marker=\"N\"", marks.WrittenSection("CVX", new("The short version", "The close was 205.15 [N].", new DateOnly(2026, 10, 9), "a writer", []), []), StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "data-marker=\"N\"",
+            marks.WrittenSection("CVX", new("The short version", "It sells fuel [D1].", new DateOnly(2026, 10, 9), "a writer", ["r"]), [document]),
+            StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void AnAnswerWrittenAsJsonIsRefusedInEverySectionAndProseOpeningOnAMarkIsNot()
     {
         var document = Release("text");
