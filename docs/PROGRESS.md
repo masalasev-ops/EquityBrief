@@ -41375,3 +41375,28 @@ Mutated:    the rule, stated before the run: the one property the correction add
             anything was committed, and the test green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
 Carried:    none.
+
+### 17.3 - the history build and the point-in-time check run on each index from main's build after the merges of 17.3 to 17.8   2026-10-09
+
+Ran:        from main at 5277a7fa, the merge of PR 413, with no night, queue, report pass, labeller or store copy running:
+            `filings --whole`, 2,104 filers asked and 599,798 facts stored in 1,414 seconds, free requests to the SEC's
+            archive; then `tools/ledger-build --index GSPC` from 14:38:57 to 14:54:41 UTC, its clean copy of 5277a7fa
+            built under the data root, and from that copy's worker the S&P 400 from 14:54:42 to 15:05:39 and the S&P 600
+            from 15:05:39 to 15:22:17, each over the 1,950 sessions from 2019-01-02 to 2026-10-05. No provider request
+            and no model call.
+Setups:     171,950, all from the history. The S&P 500 69,276, 9,258 passing the live rule: pullbacks 30,712, breakouts
+            22,297, drifts 5,927 and the heavyweights' 10,340. The S&P 400 43,509, 4,799 passing: pullbacks 23,465,
+            breakouts 15,649 and drifts 4,395. The S&P 600 59,165, 6,214 passing: pullbacks 33,048, breakouts 20,343
+            and drifts 5,774.
+Size:       the setups' stored values 93.6 MB and the 17,644 setup nights' 0.9 MB, 94.5 MB against the budget of 0.5 GB,
+            so no floor was raised; the store's file 1.84 GB after the build and the facts.
+Checked:    `ledger-check` on each index, 200 history setups an index sampled 25 a year by seed 17, each rebuilt from the
+            history cut at its session: 478 differences on the S&P 500, 558 on the S&P 400 and 551 on the S&P 600, each
+            run ending non-zero. 1,571 of them are the six readings the build takes from a family's own gates, a
+            pullback's reward to risk, freshness and band strength, a breakout's volume multiple and range ratio and a
+            drift's freshness, volume multiple and reaction, which the rebuild does not read and states as none. The
+            other 16 differ in the sixth significant figure, the depth, the gap down, the tightness and the RSI's two on
+            five S&P 500 setups of 2019 to 2021 and one S&P 600 setup of 2025-01-31.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    a 17.3 correction of its own: the check rebuilds the six family readings or leaves them out by name, and the
+            sixteen differences are traced to their source before the check is held to them or to a tolerance.
