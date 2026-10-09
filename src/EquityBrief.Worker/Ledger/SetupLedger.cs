@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
@@ -61,6 +62,7 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
@@ -231,6 +233,13 @@ public sealed class SetupLedger : IComponent
         var open = await OpenAsync(connection, index, night, cancellation);
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
 
+        // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
+        // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
+        var since = open.Where(setup => setup.Family == HeavyweightRule.Name).Select(setup => setup.Session).DefaultIfEmpty(night).Min();
+        var rebalances = index == IndexFamilies.LargeIndex
+            ? await HeavyweightCutsAsync(connection, since, night, cancellation)
+            : new Dictionary<DateOnly, IReadOnlyList<HeavyweightCut>>();
+
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         try
@@ -248,7 +257,8 @@ public sealed class SetupLedger : IComponent
             {
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, new LedgerContext(income, sectors, highs, lows, facts));
+                var context = new LedgerContext(income, sectors, highs, lows, facts);
+                var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
 
                 foreach (var family in families)
                 {
@@ -274,7 +284,30 @@ public sealed class SetupLedger : IComponent
                     passes += family.LivePasses;
                 }
 
-                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, cancellation);
+                // A rebalance night of the S&P 500's book: each member of each sector's size cut, its pick whether the
+                // book bought it, its cost a fraction of the buy, its path open and its benchmark the size cut's.
+                if (rebalances.TryGetValue(night, out var tonight))
+                {
+                    var heavyweights = LedgerSetups.Heavyweights(index, inputs.Series, closes, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context, tonight);
+
+                    foreach (var row in heavyweights.Rows)
+                    {
+                        var cost = costs.TryGetValue(row.Ticker, out var percent) ? percent / 100 : (double?)null;
+
+                        await InsertAsync(connection, transaction, row, row.LivePass, cost, (new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0)), inputs.Calendar, inputs.At, NightSource, cancellation);
+                    }
+
+                    await ExecuteAsync(connection, transaction, InsertNight,
+                    [
+                        ("$index", index), ("$family", heavyweights.Family), ("$session", Stamp(night)), ("$members", heavyweights.Members),
+                        ("$setups", heavyweights.Rows.Count), ("$live_passes", heavyweights.LivePasses), ("$source", NightSource),
+                    ], cancellation);
+
+                    setups += heavyweights.Rows.Count;
+                    passes += heavyweights.LivePasses;
+                }
+
+                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, rebalances, cancellation);
             }
 
             await transaction.CommitAsync(cancellation);
@@ -310,7 +343,15 @@ public sealed class SetupLedger : IComponent
 
     // The stored setups of the index not yet settled, each replayed again over the closes to the night and its benchmark
     // read again, and written where its path ended or its benchmark settled.
-    async Task<int> SettleAsync(SqliteConnection connection, SqliteTransaction transaction, string index, IReadOnlyList<OpenSetup> open, IndexNightInputs inputs, double[][] closes, CancellationToken cancellation)
+    async Task<int> SettleAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string index,
+        IReadOnlyList<OpenSetup> open,
+        IndexNightInputs inputs,
+        double[][] closes,
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        CancellationToken cancellation)
     {
         var closed = 0;
         var names = inputs.Series.Select((one, name) => (one.Name.Ticker, name)).ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
@@ -331,10 +372,24 @@ public sealed class SetupLedger : IComponent
                 continue;
             }
 
-            var move = inputs.Series[name].Atr[bar];
-            var anchor = setup.Anchor;
-            var plan = PlanOf(setup, move);
-            var (outcome, benchmark) = Outcome(closes, inputs, name, bar, anchor, plan);
+            (SetupOutcome Outcome, BenchmarkReading Benchmark) read;
+
+            if (setup.Family == HeavyweightRule.Name)
+            {
+                if (HeavyweightOutcome(setup, rebalances, inputs, closes, names, name, bar, at) is not { } heavyweight)
+                {
+                    continue;
+                }
+
+                read = heavyweight;
+            }
+            else
+            {
+                read = Outcome(closes, inputs, name, bar, setup.Anchor, PlanOf(setup, inputs.Series[name].Atr[bar]));
+            }
+
+            var (outcome, benchmark) = read;
+
             if (outcome.Result is null && !benchmark.Settled)
             {
                 continue;
@@ -348,6 +403,115 @@ public sealed class SetupLedger : IComponent
         }
 
         return closed;
+    }
+
+    // A heavyweights' setup's path to the night, read off the rebalances the book stored: sold at the first later one
+    // whose buys leave the stock out, the benchmark its sector's size cut on its own session over the same sessions;
+    // none where the book's rows of its own session are not held.
+    static (SetupOutcome Outcome, BenchmarkReading Benchmark)? HeavyweightOutcome(
+        OpenSetup setup,
+        IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
+        IndexNightInputs inputs,
+        double[][] closes,
+        IReadOnlyDictionary<string, int> names,
+        int name,
+        int bar,
+        int at)
+    {
+        if (!rebalances.TryGetValue(setup.Session, out var entered)
+            || entered.FirstOrDefault(cut => cut.Largest.Contains(setup.Ticker, StringComparer.Ordinal)) is not { } sector)
+        {
+            return null;
+        }
+
+        var notBought = rebalances
+            .Where(pair => pair.Key > setup.Session && !pair.Value.Any(cut => cut.Leaders.Contains(setup.Ticker)))
+            .Select(pair => Array.BinarySearch(inputs.Calendar, pair.Key))
+            .Where(session => session >= 0)
+            .Select(session => IndexNightRead.BarOf(inputs.Series[name], session))
+            .Where(held => held >= 0)
+            .ToArray();
+        var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
+        var cut = sector.Largest
+            .Where(names.ContainsKey)
+            .Select(ticker => (closes[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at)))
+            .ToArray();
+
+        return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
+    }
+
+    // The S&P 500's heavyweights' rebalances over the history, read by the sweep's own replay at the live setting: the
+    // first scored session of each month, each sector's size cut by value as it stood with the leaders the rule buys.
+    static async Task<IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>>> HeavyweightHistoryAsync(
+        SweepHistory history,
+        SweepHistoryInputs inputs,
+        DateOnly through,
+        TextWriter output,
+        CancellationToken cancellation)
+    {
+        var calendar = inputs.Sessions;
+        var first = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+
+        if (first < 0)
+        {
+            return new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
+        }
+
+        var months = HeavyweightSweep.Rebalances(calendar, first, HeavyweightPeriod.Month);
+        var pulled = await history.HeavyweightAsync(through, cancellation);
+        var market = await history.MarketAsync(through, cancellation);
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: reading the heavyweights' {months.Count} rebalance(s) by the sweep's own replay"));
+
+        var (_, laid) = HeavyweightSweep.Lay(inputs, pulled, market.FirstOrDefault(one => one.Series == LedgerMarket.Index), months.ToHashSet(), first);
+
+        return months
+            .Where(laid.ContainsKey)
+            .ToDictionary(
+                session => session,
+                session => (IReadOnlyList<HeavyweightCut>)
+                [
+                    .. HeavyweightSweep.Sectors(laid[session], HeavyweightSweep.Frozen).Select(sector => new HeavyweightCut(
+                        sector.Sector,
+                        [.. sector.Largest.Select(ranked => ranked.Ticker)],
+                        sector.Leaders.ToHashSet(StringComparer.Ordinal))),
+                ]);
+    }
+
+    // The rebalances the S&P 500's heavyweights' book stored between two sessions, each sector's size cut in order of
+    // value with the leaders it bought.
+    const string HeavyweightRebalances = @"
+        SELECT session_date, sector, ticker, leader FROM heavyweight_night
+        WHERE session_date >= $since AND session_date <= $night
+        ORDER BY session_date, sector, place;";
+
+    static async Task<IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>>> HeavyweightCutsAsync(SqliteConnection connection, DateOnly since, DateOnly night, CancellationToken cancellation)
+    {
+        var rows = new List<(DateOnly Session, string Sector, string Ticker, bool Leader)>();
+
+        await using (var command = Command(connection, null, HeavyweightRebalances, [("$since", Stamp(since)), ("$night", Stamp(night))]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                rows.Add((Date(reader.GetString(0)), reader.GetString(1), reader.GetString(2), reader.GetInt64(3) == 1));
+            }
+        }
+
+        return rows
+            .GroupBy(row => row.Session)
+            .ToDictionary(
+                session => session.Key,
+                session => (IReadOnlyList<HeavyweightCut>)
+                [
+                    .. session
+                        .GroupBy(row => row.Sector, StringComparer.Ordinal)
+                        .Select(sector => new HeavyweightCut(
+                            sector.Key,
+                            [.. sector.Select(row => row.Ticker)],
+                            sector.Where(row => row.Leader).Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal))),
+                ]);
     }
 
     // How often the build looks again while it waits for the night or the drain, and the hour a weekday's night
@@ -412,6 +576,16 @@ public sealed class SetupLedger : IComponent
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
         var context = new LedgerContext(income, sectors, highs, lows, facts);
+        var heavyweights = index == IndexFamilies.LargeIndex
+            ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
+            : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
+        var nameOf = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var name = 0; name < series.Length; name++)
+        {
+            nameOf.TryAdd(series[name].Name.Ticker, name);
+        }
+
         var first = Array.FindIndex(calendar, session => session >= from);
         var last = Array.FindLastIndex(calendar, session => session <= through);
 
@@ -473,6 +647,42 @@ public sealed class SetupLedger : IComponent
                         var outcome = Outcome(closes, inputsOnTheNight, name, bar, row.Anchor, row.Plan);
 
                         await InsertAsync(connection, transaction, row, null, null, outcome, calendar, at, HistorySource, cancellation);
+                    }
+
+                    await ExecuteAsync(connection, transaction, InsertNight,
+                    [
+                        ("$index", index), ("$family", family.Family), ("$session", Stamp(night)), ("$members", family.Members),
+                        ("$setups", family.Rows.Count), ("$live_passes", family.LivePasses), ("$source", HistorySource),
+                    ], cancellation);
+
+                    chunk += family.Rows.Count;
+                    passes += family.LivePasses;
+                }
+
+                // A rebalance of the S&P 500's heavyweights: each member of each sector's size cut held as the rule
+                // holds a buy, to the first later rebalance whose buys leave it out or its cap, against its size cut.
+                if (heavyweights.TryGetValue(at, out var cuts))
+                {
+                    var family = LedgerSetups.Heavyweights(index, series, closes, sessions, members, calendar, at, market, context, cuts);
+
+                    foreach (var row in family.Rows)
+                    {
+                        var name = nameOf[row.Ticker];
+                        var bar = IndexNightRead.BarOf(series[name], at);
+                        var notBought = heavyweights
+                            .Where(pair => pair.Key > at && !pair.Value.Any(cut => cut.Leaders.Contains(row.Ticker)))
+                            .Select(pair => IndexNightRead.BarOf(series[name], pair.Key))
+                            .Where(held => held >= 0)
+                            .ToArray();
+                        var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
+                        var cut = cuts
+                            .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
+                            .Where(nameOf.ContainsKey)
+                            .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at)))
+                            .ToArray();
+                        var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions);
+
+                        await InsertAsync(connection, transaction, row, null, null, (outcome, benchmark), calendar, at, HistorySource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,

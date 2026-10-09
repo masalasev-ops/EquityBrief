@@ -30,6 +30,10 @@ public sealed record FamilySetups(string Family, int Members, IReadOnlyList<Setu
     public int LivePasses => Rows.Count(row => row.LivePass);
 }
 
+// One sector's size cut on a rebalance as the heavyweights' rule read it: the sector, its largest companies' listings in
+// order of value, and the leaders the rule bought among them.
+public sealed record HeavyweightCut(string Sector, IReadOnlyList<string> Largest, IReadOnlySet<string> Leaders);
+
 // The market series the readings take, each over its own sessions: the index's own series, or its fund's on the S&P
 // 400 and 600, the VIX, SPY, IJH, IJR and HYG, any of them absent where the store holds none.
 public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>> Series)
@@ -104,6 +108,70 @@ public static class LedgerSetups
 
     static string Words(FamilyGrid grid, int[] setting) =>
         string.Join(", ", grid.Dials.Select((dial, at) => FormattableString.Invariant($"{dial.Dial} {grid.Value(setting, at)}")));
+
+    // The live heavyweights' setting in words, a setting a clause.
+    public static string HeavyweightWords { get; } = FormattableString.Invariant(
+        $"largest {HeavyweightRule.Live.Largest}, look-back {HeavyweightRule.Live.LookBack}, leaders {HeavyweightRule.Live.Leaders}, ")
+        + FormattableString.Invariant($"beta of at least one {HeavyweightRule.Live.HighBeta}, the sector's fund {HeavyweightRule.Live.FundReturn}, ")
+        + FormattableString.Invariant($"sold on no longer leading {HeavyweightRule.Live.SoldOnLeading}, sold under the average {HeavyweightRule.Live.SoldUnderAverage}");
+
+    // The heavyweights' setups of a rebalance session: each member of each sector's size cut, bought at the session's
+    // close and given the heavyweights' cap, its live pass whether the rule bought it, with the readings every family's
+    // setup carries. The rule places no stop, so the anchor's stop is nothing and its path is read by the heavyweights'
+    // own replay.
+    // see: A heavyweights' setup is each member of its sector's size cut on a rebalance of the S&P 500's book, held as the rule holds a buy
+    public static FamilySetups Heavyweights(
+        string indexCode,
+        IReadOnlyList<SweepSeries> series,
+        double[][] closes,
+        IReadOnlyList<SweepColumns.Session> sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyList<DateOnly> calendar,
+        int at,
+        LedgerMarket market,
+        LedgerContext context,
+        IReadOnlyList<HeavyweightCut> cuts)
+    {
+        var names = new Dictionary<string, int>(StringComparer.Ordinal);
+
+        for (var name = 0; name < series.Count; name++)
+        {
+            names.TryAdd(series[name].Name.Ticker, name);
+        }
+
+        var rows = new List<SetupRow>();
+
+        foreach (var cut in cuts)
+        {
+            foreach (var ticker in cut.Largest)
+            {
+                if (!names.TryGetValue(ticker, out var name))
+                {
+                    continue;
+                }
+
+                var bar = IndexNightRead.BarOf(series[name], at);
+
+                if (bar < 0 || !(closes[name][bar] > 0))
+                {
+                    continue;
+                }
+
+                rows.Add(new SetupRow(
+                    indexCode,
+                    HeavyweightRule.Name,
+                    ticker,
+                    calendar[at],
+                    HeavyweightWords,
+                    cut.Leaders.Contains(ticker),
+                    new SetupAnchor(calendar[at], closes[name][bar], 0, null, null, HeavyweightPaths.Cap, null),
+                    new SetupPlan(0, null, null, HeavyweightPaths.Cap),
+                    Readings(indexCode, name, series[name], closes[name], bar, sessions[at], members, calendar, at, market, context)));
+            }
+        }
+
+        return new FamilySetups(HeavyweightRule.Name, members.Names[at].Length, Ordered(rows));
+    }
 
     public static IReadOnlyList<FamilySetups> On(
         string indexCode,

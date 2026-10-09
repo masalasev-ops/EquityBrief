@@ -25,6 +25,9 @@ public static class SetupEnds
 
     public const string Cap = "cap";
 
+    // A heavyweights' setup sold at a later rebalance at which the rule did not buy it.
+    public const string Rebalance = "rebalance";
+
     // The series ran out before the trade ended, so it is open as of the last close held.
     public const string Open = "open";
 

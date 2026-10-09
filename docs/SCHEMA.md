@@ -1253,7 +1253,7 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | Column | Type | Notes |
 |---|---|---|
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
-| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
 | `rule` | TEXT | the words of the live rule's setting the pass beside it was read at: the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting |
@@ -1305,13 +1305,13 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `credit_over_fifty` | REAL | HYG's close over its 50-session average |
 | `profit` | REAL | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
 | `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty readings migration 77 created |
-| `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open |
-| `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended |
+| `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open; a heavyweights' setup, which holds no stop and whose `stop` is nothing, its close at the end over the buy less one, a fraction of the buy |
+| `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended; a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction |
 | `cost` | REAL | the round trip in risks at the member's own cost on the night, null where the night stored none and on a history row |
 | `edge` | REAL | the result less the benchmark, null until both are read |
 | `edge_after_cost` | REAL | the edge less the cost, null where either is |
 | `sessions` | INTEGER | the sessions held, to the close that ended it or the last held while open |
-| `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap` or `none`, the last for an anchor placing no trade |
+| `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap`, `rebalance` or `none`, `rebalance` a heavyweights' setup sold at a later rebalance the rule did not buy it at, `none` an anchor placing no trade |
 | `ended_on` | TEXT | the session the path ended on, null while open |
 | `settled` | INTEGER | 1 once the result and the benchmark are both final, 0 before |
 | `source` | TEXT | `night` for a row the night's step wrote, `history` for one the build wrote |

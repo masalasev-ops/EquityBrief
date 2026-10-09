@@ -25,6 +25,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - SCHEMA.md and ARCHITECTURE.html - the setup ledger's heavyweights
+Authorised by: A heavyweights' setup is each member of its sector's size cut on a rebalance of the S&P 500's book, held as the rule holds a buy
+Was:
+> | `family` | TEXT | `pullback`, `breakout` or `drift` |
+> | `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open |
+> | `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended |
+> | `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap` or `none`, the last for an anchor placing no trade |
+> [section 17, the setup ledger's loose gates] [...] each at a close of at least $5 and half the index's dollar floor (see: [...])</td><td>[...] the floors because a trade the index's rules would never take is no setup of theirs. <b>Judgement:</b> [...]
+> [the setups' store row] the plan as prices with the risk in typical moves, the forty-five readings as they stood,
+> [the setup ledger's catalogue row] [...] index family picks, setups, setup nights [...] while the night goes on; after the filings refresh [...]
+Now:
+> | `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
+> | `result` | REAL | [...]; a heavyweights' setup, which holds no stop and whose `stop` is nothing, its close at the end over the buy less one, a fraction of the buy |
+> | `benchmark` | REAL | [...]; a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction |
+> | `end` | TEXT | `open`, `stop`, `target`, `trail`, `cap`, `rebalance` or `none`, [...] |
+> [section 17] [...] (see: [...]); and the heavyweights each member of a sector's size cut on a rebalance of the index's own book, held at most 252 sessions</td><td>[...]; the heavyweights' size cut because it is what the rule chooses its leaders from, and their cap a year of sessions (see: [...]). <b>Judgement:</b> [...]
+> [the setups' store row] the plan as prices with the risk in typical moves, a heavyweights' setup holding no stop, the forty-five readings as they stood,
+> [the catalogue row] [...] index family picks, heavyweight nights, setups, setup nights [...] while the night goes on; on a rebalance night of the S&amp;P 500's heavyweights' book each member of each sector's size cut the book stored is a setup, held as the rule holds a buy (see: [...]); after the filings refresh [...]
+Why: the ledger's fourth family, the S&P 500's heavyweights, which the plan made each member of its sector's size cut at each month's rebalance capped at 252 sessions; section 13.10 gains a paragraph on them.
+
 ### 2026-10-09 - CLAUDE.md - the nightly hard rule names the filings refresh as its seventh carve-out
 Authorised by: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
 Was:
