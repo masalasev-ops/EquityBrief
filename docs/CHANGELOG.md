@@ -25,6 +25,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - the fact strip states the year's high and low with the sessions they were made on
+Corrects: 6.1's fact strip stated the high and low of the year's largest move, with no date, beside the night's close; CVX's of 2026-01-05, 146.01 to 161.25, stood beside a close of 211.55 on 2026-10-08, and 913 of the 1,506 members' strips that night did not hold their own close. Found by the operator's phase 18 brief of 2026-10-09.
+Was:
+> <tr><td>Tonight's figures</td><td>The trend state, the close, market capitalisation, the high and low of the move, the next dated event, the multiples, the averages, relative strength, momentum and the typical daily move</td>
+> <tr><td>Fact strip</td><td>close, market capitalisation, the high and low of the move, next earnings date, the multiples, the averages, momentum and the typical daily move</td></tr>
+Now:
+> <tr><td>Tonight's figures</td><td>The trend state, the close, market capitalisation, the year's high and low with the sessions they were made on, the next dated event, the multiples, the averages, relative strength, momentum and the typical daily move</td>
+> <tr><td>Fact strip</td><td>close, market capitalisation, the year's high and low with the sessions they were made on, next earnings date, the multiples, the averages, momentum and the typical daily move</td></tr>
+Why: the largest move stays in "How it got here" with its date; beside the close the strip states the range the close sits in (see: The fact strip states the year's high and low with the sessions they were made on).
+
 ### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - each loop figure's key names every box it draws, and the check holding it in both documents
 Corrects: 17.10's done condition asks that each figure's key name every box it draws in both documents, and the four loop figures' keys named their boxes by colour and not by their words, so a box could be added or renamed with no key saying what it is; found writing the guide's drawings of the same four.
 Was:

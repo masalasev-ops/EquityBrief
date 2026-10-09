@@ -1032,9 +1032,9 @@ internal static class Scope
             Verdict.Pass,
             "the figure the provider files for the whole company, stored on the newest filing's row because a price moves every session, and stated as not on file for a name holding none",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Fact strip, the year's high and low with the sessions they were made on")] = new Scoped(
             Verdict.Pass,
-            "the high and the low of the sessions the largest move spans, read as an aggregate over exactly those stored bars rather than over the calendar days between them",
+            "the highest high and the lowest low of the stored year up to the night, chosen as prices with the newer of two equal ones taken, each with the session it was made on, holding the night's close between them",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, next earnings date")] = new Scoped(
             Verdict.Pass,
@@ -4993,7 +4993,7 @@ internal static class Scope
         // one for the row, so the five could not pass while the two were absent.
         [CheckReach.Key("15.9 Name", "Fact strip, close")] = "6.1",
         [CheckReach.Key("15.9 Name", "Fact strip, market capitalisation")] = "6.1",
-        [CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move")] = "6.1",
+        [CheckReach.Key("15.9 Name", "Fact strip, the year's high and low with the sessions they were made on")] = "6.1",
         [CheckReach.Key("15.9 Name", "Fact strip, next earnings date")] = "6.1",
         [CheckReach.Key("15.9 Name", "Fact strip, the multiples")] = "6.1",
         [CheckReach.Key("15.9 Name", "Fact strip, the averages")] = "6.1",
@@ -5733,7 +5733,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Prices may be out of date")] =
             ["one line saying its prices may not reflect a recent dividend or split", "when the refetch was last tried and why it failed", "above everything the page draws from those prices"],
         [CheckReach.Key("15.9 Name", "Fact strip")] =
-            ["close", "market capitalisation", "the high and low of the move", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
+            ["close", "market capitalisation", "the year's high and low with the sessions they were made on", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
         [CheckReach.Key("15.9 Name", "The chart")] =
             ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
         [CheckReach.Key("15.9 Name", "The plan")] =

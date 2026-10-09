@@ -129,7 +129,7 @@ public sealed record FellBackRow(string Subject, string Section, int Version, st
 
 // The high and the low of the sessions one move spans, which is what section
 // 15.9's fact strip states. A name with no annotated move has none.
-public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, decimal High, decimal Low);
+public sealed record YearExtremes(string Ticker, decimal High, DateOnly HighOn, decimal Low, DateOnly LowOn, int Sessions);
 
 // One listing row, as the store holds it.
 //
@@ -1103,14 +1103,8 @@ public sealed partial class ReadApi : IComponent
         ORDER BY fetched_at DESC;
     ";
 
-    // The bars of the sessions the largest move spans, whose highest high and
-    // lowest low the fact strip states.
-    //
-    // The move row names the session it ended on and how many sessions it spans,
-    // and these are exactly those bars. The span is counted in stored sessions
-    // rather than in calendar days, because a move over a week that holds a
-    // holiday spans four sessions and five days, and the days would reach a bar
-    // the move does not cover.
+    // The bars of the stored year up to the night, whose highest high and lowest
+    // low the fact strip states with the session each was made on.
     //
     // The bars are handed back and the two extremes are chosen from them as
     // prices. Choosing which stored value to hand back is selection the read
@@ -1118,20 +1112,12 @@ public sealed partial class ReadApi : IComponent
     // is stored as text and the store compares text by its characters, so the
     // choice is made where the values are decimals.
     // see: A stored price is chosen and ordered by its value and never by the text it is stored as
-    const string MoveExtremesForName = @"
-        SELECT high, low
+    // see: The fact strip states the year's high and low with the sessions they were made on
+    const string YearForName = @"
+        SELECT session_date, high, low
         FROM bar
-        WHERE ticker = $ticker AND session_date <= $ended
-        ORDER BY session_date DESC
-        LIMIT $sessions;
-    ";
-
-    const string LargestMoveForName = @"
-        SELECT session_date, sessions
-        FROM move
         WHERE ticker = $ticker AND session_date <= $on
-        ORDER BY rank
-        LIMIT 1;
+        ORDER BY session_date;
     ";
 
     // Ordered by session so the caller does not have to sort, which is the one
@@ -6037,55 +6023,41 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
-    // The largest move's own high and low, or none where the name has no move.
-    public async Task<MoveExtremes?> MoveExtremesAsync(string ticker, DateOnly? asOf = null)
+    // The year's highest high and lowest low among the stored bars up to the night,
+    // each with the session it was made on, the newer of two equal ones, or none
+    // where the name holds no bar.
+    public async Task<YearExtremes?> YearExtremesAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
-
-        DateOnly ended;
-        int sessions;
-
-        await using (var largest = connection.CreateCommand())
-        {
-            largest.CommandText = LargestMoveForName;
-            largest.Parameters.AddWithValue("$ticker", ticker);
-            largest.Parameters.AddWithValue("$on", On(asOf));
-
-            await using var reader = await largest.ExecuteReaderAsync();
-
-            if (!await reader.ReadAsync())
-            {
-                return null;
-            }
-
-            ended = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            sessions = reader.GetInt32(1);
-        }
-
         await using var command = connection.CreateCommand();
 
-        command.CommandText = MoveExtremesForName;
+        command.CommandText = YearForName;
         command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$ended", ended.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$sessions", sessions);
+        command.Parameters.AddWithValue("$on", On(asOf));
 
         await using var bars = await command.ExecuteReaderAsync();
 
-        var highs = new List<decimal>();
-        var lows = new List<decimal>();
+        YearExtremes? year = null;
 
         while (await bars.ReadAsync())
         {
-            highs.Add(Money.FromStorage(bars.GetString(0)));
-            lows.Add(Money.FromStorage(bars.GetString(1)));
+            var on = DateOnly.ParseExact(bars.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var high = Money.FromStorage(bars.GetString(1));
+            var low = Money.FromStorage(bars.GetString(2));
+
+            year = year is null
+                ? new YearExtremes(ticker, high, on, low, on, 1)
+                : year with
+                {
+                    High = high >= year.High ? high : year.High,
+                    HighOn = high >= year.High ? on : year.HighOn,
+                    Low = low <= year.Low ? low : year.Low,
+                    LowOn = low <= year.Low ? on : year.LowOn,
+                    Sessions = year.Sessions + 1,
+                };
         }
 
-        if (highs.Count == 0)
-        {
-            return null;
-        }
-
-        return new MoveExtremes(ticker, ended, sessions, highs.Max(), lows.Min());
+        return year;
     }
 
     // Each start of the surface is a run of its own, named in UTC to the tenth of a
