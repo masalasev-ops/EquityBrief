@@ -40935,7 +40935,7 @@ Departed:   this checkpoint amends its own done condition: a filing is read on t
             stood on the night, and the operator's word is owed on how it is read. The S&P 400's and 600's
             heavyweights add no setup until a freeze registers their live rule, since their provisional books store no
             size cut. The point-in-time check cuts the history in memory rather than writing a scratch store.
-Tests:      filled from the run: the operator's test, a member that filed refreshed on the next session's night and
+Tests:      2050, fifteen more: the operator's test, a member that filed refreshed on the next session's night and
             one that did not never asked, with an 8-K's results read off its page; the days read worked by hand; a
             refused archive and a passed limit; the daily index and the 8-K pages read as captured; the facts stored as
             first filed; the five readings worked by hand, a filing on the session not read; the fixture's night
@@ -40952,7 +40952,13 @@ Mutated:    the rule, stated before the run: the two properties the ruling and t
             form: predicted red at the operator's test and at the fixture's night; both red as predicted. Each reverted
             before anything was committed. Not mutated: the heavyweights' path, the summary and the cut, each held by
             its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c19fb407, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2050 of 2050 tests ran with none failed, migrations 0 to
+            78 with none pending, schema version 78, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 47 tables, 1089 claims, 1089 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1100
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2050 of 2050 tests ran.
 Carried:    after the merge, from main: `filings --whole` once, then the history build one index at a time with its
             setup count a family an index, its time and its size against the 0.5 gigabyte budget recorded, then
             `ledger-check` on each index; migration 78 by the night's own first step; the night's ledger and filings
