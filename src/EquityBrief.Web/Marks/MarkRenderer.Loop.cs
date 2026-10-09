@@ -133,7 +133,7 @@ public sealed partial class MarkRenderer
     // a proposal declined before over fewer blocks put again with the line that says so.
     // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
-    public string LoopDecision(string index, LoopRunRow run, LoopProposalRow proposal, LoopDecided decided)
+    public string LoopDecision(string index, LoopRunRow run, LoopProposalRow proposal, LoopDecided decided, LoopProposalRow? put = null)
     {
         var key = proposal.Family + "|" + proposal.Proposal;
         var mine = decided.Decisions.FirstOrDefault(one => one.Run == run.RunId && one.Family == proposal.Family && one.Proposal == proposal.Proposal);
@@ -184,6 +184,10 @@ public sealed partial class MarkRenderer
             {
                 html.Append("<p class=\"degraded\" data-decision=\"one-a-run\">Another change to this family was approved in this run, and one change a family a run is applied.</p>");
             }
+            else if (put is not null && put.Proposal != proposal.Proposal)
+            {
+                html.Append($"<p class=\"degraded\" data-decision=\"not-put\">Not put to you: this run puts the family's strongest proposal that passed to you, {Escaped(put.Proposal)}.</p>");
+            }
             else
             {
                 if (before is not null)
@@ -204,6 +208,16 @@ public sealed partial class MarkRenderer
 
         return html.ToString();
     }
+
+    // Whether an earlier run's decline of the same proposal and change holds it back on this run: it was declined over
+    // at least as many blocks as this run reads.
+    // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
+    public static bool HeldBack(LoopRunRow run, LoopProposalRow proposal, LoopDecided decided) =>
+        decided.Decisions
+            .Where(one => one.Run != run.RunId && one.Family == proposal.Family && one.Proposal == proposal.Proposal && one.Decision == LoopDecisions.Declined && one.Change == proposal.Change)
+            .Select(one => one.Blocks ?? 0)
+            .DefaultIfEmpty(-1)
+            .Max() is var declined && declined >= 0 && !LoopDecisions.PutAgain(declined, proposal.Blocks, passedNow: true);
 
     // Every decision on the index, newest first, with what the apply step did, and every setting approvals stored, each
     // family's newest first; none where neither holds a row.

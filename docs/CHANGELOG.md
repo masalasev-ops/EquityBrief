@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - the Loop page's presses on the one proposal a family a run puts to the operator
+Authorised by: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+Was:
+> [section 13.16] The page offers Approve and Decline on each proposal of an index's newest run that passed and states a change, one approval a family a run, and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason.
+> [section 15.20's row] Your word on a proposal: from 17.9 beneath each passing proposal of the index's newest run that states a change its Approve and Decline presses or the word given with what the apply step did with it or why no press is offered there (see: [...])
+> [the roster's read-surface row] [...] and a card whose rule stands at an approved change drawing no record as its own |
+Now:
+> [section 13.16] The page offers Approve and Decline on the one proposal of each family the index's newest run puts to the operator, the strongest that passed and states a change by its adjusted p-value, leaving out one an earlier decline holds back, and a press writes one row of the decisions under the page's own header and nothing else, a decline with its reason (see: [...]).
+> [section 15.20's row] Your word on a proposal: from 17.9 beneath each passing proposal of the index's newest run that states a change the word given with what the apply step did with it or why no press is offered there, and from 17.10 the Approve and Decline presses on the one proposal of each family the run puts to the operator (see: [...])
+> [the roster's read-surface row] [...] drawing no record as its own; and from 17.10 the presses on the one proposal of each family the newest run puts to the operator, [...] |
+Why: 17.10 puts at most one proposal a family an index to the operator, the strongest that passed, so the page offers its presses there alone and a press on another is refused, the same one the month's report names.
+
 ### 2026-10-09 - CLAUDE.md and .claude/rules/checks.md - the monthly run in the layout and the Merge rule, and the roster's clauses for it
 Authorised by: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
 Was:

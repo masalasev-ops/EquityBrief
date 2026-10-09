@@ -3482,7 +3482,7 @@ internal static class Scope
         // 17.10, the monthly run: its catalogue and matrix rows, section 17's row and section 18's.
         [CheckReach.Key(CatalogueTable, "Monthly run")] = new Scoped(
             Verdict.Pass,
-            "the class declares the loop runs and proposals and the run log it reads and the run log it writes, each reconciled against the row",
+            "the class declares the loop runs, proposals and decisions and the run log it reads and the run log it writes, each reconciled against the row",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Monthly run")] = new Scoped(
             Verdict.Pass,

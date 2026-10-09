@@ -45,6 +45,16 @@ public sealed partial class ReadApi
         WHERE e.decision = 'declined' AND e.index_code = $index AND e.family = $family AND e.proposal = $proposal AND e.run_id <> $run_id
             AND COALESCE(q.change, '') = COALESCE($change, '');";
 
+    // A family's proposals on a run with the blocks the same change was last declined over on an earlier run, which say
+    // which one the run puts to the operator.
+    const string FamilyOnTheRun = @"
+        SELECT p.proposal, p.adjusted, p.passed, p.change IS NOT NULL, p.blocks,
+            (SELECT MAX(q.blocks) FROM loop_decision e
+                JOIN loop_proposal q ON q.run_id = e.run_id AND q.index_code = e.index_code AND q.family = e.family AND q.proposal = e.proposal
+                WHERE e.decision = 'declined' AND e.index_code = p.index_code AND e.family = p.family AND e.proposal = p.proposal AND e.run_id <> p.run_id
+                    AND COALESCE(q.change, '') = COALESCE(p.change, ''))
+        FROM loop_proposal p WHERE p.run_id = $run_id AND p.index_code = $index AND p.family = $family;";
+
     const string NewestSettingOf = "SELECT id FROM provisional_setting WHERE index_code = $index AND family = $family ORDER BY id DESC LIMIT 1;";
 
     const string NewestPeriodOf = "SELECT flagged FROM loop_alarm WHERE index_code = $index AND family = $family ORDER BY period DESC LIMIT 1;";
@@ -205,11 +215,21 @@ public sealed partial class ReadApi
             return new RequestWritten(false, "Nothing was decided: this proposal already holds your word.");
         }
 
+        var put = held.Passed && held.Change is not null ? await PutAsync(connection, transaction, run, index, family) : null;
+        var notPut = put is not null && put != proposal
+            ? $"Nothing was decided: this run puts the family's strongest proposal that passed to you, {put}, and no other."
+            : null;
+
         if (!approve)
         {
             if (string.IsNullOrWhiteSpace(reason))
             {
                 return new RequestWritten(false, "Nothing was declined: a decline records its reason, and none was given.");
+            }
+
+            if (notPut is not null)
+            {
+                return new RequestWritten(false, notPut);
             }
 
             await DecisionAsync(connection, transaction, run, index, family, proposal, LoopDecisions.Declined, reason.Trim());
@@ -239,6 +259,11 @@ public sealed partial class ReadApi
             && !LoopDecisions.PutAgain((int)declined, held.Blocks, passedNow: true))
         {
             return new RequestWritten(false, FormattableString.Invariant($"Nothing was approved: you declined this change over {declined} blocks, and this run reads {held.Blocks}, so it is not put to you again until a later run reads a new complete block."));
+        }
+
+        if (notPut is not null)
+        {
+            return new RequestWritten(false, notPut);
         }
 
         await DecisionAsync(connection, transaction, run, index, family, proposal, LoopDecisions.Approved, null);
@@ -307,6 +332,29 @@ public sealed partial class ReadApi
         }
 
         return command;
+    }
+
+    // The one proposal of a family the run puts to the operator, none where none is left.
+    static async Task<string?> PutAsync(SqliteConnection connection, SqliteTransaction transaction, string run, string index, string family)
+    {
+        var proposals = new List<(string, double?, bool, bool, bool)>();
+
+        await using var command = Command(connection, transaction, FamilyOnTheRun, [("$run_id", run), ("$index", index), ("$family", family)]);
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var declined = reader.IsDBNull(5) ? (int?)null : reader.GetInt32(5);
+
+            proposals.Add((
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetDouble(1),
+                reader.GetInt64(2) == 1,
+                reader.GetInt64(3) == 1,
+                declined is { } blocks && !LoopDecisions.PutAgain(blocks, reader.GetInt32(4), passedNow: true)));
+        }
+
+        return LoopDecisions.PutOf(proposals);
     }
 
     static async Task<long> CountAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object? Value)> parameters) =>

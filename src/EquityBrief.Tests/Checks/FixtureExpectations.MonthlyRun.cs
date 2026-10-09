@@ -203,6 +203,14 @@ public partial class FixtureExpectations
         LoopProposed(store, "loop-test-SML-20261003T130000Z", "SML", "drift", "the autopsy's exit, ranked 2", false, ExitChange(8), adjusted: 0.5);
         LoopProposed(store, "loop-test-MID-20261003T120000Z", "MID", "pullback", "winners against losers, ranked 1", true, ExitChange(7), adjusted: 0.002);
 
+        // A stronger pullback condition the operator declined on September's run over 19 blocks, read over 19 again and so
+        // held back; and the drift's one passing proposal, the grid choosing the setting it stands at, stating no change.
+        LoopRun(store, "loop-test-MID-20260905T120000Z", "MID", "2026-09");
+        LoopProposed(store, "loop-test-MID-20260905T120000Z", "MID", "pullback", "winners against losers, ranked 0", true, ExitChange(6));
+        LoopDecided(store, "loop-test-MID-20260905T120000Z", "MID", "pullback", "winners against losers, ranked 0", "declined", "too soon");
+        LoopProposed(store, "loop-test-MID-20261003T120000Z", "MID", "pullback", "winners against losers, ranked 0", true, ExitChange(6), adjusted: 0.0005);
+        LoopProposed(store, "loop-test-MID-20261003T120000Z", "MID", "drift", "the grid", true, null, adjusted: 0.0001);
+
         var run = new MonthlyRun(clock, store.DatabaseFile, store.Root, output, []);
         var (held, words) = await run.ReportAsync("2026-10");
         var report = File.ReadAllText(Path.Combine(store.Root, MonthlyRun.Folder, "2026-10", MonthlyRun.ReportFile));
@@ -212,6 +220,8 @@ public partial class FixtureExpectations
         Assert.Contains("The S&P 500: no tester run for 2026-10.", report, StringComparison.Ordinal);
         Assert.Contains("The S&P 400, run loop-test-MID-20261003T120000Z:", report, StringComparison.Ordinal);
         Assert.Contains("  pullback: put to you, winners against losers, ranked 1: the change; its adjusted p 0.002 against 0.0042", report, StringComparison.Ordinal);
+        Assert.DoesNotContain("ranked 0", report, StringComparison.Ordinal);
+        Assert.Contains("  drift: 1 of its 1 proposals passed and none is put to you, each stating no change or declined before over as many blocks as this run reads.", report, StringComparison.Ordinal);
         Assert.Contains("The S&P 600, run loop-test-SML-20261003T130000Z:", report, StringComparison.Ordinal);
         Assert.Contains("  breakout: put to you, the autopsy's exit, ranked 2: the change; its adjusted p 0.001 against 0.0042", report, StringComparison.Ordinal);
         Assert.DoesNotContain("ranked 1: the change; its adjusted p 0.003", report, StringComparison.Ordinal);

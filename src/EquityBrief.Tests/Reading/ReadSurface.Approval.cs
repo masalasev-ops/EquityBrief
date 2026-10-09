@@ -91,13 +91,17 @@ public partial class ReadSurface
         // A press without the page's own header is refused and writes nothing.
         Assert.Equal(HttpStatusCode.Forbidden, (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 1", "approve", fromThePage: false)).Status);
 
-        // The breakout's first exit approved; its second refused as a second change to the family in the run, then
-        // declined with its reason, and a second word on it refused.
+        // The breakout's first exit, the one the run puts to you of its two that passed at one adjusted p-value, settled
+        // by the name, approved and a second word on it refused; its second refused as a second change to the family in
+        // the run, a decline of it refused for wanting its reason and, given one, from 17.10 refused as not put to you.
         Assert.Equal(HttpStatusCode.OK, (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 1", "approve")).Status);
+        Assert.Contains("already holds your word", (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 1", "decline", "a second word")).Said, StringComparison.Ordinal);
         Assert.Contains("one change a family a run is applied", (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("a decline records its reason", (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline")).Said, StringComparison.Ordinal);
-        Assert.Equal(HttpStatusCode.OK, (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline", "the first is enough")).Status);
-        Assert.Contains("already holds your word", (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "approve")).Said, StringComparison.Ordinal);
+        Assert.Contains(
+            "this run puts the family's strongest proposal that passed to you, the autopsy's exit, ranked 1, and no other",
+            (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline", "the first is enough")).Said,
+            StringComparison.Ordinal);
 
         // Refused: a proposal that did not pass, one stating no change, a book's, an S&P 500 rule's, a run that is not the
         // newest and a proposal the run does not hold.
@@ -109,11 +113,11 @@ public partial class ReadSurface
         Assert.Contains("holds no proposal", (await Press("SML", SmallOctober, "drift", "an exit no run proposed", "approve")).Said, StringComparison.Ordinal);
 
         // The pullback's first condition, declined over 19 blocks and read over 19 again, is not put again; its second, read
-        // over 20, is put again and approved.
+        // over 20, is put again, the one the run puts to you though the first comes before it by name, and approved.
         Assert.Contains("declined this change over 19 blocks, and this run reads 19", (await Press("SML", SmallOctober, "pullback", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.OK, (await Press("SML", SmallOctober, "pullback", "winners against losers, ranked 2", "approve")).Status);
 
-        // October's rows are the three words given, each once.
+        // October's rows are the two words given, each once.
         using var connection = store.Open();
         using var command = connection.CreateCommand();
 
@@ -130,7 +134,6 @@ public partial class ReadSurface
         Assert.Equal(
             [
                 "breakout|the autopsy's exit, ranked 1|approved|none",
-                "breakout|the autopsy's exit, ranked 2|declined|the first is enough",
                 "pullback|winners against losers, ranked 2|approved|none",
             ],
             rows);
@@ -147,6 +150,7 @@ public partial class ReadSurface
         Run(store, SmallOctober, "SML", "2026-10");
         Run(store, LargeOctober, "GSPC", "2026-10");
         Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", true, Exit(7));
+        Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 2", true, Exit(10));
         Proposed(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 1", true, Exit(8));
         Proposed(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 2", false, Exit(9));
         Proposed(store, SmallOctober, "SML", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
@@ -172,6 +176,13 @@ public partial class ReadSurface
 
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("SML", SmallOctober, "breakout")}\" data-loop-key=\"breakout|the autopsy's exit, ranked 1\"><input type=\"hidden\" name=\"proposal\" value=\"the autopsy's exit, ranked 1\"><input type=\"hidden\" name=\"decision\" value=\"approve\"><button type=\"submit\">Approve</button></form>", breakout, StringComparison.Ordinal);
         Assert.Contains("<input type=\"hidden\" name=\"decision\" value=\"decline\"><label>Reason <input name=\"reason\" required></label> <button type=\"submit\">Decline</button>", breakout, StringComparison.Ordinal);
+
+        // From 17.10 its second exit, passing at the same adjusted p-value and after the first by name, is not put to you:
+        // it says which is and carries no press.
+        var second = Assert.Single(Blocks(page, "<div class=\"loop-decision\" data-loop-key=\"breakout\\|the autopsy's exit, ranked 2\">.*?</div>"));
+
+        Assert.Contains("<p class=\"degraded\" data-decision=\"not-put\">Not put to you: this run puts the family's strongest proposal that passed to you, the autopsy's exit, ranked 1.</p>", second, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"loop-press\"", second, StringComparison.Ordinal);
 
         // The drift's approval with what the apply did; the pullback's decline with its reason; the book's exit not
         // offered, saying why; the failing exit drawing no word.

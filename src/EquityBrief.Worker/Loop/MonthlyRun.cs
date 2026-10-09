@@ -36,6 +36,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         [
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
+            new StoreTouch(Store.LoopDecision, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -84,9 +85,14 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
         SELECT r.index_code, r.run_id FROM loop_run r
         WHERE r.month = $month AND r.rowid = (SELECT MAX(s.rowid) FROM loop_run s WHERE s.month = r.month AND s.index_code = r.index_code);";
 
+    // A run's proposals with the blocks the same change was last declined over on an earlier run, which hold one back.
     const string ProposalsOf = @"
-        SELECT family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change
-        FROM loop_proposal WHERE run_id = $run_id ORDER BY family, proposal;";
+        SELECT p.family, p.proposal, p.words, p.current_words, p.unit, p.units, p.blocks, p.adjusted, p.gate, p.stable, p.counted, p.better, p.trimmed, p.counts, p.detectable, p.stable_folds, p.passed, p.finding, p.change,
+            (SELECT MAX(q.blocks) FROM loop_decision e
+                JOIN loop_proposal q ON q.run_id = e.run_id AND q.index_code = e.index_code AND q.family = e.family AND q.proposal = e.proposal
+                WHERE e.decision = 'declined' AND e.index_code = p.index_code AND e.family = p.family AND e.proposal = p.proposal AND e.run_id <> p.run_id
+                    AND COALESCE(q.change, '') = COALESCE(p.change, ''))
+        FROM loop_proposal p WHERE p.run_id = $run_id ORDER BY p.family, p.proposal;";
 
     public async Task<MonthlyOutcome> RunAsync(string month, CancellationToken cancellation = default)
     {
@@ -182,12 +188,18 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
             }
 
             var proposals = new List<LoopProposalRow>();
+            var heldBack = new HashSet<string>(StringComparer.Ordinal);
 
             await using (var command = Command(connection, ProposalsOf, [("$run_id", run)]))
             await using (var reader = await command.ExecuteReaderAsync(cancellation))
             {
                 while (await reader.ReadAsync(cancellation))
                 {
+                    if (!reader.IsDBNull(19) && !LoopDecisions.PutAgain(reader.GetInt32(19), reader.GetInt32(6), passedNow: true))
+                    {
+                        heldBack.Add(reader.GetString(0) + "|" + reader.GetString(1));
+                    }
+
                     proposals.Add(new LoopProposalRow(
                         reader.GetString(0),
                         reader.GetString(1),
@@ -215,15 +227,21 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
             foreach (var family in proposals.GroupBy(proposal => proposal.Family).OrderBy(group => group.Key, StringComparer.Ordinal))
             {
-                if (LoopDecisions.PutOf(family) is { } one)
+                var passed = family.Count(proposal => proposal.Passed);
+
+                if (LoopDecisions.PutOf(family, proposal => heldBack.Contains(proposal.Family + "|" + proposal.Proposal)) is { } one)
                 {
                     put++;
                     text.AppendLine(FormattableString.Invariant(
                         $"  {family.Key}: put to you, {one.Proposal}: {one.Words ?? "no change in words"}; its adjusted p {one.Adjusted:0.####} against {LoopGate.Bar:0.####}, better in {one.Better} of {one.Counted} counted years, over {one.Units} units in {one.Blocks} blocks."));
                 }
-                else
+                else if (passed == 0)
                 {
                     text.AppendLine(FormattableString.Invariant($"  {family.Key}: none of its {family.Count()} proposals passed."));
+                }
+                else
+                {
+                    text.AppendLine(FormattableString.Invariant($"  {family.Key}: {passed} of its {family.Count()} proposals passed and none is put to you, each stating no change or declined before over as many blocks as this run reads."));
                 }
             }
         }
