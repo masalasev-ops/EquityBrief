@@ -40865,8 +40865,10 @@ Mutated:    the rule, stated before the run: the property the done condition nam
             the VIX read 75 over the series cut at the session and 76 over the whole, the session after's close. Reverted
             before anything was committed. Not mutated: the loose gates, the benchmark's settling and the night's window
             closing, each held by its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 7f0a5cc1, the
-            pull request's last commit but its fill, the second reading the first's suite result.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2336d10a, the
+            pull request's last commit but its fill, the second reading the first's suite result. The hosted macOS run
+            over 7f0a5cc1 failed the fixture's two nights, with the queue and without, writing the same run log rows,
+            since the ledger step's row stated each index's seconds; 2336d10a states its counts alone.
             `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2035 of 2035 tests ran with none failed, migrations 0 to
             77 with none pending, schema version 77, against `data-ci` and never `data`.
             `tools/verify-phase.ps1`: 45 tables, 1076 claims, 1076 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1087
@@ -40876,5 +40878,5 @@ Carried:    this pull request changes the night's code, so it merges outside the
             run on the store after the merge; its first night is read the morning after. The night step's time on the
             live store is read off that night's run page against the plan's 60 s, and the history build is run and its
             setup count a family an index, its time and its size against the budget are recorded by the pull request
-            that runs it from a clean copy. 17.1's remedy, `--from 6`, is the operator's to run after the night of
-            2026-10-08's drain and copy have ended.
+            that runs it from a clean copy. 17.1's remedy, `--from 6`, was run by the operator on 2026-10-09 from 02:13Z
+            to 02:45Z, its surprises and both rule records ending ok.
