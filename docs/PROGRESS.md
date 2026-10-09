@@ -41345,3 +41345,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    a finding outside this correction, found by the same reviewers: the Run page's runs by hand leave out the
             filings refresh's and the members' runs by hand, so after either is run in the daytime the dateless Run
             page opens on that day until the next night writes its rows. A correction of its own after #413.
+
+### 15.1 - correction: the S&P 400's and 600's page trades are given the benchmark of their plan on every member once their cap has passed, as the schema has stated since 15.1 and nothing wrote   2026-10-09
+
+Corrects:   15.1's second half, whose index families' step ends and keeps each S&P 400 and 600 list's trades and wrote no
+            benchmark for them. SCHEMA has stated since 15.1 that a page trade carries the same plan's benchmark on every
+            member of its index once its cap's sessions have passed, as a registered rule's trade does, and no code wrote
+            `benchmark` or `members` on `index_family_trade`.
+Found:      while building 17.9's live alarm, whose units on the S&P 400's and 600's provisional rules are their page
+            trades' edges after costs, read once a trade's benchmark is written. On the live store the S&P 600's eleven
+            page trades, the earliest bought on 2026-10-02, hold none and none has reached its cap, so no page or record
+            had yet read one.
+Built:      after the step walks the night's trades, each page trade of the index holding no benchmark whose cap's
+            sessions have passed is given the benchmark of its plan entered at the close on every member of the index on
+            its night, through the functions a registered rule's trade is benchmarked by: the exit menu's where the trade
+            names an exit, otherwise the breakout's for a trailing plan and the drift's for a fixed one. Its stop's
+            distance is read in typical moves off the trade where it stored one and off its stock's typical move on its
+            night where it did not. A trade older than the year the night reads is left as it stands.
+Tests:      one more: a fixed, a trailing and an older fixed plan held three sessions over closes of 100 each given nothing
+            over the seven members; a fixed plan held one session given the benchmark a registered rule's trade of the
+            same plan is given, over the same seven; and a trade whose cap has not passed given none.
+Claims:     no row of the architecture moved.
+Pins:       the index families' file is pinned by every S&P 400 and 600 rule evaluator, so their versions moved, once,
+            with 17.9's changes to the same sources, and are stated in its entry. No rule stands registered on either
+            index, so nothing restarts.
+Mutated:    the rule, stated before the run: the one property the correction adds, broken by making the step's call to the
+            page trades' benchmark unreachable. Predicted red at the new test. Result: red at its first assertion, the three
+            trades held three sessions read with no benchmark and no members. Made on this branch and reverted before
+            anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    none.
