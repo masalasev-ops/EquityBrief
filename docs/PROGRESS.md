@@ -41499,3 +41499,20 @@ Read back:  each index's Loop page from the read surface's Release build of main
             score part is written by the night's own step, so the cards are read after the night of 2026-10-09.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
 Carried:    the cards' score part read back after the night of 2026-10-09.
+
+### 17.8 - the fundamentals-first search run on each index from main's build after the merges of 17.3 to 17.8, none of its 27 settings passing   2026-10-09
+
+Ran:        from the same clean copy after the tester's runs: `sweep-fundamentals --index GSPC` from 16:08:23 to 16:16:57
+            UTC, the S&P 400 from 16:16:57 to 16:22:42 and the S&P 600 from 16:22:42 to 16:30:44, each over the 27
+            settings written before any run and the pullback's base listings through 2026-10-08. It writes nothing. No
+            provider request and no model call.
+Results:    0 of 27 passed the family floors on every index, against about 3.6 that luck alone passes. The S&P 500 over
+            274 base listings: the most trades 54, growth above nothing with either margin and cash at 0.8, at -0.123
+            risks; the provisional setting 51 at -0.153, above nothing in 1 of 8 years. The S&P 400 over 1,703: the most
+            236 at the same setting, at +0.070; the provisional 220 at +0.034 in 5 of 8 years with 2 of the last 3. The
+            S&P 600 over 1,976: the most 233, at -0.062; the provisional 223 at -0.045 in 4 of 8 with none of the last 3.
+            No setting on any index reaches the floor of 300 trades over this history, and on the S&P 500 none could,
+            since its base listed 274.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    the report to the operator with no freeze: the family keeps listing on its provisional setting on every
+            index, and what follows a search no setting of which can reach the trade floor is the operator's to rule.
