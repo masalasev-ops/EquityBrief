@@ -40964,3 +40964,55 @@ Carried:    after the merge, from main: `filings --whole` once, then the history
             `ledger-check` on each index; migration 78 by the night's own first step; the night's ledger and filings
             steps' times read over the five nights after; the valuation reading's ruling; the C5 ruling is above and
             D4's approval still gates 17.2a.
+
+### 17.4 - the walk-forward tester: Part 0's procedures run inside a fold a year, the gate's step-down and its three screens, a book judged by its months, and the Loop page's frame   2026-10-09
+
+Built:      `WalkForwardTester`, the verb `loop-test --index <MID or SML>`, by hand and later by the monthly run: a fold
+            a year from 2022 to the newest session's year, each learning on what ended before its year's first session
+            through a view that refuses any read of that session or a later one, and tested on what it entered in its
+            year. Part 0's procedures with a set of tries run inside every fold: the breakout's and the drift's grids
+            on each index, the drift at the runbook's stop floor of 1 and on the S&P 400 with its learning window's
+            last two years read, and the heavyweights' six settings in each design, each setting walked once over the
+            whole history and each fold choosing through its view with the family floors in proportion to its
+            learning years. The proposals for one rule are read together by Romano and Wolf's step-down over every
+            sign vector of their blocks at a bar of 0.05 over 12, each with its three screens; a book's unit is its
+            month. Migration 79 creates `loop_run`, `loop_proposal` and `loop_test`, written in one transaction under
+            the drain's lock, with `--print` writing nothing. The Loop page under Universe, `#/loop`, section 15.20.
+            Section 13.12 with figure 13.4, the catalogue and matrix rows, three stores, section 17's five rows and
+            section 18's two, two decisions, SCHEMA, the runbook, the guide's paragraph, the roster's clauses and the
+            changelog.
+Departed:   the pullback's searches are not run inside a fold: they sample their grid for four hours rather than over
+            a stated set of settings, so a fold would read other settings on another machine; the plan's text says so,
+            with its prior text in the changelog, and the pullback's first proposals come from the engines. The S&P
+            500 holds no Part 0 procedure, so its families draw no proposal until then. The drift's rule today reads
+            its stop at the reaction's low with no floor and its procedure runs at the runbook's floor of 1, so in
+            risks the rule's trades carry hair-wide stops against the proposal's; the comparison is the decision's,
+            and the page draws both totals.
+Results:    the print form over the live store read-only, each index in about a minute and no request. The S&P 400:
+            the breakout's grid and both heavyweights' designs chose no setting in any fold or on all finished data;
+            the drift's chose the drift within 3 sessions, up 0.5 typical moves on 1.5 times the volume, the target at
+            2 risks, its stop floor 1, better in 3 of 4 counted years over 1,181 trades and 3 of 5 folds within a step,
+            at an adjusted p-value of 0.1752 against the bar of 0.0042: not passed. The S&P 600: the breakout's and the
+            drift's grids chose nothing; design (a)'s profit gate with the interest cover on all finished data, 3 of 5
+            folds, better in 2 of 4 counted years at 0.5999, and design (b) nothing on all finished data at 0.844;
+            none passed. Nothing is proposed to the operator from this run.
+Tests:      filled from the run: the windows and the purge worked by hand on a constructed ledger with a read past a
+            fold's end refused; the step-down worked by hand over three blocks and two proposals, a single proposal's
+            its own sign-flip p-value, and the gate either side of the bar; each screen at its edge; a book's months
+            by hand; the floors in proportion and a fold short of trades adding nothing; a run written whole and read
+            back; and the Loop page read back off the rendered page.
+Claims:     1104, from 1089: the tester's catalogue and matrix rows, its three stores, section 17's five rows, section
+            18's two and the Loop page's three regions.
+Pins:       none moved; the tester and its procedures sit in files no rule pins.
+Mutated:    the rule, stated before the run: the two properties the done condition names first, each broken alone. A
+            fold learns only on what ended before its first session, broken by learning on what ended on it: predicted
+            red at the windows test, the setup ended on the cut learned on by the 2022 fold. The step-down reads each
+            proposal against the largest statistic of those still standing, broken by reading each against its own
+            alone: predicted red at the step-down test, the first proposal's adjusted p-value an eighth rather than a
+            quarter. Results: the first red at the windows test alone, the 2022 fold learning on the setup ended on its
+            cut; the second red at the step-down test alone, the first proposal reading 0.125 for 0.25; each reverted
+            before anything was committed and the tests green. Not mutated: the book's months, the screens and the
+            page, each held by its own test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    after the merge, from main and once migration 79 is applied: `loop-test --index MID` and `--index SML` to
+            write the month's rows, and the Loop page read back against them.
