@@ -175,8 +175,8 @@ public partial class ReadSurface
             new(97.5m, 98.2m, PlanKind.Tranche, "buy on a failed breakdown back into the zone, stop on a daily close below 97.8", true),
             new(97.8m, 97.8m, PlanKind.Stop, "stop for the 97.5 zone", true),
             new(97.7m, 97.7m, PlanKind.Invalidation, "the whole position is wrong below this", true),
-            new(104m, 105m, PlanKind.Exit, "sell 1/3", true),
-            new(108m, 109m, PlanKind.Exit, "sell 1/3 and trail the rest", true),
+            new(104m, 105m, PlanKind.Exit, "sell 1/2 of the position", true),
+            new(108m, 109m, PlanKind.Exit, "the last 1/2 is held on a stop trailed under the price, not sold at a price", true, Trails: true),
         ];
 
         var svg = marks.PlanColumn("TEST", 100m, rows);
@@ -208,7 +208,8 @@ public partial class ReadSurface
         Assert.Contains("class=\"m-leader\"", svg, StringComparison.Ordinal);
 
         Assert.Contains(">Buy 98.00 to 99.00</text>", svg, StringComparison.Ordinal);
-        Assert.Contains(">Sell at 108.00 to 109.00</text>", svg, StringComparison.Ordinal);
+        Assert.Contains(">Sell at 104.00 to 105.00</text>", svg, StringComparison.Ordinal);
+        Assert.Contains(">Trail from 108.00 to 109.00</text>", svg, StringComparison.Ordinal);
         Assert.Contains(">Stop 97.90</text>", svg, StringComparison.Ordinal);
         Assert.Contains(">Invalidation 97.70</text>", svg, StringComparison.Ordinal);
 
