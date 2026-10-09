@@ -41151,6 +41151,12 @@ Mutated:    the rule, stated before the run: the three properties the done condi
             reading's mark falling to two thirds over 199; the second red at both, each condition at its mark proposed;
             the third red at the fold test alone, a test year's listing read. Each reverted before anything was
             committed and the tests green. Not mutated: the spreads and the page, each held by its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 95854269, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2076 of 2076 tests ran with none failed, migrations 0 to
+            81 with none pending, schema version 81, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 51 tables, 1115 claims, 1115 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1126
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2076 of 2076 tests ran.
 Carried:    after the merges of 17.3 to 17.5, from main: `loop-test` on each index over the facts as filed, its
             conditions and spreads written and read back on the Loop page.
