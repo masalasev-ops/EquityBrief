@@ -41742,5 +41742,11 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             predicted red at the bracket test and the two tests reading the year's extremes, and green at the
             not-on-file and route tests. Result: the three red and the two green, as predicted, made on this branch and
             reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ddfdd1bc, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2121 of 2121 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2121 of 2121 tests ran.
 Carried:    nothing.
