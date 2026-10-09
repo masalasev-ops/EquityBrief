@@ -41400,3 +41400,82 @@ Checked:    `ledger-check` on each index, 200 history setups an index sampled 25
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
 Carried:    a 17.3 correction of its own: the check rebuilds the six family readings or leaves them out by name, and the
             sixteen differences are traced to their source before the check is held to them or to a tolerance.
+
+### 17.9 - approval and the live alarm: the Loop page's presses, the apply step writing an S&P 400 or 600 family's setting before the next night on that index alone, the tester walking each rule at the setting it stands at, and the alarm on each live rule's periods   2026-10-09
+
+Built:      the operator's word on the Loop page. Approve and Decline beside each passing proposal of the newest tester
+            run on the S&P 400 and 600, a decline asking its reason, and a restore beside a flagged rule's alarm, each a
+            press under the page's own header writing one row to `loop_decision`, and refusing with nothing written a run
+            that is not the newest, a proposal that did not pass or states no change, an S&P 500 rule, a book, a second
+            word on one proposal, a second approval in a family a run and a proposal declined before over no more blocks
+            than its run reads. The apply step, in the swing filter's step after the heavyweights' books and before the
+            index families, and the verb `loop-apply` by hand: each approved change no apply has answered written on top
+            of the setting standing as a row of the append-only `provisional_setting` on its index alone, each answer in
+            `loop_applied`, and a change to an S&P 500 rule, a book or a family whose live rule stands registered refused
+            with why. Under `EquityBrief:Loop:Adopt`, shipped as `on approval`, a proposal holding no decision is applied
+            only where the setting reads `automatic`, then the strongest of a family once a run. The S&P 400's and 600's
+            families, cards and forming list read the stored setting from the next night: a swing family's places on its
+            grid, the drift's stop floor, and the exit and hooks over the menu, each trade keeping its exit and its stop's
+            distance in typical moves. The tester walks each rule at the setting it stands at, a proposal's hooks set on
+            top as an approval sets them, and stores each proposal's change and each live rule's test-window units in
+            `loop_reference`. The live alarm, a night stage after the rule cards: each live rule's settled months,
+            quarters for a book, against a stationary bootstrap of its reference at the period's own count, 10,000 draws
+            at seed 20261011 in blocks of weeks four long on average, written once to `loop_alarm` and flagged two counted
+            periods running under the fifth percentile, a period under five units neither counting nor breaking the run;
+            a flag drawn above its index's Tonight and on the Loop page with its restore. A card whose rule stands at an
+            approved change draws no record as its own, the record stored replaying the setting before the change. The
+            Run page groups the two stages. Migration 83. Section 13.16 and figure 13.7, two catalogue and matrix rows,
+            section 14's step, Tonight's, the card's and the Loop page's rows, five stores, section 17's alarm and setting
+            and section 18's two rows; the two decisions; SCHEMA, the runbook, CLAUDE.md's layout and Merge for the
+            ledger's history build, the roster and the changelog.
+Departed:   This checkpoint amends its own done condition, its text in the plan rewritten and the prior text in the
+            changelog. An approved change reaches an S&P 400 or 600 provisional rule alone; one to an S&P 500 rule, a book
+            or a family whose live rule stands registered is refused with why. The S&P 500's page is drawn by its
+            families' own code at their frozen settings, so how a change reaches it, registered with every S&P 500
+            family's pins moved or read from the store, is the operator's to rule, put on 2026-10-09. The old loop's
+            decisions govern the S&P 500's registered rules, which no approval changes until that ruling, so their
+            reconciliation lands with it and no decision moved to Previously decided here. The guide's section on the
+            loop, the check holding each figure's key in both documents and section 18's row for a monthly run that fails
+            move to 17.10, which builds the monthly run.
+Tests:      2109, thirteen more and the 15.1 correction's one: the adopt setting shipped and read; an approval on the
+            S&P 600 applied there alone, the S&P 500's refused with why and a decline answered by nothing; each refusal of
+            the apply step and a restore writing the setting before the change; a declined proposal put again only over
+            more blocks and a change on top of another replacing its own parts alone; the S&P 400's night reading the
+            breakout's stop at its own stored setting and not the S&P 600's; the alarm's rule worked by hand and its
+            reader writing each settled period once; a rule standing at approved hooks walked at them; and five read back
+            off the rendered pages: the presses writing one decision or refusing with nothing written, the page drawing
+            the presses, the decisions, the settings and the alarm, a change approved on the S&P 600 read on its cards
+            alone with the S&P 400's and 500's pages the same byte for byte, a page whose every proposal failed drawing
+            every family's card with no press, and a card at an approved change drawing no record as its own.
+Claims:     1145, from 1127: the two catalogue and two matrix rows, five stores, section 17's two rows, section 18's two,
+            the Loop page's three regions, Tonight's line and the card's row.
+Pins:       the four S&P 400 and 600 rule evaluators', the index night's and the index families' sources moving with this
+            checkpoint and the 15.1 correction: the pullback 1318c9a575b5 to 76acc1a48419, the breakout e4ce98f158b9 to
+            c66f249ae3a8, the drift ae24c3f78e90 to 285c79d96f7a and the heavyweights 34fc5ff8ccd6 to 81aa1113c30f. No
+            rule stands registered on either index, so nothing restarts; no S&P 500 evaluator's moved.
+Mutated:    the rule, stated before the run: each property the done condition names that one edit can break alone. A
+            change applied only on the operator's word, broken by the apply step taking every passing proposal as
+            approved whatever the setting reads: predicted red at the adopt setting's test. An approval on one index
+            changing no other, broken by the stored setting read whatever its index: predicted red at the S&P 400's night
+            test and the S&P 600's cards test. No engine writing the register, broken by the tester declaring an insert
+            into it: predicted red at component-access. The alarm's two periods running, broken by flagging at one:
+            predicted red at the rule's hand-worked test and at pinned-constants. A page whose every proposal failed
+            drawing every family's card, broken by the Loop page leaving out a family with no passing proposal: predicted
+            red at that page's test. Results: the first red at the adopt setting's test, the S&P 600's breakout proposal
+            ranked 2 applied with no decision under on approval, and at the S&P 600's apply test, the S&P 400's breakout
+            and the S&P 600's drift applied undecided; the second red at the S&P 400's night test, its pick's stop read
+            at 98.0458, three moves under its buy as the setting stored for the S&P 600 puts it, for its own 100.0229,
+            and at the S&P 600's cards test and its apply test, the S&P 600's breakout change read as another index's
+            setting; the third red at component-access three times, the write against SCHEMA's ownership and
+            the code, against the catalogue row and against the matrix row; the fourth red at the rule's test, January
+            and May flagged on one counted month, at the reader's test, July flagged, and at pinned-constants, section 17's
+            2 against the constant; the fifth red at the page's test, no pullback card drawn. Each made on this branch and
+            reverted before anything was committed, and the tests green. Not mutated: the presses' refusals, a decline
+            put again only over more blocks, a restore writing the setting before the change, the tester walking a rule
+            at its standing hooks and the card's record drawn as none, each held by its own test above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    the merge waits until the night of 2026-10-09, the first of 17.3 to 17.8, has been read; after it, from main,
+            migration 83 by the night's own first step and the apply step's and the alarm's rows read on its first
+            nights, the alarm's first two months read as they come (owes: The alarm's first two months). The operator's
+            ruling on the S&P 500's apply path, its reconciliation of the old loop's decisions and its 63 sessions as a
+            variant (owes: A replaced rule's 63 sessions as a variant).
