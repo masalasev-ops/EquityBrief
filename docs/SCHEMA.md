@@ -94,6 +94,11 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_finding` | WalkForwardTester | none | none |
 | `loop_reading` | WalkForwardTester | none | none |
 | `loop_model` | WalkForwardTester | none | none |
+| `loop_reference` | WalkForwardTester | none | none |
+| `loop_decision` | ReadApi | none | none |
+| `loop_applied` | LoopApply | none | none |
+| `provisional_setting` | LoopApply | none | none |
+| `loop_alarm` | LiveAlarmReader | none | none |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -145,7 +150,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
-**`research_request`, `watch_list` and `taken_trade` are the three tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them.
+**`research_request`, `watch_list`, `taken_trade` and `loop_decision` are the four tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them. The decisions are the operator's word on the loop's proposals: ReadApi inserts one on a Loop page press and never edits it, and the worker's apply step reads it and writes what it did in tables of its own (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -1032,10 +1037,12 @@ Grain: one row per index, family, stock and session the index's list kept a trad
 | `cost` | REAL | its round trip in multiples of its risk at the published table, its company valued as the member readings read it under its index on its night and one they read none for in the $1 to 2 billion band, which the result after costs subtracts, null while open |
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until every such trade has had its cap |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+| `exit` | INTEGER | from 17.9, the exit of the menu the trade and its benchmark are walked under where the setting an approval stored for its family names one; null for the family's own exit |
+| `risk_moves` | REAL | from 17.9, the stop's distance under the buy in the night's typical moves, which the benchmark's plan is placed by; null on a trade kept before it, whose distance is read off its stock's bars on its night |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`.
 
-**The index families write it and are its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). Each night they first walk every trade not yet ended over the closes since and write where it ended, its result and its cost, and once a trade's cap has passed its benchmark; then they keep each listed row of tonight's lists. A night run again replaces the trades it kept for that night. The rows are never deleted otherwise: each index's Past picks and its forward-return scoring read them.
+**The index families write it and are its own deleter** (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it). Each night they first walk every trade not yet ended over the closes since and write where it ended, its result and its cost, and once a trade's cap has passed its benchmark, the same plan entered at the close on every member of the index that night through the sweeps' own benchmark, as a registered rule's trade is given its; then they keep each listed row of tonight's lists. Until the 15.1 correction of 2026-10-09 nothing wrote the benchmark, and the trades kept before it are given theirs on the first night after it whose cap has passed. A night run again replaces the trades it kept for that night. The rows are never deleted otherwise: each index's Past picks and its forward-return scoring read them, and from 17.9 the live alarm reads each one's edge.
 
 ### index_heavyweight_holding
 Grain: one row per index, stock and the session the index's sector heavyweights bought it on.
@@ -1157,6 +1164,7 @@ Grain: one row per index, night, family and stock the family listed or the index
 | `hits` | TEXT | JSON: what could hit the trade, the hold's last session, the stock's stored reactions in typical moves and in the plan's risks with how many passed the stop's distance, the next ex-dividend date inside the hold, declared or estimated, with its payment, and the market events inside the hold with each kind whose table ends first; null on a card written before 16.3 |
 | `score_rank` | INTEGER | from migration 82, the pick's place in hundredths among the setups its index's newest learned score learned on there, null until one of that score's proposals passed the tester on the index, and for a family no score reaches |
 | `similar` | TEXT | JSON: the setups like the pick under its rule on its index, the readings matched on, how many were matched of how many and their median distance, their mean edge with its interval's two ends and the rule's own mean, or why none were matched; null for a family no learned score reaches and on a card written before 17.7 |
+| `approved` | TEXT | from 17.9, the words of the change an approval set on an S&P 400 or 600 family the card's rule stands at, in whose place the card reads no record, since the record stored for the family replays its setting before the change; null otherwise |
 
 Primary key: `index_code`, `session_date`, `family`, `ticker`.
 
@@ -1267,7 +1275,7 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
-| `rule` | TEXT | the words of the live rule's setting the pass beside it was read at: the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting |
+| `rule` | TEXT | the words of the family's setting in code the pass beside it was read at: the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting, which from 17.9 a change approved on the Loop page does not move, so the ledger keeps one measure across every session it holds |
 | `live_pass` | INTEGER | 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not |
 | `picked` | INTEGER | 1 where the night's own list held the stock under the family, 0 where the night listed and did not, null on a row the history build wrote |
 | `entry` | TEXT | decimal in code, the close the setup is bought at |
@@ -1421,6 +1429,7 @@ Grain: one row per run, family and proposal tested.
 | `stable_folds` | INTEGER | the folds choosing within a grid step of the proposal |
 | `passed` | INTEGER | 1 where all four parts held and the proposal names a change |
 | `finding` | TEXT | from 17.5, an exit proposal's finding in words: the autopsy's figures where it read the rule's trades, and the exit's edge on the years it learned on against the rule's; null for any other proposal and one naming no change |
+| `change` | TEXT | from 17.9, JSON: the change in the form an approval applies it, a swing family's setting by its places on its sweep's grid with the grid's key and the stop floor a drift reads beside it, or the hooks a registration states; null where the procedure chose no setting and on a run written before 17.9 (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone) |
 
 Primary key: `run_id`, `index_code`, `family`, `proposal`.
 
@@ -1505,6 +1514,94 @@ Grain: one row per run, family and fold of the learned score, the score fitted o
 Primary key: `run_id`, `family`, `year`.
 
 **Written once by the walk-forward tester with its run**, from 17.7, a row a fold and one for all finished data, each fitted on the ledger's finished setups of the family on all three indices whose paths ended before its cut. The decision cards read the newest run's score fitted on all finished data, the one cut after the run's last session, for the part a pick's card draws and its rank, and the Loop page draws it (see: A fitted statistical model is a rule).
+
+### loop_reference
+Grain: one row per run, family and trade of the rule today over the run's test years.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | `pullback`, `breakout`, `drift` or `heavyweight` |
+| `place` | INTEGER | the trade's place among the family's in the order they were entered, counted from one |
+| `entered` | TEXT | the session the trade was entered on, or a book's holding bought on |
+| `edge` | REAL | its edge after costs: a swing trade's result less its round trip and the same plan on every member that session, in risks; a holding's against its size cut, a fraction of the buy |
+
+Primary key: `run_id`, `index_code`, `family`, `place`.
+
+**Written once by the walk-forward tester with its run**, from 17.9, a family's trades read from the first of its proposals carrying them, since every proposal of a family is tested against the same rule. The live alarm reads the newest run's on each index as the family's reference (see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running).
+
+### loop_decision
+Grain: one row per word the operator gave on a proposal of a run, or on a restore.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run whose proposal it is, or `restore` for a restore the live alarm put |
+| `index_code` | TEXT | the index the proposal was tested on |
+| `family` | TEXT | the family it changes |
+| `proposal` | TEXT | the proposal's name in its run, or a restore's, naming the change it undoes |
+| `decision` | TEXT | `approved` or `declined`, constrained in the table |
+| `reason` | TEXT | the reason a decline gave; null on an approval |
+| `decided_at` | TEXT | UTC instant the press wrote it |
+
+Primary key: `run_id`, `index_code`, `family`, `proposal`.
+
+**The operator's word, written by the read surface on the Loop page's presses alone**, from 17.9, under the page's own header as every press is, one a proposal and never edited. A press is refused, with nothing written, for a run that is not its index's newest, a proposal the run does not hold, a second word on one proposal, an approval of a proposal that did not pass or states no change, a change no apply could apply, a second approval in a family in one run, a change declined before and not yet put again, a decline giving no reason, and a restore of a change that is not its family's newest or of a family the live alarm has not flagged (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone) (see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block). The apply step and the Loop page read it.
+
+### loop_applied
+Grain: one row per word the apply step answered, a proposal a row.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | as `loop_decision` carries it |
+| `index_code` | TEXT | |
+| `family` | TEXT | |
+| `proposal` | TEXT | |
+| `applied_at` | TEXT | UTC instant the step answered it |
+| `outcome` | TEXT | `applied` or `refused`, constrained in the table |
+| `words` | TEXT | what was applied, the setting the family stands at in words, or why it was refused |
+
+Primary key: `run_id`, `index_code`, `family`, `proposal`.
+
+**Written once by the apply step**, from 17.9, a row for each approval and, where the adopt setting reads automatic, each proposal it applied with no word; none is answered twice. The Loop page reads it beside each decision.
+
+### provisional_setting
+Grain: one row per change an approval made to a family of the S&P 400 or 600.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the change's number, counted from one across every index and family |
+| `index_code` | TEXT | `MID` or `SML` |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `change` | TEXT | JSON: the setting the family stands at from then, in the form an approval applies, its places on its sweep's grid with the grid's key and the stop floor a drift reads beside it where it states a setting, and the hooks a registration states |
+| `words` | TEXT | that setting in words |
+| `set_at` | TEXT | UTC instant the apply step wrote it |
+| `run_id` | TEXT | the run whose proposal it came from, or `restore` |
+| `proposal` | TEXT | the proposal it came from, or the restore |
+
+**Written by the apply step alone and never edited**, from 17.9, each change written on top of the setting the family stood at, a restore writing the setting before the change it undoes. A family's newest row is the setting it stands at: the index families read it for the family's list and trades and name it in the night's settings, the rule cards read it for the breakouts forming, the tester tests the family against it, and the Loop page draws every row (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone).
+
+### loop_alarm
+Grain: one row per index, family and closed period the live alarm read.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | |
+| `family` | TEXT | `breakout`, `drift`, `pullback` or `heavyweight` |
+| `period` | TEXT | the period's first day, a month's or for a book a quarter's |
+| `trades` | INTEGER | the live rule's units that ended in it holding an edge |
+| `edge` | REAL | their mean edge after costs, in risks or for a book a fraction of the buy; null where none ended |
+| `edge_floor` | REAL | the floor it was read against, the 0.05 quantile of the means of as many of the reference's units; null where it did not count |
+| `counted` | INTEGER | 1 where the period held at least five units and its reference gave a floor, 0 otherwise |
+| `under` | INTEGER | 1 where it counted and its mean stood under the floor |
+| `streak` | INTEGER | the counted periods running under the floor to this one, carried over a period that did not count |
+| `flagged` | INTEGER | 1 where the run reached two, the rule flagged on it |
+| `reference` | TEXT | the tester run whose reference it was read against |
+| `run_id` | TEXT | the night that read it |
+
+Primary key: `index_code`, `family`, `period`.
+
+**Written once by the live alarm**, from 17.9, a period read once it has closed and every unit that ended in it holds its edge, in order, so no period is written before one ahead of it, and never read again. Tonight reads each family's newest row for its line and the Loop page draws every row (see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running).
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.
