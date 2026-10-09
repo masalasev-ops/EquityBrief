@@ -40996,7 +40996,7 @@ Results:    the print form over the live store read-only, each index in about a 
             drift's grids chose nothing; design (a)'s profit gate with the interest cover on all finished data, 3 of 5
             folds, better in 2 of 4 counted years at 0.5999, and design (b) nothing on all finished data at 0.844;
             none passed. Nothing is proposed to the operator from this run.
-Tests:      filled from the run: the windows and the purge worked by hand on a constructed ledger with a read past a
+Tests:      2057, seven more: the windows and the purge worked by hand on a constructed ledger with a read past a
             fold's end refused; the step-down worked by hand over three blocks and two proposals, a single proposal's
             its own sign-flip p-value, and the gate either side of the bar; each screen at its edge; a book's months
             by hand; the floors in proportion and a fold short of trades adding nothing; a run written whole and read
@@ -41013,6 +41013,12 @@ Mutated:    the rule, stated before the run: the two properties the done conditi
             cut; the second red at the step-down test alone, the first proposal reading 0.125 for 0.25; each reverted
             before anything was committed and the tests green. Not mutated: the book's months, the screens and the
             page, each held by its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 4925770a, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2057 of 2057 tests ran with none failed, migrations 0 to
+            79 with none pending, schema version 79, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 49 tables, 1104 claims, 1104 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1115
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2057 of 2057 tests ran.
 Carried:    after the merge, from main and once migration 79 is applied: `loop-test --index MID` and `--index SML` to
             write the month's rows, and the Loop page read back against them.
