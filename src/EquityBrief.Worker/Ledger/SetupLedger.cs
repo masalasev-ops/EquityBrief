@@ -809,6 +809,108 @@ public sealed class SetupLedger : IComponent
         return 0;
     }
 
+    public const string CheckStage = "ledger-check";
+
+    // The history setups a year the point-in-time check samples, and the seed it samples by, so a check run again
+    // over the same ledger reads the same setups.
+    public const int CheckPerYear = 25;
+
+    public const int CheckSeed = 17;
+
+    static readonly string HistoryReadings =
+        "SELECT family, ticker, session_date, " + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
+        + " FROM setup WHERE index_code = $index AND source = $source ORDER BY session_date, family, ticker;";
+
+    // The point-in-time check by hand: a seeded sample of each year's history setups on the index, each one's readings
+    // rebuilt from the history cut at its own session and held to the readings stored, every reading that differs named.
+    // It reads the store and writes its run log row alone.
+    public async Task<int> CheckAsync(string index, TextWriter output, int perYear = CheckPerYear, int seed = CheckSeed, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var runId = FormattableString.Invariant($"{CheckStage}-{startedAt:yyyyMMddTHHmmssZ}");
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var stored = new List<(string Family, string Ticker, DateOnly Session, double?[] Readings)>();
+
+        await using (var command = Command(connection, null, HistoryReadings, [("$index", index), ("$source", HistorySource)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var readings = new double?[LedgerReadings.Count];
+
+                for (var at = 0; at < readings.Length; at++)
+                {
+                    readings[at] = reader.IsDBNull(3 + at) ? null : reader.GetDouble(3 + at);
+                }
+
+                stored.Add((reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)), readings));
+            }
+        }
+
+        if (stored.Count == 0)
+        {
+            output.WriteLine($"ledger-check: the ledger holds no history setup on the {DecisionCards.NameOf(index)}, so nothing was checked");
+            await AppendAsync(connection, runId, CheckStage, startedAt, 0, Ok, "no history setup to check", cancellation);
+
+            return 0;
+        }
+
+        var random = new Random(seed);
+        var sample = stored
+            .GroupBy(row => row.Session.Year)
+            .OrderBy(year => year.Key)
+            .SelectMany(year => year.Select(row => (Row: row, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Row))
+            .ToArray();
+        var through = sample.Max(row => row.Session);
+        var history = new SweepHistory(databaseFile);
+        var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: index == IndexFamilies.LargeIndex ? null : index, asItStood: index != IndexFamilies.LargeIndex);
+        var income = await history.IncomeAsync(through, cancellation);
+        var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
+        var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
+        var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var findings = new List<string>();
+        var read = 0;
+
+        foreach (var session in sample.GroupBy(row => row.Session).OrderBy(group => group.Key))
+        {
+            var cut = LedgerPointInTime.Cut(inputs, session.Key);
+            var cutMarket = LedgerPointInTime.Cut(market, session.Key);
+
+            foreach (var row in session)
+            {
+                if (LedgerPointInTime.Rebuilt(index, cut, cutMarket, income, sectors, facts, row.Ticker) is not { } rebuilt)
+                {
+                    findings.Add($"{row.Family} {row.Ticker} {Stamp(row.Session)}: the cut history holds no bar of it on its session");
+
+                    continue;
+                }
+
+                read++;
+                findings.AddRange(LedgerPointInTime.Differences(row.Readings, rebuilt).Select(differ =>
+                    FormattableString.Invariant($"{row.Family} {row.Ticker} {Stamp(row.Session)}: {differ.Reading} stored {Shown(differ.Stored)}, rebuilt {Shown(differ.Rebuilt)}")));
+            }
+        }
+
+        foreach (var finding in findings)
+        {
+            output.WriteLine("ledger-check: " + finding);
+        }
+
+        var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history cut at each one's session, {perYear} a year by seed {seed}; ")
+            + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
+
+        await AppendAsync(connection, runId, CheckStage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
+        output.WriteLine("ledger-check: " + detail);
+
+        return findings.Count == 0 ? 0 : 1;
+    }
+
+    static string Shown(double? reading) => reading is { } held ? held.ToString("R", CultureInfo.InvariantCulture) : "none";
+
     // Waiting for the night: while a night holds its lock under the data root, and inside a weekday's night window,
     // looking again each poll and saying so once.
     async Task WaitForTheNightAsync(string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)

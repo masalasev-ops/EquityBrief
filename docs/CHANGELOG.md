@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - the ledger's point-in-time check
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> [the setup ledger's catalogue row] [...] waiting for the night and holding the drain's lock while it writes each chunk and going on from the sessions not yet written; a night run again replaces its own rows,
+> [13.10] [...] a span written again only when asked. The vocabulary the loop's later sections use
+> [fixture-expectations] [...] its facts worked out from the capture by the test's own reading |
+Now:
+> [the catalogue row] [...] going on from the sessions not yet written, and checks by hand a seeded sample of its history setups against their readings rebuilt from the history cut at each one's session; a night run again replaces its own rows,
+> [13.10] [...] a span written again only when asked. The point-in-time check by hand takes a seeded sample of each year's history setups and rebuilds each one's readings from the history cut at its own session, [...]; a reading that read past its session differs, and is named. The vocabulary the loop's later sections use
+> [fixture-expectations] [...] its facts worked out from the capture by the test's own reading; and a heavyweights' setup's path worked by hand, [...]; and a setup's readings rebuilt from a constructed history cut at its session equal to those read off the whole, a stored reading taken from the session after named by its column with both figures |
+Why: the plan's point-in-time check, built as the `ledger-check` verb over the history cut in memory at each sampled setup's session rather than over a scratch file, the same inputs holding only what stood then.
+
 ### 2026-10-09 - ARCHITECTURE.html and RUNBOOK.md - the Ledger page under Universe and its summary
 Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 Was:

@@ -48,6 +48,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-answer" => await SweepAnswerRun(args),
     "rule-record" => await RuleRecordRun(args),
     "ledger-build" => await LedgerBuildRun(args),
+    "ledger-check" => await LedgerCheckRun(args),
     "filings" => await FilingsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
@@ -62,7 +63,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 29 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 30 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -137,6 +138,8 @@ static int NoVerb()
         "merged with the store's, each replayed to its end, a chunk of sessions at a time, going on from the sessions " +
         "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
         "the span again, " +
+        "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
+        "history cut at each one's session and names every reading that differs from the one stored, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
@@ -569,6 +572,24 @@ static async Task<int> LedgerBuildRun(string[] args)
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
         .BuildAsync(store.DataRoot, index, fromDay, throughDay, Console.Out, again: args.Contains("--again", StringComparer.Ordinal));
+}
+
+// The ledger's point-in-time check by hand, over one index's history setups, reading the store and writing its run log
+// row alone.
+// see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+static async Task<int> LedgerCheckRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("ledger-check: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).CheckAsync(index, Console.Out);
 }
 
 // The filings refresh by hand: the night's step over the three indices' members, or with '--whole' every filer the

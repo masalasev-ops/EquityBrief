@@ -725,6 +725,14 @@ tools/ledger-build --index MID --from 2019-01-02 --through 2026-10-05
 
 The script builds the main checkout's own commit from a clean copy under the data root's folder of nights, as `tools/nightly` builds a night, reusing the copy where a night built that commit already, and refuses a checkout off main or holding a commit origin/main lacks; `--check` prints what it would build and run and runs nothing. The worker then waits while a night holds its lock or a weekday's night window is near, holds the drain's lock, which the store's copy holds too, while it writes each chunk and for no longer, and goes on from the sessions of the span it has not written, so a build stopped part way is run again with the same span; `--again` writes the span again in place of what an earlier build wrote. It writes the ledger's two tables alone and records one run log row under `ledger-build` with the setups and the sessions written. A row the build writes carries no pick and no cost, which the night alone stores. The build ends by rewriting the index's summary, which the Ledger page under Universe draws: each family's setups a year, the share the live rule passes and the night's list picked, and the deciles of result and edge, with a chosen setup's path drawn from the bar store and the kept bars.
 
+Once an index's history is built, check it point in time:
+
+```
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+It takes 25 of each year's history setups by a fixed seed, rebuilds each one's readings from the history cut at its own session, holding only what stood then, and names every reading that differs from the one stored, exiting non-zero where any does. It reads the store and writes one run log row under `ledger-check`.
+
 ### The SEC's facts and the filings refresh
 
 From 17.3 the night refreshes the SEC's facts of the members that filed, after the quarters fetch and before the overnight queue: it reads the archive's daily index for each weekday since it last read one, and asks the archive for the facts of each member whose filer filed a 10-Q, a 10-K or an amendment to either, or an 8-K or its amendment whose own page carries item 2.02, storing each fact not yet stored as first filed in `filed_fact` (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit). The archive posts a day's index at about 22:00 New York time, so a filing is refreshed on the next session's night. The refresh uses the archive's contact in `appsettings.Secrets.json`, the one the history pull uses; a night without it refreshes nothing and its row says so. Its row on the run page states the days read, the members refreshed, the facts stored and the documents asked of the archive, and its time is the row's own start and end; a refusal leaves the facts as they were and the days for the next night.
