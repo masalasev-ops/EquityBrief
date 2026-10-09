@@ -41653,7 +41653,13 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds,
             at the key test, "Figure 13.3.'s key does not name: Business readings read again"; M5 red at the script
             test, the off-main check exiting 0 for 1; M6 red at the operating rows test, phase 17 stated at five against
             the six rows its table holds. Each reverted, and the tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 17891088, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2117 of 2117 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2117 of 2117 tests ran.
 Carried:    after the merges of 17.9 and 17.10, from main: the monthly run by hand recorded per family per index with its
             time; the screenshots of the cards with a variant chosen, the Ledger and Loop pages and the decision card on
             each index at a wide screen and a phone's width, each read back against the store; the scheduler registered
