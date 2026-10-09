@@ -40844,7 +40844,8 @@ Built:      migration 77 creates `setup` and `setup_night`. `SetupLedger`, the o
             call; that night, 2026-10-08, then ran clean from main with both, the cards' stage in 6 s writing 37 rule
             rows, 7 variant picks and 90 forming rows across the three indices, and the fetcher keeping the 1,498 bars
             it dropped for 2025-10-07, in 1,592 s to the close.
-Tests:      filled from the run, seven more: each market series reading worked by hand at its window's edge over the
+Tests:      2035, eight more: a setup's path replayed from its anchor under the stop, the target, the trail and the cap,
+            the branch's first commit; each market series reading worked by hand at its window's edge over the
             series' own sessions; each loose gate on both sides of its threshold and at it with the floors; a setup's
             edge against the same plan on three constructed members with the benchmark settled only once every path has
             ended; the readings of a session read the same over a series cut there and over the whole and differing
@@ -40864,7 +40865,13 @@ Mutated:    the rule, stated before the run: the property the done condition nam
             the VIX read 75 over the series cut at the session and 76 over the whole, the session after's close. Reverted
             before anything was committed. Not mutated: the loose gates, the benchmark's settling and the night's window
             closing, each held by its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 7f0a5cc1, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2035 of 2035 tests ran with none failed, migrations 0 to
+            77 with none pending, schema version 77, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 45 tables, 1076 claims, 1076 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1087
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2035 of 2035 tests ran.
 Carried:    this pull request changes the night's code, so it merges outside the night's window with `tools/migrate.ps1`
             run on the store after the merge; its first night is read the morning after. The night step's time on the
             live store is read off that night's run page against the plan's 60 s, and the history build is run and its
