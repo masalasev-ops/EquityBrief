@@ -40,8 +40,8 @@ public sealed record ProseFigure(
     int? Day);
 
 // One sentence and the documents it cites, by their position in the section's
-// own source list.
-public sealed record ProseSentence(string Text, IReadOnlyList<int> Citations);
+// own source list, and whether it cites the night's stored figures.
+public sealed record ProseSentence(string Text, IReadOnlyList<int> Citations, bool CitesNight = false);
 
 // One thing wrong with a section, with the text a person needs to see.
 public sealed record ClaimFinding(string Sentence, string Offending, string Reason);
@@ -144,6 +144,14 @@ public static class ClaimRules
     public const string ClaimOfCandour = "a sentence claiming candour in the word the corpus bans";
     public const string EmDashed = "a sentence carrying an em dash";
     public const string TwoCasesWithoutSides = "two cases not written as the bull case and the bear case";
+    public const string FigureNoCitedDocumentHolds = "a figure no document the sentence cites states";
+    public const string UnusableAnswer = "an answer written as a JSON object or list rather than prose";
+
+    // The mark a sentence cites the night's stored figures by: those the night computed and those code copied from a
+    // filing or the provider, which is the facts file. A figure in a sentence citing it is held to the facts file
+    // alone, and one in a sentence citing documents and not it is held to their text as well.
+    // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+    public const string NightMark = "[N]";
 
     // ---- the two cases ----
 
@@ -274,8 +282,16 @@ public static class ClaimRules
             return new ClaimVerdict([], NoAdmissibleSource: true);
         }
 
+        // An answer that is JSON is no section in any of them, the key's empty answer stored as an error object among
+        // them, and its sentences are not read.
+        if (IsJson(prose))
+        {
+            return new ClaimVerdict([new ClaimFinding(string.Empty, Excerpt(prose), UnusableAnswer)], NoAdmissibleSource: false);
+        }
+
         var findings = new List<ClaimFinding>();
         var cause = string.Equals(section, CauseSection, StringComparison.Ordinal);
+        var stated = new Dictionary<int, DocumentFigures>();
         var calendar = string.Equals(section, CalendarSection, StringComparison.Ordinal);
         var moves = cause ? MoveWindows.In(facts) : [];
 
@@ -306,10 +322,14 @@ public static class ClaimRules
                 findings.AddRange(CauseFindings(sentence, moves, sources));
             }
 
-            if (researched && sentence.Citations.Count == 0)
+            if (researched && sentence.Citations.Count == 0 && !sentence.CitesNight)
             {
                 findings.Add(new ClaimFinding(sentence.Text, sentence.Text, Uncited));
             }
+
+            // A figure in a researched sentence citing documents and not the night's figures is one a document it
+            // cites states, as well as one the facts file holds.
+            var heldToDocuments = researched && sentence.Citations.Count > 0 && !sentence.CitesNight;
 
             if (sentence.Text.Contains(BannedWord, StringComparison.OrdinalIgnoreCase))
             {
@@ -345,6 +365,7 @@ public static class ClaimRules
                 {
                     FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
                     FigureKind.Figure when NamedForAnotherPeriod(figure, facts, named) => FigureNamedForAnotherPeriod,
+                    FigureKind.Figure when heldToDocuments && !StatedByACitedDocument(figure, sentence, sources, stated) => FigureNoCitedDocumentHolds,
                     FigureKind.Window when !IsAWindow(figure, facts) => UnknownWindow,
                     FigureKind.Date when calendar => CalendarDate(figure, sentence, sources, night),
                     FigureKind.Date when !IsADate(figure, facts) => UnknownDate,
@@ -458,6 +479,90 @@ public static class ClaimRules
     static IEnumerable<ProseFigure> DatesIn(string body) =>
         Figures(body).Where(figure => figure.Kind == FigureKind.Date);
 
+    // ---- a figure a cited document states ----
+
+    // A document's figures as the prose's own reader reads them, with the scales its tables state they are written in.
+    sealed record DocumentFigures(IReadOnlyList<ProseFigure> Figures, IReadOnlyList<decimal> Scales);
+
+    // A statement of the unit a document's tables are written in: "(in millions, except per share amounts)", "(Millions
+    // of Dollars)" or "in thousands".
+    static readonly Regex StatedScale = new(
+        @"\bin\s+(?<unit>thousands|millions|billions)\b|\b(?<unit>thousands|millions|billions)\s+of\s+(?:U\.?S\.?\s+)?dollars\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+
+    public static IReadOnlyList<decimal> ScalesStated(string body) =>
+    [
+        .. StatedScale.Matches(body)
+            .Select(match => ScaleOf(string.Empty, match.Groups["unit"].Value.TrimEnd('s', 'S')))
+            .Distinct(),
+    ];
+
+    // Whether a figure is one an admitted document the sentence cites states: a figure of its text at the precision the
+    // prose writes, read at its own unit or, written bare, at a scale the document states its tables in, a percentage
+    // only against a percentage. The facts file is not read here, since a figure in such a sentence is held to it apart.
+    static bool StatedByACitedDocument(ProseFigure figure, ProseSentence sentence, IReadOnlyList<StoredDocument?> sources, Dictionary<int, DocumentFigures> stated)
+    {
+        var target = figure.Magnitude * figure.Scale;
+        var tolerance = 0.5m * Unit(figure.Decimals) * figure.Scale;
+
+        foreach (var cited in sentence.Citations.Distinct())
+        {
+            if (cited < 1 || cited > sources.Count || sources[cited - 1] is not { Admitted: true, Body: { Length: > 0 } body })
+            {
+                continue;
+            }
+
+            if (!stated.TryGetValue(cited, out var read))
+            {
+                stated[cited] = read = new DocumentFigures([.. Figures(body).Where(one => one.Kind == FigureKind.Figure)], ScalesStated(body));
+            }
+
+            foreach (var one in read.Figures.Where(one => one.Percent == figure.Percent))
+            {
+                var readings = one.Scale == 1m && !one.Percent
+                    ? read.Scales.Select(scale => one.Magnitude * scale).Prepend(one.Magnitude)
+                    : [one.Magnitude * one.Scale];
+
+                if (readings.Any(value => Math.Abs(value - target) <= tolerance))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    // ---- an answer that is not prose ----
+
+    static bool IsJson(string prose)
+    {
+        var trimmed = prose.Trim();
+
+        if (trimmed.Length == 0 || (trimmed[0] != '{' && trimmed[0] != '['))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(trimmed);
+
+            return document.RootElement.ValueKind is System.Text.Json.JsonValueKind.Object or System.Text.Json.JsonValueKind.Array;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return false;
+        }
+    }
+
+    static string Excerpt(string prose)
+    {
+        var trimmed = prose.Trim();
+
+        return trimmed.Length <= 80 ? trimmed : trimmed[..80] + "...";
+    }
+
     // ---- sentences and citations ----
 
     // A citation is a D and the document's position in the section's source list,
@@ -466,6 +571,9 @@ public static class ClaimRules
     // character wrong, and the list is stored beside the prose in the order the
     // prose cites it.
     static readonly Regex Citation = new(@"\[D(\d+)\]", RegexOptions.Compiled);
+
+    // Either mark, a document's or the night's figures', which is what a sentence's end and a figure's reading pass over.
+    static readonly Regex Marker = new(@"\[(?:D\d+|N)\]", RegexOptions.Compiled);
 
     // Words a period ends without ending a sentence. The four captured articles
     // carry "vs." in a title and "Inc." in a company name, and a split after either
@@ -487,7 +595,7 @@ public static class ClaimRules
         var sentences = new List<ProseSentence>();
         var start = 0;
 
-        foreach (Match boundary in Regex.Matches(prose, @"[.!?](?:\s*\[D\d+\])*(?=\s+|$)"))
+        foreach (Match boundary in Regex.Matches(prose, @"[.!?](?:\s*\[(?:D\d+|N)\])*(?=\s+|$)"))
         {
             var end = boundary.Index + boundary.Length;
 
@@ -520,10 +628,12 @@ public static class ClaimRules
             .Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
             .ToArray();
 
+        var night = trimmed.Contains(NightMark, StringComparison.Ordinal);
+
         // A run of markers standing alone after a terminator belongs to the
         // sentence it follows, which is where a writer who puts the citation after
         // the full stop means it to go.
-        if (Citation.Replace(trimmed, string.Empty).Trim().Length == 0 && sentences.Count > 0)
+        if (Marker.Replace(trimmed, string.Empty).Trim().Length == 0 && sentences.Count > 0)
         {
             var previous = sentences[^1];
 
@@ -531,12 +641,13 @@ public static class ClaimRules
             {
                 Text = previous.Text + " " + trimmed,
                 Citations = [.. previous.Citations, .. citations],
+                CitesNight = previous.CitesNight || night,
             };
 
             return;
         }
 
-        sentences.Add(new ProseSentence(trimmed, citations));
+        sentences.Add(new ProseSentence(trimmed, citations, night));
     }
 
     static bool EndsWithAbbreviation(string before)
@@ -667,7 +778,7 @@ public static class ClaimRules
 
     public static IReadOnlyList<ProseFigure> Figures(string sentence)
     {
-        var text = Citation.Replace(sentence, " ");
+        var text = Marker.Replace(sentence, " ");
 
         foreach (var name in NamesCarryingDigits.Concat(PeriodsInWords))
         {
