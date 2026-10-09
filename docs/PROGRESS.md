@@ -41237,3 +41237,70 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merges of 17.3 to 17.6, from main: the ledger's history built, then `loop-test` on each index,
             its scores written to `loop_model` and read back on the Loop page and on the cards. The operator's word on
             the FastTree challenger.
+
+### 17.8 - the fundamentals-first family: a fifth family on all three indices through the index families' step, the S&P 500 read there for this family alone, its card on every index, and its search of 27 settings registered before any run   2026-10-09
+
+Built:      the fundamentals-first family in the core: after the pullback's base lists a member on the night and it
+            clears its index's floors, five checks in turn, the first it fails named on its row: its profit in the
+            index's own form, the four newest quarters filed before the session summing their net income above nothing
+            and the newest above nothing; its revenue, the newest quarter's as first filed above the same quarter's a
+            year before by more than the setting's floor and growing faster than the quarter before; its gross or
+            operating margin, or both, or the operating alone, up on the year; the newest fiscal year's cash from
+            operations at least the setting's multiple of its net income; and its close above its 200-day average with
+            the 50-day above it. Every reading is the ledger's catalogue's for the night's session, read through the
+            ledger's own reader, so a filing is read from the session after the day it was filed; a reading not held
+            passes no check. Bought at the pullback's buy point on the base's plan, five a night in the pullback's
+            order. The index families' step reads it on the S&P 400 and 600 as a fourth swing family and on the S&P 500
+            first, for this family alone, its rows under `GSPC` in the index family tables and a stock the S&P 500's
+            own families listed that night held back as an open trade. The decision cards write a card for each S&P 500
+            pick of it, the rule cards its night on every index with its funnel off its own checks, the overnight queue
+            and the night's report requests take the S&P 500's picks after its own families', and Tonight draws its card
+            after each index's own families'. `sweep-fundamentals --index` walks the 27 settings over the pullback's base
+            listings on one index, each trade after its round trip, and prints each setting's trades, edge and years,
+            those passing the family floors and what luck alone passes; it writes nothing. Section 13.15, five
+            catalogue rows, section 14's step, 15.7's card, section 17's family and search, section 18's member no filed
+            fact reaches and four sources; the decision; SCHEMA, the runbook, the guide, the roster and the changelog.
+Registered: the search's 27 settings, written in the code before any run, the revenue floor slowest:
+            growth>0|margins=either|cash>=0.8, growth>0|margins=either|cash>=1, growth>0|margins=either|cash>=1.2,
+            growth>0|margins=both|cash>=0.8, growth>0|margins=both|cash>=1, growth>0|margins=both|cash>=1.2,
+            growth>0|margins=operating|cash>=0.8, growth>0|margins=operating|cash>=1,
+            growth>0|margins=operating|cash>=1.2, and the same nine at growth>0.05 and at growth>0.1. The night lists on
+            growth>0|margins=either|cash>=1. A setting passes at 300 trades or more with 6 of the 8 years above nothing
+            and 2 of the last 3; luck alone passes about 3.6 of the 27.
+Departed:   This checkpoint amends its own done condition: a filing landing on a session moves the family's answer on
+            the night of the session after it, since every business reading reads a filing from the session after the
+            day it was filed; the plan's text says so, its prior text in the changelog. The S&P 500's Past picks and
+            Run page do not yet draw the family's S&P 500 trades, which are kept and walked under `GSPC` in the index
+            family trade table; its card, its picks' cards and its reports are drawn.
+Results:    the live store is at schema 76 and holds no filed facts, so the search cannot run over it until the merges
+            of 17.3 to 17.8 have migrated it and `filings --whole` has pulled the facts; no run has been made.
+Tests:      2094, six more: each check worked by hand on both sides of its threshold, a newest loss filed on the
+            session not read and filed the day before read; the grid, a setting's figures at 300 and 299 trades and with
+            two late years under nothing, and luck; a filing filed the day before the session changing a member's
+            answer through the night's own readings and answers, one filed on the session not; the card on the S&P 400
+            and 600; the S&P 500's card after its own three; and the night's requests taking the S&P 500's pick of the
+            family after its own families' pick, the queue's order test extended to take it after the S&P 500's list.
+            Four older tests moved with the fourth family: the S&P 400's results counted 28 for 21, its market line's
+            four setups, five provisional cards and the S&P 600's failed night six times; and the night's two index
+            tests read the S&P 500's row first.
+Claims:     1127, from 1123: section 17's two rows, section 18's one and the family's card on Tonight.
+Pins:       the four S&P 400 and 600 rule evaluators', the index night's sources moving: the pullback 6d9054611e55 to
+            1318c9a575b5, the breakout 8000713eea36 to e4ce98f158b9, the drift 5e28016f26c0 to ae24c3f78e90 and the
+            heavyweights ebcbd4d38526 to 34fc5ff8ccd6. No rule stands registered on either index, so nothing restarts;
+            no S&P 500 evaluator's moved.
+Mutated:    the rule, stated before the run: the four properties the done condition names, each broken alone. A check
+            on both sides of its threshold, broken by the revenue check passing at its floor: predicted red at the
+            both-sides test. A filing read from the session after it was filed, broken by the profit check reading the
+            newest quarter whenever it was filed: predicted red at the both-sides test's quarter filed on the session.
+            The 27 settings standing before the run, broken by moving the grid's top cash level to 1.25: predicted red
+            at the grid test and at pinned-constants. The cards read back on every index, broken by the S&P 500 drawing
+            no card of the family: predicted red at the S&P 500's card test. Results: the first red at the both-sides
+            test, growth of nothing passing where the revenue check is owed; the second red there, the profit check failing where the loss filed on
+            the session is owed unread; the third red at the grid test, its last key ending 1.25, and at pinned-constants;
+            the fourth red at the S&P 500's card test, no card drawn. Each reverted before anything was committed and the
+            tests green. The queue's and the requests' order, found held by no test after the code's commit, gained the
+            two tests above, each then broken by reading no S&P 500 pick of the family: red at its own test, reverted.
+            Not mutated: the night's order with the S&P 500 read first, held by the two index night tests.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    after the merges, from main: `filings --whole`, then `sweep-fundamentals` on each index, its report to the
+            operator with no freeze; the S&P 500's Past picks and Run page drawing the family's S&P 500 trades.
