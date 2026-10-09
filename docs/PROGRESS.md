@@ -40880,3 +40880,27 @@ Carried:    this pull request changes the night's code, so it merges outside the
             setup count a family an index, its time and its size against the budget are recorded by the pull request
             that runs it from a clean copy. 17.1's remedy, `--from 6`, was run by the operator on 2026-10-09 from 02:13Z
             to 02:45Z, its surprises and both rule records ending ok.
+
+### 17.3 ruling - the filings refresh reads the archive's daily index and asks company facts for the members that filed alone, after the close under its own limit   2026-10-09
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-09, answering the C5 question, word for word in `prompts/`: "refresh only the
+            companies that filed. Each night, read EDGAR's daily filings index for the sessions since the last refresh
+            (one or a few free requests), pick the members whose CIK filed a 10-Q, 10-K, 8-K with results or an
+            amendment, and fetch company facts for those alone. State the requests and the time a night. Run it as its
+            own step after the close with its own time limit, as the quarters fetch does, so a slow or refused SEC feed
+            leaves facts as they were and never touches the night's main clock. The monthly run's full refresh stays as
+            the catch-all. Test: a member that filed on a session is refreshed that night, and one that did not is not
+            asked for."
+Replaces:   the plan's step after the fetch asking the submissions feed once a member, about 1,506 requests and 200 s a
+            night on the night's own clock.
+Read:       the archive's listing of the quarter's daily index on 2026-10-09 showed each day's index posted at about
+            22:00 New York time on the day it covers, after the night's start at 19:30, so the newest index a night
+            reads is the session before's. A filing is refreshed on the next session's night, the first night whose
+            readings may read it, since a quarter filed on a session is not read on that session.
+Queue:      done, C1 PR 398, 17.0 PR 399, the 15.2 correction PR 400, 17.1 PRs 401 and 402, the 0.7 correction PR 403,
+            17.2 PRs 404 and 405, and 17.3's kept bars and ledger, PRs 406 and 407; in progress, the rest of 17.3 on one
+            branch, going up as one pull request once the whole stage is built, on the operator's word of 2026-10-09;
+            next, 17.2a once the growth proposal is approved, and 17.4 to 17.10.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: the figures the stage's entry below records, the two
+            entries verified by one run.
