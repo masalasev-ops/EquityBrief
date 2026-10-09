@@ -41310,3 +41310,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2094 of 2094 tests ran.
 Carried:    after the merges, from main: `filings --whole`, then `sweep-fundamentals` on each index, its report to the
             operator with no freeze; the S&P 500's Past picks and Run page drawing the family's S&P 500 trades.
+
+### 1.3 - correction: each start of the read surface is a run of its own, named in UTC to the tenth of a microsecond, where two starts on one store within one second failed on the run log's key   2026-10-09
+
+Corrects:   1.3's start row, named `read-api-` and the start's instant to the second, so a second start of the surface
+            on the same store within the same second failed on the run log's key, the run and the stage, and the
+            surface did not come up. 1.3 records one row per start.
+Found:      by #413's push run on 2026-10-09: its Linux job failed 17.7's score page test, which starts two of the
+            suite's hosts on one store, with "UNIQUE constraint failed: run_log.run_id, run_log.stage" from the start
+            row; the pull request run of the same commit passed. Read-only reviewers then confirmed the cause, found
+            no reader of the start row's name that the new name changes, and asked for the two assertions below.
+Built:      `ReadApi.StartRunId`, the stage's name and the start's instant in UTC to the tenth of a microsecond, which
+            the surface records its start under. The same name twice is still refused by the key.
+Tests:      2095, one more: two starts 40 milliseconds apart in one second named apart and each writing its row, the
+            same instant read at another offset naming the same run, and two of the suite's hosts started one after
+            the other on one store each writing a row named as a start is named.
+Claims:     1127, unchanged: no row of the architecture moved.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone. Two starts in one second
+            named apart, broken by naming the start to the second: predicted red at the first name. The surface
+            recording its start under that name, broken by the surface naming its start to the second inline:
+            predicted red at the hosts' rows. The name read in UTC, broken by naming the instant at its own offset:
+            predicted red at the offset's line. Results: the first red, "read-api-20261009T131025Z" read for
+            "read-api-20261009T131025.1234567Z"; the second red, the two hosts' starts falling in one second and the
+            second failing on the key as #413's run did; the third red, "read-api-20261009T091025.1234567Z" read for
+            the UTC name. Each made on this branch and reverted before anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    a finding outside this correction, found by the same reviewers: the Run page's runs by hand leave out the
+            filings refresh's and the members' runs by hand, so after either is run in the daytime the dateless Run
+            page opens on that day until the next night writes its rows. A correction of its own after #413.
