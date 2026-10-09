@@ -36,7 +36,7 @@ public sealed record ClaimCheckOutcome(IReadOnlyList<CheckedSection> Checked)
 // section a reader is shown was ever judged by the thing that wrote it.
 // see: Every number in written prose must exist in the facts file
 // see: Every researched claim must name a stored source document
-// see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
+// see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
 //
 // It reads the admissibility verdict on each cited row and never applies the test,
 // because the test runs on a document as it is fetched and the runner is what

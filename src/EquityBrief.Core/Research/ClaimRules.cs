@@ -68,7 +68,7 @@ public sealed record ClaimVerdict(IReadOnlyList<ClaimFinding> Findings, bool NoA
 // And every sentence of a researched section names a stored document that
 // admissibility admitted, by a marker the section's source list resolves.
 // see: Every researched claim must name a stored source document
-// see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
+// see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
 //
 // The checker reads the admissibility verdict on the row and never applies the
 // test again, which 6.0 ruled: the test runs on a document as it is fetched, and
@@ -740,7 +740,7 @@ public static class ClaimRules
     // A window written in words, "the twenty-day average" or "fourteen periods", is a count
     // before a unit of time as one in digits is, and is held to the facts file the same way.
     // From eleven up, as the words read below are, so "a five-day move" stays language.
-    // see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
+    // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
     static readonly Regex WindowInWords = new(
         @"\b(?<words>(?:(?:one|two|three|four|five|six|seven|eight|nine)[ -])?"
         + @"(?:eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred)"
