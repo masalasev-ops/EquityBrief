@@ -41479,3 +41479,23 @@ Carried:    the merge waits until the night of 2026-10-09, the first of 17.3 to 
             nights, the alarm's first two months read as they come (owes: The alarm's first two months). The operator's
             ruling on the S&P 500's apply path, its reconciliation of the old loop's decisions and its 63 sessions as a
             variant (owes: A replaced rule's 63 sessions as a variant).
+
+### 17.7 - the tester run on each index from main's build after the merges of 17.3 to 17.8, its scores written and read back on the Loop page   2026-10-09
+
+Ran:        from the clean copy of 5277a7fa the history build made, after the point-in-time checks, with no night, queue,
+            report pass, labeller or store copy running: `loop-test --index GSPC` from 15:51:33 to 15:52:05 UTC, the S&P
+            400 from 15:52:05 to 15:58:51 and the S&P 600 from 15:58:51 to 16:08:23. No provider request and no model
+            call.
+Results:    against the bar of 0.0042, none passed. The S&P 500's run `loop-test-GSPC-20261009T155133Z`, 28 proposals,
+            the breakout's 13, the drift's 13 and the heavyweights' 2, its smallest adjusted p 0.1067, the breakout's
+            learned score leaving its lowest fifth off. The S&P 400's `loop-test-MID-20261009T155205Z`, 45 proposals, the
+            pullback's 13, the breakout's 14, the drift's 14 and the heavyweights' 4, its smallest 0.1801, the
+            pullback's list ordered by its learned score. The S&P 600's `loop-test-SML-20261009T155851Z`, 45 proposals,
+            its smallest 0.1477, the drift's learned score leaving its lowest fifth off. Each run wrote six scores a
+            family it fits, one a fold and one on all finished data: the S&P 500's breakout and drift, and the S&P 400's
+            and 600's pullback, breakout and drift.
+Read back:  each index's Loop page from the read surface's Release build of main draws its newest run, its four
+            families' cards and its 28, 45 and 45 proposals, the learned score's three a family among them. The card's
+            score part is written by the night's own step, so the cards are read after the night of 2026-10-09.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    the cards' score part read back after the night of 2026-10-09.
