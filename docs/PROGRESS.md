@@ -41160,3 +41160,74 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2076 of 2076 tests ran.
 Carried:    after the merges of 17.3 to 17.5, from main: `loop-test` on each index over the facts as filed, its
             conditions and spreads written and read back on the Loop page.
+
+### 17.7 - the learned score: ridge over the readings the hooks read, fitted per fold on the ledger's setups of all three indices, its three proposals, and the card's setups like the pick with its rank only once the score passed   2026-10-09
+
+Built:      the learned score in the core: ridge regression over the readings the night hands a rule's hooks less the
+            weekdays to the next report, which the history reads ahead, each standardised over the rows; the label each
+            finished setup's edge in typical moves, the risk floored at one move, clipped at the rows' first and
+            ninety-ninth hundredths; a penalty of 10 on the readings and none on the S&P 400's and 600's shifts; a
+            reading held by fewer than 95 per cent of the rows not weighed; ten rows a weight at least; solved by
+            elimination in a fixed order with every sum taken row by row, so it draws nothing at random and carries no
+            seed; its parameters as a canonical text, their hash and each index's scores at each hundredth. In the
+            tester each fold fits it on the family's finished setups of all three indices that ended before its year,
+            read off the ledger, and brings three proposals, the list ordered by the score and the same with the lowest
+            fifth or two fifths left off, each walked through the hooks a registration would set; every fit written to
+            `loop_model`, migration 82, with its window, readings, parameters, hash, pin and words. The rule walk gains
+            an arrangement of each night's listings, through which the hooks' own order is walked on every family. The
+            decision cards, for a family a score reaches, match the setups like the pick from the ledger on the six
+            readings weighing most in the index's newest score and store the part and, only where one of that run's
+            score proposals passed on the index, the pick's rank, in `decision_card.similar` and `score_rank`; a part
+            they cannot read is named on the card. The card draws the part beneath the rule's record, the Loop page the
+            score with the ranks tonight's cards carry, and both draw "Score not yet validated on this index" until a
+            pass. `rules-choose-the-stocks` holds the fitted model's store. Section 13.14, the tester's and the cards'
+            catalogue rows and the tester's matrix row, the models' store, section 17's fit, proposals and match,
+            section 18's model that cannot load and score the tester has not passed, a region table in 15.18 and the
+            Loop page's score; the decisions that a fitted statistical model is a rule and on the card's part,
+            superseding the two that barred any model's output and any score, their citations moved; CLAUDE.md's
+            nightly rule and record rule, SCHEMA, the runbook, the guide, the roster's clauses and the changelog.
+Departed:   FastTree is not built: no hook carries a tree, so its proposals could not be approved without moving every
+            family's pin, which the second round of the rulings moved once at 17.5. The challenger waits on the
+            operator's word. This checkpoint amends its own done condition: the score is reproduced from its stored
+            parameters, the word seed taken out since ridge draws none; the plan's text says so, its prior text in the
+            changelog. The trainer runs inside the tester as the other engines do, so its reads and writes are the
+            tester's rows.
+Results:    the live store is at schema 76 and holds no ledger, so no score could be fitted over it. As a smoke run, the
+            print form over the live store read-only with each rule's own listings on its index standing in for the
+            ledger's setups, a local change reverted before anything was committed: the S&P 500 in 45 seconds, the
+            breakout fitted on 1,464 listings and the drift on 6,228, every fold fitting a score; the S&P 400 in about
+            twelve minutes, the pullback on 1,695, the breakout on 861 and the drift on 4,391. None of the fifteen
+            proposals passed; the nearest was the S&P 500 breakout's lowest two fifths left off, better in 3 of 3
+            counted years at an adjusted p-value of 0.0714 against 0.0042.
+Tests:      2088, twelve more: the score worked by hand over four hundred setups, its weight 80/41 on its own scale and
+            its intercept 3/41, and over eight hundred on two indices, the S&P 400's shift one and the weight 160/81; a
+            reading one row short of the share not weighed, ten rows missing a weighed reading left out and the reading
+            that reads ahead never weighed; the score the same fitted twice, read back from its text exactly and its hash
+            moving with a row; its rank and floors read off its hundredths and the hooks a registration would set
+            ordering a night by it; its version the pin of its source; the setups like a pick by hand on both sides of
+            the sentence, the pick's stock never matched and a stock matched once within 21 sessions; the night's part
+            and rank over a constructed store read back off the stock's page and the Loop page before and after a newer
+            run's pass; Tonight's cards drawing each state; a card whose score cannot be read naming why; and the fitted
+            model's store touched by nothing that reads a model or the operator's trades.
+Claims:     1123, from 1115: the models' store, section 17's three rows, section 18's two, the card's part and the
+            Loop page's score.
+Pins:       none moved; the score, the engine, the walk's arrangement and the cards' part sit in files no rule pins,
+            and the citations moved in pinned files are comments.
+Mutated:    the rule, stated before the run: the four properties the done condition names, each broken alone. The score
+            read back from its stored parameters exactly, broken by writing its figures at six significant digits:
+            predicted red at the reproduction test, the score read back differing. The rank absent until a stored pass,
+            broken by ranking whether or not a proposal passed: predicted red at the night's page test, a rank stored
+            before the pass. The sentence on both sides of its condition, broken by drawing it where the interval leaves
+            the rule's mean out: predicted red at the night's page test and at Tonight's. A taken trade read by an
+            engine, broken by the tester declaring a read of the taken trades: predicted red at both
+            rules-choose-the-stocks tests that read it. Results: the first red at the reproduction test, 4.9382843 read
+            back for 4.9382716, and at the version's pin, which any change to the fitting source moves; the second red at
+            the night's page test, 59 stored before any pass; the third red at both page tests, the sentence missing where
+            it is owed and drawn where it is not; the fourth red at both rules-choose-the-stocks tests and at the two
+            component-access tests holding the tester's declaration to its catalogue and matrix rows. Each reverted
+            before anything was committed and the tests green. Not mutated: the walk's arrangement, held by the smoke
+            runs and the hooks' own order test, and the Loop page's words, held by its read-back.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    after the merges of 17.3 to 17.6, from main: the ledger's history built, then `loop-test` on each index,
+            its scores written to `loop_model` and read back on the Loop page and on the cards. The operator's word on
+            the FastTree challenger.
