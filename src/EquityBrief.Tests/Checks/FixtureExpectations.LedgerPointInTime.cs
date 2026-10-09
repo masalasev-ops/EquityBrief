@@ -217,10 +217,19 @@ public partial class FixtureExpectations
 
         using var output = new StringWriter();
 
-        await new SetupLedger(FixedClock.At(new DateTimeOffset(2026, 2, 16, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).CheckAsync(IndexFamilies.LargeIndex, output);
+        var ledger = new SetupLedger(FixedClock.At(new DateTimeOffset(2026, 2, 16, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile);
+
+        await ledger.CheckAsync(IndexFamilies.LargeIndex, output);
+
+        // A check of another index started in the same second writes a row of its own, its run named by its index,
+        // where two checks named to the second alone failed on the run log's key after reading their whole history.
+        await ledger.CheckAsync("MID", output);
 
         SweepRelease(store);
 
         Assert.Contains($"rebuilt from the history read through {Stamp(days[29])} and cut at each one's session", output.ToString(), StringComparison.Ordinal);
+        Assert.Equal(
+            ["ledger-check-GSPC-20260216T150000Z", "ledger-check-MID-20260216T150000Z"],
+            FamilyRows(store, "SELECT run_id FROM run_log WHERE stage = 'ledger-check' ORDER BY run_id;"));
     }
 }

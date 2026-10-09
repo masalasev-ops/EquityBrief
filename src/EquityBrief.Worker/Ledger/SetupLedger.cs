@@ -713,7 +713,7 @@ public sealed class SetupLedger : IComponent
     public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
-        var runId = FormattableString.Invariant($"{BuildStage}-{startedAt:yyyyMMddTHHmmssZ}");
+        var runId = FormattableString.Invariant($"{BuildStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
         var history = new SweepHistory(databaseFile);
         var pause = wait ?? Task.Delay;
 
@@ -902,7 +902,7 @@ public sealed class SetupLedger : IComponent
     public async Task<int> CheckAsync(string index, TextWriter output, int perYear = CheckPerYear, int seed = CheckSeed, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
-        var runId = FormattableString.Invariant($"{CheckStage}-{startedAt:yyyyMMddTHHmmssZ}");
+        var runId = FormattableString.Invariant($"{CheckStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
