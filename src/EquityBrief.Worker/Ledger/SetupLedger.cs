@@ -215,6 +215,52 @@ public sealed class SetupLedger : IComponent
         }
     }
 
+    // The catalogue's shared readings of an index's members on the newest night, for a rule whose hooks read them: each
+    // member's read as the night's own setups read theirs, from the same inputs, and none for a member the night holds no
+    // bar for. Read only where a standing rule's hooks ask, so a night with none reads nothing.
+    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    public async Task<Func<string, IReadOnlyList<double?>?>> ReadingsTonightAsync(string index, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (await ScalarAsync(connection, NewestSession, [], cancellation) is not string newest)
+        {
+            return _ => null;
+        }
+
+        var night = Date(newest);
+        var (names, income) = await IndexFamilies.InputsAsync(connection, index, night, cancellation);
+
+        if (IndexNightRead.Prepare(index, night, names, income) is not { } inputs)
+        {
+            return _ => null;
+        }
+
+        var market = await MarketAsync(connection, MarketBars, night, cancellation);
+        var sectors = await SectorsAsync(connection, Sectors, names, cancellation);
+        var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
+        var context = new LedgerContext(income, sectors, highs, lows, facts);
+        var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
+
+        IReadOnlyList<double?>? Of(string ticker)
+        {
+            var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, ticker, StringComparison.Ordinal));
+
+            if (name < 0 || IndexNightRead.BarOf(inputs.Series[name], inputs.At) is var bar && bar < 0)
+            {
+                return null;
+            }
+
+            var closes = inputs.Series[name].Bars.Select(one => Statistic.FromPrice(one.Close)).ToArray();
+
+            return LedgerSetups.Readings(index, name, inputs.Series[name], closes, bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context);
+        }
+
+        return ticker => read.TryGetValue(ticker, out var held) ? held : read[ticker] = Of(ticker);
+    }
+
     // The row states counts and no timing, so two nights over one fixture write the same row; the step's
     // time is the row's own started_at to ended_at, and an index's seconds stay on the outcome alone.
     public static string Detail(IReadOnlyList<LedgerIndex> indices) =>

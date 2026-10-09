@@ -747,16 +747,31 @@ It records one run log row under `filings-whole`. Run without `--whole`, `filing
 
 ### The walk-forward tester and the Loop page
 
-From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, one index a run:
+From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, and from 17.5 the trade autopsy's exits on every index, one index a run:
 
 ```
+dotnet run --project src/EquityBrief.Worker -- loop-test --index GSPC
 dotnet run --project src/EquityBrief.Worker -- loop-test --index MID
 dotnet run --project src/EquityBrief.Worker -- loop-test --index SML --month 2026-10
 ```
 
-Each test year from 2022 is a fold: the procedure, the breakout's or the drift's grid or the sector heavyweights' six settings in either design, chooses a setting from the trades that ended before the year began, with the family floors in proportion to those years, and the choice is scored on the year against the index's rule today (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year). The proposals for one rule are judged together by the gate's step-down, and each by its three screens (see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs). A run reads the pulled history as the sweeps read it, takes about a minute an index on this machine, makes no request, and writes `loop_run`, `loop_proposal` and `loop_test` in one transaction under the drain's lock; it refuses to start inside the night's window or while a night holds the store. `--month` names the month the run is for, the run's own month where it is left out, and `--print` prints each proposal's verdict and its test years and writes nothing. The pullback's searches run for a time rather than over a set of tries, so they are not run inside a fold; the pullback's first proposals come from the engines.
+Each test year from 2022 is a fold: the procedure, the breakout's or the drift's grid or the sector heavyweights' six settings in either design, chooses a setting from the trades that ended before the year began, with the family floors in proportion to those years, and the choice is scored on the year against the index's rule today (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year). The proposals for one rule are judged together by the gate's step-down, and each by its three screens (see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs). The pullback's searches run for a time rather than over a set of tries, so they are not run inside a fold.
 
-The Loop page under Universe draws the newest run for the index and month chosen: each family's rule today in the words its run stored, and each proposal with its change or that it proposes none, its four parts each with its figure, its test years with the setting each fold chose, the difference the gate detects four times in five, and how many folds chose within a grid step of it. Nothing is applied from the page: approval comes with 17.9.
+The trade autopsy runs in the same run (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it). It walks the breakout and the drift on every index, the S&P 400's and 600's provisional pullback, and the sector heavyweights' book on every index, each once under its own exit and once under each exit of the menu section 17 states, each fold ranking the exits above the rule's own on what ended before its year; the k-th proposal is the k-th exit each fold ranks, at most five a family, each with a finding in words. It reads the rule's own finished trades for its figures, how far they went for and against, when their best close came and how the stop's and the target's trades behaved first, and writes them to `loop_finding`. The S&P 500's pullback is the swing filter's walk and is proposed no exit.
+
+A run reads the pulled history as the sweeps read it, makes no request, and writes `loop_run`, `loop_proposal`, `loop_test` and `loop_finding` in one transaction under the drain's lock; it refuses to start inside the night's window or while a night holds the store. On this machine a run on the S&P 500 took under a minute and one on the S&P 400 about twelve, most of it reading the pullback's candidates. `--month` names the month the run is for, the run's own month where it is left out, and `--print` prints each proposal's verdict, its test years and the autopsy's figures and writes nothing.
+
+The Loop page under Universe draws the newest run for the index and month chosen: each family's rule today in the words its run stored, the autopsy's figures beneath it, and each proposal with its change or that it proposes none, its finding where the autopsy made it, its four parts each with its figure, its test years with the setting each fold chose, the difference the gate detects four times in five, and how many folds chose within a grid step of it. Nothing is applied from the page: approval comes with 17.9.
+
+### The engines' hooks
+
+From 17.5 a registered family rule may state beside its own parameters the hooks every engine's proposals turn, each off where it is not stated (see: Every engine's settings hooks land together and all default off, so the families' pins move once): `exit`, an exit of the menu by its number, 0 or none for the rule's own; `also_<reading>_above` or `also_<reading>_below`, a reading of the ledger's catalogue by its column and the level a member passing the rule's own gates must also meet; `score_<reading>`, a weight on a reading, the rule's list ordered by the sum; and `score_floor`, the least score kept. The registrar refuses an exit the menu does not hold, and a hook beside a heavyweights rule's parameters, as a parameter its book does not read. No rule stands with a hook today: they are written by the approvals 17.9 builds. A rule whose hooks read readings is handed the night's from the ledger's catalogue, on the S&P 500 and on the S&P 400 and 600, and lists nothing on a night that supplies none; each trade it keeps stores the exit it was walked under in `family_trade.exit` or `index_rule_trade.exit`.
+
+The hooks moved the S&P 500's breakout and drift evaluators' versions and every S&P 400 and 600 rule's, so 17.5's remedy registers the S&P 500's sixteen rules again, each replayed first over the nights since its record began and carrying its record on where every trade is reproduced; no S&P 400 or 600 rule stood registered.
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-09-17.5-the-hooks-registered-again.txt
+```
 
 ### The account and the trades taken from a card
 

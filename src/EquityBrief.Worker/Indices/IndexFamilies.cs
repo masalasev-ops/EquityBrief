@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Readings;
@@ -189,7 +191,15 @@ public sealed class IndexFamilies : IComponent
         this.databaseFile = databaseFile;
     }
 
-    public async Task<IndexFamiliesOutcome> RunAsync(string runId, CancellationToken cancellation = default, IReadOnlyList<Core.Candidates.RegisterRow>? register = null, DateTimeOffset? nightStartedAt = null)
+    // The catalogue's readings of an index's members on the night, read only for an index whose standing rule's hooks
+    // read them.
+    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    public async Task<IndexFamiliesOutcome> RunAsync(
+        string runId,
+        CancellationToken cancellation = default,
+        IReadOnlyList<Core.Candidates.RegisterRow>? register = null,
+        DateTimeOffset? nightStartedAt = null,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
     {
         var startedAt = clock.UtcNow;
         var outcomes = new List<IndexNightOutcome>();
@@ -220,7 +230,7 @@ public sealed class IndexFamilies : IComponent
             {
                 try
                 {
-                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation);
+                    var (outcome, written) = await IndexNightAsync(connection, index, session, [.. standing.Where(rule => rule.Index == index)], cancellation, readingsOf);
 
                     outcomes.Add(outcome);
                     rows += written;
@@ -325,7 +335,13 @@ public sealed class IndexFamilies : IComponent
 
     // One index's part of the night: its members' answers under each family, its list, its trades walked and kept and
     // its sector heavyweights, written in one transaction, so a failure anywhere in it leaves none of its writes.
-    async Task<(IndexNightOutcome Outcome, int Rows)> IndexNightAsync(SqliteConnection connection, string index, DateOnly session, IReadOnlyList<IndexRule> rules, CancellationToken cancellation)
+    async Task<(IndexNightOutcome Outcome, int Rows)> IndexNightAsync(
+        SqliteConnection connection,
+        string index,
+        DateOnly session,
+        IReadOnlyList<IndexRule> rules,
+        CancellationToken cancellation,
+        Func<string, CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsOf = null)
     {
         var (names, income) = await InputsAsync(connection, index, session, cancellation);
         var inputs = IndexNightRead.Prepare(index, session, names, income);
@@ -349,6 +365,9 @@ public sealed class IndexFamilies : IComponent
         var passing = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
         var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation);
         var picks = FamilyList.Draw(qualifying, open);
+        var readings = readingsOf is not null && ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).ReadsReadings)
+            ? await readingsOf(index, cancellation)
+            : null;
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -357,7 +376,7 @@ public sealed class IndexFamilies : IComponent
         var ended = await WalkAsync(connection, transaction, index, session, cancellation);
         var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
         var heavyweightRules = await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
-        var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation);
+        var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings);
 
         await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
 
@@ -1686,7 +1705,7 @@ public static class IndexRuleTrades
 
     // Every trade from before the night not yet ended or not yet benchmarked.
     const string Pending = @"
-        SELECT candidate, ticker, session_date, entry, stop, target, trail, cap, risk_moves, reward_to_risk, ended_on
+        SELECT candidate, ticker, session_date, entry, stop, target, trail, cap, risk_moves, reward_to_risk, ended_on, exit
         FROM index_rule_trade
         WHERE index_code = $index AND session_date < $night AND (ended_on IS NULL OR members IS NULL)
         ORDER BY session_date, candidate, ticker;
@@ -1705,8 +1724,8 @@ public static class IndexRuleTrades
     const string Holding = "SELECT ticker FROM index_rule_trade WHERE candidate = $candidate AND (ended_on IS NULL OR ended_on >= $night);";
 
     const string Keep = @"
-        INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk)
-        VALUES ($candidate, $index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap, $risk_moves, $reward_to_risk);
+        INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk, exit)
+        VALUES ($candidate, $index, $family, $ticker, $night, $place, $entry, $stop, $target, $trail, $cap, $risk_moves, $reward_to_risk, $exit);
     ";
 
     public static async Task<Kept> KeepAsync(
@@ -1716,7 +1735,8 @@ public static class IndexRuleTrades
         DateOnly night,
         IndexNightInputs? inputs,
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> rules,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        Func<string, IReadOnlyList<double?>?>? readings = null)
     {
         await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(night))], cancellation);
 
@@ -1749,7 +1769,18 @@ public static class IndexRuleTrades
 
             var place = 0;
 
-            foreach (var answer in answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place).Take(IndexRules.PerNight))
+            // The rule's hooks as its registration states them: its list kept and ordered by them where they read the
+            // night's readings, a rule reading them on a night that supplied none listing nothing; and the exit its
+            // trades are walked under.
+            // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+            var hooks = RuleHooks.Of(rule.Parameters);
+
+            if (hooks.ReadsReadings && readings is null)
+            {
+                continue;
+            }
+
+            foreach (var answer in hooks.Order([.. answers.Where(one => one.Passed && !holding.Contains(one.Ticker)).OrderBy(one => one.Place)], one => readings?.Invoke(one.Ticker)).Take(IndexRules.PerNight))
             {
                 var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, answer.Ticker, StringComparison.Ordinal));
                 var move = inputs.Series[name].Atr[IndexNightRead.BarOf(inputs.Series[name], inputs.At)];
@@ -1762,6 +1793,7 @@ public static class IndexRuleTrades
                     ("$place", ++place), ("$entry", Money.ToStorage(entry)), ("$stop", Money.ToStorage(stop)), ("$target", Stored(answer.Target)), ("$trail", Stored(answer.Trail)),
                     ("$cap", answer.Cap!.Value), ("$risk_moves", move > 0 && risk > 0 ? risk / move : DBNull.Value),
                     ("$reward_to_risk", answer.Target is { } target && risk > 0 ? Statistic.FromPrice(target - entry) / risk : DBNull.Value),
+                    ("$exit", hooks.Exit == 0 ? DBNull.Value : hooks.Exit),
                 ], cancellation);
                 kept++;
             }
@@ -1772,7 +1804,7 @@ public static class IndexRuleTrades
 
     static async Task<(int Ended, int Benchmarked)> WalkAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, CancellationToken cancellation)
     {
-        var pending = new List<(string Candidate, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, double? RiskMoves, double? RewardToRisk, bool Ended)>();
+        var pending = new List<(string Candidate, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, double? RiskMoves, double? RewardToRisk, bool Ended, int Exit)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -1796,7 +1828,8 @@ public static class IndexRuleTrades
                     reader.GetInt32(7),
                     reader.IsDBNull(8) ? null : reader.GetDouble(8),
                     reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                    !reader.IsDBNull(10)));
+                    !reader.IsDBNull(10),
+                    reader.IsDBNull(11) ? 0 : reader.GetInt32(11)));
             }
         }
 
@@ -1805,7 +1838,7 @@ public static class IndexRuleTrades
 
         foreach (var trade in pending)
         {
-            if (!trade.Ended && await EndAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Trail, trade.Cap, cancellation))
+            if (!trade.Ended && await EndAsync(connection, transaction, inputs, trade.Candidate, trade.Ticker, trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Trail, trade.Cap, cancellation, trade.Exit, trade.RiskMoves))
             {
                 ended++;
             }
@@ -1822,9 +1855,13 @@ public static class IndexRuleTrades
 
             closes ??= [.. inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray())];
 
-            var (average, members) = trade.Trail is not null
-                ? BreakoutSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.Cap)
-                : DriftSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.RewardToRisk ?? 0, trade.Cap);
+            // A trade kept under an exit of the menu is benchmarked under the same exit, its trail its stop's distance as
+            // the breakout's is.
+            var (average, members) = ExitMenu.Of(trade.Exit) is { } exit
+                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (name, bar) => inputs.Series[name].Atr[bar], moves, trade.Trail is null ? trade.RewardToRisk ?? 0 : null, trade.Trail is null ? null : 1, trade.Cap, exit)
+                : trade.Trail is not null
+                    ? BreakoutSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.Cap)
+                    : DriftSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.RewardToRisk ?? 0, trade.Cap);
 
             await ExecuteAsync(connection, transaction, Benchmarked,
             [
@@ -1852,7 +1889,9 @@ public static class IndexRuleTrades
         decimal? storedTarget,
         decimal? storedTrail,
         int cap,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        int exitNumber = 0,
+        double? riskMoves = null)
     {
         var bars = new List<(DateOnly Session, decimal Close, decimal Raw)>();
 
@@ -1883,9 +1922,22 @@ public static class IndexRuleTrades
         var entry = Statistic.FromPrice(storedEntry) * scale;
         var stop = Statistic.FromPrice(storedStop) * scale;
         int sessions;
-        double? result = storedTrail is { } trail
-            ? FamilyWalks.Trailing(closes, 0, entry, stop, Statistic.FromPrice(trail) * scale, cap, out sessions)
-            : FamilyWalks.Fixed(closes, 0, entry, stop, Statistic.FromPrice(storedTarget ?? storedEntry) * scale, cap, out sessions);
+        double? result;
+
+        // A trade kept under an exit of the menu is walked under it; one kept under its rule's own exit as it always was.
+        if (ExitMenu.Of(exitNumber) is { } exit)
+        {
+            var anchor = new SetupAnchor(listed, entry, stop, storedTrail is null ? Statistic.FromPrice(storedTarget ?? storedEntry) * scale : null, storedTrail is { } trailing ? Statistic.FromPrice(trailing) * scale : null, cap, riskMoves);
+            var outcome = ExitMenu.Replay(closes, 0, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, exit);
+
+            (result, sessions) = (outcome.Result, outcome.Sessions);
+        }
+        else
+        {
+            result = storedTrail is { } trail
+                ? FamilyWalks.Trailing(closes, 0, entry, stop, Statistic.FromPrice(trail) * scale, cap, out sessions)
+                : FamilyWalks.Fixed(closes, 0, entry, stop, Statistic.FromPrice(storedTarget ?? storedEntry) * scale, cap, out sessions);
+        }
 
         if (result is not { } multiple)
         {

@@ -41022,3 +41022,81 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed, 2057 of 2057 tests ran.
 Carried:    after the merge, from main and once migration 79 is applied: `loop-test --index MID` and `--index SML` to
             write the month's rows, and the Loop page read back against them.
+
+### 17.5 - the trade autopsy and the engines' hooks: a fixed exit menu tested as the procedure that chose it, every hook off on every rule, and the sector heavyweights' card's selector   2026-10-09
+
+Built:      the trade autopsy inside the tester, `loop-test` now on the S&P 500 as well as the S&P 400 and 600: each
+            rule's own finished trades read for the median best and worst close in risks, the sessions to the best
+            close, the stop's trades that first closed a risk up and how far the target's fell first, written to
+            `loop_finding`. The exit menu, 26 swing exits and the heavyweights' two, each replayed exactly from the
+            closes with its benchmark the same plan under the same exit on every member. The breakout and the drift on
+            every index, the S&P 400's and 600's provisional pullback and the heavyweights' book walked under their own
+            exit and each of the menu's; each fold ranks the exits above the rule's own on what ended before its year
+            with the floors in proportion, the k-th proposal the k-th exit each fold ranks, at most five a family, each
+            with its finding. The engines' hooks, `exit`, `also_`, `score_` and `score_floor`, read off a rule's
+            registered parameters by the S&P 500's recorder and replay and by the S&P 400's and 600's families, each
+            off where not stated: a rule's list kept and ordered over the night's readings of the ledger's catalogue,
+            which the night hands both, and its trades walked under its exit, stored on `family_trade.exit` and
+            `index_rule_trade.exit`; the registrar and the index rules' check refusing an exit the menu lacks and any
+            hook on a heavyweights book. The sector heavyweights' card's selector on every index, discharging its
+            obligation. Migration 80. Section 13.13 with figures 13.5 and 13.6, three catalogue rows, the findings'
+            store, section 17's two rows and section 18's one, the Loop page's findings and the card's row, two
+            decisions, SCHEMA, the runbook and the remedy file, the guide, the roster's clauses and the changelog.
+Departed:   the S&P 500's pullback takes no hook and is proposed no exit: its walk is the swing filter's, which every
+            S&P 500 evaluator pins, so a hook there would restart the three conditions' and the swing family's records,
+            which no replay reproduces. The plan's text says so, its prior text in the changelog, and the move is the
+            operator's to rule on. A heavyweights book's exits are its own settings, so a hook beside its parameters is
+            refused. The proposals are at most five a family an index a run.
+Results:    the print form over the live store read-only, no request. The S&P 500 in 39 seconds: the breakout's five
+            exits, targets of 4, 3, 2.5 and 2 risks and a trail, the best at an adjusted p-value of 0.1663 and better in
+            4 of 4 counted years; the drift's three named exits at 0.93 and 0.94, better in none; the heavyweights' two
+            met the floors in no fold, each losing in 2019 as the rule did. The S&P 400 in about twelve minutes, most
+            of it reading the pullback's candidates: the pullback's 26 exits met the floors above the rule's own in no
+            fold; the breakout's chose nothing on all finished data; the drift's five trails better in 4 of 4 counted
+            years at 0.35 to 0.42; and the drift's grid, read with them by the step-down, moved from 0.1752 to 0.3459.
+            The S&P 600 in sixteen minutes: no exit of any family met the floors above the rule's own in any fold, and
+            design (a)'s heavyweights stood at 0.5999 as at 17.4, the two exits beside it adding nothing. None passed,
+            and nothing is proposed to the operator.
+Tests:      2070, thirteen more: every exit of the menu by hand over one constructed path and a trailing plan, a series
+            running out, a stop at the buy and the benchmark over members that run out; the hooks read off a rule's
+            parameters, each off where unstated; their pins on the ten rules they hook and no other; a rule registered
+            with them, an exit the menu lacks and a hook on a heavyweights book refused; a hooked trade walked under its
+            exit; a list kept and ordered by its hooks on the S&P 500 and on the S&P 400 over the night's readings, and
+            nothing on a night supplying none, the S&P 400's hooked trade sold at the menu's target while the live
+            rule's rides on; the autopsy's figures by hand; the five strongest chosen on the learning
+            years alone; the Loop page's findings and the heavyweights' selector on the S&P 500 and the S&P 400, each
+            read back off the rendered page.
+Claims:     1110, from 1104: the findings' store, section 17's exit menu and the autopsy's proposals, section 18's path
+            no bars reach, the Loop page's findings and the heavyweights' card's rule.
+Pins:       the S&P 500's breakout 3ceed1865bf4 to 947428c359fc and drift acfc9db2b20b to d79ae4d14a45; the S&P 400's
+            and 600's pullback 2cc3b705004f to 6d9054611e55, breakout b3a218c938f7 to 8000713eea36, drift 9d6d4eaabb57 to
+            5e28016f26c0 and heavyweights 5d766e680e2a to ebcbd4d38526. No swing filter, condition or S&P 500
+            heavyweights version moved. The remedy registers the S&P 500's sixteen breakout and drift rules again, each
+            replayed first; no S&P 400 or 600 rule stands registered.
+Mutated:    the rule, stated before the run: the three properties the done condition names first, each broken alone.
+            The menu's break-even raises the stop to the buy only once a close is its risks up, broken by raising it at
+            the fill: predicted red at the menu test alone, the fourth exit selling at -0.1 on the eleventh session for
+            the target's 2.2 on the thirteenth. Every hook is off where a rule states none, broken by an exit of 1 for
+            every rule stating none: predicted red at the hooks test, the plain rule's hooks not off, at the family
+            recorder's kept-trade test and at the frozen S&P 400 rule's trade test, each trade walked under the first
+            exit. The exits are ranked on the fold's learning years alone, broken by ranking them on every trade:
+            predicted red at the five-strongest test, the twenty-sixth exit, whose trades end in the test year, ranked
+            first. Results: the first red at the menu test alone, 2.2 expected and -0.1 read. The second red at the
+            hooks test and the recorder's kept-trade test, U's benchmark 1.125 over two members read 0.7 over three, and
+            green at the frozen S&P 400 test against its prediction: its one trade falls through its stop at a close
+            every exit sells at, so no test walked an index rule under an exit. The class is a missing property, and the
+            S&P 400 hooks test gained it: the hooked rule states the menu's first target and sells IE at it on the third
+            session after, 1.6 risks, while the live rule, stating no hook, trails through a dip a raised stop would have
+            sold, each trade's exit stored. Run again, the second mutation turned that test red as well, the live rule's
+            trades carrying exit 1. The third red at the five-strongest test alone, 26, 10, 9, 8 and 7 read for 10 to 6.
+            Each reverted before anything was committed and the tests green. Not mutated: the Loop page and the
+            selector, each held by its own test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2fb1769f, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2070 of 2070 tests ran with none failed, migrations 0 to
+            80 with none pending, schema version 80, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 51 tables, 1110 claims, 1110 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1121
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2070 of 2070 tests ran.
+Carried:    after the merge, from main: the remedy, its sixteen replay lines read for every trade reproduced; and
+            `loop-test` on each index to write the month's rows, the Loop page read back against them.

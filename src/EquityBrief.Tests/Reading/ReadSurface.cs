@@ -102,6 +102,9 @@ public partial class ReadSurface
             // 17.2, the cards' rule: the card's row as its parts and the checklist's item on a live rule past its mark.
             .. RuleCardsPageClaims,
 
+            // 17.5, the sector heavyweights' card's selector.
+            .. HeavyweightSelectorClaims,
+
             // 14.3, the sector heavyweights on the pages: tonight's card, a name's line and Past picks' holdings.
             .. HeavyweightPageClaims,
 

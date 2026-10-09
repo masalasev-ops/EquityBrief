@@ -95,7 +95,24 @@ public static class IndexRules
     // named; none where every value is one its index's sweep read.
     public static string? Refusal(IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> parameters)
     {
-        if (parameters.Keys.Except(evaluator.Parameters, StringComparer.Ordinal).FirstOrDefault() is { } unread)
+        // The engines' hooks a swing rule may state beside its own parameters are read by its keeping and its walk and
+        // not by its evaluation; a heavyweights book reads none.
+        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        var hooked = evaluator is not IndexHeavyweightCandidate;
+
+        if (hooked)
+        {
+            try
+            {
+                EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+            }
+            catch (ArgumentException refused)
+            {
+                return refused.Message;
+            }
+        }
+
+        if (parameters.Keys.Where(name => !hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name)).Except(evaluator.Parameters, StringComparer.Ordinal).FirstOrDefault() is { } unread)
         {
             return $"'{evaluator.Name}' reads no parameter named '{unread}'.";
         }

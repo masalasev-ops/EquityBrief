@@ -17,8 +17,12 @@ public sealed partial class ReadApi
         WHERE index_code = $index AND month = $month ORDER BY rowid DESC LIMIT 1;";
 
     const string LoopProposalsOf = @"
-        SELECT family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed
+        SELECT family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding
         FROM loop_proposal WHERE run_id = $run_id AND index_code = $index ORDER BY family, proposal;";
+
+    const string LoopFindingsOf = @"
+        SELECT family, figure, value, trades, words
+        FROM loop_finding WHERE run_id = $run_id AND index_code = $index ORDER BY family, rowid;";
 
     const string LoopTestsOf = @"
         SELECT family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total
@@ -98,7 +102,29 @@ public sealed partial class ReadApi
                 reader.GetInt64(13) == 1,
                 Optional(reader, 14),
                 reader.GetInt32(15),
-                reader.GetInt64(16) == 1));
+                reader.GetInt64(16) == 1,
+                reader.IsDBNull(17) ? null : reader.GetString(17)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyList<LoopFindingRow>> LoopFindingsAsync(LoopRunRow run)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LoopFindingsOf;
+        command.Parameters.AddWithValue("$run_id", run.RunId);
+        command.Parameters.AddWithValue("$index", run.Index);
+
+        var rows = new List<LoopFindingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LoopFindingRow(reader.GetString(0), reader.GetString(1), Optional(reader, 2), reader.GetInt32(3), reader.GetString(4)));
         }
 
         return rows;

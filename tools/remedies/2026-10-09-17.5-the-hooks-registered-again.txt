@@ -1,0 +1,12 @@
+# The remedy of 17.5 (the trade autopsy and the engines' hooks), as its PROGRESS entry prints it: the migration adds
+# migration 80's exit to the family trades and the index rule trades, the finding to the loop proposals and the loop
+# findings table, so it runs first. The merge moves the S&P 500's breakout and drift evaluators' versions, the hooks'
+# and the menu's sources joining what each pins, so their sixteen rules would be skipped and named as failures on the
+# night until they are registered again. Registering the moved rules again first replays each over every night the
+# store holds since its record began and prints a line a rule: where every trade the replay keeps is the one its record
+# stored, the rule's record carries on; where one is not, it restarts at this registration and the line names the
+# first trade that differed. No rule states a hook, so each replay walks the rule as it ran. No S&P 400 or 600 rule
+# stands registered, no swing family, condition or heavyweights version moves, and nothing asks the provider or calls a
+# model. Run after the merge and before the night, when no night is running.
+migrate
+register --moved --evidence "17.5: the engines' hooks and the exit menu join the sources the breakout's and the drift's evaluators pin, every hook off on every rule; each family rule is replayed over the nights since its record began before it is registered again"

@@ -121,6 +121,8 @@ public partial class FixtureExpectations
             .. LedgerClaims,
             // 17.4, the walk-forward tester: section 17's five rows and section 18's two.
             .. LoopClaims,
+            // 17.5, the trade autopsy: section 17's two rows and section 18's one.
+            .. AutopsyClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

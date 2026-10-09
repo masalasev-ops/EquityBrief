@@ -112,6 +112,29 @@ public partial class NightlyRun
         Assert.Equal(["ok"], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}';"));
         Assert.StartsWith("2 setup(s), 0 passing the live rule, 0 window(s) closed on the S&P 500; ", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{SetupLedger.Stage}';").Single(), StringComparison.Ordinal);
 
+        // The readings a rule whose hooks read them is listed by on the night are AAA's as its setup stored them, the
+        // catalogue's shared readings each; a member the night holds no bar for reads none.
+        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        var tonight = await ledger.ReadingsTonightAsync("GSPC");
+        var supplied = tonight("AAA")!;
+
+        foreach (var column in new[] { "close_over_twenty", "close_over_fifty", "move_share", "liquidity", "close_over_long" })
+        {
+            var at = EquityBrief.Core.Ledger.LedgerReadings.All.Select((reading, place) => (reading, place)).Single(pair => pair.reading.Column == column).place;
+            var stored = Texts(store, $"SELECT IFNULL({column}, 'none') FROM setup WHERE family = 'breakout';").Single();
+
+            if (stored == "none")
+            {
+                Assert.Null(supplied[at]);
+            }
+            else
+            {
+                Assert.Equal(double.Parse(stored, System.Globalization.CultureInfo.InvariantCulture), supplied[at]!.Value, 9);
+            }
+        }
+
+        Assert.Null(tonight("ZZZ"));
+
         // The night after: AAA falls to 100, through both stops; the others hold at 100, so the same plan on them is
         // still open and neither benchmark is settled. Both windows are closed at the stop with their result, their
         // sessions and the session they ended on, settled no.

@@ -26,7 +26,12 @@ public sealed record LoopProposalRow(
     bool Counts,
     double? Detectable,
     int StableFolds,
-    bool Passed);
+    bool Passed,
+    string? Finding = null);
+
+// One figure the autopsy stated of a family's finished trades in a run: the family, the figure, its value, the trades
+// it was read over and its words.
+public sealed record LoopFindingRow(string Family, string Figure, double? Value, int Trades, string Words);
 
 // A proposal's test year as the run stored it: the setting the fold's learning years chose or none, and each side's
 // units and total edge after costs.

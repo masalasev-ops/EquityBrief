@@ -30,6 +30,14 @@ public sealed partial class MarkRenderer
             ? $"<p class=\"degraded\" data-loop-rule=\"none\" data-family=\"{Escaped(family)}\">No procedure was tested for this family in this run, so no rule is read here.</p>"
             : $"<p class=\"loop-rule\" data-family=\"{Escaped(family)}\" data-rule=\"{Escaped(current)}\"><b>The rule today.</b> {Escaped(Capitalised(current))}</p>";
 
+    // What the autopsy read of a family's finished trades in the run, a line a figure, none where it read none.
+    public string LoopFindings(string family, IReadOnlyList<LoopFindingRow> findings) =>
+        findings.Count == 0
+            ? string.Empty
+            : $"<div class=\"loop-findings\" data-family=\"{Escaped(family)}\" data-figures=\"{findings.Count}\"><p><b>What the rule's finished trades did.</b></p><ul>"
+                + string.Concat(findings.Select(finding => $"<li data-figure=\"{Escaped(finding.Figure)}\" data-value=\"{(finding.Value is { } value ? value.ToString("R", Invariant) : "none")}\" data-trades=\"{finding.Trades}\">{Escaped(Capitalised(finding.Words))}.</li>"))
+                + "</ul></div>";
+
     // One proposal: what it changes, its verdict part by part, its test years, and what the gate could detect.
     public string LoopProposal(LoopProposalRow proposal, IReadOnlyList<LoopTestRow> years)
     {
@@ -42,6 +50,11 @@ public sealed partial class MarkRenderer
         html.Append(proposal.Words is { } words
             ? $"<p class=\"loop-change\" data-words=\"{Escaped(words)}\"><b>Proposed, run on all finished data.</b> {Escaped(Capitalised(words))}</p>"
             : "<p class=\"loop-change degraded\" data-words=\"none\"><b>No change.</b> The procedure run on all finished data chose no setting that met the floors, so it proposes nothing; its test years below are what it chose year by year.</p>");
+
+        if (proposal.Finding is { } finding)
+        {
+            html.Append($"<p class=\"loop-finding\" data-finding=\"{Escaped(finding)}\"><b>Why.</b> {Escaped(Capitalised(finding))}.</p>");
+        }
 
         var gate = proposal.Adjusted is { } p
             ? Formatted($"<li data-part=\"gate\" data-adjusted=\"{p.ToString("R", Invariant)}\" data-held=\"{(proposal.Gate ? 1 : 0)}\">The gate: an adjusted p-value of {p.ToString("0.0000", Invariant)} over {proposal.Blocks} blocks of 63 sessions, against the bar of {LoopGate.Bar.ToString("0.0000", Invariant)}; {(proposal.Gate ? "at or under it" : "over it")}.</li>")

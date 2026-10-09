@@ -300,16 +300,16 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheTestersRunIsWrittenWholeAndReadBackRowForRowAndAnIndexWithNoProcedureIsRefused()
+    public async Task TheTestersRunIsWrittenWholeAndReadBackRowForRowAndAnIndexNoRunReadsIsRefused()
     {
         using var store = new TemporaryStore().Migrated();
         var output = new StringWriter();
         var clock = FixedClock.At(new DateTimeOffset(2026, 10, 9, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
         var tester = new WalkForwardTester(clock, store.DatabaseFile, store.Root, output, (_, _) => Task.CompletedTask);
 
-        // The S&P 500 holds no Part 0 procedure and a month is read as yyyy-MM; both refused before the store is read.
-        Assert.Equal(2, await tester.RunAsync("GSPC", null));
-        Assert.Contains("name an index with '--index', MID or SML", output.ToString(), StringComparison.Ordinal);
+        // An index no run reads and a month not read as yyyy-MM are refused before the store is read.
+        Assert.Equal(2, await tester.RunAsync("NDX", null));
+        Assert.Contains("name an index with '--index', GSPC, MID or SML", output.ToString(), StringComparison.Ordinal);
         Assert.Equal(2, await tester.RunAsync("MID", "2026-13"));
         Assert.Contains("'--month' takes a month as yyyy-MM", output.ToString(), StringComparison.Ordinal);
 

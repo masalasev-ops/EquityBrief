@@ -55,9 +55,10 @@ internal static class Scope
     internal const string LedgerSettled = "Settled setups";
     internal const string LedgerPathDrawn = "A setup's path";
 
-    // Section 15.20's heading and its three regions, held as constants for the same reason.
+    // Section 15.20's heading and its four regions, held as constants for the same reason.
     internal const string LoopPage = "15.20 The Loop page";
     internal const string LoopRuleToday = "A family's rule today";
+    internal const string LoopFindings = "The autopsy's findings";
     internal const string LoopVerdict = "A proposal's verdict";
     internal const string LoopTestYears = "A proposal's test years";
     const string ByNight = "nightly-run";
@@ -3292,6 +3293,32 @@ internal static class Scope
             Verdict.Pass,
             "each test year with the setting its fold chose or that none met the floors, each side's total over its units in risks or in points, and whether the year is counted and better, read back off the rendered page against the stored rows",
             ByReadSurface),
+        // 17.5, the trade autopsy and the engines' hooks: the findings' store, section 17's menu and proposals, section
+        // 18's path no bars reach, the Loop page's findings and the heavyweights' card's selector.
+        [CheckReach.Key(StoresTable, "Loop findings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The exit menu")] = new Scoped(
+            Verdict.Pass,
+            "every exit of the menu replayed by hand over one constructed path, a plan with a fixed target and the same plan trailing, a series running out leaving a trade open and a stop at its buy placing none; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The autopsy's proposals")] = new Scoped(
+            Verdict.Pass,
+            "the five strongest exits chosen on the learning years alone above the rule's own, an exit one trade short of its floor and one whose trades end in the test year left unranked; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A path no bars reach")] = new Scoped(
+            Verdict.Pass,
+            "a series running out before the trade ends leaves it open with no result, a stop at its buy places no trade, and the benchmark averages only the members whose closes reach the exit's end and is none where none does",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, LoopFindings)] = new Scoped(
+            Verdict.Pass,
+            "a family's figures beneath its rule today each with its value and trades, and an exit proposal's finding beneath its change, read back off the rendered page against the stored rows, a family with no figure and a proposal naming no change drawing none",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card's rule")] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered card over a constructed store with a variant chosen in the link, by default and in a link naming no rule, its own book's holdings under the band with its words marked, and on the S&P 400 with no variant registered",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4646,6 +4673,8 @@ internal static class Scope
         ["Loop runs"] = "17.4",
         ["Loop proposals"] = "17.4",
         ["Loop tests"] = "17.4",
+        // 17.5's one, the trade autopsy's figures, which the plan names as the proposals' store.
+        ["Loop findings"] = "17.5",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4679,10 +4708,13 @@ internal static class Scope
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerPathDrawn)] = "17.3",
-        // 17.4's Loop page under Universe, its three regions.
+        // 17.4's Loop page under Universe, its three regions, and 17.5's autopsy's findings beneath a family's rule.
         [CheckReach.Key(LoopPage, LoopRuleToday)] = "17.4",
         [CheckReach.Key(LoopPage, LoopVerdict)] = "17.4",
         [CheckReach.Key(LoopPage, LoopTestYears)] = "17.4",
+        [CheckReach.Key(LoopPage, LoopFindings)] = "17.5",
+        // The sector heavyweights' card's selector, 17.5, which the plan owes the card.
+        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card's rule")] = "17.5",
         // The parts of the rows the fifth phase 5 sign-off review decomposed.
         [CheckReach.Key("15.4 The two surfaces", "The app, the single page")] = "1.3",
         [CheckReach.Key("15.4 The two surfaces", "The app, routing")] = "1.3",
@@ -6198,6 +6230,8 @@ internal static class Scope
         ["The tester's fixed level"] = "17.4",
         ["The tester's stability screen"] = "17.4",
         ["The tester's floors"] = "17.4",
+        // The autopsy's proposals, 17.5, which the plan names as its proposals; the exit menu derives from the plan.
+        ["The autopsy's proposals"] = "17.5",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

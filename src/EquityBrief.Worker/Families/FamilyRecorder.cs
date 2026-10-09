@@ -3,6 +3,8 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Ledger;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
@@ -50,7 +52,7 @@ public sealed class FamilyRecorder : IComponent
 
     // Every trade a rule kept that has not ended, or whose benchmark is not written yet.
     const string Pending = @"
-        SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, members IS NOT NULL
+        SELECT candidate, ticker, session_date, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, members IS NOT NULL, exit
         FROM family_trade
         WHERE (ended_on IS NULL OR (benchmark IS NULL AND members IS NULL)) AND session_date < $night
         ORDER BY session_date, candidate, ticker;
@@ -113,9 +115,9 @@ public sealed class FamilyRecorder : IComponent
 
     const string Insert = @"
         INSERT INTO family_trade (
-            candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap)
+            candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, exit)
         VALUES (
-            $candidate, $ticker, $night, $family, $place, $entry, $stop, $target, $risk_moves, $reward_to_risk, $cap);
+            $candidate, $ticker, $night, $family, $place, $entry, $stop, $target, $risk_moves, $reward_to_risk, $cap, $exit);
     ";
 
     const string AppendRun = @"
@@ -149,9 +151,12 @@ public sealed class FamilyRecorder : IComponent
         int Cap,
         DateOnly? EndedOn,
         double? Result,
-        bool Benchmarked);
+        bool Benchmarked,
+        int Exit);
 
-    public async Task<FamilyRecordsOutcome> RunAsync(string indexCode, string runId, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation = default)
+    // The night's records; the readings a rule whose hooks read them is listed by, one member's at a time, where the
+    // night supplies them.
+    public async Task<FamilyRecordsOutcome> RunAsync(string indexCode, string runId, IReadOnlyList<RegisterRow> standing, CancellationToken cancellation = default, Func<string, IReadOnlyList<double?>?>? readings = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -229,10 +234,23 @@ public sealed class FamilyRecorder : IComponent
         {
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;
+            var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
+
+            // A rule whose hooks read readings the night did not supply lists nothing tonight rather than a list its
+            // hooks did not order.
+            if (hooks.ReadsReadings && readings is null)
+            {
+                said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept 0, its hooks reading what the night did not supply"));
+
+                continue;
+            }
+
             var held = await HeldAsync(connection, transaction, rule.Candidate, night, cancellation);
             var listed = Keep(
                 verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome)),
-                held);
+                held,
+                hooks,
+                readings);
 
             foreach (var (ticker, place, plan) in listed)
             {
@@ -242,7 +260,8 @@ public sealed class FamilyRecorder : IComponent
                     ("$target", plan.Target is { } target ? Money.ToStorage(target) : DBNull.Value),
                     ("$risk_moves", plan.RiskMoves is { } risk ? risk : DBNull.Value),
                     ("$reward_to_risk", plan.RewardToRisk is { } ratio ? ratio : DBNull.Value),
-                    ("$cap", cap));
+                    ("$cap", cap),
+                    ("$exit", hooks.Exit == 0 ? DBNull.Value : hooks.Exit));
             }
 
             kept += listed.Count;
@@ -262,17 +281,25 @@ public sealed class FamilyRecorder : IComponent
     // order, the order's figure and then the second figure each largest first and then the ticker, at most five,
     // none it holds a trade on still open and none whose values place no plan. The night's record keeps its list
     // by it, and a replay of the rule keeps the list the same way.
+    // Where the rule states hooks reading readings, its fired members are kept and ordered by them first, its own order
+    // breaking a tie; a rule stating none keeps its own order.
     public static IReadOnlyList<(string Ticker, int Place, (decimal Entry, decimal Stop, decimal? Target, double? RiskMoves, double? RewardToRisk) Plan)> Keep(
         IEnumerable<(string Ticker, ShadowOutcome Outcome)> verdicts,
-        IReadOnlySet<string> held)
+        IReadOnlySet<string> held,
+        RuleHooks? hooks = null,
+        Func<string, IReadOnlyList<double?>?>? readings = null)
     {
         var kept = new List<(string, int, (decimal, decimal, decimal?, double?, double?))>();
+        IReadOnlyList<(string Ticker, ShadowOutcome Outcome)> own =
+        [
+            .. verdicts
+                .Where(verdict => verdict.Outcome.Fired)
+                .OrderByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.OrderValue) ?? double.MinValue)
+                .ThenByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.ThenByValue) ?? double.MinValue)
+                .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal),
+        ];
 
-        foreach (var fire in verdicts
-            .Where(verdict => verdict.Outcome.Fired)
-            .OrderByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.OrderValue) ?? double.MinValue)
-            .ThenByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.ThenByValue) ?? double.MinValue)
-            .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal))
+        foreach (var fire in (hooks ?? RuleHooks.Off).Order(own, verdict => readings?.Invoke(verdict.Ticker)))
         {
             if (kept.Count == SetupFamilies.ListedANight)
             {
@@ -318,8 +345,10 @@ public sealed class FamilyRecorder : IComponent
     // plan is read at the scale of the closes as they are stored now, so an adjustment since the night moves
     // the buy, the stop and the target together.
     static (DateOnly On, double? Result)? Walk(Kept trade, IReadOnlyList<(DateOnly Session, double Close)>? series, IReadOnlyList<DateOnly> calendar, IReadOnlyDictionary<DateOnly, int> at) =>
-        Walk(trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Cap, series, calendar, at);
+        Walk(trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Cap, series, calendar, at, trade.Exit, trade.RiskMoves);
 
+    // A trade kept under an exit of the menu is walked under it, its trail counted in the typical moves its stop's
+    // distance states; one kept under its rule's own exit is walked as it always was.
     public static (DateOnly On, double? Result)? Walk(
         DateOnly session,
         decimal buy,
@@ -328,7 +357,9 @@ public sealed class FamilyRecorder : IComponent
         int cap,
         IReadOnlyList<(DateOnly Session, double Close)>? series,
         IReadOnlyList<DateOnly> calendar,
-        IReadOnlyDictionary<DateOnly, int> at)
+        IReadOnlyDictionary<DateOnly, int> at,
+        int exit = 0,
+        double? riskMoves = null)
     {
         var index = series is null ? -1 : IndexOf(series, session);
 
@@ -338,9 +369,22 @@ public sealed class FamilyRecorder : IComponent
             var scale = closes[index] / Statistic.FromPrice(buy);
             var entry = closes[index];
             var stop = Statistic.FromPrice(stopAt) * scale;
-            double? result = targetAt is { } target
-                ? FamilyWalks.Fixed(closes, index, entry, stop, Statistic.FromPrice(target) * scale, cap, out var sessions)
-                : FamilyWalks.Trailing(closes, index, entry, stop, entry - stop, cap, out sessions);
+            int sessions;
+            double? result;
+
+            if (ExitMenu.Of(exit) is { } choice)
+            {
+                var anchor = new SetupAnchor(session, entry, stop, targetAt is { } aimed ? Statistic.FromPrice(aimed) * scale : null, targetAt is null ? entry - stop : null, cap, riskMoves);
+                var outcome = ExitMenu.Replay(closes, index, anchor, riskMoves is > 0 ? (entry - stop) / riskMoves.Value : double.NaN, choice);
+
+                (result, sessions) = (outcome.Result, outcome.Sessions);
+            }
+            else
+            {
+                result = targetAt is { } target
+                    ? FamilyWalks.Fixed(closes, index, entry, stop, Statistic.FromPrice(target) * scale, cap, out sessions)
+                    : FamilyWalks.Trailing(closes, index, entry, stop, entry - stop, cap, out sessions);
+            }
 
             if (result is not null)
             {
@@ -392,11 +436,23 @@ public sealed class FamilyRecorder : IComponent
                 continue;
             }
 
-            var result = trade.Target is not null && trade.RewardToRisk is { } ratio
-                ? FamilyWalks.Fixed(held, index, entry, entry - risk, entry + (ratio * risk), trade.Cap, out _)
-                : trade.Target is null
-                    ? FamilyWalks.Trailing(held, index, entry, entry - risk, risk, trade.Cap, out _)
-                    : null;
+            double? result;
+
+            // The same plan on every member is walked under the trade's own exit, whether the rule's or the menu's.
+            if (ExitMenu.Of(trade.Exit) is { } choice)
+            {
+                var anchor = new SetupAnchor(trade.Session, entry, entry - risk, trade.Target is not null && trade.RewardToRisk is { } aimed ? entry + (aimed * risk) : null, trade.Target is null ? risk : null, trade.Cap, riskMoves);
+
+                result = trade.Target is not null && trade.RewardToRisk is null ? null : ExitMenu.Replay(held, index, anchor, move, choice).Result;
+            }
+            else
+            {
+                result = trade.Target is not null && trade.RewardToRisk is { } ratio
+                    ? FamilyWalks.Fixed(held, index, entry, entry - risk, entry + (ratio * risk), trade.Cap, out _)
+                    : trade.Target is null
+                        ? FamilyWalks.Trailing(held, index, entry, entry - risk, risk, trade.Cap, out _)
+                        : null;
+            }
 
             if (result is { } made)
             {
@@ -491,7 +547,8 @@ public sealed class FamilyRecorder : IComponent
                 reader.GetInt32(8),
                 reader.IsDBNull(9) ? null : Date(reader.GetString(9)),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
-                reader.GetInt64(11) == 1));
+                reader.GetInt64(11) == 1,
+                reader.IsDBNull(12) ? 0 : reader.GetInt32(12)));
         }
 
         return trades;

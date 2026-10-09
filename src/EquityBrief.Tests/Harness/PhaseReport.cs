@@ -271,6 +271,10 @@ internal static class PhaseReport
             "the loop's nightly half drawn from the night's lists to the Ledger page's summary, whose steps section 14's list claims and whose stores section 16's rows carry; a picture of claims placed elsewhere and none of its own"),
         ["Figure 13.4"] = new Placement(
             "the tester's windows drawn a fold a year, what each learns on and the year it is tested on, whose rule section 13.12 states and section 17's rows claim; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 13.5"] = new Placement(
+            "the loop's monthly half drawn from what the night recorded to a change applied before the next night, whose engines and tester section 13's subsections state and whose stores and the Loop page's regions sections 15 and 16 carry; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 13.6"] = new Placement(
+            "one finished trade's path drawn as the autopsy reads it and under an exit of the menu, illustrative, whose figures section 13.13 states and whose menu section 17's row claims; a picture of claims placed elsewhere and none of its own"),
         // 16.4's: the card drawn with its parts numbered, its figures placeholders, and a key the conformance check
         // holds to name every part the figure draws.
         ["Figure 15.1"] = new Placement(

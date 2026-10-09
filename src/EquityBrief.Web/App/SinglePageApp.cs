@@ -2572,7 +2572,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<string> months,
         EquityBrief.Core.Loop.LoopRunRow? run,
         IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals,
-        IReadOnlyList<EquityBrief.Core.Loop.LoopTestRow> tests)
+        IReadOnlyList<EquityBrief.Core.Loop.LoopTestRow> tests,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopFindingRow>? findings = null)
     {
         static string Named(string word) => word switch
         {
@@ -2617,6 +2618,8 @@ public sealed class SinglePageApp : IComponent
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
+
+            body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
 
             foreach (var proposal in own)
             {
