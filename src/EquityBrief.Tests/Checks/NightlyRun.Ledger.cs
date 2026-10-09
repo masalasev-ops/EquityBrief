@@ -110,7 +110,7 @@ public partial class NightlyRun
         Assert.True(LedgerScalar<double>(store,"SELECT target FROM setup WHERE family = 'drift';") <= 112.5);
         Assert.True(LedgerScalar<double>(store,"SELECT reaction_moves FROM setup WHERE family = 'drift';") > 0.25);
         Assert.Equal(["ok"], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}';"));
-        Assert.StartsWith("2 setup(s), 0 passing the live rule, 0 window(s) closed on the S&P 500 in ", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{SetupLedger.Stage}';").Single(), StringComparison.Ordinal);
+        Assert.StartsWith("2 setup(s), 0 passing the live rule, 0 window(s) closed on the S&P 500; ", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{SetupLedger.Stage}';").Single(), StringComparison.Ordinal);
 
         // The night after: AAA falls to 100, through both stops; the others hold at 100, so the same plan on them is
         // still open and neither benchmark is settled. Both windows are closed at the stop with their result, their

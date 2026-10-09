@@ -195,9 +195,11 @@ public sealed class SetupLedger : IComponent
         }
     }
 
+    // The row states counts and no timing, so two nights over one fixture write the same row; the step's
+    // time is the row's own started_at to ended_at, and an index's seconds stay on the outcome alone.
     public static string Detail(IReadOnlyList<LedgerIndex> indices) =>
         string.Join("; ", indices.Select(index => index.Fault is null
-            ? FormattableString.Invariant($"{index.Setups} setup(s), {index.LivePasses} passing the live rule, {index.Closed} window(s) closed on the {DecisionCards.NameOf(index.Index)} in {index.Seconds:0.0} s")
+            ? FormattableString.Invariant($"{index.Setups} setup(s), {index.LivePasses} passing the live rule, {index.Closed} window(s) closed on the {DecisionCards.NameOf(index.Index)}")
             : $"the {DecisionCards.NameOf(index.Index)}'s setups not computed tonight: {index.Fault}"));
 
     async Task<LedgerIndex> IndexNightAsync(SqliteConnection connection, string index, DateOnly night, Stopwatch watch, CancellationToken cancellation)
