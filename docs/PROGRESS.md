@@ -41335,7 +41335,13 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             "read-api-20261009T131025.1234567Z"; the second red, the two hosts' starts falling in one second and the
             second failing on the key as #413's run did; the third red, "read-api-20261009T091025.1234567Z" read for
             the UTC name. Each made on this branch and reverted before anything was committed, and the test green.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 16ad5c1c, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2095 of 2095 tests ran with none failed, migrations 0 to
+            82 with none pending, schema version 82, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 52 tables, 1127 claims, 1127 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1138
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2095 of 2095 tests ran.
 Carried:    a finding outside this correction, found by the same reviewers: the Run page's runs by hand leave out the
             filings refresh's and the members' runs by hand, so after either is run in the daytime the dateless Run
             page opens on that day until the next night writes its rows. A correction of its own after #413.
