@@ -65,7 +65,7 @@ Now:
 > [SCHEMA index_family_pick] [...] `GSPC` for the S&P 500's, a `GSPC` row's stock the S&P 500's own families listed that night among them; null otherwise | [...] From 17.8 a `GSPC` row is the S&P 500's fundamentals-first family's, a stock the S&P 500's own families listed that night held back as an `open trade` naming that family and that night (see: [...]). A night run again replaces its own rows.
 > [RUNBOOK] a section on the fundamentals-first family and the `sweep-fundamentals` verb, added.
 > [checks.md, fixture-expectations] [...]; and from 17.8 each check of the fundamentals-first family worked by hand on both sides of its threshold, [...] while one filed on the session is read from the next |
-> [checks.md, nightly-run] [...]; and from 17.8 the swing filter's step reads the S&P 500 first for the fundamentals-first family alone, [...] beside the index's other rules |
+> [checks.md, nightly-run] [...]; and from 17.8 the swing filter's step reads the S&P 500 first for the fundamentals-first family alone, [...] and the overnight queue and the night's requests taking the S&P 500's picks of the family after its own families' |
 > [checks.md, read-surface] [...]; and from 17.8 the fundamentals-first family's card read back off the rendered page on every index, [...] drawn from the rows the index families' step writes there and saying so |
 Why: the done condition read a filing landing on a session on that session's own night, which the point-in-time rule every business reading keeps refuses, so 17.8 amends it to that rule; the rest records the family's rows, its verb and its checks.
 

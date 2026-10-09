@@ -134,4 +134,29 @@ public partial class NightlyRun
         Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE asked_from = 'night';"));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE ticker = 'S0';"));
     }
+
+    // From 17.8 the S&P 500's page lists the fundamentals-first family's picks after its own families', from the rows the
+    // index families' step writes under the S&P 500, so the night's requests take them in that place.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    [Fact]
+    public async Task TheNightAsksForTheSAndP500sFundamentalsFirstPicksAfterItsOwnFamiliesPicks()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // The S&P 500's families listed P1; its fundamentals-first family listed F1 and held back P1, which its own
+        // families listed; no other index listed anything.
+        store.Execute("INSERT INTO family_night (session_date, families) VALUES ('2026-10-01', '[\"pullback\",\"breakout\",\"drift\"]');");
+        store.Execute("INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night) VALUES ('2026-10-01', 'P1', 'pullback', 'listed', 1, '[]', NULL, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            "('GSPC', '2026-10-01', 'F1', 'fundamentals', 'listed', 1, '[]', NULL, NULL, NULL), " +
+            "('GSPC', '2026-10-01', 'P1', 'fundamentals', 'open trade', NULL, '[]', 'GSPC', 'pullback', '2026-10-01');");
+
+        var ask = await RequestDrain.AskForTheNightAsync(store.DatabaseFile, new DateOnly(2026, 10, 1), FixedClock.At(new DateTimeOffset(2026, 10, 2, 1, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        // P1 first and F1 second on the S&P 500's page, P1 asked once.
+        Assert.Equal(["P1", "F1"], ask.Asked);
+        Assert.Contains("F1 is number 2 on the list, and a report on it was asked for", ask.Line, StringComparison.Ordinal);
+        Assert.Equal(2, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE asked_from = 'night';"));
+    }
 }

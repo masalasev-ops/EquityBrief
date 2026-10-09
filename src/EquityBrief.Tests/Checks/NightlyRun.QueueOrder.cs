@@ -79,7 +79,8 @@ public partial class NightlyRun
             "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
             "('MID', '2026-09-08', 'XRAY', 'pullback', 'listed', 1, '[]', NULL, NULL, NULL), " +
             "('MID', '2026-09-08', 'AA', 'breakout', 'listed', 2, '[]', NULL, NULL, NULL), " +
-            "('SML', '2026-09-08', 'AAL', 'drift', 'listed', 1, '[]', NULL, NULL, NULL);");
+            "('SML', '2026-09-08', 'AAL', 'drift', 'listed', 1, '[]', NULL, NULL, NULL), " +
+            "('GSPC', '2026-09-08', 'KEYS', 'fundamentals', 'listed', 1, '[]', NULL, NULL, NULL);");
 
         // The S&P 500's own order, as the queue reads it handed no wider index: its list and then its other members.
         var fiveHundred = await QueueOver(store, new FixtureExpectations.NothingAnsweringLocal()).RunAsync("queue-order-500", new DateOnly(2026, 9, 8));
@@ -88,11 +89,12 @@ public partial class NightlyRun
         Assert.Equal("NFLX", fiveHundred.Queued[0]);
         Assert.Equal(4, fiveHundred.Queued.Count);
 
-        // Handed the S&P 400 and 600: the S&P 500's list, the 400's in its page's order and the 600's, then every other
-        // member, the S&P 500's first in their own order and then the 400's A.
+        // Handed the S&P 400 and 600: the S&P 500's list, from 17.8 the S&P 500's fundamentals-first pick KEYS after it,
+        // the 400's in its page's order and the 600's, then every other member, the S&P 500's first in their own order
+        // and then the 400's A.
         var three = await QueueOver(store, new FixtureExpectations.NothingAnsweringLocal()).RunAsync("queue-order-three", new DateOnly(2026, 9, 8), wider: ["MID", "SML"]);
 
-        Assert.Equal(["NFLX", "XRAY", "AA", "AAL", .. fiveHundred.Queued.Skip(1), "A"], three.Queued);
+        Assert.Equal(["NFLX", "KEYS", "XRAY", "AA", "AAL", .. fiveHundred.Queued.Skip(1).Where(ticker => ticker != "KEYS"), "A"], three.Queued);
 
         // And a pass over the S&P 400's AA reads its facts file as the night stored it and writes its sections, each
         // accepted by the checker, written by the local model and handed no document.
