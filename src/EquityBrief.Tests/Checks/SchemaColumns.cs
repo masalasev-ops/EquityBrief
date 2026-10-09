@@ -82,6 +82,13 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Loop readings"),
             // 17.7, every score the tester fits.
             CheckReach.Key(Scope.StoresTable, "Loop models"),
+            // 17.9, each run's references, the operator's decisions, what the apply step did, the settings it wrote and
+            // the alarm's periods.
+            CheckReach.Key(Scope.StoresTable, "Loop references"),
+            CheckReach.Key(Scope.StoresTable, "Loop decisions"),
+            CheckReach.Key(Scope.StoresTable, "Loop applications"),
+            CheckReach.Key(Scope.StoresTable, "Provisional settings"),
+            CheckReach.Key(Scope.StoresTable, "Alarm periods"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

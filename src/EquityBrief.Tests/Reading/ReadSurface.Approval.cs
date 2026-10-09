@@ -21,6 +21,16 @@ namespace EquityBrief.Tests.Reading;
 // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
 public partial class ReadSurface
 {
+    // The Loop page's three regions, Tonight's line and the card's row this check reaches.
+    internal static readonly string[] ApprovalPageClaims =
+    [
+        CheckReach.Key(Scope.LoopPage, Scope.LoopWord),
+        CheckReach.Key(Scope.LoopPage, Scope.LoopDecided),
+        CheckReach.Key(Scope.LoopPage, Scope.LoopAlarm),
+        CheckReach.Key("15.7 Tonight", "The live alarm's line"),
+        CheckReach.Key(Scope.CardPage, Scope.CardApproved),
+    ];
+
     const string SmallOctober = "loop-test-SML-20261009T120000Z";
 
     const string SmallSeptember = "loop-test-SML-20260905T120000Z";

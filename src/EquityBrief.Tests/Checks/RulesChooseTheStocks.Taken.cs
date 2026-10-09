@@ -32,6 +32,9 @@ public partial class RulesChooseTheStocks
         (nameof(EquityBrief.Worker.Ledger.SetupLedger), EquityBrief.Worker.Ledger.SetupLedger.Access),
         // From 17.4 the walk-forward tester, which judges every proposal.
         (nameof(EquityBrief.Worker.Loop.WalkForwardTester), EquityBrief.Worker.Loop.WalkForwardTester.Access),
+        // From 17.9 the apply step, which writes the settings a family lists at, and the live alarm, which flags a rule.
+        (nameof(EquityBrief.Worker.Loop.LoopApply), EquityBrief.Worker.Loop.LoopApply.Access),
+        (nameof(EquityBrief.Worker.Loop.LiveAlarmReader), EquityBrief.Worker.Loop.LiveAlarmReader.Access),
     ];
 
     internal static IReadOnlyList<string> ReadsTheOperatorsOwn(string name, Declared access) =>
@@ -42,8 +45,8 @@ public partial class RulesChooseTheStocks
     {
         var components = PickMaking;
 
-        // The scope, in numbers: the deciding list and the five named beside it.
-        Assert.Equal(Deciding.Length + 5, components.Length);
+        // The scope, in numbers: the deciding list and the seven named beside it.
+        Assert.Equal(Deciding.Length + 7, components.Length);
         Assert.Empty(components.SelectMany(component => ReadsTheOperatorsOwn(component.Name, component.Access)));
 
         var sources = Folders

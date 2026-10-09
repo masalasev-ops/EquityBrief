@@ -1408,7 +1408,9 @@ public partial class ArchitectureConformance
         // 140 at 17.6: the Loop page's readings.
         // 142 at 17.7: the decision card's score part and the Loop page's learned score.
         // 143 at 17.8: the fundamentals-first family's card on Tonight.
-        Assert.Equal(143, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 148 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the
+        // decision card's rule standing at an approved change.
+        Assert.Equal(148, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1524,7 +1526,9 @@ public partial class ArchitectureConformance
         // 498 at 17.6: the Loop page's readings.
         // 500 at 17.7: the decision card's score part and the Loop page's learned score.
         // 501 at 17.8: the fundamentals-first family's card on Tonight.
-        Assert.Equal(501, inDocument.Length);
+        // 506 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the decision
+        // card's rule standing at an approved change.
+        Assert.Equal(506, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

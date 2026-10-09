@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Time;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Indices;
 using EquityBrief.Worker.Loop;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,32 @@ namespace EquityBrief.Tests.Checks;
 // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
 public partial class FixtureExpectations
 {
+    // The rows 17.9 adds that this check reaches: section 17's alarm and setting, and section 18's two.
+    internal static readonly string[] ApprovalClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "The live alarm"),
+        CheckReach.Key(Scope.LimitsTable, "The adopt setting"),
+        CheckReach.Key(Scope.FailureTable, "An approval that cannot be applied"),
+        CheckReach.Key(Scope.FailureTable, "An alarm on a rule"),
+    ];
+
+    // Every row 17.9 adds, named after phase 16's report until phase 17's own pair is checked: the apply step's and the
+    // alarm's catalogue and matrix rows, the five stores, the four above, and the Loop page's, Tonight's and the card's.
+    internal static string[] ApprovalRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Loop apply"),
+        CheckReach.Key(Scope.MatrixTable, "Loop apply"),
+        CheckReach.Key(Scope.CatalogueTable, "Live alarm reader"),
+        CheckReach.Key(Scope.MatrixTable, "Live alarm reader"),
+        CheckReach.Key(Scope.StoresTable, "Loop references"),
+        CheckReach.Key(Scope.StoresTable, "Loop decisions"),
+        CheckReach.Key(Scope.StoresTable, "Loop applications"),
+        CheckReach.Key(Scope.StoresTable, "Provisional settings"),
+        CheckReach.Key(Scope.StoresTable, "Alarm periods"),
+        .. ApprovalClaims,
+        .. Reading.ReadSurface.ApprovalPageClaims,
+    ];
+
     static readonly FixedClock ApprovalClock = FixedClock.At(new DateTimeOffset(2026, 10, 9, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates);
 
     static string ExitChange(int exit) => LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExitParameter] = exit }).Json;
