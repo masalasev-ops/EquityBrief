@@ -2095,7 +2095,7 @@ public static class SchemaMigrations
     // The history pulled on the operator's command for the sessions before the store's rolling year,
     // held apart from the bar and calendar tables every night reads. Every row carries the run id of
     // the pull that wrote it, which is what removes a pull whole.
-    // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
     const string CreatePulledHistory = @"
         CREATE TABLE pulled_bar (
             ticker       TEXT    NOT NULL,

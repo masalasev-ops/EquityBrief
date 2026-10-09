@@ -18,7 +18,7 @@ namespace EquityBrief.Tests.Bars;
 // throughout, BBB leaving on 2026-08-03, CCC joining on 2026-08-17, and DDD leaving on 2026-06-30,
 // before any span below begins, so it is never asked for. Every bar and print is constructed here,
 // and every count is derived from the exchange's calendar over the span rather than read back.
-// see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
 public class HistoryPullTests
 {
     const string Index = "GSPC";
@@ -599,7 +599,7 @@ public class HistoryPullTests
     // history pull, the migration that creates its two tables and the sweep's history, which reads them by
     // hand and never from a night, are the only files outside the suite that name either table or its store,
     // so no stage, score, record or page can read them without this failing first.
-    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
+    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone
     [Fact]
     public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
     {

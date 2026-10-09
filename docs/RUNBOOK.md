@@ -528,7 +528,7 @@ It removes the replayed results of the sessions named and nothing else, a night'
 
 ### Pulling history before the store's year
 
-The store keeps a year of bars, and a session can be read only once two hundred sessions stand before it, so a replay over the store alone reaches about fifty sessions. The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull):
+The store keeps a year of bars, and a session can be read only once two hundred sessions stand before it, so a replay over the store alone reaches about fifty sessions. The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it but the chart's averages before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull):
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --live
