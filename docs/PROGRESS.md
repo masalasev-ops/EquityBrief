@@ -41516,3 +41516,46 @@ Results:    0 of 27 passed the family floors on every index, against about 3.6 t
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
 Carried:    the report to the operator with no freeze: the family keeps listing on its provisional setting on every
             index, and what follows a search no setting of which can reach the trade floor is the operator's to rule.
+
+### 17.3 - correction: the point-in-time check reads the history through the session the build read it through, and rebuilds a swing setup's own readings by its family's gates over the cut   2026-10-09
+
+Corrects:   17.3's point-in-time check, which could not pass on any index: it rebuilt the readings every setup carries
+            and left a swing setup's six own readings as none, and it read the history through its newest sampled setup
+            where the build read it through its own end. Discharges the correction the history build's record carried.
+Found:      by its first runs from main after the merges, recorded above: 478, 558 and 551 differences, 1,571 of them the
+            six readings as none and 16 in the sixth significant figure. The history reader prices the years the pull
+            holds before the store's at the median ratio of the two over the sessions both hold to the end it reads, so
+            the S&P 500's history read through its newest sampled setup, 2026-09-21, priced them a rounding apart from the
+            build's read through 2026-10-05.
+Built:      the check reads the history through the newest session the history build's rows reach on the index and names
+            it on its row; a swing setup's readings are rebuilt by its family's own gates over the cut, its own beside
+            every setup's, a setup those gates do not pass at its session named as one; a heavyweights' setup keeps the
+            readings every setup carries, which are all it has. Each run of the check and of the history build is named by
+            its index beside its instant, as the tester's are. The catalogue row, section 13.11, the runbook and the roster
+            say so, the prior text in the changelog.
+Checked:    the corrected check from this branch's build over the live store, reading it and writing its run log row
+            alone: on the S&P 500 from 16:55:49 to 17:08:18 UTC, 200 of 200 sampled setups rebuilt with every reading the
+            same, exit 0; on the S&P 400 from 17:08:40 to 17:28:30, the same. The S&P 600's, started in the same second as
+            the S&P 400's, named no difference and then failed writing its row on the run log's key, both runs named to
+            the second alone: the naming above corrects it.
+Tests:      2111, two more: a breakout's own readings rebuilt by its family's gates over the cut equal to those read off
+            the whole history, the readings every setup carries leaving them none, a range ratio a hundredth over named
+            and a family whose gates pass no setup of the stock reading none; and a member pulled at 100 and stored from
+            its 11th session at 200 and a point more a session, its pulled years priced at 204.5 read through the 20th
+            session and 209.5 through the 30th, worked by hand, the check reading the history through the 30th, where the
+            build's rows end, though its one sampled setup stands on the 16th, naming it on its line, and a check of the
+            S&P 400 started in the same second writing a row of its own.
+Claims:     no row moved: the setup ledger's catalogue row reworded.
+Pins:       none moved: the readings' own sources are unchanged.
+Mutated:    the rule, stated before each run: each property the correction adds, broken alone. A swing setup's own readings
+            rebuilt by its family's gates, broken by rebuilding every family's setup from the readings every setup
+            carries, as before: predicted red at the breakout's test. The history read through the build's end, broken by
+            the check reading through its newest sampled setup again: predicted red at the history's test. A run named by
+            its index, broken by naming the check's run to the second alone again: predicted red at the history's test's
+            second check. Results: the first red at the breakout's test, its volume multiple rebuilt as none; the second
+            red at the history's test, the check's line naming the history read through 2026-01-26, the sampled setup's
+            session, and not 2026-02-13, where the build's rows end; the third red there, the S&P 400's check failing on
+            the run log's key as the S&P 600's did over the live store. Each made on this branch and reverted before
+            anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Carried:    after the merge, from main: `ledger-check` on each index, its row read.
