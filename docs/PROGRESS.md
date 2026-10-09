@@ -41091,6 +41091,12 @@ Mutated:    the rule, stated before the run: the three properties the done condi
             trades carrying exit 1. The third red at the five-strongest test alone, 26, 10, 9, 8 and 7 read for 10 to 6.
             Each reverted before anything was committed and the tests green. Not mutated: the Loop page and the
             selector, each held by its own test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2fb1769f, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2070 of 2070 tests ran with none failed, migrations 0 to
+            80 with none pending, schema version 80, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 51 tables, 1110 claims, 1110 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1121
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2070 of 2070 tests ran.
 Carried:    after the merge, from main: the remedy, its sixteen replay lines read for every trade reproduced; and
             `loop-test` on each index to write the month's rows, the Loop page read back against them.
