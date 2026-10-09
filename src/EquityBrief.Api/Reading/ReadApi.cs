@@ -6076,6 +6076,11 @@ public sealed partial class ReadApi : IComponent
         return new MoveExtremes(ticker, ended, sessions, highs.Max(), lows.Min());
     }
 
+    // Each start of the surface is a run of its own, named in UTC to the tenth of a
+    // microsecond, so two starts on one store within one second each write a row.
+    public static string StartRunId(DateTimeOffset startedAt) =>
+        FormattableString.Invariant($"{Stage}-{startedAt.UtcDateTime:yyyyMMddTHHmmss.fffffffZ}");
+
     // The operational record of the read surface coming up, which section
     // 15.10's run page reads. Appended rather than updated, because the run log
     // has no updater declared and every component that writes appends to it.

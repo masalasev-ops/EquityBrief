@@ -82,6 +82,22 @@ public static class SetupFamilies
     // order the night's reports are asked for in.
     public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift];
 
+    // The fundamentals-first family, read on every index by the index families' step, the S&P 500's included, so no S&P
+    // 500 family's own code moves: an improving business in an uptrend bought at a pullback's buy point, on the
+    // pullback's plan.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    public static SetupFamily FundamentalsFirst { get; } = new(
+        FundamentalsRule.Name,
+        "Fundamentals first",
+        "Improving businesses in an uptrend",
+        "Business first, then the chart",
+        "A company whose revenue grew on the year-earlier quarter and faster than the quarter before, whose gross or operating margin widened on the year, whose cash from operations covered its net income and whose four newest quarters and newest quarter were profitable, closing above its 200-day average with the 50-day above it, bought at a pullback's buy point. Stop below the band, target at its reward to risk, as the pullback's base.",
+        ForwardReturnSeries.Clear,
+        Sweep.SweepDesign.Live.Hold);
+
+    // The families every index's page draws in its order: the page's own and, after them, the fundamentals-first family.
+    public static IReadOnlyList<SetupFamily> OnEveryIndex { get; } = [.. InPageOrder, FundamentalsFirst];
+
     // The sector heavyweights, the page's fourth card: a rotation held while it leads, with a book of its own in place
     // of a list of the night's buy points, so it is drawn after the swing families and stands in none of their
     // orders, horizons or caps. A stock it holds is free for any swing family, each card keeping its own one trade a
@@ -107,7 +123,7 @@ public static class SetupFamilies
     public static IReadOnlyList<SetupFamily> Evaluated { get; } = [.. InPageOrder.Where(family => family.Name != Pullback)];
 
     public static SetupFamily? Named(string name) =>
-        InPageOrder.Concat(Former).FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
+        OnEveryIndex.Concat(Former).FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
 
     // Where a family stands in the page's order, counted from one, and past every family for a name the
     // page does not draw.

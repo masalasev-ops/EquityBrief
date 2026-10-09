@@ -61,6 +61,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
@@ -226,7 +227,7 @@ public sealed class IndexFamilies : IComponent
 
             read = session;
 
-            foreach (var index in Indices)
+            foreach (var index in (IReadOnlyList<string>)[LargeIndex, .. Indices])
             {
                 try
                 {
@@ -254,7 +255,7 @@ public sealed class IndexFamilies : IComponent
             IndexNightOutcome[] all =
             [
                 .. outcomes,
-                .. Indices.Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
+                .. ((IReadOnlyList<string>)[LargeIndex, .. Indices]).Where(index => outcomes.All(outcome => outcome.Index != index)).Select(index => IndexNightOutcome.NotComputed(index, fault)),
             ];
 
             await AppendAfterAFailureAsync(runId, startedAt, rows, Detail(all) + "; the step stopped on " + fault, cancellation);
@@ -347,35 +348,47 @@ public sealed class IndexFamilies : IComponent
         var inputs = IndexNightRead.Prepare(index, session, names, income);
         var levels = inputs is null || rules.Count == 0 ? IndexLevels.None : await LevelsAsync(connection, inputs, cancellation);
 
+        // The S&P 500 is read here for the fundamentals-first family alone, its other families being the S&P 500's own and
+        // its book the S&P 500's sector heavyweights'.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        var large = index == LargeIndex;
+        var families = large ? IndexNightRead.LargeFamilies : IndexNightRead.Families;
+
+        // The catalogue's readings of the members on the night, which the fundamentals-first family reads every night and a
+        // standing rule's hooks read where they state one.
+        var tonight = inputs is not null && readingsOf is not null ? await readingsOf(index, cancellation) : null;
+
         // A family whose live rule stands draws the index's page on that rule's settings, and every other on its
         // provisional rule.
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
-            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels) : IndexNightRead.Provisional(prepared, family);
+            rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels) : IndexNightRead.Provisional(prepared, family, tonight);
 
         var read = inputs is null
             ? new IndexNight(index, session, 0, null, false, [])
-            : new IndexNight(index, session, inputs.Held.Length, inputs.Breadth, inputs.Open, [.. IndexNightRead.Families.SelectMany(family => IndexNightRead.Answers(inputs, family, ReadOf(inputs, family)))]);
+            : new IndexNight(index, session, inputs.Held.Length, inputs.Breadth, inputs.Open, [.. families.SelectMany(family => IndexNightRead.Answers(inputs, family, ReadOf(inputs, family)))]);
         IReadOnlyList<(IndexRule Rule, IReadOnlyList<IndexAnswer> Answers)> ruleAnswers = inputs is null
             ? []
             : [.. rules.Where(rule => rule.Evaluator is not Core.Candidates.IndexHeavyweightCandidate).Select(rule => (rule, IndexNightRead.Answers(inputs, rule.Family, IndexRules.Read(inputs, rule, levels))))];
-        var qualifying = IndexNightRead.Families
+        var qualifying = families
             .Select(family => new FamilyQualifiers(family, [.. read.Answers.Where(answer => answer.Family == family && answer.Passed).OrderBy(answer => answer.Place).Select(answer => answer.Ticker)]))
             .ToArray();
         var passing = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
-        var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation);
+        var (open, heldIn) = await OpenAsync(connection, session, passing, cancellation, large);
         var picks = FamilyList.Draw(qualifying, open);
-        var readings = readingsOf is not null && ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).ReadsReadings)
-            ? await readingsOf(index, cancellation)
-            : null;
+        var readings = ruleAnswers.Any(pair => RuleHooks.Of(pair.Rule.Parameters).ReadsReadings) ? tonight : null;
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
         await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(session))], cancellation);
 
         var ended = await WalkAsync(connection, transaction, index, session, cancellation);
-        var heavyweights = await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
-        var heavyweightRules = await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
+        var heavyweights = large
+            ? new IndexHeavyweightsOutcome(false, 0, 0, 0)
+            : await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
+        var heavyweightRules = large
+            ? new IndexHeavyweightsOutcome(false, 0, 0, 0)
+            : await IndexHeavyweights.RulesAsync(connection, transaction, index, session, names, income, levels, [.. rules.Where(rule => rule.Evaluator is Core.Candidates.IndexHeavyweightCandidate)], cancellation);
         var ruleTrades = await IndexRuleTrades.KeepAsync(connection, transaction, index, session, inputs, ruleAnswers, cancellation, readings);
 
         await ExecuteAsync(connection, transaction, InsertNight, [("$index", index), ("$night", Stamp(session)), ("$members", read.Members), ("$breadth", (object?)read.Breadth ?? DBNull.Value), ("$open", read.MarketOpen ? 1 : 0), ("$settings", Settings(index, rules)), ("$rebalanced", heavyweights.Rebalanced ? 1 : 0)], cancellation);
@@ -422,7 +435,7 @@ public sealed class IndexFamilies : IComponent
             read.Members,
             read.Breadth,
             read.MarketOpen,
-            IndexNightRead.Families.ToDictionary(family => family, family => read.Answers.Count(answer => answer.Family == family && answer.Passed), StringComparer.Ordinal),
+            families.ToDictionary(family => family, family => read.Answers.Count(answer => answer.Family == family && answer.Passed), StringComparer.Ordinal),
             picks.Count(pick => pick.State == FamilyList.Listed),
             picks.Count(pick => pick.State == FamilyList.OpenTrade),
             kept,
@@ -464,6 +477,7 @@ public sealed class IndexFamilies : IComponent
         breakout = BreakoutSweep.Grid.Key(IndexNightRead.BreakoutAsFrozen),
         drift = DriftSweep.Grid.Key(IndexNightRead.DriftAsFrozen),
         heavyweights = IndexHeavyweights.Provisional.Key,
+        fundamentals = new { setting = FundamentalsRule.Provisional.Key, words = FundamentalsRule.Provisional.Words, cap = IndexNightRead.PullbackCap },
         live = (rules ?? [])
             .Where(rule => rule.Live)
             .Select(rule => new
@@ -656,7 +670,7 @@ public sealed class IndexFamilies : IComponent
 
     // The trade each of the names still holds on the night on any card of any index, with the index it is held in: the
     // S&P 500's by its own list's rule, and the S&P 400's and 600's while not ended or ended on the night itself.
-    static async Task<(IReadOnlyDictionary<string, HeldTrade> Open, IReadOnlyDictionary<string, string> Index)> OpenAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation)
+    static async Task<(IReadOnlyDictionary<string, HeldTrade> Open, IReadOnlyDictionary<string, string> Index)> OpenAsync(SqliteConnection connection, DateOnly night, IReadOnlyList<string> tickers, CancellationToken cancellation, bool large = false)
     {
         var open = new Dictionary<string, HeldTrade>(StringComparer.Ordinal);
         var index = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -677,8 +691,25 @@ public sealed class IndexFamilies : IComponent
             }
         }
 
+        // On the S&P 500, a stock its own families listed tonight is held as by that trade, so it is listed once on the page.
+        if (large)
+        {
+            var wanted = tickers.ToHashSet(StringComparer.Ordinal);
+
+            await foreach (var row in RowsAsync(connection, ListedTonight, [("$night", Stamp(night))], cancellation))
+            {
+                if (wanted.Contains(row.GetString(0)) && open.TryAdd(row.GetString(0), new HeldTrade(row.GetString(1), night)))
+                {
+                    index[row.GetString(0)] = LargeIndex;
+                }
+            }
+        }
+
         return (open, index);
     }
+
+    // The stocks the S&P 500's own families listed on the night.
+    const string ListedTonight = "SELECT ticker, family FROM family_pick WHERE session_date = $night AND state = 'listed' ORDER BY ticker;";
 
     // The code an S&P 500 card's trade is named by where a list of the S&P 400 or 600 holds a stock back for it.
     public const string LargeIndex = "GSPC";

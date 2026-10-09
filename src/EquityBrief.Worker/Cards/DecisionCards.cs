@@ -300,14 +300,19 @@ public sealed class DecisionCards : IComponent
         var picks = await PicksAsync(connection, transaction, large ? LargePicks : IndexPicks, index, night, cancellation);
         var bought = await BoughtAsync(connection, transaction, large ? LargeHeavyweights : IndexHeavyweights, index, night, cancellation);
 
-        if (picks.Count == 0 && bought.Count == 0)
+        // On the S&P 500, the fundamentals-first family's picks, which the index families' step lists there under its own
+        // rows.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        var indexPicks = large ? await PicksAsync(connection, transaction, IndexPicks, index, night, cancellation) : [];
+
+        if (picks.Count == 0 && bought.Count == 0 && indexPicks.Count == 0)
         {
             return 0;
         }
 
         var sectors = await SectorsAsync(connection, transaction, cancellation);
         var ranks = await RanksAsync(connection, transaction, index, night, sectors, cancellation);
-        var (breadth, floor, indexSettings) = large ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
+        var (breadth, floor, indexSettings) = large && indexPicks.Count == 0 ? (null, 0d, null) : await IndexNightAsync(connection, transaction, index, night, cancellation);
         var scores = new IndexScores();
         var written = 0;
 
@@ -322,6 +327,13 @@ public sealed class DecisionCards : IComponent
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score);
+        }
+
+        foreach (var pick in indexPicks)
+        {
+            var plan = await IndexPlanAsync(connection, transaction, index, pick, night, indexSettings, cancellation);
+
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(breadth, floor, true), sectors, ranks, null, cancellation);
         }
 
         var place = 0;
@@ -760,7 +772,9 @@ public sealed class DecisionCards : IComponent
 
         if (read.TryGetProperty("profitGate", out var profit))
         {
-            gates.Add(FormattableString.Invariant($"profit, the {profit.GetProperty("quarters").GetInt32()} newest quarters' net income above nothing"));
+            gates.Add(family == FundamentalsRule.Name
+                ? FormattableString.Invariant($"profit in the index's form, the {profit.GetProperty("quarters").GetInt32()} newest quarters' net income above nothing and the newest quarter's above nothing")
+                : FormattableString.Invariant($"profit, the {profit.GetProperty("quarters").GetInt32()} newest quarters' net income above nothing"));
         }
 
         if (read.TryGetProperty("marketFloor", out var market) && family != Heavyweights)
@@ -775,6 +789,11 @@ public sealed class DecisionCards : IComponent
             if (!string.IsNullOrWhiteSpace(words))
             {
                 gates.Add("its setting, " + words.Replace("|", ", ", StringComparison.Ordinal).Replace("=", " ", StringComparison.Ordinal));
+            }
+
+            if (rule.ValueKind == JsonValueKind.Object && rule.TryGetProperty("words", out var business) && business.GetString() is { Length: > 0 } stated)
+            {
+                gates.Add("the business, " + stated + ", closing above its 200-day average with the 50-day above it, at a pullback's buy point");
             }
         }
 

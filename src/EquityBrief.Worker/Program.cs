@@ -51,6 +51,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-check" => await LedgerCheckRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
+    "sweep-fundamentals" => await SweepFundamentalsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -64,7 +65,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 31 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 32 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -149,6 +150,9 @@ static int NoVerb()
         "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
         "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
         "'--print' printing each verdict and writing nothing, " +
+        "'sweep-fundamentals --index <GSPC, MID or SML>' searches the fundamentals-first family's 27 registered settings " +
+        "over the pullback's listings on the index's history, each walked after its round trip, and prints each setting's " +
+        "trades, edge and years against the family floors with what luck passes, writing nothing, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -469,7 +473,12 @@ static async Task<int> IndexFamiliesRun(string[] args)
 
     // The index rules standing when the run started, as a night reads them.
     var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync();
-    var outcome = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, default, register, startedAt);
+    var outcome = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(
+        runId,
+        default,
+        register,
+        startedAt,
+        (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
 
     Console.Out.WriteLine(outcome.Session is { } session
         ? FormattableString.Invariant($"index-families: {session:yyyy-MM-dd} read under {runId}: {IndexFamilies.Detail(outcome.Nights)}")
@@ -614,6 +623,24 @@ static async Task<int> LoopTestRun(string[] args)
 
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
         .RunAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
+}
+
+// The fundamentals-first family's search by hand on one index, its 27 settings registered before it ran, printed and
+// nothing written.
+// see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+static async Task<int> SweepFundamentalsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("sweep-fundamentals: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await EquityBrief.Worker.Loop.FundamentalsSearch.RunAsync(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, index, Console.Out);
 }
 
 // The filings refresh by hand: the night's step over the three indices' members, or with '--whole' every filer the

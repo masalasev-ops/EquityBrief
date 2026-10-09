@@ -952,17 +952,17 @@ Primary key: `candidate`, `ticker`, `entered_on`.
 **The heavyweight book writes it for each registered rule's own book, in the swing filter's step, and is its own deleter** (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut). Each night it carries each of a rule's holdings and its size cut, ends the holdings the rule's exits end and buys the rule's leaders it does not hold, as `heavyweight_holding` is kept for the page's book, one holding a stock in each rule's book and none held back for another's. A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again. The rows are never deleted otherwise: they are each rule's record, its holdings' edge, the result less the size cut's return, read over blocks of 63 sessions by the session each ended on, which the run page draws beside the swing families' rules'.
 
 ### index_family_night
-Grain: one row per session and index the S&P 400's and 600's provisional rules were read for.
+Grain: one row per session and index the S&P 400's and 600's provisional rules were read for, and from 17.8 the S&P 500's fundamentals-first family.
 
 | Column | Type | Notes |
 |---|---|---|
-| `index_code` | TEXT | `MID` for the S&P 400 or `SML` for the S&P 600 |
+| `index_code` | TEXT | `MID` for the S&P 400 or `SML` for the S&P 600; `GSPC` for the S&P 500, read for the fundamentals-first family alone |
 | `session_date` | TEXT | the session read, the newest any name holds on the night |
 | `members` | INTEGER | the index's members the night read, each holding a bar on the session |
 | `breadth` | REAL | the share of those members holding a close and a 200-day average whose close stood above it, null where fewer than half hold both |
 | `market_open` | INTEGER | 1 where the breadth stood at or above the floor the S&P 500's filter reads, 0 otherwise, which closes every swing family's list of the index that night |
-| `settings` | TEXT | JSON: each family's rule as the night read it, its settings, its floors and its gate, the words each card's description is written from |
-| `rebalanced` | INTEGER | 1 where the index's sector heavyweights read a rebalance that night, the first night of a month the book reads, 0 otherwise |
+| `settings` | TEXT | JSON: each family's rule as the night read it, its settings, its floors and its gate, the words each card's description is written from, the fundamentals-first family's setting with its words and its cap among them |
+| `rebalanced` | INTEGER | 1 where the index's sector heavyweights read a rebalance that night, the first night of a month the book reads, 0 otherwise and always on a `GSPC` row, whose book is the S&P 500's own |
 | `fault` | TEXT | null where the index's night was computed; otherwise the failure that stopped it, its type and message, the row then holding no breadth, 0 members and 0 in `market_open` and `rebalanced` |
 
 Primary key: `index_code`, `session_date`.
@@ -986,7 +986,7 @@ Grain: one row per session, index, member and family.
 | `trail` | TEXT | the distance a trailing stop is held under the highest close since the buy, null for a family that names a target |
 | `cap` | INTEGER | the sessions the trade is given, its family's, null on a row that did not pass |
 | `order_by` | REAL | the figure the family's order reads, largest first, null where it reads none |
-| `reason` | TEXT | on a row that did not pass, the first part of the rule it failed in the rule's order: the market check, no setup, the price under $5, the dollar volume under the floor or the profit check; null on a row that passed |
+| `reason` | TEXT | on a row that did not pass, the first part of the rule it failed in the rule's order: the market check, no setup, the price under $5, the dollar volume under the floor or the profit check, and for the fundamentals-first family after the floors no readings read tonight or its profit check in the index's form, its revenue, margin, cash or trend check; null on a row that passed |
 
 Primary key: `index_code`, `session_date`, `ticker`, `family`.
 
@@ -1004,13 +1004,13 @@ Grain: one row per session, index, stock and family that passed it.
 | `state` | TEXT | `listed`, the index's page lists the stock under this family; `under another`, it is listed tonight under a family earlier in the page's order; `open trade`, a trade a list of any index made for it on an earlier night is still open; `past five`, the family's five places were taken |
 | `place` | INTEGER | a listed row's place down the index's page, counted from one across its families; null on a row held back |
 | `also` | TEXT | JSON: on a listed row, the other families the stock qualified under that night in the page's order; an empty list otherwise |
-| `held_index` | TEXT | on an `open trade` row, the index whose list made the trade still open, `GSPC` for the S&P 500's; null otherwise |
+| `held_index` | TEXT | on an `open trade` row, the index whose list made the trade still open, `GSPC` for the S&P 500's, a `GSPC` row's stock the S&P 500's own families listed that night among them; null otherwise |
 | `held_family` | TEXT | on an `open trade` row, the family that listed the trade; null otherwise |
 | `held_night` | TEXT | on an `open trade` row, the session that trade was listed on; null otherwise |
 
 Primary key: `index_code`, `session_date`, `ticker`, `family`.
 
-**The index families write each index's list here and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). The list is drawn by the S&P 500's rule within each index: the families in the page's order, a family listing at most five, a stock listed once under the first family it qualified under, and a stock whose trade on any card of any index is still open listed by none. A night run again replaces its own rows.
+**The index families write each index's list here and are its own deleter** (see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own). The list is drawn by the S&P 500's rule within each index: the families in the page's order, a family listing at most five, a stock listed once under the first family it qualified under, and a stock whose trade on any card of any index is still open listed by none. From 17.8 a `GSPC` row is the S&P 500's fundamentals-first family's, a stock the S&P 500's own families listed that night held back as an `open trade` naming that family and that night (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). A night run again replaces its own rows.
 
 ### index_family_trade
 Grain: one row per index, family, stock and session the index's list kept a trade on.
@@ -1523,7 +1523,7 @@ Grain: one row per filer, concept and period, as first filed.
 
 Primary key: `cik`, `concept`, `period_start`, `period_end`.
 
-**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
+**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
 
 ### filed_fact_pull
 Grain: one row per filer each time the refresh asked for its facts.

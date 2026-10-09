@@ -256,6 +256,25 @@ public sealed class RequestDrain : IComponent
             }
         }
 
+        // The fundamentals-first family's picks on the S&P 500, drawn after its own families and before its book.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        await using (var fundamentals = connection.CreateCommand())
+        {
+            fundamentals.CommandText = IndexListedOnTheNight;
+            fundamentals.Parameters.AddWithValue("$index", IndexFamilies.LargeIndex);
+            fundamentals.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await fundamentals.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (!passed.Contains(reader.GetString(0), StringComparer.Ordinal))
+                {
+                    passed.Add(reader.GetString(0));
+                }
+            }
+        }
+
         await using (var bought = connection.CreateCommand())
         {
             bought.CommandText = BoughtOnTheNight;

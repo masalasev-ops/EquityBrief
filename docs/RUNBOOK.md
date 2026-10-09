@@ -779,6 +779,19 @@ The hooks moved the S&P 500's breakout and drift evaluators' versions and every 
 powershell -File tools/remedy.ps1 tools/remedies/2026-10-09-17.5-the-hooks-registered-again.txt
 ```
 
+### The fundamentals-first family
+
+From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it.
+
+Its search reads 27 settings written in the code before it runs, three levels of each of its three dials, over the pullback's base listings on one index at a time, each trade after its round trip, and states each setting's trades, edge and years, how many passed the family floors and what luck alone passes of 27:
+
+```
+dotnet run --project src/EquityBrief.Worker -- sweep-fundamentals --index GSPC
+dotnet run --project src/EquityBrief.Worker -- sweep-fundamentals --index MID
+```
+
+It reads the store and the pulled history, writes nothing, asks for nothing and calls no model; it refuses while the night holds the store or where a run started now would reach the night's window. It needs the facts pulled whole first, `filings --whole`, or every listing fails the revenue check. What it finds goes to the operator, and nothing is frozen or registered from it.
+
 ### The account and the trades taken from a card
 
 A pick's card sizes its plan from three settings kept on the Account page, reached from the masthead: the account's size, the risk a trade in per cent and the position cap as a share of the account, a fifth where none is entered (see: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none). The page writes them whole to `account.json` under the data root, beside the store and as untracked as it, by writing a file beside it and moving it into place, so a save that fails leaves the settings as they were (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold). Nothing else holds them: no store row, log line, run log row or exported report. Deleting the file unsets them, and every card then draws its plan in prices and risks with a line linking the page; a file that cannot be read is read the same way.

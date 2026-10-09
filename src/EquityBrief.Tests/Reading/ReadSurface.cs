@@ -335,6 +335,9 @@ public partial class ReadSurface
             CheckReach.Key(Scope.FailureTable, "A model that cannot load"),
             CheckReach.Key(Scope.FailureTable, "A score the tester has not passed"),
 
+            // 17.8's fundamentals-first family's card on Tonight, on every index.
+            .. FundamentalsPageClaims,
+
             // The 12.2 correction's one open trade per stock on the pages: Still open on tonight's page, the
             // two marks on Past picks and section 18's row for a still open trade with no outcome row.
             .. OpenTradeClaims,
@@ -691,6 +694,64 @@ public partial class ReadSurface
 
         await Assert.ThrowsAsync<SqliteException>(
             () => Api(store).RecordStartAsync("read-api-1", "the same run again"));
+    }
+
+    // Each start of the surface is a run of its own, named in UTC to the tenth of a microsecond, so two starts on one
+    // store within one second each write their own row.
+    [Fact]
+    public async Task TwoStartsOfTheSurfaceOnOneStoreWithinOneSecondEachWriteTheirOwnRow()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var first = new DateTimeOffset(2026, 10, 9, 13, 10, 25, TimeSpan.Zero).AddTicks(1_234_567);
+        var second = first.AddMilliseconds(40);
+
+        Assert.Equal("read-api-20261009T131025.1234567Z", ReadApi.StartRunId(first));
+        Assert.Equal("read-api-20261009T131025.1634567Z", ReadApi.StartRunId(second));
+
+        // The same instant read at another offset names the same run.
+        Assert.Equal(ReadApi.StartRunId(first), ReadApi.StartRunId(first.ToOffset(TimeSpan.FromHours(-4))));
+
+        await Api(store).RecordStartAsync(ReadApi.StartRunId(first), "the read surface started");
+        await Api(store).RecordStartAsync(ReadApi.StartRunId(second), "the read surface started");
+
+        IReadOnlyList<string> Starts()
+        {
+            using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT run_id FROM run_log WHERE stage = $stage ORDER BY rowid;";
+            command.Parameters.AddWithValue("$stage", ReadApi.Stage);
+
+            using var reader = command.ExecuteReader();
+            var runs = new List<string>();
+
+            while (reader.Read())
+            {
+                runs.Add(reader.GetString(0));
+            }
+
+            return runs;
+        }
+
+        Assert.Equal([ReadApi.StartRunId(first), ReadApi.StartRunId(second)], Starts());
+
+        // Two of the suite's hosts on the store, the second started as soon as the first had: a row each, each named as a
+        // start is named.
+        using (var one = new Host(store.Root))
+        {
+            using var client = one.CreateClient();
+        }
+
+        using (var two = new Host(store.Root))
+        {
+            using var client = two.CreateClient();
+        }
+
+        var runs = Starts();
+
+        Assert.Equal(4, runs.Count);
+        Assert.All(runs.Skip(2), run => Assert.Matches(@"^read-api-\d{8}T\d{6}\.\d{7}Z$", run));
     }
 
     [Fact]

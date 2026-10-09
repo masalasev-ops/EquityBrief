@@ -1144,6 +1144,39 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
             ruleView.MarketOpen);
+
+    // The fundamentals-first family's card, which the index families' step reads on the S&P 500 under its own rows, drawn
+    // after the S&P 500's own families on a night that step read it, each card numbered in the page's order.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    if (cards is not null && await read.IndexNightAsync(reading.Code, dated) is { } largeIndexNight)
+    {
+        var fundamentals = RuleScreen.WithRules(
+            CardScreen.WithCards(
+                TonightScreen.IndexCards(
+                    reading,
+                    largeIndexNight,
+                    await read.IndexPicksAsync(reading.Code, dated),
+                    await read.IndexResultsAsync(reading.Code, dated),
+                    await read.IndexMembersAsync(reading.Code, dated),
+                    researched,
+                    states,
+                    readings),
+                await read.DecisionCardsAsync(reading.Code, dated),
+                cardContext),
+            reading.Name,
+            false,
+            dated,
+            register,
+            family => request.Query[RuleScreen.QueryKey(family)].FirstOrDefault(),
+            await read.RuleNightsAsync(reading.Code, dated),
+            await read.RulePicksAsync(reading.Code, dated),
+            await read.FormingRowsAsync(reading.Code, dated),
+            largeIndexNight.MarketOpen);
+        var count = cards.Count + fundamentals.Count;
+
+        cards = [.. cards.Select(card => card with { Of = count }), .. fundamentals.Select((card, at) => card with { Place = cards.Count + at + 1, Of = count })];
+    }
+
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
@@ -1925,11 +1958,11 @@ app.MapGet("/screens/run/{night?}", async (
         "text/html; charset=utf-8");
 });
 
-// One run log row for the surface coming up, which is the grain SCHEMA declares
+// One run log row for each start of the surface, which is the grain SCHEMA declares
 // and what section 15.10's run page reads. Written after the host is built so a
 // store that cannot be opened fails the start rather than a request.
 await app.Services.GetRequiredService<ReadApi>().RecordStartAsync(
-    FormattableString.Invariant($"read-api-{app.Services.GetRequiredService<IClock>().UtcNow:yyyyMMddTHHmmssZ}"),
+    ReadApi.StartRunId(app.Services.GetRequiredService<IClock>().UtcNow),
     "the read surface started");
 
 app.Run();

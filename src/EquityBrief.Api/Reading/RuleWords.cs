@@ -21,7 +21,8 @@ public sealed record IndexRuleSettings(
     IReadOnlyDictionary<string, string> Breakout,
     IReadOnlyDictionary<string, string> Drift,
     IReadOnlyDictionary<string, string> Heavyweights,
-    IReadOnlyList<string>? ReadByLiveRule = null)
+    IReadOnlyList<string>? ReadByLiveRule = null,
+    string? Fundamentals = null)
 {
     // The settings as the night stored them, each family's dials read off its key.
     public static IndexRuleSettings Read(string stored)
@@ -38,7 +39,7 @@ public sealed record IndexRuleSettings(
 
         return new IndexRuleSettings(
             floors.GetProperty("price").GetDecimal(),
-            floors.GetProperty("dollarVolume").GetDecimal(),
+            floors.GetProperty("dollarVolume") is { ValueKind: JsonValueKind.Number } dollars ? dollars.GetDecimal() : 0m,
             floors.GetProperty("sessions").GetInt32(),
             root.TryGetProperty("profitGate", out var gate) && gate.ValueKind == JsonValueKind.Object ? gate.GetProperty("quarters").GetInt32() : null,
             root.TryGetProperty("costs", out var costs) && costs.ValueKind == JsonValueKind.String ? costs.GetString() : null,
@@ -50,7 +51,10 @@ public sealed record IndexRuleSettings(
             Dials(root, "heavyweights"),
             root.TryGetProperty("live", out var live) && live.ValueKind == JsonValueKind.Array
                 ? [.. live.EnumerateArray().Select(rule => rule.TryGetProperty("family", out var family) ? family.GetString() ?? string.Empty : string.Empty)]
-                : []);
+                : [],
+            root.TryGetProperty("fundamentals", out var fundamentals) && fundamentals.ValueKind == JsonValueKind.Object && fundamentals.TryGetProperty("words", out var words)
+                ? words.GetString()
+                : null);
     }
 }
 
@@ -119,6 +123,13 @@ public static class RuleWords
     public static string Drift(IndexRuleSettings settings, string index) =>
         Drift(Dial(settings.Drift, "window"), Dial(settings.Drift, "reaction"), Dial(settings.Drift, "volume"), Dial(settings.Drift, "target"))
         + " " + Differs(settings, index);
+
+    // The fundamentals-first family on any index, in the words its night's settings state, its business read from the
+    // facts the company filed before the night as first filed; on the S&P 400 and 600 with the floors their rules read.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    public static string Fundamentals(IndexRuleSettings settings, string index) =>
+        Invariant($"A company with {settings.Fundamentals ?? FundamentalsRule.Provisional.Words}, its four newest quarters and its newest quarter profitable, closing above its 200-day average with the 50-day above it, bought at a pullback's buy point on the sweep's base setting and held at most {settings.PullbackCap} sessions; its business read from the facts it filed before the night as first filed. ")
+        + (index == "S&P 500" ? "Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families." : Differs(settings, index));
 
     // The index's sector heavyweights, naming the design and the sector comparison its index reads.
     public static string Heavyweights(IndexRuleSettings settings, string index, string fund)

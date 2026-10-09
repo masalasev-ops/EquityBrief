@@ -40,7 +40,11 @@ public static partial class TonightScreen
         var listedUnder = picks
             .Where(pick => pick.State == FamilyList.Listed)
             .ToDictionary(pick => pick.Ticker, pick => pick.Family, StringComparer.Ordinal);
-        var families = SetupFamilies.InPageOrder;
+
+        // Every family on the S&P 400 and 600, and on the S&P 500 the fundamentals-first family alone, whose rows the index
+        // families' step writes there, the S&P 500's other families drawn from its own rows.
+        // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+        IReadOnlyList<SetupFamily> families = universe.Code == Universes.Large.Code ? [SetupFamilies.FundamentalsFirst] : SetupFamilies.OnEveryIndex;
         var cards = new List<FamilyCardView>();
 
         foreach (var (family, at) in families.Select((family, at) => (family, at)))
@@ -94,6 +98,7 @@ public static partial class TonightScreen
                 {
                     SetupFamilies.Pullback => RuleWords.Pullback(settings, universe.Name),
                     BreakoutRule.Name => RuleWords.Breakout(settings, universe.Name),
+                    FundamentalsRule.Name => RuleWords.Fundamentals(settings, universe.Name),
                     _ => RuleWords.Drift(settings, universe.Name),
                 },
                 at + 1,
@@ -254,6 +259,7 @@ public static partial class TonightScreen
         {
             SetupFamilies.Pullback => $"Passed every gate of the pullback on the {index}'s base setting tonight.",
             BreakoutRule.Name => $"Closed above its high of the {settings.Breakout.GetValueOrDefault("high", "stored")} sessions before on heavy volume tonight, every gate of the breakout passing on the {index}'s provisional settings.",
+            FundamentalsRule.Name => $"Its business improving and profitable in the index's form, in an uptrend and at a pullback's buy point tonight, every part of the fundamentals-first rule passing on the {index}'s provisional setting.",
             _ => $"Its report beat its estimate and the reaction held, every gate of the drift passing on the {index}'s provisional settings.",
         };
 
@@ -414,7 +420,7 @@ public static partial class TonightScreen
     // kept, and the sector heavyweights with their holdings, each provisional with its record waiting for its freeze.
     public static IReadOnlyList<FamilyRunRow> IndexFamilyRun(IReadOnlyList<FamilyPickRow> picks, IReadOnlyList<IndexTradeRow> trades, IReadOnlyList<IndexHoldingRow> holdings) =>
     [
-        .. SetupFamilies.InPageOrder.Select(family =>
+        .. SetupFamilies.OnEveryIndex.Select(family =>
         {
             var own = trades.Where(trade => trade.Family == family.Name).ToArray();
 

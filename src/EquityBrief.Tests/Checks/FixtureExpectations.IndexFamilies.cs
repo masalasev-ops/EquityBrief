@@ -110,9 +110,10 @@ public partial class FixtureExpectations
             ],
             FamilyRows(store, "SELECT ticker, passed, place, reason FROM index_family_result WHERE index_code = 'MID' AND family = 'breakout' ORDER BY ticker;"));
 
-        // Every member answers under every family, the pullback and the drift with no setup for any of them.
-        Assert.Equal(["21"], FamilyRows(store, "SELECT COUNT(*) FROM index_family_result WHERE index_code = 'MID';"));
-        Assert.Equal([IndexNightRead.NoSetup], FamilyRows(store, "SELECT DISTINCT reason FROM index_family_result WHERE index_code = 'MID' AND family IN ('pullback', 'drift');"));
+        // Every member answers under every family, the pullback, the drift and from 17.8 the fundamentals-first family,
+        // which buys at the pullback's buy point, with no setup for any of them.
+        Assert.Equal(["28"], FamilyRows(store, "SELECT COUNT(*) FROM index_family_result WHERE index_code = 'MID';"));
+        Assert.Equal([IndexNightRead.NoSetup], FamilyRows(store, "SELECT DISTINCT reason FROM index_family_result WHERE index_code = 'MID' AND family IN ('pullback', 'drift', 'fundamentals');"));
 
         // The list: IA first; IB held by its S&P 500 trade and IC by its S&P 600 trade, each naming the index holding it;
         // ID second.

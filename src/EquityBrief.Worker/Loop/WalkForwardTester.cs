@@ -301,8 +301,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         return rows;
     }
 
-    // The history an index's procedures are run over.
-    static async Task<LoopRead> ReadAsync(string index, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, CancellationToken cancellation)
+    // The history an index's procedures are run over, which the fundamentals-first family's search reads too.
+    internal static async Task<LoopRead> ReadAsync(string index, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, CancellationToken cancellation)
     {
         var companies = await history.HeavyweightAsync(through, cancellation);
         var income = await history.IncomeAsync(through, cancellation);

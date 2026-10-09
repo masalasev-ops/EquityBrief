@@ -45,10 +45,16 @@ public partial class NightlyRun
 
         Assert.Equal(1, stages.Count(stage => stage == EquityBrief.Worker.Indices.IndexFamilies.Stage));
         Assert.True(stages.IndexOf(EquityBrief.Worker.Families.HeavyweightBook.Stage) < stages.IndexOf(EquityBrief.Worker.Indices.IndexFamilies.Stage));
+        // From 17.8 the S&P 500's four members are read first, for the fundamentals-first family alone.
         Assert.Equal(
-            ["MID|0", "SML|0"],
+            ["GSPC|4", "MID|0", "SML|0"],
             Texts(store, "SELECT index_code || '|' || members FROM index_family_night ORDER BY index_code;"));
-        Assert.StartsWith("MID: 0 member(s) read, breadth not read, the market check closed", Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single(), StringComparison.Ordinal);
+
+        var detail = Texts(store, $"SELECT detail FROM run_log WHERE stage = '{EquityBrief.Worker.Indices.IndexFamilies.Stage}';").Single();
+
+        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
+        Assert.Contains(" passed by the fundamentals, ", detail, StringComparison.Ordinal);
+        Assert.Contains("; MID: 0 member(s) read, breadth not read, the market check closed", detail, StringComparison.Ordinal);
     }
 
     // An S&P 400 book that throws: a holding whose buy close is not a price, which the book reads first. The S&P 400's
@@ -83,10 +89,11 @@ public partial class NightlyRun
 
         var detail = Texts(store, $"SELECT detail FROM run_log WHERE {Night} AND stage = '{stage}';").Single();
 
-        Assert.StartsWith("MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
+        Assert.StartsWith("GSPC: 4 member(s) read, ", detail, StringComparison.Ordinal);
+        Assert.Contains("; MID: not computed tonight, FormatException: ", detail, StringComparison.Ordinal);
         Assert.Contains("; SML: 0 member(s) read, breadth not read", detail, StringComparison.Ordinal);
         Assert.Equal(
-            ["MID|0|FormatException", "SML|0|"],
+            ["GSPC|4|", "MID|0|FormatException", "SML|0|"],
             Texts(store, "SELECT index_code || '|' || members || '|' || COALESCE(substr(fault, 1, instr(fault, ':') - 1), '') FROM index_family_night ORDER BY index_code;"));
 
         // The book's holding left as it was, carried by nothing.
@@ -126,5 +133,30 @@ public partial class NightlyRun
         // Six requests marked as asked by the night, and none for the holding carried.
         Assert.Equal(6, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE asked_from = 'night';"));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE ticker = 'S0';"));
+    }
+
+    // From 17.8 the S&P 500's page lists the fundamentals-first family's picks after its own families', from the rows the
+    // index families' step writes under the S&P 500, so the night's requests take them in that place.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    [Fact]
+    public async Task TheNightAsksForTheSAndP500sFundamentalsFirstPicksAfterItsOwnFamiliesPicks()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // The S&P 500's families listed P1; its fundamentals-first family listed F1 and held back P1, which its own
+        // families listed; no other index listed anything.
+        store.Execute("INSERT INTO family_night (session_date, families) VALUES ('2026-10-01', '[\"pullback\",\"breakout\",\"drift\"]');");
+        store.Execute("INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night) VALUES ('2026-10-01', 'P1', 'pullback', 'listed', 1, '[]', NULL, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            "('GSPC', '2026-10-01', 'F1', 'fundamentals', 'listed', 1, '[]', NULL, NULL, NULL), " +
+            "('GSPC', '2026-10-01', 'P1', 'fundamentals', 'open trade', NULL, '[]', 'GSPC', 'pullback', '2026-10-01');");
+
+        var ask = await RequestDrain.AskForTheNightAsync(store.DatabaseFile, new DateOnly(2026, 10, 1), FixedClock.At(new DateTimeOffset(2026, 10, 2, 1, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        // P1 first and F1 second on the S&P 500's page, P1 asked once.
+        Assert.Equal(["P1", "F1"], ask.Asked);
+        Assert.Contains("F1 is number 2 on the list, and a report on it was asked for", ask.Line, StringComparison.Ordinal);
+        Assert.Equal(2, Scalar(store, "SELECT COUNT(*) FROM research_request WHERE asked_from = 'night';"));
     }
 }
