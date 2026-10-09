@@ -41227,7 +41227,13 @@ Mutated:    the rule, stated before the run: the four properties the done condit
             component-access tests holding the tester's declaration to its catalogue and matrix rows. Each reverted
             before anything was committed and the tests green. Not mutated: the walk's arrangement, held by the smoke
             runs and the hooks' own order test, and the Loop page's words, held by its read-back.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: a1f42469, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2088 of 2088 tests ran with none failed, migrations 0 to
+            82 with none pending, schema version 82, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 52 tables, 1123 claims, 1123 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1134
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2088 of 2088 tests ran.
 Carried:    after the merges of 17.3 to 17.6, from main: the ledger's history built, then `loop-test` on each index,
             its scores written to `loop_model` and read back on the Loop page and on the cards. The operator's word on
             the FastTree challenger.
