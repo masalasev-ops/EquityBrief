@@ -25,6 +25,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html, RUNBOOK.md and .claude/rules/checks.md - the point-in-time check reads the history through the build's own end and rebuilds a swing setup's own readings by its family's gates
+Corrects: 17.3's point-in-time check, which named differences on every index when first run from main after the merges: it rebuilt the readings every setup carries and left a swing setup's six own readings as none, 1,571 of its differences, and it read the history through its newest sampled setup where the build read it through 2026-10-05, so the years the pull holds before the store's were priced at another median ratio and 16 readings differed in the sixth significant figure; found reading the check's output after the history build.
+Was:
+> [the setup ledger's catalogue row] checks by hand a seeded sample of its history setups against their readings rebuilt from the history cut at each one's session; a night run again [...]
+> [section 13.11] The point-in-time check by hand takes a seeded sample of each year's history setups and rebuilds each one's readings from the history cut at its own session, holding only what stood then, the earnings calendar kept whole since a report's date is announced before it; a reading that read past its session differs, and is named.
+> [the runbook] It takes 25 of each year's history setups by a fixed seed, rebuilds each one's readings from the history cut at its own session, holding only what stood then, and names every reading that differs from the one stored, exiting non-zero where any does. It reads the store and writes one run log row under `ledger-check`.
+> [the roster's fixture-expectations row] [...] a stored reading taken from the session after named by its column with both figures; and from 17.4 [...]
+Now:
+> [the setup ledger's catalogue row] checks by hand a seeded sample of its history setups against their readings rebuilt from the history read through the build's own end and cut at each one's session, a swing setup's own readings by its family's gates there; a night run again [...]
+> [section 13.11] [the paragraph as it was, then] The history it cuts is read through the session the build read it through, since the years the pull holds before the store's are priced by the median ratio of the two over the sessions both hold to that end, and a history read to another end prices them a rounding apart; and a swing setup's own readings, its plan's reward to risk, its freshness, its band's strength, its volume multiple, its range ratio and its reaction, are rebuilt by its family's own gates over the cut, a setup those gates do not pass there named as one.
+> [the runbook] [the paragraph as it was, with] It reads the history through the session the build read it through, which its row names, and rebuilds a swing setup's own readings by its family's gates, naming a setup those gates do not pass at its session. [before its last sentence]
+> [the roster's fixture-expectations row] [...] a stored reading taken from the session after named by its column with both figures, and from the 17.3 correction of 2026-10-09 a breakout's own readings rebuilt by its family's gates over the cut, [...] and named on the check's own line; and from 17.4 [...]
+Why: a check that names a difference on every swing setup it samples cannot tell a reading that read past its session from one it never rebuilt, and the monthly run reads it first.
+
 ### 2026-10-09 - CLAUDE.md - the layout names the ledger's history build script, and the Merge rule waits for the build
 Corrects: 17.3 added `tools/ledger-build` and its PowerShell wrapper and the history build writing from a copy of the checkout's commit, and neither the layout nor the Merge rule named them; found writing 17.9's documents.
 Was:

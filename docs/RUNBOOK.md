@@ -731,7 +731,7 @@ Once an index's history is built, check it point in time:
 dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
 ```
 
-It takes 25 of each year's history setups by a fixed seed, rebuilds each one's readings from the history cut at its own session, holding only what stood then, and names every reading that differs from the one stored, exiting non-zero where any does. It reads the store and writes one run log row under `ledger-check`.
+It takes 25 of each year's history setups by a fixed seed, rebuilds each one's readings from the history cut at its own session, holding only what stood then, and names every reading that differs from the one stored, exiting non-zero where any does. It reads the history through the session the build read it through, which its row names, and rebuilds a swing setup's own readings by its family's gates, naming a setup those gates do not pass at its session. It reads the store and writes one run log row under `ledger-check`.
 
 ### The SEC's facts and the filings refresh
 

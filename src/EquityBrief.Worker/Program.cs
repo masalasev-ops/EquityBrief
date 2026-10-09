@@ -142,7 +142,8 @@ static int NoVerb()
         "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
         "the span again, " +
         "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
-        "history cut at each one's session and names every reading that differs from the one stored, " +
+        "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
+        "family's gates, and names every reading that differs from the one stored, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +

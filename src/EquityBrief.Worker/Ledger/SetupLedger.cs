@@ -892,9 +892,13 @@ public sealed class SetupLedger : IComponent
         "SELECT family, ticker, session_date, " + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
         + " FROM setup WHERE index_code = $index AND source = $source ORDER BY session_date, family, ticker;";
 
+    // The newest session the history build read on the index, which the check reads the history through.
+    const string HistoryEnd = "SELECT MAX(session_date) FROM setup_night WHERE index_code = $index AND source = $source;";
+
     // The point-in-time check by hand: a seeded sample of each year's history setups on the index, each one's readings
-    // rebuilt from the history cut at its own session and held to the readings stored, every reading that differs named.
-    // It reads the store and writes its run log row alone.
+    // rebuilt from the history read through the build's own end and cut at its own session, a swing setup's own readings
+    // by its family's gates there, and held to the readings stored, every reading that differs named. It reads the store
+    // and writes its run log row alone.
     public async Task<int> CheckAsync(string index, TextWriter output, int perYear = CheckPerYear, int seed = CheckSeed, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
@@ -936,7 +940,7 @@ public sealed class SetupLedger : IComponent
             .OrderBy(year => year.Key)
             .SelectMany(year => year.Select(row => (Row: row, Order: random.Next())).OrderBy(pair => pair.Order).Take(perYear).Select(pair => pair.Row))
             .ToArray();
-        var through = sample.Max(row => row.Session);
+        var through = HistoryThrough(await ScalarAsync(connection, HistoryEnd, [("$index", index), ("$source", HistorySource)], cancellation) as string, sample.Max(row => row.Session));
         var history = new SweepHistory(databaseFile);
         var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: index == IndexFamilies.LargeIndex ? null : index, asItStood: index != IndexFamilies.LargeIndex);
         var income = await history.IncomeAsync(through, cancellation);
@@ -953,9 +957,18 @@ public sealed class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                if (LedgerPointInTime.Rebuilt(index, cut, cutMarket, income, sectors, facts, row.Ticker) is not { } rebuilt)
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker);
+
+                if (!held)
                 {
                     findings.Add($"{row.Family} {row.Ticker} {Stamp(row.Session)}: the cut history holds no bar of it on its session");
+
+                    continue;
+                }
+
+                if (rebuilt is null)
+                {
+                    findings.Add($"{row.Family} {row.Ticker} {Stamp(row.Session)}: the family's loose gates over the cut history pass no setup of it on its session");
 
                     continue;
                 }
@@ -971,7 +984,7 @@ public sealed class SetupLedger : IComponent
             output.WriteLine("ledger-check: " + finding);
         }
 
-        var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history cut at each one's session, {perYear} a year by seed {seed}; ")
+        var detail = FormattableString.Invariant($"{read} of {sample.Length} sampled history setup(s) on the {DecisionCards.NameOf(index)} rebuilt from the history read through {Stamp(through)} and cut at each one's session, {perYear} a year by seed {seed}; ")
             + (findings.Count == 0 ? "every reading the same" : FormattableString.Invariant($"{findings.Count} difference(s), each named on the command's output"));
 
         await AppendAsync(connection, runId, CheckStage, startedAt, 0, findings.Count == 0 ? Ok : NotComputed, detail, cancellation);
@@ -981,6 +994,12 @@ public sealed class SetupLedger : IComponent
     }
 
     static string Shown(double? reading) => reading is { } held ? held.ToString("R", CultureInfo.InvariantCulture) : "none";
+
+    // The end the check reads the history to: the newest session the history build read on the index, so the pulled
+    // years are scaled onto the stored closes as the build scaled them, and the newest setup sampled where the store
+    // records no build reaching it.
+    public static DateOnly HistoryThrough(string? built, DateOnly sampled) =>
+        built is not null && Date(built) is var end && end >= sampled ? end : sampled;
 
     // Waiting for the night: while a night holds its lock under the data root, and inside a weekday's night window,
     // looking again each poll and saying so once.
