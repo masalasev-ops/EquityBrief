@@ -153,6 +153,10 @@ public static class ClaimRules
     // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
     public const string NightMark = "[N]";
 
+    // The day the checker first held a figure to the documents its sentence cites, which is the day the 6.4 correction
+    // merged; a researched section written before it is drawn saying so.
+    public static readonly DateOnly CitationCheckFrom = new(2026, 10, 11);
+
     // ---- the two cases ----
 
     // The section holding the case for a name and the case against it, and the words each case opens on.

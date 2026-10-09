@@ -4004,6 +4004,12 @@ public sealed partial class MarkRenderer : IComponent
 
         drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
 
+        // A researched section written before the checker held a figure to the documents its sentence cites says so.
+        if (Core.Research.ClaimRules.IsResearched(section.Section) && section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
+        {
+            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
+        }
+
         // A sentence resting on the night's own figures cites them as [N], which is listed beside the documents and
         // links to the card drawing them.
         // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state

@@ -127,6 +127,18 @@ public partial class ClaimAdmissibility
             "data-marker=\"N\"",
             marks.WrittenSection("CVX", new("The short version", "It sells fuel [D1].", new DateOnly(2026, 10, 9), "a writer", ["r"]), [document]),
             StringComparison.Ordinal);
+
+        // A researched section written the day before the check says it was written before it, one written on the day
+        // does not, and the key, which rests on the facts file alone, never does.
+        var check = ClaimRules.CitationCheckFrom;
+        const string Before = "<p class=\"written-before\"";
+
+        Assert.Contains(
+            FormattableString.Invariant($"{Before} data-check=\"{check:yyyy-MM-dd}\">Written before the citation check of {check:yyyy-MM-dd}"),
+            marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check.AddDays(-1), "a writer", ["r"]), [document]),
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check, "a writer", ["r"]), [document]), StringComparison.Ordinal);
+        Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new(ClaimRules.ComputedSection, "The close was 205.15.", check.AddDays(-1), "a writer", []), []), StringComparison.Ordinal);
     }
 
     [Fact]
