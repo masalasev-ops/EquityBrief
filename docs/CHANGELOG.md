@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - each loop figure's key names every box it draws, and the check holding it in both documents
+Corrects: 17.10's done condition asks that each figure's key name every box it draws in both documents, and the four loop figures' keys named their boxes by colour and not by their words, so a box could be added or renamed with no key saying what it is; found writing the guide's drawings of the same four.
+Was:
+> [figure 13.3's key] Key. Read it downward, one night. A box with a green edge on its left is arithmetic the night runs, and a box with a blue rule across its top is a store the night writes. The box with the source colour is the one step that reads from outside: the SEC's archive, read after the close for the members that filed and for no other.
+> [figure 13.4's key] Key. Read it a row at a time; each row is a fold. The bar with the green edge is what the fold learns on: [...] The last row's dashed bar is the months since the latest complete year: it is tested and drawn, and the stability screen does not count it.
+> [figure 13.5's key] Key. Read it downward, one month. The blue-topped box is what the nightly half stored: the ledger's setups and each rule's own trades. Green boxes compute: the engines propose, the tester judges each proposal against the rule today on the years the proposal never saw, and an approved change is applied as a stored setting by the worker before the next night. Teal boxes serve pages: the Loop page draws what the tester stored and computes nothing. Orange boxes are things outside the system, here the operator.
+> [figure 13.7's key] Key. Read each column downward, one month, one index: the large caps are the S&P 500, the mid caps the S&P 400 and the small caps the S&P 600. The blue-topped boxes are what the night recorded on each index, its own ledger setups and its rules' own trades. Green boxes compute: the tester judges each index's proposals against that index's rules today on the years they never saw, and an approved change is applied by the worker before the next night, on the S&P 400 or 600 as a stored setting of that index alone, while a change to an S&P 500 rule waits on the operator's ruling of how it reaches a page its family's code draws. Teal boxes serve pages: each index's Loop page draws its own proposals and computes nothing. Orange boxes are the operator. [...]
+> [the roster's architecture-conformance row] [...] the scan shown to find the sentence section 8.1 carried before the switch |
+Now:
+> [each key] the same reading, each box named by its own words in bold where the key explains it: The families draw the lists, the ledger appends the setups, windows close as paths end, the filings refresh, business readings read again and the summary rewritten; Tests 2022 to Tests 2025 and Tests the newest; the ledger and the rules' trades, the engines propose, the tester judges each, the change applied, the Loop page and the operator approves or declines; large caps, mid caps, small caps, tested on its years, applied to it alone, waits on a ruling, its own Loop page and your word.
+> [the roster's architecture-conformance row] [...] carried before the switch; and from 17.10 each of the loop's four figures has a key naming every box it draws, in the architecture and in the guide, [...] |
+Why: a key that names a box by colour alone says nothing a reader can hold the drawing to, and nothing a check can.
+
 ### 2026-10-09 - ARCHITECTURE.html and .claude/rules/checks.md - the Loop page's presses on the one proposal a family a run puts to the operator
 Authorised by: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
 Was:

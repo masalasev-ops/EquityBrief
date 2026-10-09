@@ -847,6 +847,142 @@
   <p><b>Why the system never applies a change itself.</b> A filter that moved its own settings would tune itself toward whatever it saw last. Every change also restarts the evidence for the settings it replaces, so it should be a deliberate choice with a written reason.</p>
 </div>
 
+<h3>How EquityBrief gets better</h3>
+<p>Since phase 17 the system keeps a ledger of every setup a family's loose gates pass on each index, picked or not, with its readings as they stood and how it turned out. Once a month it reads that ledger and each rule's own trades, proposes changes, tests each on years it never saw, and puts at most one change a family on each index to you. Nothing changes a rule until you approve it, and each index is judged and changed apart from the others. The four figures below follow one night, the test years, one month, and one month across the three indices.</p>
+<figure>
+  <svg viewBox="0 0 1000 270" role="img" aria-labelledby="f-loop-night">
+    <title id="f-loop-night">The loop's nightly half</title>
+    <defs><marker id="ah-ln" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="bx-s" x="10" y="20" width="300" height="96" rx="6"/>
+    <text class="t" x="160" y="60" text-anchor="middle">The families draw the lists</text>
+    <text class="ts" x="160" y="84" text-anchor="middle">five a family on each index</text>
+    <rect class="bx-n" x="345" y="20" width="300" height="96" rx="6"/>
+    <text class="t" x="495" y="60" text-anchor="middle">The ledger appends the setups</text>
+    <text class="ts" x="495" y="84" text-anchor="middle">every setup the loose gates pass</text>
+    <rect class="bx-s" x="680" y="20" width="310" height="96" rx="6"/>
+    <text class="t" x="835" y="60" text-anchor="middle">Windows close as paths end</text>
+    <text class="ts" x="835" y="84" text-anchor="middle">each result and edge written once</text>
+    <rect class="bx-r" x="10" y="160" width="300" height="96" rx="6"/>
+    <text class="t" x="160" y="200" text-anchor="middle">The filings refresh</text>
+    <text class="ts" x="160" y="224" text-anchor="middle">the SEC's archive, after the close</text>
+    <rect class="bx-s" x="345" y="160" width="300" height="96" rx="6"/>
+    <text class="t" x="495" y="200" text-anchor="middle">Business readings read again</text>
+    <text class="ts" x="495" y="224" text-anchor="middle">for the members that filed</text>
+    <rect class="bx-n" x="680" y="160" width="310" height="96" rx="6"/>
+    <text class="t" x="835" y="200" text-anchor="middle">The summary rewritten</text>
+    <text class="ts" x="835" y="224" text-anchor="middle">for the Ledger page</text>
+    <path class="ln" d="M310 68 H341" marker-end="url(#ah-ln)"/>
+    <path class="ln" d="M645 68 H676" marker-end="url(#ah-ln)"/>
+    <path class="ln" d="M835 116 V138 H160 V156" marker-end="url(#ah-ln)"/>
+    <path class="ln" d="M310 208 H341" marker-end="url(#ah-ln)"/>
+    <path class="ln" d="M645 208 H676" marker-end="url(#ah-ln)"/>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> One night, along the top row and then the bottom one. Green boxes are arithmetic, blue boxes are stores the night writes, and the purple box reads from outside. <b>The families draw the lists</b>, and then <b>the ledger appends the setups</b>: every member and night a family's loose gates pass, kept or not, with its readings as they stood that night. <b>Windows close as paths end</b>, so a setup's result and its edge over the same plan on every member are written once its trade would have ended. <b>The filings refresh</b> reads the SEC's archive after the close for the members that filed and for no other, their <b>business readings read again</b> from the new filings, and <b>the summary rewritten</b> for the Ledger page.</p>
+  <p><b>What to take from it.</b> The ledger is the loop's memory. It holds the setups the rules turned away as well as the ones they picked, so a change can be judged on everything it would have done.</p>
+</div>
+
+<figure>
+  <svg viewBox="0 0 1000 250" role="img" aria-labelledby="f-loop-windows">
+    <title id="f-loop-windows">The test years</title>
+    <text class="t" x="10" y="37">Tests 2022</text>
+    <rect class="band-s" x="200" y="20" width="300" height="24"/><rect class="band-o" x="500" y="20" width="100" height="24"/>
+    <text class="t" x="10" y="77">Tests 2023</text>
+    <rect class="band-s" x="200" y="60" width="400" height="24"/><rect class="band-o" x="600" y="60" width="100" height="24"/>
+    <text class="t" x="10" y="117">Tests 2024</text>
+    <rect class="band-s" x="200" y="100" width="500" height="24"/><rect class="band-o" x="700" y="100" width="100" height="24"/>
+    <text class="t" x="10" y="157">Tests 2025</text>
+    <rect class="band-s" x="200" y="140" width="600" height="24"/><rect class="band-o" x="800" y="140" width="100" height="24"/>
+    <text class="t" x="10" y="197">Tests the newest</text>
+    <rect class="band-s" x="200" y="180" width="700" height="24"/><rect class="band-o" x="900" y="180" width="80" height="24"/><rect class="stop" fill="none" x="900" y="180" width="80" height="24"/>
+    <line class="axis" x1="200" y1="216" x2="980" y2="216"/>
+    <text class="ts" x="200" y="238" text-anchor="middle">2019</text>
+    <text class="ts" x="500" y="238" text-anchor="middle">2022</text>
+    <text class="ts" x="900" y="238" text-anchor="middle">2026</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each row is one test year: <b>Tests 2022</b>, <b>Tests 2023</b>, <b>Tests 2024</b>, <b>Tests 2025</b> and <b>Tests the newest</b>, the months since the last complete year. The green bar is what a proposal is built from, every setup and trade that ended before its year began. The orange bar is the year it is judged on, which it never saw, its trades against the rule's own over the same year. The dashed bar is drawn and tested, and it does not count toward the years a proposal must be better in.</p>
+  <p><b>What to take from it.</b> A proposal is never judged on the data it was built from, so a change that only fits the past fails here.</p>
+</div>
+
+<figure>
+  <svg viewBox="0 0 1000 270" role="img" aria-labelledby="f-loop-month">
+    <title id="f-loop-month">The loop's monthly half</title>
+    <defs><marker id="ah-lm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="bx-n" x="10" y="20" width="300" height="96" rx="6"/>
+    <text class="t" x="160" y="60" text-anchor="middle">The ledger and the rules' trades</text>
+    <text class="ts" x="160" y="84" text-anchor="middle">what the nights stored</text>
+    <rect class="bx-s" x="345" y="20" width="300" height="96" rx="6"/>
+    <text class="t" x="495" y="60" text-anchor="middle">The engines propose</text>
+    <text class="ts" x="495" y="84" text-anchor="middle">exits, conditions and a score</text>
+    <rect class="bx-s" x="680" y="20" width="310" height="96" rx="6"/>
+    <text class="t" x="835" y="60" text-anchor="middle">The tester judges each</text>
+    <text class="ts" x="835" y="84" text-anchor="middle">on years it never saw</text>
+    <rect class="bx-v" x="10" y="160" width="300" height="96" rx="6"/>
+    <text class="t" x="160" y="200" text-anchor="middle">The Loop page</text>
+    <text class="ts" x="160" y="224" text-anchor="middle">the month's proposals</text>
+    <rect class="bx-o" x="345" y="160" width="300" height="96" rx="6"/>
+    <text class="t" x="495" y="200" text-anchor="middle">You approve or decline</text>
+    <text class="ts" x="495" y="224" text-anchor="middle">one proposal a family</text>
+    <rect class="bx-s" x="680" y="160" width="310" height="96" rx="6"/>
+    <text class="t" x="835" y="200" text-anchor="middle">The change applied</text>
+    <text class="ts" x="835" y="224" text-anchor="middle">before the next night</text>
+    <path class="ln" d="M310 68 H341" marker-end="url(#ah-lm)"/>
+    <path class="ln" d="M645 68 H676" marker-end="url(#ah-lm)"/>
+    <path class="ln" d="M835 116 V138 H160 V156" marker-end="url(#ah-lm)"/>
+    <path class="ln" d="M310 208 H341" marker-end="url(#ah-lm)"/>
+    <path class="ln" d="M645 208 H676" marker-end="url(#ah-lm)"/>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> One month, along the top row and then the bottom one. <b>The ledger and the rules' trades</b> are what the nights stored. <b>The engines propose</b>: the autopsy an exit, winners against losers a condition, and the learned score an order or a floor. <b>The tester judges each</b> proposal against the rule today on the years the proposal never saw. <b>The Loop page</b> draws what the tester stored and computes nothing, the orange box is you: <b>you approve or decline</b> the one proposal put to you for each family, and with your approval <b>the change applied</b> is written as a stored setting before the next night.</p>
+  <p><b>What to take from it.</b> The system measures and proposes. Only you change a rule, one change a family a month at most.</p>
+</div>
+
+<figure>
+  <svg viewBox="0 0 1000 420" role="img" aria-labelledby="f-loop-indices">
+    <title id="f-loop-indices">One month across the three indices</title>
+    <defs><marker id="ah-li" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="bx-n" x="20" y="20" width="290" height="60" rx="6"/><text class="t" x="165" y="46" text-anchor="middle">Large caps</text><text class="ts" x="165" y="68" text-anchor="middle">its own setups and trades</text>
+    <rect class="bx-n" x="355" y="20" width="290" height="60" rx="6"/><text class="t" x="500" y="46" text-anchor="middle">Mid caps</text><text class="ts" x="500" y="68" text-anchor="middle">its own setups and trades</text>
+    <rect class="bx-n" x="690" y="20" width="290" height="60" rx="6"/><text class="t" x="835" y="46" text-anchor="middle">Small caps</text><text class="ts" x="835" y="68" text-anchor="middle">its own setups and trades</text>
+    <rect class="bx-s" x="20" y="100" width="290" height="60" rx="6"/><text class="t" x="165" y="126" text-anchor="middle">Tested on its years</text><text class="ts" x="165" y="148" text-anchor="middle">against its own rules today</text>
+    <rect class="bx-s" x="355" y="100" width="290" height="60" rx="6"/><text class="t" x="500" y="126" text-anchor="middle">Tested on its years</text><text class="ts" x="500" y="148" text-anchor="middle">against its own rules today</text>
+    <rect class="bx-s" x="690" y="100" width="290" height="60" rx="6"/><text class="t" x="835" y="126" text-anchor="middle">Tested on its years</text><text class="ts" x="835" y="148" text-anchor="middle">against its own rules today</text>
+    <rect class="bx-v" x="20" y="180" width="290" height="60" rx="6"/><text class="t" x="165" y="206" text-anchor="middle">Its own Loop page</text><text class="ts" x="165" y="228" text-anchor="middle">its own proposals</text>
+    <rect class="bx-v" x="355" y="180" width="290" height="60" rx="6"/><text class="t" x="500" y="206" text-anchor="middle">Its own Loop page</text><text class="ts" x="500" y="228" text-anchor="middle">its own proposals</text>
+    <rect class="bx-v" x="690" y="180" width="290" height="60" rx="6"/><text class="t" x="835" y="206" text-anchor="middle">Its own Loop page</text><text class="ts" x="835" y="228" text-anchor="middle">its own proposals</text>
+    <rect class="bx-o" x="20" y="260" width="290" height="60" rx="6"/><text class="t" x="165" y="286" text-anchor="middle">Your word</text><text class="ts" x="165" y="308" text-anchor="middle">approve or decline here</text>
+    <rect class="bx-o" x="355" y="260" width="290" height="60" rx="6"/><text class="t" x="500" y="286" text-anchor="middle">Your word</text><text class="ts" x="500" y="308" text-anchor="middle">approve or decline here</text>
+    <rect class="bx-o" x="690" y="260" width="290" height="60" rx="6"/><text class="t" x="835" y="286" text-anchor="middle">Your word</text><text class="ts" x="835" y="308" text-anchor="middle">approve or decline here</text>
+    <rect class="bx-k" x="20" y="340" width="290" height="60" rx="6"/><text class="t" x="165" y="366" text-anchor="middle">Waits on a ruling</text><text class="ts" x="165" y="388" text-anchor="middle">its page drawn by code</text>
+    <rect class="bx-s" x="355" y="340" width="290" height="60" rx="6"/><text class="t" x="500" y="366" text-anchor="middle">Applied to it alone</text><text class="ts" x="500" y="388" text-anchor="middle">a stored setting, next night</text>
+    <rect class="bx-s" x="690" y="340" width="290" height="60" rx="6"/><text class="t" x="835" y="366" text-anchor="middle">Applied to it alone</text><text class="ts" x="835" y="388" text-anchor="middle">a stored setting, next night</text>
+    <path class="ln" d="M165 80 V96" marker-end="url(#ah-li)"/><path class="ln" d="M500 80 V96" marker-end="url(#ah-li)"/><path class="ln" d="M835 80 V96" marker-end="url(#ah-li)"/>
+    <path class="ln" d="M165 160 V176" marker-end="url(#ah-li)"/><path class="ln" d="M500 160 V176" marker-end="url(#ah-li)"/><path class="ln" d="M835 160 V176" marker-end="url(#ah-li)"/>
+    <path class="ln" d="M165 240 V256" marker-end="url(#ah-li)"/><path class="ln" d="M500 240 V256" marker-end="url(#ah-li)"/><path class="ln" d="M835 240 V256" marker-end="url(#ah-li)"/>
+    <path class="ln" d="M165 320 V336" marker-end="url(#ah-li)"/><path class="ln" d="M500 320 V336" marker-end="url(#ah-li)"/><path class="ln" d="M835 320 V336" marker-end="url(#ah-li)"/>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each column is one index for one month: the <b>large caps</b> are the S&amp;P 500, the <b>mid caps</b> the S&amp;P 400 and the <b>small caps</b> the S&amp;P 600, each with its own setups and its rules' own trades. Each index's proposals are <b>tested on its years</b>, against that index's own rules today. <b>Its own Loop page</b> draws them, and <b>your word</b> on one index is given there alone. On the S&amp;P 400 and 600 an approved change is <b>applied to it alone</b>, a stored setting read from the next night. On the S&amp;P 500 a change <b>waits on a ruling</b>, yours, of how it reaches a page its families' own code draws.</p>
+  <p><b>What to take from it.</b> Nothing crosses from one column to another. A change proven on one index says nothing about another, and approving it touches no other index's rule.</p>
+</div>
+
+<div class="why" data-example="autopsy">
+  <p><b>A worked example: an autopsy finding and its change, on one index, with placeholders in place of figures.</b> On the S&amp;P 600 the autopsy reads every breakout trade the rule took over the history: the median trade's best close came n.n risks above its buy before its trailing stop ended it, and nn% of the trades the stop ended had first closed a full risk up. So it proposes the exit from its menu that keeps the most of that, a target at n.n risks. The tester runs that same choice inside each test year, on the trades that ended before the year began, and scores what it picks on the year itself: better in n of n counted years, still ahead with the five largest results set aside, and an adjusted p-value under the bar the month's run is held to. The month's report puts it to you as the breakout's one proposal on the S&amp;P 600. You approve it on the Loop page, and before the next night the S&amp;P 600's breakout reads that exit. The S&amp;P 400's breakout, tested apart, stands as it was.</p>
+</div>
+
+<div class="why" data-example="one-index">
+  <p><b>A worked example: a proposal passing on the S&amp;P 600 and not carried to the S&amp;P 500.</b> Winners against losers finds that, on the S&amp;P 600's drift, the setups bought while the VIX closed under n.n did better than the rest, beyond nn% of the within-night shuffles of its own search, so it proposes that condition, and it passes on the S&amp;P 600's test years. The same search on the S&amp;P 500's own history finds another cut or none, and is tested there on its own, since one index's result says nothing of another's. Approved on the S&amp;P 600, the change is applied to the S&amp;P 600's drift alone. The S&amp;P 500's drift stands as it was frozen, and a change to it would wait on your ruling of how one reaches its page.</p>
+</div>
+
+<div class="why" data-example="rejected">
+  <p><b>A worked example: a proposal rejected on the years it never saw.</b> The learned score is fitted on the setups of all three indices that ended before each test year, and proposed on the S&amp;P 400's pullback as an order for its list, strongest first. On the years it learned on it looked strong. On the test years it was better in only n of n, and with the five largest results set aside its total fell under nothing. It did not pass: the Loop page draws it with each of its four parts and the one that failed, no press is offered on it, and the month's report puts nothing to you for the family. The rule stands as it was, and the score is fitted again next month.</p>
+</div>
+
 <!-- 11 -->
 <h2 id="screens">11. The screens</h2>
 <p class="asks">Where do I look, and what does each page answer?</p>
