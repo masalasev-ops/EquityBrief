@@ -68,6 +68,7 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Kept bars"),
             CheckReach.Key(Scope.StoresTable, "Setups"),
             CheckReach.Key(Scope.StoresTable, "Setup nights"),
+            CheckReach.Key(Scope.StoresTable, "Ledger summaries"),
             CheckReach.Key(Scope.StoresTable, "Filed facts"),
             CheckReach.Key(Scope.StoresTable, "Facts pulls"),
             CheckReach.Key(Scope.StoresTable, "Filing days"),

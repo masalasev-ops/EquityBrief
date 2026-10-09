@@ -67,6 +67,7 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -292,7 +293,7 @@ public sealed class SetupLedger : IComponent
 
                     foreach (var row in heavyweights.Rows)
                     {
-                        var cost = costs.TryGetValue(row.Ticker, out var percent) ? percent / 100 : (double?)null;
+                        double? cost = costs.TryGetValue(row.Ticker, out var percent) ? percent / 100 : null;
 
                         await InsertAsync(connection, transaction, row, row.LivePass, cost, (new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0)), inputs.Calendar, inputs.At, NightSource, cancellation);
                     }
@@ -311,6 +312,7 @@ public sealed class SetupLedger : IComponent
             }
 
             await transaction.CommitAsync(cancellation);
+            await RefreshSummaryAsync(connection, index, cancellation);
 
             return new LedgerIndex(index, setups, passes, closed, watch.Elapsed.TotalSeconds);
         }
@@ -476,6 +478,98 @@ public sealed class SetupLedger : IComponent
                         [.. sector.Largest.Select(ranked => ranked.Ticker)],
                         sector.Leaders.ToHashSet(StringComparer.Ordinal))),
                 ]);
+    }
+
+    const string ClearTheSummary = "DELETE FROM ledger_summary WHERE index_code = $index;";
+
+    const string SummaryCounts = @"
+        SELECT family, CAST(substr(session_date, 1, 4) AS INTEGER) AS year, COUNT(*), SUM(live_pass),
+            SUM(CASE WHEN picked IS NOT NULL THEN 1 ELSE 0 END), SUM(CASE WHEN picked = 1 THEN 1 ELSE 0 END), SUM(settled),
+            AVG(CASE WHEN settled = 1 THEN result END), AVG(CASE WHEN settled = 1 THEN edge END)
+        FROM setup WHERE index_code = $index GROUP BY family, year ORDER BY family, year;";
+
+    const string SettledFigures = "SELECT family, substr(session_date, 1, 4), result, edge FROM setup WHERE index_code = $index AND settled = 1;";
+
+    const string InsertSummary = @"
+        INSERT INTO ledger_summary (index_code, family, year, setups, live_passes, night_rows, picked, settled, result_mean, edge_mean, result_deciles, edge_deciles, refreshed_at)
+        VALUES ($index, $family, $year, $setups, $live_passes, $night_rows, $picked, $settled, $result_mean, $edge_mean, $result_deciles, $edge_deciles, $refreshed_at);";
+
+    // The Ledger page's summary of one index rewritten whole from its setups: each family's rows a year, those the live
+    // rule passes, those the night wrote and of them those its list picked, those settled, their mean result and edge
+    // and the cut points between the deciles of each.
+    async Task RefreshSummaryAsync(SqliteConnection connection, string index, CancellationToken cancellation)
+    {
+        var counts = new List<(string Family, int Year, int Setups, int Passes, int NightRows, int Picked, int Settled, double? Result, double? Edge)>();
+
+        await using (var command = Command(connection, null, SummaryCounts, [("$index", index)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                counts.Add((
+                    reader.GetString(0),
+                    reader.GetInt32(1),
+                    reader.GetInt32(2),
+                    reader.GetInt32(3),
+                    reader.GetInt32(4),
+                    reader.GetInt32(5),
+                    reader.GetInt32(6),
+                    reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                    reader.IsDBNull(8) ? null : reader.GetDouble(8)));
+            }
+        }
+
+        var figures = new Dictionary<(string Family, int Year), (List<double> Results, List<double> Edges)>();
+
+        await using (var command = Command(connection, null, SettledFigures, [("$index", index)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var key = (reader.GetString(0), int.Parse(reader.GetString(1), CultureInfo.InvariantCulture));
+
+                if (!figures.TryGetValue(key, out var held))
+                {
+                    held = ([], []);
+                    figures[key] = held;
+                }
+
+                if (!reader.IsDBNull(2))
+                {
+                    held.Results.Add(reader.GetDouble(2));
+                }
+
+                if (!reader.IsDBNull(3))
+                {
+                    held.Edges.Add(reader.GetDouble(3));
+                }
+            }
+        }
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        await ExecuteAsync(connection, transaction, ClearTheSummary, [("$index", index)], cancellation);
+
+        foreach (var row in counts)
+        {
+            var settled = figures.TryGetValue((row.Family, row.Year), out var held) ? held : ([], []);
+            var results = LedgerSummaries.Deciles(settled.Results);
+            var edges = LedgerSummaries.Deciles(settled.Edges);
+
+            await ExecuteAsync(connection, transaction, InsertSummary,
+            [
+                ("$index", index), ("$family", row.Family), ("$year", row.Year), ("$setups", row.Setups), ("$live_passes", row.Passes),
+                ("$night_rows", row.NightRows), ("$picked", row.Picked), ("$settled", row.Settled),
+                ("$result_mean", (object?)row.Result ?? DBNull.Value), ("$edge_mean", (object?)row.Edge ?? DBNull.Value),
+                ("$result_deciles", results is null ? DBNull.Value : LedgerSummaries.Stored(results)),
+                ("$edge_deciles", edges is null ? DBNull.Value : LedgerSummaries.Stored(edges)),
+                ("$refreshed_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture)),
+            ], cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
     }
 
     // The rebalances the S&P 500's heavyweights' book stored between two sessions, each sector's size cut in order of
@@ -700,6 +794,11 @@ public sealed class SetupLedger : IComponent
 
             written += chunk;
             output.WriteLine(FormattableString.Invariant($"ledger-build: {Stamp(calendar[start])} to {Stamp(calendar[end])}, {chunkSessions.Length} session(s), {chunk} setup(s) in {watch.Elapsed.TotalSeconds:0} s, {written} so far"));
+        }
+
+        using (await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation))
+        {
+            await RefreshSummaryAsync(connection, index, cancellation);
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,

@@ -698,7 +698,7 @@ public static class SchemaMigrations
         new Migration(75, "create rule_night, rule_pick and forming_row", CreateRuleCards),
         new Migration(76, "create kept_bar", CreateKeptBar),
         new Migration(77, "create setup and setup_night", CreateLedger),
-        new Migration(78, "create filed_fact, filed_fact_pull and filing_day, and add setup's business readings", CreateFiledFacts),
+        new Migration(78, "create filed_fact, filed_fact_pull, filing_day and ledger_summary, and add setup's business readings", CreateFiledFacts),
     ];
 
     // The SEC's facts as first filed, one row a filer, concept and period, which the night's filings refresh and the
@@ -744,6 +744,23 @@ public static class SchemaMigrations
         ALTER TABLE setup ADD COLUMN gross_margin_change REAL;
         ALTER TABLE setup ADD COLUMN operating_margin_change REAL;
         ALTER TABLE setup ADD COLUMN cash_over_income REAL;
+
+        CREATE TABLE ledger_summary (
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            setups          INTEGER NOT NULL,
+            live_passes     INTEGER NOT NULL,
+            night_rows      INTEGER NOT NULL,
+            picked          INTEGER NOT NULL,
+            settled         INTEGER NOT NULL,
+            result_mean     REAL,
+            edge_mean       REAL,
+            result_deciles  TEXT,
+            edge_deciles    TEXT,
+            refreshed_at    TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family, year)
+        ) STRICT;
     ";
 
     // The setup ledger: one row a member-session a family's loose gates pass on an index, with the live rule's own

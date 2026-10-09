@@ -321,6 +321,9 @@ public partial class ReadSurface
             // 18's two rows for the screen.
             .. PastPicksClaims,
 
+            // 17.3's setup ledger page under Universe.
+            .. LedgerPageClaims,
+
             // The 12.2 correction's one open trade per stock on the pages: Still open on tonight's page, the
             // two marks on Past picks and section 18's row for a still open trade with no outcome row.
             .. OpenTradeClaims,

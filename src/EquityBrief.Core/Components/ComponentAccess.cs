@@ -81,6 +81,7 @@ public enum Store
     FiledFact,
     FiledFactPull,
     FilingDay,
+    LedgerSummary,
     TakenTrade,
     TakenRecord,
     DividendReading,

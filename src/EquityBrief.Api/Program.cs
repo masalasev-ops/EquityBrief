@@ -1563,6 +1563,31 @@ IResult SweepReportPage(StoreLocation store, string? run)
 // The names holding research among the members of the index chosen under Universe: an S&P 400's or 600's current
 // members where the link names one, and every other name where it names none, the S&P 500's former members among them.
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+// The setup ledger's page under Universe: the summary the ledger's writers refresh for the index chosen, one family's
+// newest settled setups, its first family's where the link names none, and a chosen setup's path, named in the link as
+// its stock and its session.
+// see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+{
+    var night = await read.NewestNightAsync();
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.LedgerRoute) : string.Empty;
+    var years = await read.LedgerYearsAsync(reading.Code);
+    var asked = request.Query["family"].FirstOrDefault();
+    var family = years.Any(year => year.Family == asked) ? asked : years.FirstOrDefault()?.Family;
+    var settled = family is null ? [] : await read.LedgerSettledAsync(reading.Code, family, 12);
+    EquityBrief.Core.Ledger.LedgerPath? path = null;
+
+    // The chosen setup named as its stock and its session, the last full stop parting the two.
+    if (family is not null && request.Query["setup"].FirstOrDefault() is { } chosen && chosen.LastIndexOf('.') is var cut and > 0
+        && DateOnly.TryParseExact(chosen[(cut + 1)..], "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var session))
+    {
+        path = await read.LedgerPathAsync(reading.Code, family, chosen[..cut], session, night ?? session);
+    }
+
+    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path), "text/html; charset=utf-8");
+});
+
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>
 {
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());

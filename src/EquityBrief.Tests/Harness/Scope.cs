@@ -47,6 +47,13 @@ internal static class Scope
     const string ByActions = "corporate-actions";
     const string ByExpectations = "fixture-expectations";
     const string ByCost = "nightly-cost";
+
+    // Section 15.19's heading and its three regions, as constants rather than read off the read surface's own list, since
+    // a static field of this class read from that class's statics would be read before it was set.
+    internal const string LedgerPage = "15.19 The setup ledger";
+    internal const string LedgerFamilyYears = "A family's setups";
+    internal const string LedgerSettled = "Settled setups";
+    internal const string LedgerPathDrawn = "A setup's path";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
     const string ByAdmissibility = "claim-admissibility";
@@ -3200,6 +3207,23 @@ internal static class Scope
             Verdict.Pass,
             "the night runs the refresh after the quarters step and before the queue, on its output and its run log's order, and over the fixture's week it refreshes the one member that filed a report and asks nothing for the others",
             ByNight),
+        // 17.3, the Ledger page: its six parts and its summary's store.
+        [CheckReach.Key(StoresTable, "Ledger summaries")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed summary: each family a card, a year's setups, its share passed, its share picked of the rows a night wrote, its settled and their means, a heavyweights' figure as a share of the buy, the nine cut points of the newest year holding settled setups each at its share, the nearest rank worked by hand, and each card's two keys",
+            ByReadSurface),
+        [CheckReach.Key(LedgerPage, LedgerSettled)] = new Scoped(
+            Verdict.Pass,
+            "the family the link names chosen and the others linked, its settled setups newest first, each stock a link naming its session",
+            ByReadSurface),
+        [CheckReach.Key(LedgerPage, LedgerPathDrawn)] = new Scoped(
+            Verdict.Pass,
+            "a chosen setup's closes from fourteen days before its session to the session its path ended, its buy, stop and target drawn across and its session marked, read back off the rendered mark, and a setup whose closes the store holds none of drawing the line saying its bars sit in the pulled history",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4544,6 +4568,8 @@ internal static class Scope
         // 17.3's two, the setups and the ledger's rows a family a night.
         ["Setups"] = "17.3",
         ["Setup nights"] = "17.3",
+        // 17.3's Ledger page's summary, which the setup ledger refreshes.
+        ["Ledger summaries"] = "17.3",
         // 17.3's three, the SEC's facts as first filed, each ask for them and each day of the archive's index read.
         ["Filed facts"] = "17.3",
         ["Facts pulls"] = "17.3",
@@ -4577,6 +4603,10 @@ internal static class Scope
     // an entry naming a row the document no longer has fails too.
     static readonly Dictionary<string, string> Screens = new(StringComparer.Ordinal)
     {
+        // 17.3's Ledger page under Universe, its three regions.
+        [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
+        [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
+        [CheckReach.Key(LedgerPage, LedgerPathDrawn)] = "17.3",
         // The parts of the rows the fifth phase 5 sign-off review decomposed.
         [CheckReach.Key("15.4 The two surfaces", "The app, the single page")] = "1.3",
         [CheckReach.Key("15.4 The two surfaces", "The app, routing")] = "1.3",
@@ -5726,6 +5756,7 @@ internal static class Scope
         "15.15 Queue",
         "15.16 Watch list",
         "15.17 Past picks",
+        "15.19 The setup ledger",
         "15.11 How a reason's record is displayed",
     ];
 

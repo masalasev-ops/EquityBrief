@@ -87,6 +87,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `forming_row` | RuleCards | none | RuleCards |
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
+| `ledger_summary` | SetupLedger | none | SetupLedger |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -1344,6 +1345,29 @@ Grain: one row per index, family and session the ledger read.
 Primary key: `index_code`, `family`, `session_date`.
 
 **The setup ledger writes it beside the setups and is its own deleter** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). An index the night held no member of on the session has no row.
+
+### ledger_summary
+Grain: one row per index, family and year of the setups' sessions.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | as `setup` carries it |
+| `year` | INTEGER | the calendar year of the setups' sessions |
+| `setups` | INTEGER | the setups of that year |
+| `live_passes` | INTEGER | how many of them the live rule passes |
+| `night_rows` | INTEGER | how many a night wrote, which carry a pick |
+| `picked` | INTEGER | how many of those the night's list picked |
+| `settled` | INTEGER | how many are settled |
+| `result_mean` | REAL | the settled setups' mean result, null where none is settled |
+| `edge_mean` | REAL | their mean edge, null where none is settled |
+| `result_deciles` | TEXT | the nine cut points between the deciles of their results by the nearest rank, comma-separated in the invariant form, null where none is settled |
+| `edge_deciles` | TEXT | the same for their edges |
+| `refreshed_at` | TEXT | UTC instant of the refresh that wrote it |
+
+Primary key: `index_code`, `family`, `year`.
+
+**The Ledger page's counts, rewritten whole for an index by the setup ledger after each night and each build**, so the page draws them and computes none (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). The cut points are statistics and are stored as text only because nine of them sit in one cell; each reads back as the double it was.
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.

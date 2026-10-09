@@ -79,5 +79,14 @@ public partial class NightlyRun
 
         // And the later rebalance's size cut is that night's setups, AAA and BBB passed.
         Assert.Equal(["GSPC|heavyweight|3|3|2"], Texts(store, $"SELECT index_code || '|' || family || '|' || members || '|' || setups || '|' || live_passes FROM setup_night WHERE family = 'heavyweight' AND session_date = '{LedgerStamp(75)}';"));
+
+        // The Ledger page's summary, rewritten by the night from the setups: the year's six, three passed, all six
+        // written by a night and three of them picked, one settled at CCC's tenth with its edge, every cut point its own.
+        Assert.Equal(
+            ["2026|6|3|6|3|1"],
+            Texts(store, "SELECT year || '|' || setups || '|' || live_passes || '|' || night_rows || '|' || picked || '|' || settled FROM ledger_summary WHERE index_code = 'GSPC' AND family = 'heavyweight';"));
+        Assert.Equal(0.1, LedgerScalar<double>(store, "SELECT result_mean FROM ledger_summary WHERE index_code = 'GSPC' AND family = 'heavyweight';"), 9);
+        Assert.Equal(0.1 - ((0.2 - 0.1 + 0.1) / 3), LedgerScalar<double>(store, "SELECT edge_mean FROM ledger_summary WHERE index_code = 'GSPC' AND family = 'heavyweight';"), 9);
+        Assert.Equal([.. Enumerable.Repeat(0.1, 9)], LedgerSummaries.Read(Texts(store, "SELECT result_deciles FROM ledger_summary WHERE index_code = 'GSPC' AND family = 'heavyweight';").Single()));
     }
 }

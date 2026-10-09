@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html and RUNBOOK.md - the Ledger page under Universe and its summary
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> Views are hash routes resolved in the browser: <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/watch</code>, <code>#/universe</code>, <code>#/picks</code>,
+> [the setup ledger's catalogue row, its writes] setups, setup nights
+> [RUNBOOK] A row the build writes carries no pick and no cost, which the night alone stores; the Ledger page follows in 17.3's later pull requests.
+Now:
+> Views are hash routes resolved in the browser: <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/watch</code>, <code>#/universe</code>, <code>#/ledger</code>, <code>#/picks</code>,
+> [the catalogue row, its writes] setups, setup nights, ledger summaries
+> [RUNBOOK] A row the build writes carries no pick and no cost, which the night alone stores. The build ends by rewriting the index's summary, which the Ledger page under Universe draws: [...]
+Why: 17.3's Ledger page, section 15.19, drawn from a summary the setup ledger rewrites after each night and each build, its store added to section 16.
+
 ### 2026-10-09 - SCHEMA.md and ARCHITECTURE.html - the setup ledger's heavyweights
 Authorised by: A heavyweights' setup is each member of its sector's size cut on a rebalance of the S&P 500's book, held as the rule holds a buy
 Was:

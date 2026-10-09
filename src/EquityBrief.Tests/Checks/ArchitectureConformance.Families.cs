@@ -328,10 +328,11 @@ public partial class ArchitectureConformance
         // and matrix rows, its three stores, section 17's two rows, section 18's two, the card's rule row as its fourteen
         // parts and the checklist's item on a live rule past its mark, 1067 from 17.3's kept bars, 1076 from 17.3's
         // ledger, the setup ledger's catalogue and matrix rows, its two stores, section 17's two rows, section 18's two
-        // and the night's step, and 1085 from 17.3's filings refresh, the refresher's catalogue and matrix rows, its
-        // three stores, section 17's row, section 18's two and the night's step.
+        // and the night's step, 1085 from 17.3's filings refresh, the refresher's catalogue and matrix rows, its three
+        // stores, section 17's row, section 18's two and the night's step, and 1089 from 17.3's Ledger page, its three
+        // regions and its summary's store.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1085),
+            (789, 853, 6, 4, 855, 876, 1089),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

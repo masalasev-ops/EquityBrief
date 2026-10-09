@@ -737,7 +737,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // nothing says which one is the system.
 // see: Code owns every number
 // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
-public sealed class ReadApi : IComponent
+public sealed partial class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
     // is section 7's row for this component and the R cells plus one W in its
@@ -758,6 +758,7 @@ public sealed class ReadApi : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.KeptBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
@@ -794,6 +795,8 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.RuleNight, Touch.Read),
             new StoreTouch(Store.RulePick, Touch.Read),
             new StoreTouch(Store.FormingRow, Touch.Read),
+            new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.LedgerSummary, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
