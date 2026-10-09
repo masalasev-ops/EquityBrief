@@ -374,7 +374,7 @@ public sealed record MemberReadingRow(
 
 // A company's analysts' rating counts as one fetch filed them: the day of the fetch, the five counts and their total,
 // each none where the fetch filed none or was made before the counts were stored.
-public sealed record RatingsRow(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total);
+public sealed record RatingsRow(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total, bool BeforeCounts = false);
 
 // One night's swing filter results counted: the version it ran under, the members, how many passed
 // each gate after the market and every one before it, the market held open, and how many of those no
@@ -2894,15 +2894,17 @@ public sealed partial class ReadApi : IComponent
     }
 
     // A company's newest fetch made on or before a night, with its five rating counts and their total, none where the
-    // fetch filed none.
+    // fetch filed none, and whether the fetch was made before the counts were stored: the counts came with the quarters'
+    // interest expense, so a fetch whose quarters read no interest expense read no counts either.
     // see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it
     const string RatingsOn = @"
-        SELECT fetched_at, strong_buy, buy, hold, sell, strong_sell,
-               CASE WHEN COALESCE(strong_buy, buy, hold, sell, strong_sell) IS NULL THEN NULL
-                    ELSE IFNULL(strong_buy, 0) + IFNULL(buy, 0) + IFNULL(hold, 0) + IFNULL(sell, 0) + IFNULL(strong_sell, 0) END
-        FROM company
-        WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on
-        ORDER BY fetched_at DESC
+        SELECT c.fetched_at, c.strong_buy, c.buy, c.hold, c.sell, c.strong_sell,
+               CASE WHEN COALESCE(c.strong_buy, c.buy, c.hold, c.sell, c.strong_sell) IS NULL THEN NULL
+                    ELSE IFNULL(c.strong_buy, 0) + IFNULL(c.buy, 0) + IFNULL(c.hold, 0) + IFNULL(c.sell, 0) + IFNULL(c.strong_sell, 0) END,
+               EXISTS (SELECT 1 FROM reported_quarter q WHERE q.ticker = c.ticker AND q.fetched_at = c.fetched_at AND q.interest_read = 0)
+        FROM company c
+        WHERE c.ticker = $ticker AND substr(c.fetched_at, 1, 10) <= $on
+        ORDER BY c.fetched_at DESC
         LIMIT 1;
     ";
 
@@ -2933,7 +2935,8 @@ public sealed partial class ReadApi : IComponent
             Count(3),
             Count(4),
             Count(5),
-            Count(6));
+            Count(6),
+            reader.GetInt64(7) == 1);
     }
 
     static SwingReadingRow SwingRow(Microsoft.Data.Sqlite.SqliteDataReader reader) =>

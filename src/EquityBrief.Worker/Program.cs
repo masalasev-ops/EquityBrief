@@ -101,7 +101,9 @@ static int NoVerb()
         "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
-        "sector and share counts beside its quarters, and '--index <MID or SML>' asks a wider index's members, " +
+        "sector and share counts beside its quarters, 'quarters --refetch-unread' asks instead every member whose newest " +
+        "fetch read no interest expense, stating its asks and their weighted calls before the first request, '--most <n>' " +
+        "caps the asks a run makes, and '--index <MID or SML>' asks a wider index's members, " +
         "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
         "from their funds' files beside the index's and each member holding no bar asked for its year, " +
         "'index-families' runs the night's index families step by hand over the newest session the store holds, the S&P " +

@@ -315,7 +315,7 @@ public sealed record MemberReadingsView(
     RatingsView? Ratings = null);
 
 // A company's analysts' rating counts as its newest fetch filed them, with the day of the fetch and their total.
-public sealed record RatingsView(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total);
+public sealed record RatingsView(DateOnly Fetched, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell, int? Total, bool BeforeCounts = false);
 
 // One operating obligation's count against its trigger, as the Calibration region states it.
 public sealed record TriggerLine(string Obligation, int Count, int Trigger, string Says);
@@ -6312,6 +6312,7 @@ public sealed partial class MarkRenderer : IComponent
             view.Ratings switch
             {
                 { Total: { } all } ratings => FormattableString.Invariant($"{all} in all as the fetch of {ratings.Fetched:yyyy-MM-dd} filed them: {Count(ratings.StrongBuy)} strong buy, {Count(ratings.Buy)} buy, {Count(ratings.Hold)} hold, {Count(ratings.Sell)} sell and {Count(ratings.StrongSell)} strong sell"),
+                { BeforeCounts: true } early => Short(FormattableString.Invariant($"not read: the newest fetch, of {early.Fetched:yyyy-MM-dd}, was made before rating counts were stored")),
                 { } unfiled => Short(FormattableString.Invariant($"none filed: the newest fetch, of {unfiled.Fetched:yyyy-MM-dd}, stored no rating counts")),
                 null => Short("no fetch of its company stored"),
             });

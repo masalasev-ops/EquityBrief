@@ -1280,7 +1280,7 @@ public static class NameScreen
         new(EquityBrief.Web.App.Universes.ByCode(row.IndexCode)?.Name ?? row.IndexCode, row.SessionDate, row.Close, row.DollarVolume,
             row.CompanyValue, row.Cost, row.CostDouble, row.Profit, row.Coverage, row.State, row.YearHigh, row.Nearness,
             row.SinceHigh, row.VolumeRatio, row.Industry, row.IndustryMonth, row.IndustryQuarter, row.PeerSurprise,
-            ratings is null ? null : new RatingsView(ratings.Fetched, ratings.StrongBuy, ratings.Buy, ratings.Hold, ratings.Sell, ratings.StrongSell, ratings.Total));
+            ratings is null ? null : new RatingsView(ratings.Fetched, ratings.StrongBuy, ratings.Buy, ratings.Hold, ratings.Sell, ratings.StrongSell, ratings.Total, ratings.BeforeCounts));
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
     // one sentence per reading, and the quarters any reading read with the dates each was filed and
