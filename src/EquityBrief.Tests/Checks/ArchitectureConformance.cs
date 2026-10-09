@@ -1404,7 +1404,8 @@ public partial class ArchitectureConformance
         // 131 at 17.2: a family's card's rule on Tonight.
         // 134 at 17.3: the Ledger page's three regions.
         // 137 at 17.4: the Loop page's three regions.
-        Assert.Equal(137, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 139 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
+        Assert.Equal(139, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1516,7 +1517,8 @@ public partial class ArchitectureConformance
         // 489 at 17.2: a family's card's rule as its fourteen parts and the checklist's item on a live rule past its mark.
         // 492 at 17.3: the Ledger page's three regions.
         // 495 at 17.4: the Loop page's three regions.
-        Assert.Equal(495, inDocument.Length);
+        // 497 at 17.5: the sector heavyweights' card's rule on Tonight and the Loop page's findings.
+        Assert.Equal(497, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

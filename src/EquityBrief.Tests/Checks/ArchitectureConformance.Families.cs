@@ -330,10 +330,11 @@ public partial class ArchitectureConformance
         // ledger, the setup ledger's catalogue and matrix rows, its two stores, section 17's two rows, section 18's two
         // and the night's step, 1085 from 17.3's filings refresh, the refresher's catalogue and matrix rows, its three
         // stores, section 17's row, section 18's two and the night's step, 1089 from 17.3's Ledger page, its three
-        // regions and its summary's store, and 1104 from 17.4, the tester's catalogue and matrix rows, its three stores,
-        // section 17's five rows, section 18's two and the Loop page's three regions.
+        // regions and its summary's store, 1104 from 17.4, the tester's catalogue and matrix rows, its three stores,
+        // section 17's five rows, section 18's two and the Loop page's three regions, and 1110 from 17.5, the autopsy's
+        // store, section 17's two rows, section 18's one, the Loop page's findings and the heavyweights' card's rule.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1104),
+            (789, 853, 6, 4, 855, 876, 1110),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

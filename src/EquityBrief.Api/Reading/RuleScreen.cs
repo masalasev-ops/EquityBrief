@@ -94,6 +94,29 @@ public static class RuleScreen
             large || variants.Length > 0 ? null : NoVariantLine(indexName));
     }
 
+    // The sector heavyweights' card's selector on an index, as a swing card's: the live rule, or the provisional rule
+    // where no freeze registered one, then each variant by the number of its first registration, and the rule the link
+    // chooses under the family's own key, the live rule where it names none or one that does not stand; with the chosen
+    // variant's name, whose own book the card is then drawn from.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords)
+    {
+        var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
+        var live = standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
+        var variants = standing.Where(row => !FamilyRecords.IsLive(row.Candidate)).OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).ToArray();
+        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true) };
+
+        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false)));
+
+        var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
+        var chosenRow = chosen.Live ? null : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
+        var words = chosenRow is null ? liveWords : Words(HeavyweightRule.Name, chosenRow) ?? chosenRow.Candidate;
+
+        return (
+            new RuleView(chosen, choices, Parts(words, liveWords), null, null, null, null, true, large || variants.Length > 0 ? null : NoVariantLine(indexName)),
+            chosenRow?.Candidate);
+    }
+
     // The rules of a family standing on an index at the night's end: on the S&P 500 the family's own evaluators' rows,
     // and on the S&P 400 or 600 the index's rules of the family.
     static IReadOnlyList<CandidateRow> Standing(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night)

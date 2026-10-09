@@ -43,7 +43,8 @@ public sealed record HeavyweightCardView(
     int Variants = 0,
     bool SweepFoundNone = false,
     string? Waits = null,
-    IReadOnlyDictionary<string, string>? Says = null);
+    IReadOnlyDictionary<string, string>? Says = null,
+    RuleView? RuleChoice = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -85,6 +86,7 @@ public sealed partial class MarkRenderer
     public string HeavyweightCard(HeavyweightCardView card)
     {
         var body = new StringBuilder();
+        var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
 
         body.Append(Invariant, $"<section class=\"family-card heavyweight-card\" data-family=\"{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-holdings=\"{card.Holdings.Count}\" data-state=\"{(card.LiveSince is null ? "provisional" : "live")}\" ");
         body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
@@ -101,6 +103,23 @@ public sealed partial class MarkRenderer
         body.Append(card.NextRebalance is { } coming ? Formatted($" · next rebalance <b class=\"next-rebalance\">{DayOf(coming)}</b>") : " · next rebalance past the exchange calendar's table");
         body.Append("</p>");
         body.Append(SweepFoundNoneLine(card.SweepFoundNone));
+
+        // The selector the swing cards carry, and a registered variant's own book drawn under the same band with its
+        // words, the clauses the live rule's lack marked.
+        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        if (card.RuleChoice is { } rule)
+        {
+            body.Append(Invariant, $"<div class=\"heavyweight-rule\" data-rule=\"{Escaped(rule.Chosen.Slug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");
+            body.Append(RuleChoice(EquityBrief.Core.Families.HeavyweightRule.Name, rule));
+
+            if (variant is not null)
+            {
+                body.Append(Invariant, $"<p class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\">{Escaped(RuleScreenWords.Band(variant.Chosen.Variant!.Value))}</p>");
+                body.Append(RuleWordsLine(rule.Parts));
+            }
+
+            body.Append("</div>");
+        }
 
         if (card.Waits is { } waits)
         {

@@ -873,7 +873,28 @@ public sealed class CandidateRegistrar : IComponent
                 $"than on the first night that tried to run it. Carried: {string.Join(", ", CandidateEvaluators.Names)}.";
         }
 
-        var given = parameters.Keys.OrderBy(name => name, StringComparer.Ordinal).ToArray();
+        // A family rule whose trades are walked one at a time may state the engines' hooks beside its own parameters,
+        // each off where it is not stated; a heavyweights book reads none, so its hooks are refused as any parameter it
+        // does not read is.
+        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        var hooked = carried is FamilyRuleEvaluator and not IndexHeavyweightCandidate;
+
+        if (hooked)
+        {
+            try
+            {
+                EquityBrief.Core.Loop.RuleHooks.Of(parameters);
+            }
+            catch (ArgumentException refused)
+            {
+                return $"'{evaluator}' is registered with hooks that cannot be read: {refused.Message}";
+            }
+        }
+
+        var given = parameters.Keys
+            .Where(name => !hooked || !EquityBrief.Core.Loop.RuleHooks.IsHook(name))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
         var wanted = carried.Parameters.OrderBy(name => name, StringComparer.Ordinal).ToArray();
 
         if (!given.SequenceEqual(wanted, StringComparer.Ordinal))

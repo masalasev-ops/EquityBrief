@@ -901,6 +901,27 @@ app.MapGet("/screens/tonight/{night?}", async (
                 indexRegister,
                 indexNight);
 
+        // The card's selector, as the S&P 500's: the provisional or live rule first and each registered variant after
+        // it, a chosen variant's own book drawn under the band.
+        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        var (indexHeavyweightChoice, indexHeavyweightVariant) = RuleScreen.Heavyweights(
+            reading.Name,
+            false,
+            dated,
+            indexRegister,
+            request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
+            heavyweightCard.Rule);
+
+        heavyweightCard = (indexHeavyweightVariant is { } chosenBook
+            ? TonightScreen.IndexHeavyweights(
+                reading,
+                indexNight,
+                await read.IndexRuleHoldingsAsync(chosenBook, dated),
+                await read.IndexRuleLastRebalanceAsync(chosenBook, dated),
+                await read.IndexRuleHoldingClosesAsync(chosenBook, dated),
+                members)
+            : heavyweightCard) with { RuleChoice = indexHeavyweightChoice };
+
         return Results.Content(
             notice + page.IndexTonightRegion(
                 marks,
@@ -1128,16 +1149,26 @@ app.MapGet("/screens/tonight/{night?}", async (
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    // The card drawn by the rule its selector chooses, a registered variant's own book under the band where one is.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    var (heavyweightChoice, heavyweightVariant) = RuleScreen.Heavyweights(
+        reading.Name,
+        true,
+        dated,
+        register,
+        request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
+        RuleWords.Heavyweights(EquityBrief.Core.Families.HeavyweightRule.Live));
     var heavyweights = cards is null
         ? null
         : CardScreen.WithCards(
-            TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells, register) with
+            TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated, heavyweightVariant), await read.HeavyweightReadAsync(dated, heavyweightVariant), await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register) with
             {
                 SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
                     [.. answers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
                     TonightScreen.FrozenAt(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)),
+                RuleChoice = heavyweightChoice,
             },
-            await read.BoughtCardsAsync(reading.Code, dated),
+            heavyweightVariant is null ? await read.BoughtCardsAsync(reading.Code, dated) : [],
             cardContext);
     var line = cards is null
         ? null
@@ -1599,8 +1630,9 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var run = month is null ? null : await read.LoopRunAsync(reading.Code, month);
     var proposals = run is null ? [] : await read.LoopProposalsAsync(run);
     var tests = run is null ? [] : await read.LoopTestsAsync(run);
+    var findings = run is null ? [] : await read.LoopFindingsAsync(run);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests), "text/html; charset=utf-8");
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>

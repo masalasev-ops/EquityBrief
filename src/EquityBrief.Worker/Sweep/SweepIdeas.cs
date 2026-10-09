@@ -781,7 +781,11 @@ public sealed class IdeaReplay
 
     // A listing the filter refuses, by its stock and its bar, is left off before the walk, so the next in the list's
     // order takes its place.
-    public List<IdeaTrade> Trades(IdeaRule rule, Func<int, int, bool>? keep = null)
+    public List<IdeaTrade> Trades(IdeaRule rule, Func<int, int, bool>? keep = null) =>
+        SweepIdeas.Walk(Listings(rule, keep), tickers, rule.PerNight, listing => Exit(listing, rule.Exit), rule.Order);
+
+    // The listings a rule's walk reads, in the picks' order, before any is kept.
+    public List<IdeaListing> Listings(IdeaRule rule, Func<int, int, bool>? keep = null)
     {
         var listings = new List<IdeaListing>();
 
@@ -814,7 +818,7 @@ public sealed class IdeaReplay
                 SweepIdeas.RsiFall(series[pick.Name].Rsi, bar, candidate.PullbackSessions[LiveHigh])));
         }
 
-        return SweepIdeas.Walk(listings, tickers, rule.PerNight, listing => Exit(listing, rule.Exit), rule.Order);
+        return listings;
     }
 
     // The place of the live design's reference high among the highs a candidate's readings are kept for.

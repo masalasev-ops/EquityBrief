@@ -28,6 +28,9 @@ public static class SetupEnds
     // A heavyweights' setup sold at a later rebalance at which the rule did not buy it.
     public const string Rebalance = "rebalance";
 
+    // A trade sold by a time exit, its close at the sessions the exit reads short of the level it asks for.
+    public const string Time = "time";
+
     // The series ran out before the trade ended, so it is open as of the last close held.
     public const string Open = "open";
 

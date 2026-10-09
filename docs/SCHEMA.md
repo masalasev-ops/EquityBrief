@@ -91,6 +91,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
+| `loop_finding` | WalkForwardTester | none | none |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -850,10 +851,11 @@ Grain: one row per registered family rule, stock and session the rule's own list
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member the index held that night with a bar and a typical move, the stop the trade's distance in each member's own typical moves and the target its reward to risk above, or the stop trailing at that distance; null until every such trade has had its cap, and where none could be entered |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
 | `cost` | REAL | from 15.2, the round trip the trade paid in multiples of its risk at the published table, its company valued as the night's member readings read it on the listing session and read in the $1 to 2 billion band where they hold none, the sale where its result puts it; null while the trade is open or ended with no result. The result is the one the record stored and is never read after it |
+| `exit` | INTEGER | from 17.5, the exit of the menu the trade and its benchmark are walked under, by its number, where the rule's registration names one; null for the rule's own exit |
 
 Primary key: `candidate`, `ticker`, `session_date`.
 
-**The family recorder writes it in the swing filter's step, after the family lister, and is its own deleter** (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end). For each family candidate standing when the night started it reads the verdicts the family evaluator stored on that family's rows, the members it fired on in the family's own order, and keeps at most five, none whose trade on its own list is still open, a trade freeing its stock the night after it ends, so each rule's record counts the trades it alone would have made and is never held by another rule's (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). Each night it first walks every trade not yet ended over the closes since, at the scale the series has now, and writes where it ended and its result; and once a trade's cap has passed it writes the benchmark and how many members it averaged. Each is written once and never recomputed, because the bars and the typical moves they are read from are kept a year and a record is read over many. A night run again replaces the trades it kept for that night and touches no other night's. The rows are never deleted otherwise: they are the record each rule's checkpoints read.
+**The family recorder writes it in the swing filter's step, after the family lister, and is its own deleter** (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end). For each family candidate standing when the night started it reads the verdicts the family evaluator stored on that family's rows, the members it fired on in the family's own order, and keeps at most five, none whose trade on its own list is still open, a trade freeing its stock the night after it ends, so each rule's record counts the trades it alone would have made and is never held by another rule's (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). From 17.5 a rule whose registration states the engines' hooks keeps the members meeting its conditions, ordered by its score, over the night's readings of the ledger's catalogue, and walks each trade and its benchmark under the exit it names, stored on the trade; a rule stating none keeps and walks as before (see: Every engine's settings hooks land together and all default off, so the families' pins move once). Each night it first walks every trade not yet ended over the closes since, at the scale the series has now, and writes where it ended and its result; and once a trade's cap has passed it writes the benchmark and how many members it averaged. Each is written once and never recomputed, because the bars and the typical moves they are read from are kept a year and a record is read over many. A night run again replaces the trades it kept for that night and touches no other night's. The rows are never deleted otherwise: they are the record each rule's checkpoints read.
 
 ### heavyweight_night
 Grain: one row per rebalance session, sector and place among the sector's largest companies.
@@ -1081,10 +1083,11 @@ Grain: one row per registered rule of an S&P 400's or 600's swing family, stock 
 | `cost` | REAL | its round trip in multiples of its risk at the published table, its company valued as the member readings read it on its night, which the result after costs subtracts, null while open |
 | `benchmark` | REAL | the average result of the same plan entered at the close on every member of the index that night, null until the trade's cap has passed |
 | `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+| `exit` | INTEGER | from 17.5, the exit of the menu the trade and its benchmark are walked under, by its number, where the rule's registration names one; null for the rule's own exit |
 
 Primary key: `candidate`, `ticker`, `session_date`.
 
-**The index families write it for each registered rule and are its own deleter** (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone). Each night, for each index, they first walk every trade not yet ended over its stock's closes since and write where it ended, its result and its cost, and once its cap's sessions have passed its benchmark; then each rule standing registered when the night started keeps its members passing tonight in its family's order, five at most, none whose stock it holds a trade on. A night run again replaces the trades it kept that night and no other night's. The rows are never deleted otherwise: a rule's record on the index's Run page is its trades.
+**The index families write it for each registered rule and are its own deleter** (see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone). Each night, for each index, they first walk every trade not yet ended over its stock's closes since and write where it ended, its result and its cost, and once its cap's sessions have passed its benchmark; then each rule standing registered when the night started keeps its members passing tonight in its family's order, five at most, none whose stock it holds a trade on. From 17.5 a rule whose registration states the engines' hooks keeps those meeting its conditions, ordered by its score, over the night's readings of the ledger's catalogue, none on a night handed none, and walks its trades under the exit it names (see: Every engine's settings hooks land together and all default off, so the families' pins move once). A night run again replaces the trades it kept that night and no other night's. The rows are never deleted otherwise: a rule's record on the index's Run page is its trades.
 
 ### index_heavyweight_rule_night
 Grain: one row per registered sector heavyweights rule of the S&P 400 or 600 and each session its own book rebalanced on.
@@ -1379,7 +1382,7 @@ Grain: one row per tester run on an index.
 |---|---|---|
 | `run_id` | TEXT | the run, naming the verb, the index and its start |
 | `month` | TEXT | the month the run is for, as `yyyy-MM` |
-| `index_code` | TEXT | `MID` or `SML` |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
 | `through` | TEXT | the newest session the run read, as `yyyy-MM-dd` |
 | `started_at` | TEXT | UTC instant |
 | `ended_at` | TEXT | UTC instant |
@@ -1413,6 +1416,7 @@ Grain: one row per run, family and proposal tested.
 | `detectable` | REAL | the difference a unit the gate detects four times in five at the bar; null under two blocks |
 | `stable_folds` | INTEGER | the folds choosing within a grid step of the proposal |
 | `passed` | INTEGER | 1 where all four parts held and the proposal names a change |
+| `finding` | TEXT | from 17.5, an exit proposal's finding in words: the autopsy's figures where it read the rule's trades, and the exit's edge on the years it learned on against the rule's; null for any other proposal and one naming no change |
 
 Primary key: `run_id`, `index_code`, `family`, `proposal`.
 
@@ -1438,6 +1442,23 @@ Grain: one row per run, proposal and test year.
 Primary key: `run_id`, `index_code`, `family`, `proposal`, `year`.
 
 **Written once by the walk-forward tester with its run**, so the Loop page's test years read a fold's choice as it was made (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year).
+
+### loop_finding
+Grain: one row per run, family and figure of the trade autopsy.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `figure` | TEXT | `best`, `worst`, `sessions to best`, `stopped once a risk up` or `target hits' worst` |
+| `value` | REAL | the median in risks or sessions, or the share of the stop's trades; null where no trade is read |
+| `trades` | INTEGER | the finished trades the figure was read over |
+| `words` | TEXT | the figure in words, as the Loop page draws it |
+
+Primary key: `run_id`, `index_code`, `family`, `figure`.
+
+**Written once by the walk-forward tester with its run**, from 17.5, read off the rule's own finished trades over the whole history; context for the exits the autopsy proposes and never a test of them (see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it).
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.

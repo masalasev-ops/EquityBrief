@@ -40,11 +40,21 @@ public sealed class HeavyweightLay
     // Each month's first session from the first scored, the months a book's edge is read over.
     public IReadOnlyList<int> Months => months;
 
+    // The S&P 500's book reads its index's own series, and the S&P 400's and 600's their funds'; every month's first
+    // session and every week's are laid, so a book rebalancing weekly reads its sessions as a monthly one does.
     public static async Task<HeavyweightLay> ReadAsync(LoopRead read, SweepHistory history, DateOnly through, Action<string> progress, CancellationToken cancellation)
     {
         var months = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Month);
-        var fund = (await history.SeriesOfAsync([IndexSweepRunner.IndexFunds[read.Index]], through, cancellation)).FirstOrDefault();
-        var (tape, sessions) = HeavyweightSweep.Lay(read.Inputs, read.Companies, fund, months.ToHashSet(), read.FirstScored);
+        var weeks = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, HeavyweightPeriod.Week);
+        var fund = read.Index == WalkForwardTester.LargeIndex
+            ? (await history.MarketAsync(through, cancellation)).FirstOrDefault(series => series.Series == "GSPC")
+            : (await history.SeriesOfAsync([IndexSweepRunner.IndexFunds[read.Index]], through, cancellation)).FirstOrDefault();
+        var (tape, sessions) = HeavyweightSweep.Lay(read.Inputs, read.Companies, fund, months.Union(weeks).ToHashSet(), read.FirstScored);
+
+        if (read.Index == WalkForwardTester.LargeIndex)
+        {
+            return new HeavyweightLay(read, tape, sessions, months, (_, _) => [], _ => null);
+        }
         var industries = await history.IndustriesAsync(cancellation);
         var spy = (await history.SeriesOfAsync(["SPY"], through, cancellation)).FirstOrDefault();
 
@@ -101,6 +111,34 @@ public sealed class HeavyweightLay
             .ToArray();
 
         return new HeavyweightBook(setting, trades, [.. trades.Select(Costed)], BookMonths.Edges(months, holdings));
+    }
+
+    // A book at one of the sweep's own settings over the whole history, as the night's book reads it: on the S&P 500
+    // every member at each rebalance of the setting's period, and on the S&P 400 or 600 the members clearing the index's
+    // floors and gate; its holdings walked under the setting's exit, each after its round trip, and its months.
+    public HeavyweightBook BookOf(HeavyweightSetting setting, string words)
+    {
+        var large = read.Index == WalkForwardTester.LargeIndex;
+        var rebalances = HeavyweightSweep.Rebalances(read.Calendar, read.FirstScored, setting.Period).ToDictionary(
+            session => session,
+            session =>
+            {
+                var laid = sessions[session];
+                var kept = large ? laid : laid with { Members = [.. laid.Members.Where(member => ClearsOn(member.Name, session, IndexQuality.Profit))] };
+
+                return HeavyweightSweep.Read(kept, setting, names);
+            });
+        var trades = HeavyweightSweep.Walk(tape, rebalances, setting.Exit, (from, to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To)));
+        var holdings = trades
+            .Select(trade => new BookHolding(
+                trade.Entry,
+                trade.End,
+                Cost(trade),
+                (from, to) => Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => CutReturn(CutOf(rebalances, trade), from, to)))
+            .ToArray();
+
+        return new HeavyweightBook(new HeavyweightSixSetting(0, words, false, IndexQuality.Profit, false, setting), trades, [.. trades.Select(Costed)], BookMonths.Edges(months, holdings));
     }
 
     // The size cut a holding was bought against: its sector's at the rebalance that bought it.

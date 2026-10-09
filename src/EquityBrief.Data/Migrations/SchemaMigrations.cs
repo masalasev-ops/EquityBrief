@@ -700,7 +700,29 @@ public static class SchemaMigrations
         new Migration(77, "create setup and setup_night", CreateLedger),
         new Migration(78, "create filed_fact, filed_fact_pull, filing_day and ledger_summary, and add setup's business readings", CreateFiledFacts),
         new Migration(79, "create loop_run, loop_proposal and loop_test", CreateLoopTests),
+        new Migration(80, "add family_trade.exit, index_rule_trade.exit and loop_proposal.finding, and create loop_finding", CreateLoopFindings),
     ];
+
+    // The exit a family rule's trade was kept under, none for the rule's own; the autopsy's finding a proposal states;
+    // and the autopsy's figures of a family's finished trades, one row a run, family and figure.
+    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    // see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+    const string CreateLoopFindings = @"
+        ALTER TABLE family_trade ADD COLUMN exit INTEGER;
+        ALTER TABLE index_rule_trade ADD COLUMN exit INTEGER;
+        ALTER TABLE loop_proposal ADD COLUMN finding TEXT;
+
+        CREATE TABLE loop_finding (
+            run_id      TEXT    NOT NULL,
+            index_code  TEXT    NOT NULL,
+            family      TEXT    NOT NULL,
+            figure      TEXT    NOT NULL,
+            value       REAL,
+            trades      INTEGER NOT NULL,
+            words       TEXT    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, figure)
+        ) STRICT;
+    ";
 
     // The walk-forward tester's record: one row a run on an index, one a proposal it tested with its verdict, and one a
     // proposal's test year with the setting its fold chose and each side's units and total edge after costs.

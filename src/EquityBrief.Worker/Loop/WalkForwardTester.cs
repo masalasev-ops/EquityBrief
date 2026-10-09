@@ -46,6 +46,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopRun, Touch.Insert),
             new StoreTouch(Store.LoopProposal, Touch.Insert),
             new StoreTouch(Store.LoopTest, Touch.Insert),
+            new StoreTouch(Store.LoopFinding, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -55,8 +56,11 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     // How long a run is allowed for before the night's window, which it does not start inside.
     public static readonly TimeSpan Expected = TimeSpan.FromHours(1);
 
-    // The indices Part 0's procedures searched; the S&P 500's first proposals come from the engines.
-    public static IReadOnlyList<string> Indices { get; } = ["MID", "SML"];
+    // The indices a run reads: the S&P 400 and 600, which Part 0's procedures searched, and the S&P 500, whose proposals
+    // come from the engines alone.
+    public static IReadOnlyList<string> Indices { get; } = ["GSPC", "MID", "SML"];
+
+    public const string LargeIndex = "GSPC";
 
     static readonly TimeSpan Poll = TimeSpan.FromSeconds(30);
 
@@ -66,8 +70,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     ";
 
     const string InsertProposal = @"
-        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed)
-        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed);
+        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding)
+        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed, $finding);
+    ";
+
+    const string InsertFinding = @"
+        INSERT INTO loop_finding (run_id, index_code, family, figure, value, trades, words)
+        VALUES ($run_id, $index_code, $family, $figure, $value, $trades, $words);
     ";
 
     const string AppendRun = @"
@@ -90,7 +99,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     {
         if (!Indices.Contains(index, StringComparer.Ordinal))
         {
-            output.WriteLine($"{Verb}: name an index with '--index', MID or SML; the S&P 500's families have no Part 0 procedure, and their first proposals come from the engines");
+            output.WriteLine($"{Verb}: name an index with '--index', GSPC, MID or SML");
 
             return 2;
         }
@@ -120,7 +129,10 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var runMonth = month ?? FormattableString.Invariant($"{started:yyyy-MM}");
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
-        var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: index, asItStood: true);
+        var large = index == LargeIndex;
+        var inputs = large
+            ? await history.ReadAsync(through, output.WriteLine, cancellation)
+            : await history.ReadAsync(through, output.WriteLine, cancellation, index: index, asItStood: true);
 
         if (inputs.Names.Count == 0)
         {
@@ -138,21 +150,49 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             return 2;
         }
 
-        var proposals = new List<LoopProposalRead>
-        {
-            LoopProcedures.Swing(read, BreakoutRule.Name, output.WriteLine),
-            LoopProcedures.Swing(read, DriftRule.Name, output.WriteLine),
-        };
+        // Part 0's procedures on the S&P 400 and 600, then the autopsy's exits for their provisional pullback and for the
+        // breakout, the drift and the sector heavyweights on every index, each family's proposals read together by the
+        // step-down.
+        var proposals = new List<LoopProposalRead>();
+        var findings = new Dictionary<string, IReadOnlyList<AutopsyFigure>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
-        proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
+        if (!large)
+        {
+            proposals.Add(LoopProcedures.Swing(read, BreakoutRule.Name, output.WriteLine));
+            proposals.Add(LoopProcedures.Swing(read, DriftRule.Name, output.WriteLine));
+            proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
+        }
+
+        if (!large)
+        {
+            var (exits, figures) = ExitProcedures.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine);
+
+            proposals.AddRange(exits);
+            findings[SetupFamilies.Pullback] = figures;
+        }
+
+        foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
+        {
+            var (exits, figures) = ExitProcedures.Swing(read, family, large, output.WriteLine);
+
+            proposals.AddRange(exits);
+            findings[family] = figures;
+        }
+
+        proposals.AddRange(ExitProcedures.Heavyweights(read, lay, output.WriteLine));
 
         var tested = Judge(read, proposals);
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
         {
-            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation);
+            await WriteAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation, findings);
+        }
+
+        foreach (var (family, figures) in findings)
+        {
+            output.WriteLine($"the autopsy of the {family}: " + string.Join("; ", figures.Select(figure => figure.Words)));
         }
 
         foreach (var one in tested)
@@ -219,7 +259,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     }
 
     // The run, its proposals and their test years, in one transaction under the drain's lock.
-    public async Task WriteAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<Tested> tested, CancellationToken cancellation = default)
+    public async Task WriteAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<Tested> tested, CancellationToken cancellation = default, IReadOnlyDictionary<string, IReadOnlyList<AutopsyFigure>>? findings = null)
     {
         using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -262,6 +302,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                 ("$detectable", (object?)verdict.Detectable ?? DBNull.Value),
                 ("$stable_folds", proposal.StableFolds),
                 ("$passed", verdict.Passes && proposal.Words is not null ? 1 : 0),
+                ("$finding", (object?)proposal.Finding ?? DBNull.Value),
             ], cancellation);
 
             foreach (var (fold, chosen) in proposal.Folds)
@@ -281,6 +322,23 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                     ("$proposed_units", year.ProposedUnits),
                     ("$current_total", year.CurrentTotal),
                     ("$proposed_total", year.ProposedTotal),
+                ], cancellation);
+            }
+        }
+
+        foreach (var (family, figures) in findings ?? new Dictionary<string, IReadOnlyList<AutopsyFigure>>())
+        {
+            foreach (var figure in figures)
+            {
+                await ExecuteAsync(connection, transaction, InsertFinding,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", family),
+                    ("$figure", figure.Figure),
+                    ("$value", (object?)figure.Value ?? DBNull.Value),
+                    ("$trades", figure.Trades),
+                    ("$words", figure.Words),
                 ], cancellation);
             }
         }

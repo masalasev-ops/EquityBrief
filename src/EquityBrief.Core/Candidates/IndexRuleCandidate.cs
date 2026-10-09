@@ -79,5 +79,6 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
         "src/EquityBrief.Core/Readings/MemberReadings.cs",
         "src/EquityBrief.Core/Readings/IndexSwitches.cs",
         .. SourcesWith("src/EquityBrief.Core/Families/FamilyRule.cs").Skip(1),
+        .. EquityBrief.Core.Loop.RuleHooks.Sources,
     ];
 }

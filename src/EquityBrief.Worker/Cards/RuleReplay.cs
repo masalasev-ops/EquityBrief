@@ -121,6 +121,10 @@ public static class RuleReplay
             Large || IndexSweepRunner.Clears(Index, Series[name], bar, Income.GetValueOrDefault(Ticker(name)) ?? []);
     }
 
+    // The pullback's base in words, as its record and the tester name it.
+    public static string PullbackWords { get; } =
+        FormattableString.Invariant($"the pullback's base, its reward to risk at least {SweepIdeas.BaseRewardToRisk:0.##}, five a night, held on closes to {SweepIdeas.Cap} sessions");
+
     // The pullback's base, the ideas' run's replay of the live design at its reward to risk floor, five a night, held on
     // closes to its cap, each trade's result after its cost in multiples of its risk.
     static Replayed Pullback(Read read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress)
@@ -155,7 +159,7 @@ public static class RuleReplay
 
         return new Replayed(
             SetupFamilies.Pullback,
-            FormattableString.Invariant($"the pullback's base, its reward to risk at least {SweepIdeas.BaseRewardToRisk:0.##}, five a night, held on closes to {SweepIdeas.Cap} sessions"),
+            PullbackWords,
             rule.Key,
             read.From,
             read.Inputs.Through,

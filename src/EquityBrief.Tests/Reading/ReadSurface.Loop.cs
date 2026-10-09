@@ -8,8 +8,10 @@ namespace EquityBrief.Tests.Reading;
 // card opens on its rule today in the words its run stored, or says the run tested no procedure for it; each proposal
 // states its change or that it proposes none, its four parts each with its figure and whether it held, and its test
 // years with the setting each fold chose and each side's totals, a swing family's in risks and a book's in points; the
-// month the link names is drawn and the others linked; and an index with no run says so in one line.
+// month the link names is drawn and the others linked; and an index with no run says so in one line. From 17.5 the
+// autopsy's figures of a family stand beneath its rule today and each exit proposal's finding beneath its change.
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
+// see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
 public partial class ReadSurface
 {
     // The parts of section 15.20's regions this check reaches.
@@ -18,6 +20,7 @@ public partial class ReadSurface
         CheckReach.Key(Scope.LoopPage, Scope.LoopRuleToday),
         CheckReach.Key(Scope.LoopPage, Scope.LoopVerdict),
         CheckReach.Key(Scope.LoopPage, Scope.LoopTestYears),
+        CheckReach.Key(Scope.LoopPage, Scope.LoopFindings),
     ];
 
     // Every row the Loop page adds, named after phase 16's report until phase 17's own pair is checked.
@@ -25,10 +28,53 @@ public partial class ReadSurface
 
     const string OctoberRun = "loop-test-MID-20261009T120000Z";
 
-    static void LoopProposalRow(TemporaryStore store, string family, string proposal, string? words, string current, string unit, int units, string? adjusted, int gate, int stable, int counted, int better, string? trimmed, int counts, string detectable, int stableFolds) =>
+    static void LoopProposalRow(TemporaryStore store, string family, string proposal, string? words, string current, string unit, int units, string? adjusted, int gate, int stable, int counted, int better, string? trimmed, int counts, string detectable, int stableFolds, string? finding = null) =>
         store.Execute(
-            "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed) "
-            + $"VALUES ('{OctoberRun}', 'MID', '{family}', '{proposal}', {(words is null ? "NULL" : $"'{words}'")}, '{current}', '{unit}', {units}, 19, {adjusted ?? "NULL"}, {gate}, {stable}, {counted}, {better}, {trimmed ?? "NULL"}, {counts}, {detectable}, {stableFolds}, 0);");
+            "INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding) "
+            + $"VALUES ('{OctoberRun}', 'MID', '{family}', '{proposal.Replace("'", "''", StringComparison.Ordinal)}', {(words is null ? "NULL" : $"'{words}'")}, '{current}', '{unit}', {units}, 19, {adjusted ?? "NULL"}, {gate}, {stable}, {counted}, {better}, {trimmed ?? "NULL"}, {counts}, {detectable}, {stableFolds}, 0, {(finding is null ? "NULL" : $"'{finding.Replace("'", "''", StringComparison.Ordinal)}'")});");
+
+    static void LoopFindingRow(TemporaryStore store, string family, string figure, double? value, int trades, string words) =>
+        store.Execute(
+            "INSERT INTO loop_finding (run_id, index_code, family, figure, value, trades, words) "
+            + $"VALUES ('{OctoberRun}', 'MID', '{family}', '{figure.Replace("'", "''", StringComparison.Ordinal)}', {(value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "NULL")}, {trades}, '{words.Replace("'", "''", StringComparison.Ordinal)}');");
+
+    [Fact]
+    public async Task TheLoopPageDrawsTheAutopsysFiguresBeneathAFamilysRuleAndEachExitProposalsFindingReadBackAgainstTheStore()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute($"INSERT INTO loop_run (run_id, month, index_code, through, started_at, ended_at, folds) VALUES ('{OctoberRun}', '2026-10', 'MID', '2026-10-08', '2026-10-09T12:00:00Z', '2026-10-09T12:01:00Z', 5);");
+
+        // The drift's autopsy: two of its figures, the second read over the 1,286 trades its stop ended, and its first
+        // exit proposal with its finding; the breakout's exit proposal, whose autopsy the run stored no figure for.
+        const string Exit = "the autopsy's exit, ranked 1";
+        const string Finding = "the median trade's best close was 1.04 risks above its buy before it ended; a trail 1.5 typical moves under the highest close once a close is 2 risks up, with no target read +0.031 risks a trade on the years it learned on against the rule's own -0.012";
+
+        LoopFindingRow(store, "drift", "best", 1.04, 1372, "the median trade's best close was 1.04 risks above its buy before it ended");
+        LoopFindingRow(store, "drift", "stopped once a risk up", 236.0 / 1286, 1286, "236 of the 1286 trades the stop ended had first closed a risk up");
+        LoopProposalRow(store, "drift", Exit, "exit: a trail 1.5 typical moves under the highest close once a close is 2 risks up, with no target", "the drift rule today", "risks", 1044, "0.41", 0, 1, 4, 4, "30.1", 1, "0.09", 1, Finding);
+        LoopProposalRow(store, "breakout", Exit, null, "the breakout rule today", "risks", 500, "0.55", 0, 0, 4, 2, "-1.2", 1, "0.14", 0);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400"));
+
+        // The drift's figures beneath its rule today, each with the value and the trades its row stored, in the run's
+        // order; and its proposal's finding beneath its change.
+        Assert.Contains(
+            "<div class=\"loop-findings\" data-family=\"drift\" data-figures=\"2\"><p><b>What the rule's finished trades did.</b></p><ul>"
+            + "<li data-figure=\"best\" data-value=\"1.04\" data-trades=\"1372\">The median trade's best close was 1.04 risks above its buy before it ended.</li>"
+            + $"<li data-figure=\"stopped once a risk up\" data-value=\"{(236.0 / 1286).ToString("R", CultureInfo.InvariantCulture)}\" data-trades=\"1286\">236 of the 1286 trades the stop ended had first closed a risk up.</li></ul></div>",
+            page,
+            StringComparison.Ordinal);
+        Assert.True(page.IndexOf("data-rule=\"the drift rule today\"", StringComparison.Ordinal) < page.IndexOf("data-family=\"drift\" data-figures=\"2\"", StringComparison.Ordinal));
+        Assert.Contains($"<p class=\"loop-finding\" data-finding=\"{Finding}\"><b>Why.</b> The median trade's best close was 1.04 risks above its buy", page, StringComparison.Ordinal);
+
+        // The breakout draws no figures and its proposal, which names no change, no finding.
+        Assert.DoesNotContain("<div class=\"loop-findings\" data-family=\"breakout\"", page, StringComparison.Ordinal);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(page, "class=\"loop-finding\""));
+    }
 
     static void LoopTestRow(TemporaryStore store, string family, string proposal, int year, int complete, string? chosen, int currentUnits, int proposedUnits, double currentTotal, double proposedTotal) =>
         store.Execute(

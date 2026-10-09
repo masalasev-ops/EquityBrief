@@ -20,14 +20,17 @@ public sealed class DriftCandidate : FamilyRuleEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "acfc9db2b20b";
+    public override string Version => "d79ae4d14a45";
 
     public override string Family => DriftRule.Name;
 
     public override IReadOnlyList<string> Parameters { get; } =
         [WindowSessionsParameter, ReactionMovesParameter, VolumeMultipleParameter, TargetRiskMultipleParameter, StopFloorMovesParameter, MarketSwitches.IndexAverageParameter, MarketSwitches.VixLookbackParameter];
 
-    public override IReadOnlyList<string> OwnSources { get; } = SourcesWith("src/EquityBrief.Core/Families/DriftRule.cs");
+    // Its rule's sources and the engines' hooks a registration may state beside its parameters, which its list and
+    // its trades are read through.
+    // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+    public override IReadOnlyList<string> OwnSources { get; } = [.. SourcesWith("src/EquityBrief.Core/Families/DriftRule.cs"), .. EquityBrief.Core.Loop.RuleHooks.Sources];
 
     // The parameters a registration states for settings and switches, and the settings a registration's parameters state.
     public static IReadOnlyDictionary<string, double> ParametersOf(DriftSettings settings, MarketSwitches switches = default) =>

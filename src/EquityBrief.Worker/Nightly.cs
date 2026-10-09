@@ -432,7 +432,12 @@ public static class Nightly
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
-                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
+                // The catalogue's readings of the night's members, read only where a standing rule's hooks read them.
+                // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+                var hookReadings = rules.Standing.Any(rule => EquityBrief.Core.Loop.RuleHooks.Of(EquityBrief.Core.Candidates.CandidateEvaluator.Read(rule.Parameters)).ReadsReadings)
+                    ? await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(indexCode, night.Token)
+                    : null;
+                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
@@ -440,7 +445,12 @@ public static class Nightly
                 // their own row, and the step goes on.
                 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
                 // see: A failure in the S&P 400's or 600's part of the night is caught and named, and the S&P 500's night is built regardless
-                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(runId, night.Token, register, nightStartedAt);
+                var indices = await new IndexFamilies(clock, store.DatabaseFile).RunAsync(
+                    runId,
+                    night.Token,
+                    register,
+                    nightStartedAt,
+                    (index, token) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(index, token));
 
                 // A card for each stock every index's families listed and each its books bought, read from the rows the
                 // stages above stored. A failure in an index's cards is named on their own row, and the step goes on.

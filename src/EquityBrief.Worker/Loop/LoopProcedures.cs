@@ -51,7 +51,11 @@ public sealed record LoopProposalRead(
     int Cap,
     IReadOnlyList<(LoopFold Fold, string? Chosen)> Folds,
     int StableFolds,
-    LoopEvidence Evidence);
+    LoopEvidence Evidence)
+{
+    // What an engine found that the proposal answers, in words; none for a search.
+    public string? Finding { get; init; }
+}
 
 // Part 0's procedures as the tester runs them inside each fold: the breakout's and the drift's grids on the S&P 400 and
 // 600, the drift at the stop floor its runbook names and on the S&P 400 with its last two years read, and the sector

@@ -25,6 +25,77 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - the tester runs the trade autopsy on every index, and the recorder and the index families read the engines' hooks
+Authorised by: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+Was:
+> [Walk-forward tester] by hand on the S&amp;P 400 or 600, and each month by the monthly run | [...] | loop runs, loop proposals, loop tests, run log | runs each of Part 0's procedures inside every fold, a test year a fold from 2022, choosing as its search chooses from the trades that ended before the year began and scoring that choice on the year against the index's current rule; reads the proposals tested for one rule together by the gate's step-down and each by its three screens, and writes the run, each proposal with its verdict part by part and each fold's test year with the setting it chose, in one transaction under the drain's lock; [...]
+> [Family recorder] [...] a stock free the night after its trade ends; each rule keeps its own list and is held by no other rule's trade; [...]
+> [Index families] [...] read by none and named on the stage's row (see: A rule of the S&amp;P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone); and keeps a book of its own [...]
+Now:
+> [Walk-forward tester] by hand on the S&amp;P 500, 400 or 600, [...] | loop runs, loop proposals, loop tests, loop findings, run log | runs each of Part 0's procedures on the S&amp;P 400 and 600 and the trade autopsy's exits on every index inside every fold, [...], and reads the autopsy's figures off each rule's own finished trades [...]; [...] and writes the run, each proposal with its verdict part by part and its finding, each fold's test year with the setting it chose and each family's autopsy figures, [...]
+> [Family recorder] [...] a stock free the night after its trade ends; from 17.5 a rule whose registration states the engines' hooks keeps those meeting its conditions, ordered by its score, over the night's readings of the ledger's catalogue, and walks its trades and their benchmark under the exit of the menu it names, a rule stating none listing and walking as before [...]; each rule keeps its own list [...]
+> [Index families] [...] read by none and named on the stage's row [...]; from 17.5 a swing rule whose registration states the engines' hooks keeps its list by its conditions and its score over the night's readings of the ledger's catalogue, handed it by the night only where a standing rule reads them, and none on a night handed none, and walks its trades and their benchmark under the exit of the menu it names [...]; and keeps a book of its own [...]
+Why: 17.5's autopsy runs inside the tester on all three indices, and the hooks every engine's proposals turn land in the walks of the rules they hook.
+
+### 2026-10-09 - ARCHITECTURE.html - the Loop page reads the autopsy's figures, and the stores carry the exit and the finding
+Authorised by: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+Was:
+> [15.20 Reads] the newest tester run for the index and the month chosen, its proposals and their test years, and the months the index's runs are for. [...]
+> [15.20, the closing paragraph] [...] and a page for an index with no run says so in one line.
+> [Loop proposals] [...] the folds choosing within a step, and whether it passed | [...]
+> [Family trades] [...] beside its result and never in it | [...]
+> [Index rule trades] [...] and how many members it was read over once the cap's sessions have passed | [...]
+Now:
+> [15.20 Reads] the newest tester run for the index and the month chosen, its proposals and their test years, from 17.5 the autopsy's figures of each family, and the months the index's runs are for. [...]
+> [15.20, the closing paragraph] [...] and a page for an index with no run says so in one line. From 17.5 a family the autopsy read stands its figures beneath its rule today, [...] and a proposal naming no change carries no finding.
+> [Loop proposals] [...] and whether it passed, and from 17.5 an exit proposal's finding in words | [...]
+> [Family trades] [...] beside its result and never in it, and from 17.5 the exit of the menu it is walked under where its rule names one [...] | [...]
+> [Index rule trades] [...] once the cap's sessions have passed, and from 17.5 the exit of the menu it is walked under where its rule names one | [...]
+Why: 17.5 stores each kept trade's exit, each exit proposal's finding and the autopsy's figures, and the Loop page draws the last two.
+
+### 2026-10-09 - SCHEMA.md - the family trades and the index rule trades read the engines' hooks, and the tester runs on the S&P 500
+Authorised by: Every engine's settings hooks land together and all default off, so the families' pins move once
+Was:
+> [family_trade] [...] (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). Each night it first walks [...]
+> [index_rule_trade] [...] five at most, none whose stock it holds a trade on. A night run again [...]
+> [loop_run] | `index_code` | TEXT | `MID` or `SML` |
+Now:
+> [family_trade] [...] (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). From 17.5 a rule whose registration states the engines' hooks keeps the members meeting its conditions, ordered by its score, [...] and walks each trade and its benchmark under the exit it names, stored on the trade; [...]. Each night it first walks [...]
+> [index_rule_trade] [...] none whose stock it holds a trade on. From 17.5 a rule whose registration states the engines' hooks keeps those meeting its conditions, [...] none on a night handed none, and walks its trades under the exit it names [...]. A night run again [...]
+> [loop_run] | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+Why: 17.5's migration adds each trade's exit, and the tester's autopsy reads the S&P 500 as well as the S&P 400 and 600.
+
+### 2026-10-09 - BUILD_PLAN.md - the heavyweights' card's selector discharged, and 17.5 names the family it leaves out
+Authorised by: Every engine's settings hooks land together and all default off, so the families' pins move once
+Was:
+> | **The sector heavyweights' card's selector** | 17.2 | 17.5 | 17.5 gives the sector heavyweights' card on each index the selector the swing cards gained at 17.2, [...]; the entry names the rule chosen read back off the rendered card |
+> [17.5] [...] so the families' pins move once, with one `register --moved` remedy whose replay reproduces every trade. Writes section 13.13 [...]
+Now:
+> | **The sector heavyweights' card's selector** | 17.2 | 17.5, discharged | discharged at 17.5: [...] read back off the rendered card on the S&P 500 with a variant chosen, by default and in a link naming no rule, and on the S&P 400 with no variant registered. What it read before: 17.5 gives [...] |
+> [17.5] [...] whose replay reproduces every trade. The S&P 500's pullback is the one family left out of both: its walk is the swing filter's, which every S&P 500 evaluator pins, so a hook there would restart the three conditions' and the swing family's records, which no replay reproduces, and it takes neither a hook nor an exit proposal until the operator rules on that move. Writes section 13.13 [...]
+Why: 17.5 builds the selector the obligation names, and a hook on the swing filter's walk would move every S&P 500 evaluator's pin, which the ruling that the pins move once with a replay keeping each record does not cover.
+
+### 2026-10-09 - RUNBOOK.md - the tester on every index with the trade autopsy, and the engines' hooks
+Authorised by: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+Was:
+> From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, one index a run: [the commands for MID and SML] [...] A run reads the pulled history as the sweeps read it, takes about a minute an index on this machine, makes no request, and writes `loop_run`, `loop_proposal` and `loop_test` in one transaction under the drain's lock; [...] The pullback's searches run for a time rather than over a set of tries, so they are not run inside a fold; the pullback's first proposals come from the engines.
+> The Loop page under Universe draws the newest run for the index and month chosen: each family's rule today in the words its run stored, and each proposal with its change or that it proposes none, its four parts each with its figure, [...]
+Now:
+> From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, and from 17.5 the trade autopsy's exits on every index, one index a run: [the commands for GSPC, MID and SML] [...] The trade autopsy runs in the same run [...]. A run [...] writes `loop_run`, `loop_proposal`, `loop_test` and `loop_finding` [...]; on this machine a run on the S&P 500 took under a minute and one on the S&P 400 about twelve, [...]
+> The Loop page [...] each family's rule today in the words its run stored, the autopsy's figures beneath it, and each proposal with its change or that it proposes none, its finding where the autopsy made it, [...]
+> [a new section, The engines' hooks, with the hooks a registration may state and the remedy's command]
+Why: 17.5's autopsy reads the S&P 500 as well, its run reads the pullback's candidates on the S&P 400 and 600, and the hooks are stated where the operator reads the verbs.
+
+### 2026-10-09 - .claude/rules/checks.md - the roster states 17.5's tests
+Authorised by: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
+Was:
+> [fixture-expectations] [...] and a run written whole by the tester and read back row for row |
+> [read-surface] [...] a family the run tested no procedure for saying so and an index with no run saying so in one line |
+Now:
+> [fixture-expectations] [...] and a run written whole by the tester and read back row for row; and from 17.5 every exit of the menu replayed by hand over one constructed path, [...] and the five strongest exits chosen on the learning years alone above the rule's own, an exit one trade short of its floor and one whose trades end in the test year left unranked |
+> [read-surface] [...] an index with no run saying so in one line; and from 17.5 the Loop page draws a family's autopsy figures beneath its rule today [...] and on the S&P 400 the provisional rule alone with the line that no variant is registered before its freeze |
+Why: 17.5's autopsy, hooks and selector, each property its tests hold stated on the check that holds it.
+
 ### 2026-10-09 - ARCHITECTURE.html - the Loop page's route
 Authorised by: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 Was:

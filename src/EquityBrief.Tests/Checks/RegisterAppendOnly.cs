@@ -560,7 +560,10 @@ public class RegisterAppendOnly
         var books = evaluators.OfType<BookEvaluator>().ToArray();
 
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
-        Assert.All(families, family => Assert.Equal(4, family.OwnSources.Count));
+        // Four of its own, and from 17.5 the engines' hooks and the exit menu its list and trades are read through.
+        // see: Every engine's settings hooks land together and all default off, so the families' pins move once
+        Assert.All(families, family => Assert.Equal(4 + Core.Loop.RuleHooks.Sources.Count, family.OwnSources.Count));
+        Assert.All(families, family => Assert.Equal(Core.Loop.RuleHooks.Sources, family.OwnSources.TakeLast(Core.Loop.RuleHooks.Sources.Count)));
         Assert.Equal(["heavyweight"], books.Select(book => book.Family));
         Assert.All(evaluators.Where(evaluator => evaluator is not (FamilyRuleEvaluator or BookEvaluator)), evaluator => Assert.Empty(evaluator.OwnSources));
 

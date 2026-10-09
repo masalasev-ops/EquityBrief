@@ -800,6 +800,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
             new StoreTouch(Store.LoopTest, Touch.Read),
+            new StoreTouch(Store.LoopFinding, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -4288,13 +4289,48 @@ public sealed partial class ReadApi : IComponent
 
     // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
     // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
-    public async Task<IReadOnlyList<HeavyweightHoldingRow>> HeavyweightHoldingsAsync(DateOnly on)
+    // A registered heavyweights rule's own book as of a night, read as the page's book is, which its card draws when the
+    // card's selector chooses it.
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    const string HeavyweightRuleHoldingsUpTo = @"
+        SELECT ticker, entered_on, sector, company, entry_close,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN exit_close END,
+               CASE WHEN ended_on <= $on THEN reason END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END
+        FROM heavyweight_rule_holding
+        WHERE candidate = $candidate AND entered_on <= $on
+        ORDER BY entered_on, sector, ticker;
+    ";
+
+    const string HeavyweightRuleReadOn = @"
+        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader
+        FROM heavyweight_rule_night
+        WHERE candidate = $candidate AND session_date = (SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date <= $on)
+        ORDER BY sector, place;
+    ";
+
+    const string HeavyweightRuleClosesOn = @"
+        SELECT h.ticker, b.close, i.value
+        FROM (SELECT DISTINCT ticker FROM heavyweight_rule_holding WHERE candidate = $candidate AND entered_on <= $on AND (ended_on IS NULL OR ended_on > $on)) h
+        LEFT JOIN bar b ON b.ticker = h.ticker AND b.session_date = $on
+        LEFT JOIN indicator i ON i.ticker = h.ticker AND i.session_date = $on AND i.name = $average
+        ORDER BY h.ticker;
+    ";
+
+    public async Task<IReadOnlyList<HeavyweightHoldingRow>> HeavyweightHoldingsAsync(DateOnly on, string? candidate = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = HeavyweightHoldingsUpTo;
+        command.CommandText = candidate is null ? HeavyweightHoldingsUpTo : HeavyweightRuleHoldingsUpTo;
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (candidate is not null)
+        {
+            command.Parameters.AddWithValue("$candidate", candidate);
+        }
 
         var rows = new List<HeavyweightHoldingRow>();
 
@@ -4328,13 +4364,18 @@ public sealed partial class ReadApi : IComponent
 
     // The sector heavyweights' last rebalance on or before a night: each sector's largest companies as the book read
     // them, and nothing where the book read none by the night.
-    public async Task<IReadOnlyList<HeavyweightReadRow>> HeavyweightReadAsync(DateOnly on)
+    public async Task<IReadOnlyList<HeavyweightReadRow>> HeavyweightReadAsync(DateOnly on, string? candidate = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = HeavyweightReadOn;
+        command.CommandText = candidate is null ? HeavyweightReadOn : HeavyweightRuleReadOn;
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        if (candidate is not null)
+        {
+            command.Parameters.AddWithValue("$candidate", candidate);
+        }
 
         var rows = new List<HeavyweightReadRow>();
 
@@ -4369,14 +4410,19 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // Where each holding open on a night closed against its 200-session average, which its row on the card states.
-    public async Task<IReadOnlyList<HeavyweightCloseRow>> HeavyweightClosesAsync(DateOnly on)
+    public async Task<IReadOnlyList<HeavyweightCloseRow>> HeavyweightClosesAsync(DateOnly on, string? candidate = null)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = HeavyweightClosesOn;
+        command.CommandText = candidate is null ? HeavyweightClosesOn : HeavyweightRuleClosesOn;
         command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$average", EquityBrief.Core.Indicators.IndicatorSeries.Sma200);
+
+        if (candidate is not null)
+        {
+            command.Parameters.AddWithValue("$candidate", candidate);
+        }
 
         var rows = new List<HeavyweightCloseRow>();
 
