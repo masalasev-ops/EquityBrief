@@ -41791,7 +41791,13 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             test alone. A fetch made before the counts read as not read, broken by drawing it as none filed again:
             predicted red at the member readings test alone. Result: each red and green as predicted, made on this
             branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e7cafdba, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2122 of 2122 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2122 of 2122 tests ran.
 Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, merging after the night of 2026-10-09 is read,
             and the 4.6 and 6.1 corrections as PRs 416 and 417; in progress, this correction, whose first refetch runs
             after its merge on 2026-10-10 with the provider's counter read first; next, the rest of Part A of the phase
