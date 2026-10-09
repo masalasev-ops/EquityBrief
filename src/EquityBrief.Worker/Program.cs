@@ -47,6 +47,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-index" => await SweepIndexRun(args),
     "sweep-answer" => await SweepAnswerRun(args),
     "rule-record" => await RuleRecordRun(args),
+    "ledger-build" => await LedgerBuildRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -60,7 +61,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 27 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 28 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -130,6 +131,9 @@ static int NoVerb()
         "and 'rule-record --nights' replays instead each standing rule's listed count on every session of the pulled " +
         "history, the live rules and the breakout's and the drift's variants at their grid settings, for the cards' " +
         "stretch lines, " +
+        "'ledger-build --index <GSPC, MID or SML> --from <yyyy-MM-dd> --through <yyyy-MM-dd>' writes the setup ledger's " +
+        "history for one index over the span, every member-session a family's loose gates pass over the pulled bars " +
+        "merged with the store's, each replayed to its end, a chunk of sessions at a time, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -533,6 +537,31 @@ static async Task<int> RuleRecordRun(string[] args)
     return args.Contains("--nights", StringComparer.Ordinal)
         ? await recorder.NightsAsync(indices)
         : await recorder.RunAsync(indices);
+}
+
+// The setup ledger's history, by hand: one index over a span of sessions, each setup the loose gates pass over the
+// pulled bars merged with the store's, replayed to its end where the history reaches it, written a chunk at a time.
+// The work is in `SetupLedger`.
+// see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+static async Task<int> LedgerBuildRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var index = VerbArguments.Value(args, "--index");
+    var from = VerbArguments.Value(args, "--from");
+    var through = VerbArguments.Value(args, "--through");
+
+    if (index is null || from is null || through is null
+        || !DateOnly.TryParseExact(from, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var fromDay)
+        || !DateOnly.TryParseExact(through, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var throughDay))
+    {
+        Console.Error.WriteLine("ledger-build: give '--index <GSPC, MID or SML> --from <yyyy-MM-dd> --through <yyyy-MM-dd>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+        .BuildAsync(index, fromDay, throughDay, Console.Out);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule

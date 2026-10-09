@@ -697,7 +697,97 @@ public static class SchemaMigrations
         new Migration(74, "add pulled_holding's shares and value", AddPulledHoldingValue),
         new Migration(75, "create rule_night, rule_pick and forming_row", CreateRuleCards),
         new Migration(76, "create kept_bar", CreateKeptBar),
+        new Migration(77, "create setup and setup_night", CreateLedger),
     ];
+
+    // The setup ledger: one row a member-session a family's loose gates pass on an index, with the live rule's own
+    // pass beside it, its plan as prices, its readings as they stood, and what its path came to under the plan's exit
+    // against the same plan on every member that night; and one row a family, index and session with the members
+    // the gates were read over. A reading the inputs do not reach is null and never nought.
+    // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+    // see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+    const string CreateLedger = @"
+        CREATE TABLE setup (
+            index_code               TEXT    NOT NULL,
+            family                   TEXT    NOT NULL,
+            ticker                   TEXT    NOT NULL,
+            session_date             TEXT    NOT NULL,
+            rule                     TEXT    NOT NULL,
+            live_pass                INTEGER NOT NULL,
+            picked                   INTEGER,
+            entry                    TEXT    NOT NULL,
+            stop                     TEXT    NOT NULL,
+            target                   TEXT,
+            trail                    TEXT,
+            cap                      INTEGER NOT NULL,
+            risk_moves               REAL,
+            close_over_twenty        REAL,
+            close_over_fifty        REAL,
+            close_over_long       REAL,
+            fifty_over_long       REAL,
+            move_share               REAL,
+            rsi                      REAL,
+            rsi_up                   REAL,
+            volume_ratio             REAL,
+            return_quarter               REAL,
+            return_half_year              REAL,
+            return_twelve_less_one   REAL,
+            strength                 REAL,
+            strength_twelve_less_one REAL,
+            high_ratio               REAL,
+            since_high               REAL,
+            depth                    REAL,
+            dry_up                   REAL,
+            gap_down                 REAL,
+            rsi_low                  REAL,
+            tightness                REAL,
+            liquidity                REAL,
+            earnings_sessions        REAL,
+            surprise_sessions        REAL,
+            surprise_percent         REAL,
+            reward_to_risk           REAL,
+            freshness                REAL,
+            band_strength            REAL,
+            volume_multiple          REAL,
+            range_ratio              REAL,
+            reaction_moves           REAL,
+            breadth                  REAL,
+            highs_less_lows          REAL,
+            index_over_long       REAL,
+            vix                      REAL,
+            vix_change               REAL,
+            mid_over_large           REAL,
+            small_over_large         REAL,
+            credit_over_fifty       REAL,
+            profit                   REAL,
+            coverage                 REAL,
+            result                   REAL,
+            benchmark                REAL,
+            cost                     REAL,
+            edge                     REAL,
+            edge_after_cost          REAL,
+            sessions                 INTEGER,
+            end                      TEXT    NOT NULL,
+            ended_on                 TEXT,
+            settled                  INTEGER NOT NULL,
+            source                   TEXT    NOT NULL,
+            pin                      TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family, ticker, session_date)
+        ) STRICT;
+
+        CREATE INDEX setup_open ON setup (index_code, settled, session_date);
+
+        CREATE TABLE setup_night (
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            session_date    TEXT    NOT NULL,
+            members         INTEGER NOT NULL,
+            setups          INTEGER NOT NULL,
+            live_passes     INTEGER NOT NULL,
+            source          TEXT    NOT NULL,
+            PRIMARY KEY (index_code, family, session_date)
+        ) STRICT;
+    ";
 
     // The bars the fetcher drops as they fall out of the year it keeps, copied here in the transaction that drops them
     // and never read by a night: a setup's path, replayed from them under any exit from the anchor the setup stores.

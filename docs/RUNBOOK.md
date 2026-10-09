@@ -714,6 +714,17 @@ dotnet run --project src/EquityBrief.Worker -- rule-record --nights --index GSPC
 
 It replays each index's live or provisional pullback, breakout and drift rule, and on the S&P 500 the breakout's and the drift's registered variants whose settings sit on their family's grid and read no market switch, with the sweep's own walk over the pulled history, about two hours for the three indices, writing one row a rule and session over what an earlier replay wrote and a run log row; the swing filter's variants and a variant off the grid or reading a switch start their history at their registration. It reads the store read-only but for those rows, asks for nothing and calls no model, and refuses while the night holds the store or where a run started now would reach the night's window. 17.2's remedy runs it once after the merge, and a freeze's remedy runs it again for the index frozen. The night then carries each rule's row on, so the mark is drawn once thirty stretches have completed over 504 sessions and the line says how far the floors are until then.
 
+### The setup ledger's history
+
+From 17.3 the night appends every member-session a family's loose gates pass on each index to the setup ledger, with the live rule's own pass and the night's pick beside it, and closes the windows of the setups stored before as their paths end. The history before the store's own nights is built by hand, one index over a span of sessions, over the pulled bars merged with the store's on membership as it stood, each setup replayed to its end where the history reaches it and written a quarter of sessions at a time (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood):
+
+```
+dotnet run --project src/EquityBrief.Worker -- ledger-build --index GSPC --from 2019-01-02 --through 2026-10-05
+dotnet run --project src/EquityBrief.Worker -- ledger-build --index MID --from 2019-01-02 --through 2026-10-05
+```
+
+It reads the store directly and writes the ledger's two tables alone, replacing what an earlier build wrote for the span, and records one run log row under `ledger-build` with the setups written. A row the build writes carries no pick and no cost, which the night alone stores; the Ledger page and the build's run from a clean copy of main's commit, waiting for the night and the copy, follow in 17.3's later pull requests.
+
 ### The account and the trades taken from a card
 
 A pick's card sizes its plan from three settings kept on the Account page, reached from the masthead: the account's size, the risk a trade in per cent and the position cap as a share of the account, a fifth where none is entered (see: A pick's card sizes its plan from the operator's own settings, and the report's plan still sizes none). The page writes them whole to `account.json` under the data root, beside the store and as untracked as it, by writing a file beside it and moving it into place, so a save that fails leaves the settings as they were (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold). Nothing else holds them: no store row, log line, run log row or exported report. Deleting the file unsets them, and every card then draws its plan in prices and risks with a line linking the page; a file that cannot be read is read the same way.

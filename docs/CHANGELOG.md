@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - section 14's note counts the arithmetic to the ledger's step
+Authorised by: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+Was:
+> The arithmetic, being steps 1 to 21, calls no model and makes no per-name network request. Step 22 is carved out of the second of those by name and calls no model: [...] Step 23 is carved out of the first by name and calls the local model only
+Now:
+> The arithmetic, being steps 1 to 22, calls no model and makes no per-name network request. Step 23 is carved out of the second of those by name and calls no model: [...] Step 24 is carved out of the first by name and calls the local model only
+Why: 17.3 adds the setup ledger's step after the swing filter's, the sixteenth, so every step after it moves down one and the note that numbers the arithmetic, the quarters fetch and the overnight queue moves with them.
+
 ### 2026-09-23 - .claude/rules/checks.md - the research-marked roster row carries the reconciliation of its own subsection list
 Corrects: `ResearchMarked.Subsections` was a hand-kept list of five headings and nothing reconciled it against the document, so a subsection taken out of it with the document untouched left every test green and a rule could stop being read with nothing failing. The 10.0 pass predicted that mutation would survive and it did. Found by the phase 10 sign-off review of 2026-09-23.
 Was:
