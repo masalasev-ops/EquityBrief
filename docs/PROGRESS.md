@@ -41373,7 +41373,13 @@ Mutated:    the rule, stated before the run: the one property the correction add
             page trades' benchmark unreachable. Predicted red at the new test. Result: red at its first assertion, the three
             trades held three sessions read with no benchmark and no members. Made on this branch and reverted before
             anything was committed, and the test green.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    none.
 
 ### 17.3 - the history build and the point-in-time check run on each index from main's build after the merges of 17.3 to 17.8   2026-10-09
@@ -41397,7 +41403,13 @@ Checked:    `ledger-check` on each index, 200 history setups an index sampled 25
             drift's freshness, volume multiple and reaction, which the rebuild does not read and states as none. The
             other 16 differ in the sixth significant figure, the depth, the gap down, the tightness and the RSI's two on
             five S&P 500 setups of 2019 to 2021 and one S&P 600 setup of 2025-01-31.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    a 17.3 correction of its own: the check rebuilds the six family readings or leaves them out by name, and the
             sixteen differences are traced to their source before the check is held to them or to a tolerance.
 
@@ -41473,7 +41485,13 @@ Mutated:    the rule, stated before the run: each property the done condition na
             reverted before anything was committed, and the tests green. Not mutated: the presses' refusals, a decline
             put again only over more blocks, a restore writing the setting before the change, the tester walking a rule
             at its standing hooks and the card's record drawn as none, each held by its own test above.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    the merge waits until the night of 2026-10-09, the first of 17.3 to 17.8, has been read; after it, from main,
             migration 83 by the night's own first step and the apply step's and the alarm's rows read on its first
             nights, the alarm's first two months read as they come (owes: The alarm's first two months). The operator's
@@ -41497,7 +41515,13 @@ Results:    against the bar of 0.0042, none passed. The S&P 500's run `loop-test
 Read back:  each index's Loop page from the read surface's Release build of main draws its newest run, its four
             families' cards and its 28, 45 and 45 proposals, the learned score's three a family among them. The card's
             score part is written by the night's own step, so the cards are read after the night of 2026-10-09.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    the cards' score part read back after the night of 2026-10-09.
 
 ### 17.8 - the fundamentals-first search run on each index from main's build after the merges of 17.3 to 17.8, none of its 27 settings passing   2026-10-09
@@ -41513,7 +41537,13 @@ Results:    0 of 27 passed the family floors on every index, against about 3.6 t
             S&P 600 over 1,976: the most 233, at -0.062; the provisional 223 at -0.045 in 4 of 8 with none of the last 3.
             No setting on any index reaches the floor of 300 trades over this history, and on the S&P 500 none could,
             since its base listed 274.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    the report to the operator with no freeze: the family keeps listing on its provisional setting on every
             index, and what follows a search no setting of which can reach the trade floor is the operator's to rule.
 
@@ -41557,5 +41587,11 @@ Mutated:    the rule, stated before each run: each property the correction adds,
             session, and not 2026-02-13, where the build's rows end; the third red there, the S&P 400's check failing on
             the run log's key as the S&P 600's did over the live store. Each made on this branch and reverted before
             anything was committed, and the tests green.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    after the merge, from main: `ledger-check` on each index, its row read.
