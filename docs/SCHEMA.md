@@ -88,6 +88,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
 | `ledger_summary` | SetupLedger | none | SetupLedger |
+| `loop_run` | WalkForwardTester | none | none |
+| `loop_proposal` | WalkForwardTester | none | none |
+| `loop_test` | WalkForwardTester | none | none |
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
@@ -1368,6 +1371,73 @@ Grain: one row per index, family and year of the setups' sessions.
 Primary key: `index_code`, `family`, `year`.
 
 **The Ledger page's counts, rewritten whole for an index by the setup ledger after each night and each build**, so the page draws them and computes none (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). The cut points are statistics and are stored as text only because nine of them sit in one cell; each reads back as the double it was.
+
+### loop_run
+Grain: one row per tester run on an index.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, naming the verb, the index and its start |
+| `month` | TEXT | the month the run is for, as `yyyy-MM` |
+| `index_code` | TEXT | `MID` or `SML` |
+| `through` | TEXT | the newest session the run read, as `yyyy-MM-dd` |
+| `started_at` | TEXT | UTC instant |
+| `ended_at` | TEXT | UTC instant |
+| `folds` | INTEGER | how many test years the run read |
+
+Primary key: `run_id`.
+
+**Written once by the walk-forward tester in the transaction that writes its proposals and test years**, and never updated, so a later run for the same month stands beside it and the Loop page reads the newest (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year).
+
+### loop_proposal
+Grain: one row per run, family and proposal tested.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | `pullback`, `breakout`, `drift` or `heavyweight` |
+| `proposal` | TEXT | the procedure, in words |
+| `words` | TEXT | the change the procedure makes run on all finished data, in words; null where it chose no setting |
+| `current_words` | TEXT | the rule today, in words |
+| `unit` | TEXT | `risks` for a swing family, `points` for a book |
+| `units` | INTEGER | the proposal's trades, or the book's months either side held, over the test years |
+| `blocks` | INTEGER | the blocks of 63 sessions the gate read |
+| `adjusted` | REAL | the step-down's adjusted p-value; null where the blocks are under the floor |
+| `gate` | INTEGER | 1 where the adjusted p-value is at or under the bar |
+| `stable` | INTEGER | 1 where the stability screen held |
+| `counted` | INTEGER | the complete test years the screen counted |
+| `better` | INTEGER | of those, the years the proposal's total stood above the rule's |
+| `trimmed` | REAL | the proposal's total less the rule's with the five largest results left out of each side; null where neither side holds one |
+| `counts` | INTEGER | 1 where the units reach the count the family is judged on |
+| `detectable` | REAL | the difference a unit the gate detects four times in five at the bar; null under two blocks |
+| `stable_folds` | INTEGER | the folds choosing within a grid step of the proposal |
+| `passed` | INTEGER | 1 where all four parts held and the proposal names a change |
+
+Primary key: `run_id`, `index_code`, `family`, `proposal`.
+
+**Written once by the walk-forward tester with its run.** Every figure is a statistic and stored as the double it is (see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs).
+
+### loop_test
+Grain: one row per run, proposal and test year.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_run` carries it |
+| `family` | TEXT | as `loop_proposal` carries it |
+| `proposal` | TEXT | as `loop_proposal` carries it |
+| `year` | INTEGER | the test year |
+| `complete` | INTEGER | 1 where a later year holds the newest session |
+| `chosen` | TEXT | the setting the fold chose on what ended before the year began, in words; null where none met the floors |
+| `current_units` | INTEGER | the rule's trades, or the book's months, entered in the year with a result |
+| `proposed_units` | INTEGER | the same for the setting chosen, or the rule's where none was |
+| `current_total` | REAL | the rule's total edge after costs over them |
+| `proposed_total` | REAL | the setting chosen's |
+
+Primary key: `run_id`, `index_code`, `family`, `proposal`, `year`.
+
+**Written once by the walk-forward tester with its run**, so the Loop page's test years read a fold's choice as it was made (see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year).
 
 ### filed_fact
 Grain: one row per filer, concept and period, as first filed.

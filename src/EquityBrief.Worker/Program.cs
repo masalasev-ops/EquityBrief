@@ -50,6 +50,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-build" => await LedgerBuildRun(args),
     "ledger-check" => await LedgerCheckRun(args),
     "filings" => await FilingsRun(args),
+    "loop-test" => await LoopTestRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
@@ -63,7 +64,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 30 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 31 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -144,6 +145,10 @@ static int NoVerb()
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
         "not yet stored as first filed, " +
+        "'loop-test --index <MID or SML>' runs the walk-forward tester over Part 0's procedures, each run inside every " +
+        "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
+        "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
+        "'--print' printing each verdict and writing nothing, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -590,6 +595,25 @@ static async Task<int> LedgerCheckRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).CheckAsync(index, Console.Out);
+}
+
+// The walk-forward tester by hand on the S&P 400 or 600, Part 0's procedures run inside every fold, reading the pulled
+// history and writing its own three tables.
+// see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
+static async Task<int> LoopTestRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-test: give '--index <MID or SML>', with '--month <yyyy-MM>' to name the month the run is for.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RunAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
 }
 
 // The filings refresh by hand: the night's step over the three indices' members, or with '--whole' every filer the

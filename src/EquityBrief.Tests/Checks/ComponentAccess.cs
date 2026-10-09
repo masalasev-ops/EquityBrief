@@ -157,6 +157,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Filings refresher"),
             CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
 
+            // 17.4, the walk-forward tester.
+            CheckReach.Key(Scope.CatalogueTable, "Walk-forward tester"),
+            CheckReach.Key(Scope.MatrixTable, "Walk-forward tester"),
+
             // 16.3, the taken trades' follower.
             CheckReach.Key(Scope.CatalogueTable, "Taken follower"),
             CheckReach.Key(Scope.MatrixTable, "Taken follower"),
@@ -693,9 +697,10 @@ public partial class ComponentAccess
     // Section 7 says a class of this exact name with spaces removed, which
     // literally yields Membershiploader. The comparison is on the space-stripped
     // form without case, and this says so rather than leaving a reader to find
-    // out why the catalogue and the class disagree about a capital.
+    // out why the catalogue and the class disagree about a capital. A hyphen is
+    // removed as a space is, since "Walk-forward tester" names WalkForwardTester.
     internal static string Key(string component) =>
-        component.Replace(" ", string.Empty, StringComparison.Ordinal);
+        component.Replace(" ", string.Empty, StringComparison.Ordinal).Replace("-", string.Empty, StringComparison.Ordinal);
 
     // Compared without case. Section 7 writes "Membership loader" and the class
     // is MembershipLoader, so the space-stripped forms differ by one capital and

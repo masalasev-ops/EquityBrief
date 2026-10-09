@@ -81,6 +81,8 @@ public sealed class SinglePageApp : IComponent
     // The setup ledger's page, reached from the Universe page and drawn under it.
     public const string LedgerRoute = "#/ledger";
 
+    public const string LoopRoute = "#/loop";
+
     // Tonight's list, section 15.3's first route. `#/` resolves to the newest
     // night and `#/night/<date>` to an earlier one, which is the pair 15.7
     // names and which 15.3's own list lacked until 5.0.
@@ -253,6 +255,10 @@ public sealed class SinglePageApp : IComponent
             view = 'universe';
             const ledger = await fetch('/screens/ledger' + (query ? '?' + query : ''));
             screen.innerHTML = await ledger.text();
+          } else if (path === '{{{LoopRoute}}}') {
+            view = 'universe';
+            const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
+            screen.innerHTML = await loop.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
             view = 'name';
             // A name alone is tonight's page for it, and a name and a date is that evening's.
@@ -1319,6 +1325,7 @@ public sealed class SinglePageApp : IComponent
 
         // The setup ledger of the same index, under Universe.
         region.Append(Invariant($"<p class=\"ledger-link\"><a href=\"{LedgerRoute}?universe={reading.Word}\" data-ledger=\"{reading.Word}\">The setup ledger: every near-setup on the {Escaped(reading.Name)} and how it turned out</a></p>"));
+        region.Append(Invariant($"<p class=\"loop-link\"><a href=\"{LoopRoute}?universe={reading.Word}\" data-loop=\"{reading.Word}\">The loop: each family's proposals on the {Escaped(reading.Name)}, tested on years they never saw</a></p>"));
 
         // The S&P 400's and 600's members are read by the stages every member's figures need, and not by the listings,
         // the ladder or the swing readings, which read the S&P 500's alone, so their rows say so where those draw.
@@ -2545,6 +2552,93 @@ public sealed class SinglePageApp : IComponent
             title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
             stamp: Cards.Night(night),
             region: "ledger-path"));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The families the Loop page draws, in the page's order.
+    public static IReadOnlyList<string> LoopFamilies { get; } = ["pullback", "breakout", "drift", "heavyweight"];
+
+    // The Loop page under Universe: for the index chosen and the month its newest tester run is for, each family's rule
+    // today in the words the run stored, and each proposal tested against it with its verdict part by part and its test
+    // years; the months held for the index are offered above. The page draws the tester's rows and computes nothing.
+    // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
+    public string LoopRegion(
+        MarkRenderer marks,
+        DateOnly? night,
+        UniverseChoice reading,
+        string selector,
+        IReadOnlyList<string> months,
+        EquityBrief.Core.Loop.LoopRunRow? run,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopTestRow> tests)
+    {
+        static string Named(string word) => word switch
+        {
+            "pullback" => "Pullback",
+            "breakout" => "Breakout",
+            "drift" => "Earnings drift",
+            "heavyweight" => "Sector heavyweights",
+            _ => word,
+        };
+
+        var region = new StringBuilder();
+        var heading = "Loop: " + reading.Name;
+
+        region.Append(Invariant($"<section class=\"loop\" data-universe=\"{reading.Word}\" data-month=\"{Escaped(run?.Month ?? "none")}\" data-run=\"{Escaped(run?.RunId ?? "none")}\" data-proposals=\"{proposals.Count}\">"));
+        region.Append(Cards.Masthead(
+            heading,
+            $"<span class=\"m-screen\">{Escaped(heading)}</span>",
+            run is { } held ? Invariant($"Proposals tested on years they never saw, the run for {held.Month} through the close of {held.Through:yyyy-MM-dd}") : "No tester run is stored for this index"));
+        region.Append(selector);
+
+        if (months.Count > 1)
+        {
+            region.Append("<p class=\"loop-months\">" + string.Join(" · ", months.Select(month => month == run?.Month
+                ? $"<b data-month-chosen=\"{Escaped(month)}\">{Escaped(month)}</b>"
+                : $"<a href=\"{LoopRoute}?universe={reading.Word}&amp;month={Uri.EscapeDataString(month)}\" data-month-link=\"{Escaped(month)}\">{Escaped(month)}</a>")) + "</p>");
+        }
+
+        if (run is null)
+        {
+            region.Append(Cards.Computed(
+                "Loop",
+                "<p class=\"degraded\" data-loop=\"none\">No tester run is stored for this index. The tester runs by hand with 'loop-test' on the S&amp;P 400 and 600, and each month in the monthly run.</p>",
+                title: "The loop",
+                stamp: Cards.Night(night),
+                region: "loop-none"));
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
+        foreach (var family in LoopFamilies)
+        {
+            var own = proposals.Where(proposal => proposal.Family == family).ToArray();
+            var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
+
+            foreach (var proposal in own)
+            {
+                body.Append(marks.LoopProposal(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)]));
+            }
+
+            if (own.Length > 0)
+            {
+                body.Append(Cards.Key(
+                    "Each proposal.",
+                    "A procedure is run in each test year on the trades that ended before the year began and scored on that year against the rule today; the four parts must all hold for a proposal to pass, and the setting put forward is the procedure run on all finished data.",
+                    "The rule today was chosen on these same test years, so a proposal reads understated against it."));
+            }
+
+            region.Append(Cards.Computed(
+                "Loop",
+                body.ToString(),
+                title: Escaped(Named(family)),
+                stamp: Cards.Night(night),
+                region: "loop-" + family));
+        }
+
         region.Append("</section>");
 
         return region.ToString();

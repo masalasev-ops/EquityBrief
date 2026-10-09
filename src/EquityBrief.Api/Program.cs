@@ -1588,6 +1588,21 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
     return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path), "text/html; charset=utf-8");
 });
 
+app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+{
+    var night = await read.NewestNightAsync();
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.LoopRoute) : string.Empty;
+    var months = await read.LoopMonthsAsync(reading.Code);
+    var asked = request.Query["month"].FirstOrDefault();
+    var month = months.Contains(asked ?? string.Empty, StringComparer.Ordinal) ? asked : months.FirstOrDefault();
+    var run = month is null ? null : await read.LoopRunAsync(reading.Code, month);
+    var proposals = run is null ? [] : await read.LoopProposalsAsync(run);
+    var tests = run is null ? [] : await read.LoopTestsAsync(run);
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests), "text/html; charset=utf-8");
+});
+
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>
 {
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());

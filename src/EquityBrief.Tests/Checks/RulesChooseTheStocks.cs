@@ -53,7 +53,7 @@ public partial class RulesChooseTheStocks
     // The folders the deciding components' code runs through, in the core and in the worker.
     internal static readonly string[] Folders =
     [
-        .. new[] { "Candidates", "Families", "Filter", "Indicators", "Ladders", "Ledger", "Levels", "Quarters", "Returns", "Rules", "Shortlist", "Sweep", "Swings", "Volume" }
+        .. new[] { "Candidates", "Families", "Filter", "Indicators", "Ladders", "Ledger", "Levels", "Loop", "Quarters", "Returns", "Rules", "Shortlist", "Sweep", "Swings", "Volume" }
             .SelectMany(folder => new[] { $"src/EquityBrief.Core/{folder}", $"src/EquityBrief.Worker/{folder}" }),
     ];
 

@@ -54,6 +54,12 @@ internal static class Scope
     internal const string LedgerFamilyYears = "A family's setups";
     internal const string LedgerSettled = "Settled setups";
     internal const string LedgerPathDrawn = "A setup's path";
+
+    // Section 15.20's heading and its three regions, held as constants for the same reason.
+    internal const string LoopPage = "15.20 The Loop page";
+    internal const string LoopRuleToday = "A family's rule today";
+    internal const string LoopVerdict = "A proposal's verdict";
+    internal const string LoopTestYears = "A proposal's test years";
     const string ByNight = "nightly-run";
     const string ByListings = "listings-coverage";
     const string ByAdmissibility = "claim-admissibility";
@@ -3224,6 +3230,68 @@ internal static class Scope
             Verdict.Pass,
             "a chosen setup's closes from fourteen days before its session to the session its path ended, its buy, stop and target drawn across and its session marked, read back off the rendered mark, and a setup whose closes the store holds none of drawing the line saying its bars sit in the pulled history",
             ByReadSurface),
+        // 17.4, the walk-forward tester: its catalogue and matrix rows, its three stores, section 17's five rows, section
+        // 18's two and the Loop page's three regions.
+        [CheckReach.Key(CatalogueTable, "Walk-forward tester")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the history the sweeps read and the loop runs, proposals and tests it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Walk-forward tester")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Loop runs")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Loop proposals")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Loop tests")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "The tester's folds")] = new Scoped(
+            Verdict.Pass,
+            "the windows worked by hand over a constructed calendar and the purge over a constructed ledger, a setup ended the day before a fold's first session learned on and one ended on it or still open not; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The tester's bar")] = new Scoped(
+            Verdict.Pass,
+            "the step-down worked by hand over constructed blocks, a single proposal's adjusted p-value its own sign-flip p-value, and the gate on both sides of the bar; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The tester's fixed level")] = new Scoped(
+            Verdict.Pass,
+            "the bar is one constant every run reads; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The tester's stability screen")] = new Scoped(
+            Verdict.Pass,
+            "the screen worked by hand at three in five and at two in four, the latest complete year better and not, a partial year never counted and a year one trade short of its side; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "The tester's floors")] = new Scoped(
+            Verdict.Pass,
+            "the count at 300 and 299 trades and at 36 and 35 months, the trimmed total worked by hand on both sides of nothing, and the floors in proportion worked by hand at three, four and eight years; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A fold short of trades")] = new Scoped(
+            Verdict.Pass,
+            "a fold whose learning trades meet no setting's floors chooses none and its year reads the rule today against itself, and a proposal over fewer blocks than the floor is not read by the gate and does not pass",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A read past a fold's end")] = new Scoped(
+            Verdict.Pass,
+            "the fold view refuses a read of its first session and of a later one, naming the session and the fold, and hands over the session before",
+            ByExpectations),
+        [CheckReach.Key(LoopPage, LoopRuleToday)] = new Scoped(
+            Verdict.Pass,
+            "read back off the rendered page over a constructed store: each family a card opening on the rule in the words its run stored, a family the run tested no procedure for saying so, and an index with no run saying so in one line",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, LoopVerdict)] = new Scoped(
+            Verdict.Pass,
+            "each proposal's change or that it proposes none, and its gate, stability, trimmed total and count each with its figure and whether it held, read back off the rendered page against the stored row, a gate under the block floor saying so",
+            ByReadSurface),
+        [CheckReach.Key(LoopPage, LoopTestYears)] = new Scoped(
+            Verdict.Pass,
+            "each test year with the setting its fold chose or that none met the floors, each side's total over its units in risks or in points, and whether the year is counted and better, read back off the rendered page against the stored rows",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
@@ -4574,6 +4642,10 @@ internal static class Scope
         ["Filed facts"] = "17.3",
         ["Facts pulls"] = "17.3",
         ["Filing days"] = "17.3",
+        // 17.4's three, the tester's runs, its proposals and their test years, which the plan names as three stores.
+        ["Loop runs"] = "17.4",
+        ["Loop proposals"] = "17.4",
+        ["Loop tests"] = "17.4",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4607,6 +4679,10 @@ internal static class Scope
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerPathDrawn)] = "17.3",
+        // 17.4's Loop page under Universe, its three regions.
+        [CheckReach.Key(LoopPage, LoopRuleToday)] = "17.4",
+        [CheckReach.Key(LoopPage, LoopVerdict)] = "17.4",
+        [CheckReach.Key(LoopPage, LoopTestYears)] = "17.4",
         // The parts of the rows the fifth phase 5 sign-off review decomposed.
         [CheckReach.Key("15.4 The two surfaces", "The app, the single page")] = "1.3",
         [CheckReach.Key("15.4 The two surfaces", "The app, routing")] = "1.3",
@@ -5757,6 +5833,7 @@ internal static class Scope
         "15.16 Watch list",
         "15.17 Past picks",
         "15.19 The setup ledger",
+        "15.20 The Loop page",
         "15.11 How a reason's record is displayed",
     ];
 
@@ -6115,6 +6192,12 @@ internal static class Scope
         ["Setup ledger's history budget"] = "17.3",
         // The filings refresh's limit, its days, its first read, its pace and its first period, 17.3.
         ["Filings refresh"] = "17.3",
+        // The tester's folds, bar, fixed level, stability screen and floors, 17.4, which the plan names by their parts.
+        ["The tester's folds"] = "17.4",
+        ["The tester's bar"] = "17.4",
+        ["The tester's fixed level"] = "17.4",
+        ["The tester's stability screen"] = "17.4",
+        ["The tester's floors"] = "17.4",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
