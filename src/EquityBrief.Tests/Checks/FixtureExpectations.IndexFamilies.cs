@@ -171,6 +171,47 @@ public partial class FixtureExpectations
         }
     }
 
+    // From the 15.1 correction of 2026-10-09: a page trade whose cap's sessions have passed is given the benchmark of the
+    // same plan entered at the close on every member of the index that night, as a registered rule's trade is, and one
+    // whose cap has not passed is given none. Every member closes at 100 from 2026-08-23 to 2026-10-01, so a plan bought
+    // on 2026-09-25 and held three sessions comes to nothing on each of the seven whatever its stop's distance.
+    [Fact]
+    public async Task AnIndexListsTradeIsGivenItsBenchmarkOnceItsCapHasPassedAsARegisteredRulesTradeIs()
+    {
+        using var store = IndexStore();
+
+        // A fixed plan, a trailing one and a fixed one stored before a trade carried its stop's distance, each bought on
+        // 2026-09-25 and given three sessions; a fixed plan bought on 2026-10-01 and given one, beside a registered rule's
+        // trade of the same plan; and a trailing plan bought then and given three.
+        store.Execute(
+            "INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves) VALUES " +
+            "('MID', 'drift', 'IA', '2026-09-25', 1, '100', '99', '102', NULL, 3, 1.0), " +
+            "('MID', 'breakout', 'IB', '2026-09-25', 1, '100', '97', NULL, '3', 3, 1.0), " +
+            "('MID', 'pullback', 'IC', '2026-09-25', 1, '100', '99', '102', NULL, 3, NULL), " +
+            "('MID', 'drift', 'ID', '2026-10-01', 1, '100', '99', '102', NULL, 1, 1.0), " +
+            "('MID', 'breakout', 'NH', '2026-10-01', 1, '100', '97', NULL, '3', 3, 1.0);");
+        store.Execute(
+            "INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk) " +
+            "VALUES ('the drift rule on the S&P 400', 'MID', 'drift', 'ID', '2026-10-01', 1, '100', '99', '102', NULL, 1, 1.0, 2.0);");
+
+        await new IndexFamilies(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("night-benchmarked");
+
+        // Held three sessions over closes of 100, each of the three comes to nothing on all seven members, the third's stop
+        // read in the typical move of its own night off its bars.
+        Assert.Equal(
+            ["IA|0|7", "IB|0|7", "IC|0|7"],
+            FamilyRows(store, "SELECT ticker, benchmark, members FROM index_family_trade WHERE index_code = 'MID' AND session_date = '2026-09-25' ORDER BY ticker;"));
+
+        // Held one session into the night's closes of 102 and 100.2, the page's trade is given the benchmark the registered
+        // rule's trade of the same plan is, over the same seven; and the trade whose three sessions have not passed, none.
+        var registered = FamilyRows(store, "SELECT benchmark, members FROM index_rule_trade WHERE ticker = 'ID';").Single();
+
+        Assert.EndsWith("|7", registered, StringComparison.Ordinal);
+        Assert.NotEqual("0|7", registered);
+        Assert.Equal([registered], FamilyRows(store, "SELECT benchmark, members FROM index_family_trade WHERE index_code = 'MID' AND ticker = 'ID' AND session_date = '2026-10-01';"));
+        Assert.Equal(["null|null"], FamilyRows(store, "SELECT benchmark, members FROM index_family_trade WHERE index_code = 'MID' AND ticker = 'NH';"));
+    }
+
     // Three S&P 400 members of one sector over 261 calendar days to 2026-10-01 and one more to 2026-10-02, and IJH beside
     // them: the fund rising 1 per cent and falling 0.8 on alternate days, L1 moving 1.5 times the fund and 0.1 per cent a
     // day more, L2 1.1 times and 0.1 more, and L3 half the fund and 0.3 less, each close rounded to four places, a

@@ -390,6 +390,15 @@ public sealed class IndexFamilies : IComponent
         await ExecuteAsync(connection, transaction, ClearTheNight, [("$index", index), ("$night", Stamp(session))], cancellation);
 
         var ended = await WalkAsync(connection, transaction, index, session, cancellation);
+
+        // Each page trade whose cap's sessions have passed is given the benchmark of the same plan entered at the close on
+        // every member of the index that night, as a registered rule's trade is.
+        // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+        if (inputs is not null)
+        {
+            await BenchmarkPageTradesAsync(connection, transaction, inputs, cancellation);
+        }
+
         var heavyweights = large
             ? new IndexHeavyweightsOutcome(false, 0, 0, 0)
             : await IndexHeavyweights.RunAsync(connection, transaction, index, session, names, income, cancellation);
@@ -507,6 +516,95 @@ public sealed class IndexFamilies : IComponent
             })
             .ToArray(),
     });
+
+    // Every page trade from before the night not yet given its benchmark.
+    const string Unbenchmarked = @"
+        SELECT family, ticker, session_date, entry, stop, target, trail, cap, risk_moves, exit
+        FROM index_family_trade
+        WHERE index_code = $index AND session_date < $night AND members IS NULL
+        ORDER BY session_date, family, ticker;
+    ";
+
+    const string PageBenchmarked = @"
+        UPDATE index_family_trade SET benchmark = $benchmark, members = $members
+        WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session;
+    ";
+
+    // The benchmark of each page trade whose cap's sessions have passed, through the sweeps' own benchmark of the plan's
+    // shape as a registered rule's trade is given its: the breakout's for a stop that trails, the drift's for a stop and a
+    // target, which a pullback's plan is, and the menu's under the exit a trade was kept under. The stop's distance is in
+    // the typical move of the trade's own night, as stored where the trade carries it and read off its bars where not; a
+    // trade whose stock holds no bar or no typical move on its night is given none.
+    static async Task<int> BenchmarkPageTradesAsync(SqliteConnection connection, SqliteTransaction transaction, IndexNightInputs inputs, CancellationToken cancellation)
+    {
+        var pending = new List<(string Family, string Ticker, DateOnly Session, decimal Entry, decimal Stop, decimal? Target, bool Trails, int Cap, double? RiskMoves, int Exit)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = Unbenchmarked;
+            command.Parameters.AddWithValue("$index", inputs.Index);
+            command.Parameters.AddWithValue("$night", Stamp(inputs.Night));
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                pending.Add((
+                    reader.GetString(0),
+                    reader.GetString(1),
+                    Date(reader.GetString(2)),
+                    Money.FromStorage(reader.GetString(3)),
+                    Money.FromStorage(reader.GetString(4)),
+                    reader.IsDBNull(5) ? null : Money.FromStorage(reader.GetString(5)),
+                    !reader.IsDBNull(6),
+                    reader.GetInt32(7),
+                    reader.IsDBNull(8) ? null : reader.GetDouble(8),
+                    reader.IsDBNull(9) ? 0 : reader.GetInt32(9)));
+            }
+        }
+
+        double[][]? closes = null;
+        var benchmarked = 0;
+
+        foreach (var trade in pending)
+        {
+            var session = Array.IndexOf(inputs.Calendar, trade.Session);
+
+            if (session < 0 || inputs.At - session < trade.Cap)
+            {
+                continue;
+            }
+
+            var risk = Statistic.FromPrice(trade.Entry - trade.Stop);
+            var name = Array.FindIndex(inputs.Series, one => string.Equals(one.Name.Ticker, trade.Ticker, StringComparison.Ordinal));
+            var bar = name < 0 ? -1 : IndexNightRead.BarOf(inputs.Series[name], session);
+            var move = bar < 0 ? 0 : inputs.Series[name].Atr[bar];
+
+            if ((trade.RiskMoves ?? (move > 0 && risk > 0 ? risk / move : null)) is not { } moves)
+            {
+                continue;
+            }
+
+            closes ??= [.. inputs.Series.Select(one => one.Bars.Select(day => Statistic.FromPrice(day.Close)).ToArray())];
+
+            var reward = trade.Target is { } target && risk > 0 ? Statistic.FromPrice(target - trade.Entry) / risk : 0;
+            var (average, members) = ExitMenu.Of(trade.Exit) is { } exit
+                ? ExitMenu.Benchmark(closes, inputs.Members.Names[session], inputs.Members.Bars[session], (one, at) => inputs.Series[one].Atr[at], moves, trade.Trails ? null : reward, trade.Trails ? 1 : null, trade.Cap, exit)
+                : trade.Trails
+                    ? BreakoutSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, trade.Cap)
+                    : DriftSweep.BenchmarkCounted(inputs.Series, closes, inputs.Members, session, moves, reward, trade.Cap);
+
+            await ExecuteAsync(connection, transaction, PageBenchmarked,
+            [
+                ("$index", inputs.Index), ("$family", trade.Family), ("$ticker", trade.Ticker), ("$session", Stamp(trade.Session)),
+                ("$benchmark", double.IsNaN(average) ? DBNull.Value : average), ("$members", members),
+            ], cancellation);
+            benchmarked++;
+        }
+
+        return benchmarked;
+    }
 
     static int[]? StoredPlaces(IReadOnlyDictionary<string, LoopChange>? stored, string family) =>
         stored is not null && stored.TryGetValue(family, out var setting) && setting.Places is { } places ? [.. places] : null;
