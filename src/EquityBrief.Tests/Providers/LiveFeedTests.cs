@@ -75,6 +75,35 @@ public class LiveFeedTests
     }
 
     [Fact]
+    public async Task TheQuoteFeedAsksTheRouteTheCaptureCameFromAndReadsTheCapturedAnswer()
+    {
+        var (client, handler) = Client(_ => Ok(Captured("quote-CVX.json")));
+        var feed = new EodhdQuoteFeed(client, new ProviderCredentials(Key), Patient());
+
+        var quote = await feed.QuoteAsync("CVX");
+
+        Assert.Equal(1, feed.Requests);
+
+        var asked = Assert.Single(handler.Asked);
+
+        Assert.Equal("/api/real-time/CVX.US", asked.AbsolutePath);
+        Assert.Contains("fmt=json", asked.Query, StringComparison.Ordinal);
+        Assert.Contains("real-time/CVX.US?fmt=json", Manifest(), StringComparison.Ordinal);
+
+        // Asked on a Saturday, the provider answered the session before's last delayed price, stamped 1791577380 seconds
+        // after the epoch: 2026-10-09T20:23:00Z, 16:23 in New York and 23 minutes after that session's close, which is
+        // the close the bars store for the session.
+        Assert.NotNull(quote);
+        Assert.Equal(new DateTimeOffset(2026, 10, 9, 20, 23, 0, TimeSpan.Zero), quote.QuotedAt);
+        Assert.Equal((211.98m, 211.55m, 0.43m), (quote.Price, quote.PreviousClose, quote.Change));
+
+        // The change is the price less the previous close, and its per cent, 0.43 over 211.55, is 0.20326 to five places,
+        // which the provider sends rounded to four.
+        Assert.Equal(quote.Price - quote.PreviousClose!.Value, quote.Change);
+        Assert.Equal(Math.Round(0.43 / 211.55 * 100, 4), quote.ChangePercent!.Value, 9);
+    }
+
+    [Fact]
     public async Task TheHistoricalFeedAsksForTheWindowAndTheSuffixTheProviderWants()
     {
         var (client, handler) = Client(_ => Ok(Captured("bars-AAPL.json")));

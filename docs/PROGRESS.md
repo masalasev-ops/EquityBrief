@@ -42144,13 +42144,18 @@ Measured:   the palette check over the stylesheet, 259 selectors stating a text 
             page of CVX over a copy of the store taken read-only and migrated, at 1440 and at 390 framed, in both
             palettes outside the session: the masthead, the headline, the tiles worked by hand from the store (7.12
             over 211.98 is 3.36%, 211.98 under 217.78 is 2.7%), the contents numbered 1 to 18 and every region in
-            order. The plan column cuts the trailing exit's words at its edge, which the 4.6 correction wrote.
-Tests:      2127, thirteen more: the session and its early closes, the tiles worked by hand, the quote job inside the
-            session, at and under the cap, with no price and unanswered, the provider's answer read as sent, the
-            masthead in and out of the session with each band's distance at the quote, the press's refusals and its
-            interval, the read-back, the headline and the contents' dated entries, the Run page's quote line, the
-            range bar, and the palette's two tests with the column and the rules by role read off the stylesheet and
-            a rendered page.
+            order. The plan column cuts the trailing exit's words at its edge, which the 4.6 correction wrote. One
+            delayed quote for CVX asked on Saturday 2026-10-10 at 15:51:54Z, the provider's count for the day read
+            first at 5,494 and at 5,495 after, past the operator's 5,000 a day and made on the operator's word: it
+            answered the last price of 2026-10-09, 211.98 against a previous close of 211.55, stamped 20:23:00Z, 23
+            minutes after that session's close and the close the bars store for it, and is kept as a fixture the
+            feed and its parser are read over.
+Tests:      2128, fourteen more: the session and its early closes, the tiles worked by hand, the quote job inside the
+            session, at and under the cap, with no price and unanswered, the provider's answer read as sent and the
+            captured answer read through the feed on the route it came from, the masthead in and out of the session
+            with each band's distance at the quote, the press's refusals and its interval, the read-back, the
+            headline and the contents' dated entries, the Run page's quote line, the range bar, and the palette's two
+            tests with the column and the rules by role read off the stylesheet and a rendered page.
 Claims:     1167, nineteen more, each named as added after phase 17's report: the quote job's catalogue and matrix
             rows, its two stores, section 17's cap and interval, section 18's three failures, the range bar, the name
             page's eight parts and the Run page's quote runs.
@@ -42168,11 +42173,10 @@ Mutated:    the rule, stated before the run: the brief's two mutations. First, a
             test green. Each made on this branch and reverted before anything was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to
             be filled from the run.
-Queue:      done, phase 17 through 17.10 and the 4.6, 6.1 and 15.2 corrections; gated and merging once phase 17's
-            monthly run by hand has finished, the 6.4 correction, 18.0 and the 3.1, 6.10 and 16.3 corrections as PRs
-            419 to 423, those changing the night one a night; in progress, this checkpoint, its pull request opened
-            once the delayed quote is read in a session; next, 18.2 to 18.5.
-Carried:    the delayed quote for CVX read in the session of 2026-10-12, one weighted call with the provider's count
-            read first, its delay off its own time recorded here and its answer kept as a fixture the parser is tested
-            over, before this checkpoint's pull request; the plan column's trailing exit cut at its edge, a 4.6
-            correction; and the operating row on the day's cap, read over the first five sessions after this merges.
+Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2 and 6.4 corrections, 18.0 and the 3.1, 6.10 and 16.3
+            corrections, PRs 419 to 423 merged on 2026-10-10; in progress, this checkpoint, its pull request opened
+            on the operator's word of 2026-10-10 with the quote captured outside the session, and 18.2 after it;
+            next, 18.3 to 18.5.
+Carried:    the delay of a quote asked inside a session, read under the operating row on the day's cap over the
+            first five sessions after this merges, which reads each quote's delay beside its count; and the plan
+            column's trailing exit cut at its edge, a 4.6 correction.
