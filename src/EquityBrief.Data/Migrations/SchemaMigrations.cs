@@ -705,7 +705,34 @@ public static class SchemaMigrations
         new Migration(82, "create loop_model, and add decision_card's score_rank and similar", CreateLoopModels),
         new Migration(83, "add loop_proposal.change, index_family_trade's exit and risk_moves and decision_card.approved, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
         new Migration(84, "create chart_average", CreateChartAverages),
+        new Migration(85, "create quote_request and live_quote", CreateLiveQuotes),
     ];
+
+    // A name page's ask for the delayed quote in the regular session, a row a press, and the quote the worker's quote job
+    // asked for it: the price and its own time, the previous close and the change on it, and each band's distance at the
+    // price in typical days' moves, read off the stored night it names.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    const string CreateLiveQuotes = @"
+        CREATE TABLE quote_request (
+            ticker    TEXT NOT NULL,
+            asked_at  TEXT NOT NULL,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+
+        CREATE TABLE live_quote (
+            ticker          TEXT NOT NULL,
+            asked_at        TEXT NOT NULL,
+            answered_at     TEXT NOT NULL,
+            quoted_at       TEXT NOT NULL,
+            price           TEXT NOT NULL,
+            previous_close  TEXT,
+            change          TEXT,
+            change_pct      REAL,
+            night           TEXT,
+            distances       TEXT NOT NULL,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+    ";
 
     // The chart's averages over the sessions the indicator rows leave empty, read through the sessions before the store's
     // year from the pulled history: a row an average a name, its sessions and values as a list, the pull they came from,

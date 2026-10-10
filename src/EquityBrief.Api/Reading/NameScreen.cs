@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;

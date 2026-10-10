@@ -26,6 +26,7 @@ public enum Store
     Membership,
     Bar,
     MarketBar,
+    LiveQuote,
     Calendar,
     PulledBar,
     PulledEarnings,
@@ -121,6 +122,7 @@ public enum Store
     VersionBlock,
     SeriesState,
     ResearchRequest,
+    QuoteRequest,
     WatchList,
     RunLog,
 }
@@ -147,6 +149,8 @@ public enum Feed
     // OpenFIGI's mapping of a security's identifier to the tickers it traded under, keyless, asked by the history
     // pull alone for the holdings the provider's symbol lists carry under no code.
     IdentifierMapping,
+    // The provider's delayed quote of one listing, asked by the quote job alone for a name page open in the session.
+    Quote,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

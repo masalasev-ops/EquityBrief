@@ -82,4 +82,7 @@ public static class ProviderWeights
 
     // Measured at 16.0: 21 dividend calendar requests, one a session, moved the account's counter from 2,723 to 2,744.
     public const int DividendCalendar = 1;
+
+    // The delayed quote of one listing, one a request.
+    public const int Quote = 1;
 }

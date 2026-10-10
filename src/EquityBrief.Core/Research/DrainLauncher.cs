@@ -35,6 +35,12 @@ public interface IDrainLauncher
     // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
     DrainStart StartTheBackup(bool afterTheLabeller) =>
         new(false, "The store's copy was not started, because this surface holds no way to start the worker.");
+
+    // The quote job for one name's delayed quote, which a name page's press starts as a process of its own once its
+    // request is written, handed the name and the instant the page asked.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
+        new(false, "The quote was not asked, because this surface holds no way to start the worker.");
 }
 
 // The worker's drain, started as a process of its own from a copy of the worker's build
@@ -87,6 +93,12 @@ public sealed class WorkerDrainLauncher(
 
     public static readonly IReadOnlyList<string> CopyTheStoreAfterTheLabeller = ["backup", "--after-labeller"];
 
+    // The verb that asks one name's delayed quote, and its two flags.
+    public const string QuoteVerb = "quote";
+
+    public static IReadOnlyList<string> AskTheQuote(string ticker, DateTimeOffset askedAt) =>
+        [QuoteVerb, "--ticker", ticker, "--asked", askedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)];
+
     // The folder under the data root the copies are made in.
     public const string CopiesFolder = "drains";
 
@@ -132,6 +144,9 @@ public sealed class WorkerDrainLauncher(
             afterTheLabeller ? CopyTheStoreAfterTheLabeller : CopyTheStore,
             "The store's copy has started as a process of its own, and waits until the night, its drain and its labeller have finished.",
             "the store waits for the backup verb run by hand");
+
+    public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
+        Launch(AskTheQuote(ticker, askedAt), "The quote has been asked as a process of its own.", "the page keeps the last stored price");
 
     // The build a drain or the rest of the night is started from: the newest night's own build where the
     // night's script left one holding the worker, so the drain and the rest of a night run the build the

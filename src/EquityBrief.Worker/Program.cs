@@ -61,13 +61,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
+    "quote" => await QuoteRun(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 34 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 35 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -174,7 +175,10 @@ static int NoVerb()
         "for the names the index holds, and " +
         "'backup' copies the store into the copies' folder once no night or drain holds it, opens and reads the copy " +
         "and keeps the newest three, as the night starts it after the labeller with '--after-labeller' waiting for " +
-        "the labeller too. '--live' " +
+        "the labeller too, and " +
+        "'quote --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks the provider once for the name's delayed quote " +
+        "inside the regular session and under the day's cap and stores it with each band's distance at its price, as a " +
+        "name page's press starts it. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -1431,6 +1435,53 @@ static string? RunId(string? session) =>
         : FormattableString.Invariant($"night-{SystemClock.ForUnitedStatesSessions().UtcNow:yyyyMMddTHHmmssZ}-for-{session}");
 
 static string? Argument(string[] args, string name) => VerbArguments.Value(args, name);
+
+// The quote job, which a name page's press starts as a process of its own with the name and the instant the page asked:
+// one ask of the provider inside the regular session and under the day's cap, and a run log row whatever it came to.
+// see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+static async Task<int> QuoteRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (Argument(args, "--ticker") is not { Length: > 0 } ticker
+        || Argument(args, "--asked") is not { } asked
+        || !DateTimeOffset.TryParseExact(asked, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var askedAt))
+    {
+        Console.Error.WriteLine("quote: it takes '--ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>', the name and the instant its page asked.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"quote: no store at '{store.DatabaseFile}', so there is nowhere to keep a quote.");
+
+        return 1;
+    }
+
+    ProviderCredentials credentials;
+
+    try
+    {
+        credentials = new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("quote: " + refusal.Message);
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Quotes.QuoteJob(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        EodhdQuoteFeed.Live(configuration[EodhdBulkPriceFeed.BaseAddressKey] ?? string.Empty, credentials)).RunAsync(ticker.ToUpperInvariant(), askedAt);
+
+    Console.WriteLine($"quote: {outcome.Outcome}, {outcome.Detail}");
+
+    return outcome.Outcome == EquityBrief.Worker.Quotes.QuoteJob.Quoted ? 0 : 1;
+}
 
 static IConfiguration Configuration() => WorkerConfiguration.Build();
 
