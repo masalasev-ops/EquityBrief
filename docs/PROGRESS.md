@@ -42273,3 +42273,26 @@ Changes:    18.5's text, which read the phase report's written sections as store
 Verified:   `tools/ci.ps1` green over the tree carrying this entry: the figures 18.3's entry below records, the three
             entries verified by one run.
 
+### 6.4 - correction: the citation check holds from the night of 2026-10-12, the first built from a main holding it, where the page dated it from the day after the merge it predicted   2026-10-10
+
+Corrects:   the date a researched section is drawn as written before the citation check from, 2026-10-11, set as the
+            day after the 6.4 correction was expected to merge. It merged on Saturday 2026-10-10, and a pass runs from
+            the newest night's build, not from main: the passes of 2026-10-10 and 2026-10-11 run the build of the night
+            of 2026-10-09, before the check, and the night of 2026-10-12 is the first built with it. A section dated
+            2026-10-11 would have been drawn as checked, and every page drew a date in the future on the day of the merge.
+Found:      by 18.3's own review of the page on 2026-10-10.
+Built:      the check holds from 2026-10-12, the first session on or after the merge the closure table holds, and the
+            line reads "Written before the citation check, which holds from the night of 2026-10-12". A pass a press
+            starts on 2026-10-12 before that night's build runs the build before it, which a section's date cannot tell
+            apart, and the constant's comment says so.
+Tests:      one more, the date read off the closure table from the merge day and the weekend's sections drawn as
+            written before it; the page's line test reads the new words.
+Claims:     none more.
+Pins:       none moved; the claim checker is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: the date set back to 2026-10-11, the day the entry predicted. Predicted red
+            at the new test and green at the page's line test, which reads the constant. Result: red at the new test,
+            2026-10-11 against the 2026-10-12 the closure table gives, and the line test green, as predicted; made on
+            this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures
+            18.3's entry below records, the three entries verified by one run.
+

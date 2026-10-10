@@ -4011,7 +4011,7 @@ public sealed partial class MarkRenderer : IComponent
         // A section written before the checker held a figure to the documents its sentence cites says so.
         if (section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
         {
-            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
+            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check, which holds from the night of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
         }
 
         // A sentence resting on the night's own figures cites them as [N], which is listed beside the documents and
