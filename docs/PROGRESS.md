@@ -41965,7 +41965,13 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             brief's mutation: predicted red at the two store tests reading the averages through the pull and at the page
             test, and green at the no-pull test, the gap test and the hostile night. Result: the three red and the three
             green, as predicted, made on this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f712c137, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2133 of 2133 tests ran with none failed, migrations 0 to
+            84 with none pending, schema version 84, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1154 claims, 1154 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1165
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2133 of 2133 tests ran.
 Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418,
             merged on 2026-10-10, and the 6.4 correction and 18.0 as PRs 419 and 420, gated and merging once phase 17's
             monthly run by hand has finished; in progress, this correction, which changes the night and merges before a
