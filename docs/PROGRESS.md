@@ -41667,3 +41667,48 @@ Carried:    after the merges of 17.9 and 17.10, from main: the monthly run by ha
             the operator approves the growth proposal. The operator's rulings owed: how an approval reaches the S&P
             500, the FastTree challenger, the valuation reading and the S&P 600 heavyweights' two settings. Phase 17's
             sign-off by a session that committed none of it.
+
+### 4.6 - correction: each exit says what it does with the position, the exits below the top selling their share and the top holding the last on a stop trailed under the price, where the top said to sell its share and trail the rest   2026-10-09
+
+Corrects:   4.6's exit words. The traded exits' fractions are equal shares of the whole position and sum to all of it,
+            and the top of the ladder is a trailing rule rather than a price (see: Each traded exit sells an equal
+            fraction of what is held, and the top of the ladder trails). The page drew the top exit as "sell 1/n and
+            trail the rest", a sale of its share followed by a trail of nothing, and the plan column labelled it "Sell
+            at" its band. On the night of 2026-10-08, 320 of the S&P 500's 503 plans carried a traded top exit, 59 of
+            them the only exit traded and drawn "sell 1/1 and trail the rest", CVX's at 217.78 among them.
+Found:      by the operator's phase 18 brief of 2026-10-09, reading CVX's page, and counted over the night's ladder rows
+            read-only. No code acts on an exit's trailing flag but these words.
+Built:      the words. Each traded exit below the top says "sell 1/n of the position". The top says "the last 1/n is
+            held on a stop trailed under the price, not sold at a price", and "the whole position" where it is the only
+            exit traded. The plan row carries whether its exit trails, and the plan column labels that exit "Trail
+            from" its band. The stored plan and the ladder's code are untouched and decision 446 stands: the plan of
+            2026-10-09 proposed superseding it so the top would sell what is left, and figure 10.1 and the decision both
+            make the top a trailing rule, so the words follow them instead.
+Tests:      2120, three more: CVX's plan as the night of 2026-10-08 stored it, drawn as the whole position held on the
+            trail and labelled "Trail from 217.78"; four exits worked by hand, three traded at a third with the top
+            trailing and one listed and not traded, each with its words and the shares the words name summing to the
+            whole position; and every fixture name's plan, AAPL's, KEYS's and NFLX's seven traded exits read off the
+            ladder expectation, each naming its share once with exactly one trailing where any is traded. The plan
+            column's test draws its top exit as trailing.
+Claims:     1149, unchanged: no row of the architecture moved.
+Pins:       none moved. The read surface and the marks are in no pin list, and `LadderSeries.cs` is untouched.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone. The top exit's words saying
+            it sells nothing at a price and holds the last share on a trailed stop, broken by restoring the words the
+            correction replaced: predicted red at the three new tests and green at the four existing plan tests. Result:
+            the three red and the four green, as predicted, made on this branch and reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c1cf3da6, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2120 of 2120 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2120 of 2120 tests ran.
+Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, merging after the night of 2026-10-09 is read;
+            in progress, this correction; next, the rest of Part A of the phase 18 plan the operator approved on
+            2026-10-09, each its own pull request under the checkpoint that built the code: 6.1 the fact strip's high and
+            low, 15.2 the quarters fetched before interest expense and the rating counts were stored, 6.4 the citation
+            check, 6.10 the written key retired, 3.1 the chart's averages, 16.3 the dividend estimate and, if the data
+            check confirms it, the market events table, a correction changing the night merged at most one a night;
+            then 18.0. The plan and the operator's words are in `prompts/2026-10-09-18.0-*.md`.
+Carried:    nothing.

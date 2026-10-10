@@ -87,7 +87,10 @@ public sealed record SummaryBand(
 // horizontal rule and the invalidation as the lowest rule of all. `Detail` is
 // what the row says in words, because hue is never the only channel. A tranche
 // also carries its condition in words and its stop apart, which is what the
-// tranche table draws a column each.
+// tranche table draws a column each. `Trails` marks the exit at the top of the
+// ladder, which is a trailing rule rather than a price, so the column names it
+// as one rather than as a sale at its band.
+// see: Each traded exit sells an equal fraction of what is held, and the top of the ladder trails
 public sealed record PlanRow(
     decimal LowEdge,
     decimal HighEdge,
@@ -95,7 +98,8 @@ public sealed record PlanRow(
     string Detail,
     bool Traded,
     string? BuyOn = null,
-    decimal? Stop = null);
+    decimal? Stop = null,
+    bool Trails = false);
 
 // The kinds a plan row takes, named once so the mark and the tables agree.
 public static class PlanKind
@@ -1377,7 +1381,7 @@ public sealed partial class MarkRenderer : IComponent
                     right.Add((index, Y(row.HighEdge) + 10, [Formatted($"Buy {Zone(row)}"), .. Clauses(row.Detail)]));
                     break;
                 case PlanKind.Exit:
-                    right.Add((index, Y(row.LowEdge) - 2, [Formatted($"Sell at {Zone(row)}"), .. Clauses(row.Detail)]));
+                    right.Add((index, Y(row.LowEdge) - 2, [row.Trails ? Formatted($"Trail from {Zone(row)}") : Formatted($"Sell at {Zone(row)}"), .. Clauses(row.Detail)]));
                     break;
                 case PlanKind.Invalidation:
                     left.Add((index, Y(row.LowEdge) - 5, [Formatted($"Invalidation {Price(row.LowEdge)}")]));

@@ -87,11 +87,10 @@ public static class NameScreen
                 Price(exit, "highEdge"),
                 PlanKind.Exit,
                 traded
-                    ? trailing
-                        ? $"sell {fraction} and trail the rest"
-                        : $"sell {fraction}"
+                    ? ExitWords(fraction, trailing)
                     : exit.GetProperty("reason").GetString() ?? "listed and not traded",
-                traded));
+                traded,
+                Trails: traded && trailing));
         }
 
         // The invalidation is the lowest stop rather than a rule beside it, which
@@ -1062,6 +1061,16 @@ public static class NameScreen
             "A sentence a reader acts on that was produced by a value nobody wrote is what a catch-all arm " +
             "makes invisible, so the page fails rather than rendering a default."),
     };
+
+    // What a traded exit does with the position. Each traded exit's fraction is an equal share
+    // of the whole position and the shares sum to all of it, so every exit below the top sells
+    // its share at its band, and the top sells none at a price: the last share, the whole
+    // position where it is the only exit traded, is held on a stop trailed under the price.
+    // see: Each traded exit sells an equal fraction of what is held, and the top of the ladder trails
+    static string ExitWords(string? fraction, bool trailing) =>
+        !trailing ? $"sell {fraction} of the position"
+        : fraction == "1/1" ? "the whole position is held on a stop trailed under the price, not sold at a price"
+        : $"the last {fraction} is held on a stop trailed under the price, not sold at a price";
 
     public static string Region(
         SinglePageApp page,
