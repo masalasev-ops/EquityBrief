@@ -42356,8 +42356,13 @@ Mutated:    the rule, stated before the run: the plan's mutation and one on the 
             mark test green, as predicted; the second red at CVX's shares, the third tranche's risk 0.7378 where none is
             stated, and at the page's shares table, the ladder's and the causes' tests green, as predicted. Each made on
             this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green, 2180 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
-            figures to be filled from the run.
+Verified:   `tools/ci.ps1` green, 2180 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            ddecfd2b, the entry's commit, the second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2180 of 2180 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1235 claims, 1235 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1246
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2180 of 2180 tests ran.
 Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0, 18.1 and 18.2, PRs 419 to 425 merged on
             2026-10-10; in progress, this checkpoint, the 6.4 correction and the 18.5 ruling, one pull request; next,
             18.4, then the regeneration once a night is built with it, then 18.5.
