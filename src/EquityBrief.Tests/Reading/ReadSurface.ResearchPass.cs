@@ -132,9 +132,8 @@ public partial class ReadSurface
         string[] placed =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.BeforeTheNumbers,
             .. SinglePageApp.AfterTheNumbers,
-            .. SinglePageApp.AfterThePlan,
+            .. SinglePageApp.AfterTheRules,
             SinglePageApp.InTheDates,
             SinglePageApp.InTheMovesTable,
         ];

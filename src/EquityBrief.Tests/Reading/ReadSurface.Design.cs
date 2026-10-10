@@ -448,9 +448,8 @@ public partial class ReadSurface
         string[] written =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.BeforeTheNumbers,
-            .. SinglePageApp.AfterTheNumbers.Where(section => section != ClaimRules.CycleSection),
-            .. SinglePageApp.AfterThePlan,
+            .. SinglePageApp.AfterTheNumbers,
+            .. SinglePageApp.AfterTheRules.Where(section => section != ClaimRules.CycleSection),
         ];
 
         foreach (var section in written)

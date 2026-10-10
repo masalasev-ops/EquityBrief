@@ -1133,7 +1133,15 @@ public static class NameScreen
         // The account and the taken trades its card draws, none for an export or an earlier night.
         CardContext? cardContext = null,
         // The chart's averages over the sessions the indicator rows leave empty, read through the pulled history.
-        IReadOnlyList<ChartAverageRow>? warmed = null)
+        IReadOnlyList<ChartAverageRow>? warmed = null,
+        // The delayed quote stored for the session the page is drawn in and the session itself, the newest fetch's quarters
+        // and the forward rate the tiles read, the index that holds the name, and whether the page asks for its quote.
+        LiveQuoteView? quote = null,
+        QuoteSession? quoteSession = null,
+        IReadOnlyList<EquityBrief.Core.Tiles.TileQuarter>? tileQuarters = null,
+        decimal? forwardRate = null,
+        string? indexCode = null,
+        bool asksForQuotes = false)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1215,6 +1223,23 @@ public static class NameScreen
                 indicators.Where(row => row.Name == name).Select(row => row.BarCount).DefaultIfEmpty(0).Max()))
             .ToArray();
 
+        // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session, and the
+        // last close otherwise, which the tiles are worked at.
+        var live = night is null && quoteSession is { IsOpen: true } ? quote : null;
+        var cards = (decisionCards ?? [])
+            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
+            .Select(card => CardScreen.View(card, cardContext))
+            .FirstOrDefault();
+        decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
+        var quarters = tileQuarters ?? [];
+        var tiles = new TilesView(
+            EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
+            EquityBrief.Core.Tiles.NameTiles.SalesGrowth(quarters),
+            shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.Yield(forwardRate, yieldAt) : null,
+            shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
+            shownPrice,
+            live is not null);
+
         return page.NameRegion(
             marks,
             ticker,
@@ -1266,7 +1291,7 @@ public static class NameScreen
             Suspect(suspect),
             listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
-            new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
+            new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars), Universes.ByCode(indexCode)?.Name),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             night,
             Peers(ticker, universe, peerReadings, night, peerCloses),
@@ -1282,12 +1307,54 @@ public static class NameScreen
             TonightScreen.ListedUnder(ticker, familyPicks ?? []),
             TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []),
             memberReading is null ? null : Member(memberReading, ratings),
-            (decisionCards ?? [])
-                .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
-                .Select(card => CardScreen.View(card, cardContext))
-                .FirstOrDefault(),
-            warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null);
+            cards,
+            warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null,
+            quote: live,
+            quoteSession: quoteSession,
+            headline: Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
+            tiles: tiles,
+            asksForQuotes: asksForQuotes);
     }
+
+    // The sentence under the masthead until a written one is accepted: whether a rule picked the name tonight and which,
+    // or how close it came, its business as its reported quarters read it and its trend, with no figure in it.
+    // see: The headline carries no figure, and code writes it until a written one is accepted
+    public static HeadlineView Headline(string company, DecisionCardView? card, FilterWhy? passed, EquityBrief.Core.Filter.MissedGate? missed, string? state, string? trend)
+    {
+        var business = state switch
+        {
+            EquityBrief.Core.Quarters.FundamentalState.Improving => "an improving business",
+            EquityBrief.Core.Quarters.FundamentalState.Steady => "a steady business",
+            EquityBrief.Core.Quarters.FundamentalState.Deteriorating => "a deteriorating business",
+            _ => "a business its quarters do not yet read",
+        };
+        var chart = trend switch
+        {
+            TrendState.Uptrend => "in an uptrend",
+            TrendState.Downtrend => "in a downtrend",
+            TrendState.Range => "in a range",
+            _ => "in a trend not yet classified",
+        };
+
+        var said = card is { } picked
+            ? $"{company} is a pick of {FamilyPhrase(picked.Family)} on the {Universes.ByCode(picked.Index)?.Name ?? picked.Index} tonight: {business}, {chart}."
+            : passed is not null
+                ? $"{company} passed the swing filter tonight: {business}, {chart}."
+                : missed is not null
+                    ? $"{company} is one gate short of a buy point tonight: {business}, {chart}."
+                    : $"{company} is on no list tonight: {business}, {chart}.";
+
+        return new HeadlineView(said, Written: false);
+    }
+
+    static string FamilyPhrase(string family) => family switch
+    {
+        "pullback" => "the pullback",
+        "breakout" => "the breakout",
+        "drift" => "the earnings drift",
+        "heavyweight" => "the sector heavyweights",
+        _ => "the " + family.Replace('-', ' '),
+    };
 
     // A name's member readings as the page draws them, each as the member reader stored it, its index named as every
     // page names it, with its company's rating counts as the newest fetch filed them.

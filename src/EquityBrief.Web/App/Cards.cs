@@ -89,8 +89,8 @@ public static class Cards
 
     // The line naming what a screen is and as of when, which the shell moves into its
     // masthead and an exported report draws at its head.
-    public static string Masthead(string title, string identity, string asOf) =>
-        $"<div class=\"screen-mast\" data-title=\"{Escaped(title)}\">{identity}<span class=\"m-asof\">{asOf}</span></div>";
+    public static string Masthead(string title, string identity, string asOf, string attributes = "") =>
+        $"<div class=\"screen-mast\" data-title=\"{Escaped(title)}\"{attributes}>{identity}<span class=\"m-asof\">{asOf}</span></div>";
 
     public static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 

@@ -1174,8 +1174,9 @@ public sealed record ChartMarker(DateOnly Session, string Says, string Href);
 public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
-// card calls itself, and the card's own id, which is what the entry links to.
-public sealed record ContentsEntry(int At, string Title, string Id);
+// card calls itself, the card's own id, which is what the entry links to, and for a written or
+// filed card the day it is as of, which the page's script marks new against the reader's last visit.
+public sealed record ContentsEntry(int At, string Title, string Id, DateOnly? Dated = null);
 
 // The marks, as SVG strings written server side.
 //
@@ -2787,9 +2788,15 @@ public sealed partial class MarkRenderer : IComponent
 
         nav.Append(Invariant, $"<nav class=\"contents\" aria-label=\"What is on this page\" data-ticker=\"{Escaped(ticker)}\" data-entries=\"{entries.Count}\"><ol>");
 
+        // A written or filed entry carries the day it is as of, which the page's script reads against the day this
+        // browser last opened the page to mark the entry new; the store records no visit, so a first visit and an
+        // exported file mark nothing.
+        // see: A section newer than the reader's last visit is marked new by the browser alone, and the store records no visit
         foreach (var entry in entries)
         {
-            nav.Append(Invariant, $"<li><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
+            var dated = entry.Dated is { } day ? Formatted($" data-dated=\"{day:yyyy-MM-dd}\"") : string.Empty;
+
+            nav.Append(Invariant, $"<li{dated}><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
         }
 
         nav.Append("</ol></nav>");

@@ -4,6 +4,7 @@ using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Quotes;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -256,6 +257,7 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
 // The name screen's region, read here and composed by the app, for the page and for the file.
 static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null)
 {
+    var session = RegularSession.On(clock.SessionDateAt(clock.UtcNow), clock.SessionZone);
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var levels = await read.LevelsAsync(ticker, on);
@@ -421,7 +423,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
         cardContext: export ? null : cardContext,
-        warmed: await read.ChartAveragesAsync(ticker));
+        warmed: await read.ChartAveragesAsync(ticker),
+        // The regular session of the day the page is opened on and the newest quote stored inside it, which tonight's
+        // page draws in its masthead while the session is open; an earlier night's page and the file draw the close.
+        quote: on is null && session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null,
+        quoteSession: session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null,
+        tileQuarters: await read.TileQuartersAsync(ticker, on),
+        forwardRate: await read.ForwardRateAsync(ticker, on),
+        indexCode: await read.IndexOfAsync(ticker),
+        asksForQuotes: !export && on is null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
