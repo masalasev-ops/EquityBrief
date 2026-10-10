@@ -42524,8 +42524,13 @@ Mutated:    the rule, stated before the run: a band named by its two edges whate
             test and green at the risks' page test, which reads the lines' openings. Result: red at the new test,
             "217.78 to 217.78" where "at 217.78" was worked, and the page test green beside the 4.6 correction's, as
             predicted; made on this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green, 2196 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
-            figures to be filled from the run.
+Verified:   `tools/ci.ps1` green, 2196 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            3ff56c5e, the entry's commit, the second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2196 of 2196 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2196 of 2196 tests ran.
 Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.4, PRs 419 to 427 merged on 2026-10-10;
             in progress, the 4.6 correction and this one, one pull request; next, the written reports regenerated once a
             night is built from a main holding 18.4, then 18.5.
