@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - .claude/rules/checks.md - read-surface states what the 4.6 and 18.4 corrections of the day assert of the plan column's words and the risks' computed lines
+Corrects: the plan column cut its top exit's words at its edge, found reading the rendered page at 18.3, and the risks' computed lines named a band of one price as running from that price to itself, found reading CVX's page after 18.4 merged
+Was:
+> read-surface: ... draws the same with scripts off and is stamped with the price at its export |
+Now:
+> read-surface: ... draws the same with scripts off and is stamped with the price at its export; and from the 4.6 correction of 2026-10-10 each line of a plan column's words is carried on at a word and holds at most the characters a line holds, the top exit's read back whole and in order; and from the 18.4 correction of 2026-10-10 the risks' computed lines name a band of one price at its price and a wider one by its edges, worked by hand over constructed bands |
+Why: each roster row says what its check asserts, and the two corrections' tests extend read-surface's.
+
 ### 2026-10-10 - CLAUDE.md - the prose rule holds a written figure to its own region of the page and the short version and the headline to the claims they cite
 Authorised by: Each figure of the facts file is owned by one region of the page, and a written section writes only the figures its own region owns
 Was:

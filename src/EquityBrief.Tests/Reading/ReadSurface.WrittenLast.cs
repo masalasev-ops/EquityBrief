@@ -118,6 +118,31 @@ public partial class ReadSurface
         Assert.DoesNotContain("<table class=\"calendar-dates\"", marks.TheCalendar("KEYS", none, null, []), StringComparison.Ordinal);
     }
 
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    [Fact]
+    public void TheRisksComputedLinesNameABandOfOnePriceAtItsPriceAndAWiderBandByItsEdges()
+    {
+        LadderBand[] bands =
+        [
+            new(217.78m, 217.78m, "resistance", 1.3, 2, null, null),
+            new(240.00m, 245.50m, "resistance", 4.0, 1, null, null),
+            new(190.00m, 195.50m, "support", 2.1, 3, null, null),
+        ];
+
+        // A band whose two edges are one price is named at it, and the nearest band is the one read.
+        var lines = EquityBrief.Api.Reading.NameScreen.RiskLinesAt(bands, 205.15m, invalidation: null);
+
+        Assert.Equal("A close above the nearest resistance band at 217.78, 1.3 typical days above.", lines.Up);
+        Assert.Equal("A close below the nearest support band, 190.00 to 195.50, 2.1 typical days below.", lines.Worse);
+
+        // Past the band of one price the next is a wider band, named by its edges; and the plan's invalidation, where one
+        // is stored, closes the other column in place of the support band.
+        var past = EquityBrief.Api.Reading.NameScreen.RiskLinesAt(bands, 230.00m, invalidation: 184.26m);
+
+        Assert.Equal("A close above the nearest resistance band, 240.00 to 245.50, 4.0 typical days above.", past.Up);
+        Assert.Equal("A close below the plan's invalidation at 184.26, where the whole position is sold.", past.Worse);
+    }
+
     [Fact]
     public void TheSourcesListTheFiguresTheFilingAndTheFetchStateDifferentlyAndSayWhereNoneCouldBeChecked()
     {

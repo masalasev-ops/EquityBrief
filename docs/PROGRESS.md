@@ -42486,3 +42486,54 @@ Carried:    the regeneration the 18.5 ruling sets, every stock holding a written
             screenshots; and a finding on the claims harness: its part reader reads parts set apart by commas and not by
             semicolons, so the four marks 18.3 added, which list theirs between semicolons, each pass on one verdict,
             owed a reading at 18.5's phase report.
+
+### 4.6 - correction: the plan column carries a row's words on at a word so no line runs past its edge, where the top exit's ran past it and were cut   2026-10-10
+
+Corrects:   the plan column's words, which the 4.6 correction of 2026-10-09 lengthened: a row's words are drawn a clause to
+            a line, and the top exit's first clause, "the last 1/3 is held on a stop trailed under the price", runs 54
+            characters from 178 pixels into a drawing 440 wide, past its edge, where the page cuts it.
+Found:      by 18.3's reading of the rendered page at 1440 on 2026-10-10, carried as owed before 18.5's screenshots.
+Built:      a clause longer than a line holds is carried on at a word, a line holding at most 40 characters, which an
+            eleven pixel note sets inside the 262 pixels to the drawing's edge with room for wider letters; the labels'
+            placement already spaces a row's lines however many there are.
+Tests:      one more, the top exit's words over a plan worked by hand, every line beside the column at most 40
+            characters and the clause read back whole and in order.
+Claims:     none more; the roster's row for the page says what the test asserts, written with the 18.4 correction's
+            below.
+Pins:       none moved; the plan column is drawn by the read surface, which no rule's version, the swing filter or a
+            candidate evaluator pins.
+Mutated:    the rule, stated before the run: the carrying taken out, a clause to a line again. Predicted red at the new
+            test and green at the other exit words' and plan column's tests. Result: red at the new test alone, a line
+            of 54 characters, and the other six green, as predicted; made on this branch and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures the
+            18.4 correction's entry below records, the two entries verified by one run.
+
+### 18.4 - correction: the risks' computed lines name a band of one price at its price, where they named it as running from that price to itself   2026-10-10
+
+Corrects:   18.4's lines the risks' two columns open on, which named the nearest band by its two edges, so a band whose
+            edges are one price, as CVX's resistance at 217.78 is, read "the nearest resistance band, 217.78 to 217.78".
+Found:      by reading CVX's page on the operator's surface after 18.4 merged on 2026-10-10.
+Built:      a band of one price is named at it, "the nearest resistance band at 217.78", and a wider one by its edges as
+            before, the same for the support band beneath the price where no plan is stored.
+Tests:      one more, the lines worked by hand over constructed bands: a band of one price, a wider band past it, and the
+            plan's invalidation in the support band's place.
+Claims:     none more; the roster's row for the page says what the test asserts.
+Pins:       none moved; the read surface is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: a band named by its two edges whatever they are. Predicted red at the new
+            test and green at the risks' page test, which reads the lines' openings. Result: red at the new test,
+            "217.78 to 217.78" where "at 217.78" was worked, and the page test green beside the 4.6 correction's, as
+            predicted; made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2196 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            3ff56c5e, the entry's commit, the second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2196 of 2196 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2196 of 2196 tests ran.
+Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.4, PRs 419 to 427 merged on 2026-10-10;
+            in progress, the 4.6 correction and this one, one pull request; next, the written reports regenerated once a
+            night is built from a main holding 18.4, then 18.5.
+Carried:    the regeneration once the night of 2026-10-12 is built from a main holding 18.4; the short version's refusals
+            after it is written from accepted claims, read on the Run page's rate at ten reports; and the finding on the
+            claims harness's part reader, owed a reading at 18.5's phase report.
