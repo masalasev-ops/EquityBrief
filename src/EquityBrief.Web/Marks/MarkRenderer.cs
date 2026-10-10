@@ -898,6 +898,10 @@ public sealed record QueueState(string State, string? At, string Words)
 // them.
 public sealed record SuspectPrices(string LastAskedAt, string Reason);
 
+// Where the chart's averages over its first sessions came from, as the night stored it: the pull read through the
+// sessions before the store's year, or why none was read.
+public sealed record AveragesFrom(string? Pull, string? Reason);
+
 // A member the backfill asked for a year for and got none: the nights it was asked for, the
 // session it was last asked for on, and the session it is next asked for on, null where
 // that is the next night.

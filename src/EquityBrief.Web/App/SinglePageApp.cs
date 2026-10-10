@@ -770,7 +770,8 @@ public sealed class SinglePageApp : IComponent
         ListedUnderView? listedUnder = null,
         string? heavyweight = null,
         MemberReadingsView? member = null,
-        DecisionCardView? decision = null)
+        DecisionCardView? decision = null,
+        AveragesFrom? averagesFrom = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1082,6 +1083,16 @@ public sealed class SinglePageApp : IComponent
         }
 
         chart.Append("</div>");
+
+        // Where the averages over the chart's first sessions came from, or why they start partway across it.
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+        if (averagesFrom is { } from)
+        {
+            chart.Append(from.Pull is { } pull
+                ? $"<p class=\"averages-from\" data-pull=\"{Escaped(pull)}\">The averages on the chart's first sessions are read through the history pulled before the stored year, from the pull {Escaped(pull)}, brought to the stored prices.</p>"
+                : $"<p class=\"averages-from\" data-reason=\"{Escaped(from.Reason ?? string.Empty)}\">The averages start partway across the chart: {Escaped(from.Reason ?? "none was read before the stored year")}.</p>");
+        }
+
         chart.Append(Cards.Key(
             "How to read it.",
             "A hollow candle closed above where it opened and a filled one closed below. Shaded bands are prices the stock has repeatedly turned at: green below the price is support, orange above it is resistance, and the column on the right names the last close and each band's edges, drawing the edges of the nearest band on either side in that band's own colour. The row above the chart names the averages and those two colours. Beside the chart, on the same prices, is how many shares traded at each price, with a rule where a bar would reach if every price had traded the same and another at twice that.",

@@ -50,6 +50,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_snapshot` | HistoryPull | none | HistoryPull |
 | `pulled_holding` | HistoryPull | HistoryPull | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+| `chart_average` | ChartAverager | none | ChartAverager |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
 | `level` | LevelBuilder | LevelBuilder | LevelBuilder |
@@ -498,6 +499,22 @@ Grain: one row per ticker, session and indicator name.
 Primary key: `ticker`, `session_date`, `name`.
 
 `bar_count` is a column rather than a note because an average of sixty bars labelled two hundred day is a lie, and the only way to see it later is to have stored what it was computed over.
+
+### chart_average
+Grain: one row per ticker and average the chart draws.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `name` | TEXT | `sma20`, `sma50` or `sma200`, held by a check |
+| `night` | TEXT | the session date of the night that wrote the row |
+| `sessions` | TEXT | a JSON list of pairs, each a stored session and the average's value on it, for the sessions the `indicator` rows leave null and the warm-up fills; empty where there is no warm-up |
+| `pull` | TEXT | the pull the warm-up was read from, null where none was |
+| `reason` | TEXT | why no warm-up was read, null where one was |
+
+Primary key: `ticker`, `name`.
+
+The chart's averages over the sessions the `indicator` rows leave empty, computed by the chart averages step over each name's sessions before its first stored bar from `pulled_bar`, at the bar store's scale, and the stored year (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads). Each night replaces a name's rows whole, and a name the bar store no longer holds keeps none. The values sit in one list a row because the chart is their one reader and draws them a name at a time; no rule, level, listing, gate or card reads this table.
 
 ### swing
 Grain: one row per ticker, session and direction.

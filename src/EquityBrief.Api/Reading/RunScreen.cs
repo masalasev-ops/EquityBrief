@@ -1189,7 +1189,7 @@ public static class RunScreen
     public static IReadOnlyList<(string Name, IReadOnlyList<string> Stages)> StepGroups { get; } =
     [
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
-        ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
+        ("Indicators and levels", ["indicators", "chart-averages", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
         ("Readings and the list", ["swing-readings", "fundamental-readings", "member-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "loop-apply", "index-families", "decision-cards", "rule-cards", "live-alarm", "taken-follower", "ledger", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),

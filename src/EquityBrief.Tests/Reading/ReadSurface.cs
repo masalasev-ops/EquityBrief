@@ -444,6 +444,7 @@ public partial class ReadSurface
             CheckReach.Key("15.8 Universe", "The table, the distance row mark"),
             CheckReach.Key("15.8 Universe", "The table, the evening last on the list"),
             CheckReach.Key("15.9 Name", "The chart, the level chart"),
+            ChartAveragesPart,
             CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis"),
             CheckReach.Key("15.9 Name", "The chart, the momentum panel beneath"),
             CheckReach.Key("15.9 Name", "The chart, the level summary table with each band's members and dates"),

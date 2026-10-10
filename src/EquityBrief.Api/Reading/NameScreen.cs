@@ -1284,7 +1284,8 @@ public static class NameScreen
             (decisionCards ?? [])
                 .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
                 .Select(card => CardScreen.View(card, cardContext))
-                .FirstOrDefault());
+                .FirstOrDefault(),
+            warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null);
     }
 
     // A name's member readings as the page draws them, each as the member reader stored it, its index named as every

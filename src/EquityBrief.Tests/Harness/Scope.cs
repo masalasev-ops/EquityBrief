@@ -1060,6 +1060,10 @@ internal static class Scope
             Verdict.Pass,
             "the region draws the level chart with its bands",
             ByReadSurface),
+        [Reading.ReadSurface.ChartAveragesPart] = new Scoped(
+            Verdict.Pass,
+            "a name given a pull draws its averages over the sessions the pull fills and names the pull beneath the chart, and a name with none draws its 200-day line from its 200th session and says why, read off the rendered page over the fixture's night",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis")] = new Scoped(
             Verdict.Pass,
             "the profile is drawn against the chart's own price axis",
@@ -2473,6 +2477,10 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it in the order section 14 states and the store holds the rows afterwards",
             ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.ChartAveragesStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs it after the indicators and the store holds a row for every average of every name afterwards, each naming its pull or why none was read",
+            ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name.")] = new Scoped(
             Verdict.Pass,
             "the night runs it after the indicators and the store holds the rows afterwards, where before 4.1 no night ran it at all",
@@ -3130,6 +3138,10 @@ internal static class Scope
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
         [CheckReach.Key(StoresTable, "Kept bars")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Chart averages")] = new Scoped(
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
@@ -4323,6 +4335,14 @@ internal static class Scope
             Verdict.Pass,
             "every name, session and indicator carries a row, the averages match arithmetic done over the committed bars outside this repository, and an indicator without its window is null with the bar count that explains it",
             ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Chart averager")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bar store and the pulled bars it reads and the chart averages and run log it writes, which is what its row says in words, and the declaration matches its matrix row cell by cell",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Chart averager")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the pulled history's read among them",
+            ByAccess),
         [CheckReach.Key(CatalogueTable, "Indicator engine")] = new Scoped(
             Verdict.Pass,
             "the class declares the bar store it reads and the indicators it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
@@ -4999,6 +5019,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Fact strip, the averages")] = "6.1",
         [CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move")] = "6.1",
         [CheckReach.Key("15.9 Name", "The chart, the level chart")] = "4.1",
+        [Reading.ReadSurface.ChartAveragesPart] = "3.1",
         [CheckReach.Key("15.9 Name", "The chart, the volume profile beside it on the same price axis")] = "3.3",
         [CheckReach.Key("15.9 Name", "The chart, the momentum panel beneath")] = "3.5",
         [CheckReach.Key("15.9 Name", "The chart, the level summary table with each band's members and dates")] = "3.4",
@@ -5735,7 +5756,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Fact strip")] =
             ["close", "market capitalisation", "the year's high and low with the sessions they were made on", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
         [CheckReach.Key("15.9 Name", "The chart")] =
-            ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
+            ["the level chart", "its averages drawn on the sessions the indicators leave empty from what the night read through the sessions before the store's year with a line beneath naming the pull or why none was read", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
         [CheckReach.Key("15.9 Name", "The plan")] =
             ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic"],
         // 11.6. The row names the table's place, its population, its order, its seven columns and
@@ -6492,6 +6513,7 @@ internal static class Scope
         // suite. Nine claims, each owed at the checkpoint that puts its stage
         // into the night's own order.
         ["Compute the indicators"] = "4.1",
+        ["Compute the chart's averages"] = "3.1",
         ["Mark the swings"] = "4.1",
         ["Build the volume profile"] = "4.1",
         ["Build the levels"] = "4.1",

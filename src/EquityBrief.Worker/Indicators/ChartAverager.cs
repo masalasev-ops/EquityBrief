@@ -35,7 +35,7 @@ public sealed class ChartAverager : IComponent
         ],
         Feeds: []);
 
-    public const string Stage = "chart averages";
+    public const string Stage = "chart-averages";
 
     // The averages the chart draws, and the sessions before the year the longest of them needs.
     public static IReadOnlyList<string> Averages { get; } = [IndicatorSeries.Sma20, IndicatorSeries.Sma50, IndicatorSeries.Sma200];
