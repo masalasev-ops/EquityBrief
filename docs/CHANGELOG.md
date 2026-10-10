@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - BUILD_PLAN.md - 18.5's screenshots read the written reports the operator's regeneration writes on 18.4's prompts
+Authorised by: the operator's ruling of 2026-10-10, recorded as the 18.5 ruling "the written reports regenerated once after 18.4 merges, on its prompts, under the caps and off-peak" in PROGRESS.md
+Was:
+> ... each read back against the store and set beside the reference, with the written sections as stored, each marked where it was written before the citation check, and no paid report written for them; ...
+Now:
+> ... each read back against the store and set beside the reference, with the written sections as the regeneration the operator ruled on 2026-10-10 writes them: every stock holding a written report regenerated once on 18.4's prompts, on the paid lane under the spend caps and off-peak, about $1.30 for the 32 of that day and up to about $2 with retries, asked once a night has been built from a main holding 18.4, since a pass runs from the newest night's build, and no other paid report written for the screenshots; ...
+Why: the operator asked on 2026-10-10 that every written report be regenerated and chose once, after 18.4 merges, so no report is paid for twice.
+
 ### 2026-10-10 - CLAUDE.md - the nightly hard rule's list names the Treasury's daily par yields, one request a night to the Treasury and not the provider
 Authorised by: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
 Was:

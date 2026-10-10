@@ -42256,3 +42256,20 @@ Carried:    the release before's guided figures in the facts file, owed at 18.4,
             region; the dividends history run by hand over the three indices, one weighted call a member with the
             provider's count read first and the day's allowance held; and the paid answers for what management said
             constructed with no call, re-recorded only on the operator's word.
+
+### 18.5 ruling - the written reports regenerated once after 18.4 merges, on its prompts, under the caps and off-peak   2026-10-10
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-10 at about 17:05Z, asking that the reports beside CVX's be regenerated as well
+            and choosing, of three options put to them, "After 18.4 merges (Recommended)": every stock holding a written
+            report regenerated once, on 18.4's prompts, word for word in `prompts/`. 32 stocks held one on 2026-10-10;
+            a regeneration is one paid pass a stock on DeepSeek's lane, about $0.04 off-peak, about $1.30 for the 32
+            and up to about $2 with retries, under the spend caps and in the off-peak hours. 18.4 changes how the written
+            sections are asked for, the short version and the headline written last and the risks with what would turn
+            them up or make them worse, so a regeneration before it would be paid for twice.
+Changes:    18.5's text, which read the phase report's written sections as stored with no paid report, reads them as
+            this regeneration writes them, no other paid report written for the screenshots. A pass runs from the newest
+            night's build, so the regeneration is asked once a night has been built from a main holding 18.4.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: the figures 18.3's entry below records, the three
+            entries verified by one run.
+
