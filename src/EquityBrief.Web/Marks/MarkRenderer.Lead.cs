@@ -41,9 +41,9 @@ public sealed partial class MarkRenderer
             : LeadTile(
                 "earnings",
                 Formatted($"Quarter to {tile.Quarter:yyyy-MM-dd}, earnings a share"),
-                Formatted($"<span class=\"v\" data-value=\"{tile.Actual.ToString(Invariant)}\">{tile.Actual.ToString("0.00##", Invariant)}</span>"),
+                Formatted($"<span class=\"v\" data-value=\"{tile.Actual.ToString(Invariant)}\">{Figures.PerShare(tile.Actual)}</span>"),
                 (tile.Estimate is { } estimate
-                    ? Formatted($"estimate {estimate.ToString("0.00##", Invariant)}") + (tile.AgainstEstimate is { } against ? ", " + Signed(against, "against") : string.Empty)
+                    ? Formatted($"estimate <span data-estimate=\"{estimate.ToString(Invariant)}\">{Figures.PerShare(estimate)}</span>") + (tile.AgainstEstimate is { } against ? ", " + Signed(against, "against") : string.Empty)
                     : "no estimate was filed")
                 + (tile.OnTheYear is { } year ? "; " + Signed(year, "year") + " on a year" : tile.YearBefore is null ? "; no quarter a year before" : "; a year before read no change"));
 
@@ -63,7 +63,7 @@ public sealed partial class MarkRenderer
                 "yield",
                 "Dividend yield",
                 Formatted($"<span class=\"v\" data-value=\"{tile.Percent.ToString(Invariant)}\">{tile.Percent.ToString("0.00", Invariant)}%</span>"),
-                Formatted($"{tile.Rate.ToString("0.00##", Invariant)} a year at {(price is { } at ? at.ToString("0.00##", Invariant) : "the price")}, {(live ? "the quote" : "the last close")}"));
+                Formatted($"<span data-rate=\"{tile.Rate.ToString(Invariant)}\">{Figures.PerShare(tile.Rate)}</span> a year at {(price is { } at ? Formatted($"<span data-price=\"{at.ToString(Invariant)}\">{Figures.Price(at)}</span>") : "the price")}, {(live ? "the quote" : "the last close")}"));
 
     static string HighTile(EquityBrief.Core.Tiles.HighTile? high, bool live) =>
         high is not { } tile
@@ -72,7 +72,7 @@ public sealed partial class MarkRenderer
                 "high",
                 "From the 52-week high",
                 Signed(tile.FromHigh, "from-high", "v") + RangeBar(tile),
-                Formatted($"high {tile.High.ToString("0.00##", Invariant)} on {tile.HighOn:yyyy-MM-dd}; low {tile.Low.ToString("0.00##", Invariant)} on {tile.LowOn:yyyy-MM-dd}; {(live ? "at the quote" : "at the last close")}"));
+                Formatted($"high <span data-high=\"{tile.High.ToString(Invariant)}\">{Figures.Price(tile.High)}</span> on {tile.HighOn:yyyy-MM-dd}; low <span data-low=\"{tile.Low.ToString(Invariant)}\">{Figures.Price(tile.Low)}</span> on {tile.LowOn:yyyy-MM-dd}; {(live ? "at the quote" : "at the last close")}"));
 
     // Where the price sits between the year's low and high: a line from the low to the high and a dot at the price, held
     // inside the line where the price is past either end.
@@ -81,7 +81,7 @@ public sealed partial class MarkRenderer
         const double Width = 120;
         var at = Math.Clamp(tile.Position, 0, 1) * Width;
 
-        return Formatted($"<svg class=\"range-bar\" viewBox=\"-4 0 128 12\" width=\"128\" height=\"12\" role=\"img\" aria-label=\"The price between the year's low and high\" data-position=\"{tile.Position.ToString(Invariant)}\"><title>The price between the year's low of {tile.Low.ToString("0.00##", Invariant)} and high of {tile.High.ToString("0.00##", Invariant)}</title><line class=\"rb-track\" x1=\"0\" y1=\"6\" x2=\"{Width.ToString(Invariant)}\" y2=\"6\"/><circle class=\"rb-dot\" cx=\"{at.ToString("0.#", Invariant)}\" cy=\"6\" r=\"4\"/></svg>");
+        return Formatted($"<svg class=\"range-bar\" viewBox=\"-4 0 128 12\" width=\"128\" height=\"12\" role=\"img\" aria-label=\"The price between the year's low and high\" data-position=\"{tile.Position.ToString(Invariant)}\"><title>The price between the year's low of {Figures.Price(tile.Low)} and high of {Figures.Price(tile.High)}</title><line class=\"rb-track\" x1=\"0\" y1=\"6\" x2=\"{Width.ToString(Invariant)}\" y2=\"6\"/><circle class=\"rb-dot\" cx=\"{at.ToString("0.#", Invariant)}\" cy=\"6\" r=\"4\"/></svg>");
     }
 
     static string LeadTile(string kind, string key, string value, string beneath) =>

@@ -468,20 +468,21 @@ public partial class ReadSurface
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
 
-        // Section 4's order: how it got here, the chart and the plan, then what the company
-        // sells and its segments, the numbers, the two cases, and what would make it wrong.
-        // Read as the order the page draws them in, so a page drawing them otherwise says
+        // Section 4's order: the numbers, what the company sells and its segments, the chart,
+        // how it got here, the levels and the plan, then what would make it wrong and the two
+        // cases. Read as the order the page draws them in, so a page drawing them otherwise says
         // which came where.
         (string Part, int At)[] drawn =
         [
-            ("how it got here", At("<section class=\"how-it-got-here\"")),
-            ("the chart", At("class=\"level-summary\"")),
-            ("the plan", At("<section class=\"plan-arithmetic\"")),
+            ("the numbers", At("<section class=\"numbers\"")),
             ("what it sells", Section("What the company sells")),
             ("the segments", Section("The segment commentary")),
-            ("the numbers", At("<section class=\"numbers\"")),
-            ("the two cases", Section("The two cases")),
+            ("the chart", At("class=\"level-chart\"")),
+            ("how it got here", At("<section class=\"how-it-got-here\"")),
+            ("the levels", At("class=\"level-summary\"")),
+            ("the plan", At("<section class=\"plan-arithmetic\"")),
             ("the risks", Section("The risks, each with what would confirm it")),
+            ("the two cases", Section("The two cases")),
         ];
 
         Assert.All(drawn, part => Assert.True(part.At >= 0, $"{part.Part} is not drawn"));

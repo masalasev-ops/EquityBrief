@@ -227,7 +227,7 @@ public partial class ReadSurface
         var head = Regex.Match(offered, "<div class=\"screen-mast\"[^>]*>(.*?)<span class=\"m-asof\">(.*?)</span></div>", RegexOptions.Singleline);
 
         Assert.True(head.Success);
-        Assert.Matches("<span class=\"m-chg\">[^<]*</span><form class=\"watch-control name-watch\"", head.Groups[1].Value);
+        Assert.Matches("<span class=\"m-chg\">[^<]*</span></span><form class=\"watch-control name-watch\"", head.Groups[1].Value);
         Assert.DoesNotContain("watch-control", head.Groups[2].Value, StringComparison.Ordinal);
 
         Assert.Contains($"<p class=\"watch-line\" data-watching=\"0\">No name is watched yet. <a href=\"{SinglePageApp.WatchRoute}\">Add names on the watch list</a></p>", await client.GetStringAsync("/screens/tonight"), StringComparison.Ordinal);

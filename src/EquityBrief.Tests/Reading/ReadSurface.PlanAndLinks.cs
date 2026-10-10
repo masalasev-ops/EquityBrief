@@ -23,9 +23,11 @@ public partial class ReadSurface
         var name = FiredNamesOn(store, NightIn(store))[0];
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{name}"));
 
-        // The card and its entry in the contents both carry the plain heading.
+        // The card and its entry in the contents both carry a plain heading: the region's name in the contents, as
+        // section 4 names it, and the card's heading over it.
         Assert.Contains("<a href=\"#plan\">", page, StringComparison.Ordinal);
-        Assert.Matches("<a href=\"#plan\"><span class=\"c-n\">\\d+</span>Entry and exit plan</a>", page);
+        Assert.Matches("<a href=\"#plan\"><span class=\"c-n\">\\d+</span>The plan</a>", page);
+        Assert.Matches("<section class=\"card\" id=\"plan\"[^>]*>.*?<h2>Entry and exit plan</h2>", page);
         Assert.DoesNotContain("Where it is bought, sold, and wrong", page, StringComparison.Ordinal);
 
         // Every rule across the column, the price line among them, ends short of every word set to the

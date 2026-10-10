@@ -210,10 +210,11 @@ public partial class ReadSurface
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{name.Name}"));
 
-            // Beneath the table of the biggest moves: the peers card is the card after it.
+            // After how the rules read the name and the written regions that follow it: the peers card is the computed
+            // card after the rules'.
             var cards = Regex.Matches(page, "<section class=\"card\"[^>]* data-card=\"([^\"]+)\">").Select(card => card.Groups[1].Value).ToList();
 
-            Assert.Equal("peers", cards[cards.IndexOf("how-it-got-here") + 1]);
+            Assert.Equal("peers", cards[cards.IndexOf("rules") + 1]);
 
             // The name first and marked, then the members the night chose in the order it stored them.
             var drawn = PeerRowsOf(page);

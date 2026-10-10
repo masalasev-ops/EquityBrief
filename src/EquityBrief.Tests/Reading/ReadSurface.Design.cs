@@ -383,7 +383,7 @@ public partial class ReadSurface
 
         Assert.True(contents.Success, "The name page draws no contents.");
 
-        var entries = Regex.Matches(contents.Value, "<li><a href=\"#([^\"]+)\"><span class=\"c-n\">(\\d+)</span>([^<]*)</a></li>")
+        var entries = Regex.Matches(contents.Value, "<li(?: data-dated=\"\\d{4}-\\d{2}-\\d{2}\")?><a href=\"#([^\"]+)\"><span class=\"c-n\">(\\d+)</span>([^<]*)</a></li>")
             .Select(match => (Id: match.Groups[1].Value, At: int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), Title: match.Groups[3].Value))
             .ToArray();
 
@@ -392,8 +392,8 @@ public partial class ReadSurface
         Assert.True(entries.Length >= 9, $"The contents names {entries.Length} card(s), expected at least 9.");
         Assert.Contains($"data-entries=\"{entries.Length}\"", contents.Value, StringComparison.Ordinal);
 
-        // Numbered from where a reader starts, contiguously, in the order the page draws.
-        Assert.Equal([.. Enumerable.Range(0, entries.Length)], [.. entries.Select(entry => entry.At)]);
+        // Numbered from one, contiguously, in the order the page draws.
+        Assert.Equal([.. Enumerable.Range(1, entries.Length)], [.. entries.Select(entry => entry.At)]);
         Assert.All(entries, entry => Assert.NotEqual(string.Empty, entry.Title));
 
         // Every card the page drew is named once, and every entry reaches a card. The cards
@@ -588,7 +588,7 @@ public partial class ReadSurface
             (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
             (universe, new[] { "sectors", "index" }),
             (run, new[] { "operational", "records", "shadow", "stale", "harness" }),
-            (page, new[] { "facts", "how-it-got-here", "chart", "plan", "sources" }),
+            (page, new[] { "how-to-read", "chart", "how-it-got-here", "levels", "plan", "rules", "sources" }),
         };
 
         var keys = 0;

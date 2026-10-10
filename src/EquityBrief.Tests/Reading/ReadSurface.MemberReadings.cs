@@ -65,7 +65,7 @@ public partial class ReadSurface
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync(route));
 
-            return Assert.Single(Blocks(page, "<section class=\"card\"[^>]* data-card=\"member\">.*?</section>"));
+            return Assert.Single(Blocks(page, "<details class=\"rule-part\" id=\"member\" data-card=\"member\">.*?</details>"));
         }
 
         static string Cell(string card, string reading) =>

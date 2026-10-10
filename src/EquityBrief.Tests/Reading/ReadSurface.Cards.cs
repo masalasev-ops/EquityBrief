@@ -174,9 +174,13 @@ public partial class ReadSurface
         foreach (var card in stored)
         {
             var named = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{card.Ticker}/{night}"));
-            var top = Regex.Match(named, $"<section class=\"name-card\" data-family=\"{card.Family}\" data-index=\"{card.Index}\">(.*?)</div></section>", RegexOptions.Singleline);
+            var top = Regex.Match(named, $"<section class=\"card name-card\" id=\"card\" data-role=\"buy\" data-family=\"{card.Family}\" data-index=\"{card.Index}\">(.*?)</div></section>", RegexOptions.Singleline);
 
-            Assert.True(top.Success, $"{card.Ticker}'s page draws no card at its top.");
+            // The card is the page's third region, after the reading guide and the short version.
+            Assert.True(top.Success, $"{card.Ticker}'s page draws no card as its third region.");
+            Assert.Equal(
+                ["how-to-read", "s-the-short-version", "card"],
+                Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             Assert.Equal(
                 card.Lines.Select(line => line.Words),
                 Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">([^<]*)</span>").Select(match => match.Groups[1].Value));

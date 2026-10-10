@@ -201,7 +201,7 @@ public partial class ReadSurface
 
         // AG's own page, on 2026-10-05: picked once, still open, and listed again once, drawn and not counted.
         var name = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AG"));
-        var region = Assert.Single(Blocks(name, "<section class=\"card\" id=\"on-the-list-before\".*?</section>"));
+        var region = Assert.Single(Blocks(name, "<details class=\"rule-part\" id=\"on-the-list-before\".*?</details>"));
 
         Assert.Contains("<p class=\"picked\" data-ticker=\"AG\" data-picked=\"1\" data-repeats=\"1\">Picked once: still open once; listed again once while an earlier trade was open, drawn and not counted.</p>", region, StringComparison.Ordinal);
         Assert.Contains($"data-repeat-of=\"{EarlierNight}\">", PickRowOf(region, "AG", TheSwitch), StringComparison.Ordinal);

@@ -72,7 +72,7 @@ public partial class ReadSurface
         {
             var ticker = row[0];
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
-            var card = Assert.Single(Blocks(page, "<section class=\"card\"[^>]* data-card=\"swing\">.*?</section>"));
+            var card = Assert.Single(Blocks(page, "<details class=\"rule-part\" id=\"swing\" data-card=\"swing\">.*?</details>"));
             var region = Regex.Match(card, "<div class=\"swing-readings\" data-ticker=\"([^\"]+)\" data-session=\"([^\"]+)\" data-bars=\"(\\d+)\">");
 
             Assert.True(region.Success, $"no swing readings region on {ticker}'s page");

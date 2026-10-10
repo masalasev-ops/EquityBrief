@@ -208,7 +208,7 @@ public sealed class SinglePageApp : IComponent
                 ? Invariant($"<span class=\"m-chg{hue}\" data-change=\"{amount.ToString(CultureInfo.InvariantCulture)}\">{amount.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}{(quoted.ChangePercent is { } percent ? Invariant($" ({percent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%)") : string.Empty)}</span>")
                 : string.Empty;
 
-            return Invariant($"<span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"{quoted.Price.ToString(CultureInfo.InvariantCulture)}\">{quoted.Price.ToString("0.00##", CultureInfo.InvariantCulture)}</span>{change}");
+            return Invariant($"<span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"{quoted.Price.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(quoted.Price)}</span>{change}");
         }
 
         return (bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
@@ -221,7 +221,7 @@ public sealed class SinglePageApp : IComponent
     // and the plan are read through.
     public static string QuoteAsOf(LiveQuoteView quote, DateOnly? levelsThrough) =>
         Invariant($"Quote of {TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).ToString("HH:mm", CultureInfo.InvariantCulture)} ET, delayed about 15 minutes")
-        + (quote.PreviousClose is { } previous ? Invariant($". Previous close {previous.ToString("0.00##", CultureInfo.InvariantCulture)}") : string.Empty)
+        + (quote.PreviousClose is { } previous ? Invariant($". Previous close <span data-previous-close=\"{previous.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(previous)}</span>") : string.Empty)
         + (levelsThrough is { } through ? Invariant($". Levels and the plan come from completed sessions to {through:yyyy-MM-dd}") : string.Empty);
 
     static readonly TimeZoneInfo NewYork = EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates);

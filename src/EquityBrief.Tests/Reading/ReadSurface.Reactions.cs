@@ -59,7 +59,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task EachNamesReactionRecordIsDrawnBesideItsSetupsFromTheStoreOverTheFixture()
+    public async Task EachNamesReactionRecordIsDrawnBeforeItsChartFromTheStoreOverTheFixture()
     {
         using var store = await FixtureReplay.ReplayedAsync();
         using var host = new PassHost(store.Root);
@@ -71,10 +71,11 @@ public partial class ReadSurface
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
 
-            // Beside the earnings setups, which close the plan's card: the record is the card after it.
+            // After the numbers and before the chart, where a buyer reads how past reports moved the price before the
+            // picture of the year: the chart is the card after the record.
             var cards = Regex.Matches(page, "<section class=\"card\"[^>]* data-card=\"([^\"]+)\">").Select(card => card.Groups[1].Value).ToList();
 
-            Assert.Equal("reactions", cards[cards.IndexOf("plan") + 1]);
+            Assert.Equal("chart", cards[cards.IndexOf("reactions") + 1]);
             Assert.Matches("<section class=\"card\"[^>]* data-card=\"reactions\">.*?<div class=\"key\">.*?How to read it\\..*?<p class=\"take\"><b>What to take from it\\.</b> A record of what past reports did", page.Replace("\n", " ", StringComparison.Ordinal));
 
             var stored = Rows(store, $"SELECT report_date, timing, reaction_session, IFNULL(estimate, ''), IFNULL(actual, ''), CASE WHEN surprise_pct IS NULL THEN '' ELSE printf('%.6f', surprise_pct) END, printf('%.6f', move_pct) FROM earnings_reaction WHERE ticker = '{ticker}' ORDER BY report_date;");

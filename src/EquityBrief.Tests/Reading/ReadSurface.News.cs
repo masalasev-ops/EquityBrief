@@ -88,7 +88,7 @@ public partial class ReadSurface
     static async Task<string> Page(HttpClient client, string path) => WebUtility.HtmlDecode(await client.GetStringAsync(path));
 
     [Fact]
-    public async Task ANamesPageDrawsItsNewsAfterTheNightsTheListPickedItUnderTabsWithTheBarAndTheModelNamedOnce()
+    public async Task ANamesPageDrawsItsNewsAfterItsGroupByPriceUnderTabsWithTheBarAndTheModelNamedOnce()
     {
         using var store = NewsStore();
         using var host = new Host(store.Root);
@@ -96,7 +96,7 @@ public partial class ReadSurface
 
         var page = await Page(client, "/screens/name/AG");
         var cards = Regex.Matches(page, "<section class=\"card\"[^>]* data-card=\"([^\"]+)\">").Select(card => card.Groups[1].Value).ToList();
-        var before = new[] { "on-the-list-before", "reactions", "plan" }.First(cards.Contains);
+        var before = new[] { "peers", "rules" }.First(cards.Contains);
 
         Assert.Equal("news", cards[cards.IndexOf(before) + 1]);
 

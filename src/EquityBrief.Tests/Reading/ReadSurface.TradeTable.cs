@@ -86,7 +86,7 @@ public partial class ReadSurface
         })
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{TradeTableTicker}/{night}"));
-            var card = Assert.Single(Blocks(page, "<section class=\"card\"[^>]* data-card=\"gates\">.*?</section>"));
+            var card = Assert.Single(Blocks(page, "<details class=\"rule-part\" id=\"gates\" data-card=\"gates\">.*?</details>"));
 
             Assert.Contains($"data-session=\"{night}\" data-version=\"{version}\"", card, StringComparison.Ordinal);
 
@@ -106,7 +106,7 @@ public partial class ReadSurface
             // The other plan's stop and target appear nowhere on the page, the code-written summary included.
             // "On the list before" is set aside: it draws an earlier night's trade on that night's own live
             // plan, which on the nights before section 10's plan was live is the nearest bands'.
-            var rest = Regex.Replace(page, "<section class=\"card\" id=\"on-the-list-before\".*?</section>", string.Empty, RegexOptions.Singleline);
+            var rest = Regex.Replace(page, "<details class=\"rule-part\" id=\"on-the-list-before\".*?</details>", string.Empty, RegexOptions.Singleline);
 
             foreach (var price in absent)
             {

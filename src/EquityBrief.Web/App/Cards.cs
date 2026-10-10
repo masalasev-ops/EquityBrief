@@ -28,8 +28,8 @@ public static class Cards
 
         card.Append("<section class=\"card\"");
         card.Append(id is null ? string.Empty : $" id=\"{Escaped(id)}\"");
-        card.Append(region is null ? string.Empty : $" data-card=\"{Escaped(region)}\"");
         card.Append(role is null ? string.Empty : $" data-role=\"{Escaped(role)}\"");
+        card.Append(region is null ? string.Empty : $" data-card=\"{Escaped(region)}\"");
         card.Append("><div class=\"card-h\"><div>");
         card.Append($"<div class=\"lbl\">{Escaped(label)}</div>");
         card.Append(title is null ? string.Empty : $"<h2>{title}</h2>");

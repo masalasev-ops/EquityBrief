@@ -411,7 +411,7 @@ public partial class ReadSurface
 
         // Tonight, 2026-09-30: PA's pick of 2026-09-24 reached its target on 2026-09-28.
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/PA"));
-        var region = Assert.Single(Blocks(tonight, "<section class=\"card\" id=\"on-the-list-before\".*?</section>"));
+        var region = Assert.Single(Blocks(tonight, "<details class=\"rule-part\" id=\"on-the-list-before\".*?</details>"));
 
         Assert.Contains("<p class=\"picked\" data-ticker=\"PA\" data-picked=\"1\" data-repeats=\"0\">Picked once: reached target once.</p>", region, StringComparison.Ordinal);
 
@@ -422,16 +422,20 @@ public partial class ReadSurface
         Assert.Contains("+2.50 ×</td>", row, StringComparison.Ordinal);
         Assert.Contains("<p class=\"take\"><b>What to take from it.</b>", region, StringComparison.Ordinal);
 
-        // It stands after the plan and its earnings reactions in the contents as on the page.
+        // It is folded inside the plan, after the plan's own tables and before the next region, and has no entry of
+        // its own in the contents.
         var titles = ContentsTitles(tonight);
+        var planAt = tonight.IndexOf("<section class=\"card\" id=\"plan\"", StringComparison.Ordinal);
+        var nextAt = planAt + 1 + Regex.Match(tonight[(planAt + 1)..], "<section class=\"(?:card[^\"]*|absent)\" id=").Index;
+        var foldAt = tonight.IndexOf("id=\"on-the-list-before\"", StringComparison.Ordinal);
 
-        Assert.True(Array.IndexOf(titles, "On the list before") > Array.IndexOf(titles, "Entry and exit plan"), string.Join(", ", titles));
-        Assert.True(tonight.IndexOf("id=\"on-the-list-before\"", StringComparison.Ordinal) > tonight.IndexOf("id=\"plan\"", StringComparison.Ordinal));
+        Assert.DoesNotContain("On the list before", titles);
+        Assert.True(planAt >= 0 && foldAt > tonight.IndexOf("class=\"plan-grid\"", planAt, StringComparison.Ordinal) && foldAt < nextAt, string.Join(", ", titles));
 
         // On 2026-09-25 the same pick was open, one session held, its close of 103 over the listing's 100 at
         // 1.03 on a line from 0.96 to 1.10, at 10 + 0.07/0.14 of 140, 80, hollow.
         var earlier = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/PA/2026-09-25"));
-        var then = PickRowOf(Assert.Single(Blocks(earlier, "<section class=\"card\" id=\"on-the-list-before\".*?</section>")), "PA", PicksVersionTwoNight);
+        var then = PickRowOf(Assert.Single(Blocks(earlier, "<details class=\"rule-part\" id=\"on-the-list-before\".*?</details>")), "PA", PicksVersionTwoNight);
 
         Assert.Contains("Picked once: still open once.", earlier, StringComparison.Ordinal);
         Assert.Contains("<td class=\"status\">Open</td>", then, StringComparison.Ordinal);
