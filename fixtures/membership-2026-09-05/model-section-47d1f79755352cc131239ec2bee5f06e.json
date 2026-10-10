@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-1w3xzz5umreev0gu2hj7lr",
+  "object": "chat.completion",
+  "created": 1791663954,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "On guidance management now expects fourth fiscal quarter 2026 revenue to be in the range of $1.930 billion to $1.950 billion with a mid-point representing year-over-year growth of approximately 37 percent, which represents an improvement from the prior outlook that projected third fiscal quarter 2026 revenue between $1.730 billion and $1.750 billion with a mid-point representing year-over-year growth of approximately 29 percent [D1] [D2]. What is working includes record Q3 results reflecting the growing relevance of our strategy and portfolio, which is enabling customers to solve complex engineering challenges across our end markets [D1], strong momentum in commercial communications showing 56 percent growth alongside 14 percent growth in aerospace, defense, and government within the Communications Solutions Group [D1], double-digit growth across all end markets of automotive and energy, general electronics, and semiconductor within the Electronic Industrial Solutions Group [D2], and a robust pipeline of opportunities supporting the company's ability to capitalize on accelerating demand [D2]. What is not working includes certain items impacting the GAAP tax rate pertaining to future events that are not currently estimable with a reasonable degree of accuracy [D1], the exclusion of acquisition-related items such as amortization of acquired intangible assets and legal costs from non-GAAP measures due to their non-cash or non-recurring nature [D1], share-based compensation expense which is primarily a non-cash charge varying significantly based on share price and equity awards granted [D1], and restructuring initiatives aimed at material changes in the business or cost structure that are excluded from non-GAAP financial measures as they are not normal recurring operating expenses [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18915,
+    "completion_tokens": 356,
+    "total_tokens": 19271,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

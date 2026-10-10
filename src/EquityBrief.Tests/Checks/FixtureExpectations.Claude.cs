@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Worker.Research;
@@ -38,13 +37,14 @@ public partial class FixtureExpectations
             Assert.Contains(written, row => row.StartsWith(section + "|" + ClaimChecker.Accepted + "|", StringComparison.Ordinal));
         }
 
-        // The short version, asked again under the refined prompt, is refused twice and left out, each time for a
-        // figure or a date a document states that the facts file does not hold, and never for a sentence naming
-        // no document.
-        var summary = written.Where(row => row.StartsWith("The short version|", StringComparison.Ordinal)).ToArray();
-
-        Assert.Equal(["The short version|" + ClaimChecker.Rejected, "The short version|" + ClaimChecker.Fallback], summary.Select(row => string.Join('|', row.Split('|')[..2])));
-        Assert.All(summary, row => Assert.Matches($"^The short version\\|[a-z]+\\|({Regex.Escape(ClaimChecker.RejectedOnEveryRetry)}: )?({Regex.Escape(ClaimRules.UnmatchedFigure)}|{Regex.Escape(ClaimRules.UnknownDate)}): ", row));
+        // The short version and, from 18.4, the headline, written last from the accepted claims, each accepted at its
+        // first draft. Asked over the documents, the short version was refused twice and left out for figures and dates
+        // a document states that the facts file does not hold, which no claim carries. Both answers are written by hand
+        // in the shell of Claude's recorded short version, since no Claude call is made to record them.
+        foreach (var section in new[] { ClaimRules.ShortVersionSection, ClaimRules.HeadlineSection })
+        {
+            Assert.Equal([section + "|" + ClaimChecker.Accepted + "|"], written.Where(row => row.StartsWith(section + "|", StringComparison.Ordinal)));
+        }
 
         // The cause, which Claude found nothing in the documents beside each move to write from: answered with
         // a thinking block and no text, asked for once more, and left out saying so, with no draft stored.

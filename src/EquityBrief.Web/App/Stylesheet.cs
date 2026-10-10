@@ -2,7 +2,7 @@ namespace EquityBrief.Web.App;
 
 // The one stylesheet, which the app's shell and the exported report both carry, so a
 // report handed to someone reads as the page it came from.
-// see: A single report can still be exported as a self-contained file
+// see: A single report is exported as one self-contained file in the page's design, opening light with a dark toggle and stamped with the price it was exported at
 //
 // Every colour is a token, and the comment at its head is the rule each token is held to.
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
@@ -587,6 +587,12 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .rk-bar{fill:var(--s3)} .rk-bar.rk-under{fill:var(--s2)} .rk-one{stroke:var(--soft);stroke-width:1.2;stroke-dasharray:4 3}
 .ev-tag{fill:var(--surface);stroke:var(--ink-2);stroke-width:1} .ev-tag-t{font-size:9px;font-weight:700;fill:var(--ink)}
 .typical-move,.long-view-basis,.long-view-levels,.plan-trail,.labels-cover,.shares-sum{font-size:13.5px;color:var(--ink-2);margin:8px 0}
+/* the calendar's timeline, the risks' two columns and the sources: results in ink, an ex-dividend date a neutral step,
+   drawn hollow where estimated, and the Fed's and the CPI's dates in the caution hue */
+.ct-dot{stroke:var(--surface);stroke-width:2} .ct-results{fill:var(--ink)} .ct-ex-dividend{fill:var(--s3)} .name .ct-fomc,.name .ct-cpi{fill:var(--warn)}
+.ct-ex-dividend.ct-estimated{fill:var(--surface);stroke:var(--s3);stroke-width:2}
+.calendar-past,.computed-line{font-size:13.5px;color:var(--ink-2);margin:8px 0}
+.risk-cols .computed-line{font-weight:600;color:var(--ink)}
 .moves-table td.cause-source{font-size:12.5px;color:var(--ink-2)}
 @media (max-width:700px){ .lead-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .two-col{grid-template-columns:1fr} .lead-line{font-size:20px} }
 table.risks-table td{vertical-align:top;padding-top:10px;padding-bottom:10px}

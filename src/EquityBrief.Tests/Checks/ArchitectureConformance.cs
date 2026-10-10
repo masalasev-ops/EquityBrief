@@ -1417,7 +1417,9 @@ public partial class ArchitectureConformance
         // analysts, dividend safety and valuation.
         // 179 at 18.3: the reaction range, the long view, the ladder figure and the reward to risk bars, and the name page's
         // long view and ladder figure.
-        Assert.Equal(179, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 182 at 18.4: the calendar timeline, and the name page's risks' two columns, calendar and sources, where the dates
+        // and sources leave.
+        Assert.Equal(182, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1543,7 +1545,9 @@ public partial class ArchitectureConformance
         // analysts, dividend safety and valuation.
         // 555 at 18.3: the four marks and the name page's long view and ladder figure, the level chart's two parts, the
         // chart's two, the plan's five, the reactions' three and how it got here's six for the twelve-month picture.
-        Assert.Equal(555, inDocument.Length);
+        // 581 at 18.4: the calendar timeline as its eight parts, the headline as its four where it was one, the risks' two
+        // columns as their four, the calendar as its eight and the sources as their four, where the dates and sources leave.
+        Assert.Equal(581, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1648,7 +1652,9 @@ public partial class ArchitectureConformance
         // 480 at 18.3: the level chart's two parts, the chart's two, the plan's five, the reactions' three beside the place
         // it states anew, how it got here's six for the twelve-month picture's one, and the gap row's part on the
         // typical earnings move and the long view.
-        Assert.Equal(480, checkedElements);
+        // 508 at 18.4: the headline's four parts, the risks' two columns' four, the calendar's eight, the sources' four and
+        // the calendar timeline's eight.
+        Assert.Equal(508, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

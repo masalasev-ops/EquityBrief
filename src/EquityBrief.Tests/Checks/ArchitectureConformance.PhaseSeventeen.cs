@@ -65,7 +65,9 @@ public partial class ArchitectureConformance
     // Treasury reader, their three stores, the Treasury's step, the report's windows and the dividends history run, its six
     // failures, and the name page's seven regions and nine marks; and 18.3's page history reader, its two stores, the
     // typical earnings move's floor and seven failures with the gap row's part, and the name page's two regions, four
-    // marks and the parts the chart, the plan, the reactions and the moves gain.
+    // marks and the parts the chart, the plan, the reactions and the moves gain; and 18.4's two limits and three
+    // failures, and the parts of the name page's headline it writes last and dates, its risks' two columns, calendar and
+    // sources and the calendar's timeline.
     internal static string[] PhaseEighteenRows =>
     [
         .. ComponentAccess.QuoteJobRows,
@@ -83,13 +85,16 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "The page history reader cannot finish"),
         CheckReach.Key(Scope.FailureTable, "A gap in one name's series, typical earnings move and long view"),
         .. Reading.ReadSurface.HistoryPageRows,
+        .. FixtureExpectations.WrittenLastRows,
+        .. Reading.ReadSurface.WrittenLastPageRows,
     ];
 
     // The rows the document loses after phase 17's report, each counted by the report of the phase that added it: the
     // 6.10 correction's overnight queue, its catalogue and matrix rows, its step, section 17's row, section 18's row for
     // a night the machine slept and the part of the local model's row the queue recorded, and the run page's region;
     // and 18.3's twelve-month picture, which the chart's numbered moves replace, and the reactions' place beside the
-    // earnings setups, which 18.1 moved and 18.3 states.
+    // earnings setups, which 18.1 moved and 18.3 states; and 18.4's dates and sources, which the calendar and the
+    // sources replace.
     // The step is named by how it opened, since its whole text cites the decisions its retirement superseded.
     internal static readonly string[] TakenOutAfterPhaseSeventeen =
     [
@@ -102,6 +107,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "Overnight queue"),
         CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
         CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
+        CheckReach.Key("15.9 Name", "Dates and sources"),
     ];
 
     [Fact]

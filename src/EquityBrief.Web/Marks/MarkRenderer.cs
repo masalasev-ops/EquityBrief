@@ -562,10 +562,10 @@ public sealed record NewsView(
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
-// how many drafts the pass wrote of it; and for the two cases whether any of those drafts carried a figure on
-// both sides.
+// how many drafts the pass wrote of it; for the two cases whether any of those drafts carried a figure on
+// both sides; and for the short version whether it was written last from the accepted claims.
 // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
-public sealed record ReportCell(string Section, string Outcome, string? Why, decimal Cost, int Drafts, bool BothSides);
+public sealed record ReportCell(string Section, string Outcome, string? Why, decimal Cost, int Drafts, bool BothSides, bool WrittenLast = false);
 
 // One report: the pass's run, its stock and the day it wrote for, what its calls cost, a trial's left out, and a
 // cell for each section in figure 12.2's order.
@@ -1120,15 +1120,17 @@ public sealed record LeftOutSection(string Subject, string Section, string Reaso
 public sealed record ResearchStateLine(string State, string Line);
 
 // One written section as a page draws it: the section, the prose as stored, the date it
-// was written on, the model that wrote it, and the ids its markers resolve to, in the
-// order its source list holds them, so [D1] is the first.
-public sealed record WrittenCell(string Section, string Prose, DateOnly AsOf, string Model, IReadOnlyList<string> SourceIds);
+// was written on, the model that wrote it, the ids its markers resolve to, in the order
+// its source list holds them, so [D1] is the first, and for the two written last the
+// claims they were handed, so [C1] is the first.
+public sealed record WrittenCell(string Section, string Prose, DateOnly AsOf, string Model, IReadOnlyList<string> SourceIds, IReadOnlyList<EquityBrief.Core.Research.Claim>? Claims = null);
+
+// The lines the plan computes that open the risks' two columns: a close above the nearest resistance band, and a close
+// below the plan's invalidation or, where no plan is stored, the nearest support band.
+public sealed record RiskLines(string? Up, string? Worse);
 
 // One document a written section cites, as a page draws it.
 public sealed record SourceCell(string Id, string Title, string Url, DateOnly? PublishedOn);
-
-// One dated event the calendar holds for a name, as the dates-and-sources region draws it.
-public sealed record DateCell(DateOnly Date, string Kind, string Timing);
 
 // What the newest pass for a name came to, as the research region states it: its
 // outcome, the session it ran on, and the one line that says what happened.
@@ -1315,7 +1317,7 @@ public sealed partial class MarkRenderer : IComponent
     // It draws nothing the ladder does not carry. Every row handed in is a
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
     {
         if (rows.Count == 0)
@@ -3951,7 +3953,7 @@ public sealed partial class MarkRenderer : IComponent
     // [D2] is checkable only where [D2] says which document it is.
     // see: A research record is written and dated per section, not as a whole
     // see: Every researched claim must name a stored source document
-    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on")
+    public string WrittenSection(string ticker, WrittenCell section, IReadOnlyList<SourceCell> documents, string dated = "written on", RiskLines? riskLines = null)
     {
         var drawn = new StringBuilder();
 
@@ -3959,7 +3961,12 @@ public sealed partial class MarkRenderer : IComponent
         drawn.Append(Invariant, $"data-as-of=\"{section.AsOf:yyyy-MM-dd}\" data-model=\"{Escaped(section.Model)}\">");
         drawn.Append(Invariant, $"<h3>{Escaped(section.Section)}</h3>");
 
-        var paragraphs = section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var whole = section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // The risks close on their two columns, each paragraph opening on its column's words, read apart from the risks.
+        // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+        var risksColumns = string.Equals(section.Section, TheRisks, StringComparison.Ordinal);
+        var paragraphs = risksColumns ? [.. whole.Where(paragraph => !IsRiskColumn(paragraph))] : whole;
 
         if (ManagementParts(section.Section, paragraphs) is { } said)
         {
@@ -4037,6 +4044,11 @@ public sealed partial class MarkRenderer : IComponent
             }
         }
 
+        if (risksColumns && (riskLines is not null || whole.Any(IsRiskColumn)))
+        {
+            drawn.Append(RiskColumns(whole, riskLines));
+        }
+
         drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
 
         // A section written before the checker held a figure to the documents its sentence cites says so.
@@ -4072,6 +4084,11 @@ public sealed partial class MarkRenderer : IComponent
             drawn.Append("</ol>");
         }
 
+        if (section.Claims is { Count: > 0 } claims)
+        {
+            drawn.Append(ClaimSources(section.Prose, claims));
+        }
+
         drawn.Append("</section>");
 
         return drawn.ToString();
@@ -4100,7 +4117,7 @@ public sealed partial class MarkRenderer : IComponent
     // asked and nothing is stored, so it follows the night the page draws. The list is the one the page's
     // night drew, dated where the page is for an earlier night and called tonight's where it is not, as the
     // page's reasons are, since the newest bar can be a night the list has not yet been drawn for.
-    // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
     public string ShortVersionByCode(
         string ticker,
         string reason,
@@ -4266,6 +4283,89 @@ public sealed partial class MarkRenderer : IComponent
     // rank them on a judgement no model stated and no code computed.
     // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
     // see: Code owns every number
+    // The address of a written section's card on the name page.
+    public static string WrittenId(string section) =>
+        "s-" + new string([.. section.ToLowerInvariant().Select(letter => char.IsLetterOrDigit(letter) ? letter : '-')]);
+
+    // Where a claim's region stands on the page, which its mark links to: a computed region by its own address and a
+    // written one by its section's card.
+    public static string ClaimAnchor(string region) => region switch
+    {
+        EquityBrief.Core.Research.AcceptedClaims.Quarter => "quarter",
+        EquityBrief.Core.Research.AcceptedClaims.Segments => "segments",
+        EquityBrief.Core.Research.AcceptedClaims.Moves => "how-it-got-here",
+        EquityBrief.Core.Research.AcceptedClaims.Plan => "plan",
+        EquityBrief.Core.Research.AcceptedClaims.Calendar => "calendar",
+        _ => WrittenId(region),
+    };
+
+    // The claims a section written last cites, each with the region drawing it, in the order of their numbers.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    static string ClaimSources(string prose, IReadOnlyList<EquityBrief.Core.Research.Claim> claims)
+    {
+        int[] cited =
+        [
+            .. EquityBrief.Core.Research.ClaimRules.Sentences(prose)
+                .SelectMany(sentence => sentence.ClaimsCited)
+                .Where(number => number >= 1 && number <= claims.Count)
+                .Distinct()
+                .Order(),
+        ];
+
+        if (cited.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<ol class=\"section-sources claim-sources\" data-claims=\"{cited.Length}\">");
+
+        foreach (var number in cited)
+        {
+            var claim = claims[number - 1];
+
+            drawn.Append(Invariant, $"<li data-marker=\"C{number}\">[C{number}] {Escaped(claim.Text)} <a href=\"#{ClaimAnchor(claim.Region)}\">{Escaped(claim.Region)}</a></li>");
+        }
+
+        return drawn.Append("</ol>").ToString();
+    }
+
+    // A paragraph of one of the two columns the risks close on.
+    static bool IsRiskColumn(string paragraph) =>
+        paragraph.StartsWith(EquityBrief.Core.Research.RiskFields.TurnsUp, StringComparison.Ordinal)
+        || paragraph.StartsWith(EquityBrief.Core.Research.RiskFields.MakesWorse, StringComparison.Ordinal);
+
+    // The two columns beneath the risks, what would turn the stock up beside what would make it worse, each opening on
+    // the line the plan computes and then the writer's lines, a claim to a row.
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    static string RiskColumns(IReadOnlyList<string> paragraphs, RiskLines? computed)
+    {
+        static IReadOnlyList<string> Written(IReadOnlyList<string> paragraphs, string opening) =>
+            Claims([.. paragraphs.Where(paragraph => paragraph.StartsWith(opening, StringComparison.Ordinal))]);
+
+        var drawn = new StringBuilder("<div class=\"two-col risk-cols\">");
+
+        foreach (var (side, heading, line, opening) in new[]
+        {
+            ("up", "What would turn it up", computed?.Up, EquityBrief.Core.Research.RiskFields.TurnsUp),
+            ("worse", "What would make it worse", computed?.Worse, EquityBrief.Core.Research.RiskFields.MakesWorse),
+        })
+        {
+            drawn.Append(Invariant, $"<div class=\"{(side == "up" ? "col-up" : "col-down")}\" data-risk-column=\"{side}\"><h4>{heading}</h4>");
+
+            if (line is not null)
+            {
+                drawn.Append(Invariant, $"<p class=\"prose computed-line\" data-computed=\"{side}\">{Escaped(line)}</p>");
+            }
+
+            ClaimRows(drawn, Written(paragraphs, opening));
+            drawn.Append("</div>");
+        }
+
+        return drawn.Append("</div>").ToString();
+    }
+
     static IReadOnlyList<string>? RiskParts(string section, IReadOnlyList<string> paragraphs)
     {
         if (!string.Equals(section, TheRisks, StringComparison.Ordinal) || paragraphs.Count == 0)
@@ -4315,65 +4415,6 @@ public sealed partial class MarkRenderer : IComponent
         var at = part.IndexOf(". " + ConfirmationOpens, StringComparison.Ordinal);
 
         return at < 0 ? (part, null) : (part[..(at + 1)], part[(at + 2)..]);
-    }
-
-    // Dates and sources, section 15.9's region and the one section 4 calls what the research read: the
-    // calendar, the dated items a pass read out of the documents, and every document the
-    // written sections cite with its date and link.
-    //
-    // The calendar is the provider's and the dated items are a model's, and the two are
-    // drawn apart for that reason: an earnings date is filed and a conference date is a
-    // sentence resting on a document, and a reader has to be able to tell which is which.
-    // A region with nothing in a part says so rather than drawing it empty.
-    public string DatesAndSources(string ticker, IReadOnlyList<DateCell> dates, WrittenCell? items, IReadOnlyList<SourceCell> documents)
-    {
-        var region = new StringBuilder();
-
-        region.Append(Invariant, $"<section class=\"dates-and-sources\" data-ticker=\"{Escaped(ticker)}\" data-events=\"{dates.Count}\" data-documents=\"{documents.Count}\">");
-
-        if (dates.Count == 0)
-        {
-            region.Append("<p class=\"degraded\" data-events=\"none\">the calendar holds no dated event for this name from its newest session</p>");
-        }
-        else
-        {
-            region.Append("<div class=\"tbl-wrap\">");
-            region.Append("<table class=\"calendar-dates\"><tr><th>Date</th><th>Event</th><th>Timing</th></tr>");
-
-            foreach (var date in dates)
-            {
-                region.Append(Invariant, $"<tr data-date=\"{date.Date:yyyy-MM-dd}\" data-kind=\"{Escaped(date.Kind)}\">");
-                region.Append(Invariant, $"<td>{date.Date:yyyy-MM-dd}</td><td>{Escaped(date.Kind)}</td><td>{Escaped(date.Timing)}</td></tr>");
-            }
-
-            region.Append("</table></div>");
-        }
-
-        if (items is not null)
-        {
-            region.Append(WrittenSection(ticker, items, documents));
-        }
-
-        if (documents.Count == 0)
-        {
-            region.Append("<p class=\"degraded\" data-documents=\"none\">no written section cites a document</p>");
-        }
-        else
-        {
-            region.Append("<ol class=\"sources\">");
-
-            foreach (var document in documents)
-            {
-                region.Append(Invariant, $"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Escaped(document.Url)}\">");
-                region.Append(Link(document)).Append("</li>");
-            }
-
-            region.Append("</ol>");
-        }
-
-        region.Append("</section>");
-
-        return region.ToString();
     }
 
     // A document as a link with the date it was published beside it, or the words saying
@@ -5358,7 +5399,7 @@ public sealed partial class MarkRenderer : IComponent
     // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
     // The median is the annotator's and is drawn as stored; nothing here works it out.
     // see: A large move is shown beside its group's median move over the same sessions
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     static string GroupCell(MoveGroup? group)
     {
         if (group is null)
@@ -5404,7 +5445,7 @@ public sealed partial class MarkRenderer : IComponent
     // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
     // sorts, filters or works a figure out.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
@@ -5585,7 +5626,7 @@ public sealed partial class MarkRenderer : IComponent
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
         var table = new StringBuilder();

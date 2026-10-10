@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-1za335f3elt087rh5yqg6jj",
+  "object": "chat.completion",
+  "created": 1791663967,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The plan buys in three tranches at support bands and sells an equal share at each resistance band above but the top one [C4][C5].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 689,
+    "completion_tokens": 32,
+    "total_tokens": 721,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

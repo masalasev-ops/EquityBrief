@@ -129,7 +129,15 @@ public partial class FixtureExpectations
 
         var asked = await FixturePromptsAsync();
 
-        Assert.All(asked, request => Assert.Contains(Reader, request.System, StringComparison.Ordinal));
+        // The two written last are handed the accepted claims alone and choose nothing the sections did not, so they
+        // are told the reader and not what to choose.
+        Assert.All(
+            asked,
+            request => Assert.Contains(
+                ClaimRules.IsWrittenLast(request.Section) ? "The reader is deciding whether to hold a swing trade in this stock over the next weeks to few months. " : Reader,
+                request.System,
+                StringComparison.Ordinal));
+        Assert.Contains(asked, request => ClaimRules.IsWrittenLast(request.Section) && request.System == SectionPrompt.FromClaims);
 
         // The risks' own system, which opens on the answer's form, carries it.
         Assert.Contains(asked, request => RiskFields.IsRisks(request.Section) && request.System.StartsWith(SectionPrompt.AsFields, StringComparison.Ordinal) && request.System.Contains(Reader, StringComparison.Ordinal));
@@ -145,7 +153,14 @@ public partial class FixtureExpectations
 
         var asked = await FixturePromptsAsync();
 
-        Assert.All(asked, request => Assert.Contains(Alternative, request.System, StringComparison.Ordinal));
+        // The two written last are listed no facts and no document, and are told that every figure is one a claim they
+        // cite states.
+        Assert.All(
+            asked,
+            request => Assert.Contains(
+                ClaimRules.IsWrittenLast(request.Section) ? "Every figure you write must be one a claim you cite states" : Alternative,
+                request.System,
+                StringComparison.Ordinal));
 
         // The risks' own system, which opens on the answer's form, carries it.
         Assert.Contains(asked, request => RiskFields.IsRisks(request.Section) && request.System.StartsWith(SectionPrompt.AsFields, StringComparison.Ordinal) && request.System.Contains(Alternative, StringComparison.Ordinal));

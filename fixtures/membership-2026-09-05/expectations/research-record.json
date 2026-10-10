@@ -6,7 +6,7 @@
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written. The local model's answers were recorded again on 2026-10-10 under the prompt that teaches [N], and the paid lane's answers were constructed from their recordings of 2026-09-30 with [N] marked, no paid call made: in the comparison with every section local, the short version's first draft is refused and each of its three retries, one request since no retry's draft reaches the checker, stops at its budget of 1024 tokens and is asked once more and stops there again, so it is left out with no usable answer where it had fallen back after its last retry, and that half asks 22 calls where it asked 19: the short version's 7 where it asked 4. From the 6.10 correction of 2026-10-10 no pass asks for the key under each figure, so the pass's local lane makes 3 calls where it made 4, the comparison's local half 21 where it made 22, and its paid half 10 where it made 11, spending 0.0376086 where it spent 0.038743068, less the key's one call of 0.001134468. From 18.2 the pass asks what management said of the paid lane, whose answer was constructed from the two releases with no paid call made and is accepted at its first draft, so the pass makes 8 paid calls where it made 7 and spends 0.03656136 where it spent 0.03369171, the call's 0.00286965 over the usage its constructed answer states; the short version's requests carry it among the sections already written, so the short version's answers are those recordings' own under the requests' new keys. In the comparison the paid half makes 11 calls and spends 0.04047825, and the local model's drafts of it state the release before's guidance, whose figures the facts file does not list, at every retry, so it is left out and that half asks 25 calls where it asked 21.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written. The local model's answers were recorded again on 2026-10-10 under the prompt that teaches [N], and the paid lane's answers were constructed from their recordings of 2026-09-30 with [N] marked, no paid call made: in the comparison with every section local, the short version's first draft is refused and each of its three retries, one request since no retry's draft reaches the checker, stops at its budget of 1024 tokens and is asked once more and stops there again, so it is left out with no usable answer where it had fallen back after its last retry, and that half asks 22 calls where it asked 19: the short version's 7 where it asked 4. From the 6.10 correction of 2026-10-10 no pass asks for the key under each figure, so the pass's local lane makes 3 calls where it made 4, the comparison's local half 21 where it made 22, and its paid half 10 where it made 11, spending 0.0376086 where it spent 0.038743068, less the key's one call of 0.001134468. From 18.2 the pass asks what management said of the paid lane, whose answer was constructed from the two releases with no paid call made and is accepted at its first draft, so the pass makes 8 paid calls where it made 7 and spends 0.03656136 where it spent 0.03369171, the call's 0.00286965 over the usage its constructed answer states; the short version's requests carry it among the sections already written, so the short version's answers are those recordings' own under the requests' new keys. In the comparison the paid half makes 11 calls and spends 0.04047825, and the local model's drafts of it state the release before's guidance, whose figures the facts file does not list, at every retry, so it is left out and that half asks 25 calls where it asked 21. From 18.4 each figure is held to the region of the page drawing it, and the short version and the headline are written last from the accepted claims: the local model's answers were recorded again on 2026-10-10 under the prompt that lists each figure under its region, and the paid lane's were constructed from their recordings with no paid call made, the short version's and the headline's written by hand for the claims each request lists. In the pass the segment commentary is refused at each of its three retries, for growth rates the release states and the facts file does not hold, figures it holds for other regions and totals the release does not state, and is left out where it had passed at its retry; the short version is refused at its first draft for the latest quarter's earnings a share, which the tiles show, and accepted at its retry; and the headline is accepted at its first draft. So the pass's local lane makes 5 calls where it made 3 and its paid lane 9 where it made 8, spending 0.045164076 where it spent 0.03656136. In the comparison the paid half makes 12 calls and spends 0.050044848, and the local half makes 26, leaving out the cause of each large move and the segment commentary beside the three it left out before and accepting the short version at its retry and the headline at its first draft.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -24,7 +24,8 @@
       "The dated calendar items",
       "The two cases",
       "The risks, each with what would confirm it",
-      "The short version"
+      "The short version",
+      "The headline"
     ]
   },
   "notWritten": {
@@ -64,9 +65,12 @@
   },
   "versions": [
     { "section": "The dated calendar items", "version": 1, "lane": "paid", "status": "accepted" },
+    { "section": "The headline", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "rejected" },
-    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "accepted" },
+    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "rejected" },
+    { "section": "The segment commentary", "version": 3, "lane": "local", "status": "rejected" },
+    { "section": "The segment commentary", "version": 4, "lane": "local", "status": "fallback" },
     { "section": "The short version", "version": 1, "lane": "paid", "status": "rejected" },
     { "section": "The short version", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "The two cases", "version": 1, "lane": "paid", "status": "accepted" },
@@ -87,17 +91,23 @@
     "research call: The risks, each with what would confirm it",
     "claims",
     "prose, round 2",
-    "research call: The short version, round 2",
     "claims, round 2",
-    "research call: The short version, round 3",
+    "prose, round 3",
     "claims, round 3",
+    "prose, round 4",
+    "claims, round 4",
+    "research call: The short version, round 5",
+    "research call: The headline, round 5",
+    "claims, round 5",
+    "research call: The short version, round 6",
+    "claims, round 6",
     "research"
   ],
   "modelCalls": {
-    "local": 3,
-    "paid": 8
+    "local": 5,
+    "paid": 9
   },
-  "spend": "0.03656136",
+  "spend": "0.045164076",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -117,25 +127,28 @@
         "The dated calendar items": 1,
         "The two cases": 1,
         "The risks, each with what would confirm it": 1,
-        "The short version": 2
+        "The short version": 2,
+        "The headline": 1
       },
       "fallback": [],
-      "calls": 11,
-      "spend": "0.04047825"
+      "calls": 12,
+      "spend": "0.050044848"
     },
     "local": {
       "accepted": {
-        "The cause of each large move": 1,
         "What the company sells": 1,
-        "The segment commentary": 2,
-        "The dated calendar items": 2
+        "The dated calendar items": 2,
+        "The short version": 2,
+        "The headline": 1
       },
       "fallback": [
+        "The cause of each large move",
+        "The segment commentary",
         "What management said",
         "The two cases",
         "The risks, each with what would confirm it"
       ],
-      "calls": 25,
+      "calls": 26,
       "spend": "0"
     }
   }

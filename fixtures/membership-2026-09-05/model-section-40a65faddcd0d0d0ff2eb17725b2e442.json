@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-05rflusxl85xajrlcu982dj",
+  "object": "chat.completion",
+  "created": 1791662744,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies announced participation in the Goldman Sachs Communacopia + Technology Conference on September 11, 2026 [D6]. Keysight Technologies announced participation in the 2026 Truist Technology Symposium on September 15, 2026 [D6].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19233,
+    "completion_tokens": 63,
+    "total_tokens": 19296,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

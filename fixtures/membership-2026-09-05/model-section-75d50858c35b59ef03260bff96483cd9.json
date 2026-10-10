@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bmgyywufwnq0zwuct7487lh",
+  "object": "chat.completion",
+  "created": 1791663832,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The Communications Solutions Group reported operating income of 458 million representing an increase of 86 percent on a year earlier as the filing attributes this improvement to strong performance across commercial communications and aerospace markets. The Electronic Industrial Solutions Group posted operating income of 155 million reflecting a rise of 68 percent from the prior year while management noted growth across semiconductor, general electronics, automotive and energy markets in the release. Total segment operating income rose to 613 million representing an increase of 81 percent on a year earlier while the filing attributes this improvement to strong performance across both reportable segments.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13057,
+    "completion_tokens": 124,
+    "total_tokens": 13181,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

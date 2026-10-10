@@ -7,7 +7,7 @@ namespace EquityBrief.Web.Marks;
 // from stored values at the price the masthead draws, with what it is read against beneath it and its value whole on its
 // element. A change is coloured by its sign on the name page alone, and the sign is always written beside it, so the hue
 // is never the only channel.
-// see: The headline carries no figure, and code writes it until a written one is accepted
+// see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
 // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
 // see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
 public sealed partial class MarkRenderer
@@ -19,6 +19,7 @@ public sealed partial class MarkRenderer
         lead.Append(Formatted($"<section class=\"lead\" data-ticker=\"{Escaped(ticker)}\">"));
         lead.Append(headline is { } said
             ? Formatted($"<h1 class=\"lead-line\" data-written=\"{(said.Written ? "model" : "code")}\">{Escaped(said.Sentence)}</h1>")
+                + (said.WrittenOn is { } on ? "<p class=\"written-by\">written on " + DayOf(on) + "</p>" : string.Empty)
             : string.Empty);
 
         lead.Append(tiles is { } shown ? LeadTiles(shown) : string.Empty);

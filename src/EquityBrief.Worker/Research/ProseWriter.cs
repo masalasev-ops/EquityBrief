@@ -94,6 +94,9 @@ public sealed class ProseWriter(
     public const string NoFactsFile = "no facts file is stored for the name on or before today";
     public const string NoDocumentInsideAMove = "no document handed to the writer was published inside any stored move";
 
+    // Why the short version or the headline is not written: no written section stands accepted to give it a claim.
+    public const string NoClaimAccepted = "no written section stands accepted to write it from";
+
     // And the three that are not absences: the section has a row a reader is shown
     // or will be, so the page says nothing of the skip.
     public const string AwaitingTheChecker = "an earlier draft is still waiting on the claim checker";
@@ -166,7 +169,8 @@ public sealed class ProseWriter(
         IReadOnlyDictionary<string, IReadOnlyList<StoredDocument>> documents,
         string runId,
         string? round = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyList<Claim>? claims = null)
     {
         Checked(lane);
 
@@ -224,6 +228,41 @@ public sealed class ProseWriter(
 
             // A retry: the newest version was refused today, so this draft is told why.
             var retry = today && newest!.Status == "rejected";
+
+            // The two written last rest on the claims handed in and on no document, and are not asked where no written
+            // section was accepted to give them one.
+            // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+            if (ClaimRules.IsWrittenLast(section))
+            {
+                if (claims is null || !AcceptedClaims.AnyWritten(claims))
+                {
+                    notWritten.Add(new UnwrittenSection(section, NoClaimAccepted));
+
+                    continue;
+                }
+
+                var asked = SectionPrompt.ClaimsRequest(
+                    settings.Model,
+                    ticker,
+                    section,
+                    claims,
+                    facts,
+                    retry ? RetryBrief.For(section, newest!.Prose, facts, [], night, newest.Reason, newest.Parts) : null,
+                    SectionPrompt.Lane);
+
+                if (!SectionPrompt.Fits(asked, settings.ContextTokens))
+                {
+                    notWritten.Add(new UnwrittenSection(
+                        section,
+                        FormattableString.Invariant($"{CannotHold}: an estimated {SectionPrompt.EstimatedTokens(asked)} prompt tokens and {OpenAiCompatibleModelFeed.AnswerTokens} for the answer against a context of {settings.ContextTokens}")));
+
+                    continue;
+                }
+
+                planned.Add((section, asked, [], retry, (newest?.Version ?? 0) + 1));
+
+                continue;
+            }
 
             var handed = documents.TryGetValue(section, out var given) ? given : [];
 
@@ -366,7 +405,9 @@ public sealed class ProseWriter(
 
             // The risks come back as fields, stored beside the prose code composes from them.
             // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
-            var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0 ? RiskFields.FromAnswer(prose) : (prose, null);
+            var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0
+                ? RiskFields.FromAnswer(prose)
+                : (prose, ClaimRules.IsWrittenLast(section) && claims is not null ? AcceptedClaims.Stored(claims) : null);
 
             await using var insert = connection.CreateCommand();
 

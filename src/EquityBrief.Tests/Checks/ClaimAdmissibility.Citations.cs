@@ -28,7 +28,7 @@ public partial class ClaimAdmissibility
     [Fact]
     public void AFigureInASentenceCitingDocumentsAloneIsOneTheyStateReadAtTheScaleTheirTablesState()
     {
-        const string Section = "What the company sells";
+        const string Section = Ungoverned;
 
         // A results release whose table states its unit once, as Chevron's does: 67,199 read at millions is
         // $67.199 billion, which "$67.2 billion" rounds, and the night's close is in no release.
@@ -69,7 +69,7 @@ public partial class ClaimAdmissibility
     [Fact]
     public void APercentageInASentenceIsReadOnlyAgainstAPercentageTheDocumentStates()
     {
-        const string Section = "What the company sells";
+        const string Section = Ungoverned;
 
         // The facts file holds both as numbers; the document writes the rate as a percentage and the reading bare.
         var document = Release("It pays a yield of 7.12% and holds an index reading of 51.4 for the quarter.");
@@ -165,6 +165,8 @@ public partial class ClaimAdmissibility
     {
         var document = Release("text");
 
+        // The risks are asked for as an object, so JSON that is not their fields is refused as that and the retry told to
+        // answer with the object asked for; every other section is told to answer in prose.
         foreach (var section in ClaimRules.Sections)
         {
             foreach (var answer in new[] { "{\"error\": \"no text at all\"}", " [1, 2] " })
@@ -172,12 +174,18 @@ public partial class ClaimAdmissibility
                 var verdict = ClaimRules.Check(section, answer, NightFacts, [document]);
 
                 Assert.False(verdict.NoAdmissibleSource, section);
-                Assert.Equal([(answer.Trim(), ClaimRules.UnusableAnswer)], verdict.Findings.Select(finding => (finding.Offending, finding.Reason)));
+                Assert.Equal(
+                    RiskFields.IsRisks(section) ? new[] { ("the answer", RiskFields.NotFields) } : new[] { (answer.Trim(), ClaimRules.UnusableAnswer) },
+                    verdict.Findings.Select(finding => (finding.Offending, finding.Reason)));
             }
         }
 
+        Assert.Equal(
+            "- the answer: " + RiskFields.NotFields + ". Answer with the JSON object the section asks for and nothing else.",
+            RetryBrief.Line(Assert.Single(ClaimRules.Check(RiskFields.Section, "{\"risks\": \"supply\"}", NightFacts, [document]).Findings)));
+
         // Prose that opens on a mark is prose, and a bracket that is not JSON is read as written.
-        Assert.True(ClaimRules.Check("What the company sells", "[N] The close was 205.15.", NightFacts, [document]).Passes);
+        Assert.True(ClaimRules.Check(Ungoverned, "[N] The close was 205.15.", NightFacts, [document]).Passes);
         Assert.DoesNotContain(
             ClaimRules.UnusableAnswer,
             ClaimRules.Check("What the company sells", "[D1] It sells fuel.", NightFacts, [document]).Findings.Select(finding => finding.Reason));

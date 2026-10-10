@@ -216,8 +216,9 @@ public partial class ReadSurface
         // from 17.2, the checklist's item on a live rule past its mark, 77 from 18.1, the year's range bar in
         // the fourth tile on the name page and in the exported report, and 81 from 18.3, the reaction range, the long
         // view and the ladder figure on both where the twelve-month picture is drawn no more, the fixture's name
-        // trading no exit a tranche's risk is read to, so its reward to risk bars say so in words.
-        Assert.Equal(81, pictures);
+        // trading no exit a tranche's risk is read to, so its reward to risk bars say so in words, and 83 from 18.4,
+        // the calendar's timeline on both.
+        Assert.Equal(83, pictures);
 
         var page = screens[3].Item2;
 

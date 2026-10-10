@@ -122,7 +122,7 @@ public sealed record SectionStateRow(string Section, int Version, DateOnly AsOf,
 // The prose and the source list are handed back as stored. What 6.6 draws from
 // them is the cause of each move, in the moves table, and the provenance footer's
 // date and model; the sections themselves are drawn from 6.8.
-public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsOf, string Model, string Prose, string SourceIds);
+public sealed record WrittenSectionRow(string Section, int Version, DateOnly AsOf, string Model, string Prose, string SourceIds, string? Parts = null);
 
 // One document a written section cites, as stored, less the body: the dates-and-sources
 // region draws what it was, when it was published and where it is, and a reader follows
@@ -189,7 +189,7 @@ public sealed record RunStageRow(
 
 // One version a research pass or its theme pass wrote, as the store holds it now: the name or the theme it was
 // written for, the section, the version, the status the checker gave it, its prose and why it was refused.
-public sealed record WrittenVersion(string Owner, string Section, int Version, string Status, string Prose, string? RejectReason);
+public sealed record WrittenVersion(string Owner, string Section, int Version, string Status, string Prose, string? RejectReason, string? Parts = null);
 
 // One row of a pass as it runs: the component that wrote it, what it came to, and whether it
 // has ended. A row with no end is the step the pass is on.
@@ -691,7 +691,7 @@ public sealed record ReactionRow(
 // subtraction is not here: this hands back the stored column and the projection
 // that draws the column works out the change, which is the seam
 // `UniverseScreen` already names for the distance.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
 
 // One row of the universe screen, and every field is a stored column.
@@ -745,7 +745,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // place the arithmetic lives, and the day it disagrees with the nightly run
 // nothing says which one is the system.
 // see: Code owns every number
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public sealed partial class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
@@ -923,7 +923,7 @@ public sealed partial class ReadApi : IComponent
 
     // Each version a research pass or its theme pass says it wrote, as the stores hold it now.
     const string ReportVersions = @"
-        SELECT r.ticker, r.section, r.version, r.status, r.prose, r.reject_reason
+        SELECT r.ticker, r.section, r.version, r.status, r.prose, r.reject_reason, r.parts
         FROM run_log l, json_each(l.detail, '$.written') w
         JOIN research_section r
           ON r.ticker = json_extract(l.detail, '$.ticker')
@@ -931,7 +931,7 @@ public sealed partial class ReadApi : IComponent
          AND r.version = json_extract(w.value, '$.version')
         WHERE l.stage = $research AND substr(l.run_id, 1, length($pass)) = $pass AND json_valid(l.detail)
         UNION
-        SELECT t.theme, t.section, t.version, t.status, t.prose, t.reject_reason
+        SELECT t.theme, t.section, t.version, t.status, t.prose, t.reject_reason, NULL
         FROM run_log l, json_each(l.detail, '$.written') w
         JOIN theme_section t
           ON t.theme = json_extract(l.detail, '$.theme')
@@ -953,7 +953,7 @@ public sealed partial class ReadApi : IComponent
     // left out as it is from every read the pages draw.
     // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
     const string WrittenSectionsForName = @"
-        SELECT r.section, r.version, r.as_of, r.model, r.prose, r.source_ids
+        SELECT r.section, r.version, r.as_of, r.model, r.prose, r.source_ids, r.parts
         FROM research_section r
         WHERE r.ticker = $ticker
           AND r.section <> $retired
@@ -5297,7 +5297,8 @@ public sealed partial class ReadApi : IComponent
                 reader.GetInt32(2),
                 reader.GetString(3),
                 reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
-                reader.IsDBNull(5) ? null : reader.GetString(5)));
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6)));
         }
 
         return versions;
@@ -5361,7 +5362,8 @@ public sealed partial class ReadApi : IComponent
                 DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(3),
                 reader.GetString(4),
-                reader.GetString(5)));
+                reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6)));
         }
 
         if (await ThemeCycleAsync(ticker) is { } cycle)

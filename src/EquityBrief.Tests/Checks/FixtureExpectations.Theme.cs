@@ -575,10 +575,11 @@ public partial class FixtureExpectations
         Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
         // Every section of the name's own is written and stored but the cause of each large move,
-        // which the recorded model answered with nothing twice, the cycle is omitted with the one
-        // line saying the theme could not be refreshed, and the theme record is as it was.
+        // which the recorded model answered with nothing twice, the headline among them from 18.4,
+        // the cycle is omitted with the one line saying the theme could not be refreshed, and the
+        // theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(8, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
             [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", CauseNotWritten()],
@@ -930,8 +931,8 @@ public partial class FixtureExpectations
             Query(store, "SELECT network_requests FROM run_log WHERE run_id = 'research-counted' AND stage = 'research';"));
     }
 
-    // A research model that answers each call with the next of its texts, for a pass whose
-    // drafts a test chooses rather than a provider recorded.
+    // A research model that answers each call with the next of its texts, and with its last once they run out, for a pass
+    // whose drafts a test chooses rather than a provider recorded. One given no text answers no call.
     internal sealed class ScriptedModel(params string[] texts) : IResearchModelFeed
     {
         readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Pinned();
@@ -955,7 +956,7 @@ public partial class FixtureExpectations
         {
             Asked.Add(request);
 
-            var text = texts[Requests++];
+            var text = texts[Math.Min(Requests++, texts.Length - 1)];
 
             return Task.FromResult(new ResearchAnswer(settings.Model, text, 100, 0, 100, 50, 0, "stop", DateTimeOffset.Parse("2026-09-08T21:10:30Z", CultureInfo.InvariantCulture)));
         }

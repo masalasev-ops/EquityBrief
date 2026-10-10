@@ -202,17 +202,19 @@ public partial class FixtureExpectations
     [Fact]
     public async Task ASectionTheCheckerRefusedIsAskedOnceMoreToldWhyAndTheSecondDraftStands()
     {
-        // The local lane's retry over a scripted runtime: the segment commentary's first draft quotes
-        // a close no facts file holds, citing the night's figures, and is refused, and the next pass
-        // asks once more, told why, and stores the second draft, which quotes the close the file holds
-        // and is accepted.
+        // The local lane's retry over a scripted runtime: the segment commentary's first draft states
+        // a segment's revenue no facts file holds, citing the night's figures, and is refused, and the
+        // next pass asks once more, told why, and stores the second draft, which states the revenue the
+        // file holds for the segment, a figure the segments draw, and is accepted.
         const string Section = "The segment commentary";
 
         var (store, document) = await WithRelease();
 
         using (store)
         {
-            var feed = new TwoDrafts("Keysight closed at 999.99 on the night [N].", "Keysight closed at 333.42 on the night [N].");
+            var feed = new TwoDrafts(
+                "Communications Solutions Group revenue was $9,999 million in the quarter [N].",
+                "Communications Solutions Group revenue was $1,345 million in the quarter [N].");
             var writer = new ProseWriter(feed, LocalSettings(), [Section], ProseClock, store.DatabaseFile);
             var checker = new ClaimChecker(ProseClock, store.DatabaseFile);
 
@@ -226,7 +228,7 @@ public partial class FixtureExpectations
             Assert.DoesNotContain("previous draft", feed.Asked[0].Prompt, StringComparison.Ordinal);
             Assert.Contains(RetryBrief.Opening, feed.Asked[1].Prompt, StringComparison.Ordinal);
             Assert.Contains(
-                $"- \"999.99\" in the sentence \"Keysight closed at 999.99 on the night [N].\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
+                $"- \"$9,999 million\" in the sentence \"Communications Solutions Group revenue was $9,999 million in the quarter [N].\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
                 feed.Asked[1].Prompt,
                 StringComparison.Ordinal);
             Assert.Equal([$"{Section}|{ClaimChecker.Accepted}"], second.Checked.Select(section => $"{section.Section}|{section.Status}"));
@@ -603,17 +605,15 @@ public partial class FixtureExpectations
 
         // Five from the release's passes, what the company sells, the segment commentary and the
         // cause, and the segment commentary and the cause again after the checker refused their
-        // first drafts; three from the research pass with the configured lanes, the segment
-        // commentary among them asked again after the checker refused its first draft; sixteen
-        // from the comparison with every section in the local lane, the cause, what management
-        // said, the dated calendar items, the two cases, the risks and the short version, each of
-        // the last five asked again after the checker refused its first draft, what management
-        // said, the two cases and the risks each asked twice more, refused at every retry to the
-        // last, what management said's last retry the request its second was, since the two drafts
-        // before them were one draft refused for the same figures, and the short version's three
-        // retries one request, since each stopped at its budget and no draft after its first
-        // reached the checker.
-        Assert.Equal(24, recorded.Length);
+        // first drafts; and twenty-four from the comparison with every section in the local lane,
+        // among them the five the research pass with the configured lanes asks, what the company
+        // sells and the segment commentary's first draft and three retries, refused at each for
+        // figures the facts file does not hold or another region of the page draws: the cause's
+        // first draft and one retry, its later retries the same request since each draft repeated
+        // the one before it, the segment commentary's four, what management said's four, the dated
+        // calendar items' two, the two cases' four and the risks' four, and from 18.4 the short
+        // version's two and the headline's one, written last from the accepted claims.
+        Assert.Equal(29, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

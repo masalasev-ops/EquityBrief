@@ -280,10 +280,10 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted') " +
             "ORDER BY section;");
 
-        // Two written over the two passes, stated in advance: what the company sells on the
-        // first draft and the segment commentary on its retry, with the cause of each large
-        // move left out after two refusals.
-        Assert.Equal(2, written.Count);
+        // One written over the two passes, stated in advance: what the company sells on the
+        // first draft, the segment commentary refused at its retry from 18.4 for figures the
+        // segments do not draw, and the cause of each large move left out after two refusals.
+        Assert.Single(written);
 
         foreach (var row in written)
         {

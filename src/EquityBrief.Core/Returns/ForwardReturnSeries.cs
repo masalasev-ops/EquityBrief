@@ -354,7 +354,7 @@ public static class ForwardReturnSeries
     // reason the base rate's is: a rendering layer that computes is a second
     // implementation of one rule, and the two disagree eventually. Nothing here
     // decides whether the figures are shown. That is the minimum's job.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: A condition is judged against the break-even its own plan demands
     public static (int Scored, double? Share, double? BreakEven) Record(
         IReadOnlyList<(string? Outcome, double? BreakEven)> setups)

@@ -27,7 +27,7 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // Nothing in it derives a figure. Every value is the stored column, and the one
 // thing that is worked out is which of the four momentum readings exist, which
 // is a lookup in a list the indicator arithmetic already carries.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static partial class NameScreen
 {
     // The three averages drawn on a price axis. The momentum readings are not
@@ -188,7 +188,7 @@ public static partial class NameScreen
     // earnings basis they were struck on, the market value likewise, the close and
     // the year's high and low are bars, and the averages, the momentum readings and
     // the typical daily move are the indicator engine's own rows.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: The fact strip states the year's high and low with the sessions they were made on
     public static string FactStrip(
         string ticker,
@@ -347,7 +347,7 @@ public static partial class NameScreen
     // stored value on its cell. Nothing here works a figure out: the margin was
     // computed by the fetcher from the two figures in its own filing, and the
     // valuation was copied from the provider with the earnings basis beside it.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
@@ -478,7 +478,7 @@ public static partial class NameScreen
     // what the read API handed: the latest quarter, the growth and the margins of the newest fetch's quarters, the segment
     // table the stated rule makes of the newest filing's, the analysts' figures, the dividend's safety at the price drawn,
     // and the valuation from the night's reading of the quarters and of the stock's industry's members.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public static ReportView Report(
         string ticker,
         ReportInputs inputs,
@@ -550,7 +550,7 @@ public static partial class NameScreen
     // being the fetcher's, and each row's element carries the stored value whole. The analysts'
     // target price is not among them, for the reason the facts file does not carry it: set
     // beside the company's own figures, an analyst's estimate reads as one of them.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     static string Snapshot(JsonElement payload, string currency)
@@ -654,7 +654,7 @@ public static partial class NameScreen
     // column. A screen that guessed would be a screen deciding what an absence
     // meant, and the three reasons a part can be absent are exactly what this
     // column exists to tell apart.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     static IReadOnlyDictionary<string, string> Attribution(string source)
     {
         try
@@ -1017,7 +1017,7 @@ public static partial class NameScreen
     // The sizing arithmetic and the earnings rule, as the plan section states
     // them. Every figure is read off the ladder row, which derived them from its
     // own prices, so nothing here computes and nothing can drift.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public static string Arithmetic(LadderRow? ladder)
     {
         if (ladder is null)
@@ -1228,7 +1228,9 @@ public static partial class NameScreen
         ReportInputs? reportInputs = null,
         // What the typical earnings move, the long view, the chart's marks and the moves' causes read, as the read API
         // handed it.
-        HistoryInputs? historyInputs = null)
+        HistoryInputs? historyInputs = null,
+        // The SEC's facts as first filed for the name's filer, which the sources check the latest quarter's lines against.
+        IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1256,6 +1258,10 @@ public static partial class NameScreen
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
         var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? []);
+
+        // The latest quarter's lines checked against the filing's facts as first filed.
+        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+        var checkedFigures = EquityBrief.Core.Report.FiguresChecked.Of(filedFacts ?? [], reportInputs?.Quarters.MaxBy(quarter => quarter.PeriodEnd));
 
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -1377,7 +1383,6 @@ public static partial class NameScreen
             spend is null ? null : Paused(spend),
             Written(accepted),
             [.. (cited ?? []).Select(document => new SourceCell(document.Id, document.Title, document.Url, document.PublishedOn))],
-            [.. (events ?? []).Select(dated => new DateCell(dated.EventDate, dated.Kind, dated.Timing))],
             PassLine(newest, spend, today),
             Controls(staleness, newest, notWritten, spend, priced, today),
             spend is null || priced is null ? null : Cost(priced, spend),
@@ -1404,7 +1409,7 @@ public static partial class NameScreen
             warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null,
             quote: live,
             quoteSession: quoteSession,
-            headline: Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
+            headline: WrittenHeadline(accepted) ?? Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
             asksForQuotes: asksForQuotes,
             report: reportInputs is { } inputs
@@ -1413,12 +1418,63 @@ public static partial class NameScreen
             rawSegments: RawSegments(filings),
             history: historyInputs is { } inputsOfHistory
                 ? History(inputsOfHistory, bars, levels, typicalMove, ladder, reactions ?? [], reportInputs?.Dividends ?? [], year, live)
-                : null);
+                : null,
+            calendar: bars.Count > 0
+                ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings)
+                : null,
+            figuresChecked: checkedFigures.Conflicts,
+            filedFactsHeld: checkedFigures.Compared > 0);
     }
 
-    // The sentence under the masthead until a written one is accepted: whether a rule picked the name tonight and which,
+    // The ninety days after the night the page draws: the company's next results, its next ex-dividend date, declared or
+    // estimated from the newest ex-date the store holds, a kept dividend's or the provider's, at the payments a year its
+    // bars' steps show, and the Fed's and the CPI's dates.
+    // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
+    public static CalendarView Calendar(
+        DateOnly night,
+        IReadOnlyList<CalendarRow> events,
+        decimal? forwardRate,
+        IReadOnlyList<EquityBrief.Core.Report.KeptDividend> dividends,
+        IReadOnlyList<RawCloseRow> rawCloses,
+        IReadOnlyList<FilingRow> filings)
+    {
+        DateOnly? provided = null;
+
+        if (filings.Count > 0)
+        {
+            using var newest = JsonDocument.Parse(filings[0].Payload);
+
+            if (newest.RootElement.TryGetProperty("dividend", out var dividend) && Text(dividend, "exDividendDate") is { } day
+                && DateOnly.TryParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var exDate))
+            {
+                provided = exDate;
+            }
+        }
+
+        DateOnly[] exDates = [.. dividends.Select(dividend => dividend.ExDate).Append(provided ?? DateOnly.MinValue).Where(date => date != DateOnly.MinValue && date <= night)];
+
+        var kept = forwardRate is > 0m && exDates.Length > 0
+            ? new EquityBrief.Core.Cards.DividendKept(forwardRate, exDates.Max(), [])
+            {
+                PaymentsAYear = EquityBrief.Core.Cards.CardHitsReading.PaymentsAYear([.. rawCloses.Select(row => (row.Session, row.Close, row.RawClose))]),
+            }
+            : null;
+
+        var (items, past) = EquityBrief.Core.Cards.PageCalendar.Of(night, [.. events.Select(row => (row.EventDate, row.Kind, row.Timing))], kept);
+
+        return new CalendarView(night, night.AddDays(EquityBrief.Core.Cards.PageCalendar.Days), items, past);
+    }
+
+    // The headline a pass wrote last and the checker accepted, its claim marks taken off, or none where none stands.
+    // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
+    public static HeadlineView? WrittenHeadline(IReadOnlyList<WrittenSectionRow> accepted) =>
+        accepted.FirstOrDefault(section => string.Equals(section.Section, ClaimRules.HeadlineSection, StringComparison.Ordinal)) is { Prose.Length: > 0 } written
+            ? new HeadlineView(ClaimRules.Unmarked(written.Prose), Written: true, written.AsOf)
+            : null;
+
+    // The sentence under the masthead where no written one is accepted: whether a rule picked the name tonight and which,
     // or how close it came, its business as its reported quarters read it and its trend, with no figure in it.
-    // see: The headline carries no figure, and code writes it until a written one is accepted
+    // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
     public static HeadlineView Headline(string company, DecisionCardView? card, FilterWhy? passed, EquityBrief.Core.Filter.MissedGate? missed, string? state, string? trend)
     {
         var business = state switch
@@ -1889,7 +1945,7 @@ public static partial class NameScreen
     [
         .. accepted
             .Where(section => !string.Equals(section.Section, ClaimRules.CauseSection, StringComparison.Ordinal))
-            .Select(section => new WrittenCell(section.Section, section.Prose, section.AsOf, section.Model, SourceIds(section.SourceIds))),
+            .Select(section => new WrittenCell(section.Section, section.Prose, section.AsOf, section.Model, SourceIds(section.SourceIds), ClaimRules.IsWrittenLast(section.Section) ? AcceptedClaims.Read(section.Parts) : null)),
     ];
 
     // Every id the written sections cite, once each, which is what the dates-and-sources

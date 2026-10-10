@@ -233,6 +233,52 @@ public partial class ReadSurface
         Assert.Contains("Showing 7 of 22 reports", drawn, StringComparison.Ordinal);
     }
 
+    // The short version written last from the accepted claims is rated on a row of its own beside the ones written before,
+    // which is what the operating row reads at its trigger.
+    // owes: The short version's refusals after it is written from accepted claims
+    [Fact]
+    public void TheShortVersionWrittenLastIsRatedOnARowOfItsOwnApartFromTheOnesBeforeIt()
+    {
+        static ReportRow Report(int day, string outcome, bool last) => new(
+            "research-" + day.ToString(CultureInfo.InvariantCulture),
+            "N" + day.ToString(CultureInfo.InvariantCulture),
+            new DateOnly(2026, 10, day),
+            0m,
+            [.. ClaimRules.Sections.Select(section => section == ClaimRules.ShortVersionSection
+                ? new ReportCell(section, outcome, null, 0m, 1, false, last)
+                : new ReportCell(section, ReportsView.NotWarranted, null, 0m, 0, false))]);
+
+        // Newest first: three written last, two passing first time and one left out, and four written before, one passing
+        // first time, one at its retry and two left out.
+        ReportRow[] newest =
+        [
+            Report(9, ReportsView.FirstTime, last: true),
+            Report(8, ReportsView.LeftOut, last: true),
+            Report(7, ReportsView.FirstTime, last: true),
+            Report(6, ReportsView.FirstTime, last: false),
+            Report(5, ReportsView.OnRetry, last: false),
+            Report(4, ReportsView.LeftOut, last: false),
+            Report(3, ReportsView.LeftOut, last: false),
+        ];
+
+        static string Read(IReadOnlyList<SectionRate> rates, string named) =>
+            Assert.Single(rates, rate => rate.Section == named) is var one ? $"{one.Reports}|{one.FirstTime}|{one.LeftOut}" : string.Empty;
+
+        var rates = RunScreen.RatesOver(newest, ReportsView.RateWindow);
+        var named = rates.Select(rate => rate.Section).ToList();
+
+        Assert.Equal("4|1|2", Read(rates, ClaimRules.ShortVersionSection));
+        Assert.Equal("3|2|1", Read(rates, RunScreen.ShortVersionWrittenLast));
+        Assert.Equal(named.IndexOf(ClaimRules.ShortVersionSection) + 1, named.IndexOf(RunScreen.ShortVersionWrittenLast));
+        Assert.Equal(ClaimRules.Sections.Length + 1, rates.Count);
+
+        // Each row read over the newest of its own reports up to the window.
+        var two = RunScreen.RatesOver(newest, 2);
+
+        Assert.Equal("2|1|0", Read(two, ClaimRules.ShortVersionSection));
+        Assert.Equal("2|1|1", Read(two, RunScreen.ShortVersionWrittenLast));
+    }
+
     [Fact]
     public void AFigureOnBothSidesIsCountedFromEveryDraftOfTheTwoCasesAndNotWhereTheSidesCannotBeCut()
     {

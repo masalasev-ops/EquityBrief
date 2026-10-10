@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-aee115i1r2vkfp6c5bno6",
+  "object": "chat.completion",
+  "created": 1791664487,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies serves technology innovators as a mission-critical design enablement partner for complex engineering challenges across end markets including AI infrastructure, communications, industrial automation, aerospace and defense, automotive, semiconductor, and general electronics [C1]. The company sells design, emulation, and test solutions that connect market-leading capabilities across the full lifecycle to help engineering teams accelerate innovation and bring new technologies to market faster [C2]. Customers rely on Keysight to bridge virtual design and physical reality, enabling confident decisions earlier in their development processes [C3].\n\nKeysight Technologies announced participation in the Goldman Sachs Communacopia + Technology Conference on September 11, 2026 [C7]. Keysight Technologies announced participation in the 2026 Truist Technology Symposium on September 15, 2026 [C8]. The plan buys in three tranches at the support bands beneath the price, each an equal share of a full position [C4]. It sells an equal share at each traded resistance band above but the top one, and from the top one holds the last share on a stop trailed under the price rather than selling it at a price [C5]. In an uptrend each tranche's stop is raised to the higher of the band beneath it and the last swing low beneath it [C6].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 899,
+    "completion_tokens": 272,
+    "total_tokens": 1171,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

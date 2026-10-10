@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // computed parts alone, under a heading that says why, read from the record the page already reads the
 // section's state from. Each is read off the page the route serves, against the store by queries of the
 // test's own.
-// see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+// see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
 public partial class ReadSurface
 {
     static Match CodeSummary(string page) =>

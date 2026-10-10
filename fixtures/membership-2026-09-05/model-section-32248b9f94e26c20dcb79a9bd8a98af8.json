@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-6c6nec4q214g68lljnv7e",
+  "object": "chat.completion",
+  "created": 1791663822,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session ended on 2026-08-24 saw the stock decline as the company reported third quarter results with revenue up 36 percent and GAAP net income rising to a record level, which D1 attributes to the move.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12594,
+    "completion_tokens": 53,
+    "total_tokens": 12647,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -243,13 +243,13 @@ app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, R
 // screen's region composed by the same code from the same reads, less the research controls
 // and the pause, which are the application asking the operator something rather than the
 // report. Offered as a download, so where the file is kept is the operator's choice.
-// see: A single report can still be exported as a self-contained file
+// see: A single report is exported as one self-contained file in the page's design, opening light with a dark toggle and stamped with the price it was exported at
 app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, ReportExporter exporter) =>
 {
     var name = await NameAsync(read, marks, page, caps, clock, ticker, builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC", export: true);
 
     return Results.File(
-        System.Text.Encoding.UTF8.GetBytes(exporter.Document(ticker, name.AsOf, name.Region)),
+        System.Text.Encoding.UTF8.GetBytes(exporter.Document(ticker, name.AsOf, name.Region, clock.UtcNow)),
         "text/html; charset=utf-8",
         ReportExporter.FileName(ticker, name.AsOf));
 });
@@ -449,7 +449,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         asksForQuotes: !export && on is null,
         // What the latest quarter, the margins, the analysts, the dividend and the valuation read, as of the page's night.
         reportInputs: await read.ReportInputsAsync(ticker, on, night ?? (bars.Count > 0 ? bars[^1].SessionDate : clock.SessionDateAt(clock.UtcNow))),
-        historyInputs: historyInputs);
+        historyInputs: historyInputs,
+        // The filer's facts as first filed over the year before the page's night, which the sources check the latest
+        // quarter's lines against.
+        filedFacts: await read.FiledFactsAsync(ticker, (night ?? clock.SessionDateAt(clock.UtcNow)).AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead), on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

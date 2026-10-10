@@ -58,7 +58,8 @@ public static class SectionPrompt
     // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
     public const string Instructions =
         "You write one section of an equity research report. Write plain prose with no headings, no lists, no markdown and no preamble. "
-        + "Every figure you write must be one of the facts listed, copied or rounded, and written in digits. Write no figure that is not listed, and no date that is not listed. "
+        + "Every figure you write must be one of the facts listed under Facts, copied or rounded, and written in digits. Write no figure that is not listed, and no date that is not listed. "
+        + "The facts listed under the page's other regions are drawn there with their figures, so say what they show in words, such as that margins widened or that the price sits near the year's high, and never write their figures. "
         + "Where a document gives a figure that is not listed under Facts, say what it shows without the number, such as that orders rose sharply or that most of the growth came from a single segment, and never write it as a figure or spell the number out; describe a change no listed figure sizes the same way, against its base. "
         + "Round an amount of money to millions or billions and write the unit, write a margin as a percentage, and write any other figure to at most two decimal places. "
         + "Write a count from one to ten in words and anything larger in digits. "
@@ -108,7 +109,21 @@ public static class SectionPrompt
     public static string System(IReadOnlyList<PromptDocument> documents, string section) =>
         RiskFields.IsRisks(section)
             ? AsFields + Instructions[Instructions.IndexOf(" Every figure", StringComparison.Ordinal)..] + (documents.Count > 0 ? " " + CitingFields : string.Empty)
-            : System(documents);
+            : ClaimRules.IsWrittenLast(section)
+                ? FromClaims
+                : System(documents);
+
+    // What the short version and the headline are written under: the claims handed to them and nothing else, each
+    // sentence citing the claims it rests on, and no figure the tiles show.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    public const string FromClaims =
+        "You write one section of an equity research report from the numbered claims listed and nothing else. Write plain prose with no headings, no lists, no markdown and no preamble. "
+        + "End every sentence with the claims it rests on, written as [C1] for the first claim listed, [C2] for the second, and so on, a sentence resting on two ending with both. "
+        + "Every figure you write must be one a claim you cite states, copied or rounded as it is written there, and written in digits; write no figure, no date and no point that no claim you cite states, and none of the figures listed under the tiles. "
+        + "Write a count from one to ten in words and anything larger in digits. "
+        + "The reader is deciding whether to hold a swing trade in this stock over the next weeks to few months. "
+        + "Describe and never prescribe: propose no trade, no holding, no adding or trimming and no plan for income, and where a claim says what the plan does, say it as the claim says it. "
+        + "Write no em dash, and never call a statement or a view candid or frank.";
 
     // What each section asks for beyond the instructions, by figure 12.2's names.
     public static readonly IReadOnlyDictionary<string, string> Asks = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -136,13 +151,15 @@ public static class SectionPrompt
             + "Use only the segment facts and the documents listed.",
         // What management said with its results, in three parts the page draws apart: the guidance against the release
         // before, and what is working and what is not in the release's own words, each quoted word for word since the
-        // checker holds a quotation to the document it cites. A release's own figures are not in the facts file, so
-        // they are said without the number as every section says them.
+        // checker holds a quotation to the document it cites. The facts file carries the guided figures of the newest
+        // release and of the release before where each was located, so those are written as figures and the rest of a
+        // release's own figures are said without the number as every section says them.
         // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+        // see: The facts file carries the release before's guided figures beside the newest's, under names of their own
         ["What management said"] =
             "From the newest results release and, where one is listed, the release before it, write three paragraphs. "
             + "The first begins \"" + ClaimRules.GuidanceOpens + "\" and says what management now expects for the coming period and how that differs from what the release before expected, or that a release gives none. "
-            + "The release before's figures are not listed under Facts, so say in words how the outlook moved from it. "
+            + "Write a guided figure, the newest release's or the release before's, only where it is listed under Facts, and say in words how the outlook moved where it is not. "
             + "The second begins \"" + ClaimRules.WorkingOpens + "\" and gives at most four things the newest release says are going well, a sentence each. "
             + "The third begins \"" + ClaimRules.NotWorkingOpens + "\" and gives at most four things the newest release says are going badly or weighing on results, a sentence each, or says that it names none. "
             + "In the second and third paragraphs quote the release's own words inside double quotation marks, copied exactly, and say nothing a release does not say.",
@@ -172,36 +189,50 @@ public static class SectionPrompt
             "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
             + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
             + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
-            + "Make each point a reason, not a figure restated. Describe a change with its size, so a small change reads as small, using the listed figures at both ends or words against its base, "
-            + "and never a difference you work out yourself. Let each fact argue one side only: a figure used in the bull case does not appear in the bear case, closing sentences included. "
+            + "Make each point a reason, not a figure restated. Describe a change with its size in words against its base, so a small change reads as small, since its figures are drawn in their own regions, "
+            + "and never a difference you work out yourself. Let each fact argue one side only: a fact used in the bull case does not appear in the bear case, closing sentences included. "
             + Examples.TwoCases,
         // The risks are asked for as fields, which code composes into the paragraphs the page draws, so that
         // what confirms each is a listed fact or an event of one kind and code can tell two risks apart. A
         // confirmation is what would be seen if the risk came true, and three risks confirmed by one miss of
         // guidance are one risk.
         // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+        // The risks close on two columns, what would turn the stock up and what would make it worse, each a line of words
+        // and the document it rests on; the page opens each column on a line the plan computes.
+        // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
         ["The risks, each with what would confirm it"] =
             "Name each risk to the company that the documents support, and answer with one JSON object and nothing else, shaped as "
-            + "{\"risks\":[{\"risk\":\"...\",\"riskDocument\":1,\"confirm\":{\"fact\":\"...\"},\"direction\":\"rises above\",\"level\":\"...\",\"why\":\"...\",\"whyDocument\":1}]}. "
+            + "{\"risks\":[{\"risk\":\"...\",\"riskDocument\":1,\"confirm\":{\"fact\":\"...\"},\"direction\":\"rises above\",\"level\":\"...\",\"why\":\"...\",\"whyDocument\":1}],"
+            + "\"turnsUp\":[{\"what\":\"...\",\"document\":1}],\"makesWorse\":[{\"what\":\"...\",\"document\":1}]}. "
             + "Write risk as words completing \"The first risk is\", such as \"that supply stays short of demand\", and riskDocument as the number of the listed document that states it. "
-            + "Let confirm name what would be seen if the risk came true: a listed fact wherever one could show it, its name copied exactly as it is listed under Facts, "
-            + "with direction \"rises above\" or \"falls below\" and level a figure listed under Facts, copied or rounded. "
+            + "Let confirm name what would be seen if the risk came true: a listed fact wherever one could show it, its name copied exactly as it is listed, "
+            + "with direction \"rises above\" or \"falls below\" and level that fact's figure or another figure listed, copied or rounded. "
             + "Only where no listed fact could show it, such as a lawsuit, a regulator's decision or a competitor's launch, write confirm as {\"event\":\"...\",\"kind\":\"...\"} "
             + "with the event in words and kind one of legal, regulatory, competitive, acquisition, management, supply or other, and give it no direction and no level. "
             + "A valuation risk is confirmed by the multiple falling, not by it staying high, and three risks confirmed by the same miss of guidance cannot be told apart, "
             + "so no two risks name the same fact and no two event risks share a kind. Never use a level the next quarter crosses by construction. "
             + "Write why as words completing \"because\", saying why that movement means the risk is coming true, and whyDocument as the number of the listed document that says so. "
             + "List a real risk even where no figure can show it. "
+            + "Then write turnsUp as at most four things the documents say could lift the stock, each what as words completing \"" + RiskFields.TurnsUp + "\", "
+            + "and makesWorse as at most four things they say could hurt it further, each what as words completing \"" + RiskFields.MakesWorse + "\", "
+            + "each with document as the number of the listed document that says so, and no figure in either. "
             + Examples.Risks,
-        // What is true and what is argued about, and never a plan: the plan is computed by code
-        // and drawn in its own region. The one section that sums the others up is the one a
-        // writer opens paragraphs in with a short signpost citing nothing, so it is told that a
-        // sentence which only introduces or sums up is not one to write.
+        // Three paragraphs from the claims the other sections were accepted with and the plan's own, and never a plan of
+        // its own: the plan is computed by code and drawn in its own region. The one section that sums the others up is
+        // the one a writer opens paragraphs in with a short signpost citing nothing, so it is told that a sentence which
+        // only introduces or sums up is not one to write.
+        // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
         // see: A written section describes the company and never proposes a trade, a holding or a plan for income
         ["The short version"] =
-            "In three or four paragraphs, say what the documents and the sections already written show to be true of the company and what the market is arguing about. "
-            + "Every sentence, however short, states something a listed document says and ends with its marker, so write no sentence that only introduces, joins or sums up the others. "
-            + "Describe it and propose nothing: the trade plan is computed and drawn separately, so write no trade, no holding, no adding or trimming and no plan for income.",
+            "Write three paragraphs. The first says what happened: the latest results and what the company and its management reported. "
+            + "The second says what matters for the stock over the next weeks: what is working, what is not, the risks and what the market is arguing about. "
+            + "The third says what the plan does, in the words of the plan's claims. "
+            + "Give each point its own sentence, and write no sentence that only introduces, joins or sums up the others.",
+        // One sentence carrying no figure: every figure stands in the tiles and the sections beneath it with its source.
+        // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
+        ["The headline"] =
+            "Write one sentence of no more than twenty-five words saying what matters most about this stock now, for a reader deciding whether to hold a swing trade in it. "
+            + "Write no figure and no digit.",
     };
 
     // A weak point and a strong one for the two sections a writer most often fills with points that could be said of
@@ -241,14 +272,13 @@ public static class SectionPrompt
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
         string? refusedBecause = null,
-        IReadOnlyList<(string Section, string Prose)>? written = null,
         DateOnly? night = null) =>
-        Build("Company", ticker, section, facts, documents, refusedBecause, written, night);
+        Build("Company", ticker, section, facts, documents, refusedBecause, night);
 
     // The industry cycle for a theme, which is the one section asked of an industry rather
     // than of a company, with no facts listed because a theme has none.
     public static string ThemePrompt(string industry, IReadOnlyList<PromptDocument> documents, string? refusedBecause = null) =>
-        Build("Industry", industry, ClaimRules.CycleSection, [], documents, refusedBecause, null, null);
+        Build("Industry", industry, ClaimRules.CycleSection, [], documents, refusedBecause, null);
 
     static string Build(
         string label,
@@ -257,7 +287,6 @@ public static class SectionPrompt
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
         string? refusedBecause,
-        IReadOnlyList<(string Section, string Prose)>? written,
         DateOnly? night)
     {
         if (!Asks.ContainsKey(section))
@@ -304,11 +333,31 @@ public static class SectionPrompt
             prompt.Append('\n');
         }
 
+        // A section held to its own region's figures is handed those under Facts and every other fact under the region
+        // that draws it, so it can say what they show in words.
+        // see: Each figure of the facts file is owned by one region of the page, and a written section writes only the figures its own region owns
+        var (own, elsewhere) = FactOwners.Governs(section) ? FactOwners.Split(section, facts) : (facts, []);
+
         prompt.Append("Facts:\n");
 
-        foreach (var fact in facts)
+        foreach (var fact in own)
         {
             prompt.Append("- ").Append(fact.Name).Append(" = ").Append(fact.Value).Append('\n');
+        }
+
+        if (elsewhere.Count > 0)
+        {
+            prompt.Append("\nFacts the page's other regions draw, to say in words and never as figures:\n");
+
+            foreach (var (region, drawn) in elsewhere)
+            {
+                prompt.Append("Drawn by ").Append(region).Append(":\n");
+
+                foreach (var fact in drawn)
+                {
+                    prompt.Append("- ").Append(fact.Name).Append(" = ").Append(fact.Value).Append('\n');
+                }
+            }
         }
 
         if (documents.Count > 0)
@@ -337,19 +386,6 @@ public static class SectionPrompt
             }
         }
 
-        // The sections the checker has already accepted, handed to the one section figure
-        // 12.2 says is written last and from them. Absent from every other prompt, so a
-        // recording made before any section was written is still the request it answers.
-        if (written is { Count: > 0 })
-        {
-            prompt.Append("\nSections already written:\n");
-
-            foreach (var (name, prose) in written)
-            {
-                prompt.Append(name).Append(":\n").Append(prose.Trim()).Append("\n\n");
-            }
-        }
-
         // The ask again, word for word, after everything handed in and before any retry's brief.
         // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
         prompt.Append('\n').Append(NowWrite).Append('\n').Append(ask).Append('\n');
@@ -374,9 +410,51 @@ public static class SectionPrompt
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
         string? refusedBecause = null,
-        IReadOnlyList<(string Section, string Prose)>? written = null,
         DateOnly? night = null) =>
-        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents, section), Prompt(ticker, section, facts, documents, refusedBecause, written, night));
+        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents, section), Prompt(ticker, section, facts, documents, refusedBecause, night));
+
+    // The short version or the headline, written last from the numbered claims and asked in the lane its settings name:
+    // the claims, the figures the tiles show which it never writes, and the ask again after them, with a retry's brief.
+    // No facts file and no document is handed to it, so it can rest on nothing a claim does not state.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    public static string ClaimsPrompt(string ticker, string section, IReadOnlyList<Claim> claims, IReadOnlyList<Fact> facts, string? refusedBecause = null)
+    {
+        var ask = Asks[section];
+        var prompt = new StringBuilder();
+
+        prompt.Append("Company: ").Append(ticker).Append('\n');
+        prompt.Append("Section: ").Append(section).Append('\n');
+        prompt.Append(ask).Append("\n\nClaims:\n");
+
+        for (var at = 0; at < claims.Count; at++)
+        {
+            prompt.Append("[C").Append((at + 1).ToString(CultureInfo.InvariantCulture)).Append("] ").Append(claims[at].Text).Append('\n');
+        }
+
+        var tiles = facts.Where(FactOwners.IsTile).ToArray();
+
+        if (tiles.Length > 0)
+        {
+            prompt.Append("\nFigures the tiles under the headline show, which this section never writes:\n");
+
+            foreach (var fact in tiles)
+            {
+                prompt.Append("- ").Append(fact.Name).Append(" = ").Append(fact.Value).Append('\n');
+            }
+        }
+
+        prompt.Append('\n').Append(NowWrite).Append('\n').Append(ask).Append('\n');
+
+        if (refusedBecause is { Length: > 0 })
+        {
+            prompt.Append('\n').Append(refusedBecause.Trim()).Append('\n');
+        }
+
+        return prompt.ToString();
+    }
+
+    public static ModelRequest ClaimsRequest(string model, string ticker, string section, IReadOnlyList<Claim> claims, IReadOnlyList<Fact> facts, string? refusedBecause = null, string lane = PaidLane) =>
+        new(lane, section, model, [], FromClaims, ClaimsPrompt(ticker, section, claims, facts, refusedBecause));
 
     // A theme's industry cycle, asked in the paid lane, which figure 12.2 puts it in.
     public static ModelRequest ThemeRequest(string model, string industry, IReadOnlyList<PromptDocument> documents, string? refusedBecause = null) =>
@@ -390,9 +468,8 @@ public static class SectionPrompt
         IReadOnlyList<Fact> facts,
         IReadOnlyList<PromptDocument> documents,
         string? refusedBecause = null,
-        IReadOnlyList<(string Section, string Prose)>? written = null,
         DateOnly? night = null) =>
-        Request(model, ticker, section, facts, documents, refusedBecause, written, night) with { Lane = PaidLane };
+        Request(model, ticker, section, facts, documents, refusedBecause, night) with { Lane = PaidLane };
 
     // Which way a move went and by how much, as its change fact is written in the facts file:
     // "down 13.98 per cent" for a change written with a minus sign, "up" otherwise, and nothing

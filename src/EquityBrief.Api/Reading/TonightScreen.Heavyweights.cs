@@ -8,7 +8,7 @@ namespace EquityBrief.Api.Reading;
 // The projection from the sector heavyweights' book to the card tonight's page draws and the name page's line. It
 // reads what the book stored and reads the rule's own functions for what the card states of a close and of the next
 // rebalance, so the card and the book say one thing.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
 public static partial class TonightScreen
 {

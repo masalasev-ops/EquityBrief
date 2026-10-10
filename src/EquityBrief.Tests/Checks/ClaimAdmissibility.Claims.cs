@@ -182,8 +182,8 @@ public partial class ClaimAdmissibility
 
         // Exactly that figure and nothing else, which is what the one change in
         // the fixture buys: a checker that found something wrong somewhere in
-        // eleven figures would pass a looser assertion.
-        Assert.Equal($"{ClaimRules.UnmatchedFigure}: 66.3%", row.Reason);
+        // seven figures would pass a looser assertion.
+        Assert.Equal($"{ClaimRules.UnmatchedFigure}: 43.6%", row.Reason);
     }
 
     [Fact]
@@ -201,14 +201,17 @@ public partial class ClaimAdmissibility
 
         // And the paragraph carries the shapes the rule has to read, so an
         // acceptance is a statement about each of them rather than about a
-        // paragraph with nothing in it: eleven numbers, being eight figures, two
-        // windows and a date.
+        // paragraph with nothing in it: seven numbers, being six figures of the
+        // segments the section's region draws, three amounts and three growths,
+        // and a date. A window, drawn by the region of the averages, is read on
+        // its own below, where a window held and one refused are asserted.
         var figures = ClaimRules.Sentences(SectionNamed("a clean computed paragraph").Prose)
             .SelectMany(sentence => ClaimRules.Figures(sentence.Text))
             .ToArray();
 
-        Assert.Equal(8, figures.Count(figure => figure.Kind == FigureKind.Figure));
-        Assert.Equal(2, figures.Count(figure => figure.Kind == FigureKind.Window));
+        Assert.Equal(6, figures.Count(figure => figure.Kind == FigureKind.Figure));
+        Assert.Equal(3, figures.Count(figure => figure.Kind == FigureKind.Figure && figure.Percent));
+        Assert.DoesNotContain(figures, figure => figure.Kind == FigureKind.Window);
         Assert.Equal(1, figures.Count(figure => figure.Kind == FigureKind.Date));
     }
 
@@ -293,9 +296,9 @@ public partial class ClaimAdmissibility
 
         // Each draft's offending text on its own row and the last on the fallback, and the run log
         // line naming the last and the draft before it, which is section 18's promise.
-        Assert.Contains("66.3%", rows[0].Reason!, StringComparison.Ordinal);
+        Assert.Contains("43.6%", rows[0].Reason!, StringComparison.Ordinal);
         Assert.StartsWith(ClaimChecker.RejectedOnEveryRetry, rows[^1].Reason!, StringComparison.Ordinal);
-        Assert.Contains("66.3%", rows[^1].Reason!, StringComparison.Ordinal);
+        Assert.Contains("43.6%", rows[^1].Reason!, StringComparison.Ordinal);
 
         var detail = RunLogDetail(store, "check-last");
 
@@ -773,8 +776,9 @@ public partial class ClaimAdmissibility
         Assert.True(ClaimRules.Check(ClaimRules.CauseSection, Sentence, facts, [Published(new DateOnly(2026, 8, 17))]).Passes);
 
         // The rule is the cause section's alone: the same sentence in another
-        // researched section is held to the citation and number rules and passes.
-        Assert.True(ClaimRules.Check("What the company sells", Sentence, facts, [Published(new DateOnly(2026, 8, 14))]).Passes);
+        // researched section, one the region rule does not govern, is held to the
+        // citation and number rules and passes.
+        Assert.True(ClaimRules.Check(Ungoverned, Sentence, facts, [Published(new DateOnly(2026, 8, 14))]).Passes);
     }
 
     [Fact]
@@ -918,9 +922,10 @@ public partial class ClaimAdmissibility
             [("$80 billion", ClaimRules.FigureNamedForAnotherPeriod), ("6", ClaimRules.UnmatchedFigure)],
             Findings(facts, "Productivity reported revenue of $80 billion for the 6 months to 2026-06-30. [D1]"));
 
-        // The fundamentals' own quarter under a quarter's name passes, and so does a figure a
-        // quarter's fact also holds.
-        Assert.Empty(Findings(facts, "Revenue was $76.4 billion for the quarter. [D1]"));
+        // The fundamentals' own quarter under a quarter's name passes, read in a section the region
+        // rule does not govern since the segments draw no figure of the company's own quarter, and so
+        // does a figure a quarter's fact also holds.
+        Assert.Empty(ClaimRules.Check(Ungoverned, "Revenue was $76.4 billion for the quarter. [D1]", facts, sources).Findings);
         Assert.Empty(Findings(facts, "Productivity operating income was $37 billion for the quarter. [D1]"));
 
         // And over a segment table of a quarter no period's name is read, which is where the

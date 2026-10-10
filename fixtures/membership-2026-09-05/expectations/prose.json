@@ -71,10 +71,11 @@
         "modelCalls": 2,
         "verdicts": {
           "The cause of each large move": "rejected",
-          "The segment commentary": "accepted"
+          "The segment commentary": "rejected"
         }
       }
     ],
+    "passesNote": "the segment commentary's retry, accepted until 18.4, is refused from it: recorded again on 2026-10-10 under the prompt that lists every figure under the region of the page drawing it, it states a growth rate the release gives and the facts file does not hold, a figure the facts file holds for how it got here and not for the segments, which a section writes only for its own region, and totals the release it cites does not state",
     "causeNames": [
       "2026-08-24"
     ],

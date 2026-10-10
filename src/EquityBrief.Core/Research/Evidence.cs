@@ -47,13 +47,13 @@ public static class Evidence
     public const string Management = ClaimRules.ManagementSection;
 
     // The sections built across the evidence, which are handed the company's own
-    // filing and what was published since it.
+    // filing and what was published since it. The short version is written last from
+    // the accepted claims and is handed no document.
     public static readonly string[] AcrossTheEvidence =
     [
         "The dated calendar items",
         "The two cases",
         "The risks, each with what would confirm it",
-        "The short version",
     ];
 
     // The release before the company's own filing is handed to what management said alone, beside the own filing, and
