@@ -36,6 +36,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
+| `live_quote` | QuoteJob | none | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -131,6 +132,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
 | `watch_list` | ReadApi | none | ReadApi |
+| `quote_request` | ReadApi | none | none |
 | `run_log` | every component that writes appends | RunLog | none |
 
 **`bar` has three inserters and two deleters, and that is the one exception this file argues for.** Backfill inserts a name's first year, once, on the run that finds it holding none. BarFetcher inserts the day's bars and drops the sessions that fall out of the retention window on the night they fall out of it. CorporateActionChecker deletes and reinserts a name's whole year when an action changes its adjusted prices.
@@ -151,7 +153,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
-**`research_request`, `watch_list`, `taken_trade` and `loop_decision` are the four tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's overnight queue it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them. The decisions are the operator's word on the loop's proposals: ReadApi inserts one on a Loop page press and never edits it, and the worker's apply step reads it and writes what it did in tables of its own (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone).
+**`research_request`, `watch_list`, `taken_trade`, `loop_decision` and `quote_request` are the five tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused), and after the night's close it inserts the night's own requests, six taken in turn from the three indices' pages: the insert is split between the two by what asks, a press on a screen or the night (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own). The taken trades are the operator's own too: ReadApi inserts one on a card's Taken press, deletes one on its Not taken press before a night has followed it, and records an exit on a third, and no component that picks a stock, orders a list or keeps a record reads them. The decisions are the operator's word on the loop's proposals: ReadApi inserts one on a Loop page press and never edits it, and the worker's apply step reads it and writes what it did in tables of its own (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone). A quote request is a name page's ask for its delayed quote: ReadApi inserts one when the page's script asks inside the regular session and the name's newest is not inside the interval, and the quote job the ask starts answers it in `live_quote`, which it alone writes (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -253,6 +255,26 @@ Grain: one row per series per session a night stored.
 Primary key: `series`, `session_date`.
 
 **The index's, the VIX's and the sector funds' daily series as the night fetches them, read by the family evaluator and the heavyweight book** (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, the index and the VIX under its index exchange and each fund as a listing, and inserts each session no night has stored. A session held keeps its first row, but a fund's: the provider adjusts a fund's closes for each dividend it pays, so the fetcher writes a fund's held session again from an answer stating it at another close, the one update this table takes, and a fund's return over a year is read over closes on one basis. The table is kept whole, seventeen rows a session from 15.1, when the index and credit funds joined, each a fund whose held session is written again the same way. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads the index's and the VIX's closes on the store's own sessions to the night for the registered rules whose market switch reads them, and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; nothing else reads the table: it is apart from `bar` because no series is a member's, and apart from `pulled_market_bar` because a night reads it.
+
+### live_quote
+Grain: one row per name and ask the quote job answered with a price.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the name the page asked for |
+| `asked_at` | TEXT | the UTC instant of the page's ask the job answered, the one its quote request carries |
+| `answered_at` | TEXT | the UTC instant the job stored the answer |
+| `quoted_at` | TEXT | the quote's own time as the provider states it, in UTC |
+| `price` | TEXT | decimal in code, the delayed price as the provider sent it |
+| `previous_close` | TEXT | decimal in code, as the provider sent it, null where it sent none |
+| `change` | TEXT | decimal in code, the change on the previous close as the provider sent it, null where it sent none |
+| `change_pct` | REAL | that change in per cent as the provider sent it, null where it sent none |
+| `night` | TEXT | date of the stored night whose bands the distances were read from, null where the name holds none |
+| `distances` | TEXT | JSON: each band of that night with its low and high edges, its role and its distance from the price in typical days' moves, 0 where the price sits inside the band and null where no typical move is stored |
+
+Primary key: `ticker`, `asked_at`.
+
+**The delayed quote a name's page asked for in the regular session, written by the quote job alone** (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap). The job inserts one row for each ask it answers with a price and never updates or deletes one; an ask outside the session, at the day's cap or answered with no price stores nothing and says why on its run log row. The cap is read as the rows asked inside the session. A name's page draws the newest row stored inside the session it is open in, and the Run page counts a session's rows against the cap; no night, rule or list reads the table.
 
 ### calendar
 Grain: one row per ticker, event date and kind.
@@ -2319,3 +2341,15 @@ Grain: one row per name the operator watches.
 | `added_at` | TEXT | the UTC instant of the press that added it |
 
 At most twenty rows, which ReadApi holds to on the press that would add a twenty-first. Written on the operator's press alone, from the watch list page or a name's own page, and read by the pages alone.
+
+### quote_request
+Grain: one row per name page's ask for its delayed quote that ReadApi wrote.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the name the page asked for |
+| `asked_at` | TEXT | the UTC instant of the ask |
+
+Primary key: `ticker`, `asked_at`.
+
+Written by ReadApi on a name page's ask inside the regular session and on nothing else, and never updated or deleted. An ask inside the interval of the name's newest row writes none, so two pages open on one name ask once between them, and an ask in the same second as one held writes none. The quote job the ask starts answers it in `live_quote` (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap).

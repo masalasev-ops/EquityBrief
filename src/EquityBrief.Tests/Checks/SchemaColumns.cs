@@ -15,10 +15,20 @@ public class SchemaColumns
     // schema-columns actually opens. Two catalogue and matrix rows rest on it:
     // both are single rows and neither needs this check to read the
     // architecture, because what it asserts is the store against SCHEMA.md.
+    // The rows 18.1 adds that this check reaches: the quote requests and the live quotes.
+    internal static string[] QuoteStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Quote requests"),
+        CheckReach.Key(Scope.StoresTable, "Live quotes"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
+            // 18.1, the quote's two stores.
+            .. QuoteStoreRows,
+
             // The 3.1 correction, the chart's averages.
             CheckReach.Key(Scope.StoresTable, "Chart averages"),
 

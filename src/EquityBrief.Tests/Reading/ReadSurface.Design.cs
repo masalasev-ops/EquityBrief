@@ -434,10 +434,12 @@ public partial class ReadSurface
                 "<tr><td>Tonight&#39;s figures</td><td>x</td></tr><tr><td>How it got here</td><td>y</td></tr></table>" +
                 "<h2>5. After</h2><table><tr><td>Nor this</td></tr></table>")]);
 
-        // Eighteen since the 5.8 correction took the listing history off the page, and twenty-one since the
-        // 12.2 correction drew the nights the live list picked a name before and named the swing readings and
-        // the gates, which the page had drawn since 12.1 and 12.2 and no fixture page reached.
-        Assert.True(rows.Count >= 21, $"Section 4 names {rows.Count} region(s), expected at least 21.");
+        // Eighteen since the 5.8 correction took the listing history off the page, twenty-one since the 12.2
+        // correction drew the nights the live list picked a name before and named the swing readings and the gates,
+        // and nineteen since 18.1 folded why the name is here, its gates, its swing readings and its member readings
+        // into how the rules read it, the night's figures into the levels and the nights before into the plan, and
+        // drew the decision card as a region of its own.
+        Assert.True(rows.Count >= 19, $"Section 4 names {rows.Count} region(s), expected at least 19.");
 
         using var store = await FixtureExpectations.WithListings();
 
@@ -472,6 +474,11 @@ public partial class ReadSurface
             "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, cost, cost_double, profit) " +
             $"VALUES ('GSPC', '{night}', 'KEYS', '333.42', '445000000', 0.125, 0.25, 1);");
         GateRow(store, night, new Member("KEYS", Trigger: false));
+
+        // And a family's card for it on the night, which its page draws third.
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record) VALUES " +
+            $"('GSPC', '{night}', 'pullback', 'KEYS', 1, '330', '320', '350', 'the rule', '{{}}', '[]', NULL);");
         store.Execute($"INSERT OR REPLACE INTO list_rule (session_date, rule) VALUES ('{earlier}', 'filter');");
         GateRow(store, earlier, new Member("KEYS", Passed: true, Rank: 1));
 
@@ -556,7 +563,7 @@ public partial class ReadSurface
 
         return
         [
-            .. Regex.Matches(contents.Value, "<li><a href=\"#[^\"]+\"><span class=\"c-n\">\\d+</span>([^<]*)</a></li>")
+            .. Regex.Matches(contents.Value, "<li(?: data-dated=\"\\d{4}-\\d{2}-\\d{2}\")?><a href=\"#[^\"]+\"><span class=\"c-n\">\\d+</span>([^<]*)</a></li>")
                 .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value)),
         ];
     }

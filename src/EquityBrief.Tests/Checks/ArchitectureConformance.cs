@@ -1411,7 +1411,9 @@ public partial class ArchitectureConformance
         // 148 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the
         // decision card's rule standing at an approved change.
         // 147 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
-        Assert.Equal(147, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 157 at 18.1: the range bar, the name page's masthead, quote, headline, tiles, how the rules read it, the card,
+        // the reading column and the rules by role, and the run page's quote runs.
+        Assert.Equal(157, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1531,7 +1533,9 @@ public partial class ArchitectureConformance
         // card's rule standing at an approved change.
         // 507 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
         // 506 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
-        Assert.Equal(506, inDocument.Length);
+        // 516 at 18.1: the range bar, the name page's masthead, quote, headline, tiles, how the rules read it, the card,
+        // the reading column and the rules by role, and the run page's quote runs.
+        Assert.Equal(516, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

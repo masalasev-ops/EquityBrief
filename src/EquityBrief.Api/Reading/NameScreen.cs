@@ -1256,7 +1256,7 @@ public static class NameScreen
                 level.Strength,
                 level.HasNonAverageAnchor,
                 Members(level.Members),
-                AwayFromTheClose(bars, level, typicalMove)))],
+                AwayFromThePrice(bars, level, typicalMove, live)))],
             absent,
             ladder?.TrendState,
             ladder?.AsOf,
@@ -1996,6 +1996,14 @@ public static class NameScreen
     // distance to it is the distance to the edge the price would reach first, and a close
     // inside the band is no distance at all rather than the gap to one of its sides.
     // see: Distances are stated as typical days' moves
+    // Each band's distance from the price the masthead draws: where it draws a quote, the distance the quote job stored for
+    // the band at the quote's price, and otherwise the distance from the last close.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    static double? AwayFromThePrice(IReadOnlyList<BarRow> bars, LevelRow level, double? typicalMove, LiveQuoteView? live) =>
+        live?.Distances.FirstOrDefault(band => band.Low == level.LowEdge && band.High == level.HighEdge) is { } quoted
+            ? quoted.Days
+            : AwayFromTheClose(bars, level, typicalMove);
+
     static double? AwayFromTheClose(IReadOnlyList<BarRow> bars, LevelRow level, double? typicalMove)
     {
         if (bars.Count == 0)

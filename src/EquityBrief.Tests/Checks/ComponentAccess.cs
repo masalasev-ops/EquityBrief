@@ -22,10 +22,20 @@ namespace EquityBrief.Tests.Checks;
 // the components that exist, which is one.
 public partial class ComponentAccess
 {
+    // The rows 18.1 adds that this check reaches: the quote job's catalogue and matrix rows.
+    internal static string[] QuoteJobRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Quote job"),
+        CheckReach.Key(Scope.MatrixTable, "Quote job"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 18.1, the quote job.
+            .. QuoteJobRows,
+
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
             CheckReach.Key(Scope.MatrixTable, "Chart averager"),

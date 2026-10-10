@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -225,5 +226,33 @@ public partial class ReadSurface
 
         Assert.True(marked.Length >= drawing.Length, $"Read {marked.Length} rule(s) marking a rise or a fall.");
         Assert.All(marked, rule => Assert.DoesNotMatch(@"var\(--fail(?:-fill)?\)", rule.Body));
+    }
+
+    [Fact]
+    public async Task TheNamePageIsReadInAColumnAndEachRegionIsRuledDownItsLeftByItsRole()
+    {
+        // The page and its file in a column of a thousand pixels, and each role's rule in its hue: a buy in the support
+        // green, a caution in amber, the plan's entries ruled in the support green and its exits in the resistance orange.
+        Assert.Contains("main .name,.exported .name{max-width:1000px;margin-inline:auto}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".name .card[data-role='buy']{border-left-color:var(--sup)}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".name .card[data-role='caution']{border-left-color:var(--warn)}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".name .tranche-table td:first-child{box-shadow:inset 3px 0 0 var(--sup);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".name .exit-table td:first-child{box-shadow:inset 3px 0 0 var(--res);", Stylesheet.Css, StringComparison.Ordinal);
+
+        // On a rendered page the plan carries the buy role and the risks the caution role with the word written above them.
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+        var name = FiredNamesOn(store, night)[0];
+
+        store.Execute($"INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('{name}', '{MarkRenderer.TheRisks}', 1, '{night}', 'a writer', 'accepted', 'A sentence.', '[]', NULL);");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync($"/screens/name/{name}");
+
+        Assert.Contains("<section class=\"card\" id=\"plan\" data-role=\"buy\" data-card=\"plan\">", page, StringComparison.Ordinal);
+        Assert.Contains($"data-section=\"{System.Net.WebUtility.HtmlEncode(MarkRenderer.TheRisks)}\" data-role=\"caution\"><div class=\"spine\"><span class=\"role-word\">Caution</span>", page, StringComparison.Ordinal);
     }
 }

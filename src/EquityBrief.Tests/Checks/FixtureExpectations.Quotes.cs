@@ -16,6 +16,15 @@ namespace EquityBrief.Tests.Checks;
 // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
 public partial class FixtureExpectations
 {
+    // The rows 18.1 adds that this check reaches: section 17's cap on the day's quotes and section 18's three failures.
+    internal static string[] QuoteRows =>
+    [
+        CheckReach.Key(Scope.LimitsTable, "Live quotes a day"),
+        CheckReach.Key(Scope.FailureTable, "A quote asked outside the regular session"),
+        CheckReach.Key(Scope.FailureTable, "The day's quotes reach their cap"),
+        CheckReach.Key(Scope.FailureTable, "The provider answers a quote with no price, or does not answer"),
+    ];
+
     static readonly TimeZoneInfo NewYork = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
 
     [Fact]
@@ -162,6 +171,30 @@ public partial class FixtureExpectations
 
         Assert.Equal((QuoteJob.NoPrice, 1), ((await new QuoteJob(new FixedClock(inSession, NewYork), other.DatabaseFile, none).RunAsync("CVX", asked)).Outcome, none.Requests));
         Assert.Empty(Query(other, "SELECT ticker FROM live_quote;"));
+
+        // A provider that does not answer stores nothing either, and its run says the request failed and why.
+        var unanswered = new UnansweredQuoteFeed();
+        var failed = await new QuoteJob(new FixedClock(inSession.AddMinutes(10), NewYork), other.DatabaseFile, unanswered).RunAsync("CVX", asked.AddMinutes(10));
+
+        Assert.Equal((QuoteJob.Failed, 1), (failed.Outcome, unanswered.Requests));
+        Assert.Contains("the provider did not answer", failed.Detail, StringComparison.Ordinal);
+        Assert.Empty(Query(other, "SELECT ticker FROM live_quote;"));
+        Assert.Equal(
+            [QuoteJob.NoPrice, QuoteJob.Failed],
+            Query(other, $"SELECT outcome FROM run_log WHERE stage = '{QuoteJob.Stage}' ORDER BY started_at, run_id;"));
+    }
+
+    // A quote feed whose provider does not answer, throwing what the live feed throws then, counting its requests.
+    sealed class UnansweredQuoteFeed : IQuoteFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<ProviderQuote?> QuoteAsync(string ticker, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            throw EodhdQuery.Unreachable("quote feed", new HttpRequestException("the provider did not answer"), new ProviderCredentials("constructed-key"));
+        }
     }
 
     [Fact]

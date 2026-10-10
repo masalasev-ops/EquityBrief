@@ -52,6 +52,10 @@ public partial class ReadSurface
         // The architecture too, whose section 4 pattern table this check holds to the renderer's patterns.
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 18.1, the name page's masthead, quote, headline, tiles and order, its range bar, the Run page's quote runs
+            // and the interval between two asks.
+            .. NamePageRows,
+
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
             // version at a checkpoint, and the night's tries on tonight's notice and the Run page.

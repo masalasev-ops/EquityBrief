@@ -22,15 +22,32 @@ namespace EquityBrief.Tests.Reading;
 // see: The masthead carries the index and sector beside the price now, the delayed quote in the session and the last stored close outside it
 public partial class ReadSurface
 {
+    // The rows 18.1 adds that this check reaches: the range bar among the marks, the name page's eight parts, the Run
+    // page's quote runs and the interval between two asks.
+    internal static string[] NamePageRows =>
+    [
+        CheckReach.Key("15.5 The mark vocabulary", "Range bar"),
+        CheckReach.Key("15.9 Name", "Masthead"),
+        CheckReach.Key("15.9 Name", "The quote while the page is open"),
+        CheckReach.Key("15.9 Name", "Headline"),
+        CheckReach.Key("15.9 Name", "Tiles"),
+        CheckReach.Key("15.9 Name", "How the rules read it"),
+        CheckReach.Key("15.9 Name", "The decision card"),
+        CheckReach.Key("15.9 Name", "Reading column"),
+        CheckReach.Key("15.9 Name", "Rules by role"),
+        CheckReach.Key("15.10 Run", "The quote runs"),
+        CheckReach.Key(Scope.LimitsTable, "Quote interval"),
+    ];
+
     // Wednesday 2026-10-07: 14:58Z is 10:58 in New York, inside the session, and 20:00Z its close.
     static readonly DateTimeOffset InTheSession = new(2026, 10, 7, 14, 58, 0, TimeSpan.Zero);
 
     static readonly DateTimeOffset AfterTheClose = new(2026, 10, 7, 20, 0, 0, TimeSpan.Zero);
 
-    static void StoreQuote(TemporaryStore store, string ticker, string askedAt, string night) =>
+    static void StoreQuote(TemporaryStore store, string ticker, string askedAt, string night, string distances = "[]") =>
         store.Execute(
             "INSERT INTO live_quote (ticker, asked_at, answered_at, quoted_at, price, previous_close, change, change_pct, night, distances) VALUES " +
-            $"('{ticker}', '{askedAt}', '{askedAt}', '2026-10-07T14:43:00Z', '231.40', '229.90', '1.50', 0.652, '{night}', '[]');");
+            $"('{ticker}', '{askedAt}', '{askedAt}', '2026-10-07T14:43:00Z', '231.40', '229.90', '1.50', 0.652, '{night}', '{distances}');");
 
     [Fact]
     public async Task AQuoteIsDrawnInTheSessionWithItsTimeAndTheLastCloseOutsideIt()
@@ -40,7 +57,11 @@ public partial class ReadSurface
         var night = NightIn(store);
         var name = FiredNamesOn(store, night)[0];
 
-        StoreQuote(store, name, "2026-10-07T14:55:00Z", night);
+        // The quote's distance for one of the name's own bands, a figure no close gives it.
+        var band = Rows(store, $"SELECT low_edge, high_edge FROM level WHERE ticker = '{name}' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = '{name}') ORDER BY low_edge LIMIT 1;").Single();
+        var atTheQuote = $"<td class=\"away num\" data-away=\"7.7\">";
+
+        StoreQuote(store, name, "2026-10-07T14:55:00Z", night, $"[{{\"low\":\"{band[0]}\",\"high\":\"{band[1]}\",\"role\":\"support\",\"days\":7.7}}]");
 
         // Inside the session: the quote, marked as such, its change on the previous close in the rise's hue with its
         // sign, and beneath it its own time in New York, that it is delayed, the previous close and the session the
@@ -64,6 +85,9 @@ public partial class ReadSurface
                 StringComparison.Ordinal);
             Assert.Contains("<div class=\"lead-tiles\" data-live=\"yes\">", page, StringComparison.Ordinal);
 
+            // Each band's distance is the one the quote job stored at the quote's price, from the page's first drawing.
+            Assert.Contains(atTheQuote, page, StringComparison.Ordinal);
+
             // A page about an earlier night and the exported file draw the close and carry no route, whatever the clock.
             var earlier = await client.GetStringAsync($"/screens/name/{name}/{night}");
 
@@ -84,6 +108,7 @@ public partial class ReadSurface
             Assert.DoesNotContain("LIVE", page, StringComparison.Ordinal);
             Assert.Contains($"<span class=\"m-when\">As of the close of {night}, the last stored price. Levels and the plan come from completed sessions to {night}</span>", page, StringComparison.Ordinal);
             Assert.Contains("<div class=\"lead-tiles\" data-live=\"no\">", page, StringComparison.Ordinal);
+            Assert.DoesNotContain(atTheQuote, page, StringComparison.Ordinal);
         }
 
         // A Saturday holds no session, so the page carries no route and asks for nothing.
@@ -252,6 +277,42 @@ public partial class ReadSurface
             shell.IndexOf("try { last = localStorage.getItem(key); }", StringComparison.Ordinal) < shell.IndexOf("localStorage.setItem(key", StringComparison.Ordinal),
             "The script writes this visit before it reads the last one, so it would mark nothing new.");
         Assert.DoesNotContain("<script", await client.GetStringAsync(ReportExporter.Route + names[0]), StringComparison.Ordinal);
+    }
+
+    // The range bar, the twenty-first mark, over a full input, a price past the year's high and the input it degrades on.
+    [Fact]
+    public void TheRangeBarPlacesThePriceBetweenTheYearsLowAndHighAndATileWithNoYearSaysSo()
+    {
+        var marks = new MarkRenderer();
+        var high = new DateOnly(2026, 9, 15);
+        var low = new DateOnly(2026, 1, 5);
+
+        // 211.55 sits 61.55 of the 67.78 from the low of 150.00 to the high of 217.78: 0.9081 of the way, a dot at 109 of
+        // the line's 120, with the high, the low and their sessions written beneath at the last close.
+        var tiles = marks.LeadTiles(new TilesView(null, null, null, EquityBrief.Core.Tiles.NameTiles.High(211.55m, 217.78m, high, 150.00m, low), 211.55m, Live: false));
+        var bar = Regex.Match(tiles, "<svg class=\"range-bar\"[^>]*data-position=\"([^\"]+)\">.*?<circle class=\"rb-dot\" cx=\"([^\"]+)\"", RegexOptions.Singleline);
+
+        Assert.True(bar.Success, "The fourth tile draws no range bar.");
+        Assert.Equal(0.9081, double.Parse(bar.Groups[1].Value, CultureInfo.InvariantCulture), 4);
+        Assert.Equal("109", bar.Groups[2].Value);
+        Assert.Contains("high <span data-high=\"217.78\">217.78</span> on 2026-09-15; low <span data-low=\"150.00\">150.00</span> on 2026-01-05; at the last close", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v down\" data-from-high=\"", tiles, StringComparison.Ordinal);
+
+        // A quote past the year's high is held at the line's end, and its distance from the high is a rise.
+        var past = marks.LeadTiles(new TilesView(null, null, null, EquityBrief.Core.Tiles.NameTiles.High(230m, 217.78m, high, 150.00m, low), 230m, Live: true));
+
+        Assert.Contains("<circle class=\"rb-dot\" cx=\"120\"", past, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v up\" data-from-high=\"", past, StringComparison.Ordinal);
+        Assert.Contains("; at the quote</span>", past, StringComparison.Ordinal);
+
+        // A name whose year's high and low are not stored draws no bar and says so, as each tile with nothing stored does.
+        var none = marks.LeadTiles(new TilesView(null, null, null, null, 211.55m, Live: false));
+
+        Assert.DoesNotContain("range-bar", none, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"lead-tile\" data-tile=\"high\"><span class=\"k\">From the 52-week high</span><span class=\"v none\">not stored</span><span class=\"s\">The year's high and low are not stored for it.</span></div>", none, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v none\">not stored</span><span class=\"s\">No reported quarter is stored for it yet.</span>", none, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v none\">not read</span><span class=\"s\">Eight quarters of sales are not stored for it yet.</span>", none, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v none\">none</span><span class=\"s\">No dividend is stored for it.</span>", none, StringComparison.Ordinal);
     }
 
     [Fact]
