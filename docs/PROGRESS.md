@@ -42161,7 +42161,11 @@ Mutated:    the rule, stated before the run: the brief's two mutations. First, a
             at the quote, and green at its masthead line, which the region's own check of the session still holds.
             Second, the colour of a fall used for a failure: the rule drawing a fall names the failure's red. Predicted
             red at the palette's test that no rule drawing a rise or a fall names the failure's hue, and green at the
-            contrast test, the red reading at 4.5 or more on every ground. Result: to be filled from the run.
+            contrast test, the red reading at 4.5 or more on every ground. Result: the first red at the masthead's
+            test, the tiles drawn live after the close, its masthead line green and the five other quote tests green,
+            as predicted; the second red at the palette's test as predicted and red too at the Run page's test that
+            each status hue is drawn by the Run page's rules alone, which the prediction did not name, the contrast
+            test green. Each made on this branch and reverted before anything was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to
             be filled from the run.
 Queue:      done, phase 17 through 17.10 and the 4.6, 6.1 and 15.2 corrections; gated and merging once phase 17's
