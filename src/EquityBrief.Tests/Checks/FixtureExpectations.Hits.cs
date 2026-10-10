@@ -119,14 +119,14 @@ public partial class FixtureExpectations
             ("2025-11-06", 0.990m), ("2025-11-07", 0.993m), ("2026-01-22", 0.993m), ("2026-01-23", 0.996m),
             ("2026-05-07", 0.996m), ("2026-05-08", 0.998m), ("2026-07-23", 0.998m), ("2026-07-24", 1.000m))));
 
-        // Steps 28, 28, 28, 33 and 35 days apart: a median of 28, nearest a month's 30.4, so twelve, where a year over 28
-        // rounded would read thirteen.
+        // Gaps of 28, 28, 28, 33 and 35 days between the steps: a median of 28, nearest a month's 30.4, so twelve, where a
+        // year over 28 rounded would read thirteen.
         Assert.Equal(12, CardHitsReading.PaymentsAYear(Bars(
             ("2026-01-01", 0.990m), ("2026-01-02", 0.991m), ("2026-01-30", 0.992m), ("2026-02-27", 0.993m),
             ("2026-03-27", 0.994m), ("2026-04-29", 0.995m), ("2026-06-03", 0.996m))));
 
-        // Two steps 182 days apart read twice a year; between them a rise of exactly a fifth, a split of six for five, is no
-        // step, where one a tenth of a point under it is, and three steps 91 days apart read four.
+        // Two steps with 182 days between them read twice a year; between them a rise of exactly a fifth, a split of six for
+        // five, is no step, where one a tenth of a point under it is, and three with 91 days between each read four.
         Assert.Equal(2, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.79m), ("2026-01-05", 0.80m), ("2026-04-02", 0.80m), ("2026-04-06", 0.96m), ("2026-07-02", 0.96m), ("2026-07-06", 0.97m))));
         Assert.Equal(4, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.79m), ("2026-01-05", 0.80m), ("2026-04-02", 0.80m), ("2026-04-06", 0.9592m), ("2026-07-02", 0.9592m), ("2026-07-06", 0.97m))));
 
