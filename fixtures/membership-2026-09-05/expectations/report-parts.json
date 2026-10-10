@@ -1,0 +1,53 @@
+{
+ "stage": "report-parts",
+ "derivation": "derived",
+ "derivedFrom": "the four captured fundamentals payloads, the captured dividends answer of 2026-08-10 and the captured Treasury table read by hand, not from a run. The quarters fetch keeps beside each quarter it stores the income statement's gross profit and the cash flow statement's capital spending, free cash flow and dividends paid filed under the same quarter's date, the row marked as read with them, a line the capture files as null kept as none; each period of the earnings trend the answer files, a row a period with its consensus, range, analysts, trend and revisions as filed, a figure filed as null kept as none; and the analysts' mean rating and target on the company row. The night keeps each dividend its bulk answer carries for a name it stores, and of the four members only AAPL is in the answer of 2026-08-10. The Treasury's reader keeps every session of the year the table publishes to the night's, 172 from 2026-01-02 to 2026-09-08, the 10-year 4.80 on the night and none after it. Computed outside this repository from the captures, so a fetch keeping another quarter's lines, a trend read under the wrong period or a session kept past the night would not agree with it.",
+ "tables": ["estimate_trend", "dividend_event", "treasury_yield"],
+ "night": "2026-09-08",
+ "names": {
+  "AAPL": {
+   "newest": "2026-06-30",
+   "lines": { "grossProfit": "54770000000", "capitalSpending": "2455000000", "freeCashFlow": "31914000000", "dividendsPaid": "4035000000" },
+   "ratingMean": 4.0417,
+   "target": "324.4016",
+   "trend": [
+    { "period": "+1q", "end": "2026-12-31", "eps": "2.9047", "low": "2.56", "high": "3.42", "yearAgo": "2.84", "analysts": 21, "revenue": "154392842060", "revenueLow": "131500061129", "revenueHigh": "170414000000", "revenueYearAgo": null, "revenueAnalysts": 19, "now": "2.9047", "days7": "2.8927", "days30": "2.9086", "days60": "2.9496", "days90": "2.947", "up7": 1, "up30": 5, "down7": null, "down30": 12 },
+    { "period": "+1y", "end": "2027-09-30", "eps": "9.5676", "low": "8.69", "high": "10.67", "yearAgo": "8.8216", "analysts": 40, "revenue": "526557172099", "revenueLow": "497900000000", "revenueHigh": "594863000000", "revenueYearAgo": null, "revenueAnalysts": 40, "now": "9.5676", "days7": "9.5329", "days30": "9.5395", "days60": "9.6826", "days90": "9.6669", "up7": 0, "up30": 6, "down7": null, "down30": 24 }
+   ]
+  },
+  "KEYS": {
+   "newest": "2026-07-31",
+   "lines": { "grossProfit": "1216000000", "capitalSpending": "34000000", "freeCashFlow": "403000000", "dividendsPaid": null },
+   "ratingMean": 4.2308,
+   "target": "415.0833",
+   "trend": [
+    { "period": "+1q", "end": "2027-01-31", "eps": "3.2399", "low": "2.8167", "high": "3.69", "yearAgo": "2.17", "analysts": 11, "revenue": "1972371180", "revenueLow": "1887440000", "revenueHigh": "2073000000", "revenueYearAgo": null, "revenueAnalysts": 8, "now": "3.2399", "days7": "2.7715", "days30": "2.7374", "days60": "2.7374", "days90": "2.7282", "up7": 9, "up30": 9, "down7": null, "down30": 0 },
+    { "period": "+1y", "end": "2027-10-31", "eps": "13.6499", "low": "10.91", "high": "15.76", "yearAgo": "11.4998", "analysts": 12, "revenue": "8134527220", "revenueLow": "7493020800", "revenueHigh": "8774110000", "revenueYearAgo": null, "revenueAnalysts": 11, "now": "13.6499", "days7": "13.6499", "days30": "11.9198", "days60": "11.8564", "days90": "11.8564", "up7": 11, "up30": 11, "down7": null, "down30": 0 }
+   ]
+  },
+  "MSFT": {
+   "newest": "2026-06-30",
+   "lines": { "grossProfit": "60482000000", "capitalSpending": "35802000000", "freeCashFlow": "19639000000", "dividendsPaid": "6758000000" },
+   "ratingMean": 4.5902,
+   "target": "572.9152",
+   "trend": [
+    { "period": "0y", "end": "2027-06-30", "eps": "19.7531", "low": "19.21", "high": "20.7", "yearAgo": "17.28", "analysts": 33, "revenue": "391082295220", "revenueLow": "380000000000", "revenueHigh": "402719127430", "revenueYearAgo": null, "revenueAnalysts": 49, "now": "19.7531", "days7": "19.7531", "days30": "19.7221", "days60": "19.3894", "days90": "19.373", "up7": 3, "up30": 21, "down7": null, "down30": 8 },
+    { "period": "+1y", "end": "2028-06-30", "eps": "23.573", "low": "20.93", "high": "26", "yearAgo": "19.7531", "analysts": 33, "revenue": "467321614710", "revenueLow": "433178000000", "revenueHigh": "503000000000", "revenueYearAgo": null, "revenueAnalysts": 51, "now": "23.573", "days7": "23.5733", "days30": "23.5527", "days60": "22.5874", "days90": "22.6278", "up7": 3, "up30": 19, "down7": null, "down30": 3 }
+   ]
+  },
+  "NFLX": {
+   "newest": "2026-06-30",
+   "lines": { "grossProfit": "6522973000", "capitalSpending": "218644000", "freeCashFlow": "1367771000", "dividendsPaid": null },
+   "ratingMean": 4.1225,
+   "target": "93.66",
+   "trend": [
+    { "period": "0y", "end": "2026-12-31", "eps": "3.5844", "low": "3.51", "high": "3.69", "yearAgo": "2.53", "analysts": 41, "revenue": "51220590210", "revenueLow": "50954000000", "revenueHigh": "51513430150", "revenueYearAgo": null, "revenueAnalysts": 46, "now": "3.5844", "days7": "3.5832", "days30": "3.5798", "days60": "3.5921", "days90": "3.5923", "up7": 1, "up30": 3, "down7": null, "down30": 1 },
+    { "period": "+1y", "end": "2027-12-31", "eps": "3.8163", "low": "3.48", "high": "4.09", "yearAgo": "3.5844", "analysts": 45, "revenue": "57005763400", "revenueLow": "55889000000", "revenueHigh": "58333158000", "revenueYearAgo": null, "revenueAnalysts": 45, "now": "3.8163", "days7": "3.8121", "days30": "3.8089", "days60": "3.8267", "days90": "3.8287", "up7": 1, "up30": 3, "down7": null, "down30": 4 }
+   ]
+  }
+ },
+ "dividends": [
+  { "ticker": "AAPL", "exDate": "2026-08-10", "amount": "0.27", "unadjusted": "0.27", "declared": "2026-07-30", "record": "2026-08-10", "paid": "2026-08-13", "period": "Quarterly", "currency": "USD", "source": "night" }
+ ],
+ "treasury": { "sessions": 172, "first": ["2026-01-02", "4.19"], "night": ["2026-09-08", "4.80"] }
+}

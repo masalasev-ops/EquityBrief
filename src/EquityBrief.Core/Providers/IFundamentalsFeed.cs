@@ -116,7 +116,7 @@ public sealed record MarketValue(decimal? Capitalisation);
 //
 // As of the fetch rather than as of a filing, for the reason the ratios are: a rating moves
 // with every note an analyst writes.
-// see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+// see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
 public sealed record AnalystRatings(decimal? Rating, decimal? TargetPrice, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell);
 
 // The dividend the provider files for the company: the forward annual rate a share, the forward

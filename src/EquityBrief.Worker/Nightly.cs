@@ -677,7 +677,7 @@ public static class Nightly
 
                 return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again");
             }),
-            // Section 14's step after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
+            // Section 14's step 26, after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not
             // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and
             // stops no step. A night run again for an earlier session reads it too, since the table holds that session.
@@ -689,7 +689,7 @@ public static class Nightly
 
                 return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
-            // Section 14's step 26, after the filings refresh. The night asks for six reports taken
+            // Section 14's step 27, after the Treasury's 10-year. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and starts the drain as a press
             // does: it writes a row a name and starts one process, and each pass is the drain's own
             // run, its calls and requests on its own rows, at the off-peak rate. It is handed no token

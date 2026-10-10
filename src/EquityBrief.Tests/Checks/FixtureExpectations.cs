@@ -60,6 +60,9 @@ public partial class FixtureExpectations
             // 18.1, the quote job: the day's cap and its three failures.
             .. QuoteRows,
 
+            // 18.2, the report's windows, the dividends history run and the six failures.
+            .. ReportRows,
+
             // 12.5's correction, the sweep: section 17's four rows over constructed candidates, maps and clocks and
             // the fixture's two nights, and section 18's row about a chunk that fails twice.
             CheckReach.Key(Scope.LimitsTable, "Sweep grid"),

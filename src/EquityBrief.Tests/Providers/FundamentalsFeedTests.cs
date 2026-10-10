@@ -185,7 +185,7 @@ public class FundamentalsFeedTests
         // Every captured name files them, AAPL's read off its payload by hand; and the same payload
         // with the object taken out reads as ratings not filed rather than as a name no analyst
         // follows.
-        // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+        // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
         Assert.Equal(new AnalystRatings(4.0417m, 324.4016m, 23, 7, 16, 1, 1), Read("AAPL").Ratings);
         Assert.All(new[] { "AAPL", "MSFT", "KEYS", "NFLX" }, ticker => Assert.DoesNotContain("ratings", Read(ticker).PartsNotCarried));
 

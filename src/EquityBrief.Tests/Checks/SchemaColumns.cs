@@ -22,12 +22,23 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Live quotes"),
     ];
 
+    // 18.2's three: the estimate trend the quarters fetch keeps, the dividends kept and the Treasury's 10-year.
+    internal static string[] ReportStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Estimate trends"),
+        CheckReach.Key(Scope.StoresTable, "Dividend events"),
+        CheckReach.Key(Scope.StoresTable, "Treasury yields"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
             // 18.1, the quote's two stores.
             .. QuoteStoreRows,
+
+            // 18.2, the report's three stores.
+            .. ReportStoreRows,
 
             // The 3.1 correction, the chart's averages.
             CheckReach.Key(Scope.StoresTable, "Chart averages"),

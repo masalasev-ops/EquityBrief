@@ -515,8 +515,8 @@ public sealed partial class MarkRenderer
     }
 
     // Dividend bars: the dividends a share each year the store kept, a raise in the rise hue and a cut in the fall hue, a
-    // year that paid as many times as the one before and held level in grey, a year not compared outlined, and the night's
-    // own year marked as so far. Fewer than two years kept say so.
+    // year held level or not compared in grey, and the night's own year paler and starred as so far. Fewer than two years
+    // kept say so.
     public string DividendBars(DividendSafetyReading dividend)
     {
         var years = dividend.Years.TakeLast(16).ToArray();
@@ -541,7 +541,16 @@ public sealed partial class MarkRenderer
             var year = years[at];
             var x = ChartLeft + (slot * at) + ((slot - bar) / 2);
             var tall = Math.Max(Tall(EquityBrief.Core.Prices.Statistic.FromPrice(year.Total)), 1);
-            var kind = year.Raised switch { true => "db-raised", false when year.Whole => "db-cut", _ => "db-level" };
+
+            // A year compared and not raised is a cut only where it paid less than the year before; one that paid the same
+            // held level.
+            var before = dividend.Years.FirstOrDefault(earlier => earlier.Year == year.Year - 1);
+            var kind = year.Raised switch
+            {
+                true => "db-raised",
+                false when before is not null && year.Total < before.Total => "db-cut",
+                _ => "db-level",
+            };
 
             svg.Append(Formatted($"<rect class=\"{kind}{(year.Whole ? string.Empty : " db-partial")}\" x=\"{Number(x)}\" y=\"{Number(ChartHigh - ChartBottom - tall)}\" width=\"{Number(bar)}\" height=\"{Number(tall)}\" rx=\"2\" data-year=\"{year.Year}\" data-total=\"{year.Total.ToString(Invariant)}\" data-payments=\"{year.Payments}\" data-raised=\"{(year.Raised is { } raised ? (raised ? "yes" : "no") : "not compared")}\"><title>{year.Year}: {Figures.PerShare(year.Total)} a share over {year.Payments} payment(s){(year.Whole ? string.Empty : ", so far this year")}</title></rect>"));
             svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(x + (bar / 2))}\" y=\"{Number(ChartHigh - 10)}\" text-anchor=\"middle\">{year.Year}{(year.Whole ? string.Empty : "*")}</text>"));

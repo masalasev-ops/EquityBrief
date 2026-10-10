@@ -49,11 +49,12 @@ public sealed partial class ReadApi
     const string TrendOf = @"
         SELECT period, period_end, eps_average, eps_low, eps_high, eps_year_ago, eps_analysts,
                revenue_average, revenue_low, revenue_high, revenue_year_ago, revenue_analysts,
-               eps_now, eps_7_days_ago, eps_30_days_ago, eps_60_days_ago, eps_90_days_ago,
-               up_last_7_days, up_last_30_days, down_last_7_days, down_last_30_days, fetched_at
+               eps_now, eps_seven_days_ago, eps_thirty_days_ago, eps_sixty_days_ago, eps_ninety_days_ago,
+               up_last_seven_days, up_last_thirty_days, down_last_seven_days, down_last_thirty_days, fetched_at
         FROM estimate_trend
         WHERE ticker = $ticker
-          AND fetched_at = (SELECT MAX(fetched_at) FROM estimate_trend WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on);
+          AND fetched_at = (SELECT MAX(fetched_at) FROM estimate_trend WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on)
+        ORDER BY CASE period WHEN '0q' THEN 0 WHEN '+1q' THEN 1 WHEN '0y' THEN 2 ELSE 3 END;
     ";
 
     const string RatingFetchesOf = @"

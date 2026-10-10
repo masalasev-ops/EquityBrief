@@ -29,12 +29,24 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Quote job"),
     ];
 
+    // 18.2's two: the dividend keeper and the Treasury reader.
+    internal static string[] ReportComponentRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Dividend keeper"),
+        CheckReach.Key(Scope.MatrixTable, "Dividend keeper"),
+        CheckReach.Key(Scope.CatalogueTable, "Treasury reader"),
+        CheckReach.Key(Scope.MatrixTable, "Treasury reader"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
             // 18.1, the quote job.
             .. QuoteJobRows,
+
+            // 18.2, the dividend keeper and the Treasury reader.
+            .. ReportComponentRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

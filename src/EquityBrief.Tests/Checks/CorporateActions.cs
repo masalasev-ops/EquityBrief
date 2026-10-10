@@ -38,8 +38,12 @@ public class CorporateActions
             // none of that: component-access does, and 3.0's sweep found the
             // claims naming a check whose tests could not fail on them.
             CheckReach.Key(Scope.FailureTable, "A split or dividend not caught"),
-            CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected."),
+            CheckReach.Key(NightlyRunSteps.Heading, ActionsStep),
         ]);
+
+    // Section 14's step, as the document states it from 18.2.
+    internal const string ActionsStep =
+        "Check splits and dividends, refetch the full year for any name affected, and keep each dividend the answer carries for a member the night stores (see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read).";
 
     const string Fixture = "membership-2026-09-05";
     const string Index = "GSPC";
@@ -263,6 +267,36 @@ public class CorporateActions
         command.Parameters.AddWithValue("$s", CorporateActionChecker.Source);
 
         Assert.Equal((long)Rows(store, "AAPL"), (long)command.ExecuteScalar()!);
+    }
+
+    [Fact]
+    public async Task TheActionsStepKeepsEachDividendTheAnswerCarriesForAMemberTheNightStores()
+    {
+        // The captured answer carries four dividends on 2026-08-10, and of them only AAPL's is a member the night stores:
+        // the step hands that one to the keeper, as the night's actions step does, and the keeper keeps it once, as the
+        // answer files it, with the night as its source.
+        using var store = await Stored();
+
+        var outcome = await Checker(store).RunAsync(Index, "run-dividends");
+        var paid = Assert.Single(outcome.Paid!);
+
+        Assert.Equal(
+            new DividendPaid("AAPL", new DateOnly(2026, 8, 10), 0.27m, 0.27m, new DateOnly(2026, 7, 30), new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 13), "Quarterly", "USD"),
+            paid);
+        Assert.Equal(4, (await RecordedCorporateActionFeed.FromFolder(FixtureFolder()).ActionsAsync("US", new DateOnly(2026, 8, 10))).Count(action => action.Paid is not null));
+
+        var keeper = new EquityBrief.Worker.Dividends.DividendKeeper(FixedClock.At(ActionNight, SessionZones.UnitedStates), store.DatabaseFile);
+
+        Assert.Equal((1, 1), ((await keeper.KeepTheNightAsync(outcome.Paid!, "run-dividends")) is var kept ? (kept.Handed, kept.Kept) : default));
+        Assert.Equal(0, (await keeper.KeepTheNightAsync(outcome.Paid!, "run-dividends-again")).Kept);
+
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT ticker || '|' || ex_date || '|' || amount || '|' || source FROM dividend_event;";
+
+        Assert.Equal("AAPL|2026-08-10|0.27000|night", (string)command.ExecuteScalar()!);
     }
 
     [Fact]

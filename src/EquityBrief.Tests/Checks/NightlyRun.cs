@@ -38,6 +38,10 @@ public partial class NightlyRun
     internal const string ChartAveragesStep =
         "Compute the chart's averages for every name on the stored sessions the indicators leave empty, reading the sessions before its first stored bar from the history pulled before the store's year at the store's scale, which the chart alone draws (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads).";
 
+    // Section 14's step after the filings refresh, from 18.2, as the document states it.
+    internal const string TreasuryStep =
+        "Ask the Treasury, and not the provider, for its daily par yields of the session's calendar year, one request whatever the index's size, and keep each session's 10-year to the night's that the store does not hold; a refused or unreadable answer keeps nothing and stops no step, its row saying why (see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row).";
+
     // The rows the 3.1 correction adds: the step, its component's catalogue and matrix rows, its store and the chart's
     // part drawing what it stores.
     internal static string[] ChartAverageRows =>
@@ -53,6 +57,9 @@ public partial class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 18.2, the Treasury's 10-year after the filings refresh.
+            CheckReach.Key(NightlyRunSteps.Heading, TreasuryStep),
+
             // 12.3's build of the night from a clean copy of the committed code: the checkout the script refuses.
             CheckReach.Key(Scope.FailureTable, "The night's checkout is off main or holds a commit the remote's main lacks"),
 
@@ -1347,7 +1354,7 @@ public partial class NightlyRun
         Assert.StartsWith("Close the arithmetic", steps[^7], StringComparison.Ordinal);
         Assert.StartsWith("Ask the provider for the reported quarters", steps[^6], StringComparison.Ordinal);
         Assert.StartsWith("Read the archive's daily index", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Read the Treasury's par yield table", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -1380,6 +1387,12 @@ public partial class NightlyRun
         Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^6]);
         Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^7]);
         Assert.DoesNotContain(EquityBrief.Api.Reading.RunScreen.QueueStage, stages);
+
+        // The Treasury's step asked once and kept every session of the year the table publishes to the night's, 172 from
+        // 2026-01-02 to 2026-09-08, with no model call.
+        Assert.Equal(172, Scalar(store, "SELECT COUNT(*) FROM treasury_yield WHERE session_date <= '2026-09-08';"));
+        Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM treasury_yield WHERE session_date > '2026-09-08';"));
+        Assert.Equal(1, Scalar(store, $"SELECT network_requests FROM run_log WHERE run_id = 'night-with-no-queue' AND stage = '{EquityBrief.Worker.Treasury.TreasuryReader.Stage}';"));
 
         // The night's last line states that it called no model, and no row of the night says otherwise.
         Assert.Contains("nightly: green over a capture, 0 model calls, ", output, StringComparison.Ordinal);
@@ -1508,9 +1521,10 @@ public partial class NightlyRun
         var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var filings = steps.ToList().FindIndex(step => step.StartsWith("Read the archive's daily index", StringComparison.Ordinal)) + 1;
+        var treasury = steps.ToList().FindIndex(step => step.StartsWith("Ask the Treasury", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 3, filings);
-        Assert.Equal((close + 1, close + 2), (quarters, filings));
+        Assert.Equal(steps.Count - 3, treasury);
+        Assert.Equal((close + 1, close + 2, close + 3), (quarters, filings, treasury));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -1519,7 +1533,7 @@ public partial class NightlyRun
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);
         var section = architecture[from..architecture.IndexOf("<h2>15.", from, StringComparison.Ordinal)];
 
-        Assert.Empty(NoteFaults(section, close, quarters, filings));
+        Assert.Empty(NoteFaults(section, close, quarters, filings, treasury));
 
         // The night's own list: its steps in section 14's number, each comment naming a step
         // by its number sitting on that step.

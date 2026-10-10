@@ -157,13 +157,13 @@ public sealed class QuarterFetcher : IComponent
         INSERT INTO estimate_trend (
             ticker, fetched_at, period, period_end, eps_average, eps_low, eps_high, eps_year_ago, eps_analysts,
             revenue_average, revenue_low, revenue_high, revenue_year_ago, revenue_analysts,
-            eps_now, eps_7_days_ago, eps_30_days_ago, eps_60_days_ago, eps_90_days_ago,
-            up_last_7_days, up_last_30_days, down_last_7_days, down_last_30_days)
+            eps_now, eps_seven_days_ago, eps_thirty_days_ago, eps_sixty_days_ago, eps_ninety_days_ago,
+            up_last_seven_days, up_last_thirty_days, down_last_seven_days, down_last_thirty_days)
         VALUES (
             $ticker, $fetched_at, $period, $period_end, $eps_average, $eps_low, $eps_high, $eps_year_ago, $eps_analysts,
             $revenue_average, $revenue_low, $revenue_high, $revenue_year_ago, $revenue_analysts,
-            $eps_now, $eps_7_days_ago, $eps_30_days_ago, $eps_60_days_ago, $eps_90_days_ago,
-            $up_last_7_days, $up_last_30_days, $down_last_7_days, $down_last_30_days)
+            $eps_now, $eps_seven_days_ago, $eps_thirty_days_ago, $eps_sixty_days_ago, $eps_ninety_days_ago,
+            $up_last_seven_days, $up_last_thirty_days, $down_last_seven_days, $down_last_thirty_days)
         ON CONFLICT (ticker, fetched_at, period) DO NOTHING;
     ";
 
@@ -622,14 +622,14 @@ public sealed class QuarterFetcher : IComponent
             trend.Parameters.AddWithValue("$revenue_year_ago", Figure(period.RevenueYearAgo));
             trend.Parameters.AddWithValue("$revenue_analysts", (object?)period.RevenueAnalysts ?? DBNull.Value);
             trend.Parameters.AddWithValue("$eps_now", Figure(period.EpsNow));
-            trend.Parameters.AddWithValue("$eps_7_days_ago", Figure(period.Eps7DaysAgo));
-            trend.Parameters.AddWithValue("$eps_30_days_ago", Figure(period.Eps30DaysAgo));
-            trend.Parameters.AddWithValue("$eps_60_days_ago", Figure(period.Eps60DaysAgo));
-            trend.Parameters.AddWithValue("$eps_90_days_ago", Figure(period.Eps90DaysAgo));
-            trend.Parameters.AddWithValue("$up_last_7_days", (object?)period.UpLast7Days ?? DBNull.Value);
-            trend.Parameters.AddWithValue("$up_last_30_days", (object?)period.UpLast30Days ?? DBNull.Value);
-            trend.Parameters.AddWithValue("$down_last_7_days", (object?)period.DownLast7Days ?? DBNull.Value);
-            trend.Parameters.AddWithValue("$down_last_30_days", (object?)period.DownLast30Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$eps_seven_days_ago", Figure(period.Eps7DaysAgo));
+            trend.Parameters.AddWithValue("$eps_thirty_days_ago", Figure(period.Eps30DaysAgo));
+            trend.Parameters.AddWithValue("$eps_sixty_days_ago", Figure(period.Eps60DaysAgo));
+            trend.Parameters.AddWithValue("$eps_ninety_days_ago", Figure(period.Eps90DaysAgo));
+            trend.Parameters.AddWithValue("$up_last_seven_days", (object?)period.UpLast7Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$up_last_thirty_days", (object?)period.UpLast30Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$down_last_seven_days", (object?)period.DownLast7Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$down_last_thirty_days", (object?)period.DownLast30Days ?? DBNull.Value);
 
             await trend.ExecuteNonQueryAsync(cancellation);
         }

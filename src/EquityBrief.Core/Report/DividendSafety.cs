@@ -38,7 +38,7 @@ public sealed record DividendSafetyReading(
 
 // The dividend's safety, worked by one function from stored figures at the price the page draws, so the page and its file
 // read one arithmetic and no screen computes it.
-// see: A payer's dividend is read for its safety against its earnings, its free cash flow and the Treasury's 10-year, with every year it raised
+// see: A payer's dividend is read for its safety against its earnings and free cash flow and against the Treasury's 10-year, with every year it raised
 public static class DividendSafety
 {
     // The quarters the payout on free cash flow sums, a year.

@@ -372,7 +372,14 @@ public static class ClaimRules
             {
                 foreach (var quoted in Quotations(sentence.Text).Where(quoted => !QuotedByACitedDocument(quoted, sentence, sources)))
                 {
-                    findings.Add(new ClaimFinding(sentence.Text, "\"" + quoted + "\"", QuotationNoCitedDocumentHolds));
+                    findings.Add(new ClaimFinding(sentence.Text, quoted, QuotationNoCitedDocumentHolds));
+                }
+
+                // A quotation left open runs past the end of the sentence it sits in, where no reading of the sentence can
+                // hold its words to what it cites, so the sentence is refused whole by the same rule.
+                if (LeavesAQuotationOpen(sentence.Text))
+                {
+                    findings.Add(new ClaimFinding(sentence.Text, sentence.Text, QuotationNoCitedDocumentHolds));
                 }
             }
 
@@ -579,6 +586,12 @@ public static class ClaimRules
             .Where(source => source.Admitted && source.Body is { Length: > 0 })
             .Any(source => Plain(source.Body!).Contains(wanted, StringComparison.OrdinalIgnoreCase));
     }
+
+    // Whether a sentence opens a quotation it does not close, or closes one it did not open: an odd count of straight
+    // double marks, or curly ones that do not pair.
+    public static bool LeavesAQuotationOpen(string sentence) =>
+        sentence.Count(character => character == '"') % 2 == 1
+        || sentence.Count(character => character == '“') != sentence.Count(character => character == '”');
 
     // Text with its quotation marks and apostrophes made straight and every run of white space one space.
     static string Plain(string text) =>

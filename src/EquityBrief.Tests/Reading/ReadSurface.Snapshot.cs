@@ -9,8 +9,8 @@ using EquityBrief.Worker.Fundamentals;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, the 5.8 correction: the numbers open on a snapshot of the newest filing, a figure to a
-// row, with every other filed figure folded beneath it and no provider named in the words.
-// see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider
+// row, with every other filed figure but the segments folded beneath it and no provider named in the words.
+// see: The numbers open on a snapshot of the newest filing with every other filed figure but the segments folded beneath it, and the report names no provider
 public partial class ReadSurface
 {
     // The snapshot's rows as the page drew them: what each is, the stored value its element carries,

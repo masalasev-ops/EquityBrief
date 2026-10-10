@@ -23,15 +23,20 @@ public partial class FixtureExpectations
             .OrderBy(one => one.File, StringComparer.Ordinal)
             .ToArray();
 
-        // Twelve on DeepSeek's wire and six on Claude's: each paid request the instructions moved in the default pass,
+        // Thirteen on DeepSeek's wire and seven on Claude's: each paid request the instructions moved in the default pass,
         // the lane comparison's pass and the pass asked of Claude, the short version's retries among them, while the
-        // risks, asked under the fields' own citing line, and every request handed no document keep their captures.
-        Assert.Equal(12, constructed.Count(one => one.Node.ContainsKey("choices")));
-        Assert.Equal(6, constructed.Count(one => one.Node.ContainsKey("response")));
+        // risks, asked under the fields' own citing line, and every request handed no document keep their captures; and
+        // from 18.2 one on each wire for what management said, a section no capture answers.
+        Assert.Equal(13, constructed.Count(one => one.Node.ContainsKey("choices")));
+        Assert.Equal(7, constructed.Count(one => one.Node.ContainsKey("response")));
 
         var sources = new List<string>();
+        var unanswered = constructed.Where(one => one.Node["constructed"]!.GetValue<string>().Contains(NoCaptureAnswers, StringComparison.Ordinal)).ToArray();
 
-        foreach (var (file, node) in constructed)
+        Assert.Equal(2, unanswered.Length);
+        WrittenForASectionNoCaptureAnswers(unanswered);
+
+        foreach (var (file, node) in constructed.Except(unanswered))
         {
             var said = node["constructed"]!.GetValue<string>();
             var source = Regex.Match(said, @"recorded as (research-call-[0-9a-f]{32}\.json)").Groups[1].Value;
@@ -94,7 +99,54 @@ public partial class FixtureExpectations
         }
 
         // Each from a capture of its own.
-        Assert.Equal(constructed.Length, sources.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(constructed.Length - unanswered.Length, sources.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    const string NoCaptureAnswers = "written for a section no capture answers";
+
+    // An answer constructed for a section no capture answers holds what the section's ask and the checker hold it to, read
+    // against the two releases the pass hands it: every quotation word for word in the newest release, every sentence
+    // stating a figure marked as the night's on DeepSeek's wire and flagged on Claude's and no other, Claude's the same
+    // sentences as DeepSeek's, and the prompt's size the one the file states.
+    static void WrittenForASectionNoCaptureAnswers(IReadOnlyList<(string File, JsonObject Node)> unanswered)
+    {
+        var release = new StoredDocument(
+            "r", "https://www.sec.gov/Archives/edgar/data/1601046/release.htm", "Results release", new DateOnly(2026, 8, 18), DateTimeOffset.UnixEpoch,
+            SecEdgarArchive.Plain(Captured("release-KEYS.htm")), Admissibility.Accepted);
+
+        void QuotedFromTheRelease(string file, string sentence) =>
+            Assert.All(ClaimRules.Quotations(sentence), quoted => Assert.True(
+                ClaimRules.QuotedByACitedDocument(quoted, new ProseSentence(sentence, [1], false), [release]),
+                $"{file}: \"{quoted}\" is not in the newest release word for word."));
+
+        static void Stated(string said, long usage) =>
+            Assert.Equal(usage, long.Parse(Regex.Match(said, @"counted over the same two releases, (\d+) tokens").Groups[1].Value, CultureInfo.InvariantCulture));
+
+        var deepSeek = unanswered.Single(one => one.Node.ContainsKey("choices"));
+        var claude = unanswered.Single(one => one.Node.ContainsKey("response"));
+
+        var content = deepSeek.Node["choices"]![0]!["message"]!["content"]!.GetValue<string>();
+        var sentences = content.Split("\n\n").SelectMany(ClaimRules.Sentences).ToArray();
+
+        Assert.Equal(ClaimRules.GuidanceOpens, content[..ClaimRules.GuidanceOpens.Length]);
+        Assert.All(sentences, sentence => Assert.True(
+            sentence.CitesNight == StatesAFigure(sentence.Text),
+            $"{deepSeek.File}: \"{sentence.Text}\" {(sentence.CitesNight ? "carries [N] and states no figure" : "states a figure and carries no [N]")}."));
+        Assert.All(sentences, sentence => QuotedFromTheRelease(deepSeek.File, sentence.Text));
+        Assert.Equal(4, sentences.Sum(sentence => ClaimRules.Quotations(sentence.Text).Count));
+        Stated(deepSeek.Node["constructed"]!.GetValue<string>(), deepSeek.Node["usage"]!["prompt_tokens"]!.GetValue<long>());
+
+        var claudes = Answers(claude.Node.DeepClone().AsObject())
+            .SelectMany(answer => answer["paragraphs"]!.AsArray().SelectMany(paragraph => paragraph!.AsArray()))
+            .Select(sentence => sentence!.AsObject())
+            .ToArray();
+
+        Assert.All(claudes, sentence => Assert.Equal(StatesAFigure(sentence["sentence"]!.GetValue<string>()), sentence["facts"]!.GetValue<bool>()));
+        Assert.All(claudes, sentence => QuotedFromTheRelease(claude.File, sentence["sentence"]!.GetValue<string>()));
+        Assert.Equal(
+            sentences.Select(sentence => Regex.Replace(sentence.Text, @"\s*\[(?:D\d+|N)\]", string.Empty)),
+            claudes.Select(sentence => sentence["sentence"]!.GetValue<string>()));
+        Stated(claude.Node["constructed"]!.GetValue<string>(), claude.Node["response"]!["usage"]!["input_tokens"]!.GetValue<long>());
     }
 
     static bool StatesAFigure(string sentence) =>

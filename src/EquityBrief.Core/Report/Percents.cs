@@ -3,8 +3,10 @@ using EquityBrief.Core.Prices;
 namespace EquityBrief.Core.Report;
 
 // The one crossing the name page's report arithmetic makes from the decimal world to the statistics one: a fraction
-// worked as a decimal from money, a change, a margin or a share, out as a percentage, through `Statistic.FromRatio`.
+// worked as a decimal from money, a change, a margin or a share, out as a percentage, through `Statistic.FromRatio`. The
+// fraction is scaled while it is still a decimal, so a fraction rounded to six places crosses as the four-place
+// percentage it is.
 public static class Percents
 {
-    public static double? FromFraction(decimal? fraction) => fraction is { } part ? Statistic.FromRatio(part) * 100 : null;
+    public static double? FromFraction(decimal? fraction) => fraction is { } part ? Statistic.FromRatio(part * 100) : null;
 }

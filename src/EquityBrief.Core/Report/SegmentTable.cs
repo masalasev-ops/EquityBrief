@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
 
@@ -76,8 +75,14 @@ public static class SegmentTable
 
         bool InQuarter(SegmentFigure figure, DateOnly end) => figure.Period.Months == shortest && figure.Period.Ended == end;
 
+        // A row is money in the table's scale where it states no unit or the table's own currency, as one filer marks
+        // every money row; a count or a share states a unit of its own.
+        var currency = SecEdgarArchive.Currency(table.Title);
+
+        bool Money(SegmentFigure figure) => figure.Unit is null || string.Equals(figure.Unit, currency, StringComparison.Ordinal);
+
         decimal? First(IEnumerable<SegmentFigure> figures, Func<SegmentFigure, bool> concept, DateOnly? end) =>
-            end is { } on ? figures.FirstOrDefault(figure => figure.Unit is null && figure.Value is not null && concept(figure) && InQuarter(figure, on))?.Value : null;
+            end is { } on ? figures.FirstOrDefault(figure => Money(figure) && figure.Value is not null && concept(figure) && InQuarter(figure, on))?.Value : null;
 
         var total = First(table.Consolidated, IsRevenue, ended) ?? reportedRevenue;
 
@@ -136,7 +141,7 @@ public static class SegmentTable
                     segment.Earnings,
                     segment.EarningsBefore,
                     Percents.FromFraction(QuarterFetch.Grown(segment.Earnings, segment.EarningsBefore)),
-                    Statistic.FromRatio(segment.Revenue!.Value / whole) * 100)),
+                    Percents.FromFraction(QuarterFetch.Margined(segment.Revenue, whole))!.Value)),
             ],
             null);
     }

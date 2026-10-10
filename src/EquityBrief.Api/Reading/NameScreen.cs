@@ -552,7 +552,7 @@ public static class NameScreen
     // beside the company's own figures, an analyst's estimate reads as one of them.
     // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
-    // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+    // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     static string Snapshot(JsonElement payload, string currency)
     {
         JsonElement Part(string name) =>

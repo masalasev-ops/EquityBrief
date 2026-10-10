@@ -82,11 +82,15 @@ public class FixtureReplay
             night,
             store.DatabaseFile).RunAsync(Index, "replay-fetch");
 
-        await new CorporateActionChecker(
+        var actionsOn = FixedClock.At(new DateTimeOffset(2026, 8, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var actions = await new CorporateActionChecker(
             RecordedCorporateActionFeed.FromFolder(Folder()),
             RecordedHistoricalBarFeed.FromFolder(Folder()),
-            FixedClock.At(new DateTimeOffset(2026, 8, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            actionsOn,
             store.DatabaseFile).RunAsync(Index, "replay-actions");
+
+        // The dividends the answer carried for the names the night stores, kept in the step that asked for them, from 18.2.
+        await new EquityBrief.Worker.Dividends.DividendKeeper(actionsOn, store.DatabaseFile).KeepTheNightAsync(actions.Paid ?? [], "replay-actions");
 
         await new CalendarFetcher(
             RecordedEarningsCalendarFeed.FromFolder(Folder()),
@@ -141,6 +145,10 @@ public class FixtureReplay
 
         await new EquityBrief.Worker.Ledger.SetupLedger(night, store.DatabaseFile)
             .BusinessAgainAsync(new DateOnly(2026, 9, 8), filings.Refreshed);
+
+        // The Treasury's 10-year, after the filings refresh as the night reads it, from 18.2.
+        await new EquityBrief.Worker.Treasury.TreasuryReader(night, store.DatabaseFile)
+            .RunAsync(RecordedTreasuryYieldFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8), "replay-treasury");
 
         // The one stage here that is not the night's. The fundamentals fetcher runs
         // when a name is opened, so it is replayed after the night rather than

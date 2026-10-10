@@ -52,7 +52,7 @@ public sealed record AnalystReading(
 
 // The analysts' figures, each labelled as theirs and dated by the fetch that kept it, worked by one function so the page
 // and its file draw the same; none of it reaches written prose.
-// see: The name page draws the analysts' consensus, revisions, ratings by month and target, each labelled as theirs and dated, and no written sentence states one
+// see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
 public static class AnalystView
 {
     // The months of rating counts drawn, to the night's own.

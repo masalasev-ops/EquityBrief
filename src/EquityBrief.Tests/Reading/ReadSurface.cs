@@ -56,6 +56,9 @@ public partial class ReadSurface
             // and the interval between two asks.
             .. NamePageRows,
 
+            // 18.2, the name page's seven regions between the card and the earnings reactions and their nine marks.
+            .. ReportPageRows,
+
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
             // version at a checkpoint, and the night's tries on tonight's notice and the Run page.

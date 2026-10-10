@@ -1413,7 +1413,9 @@ public partial class ArchitectureConformance
         // 147 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
         // 157 at 18.1: the range bar, the name page's masthead, quote, headline, tiles, how the rules read it, the card,
         // the reading column and the rules by role, and the run page's quote runs.
-        Assert.Equal(157, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 173 at 18.2: the nine marks and the name page's latest quarter, what management said, segments, margins,
+        // analysts, dividend safety and valuation.
+        Assert.Equal(173, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1535,7 +1537,9 @@ public partial class ArchitectureConformance
         // 506 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
         // 516 at 18.1: the range bar, the name page's masthead, quote, headline, tiles, how the rules read it, the card,
         // the reading column and the rules by role, and the run page's quote runs.
-        Assert.Equal(516, inDocument.Length);
+        // 532 at 18.2: the nine marks and the name page's latest quarter, what management said, segments, margins,
+        // analysts, dividend safety and valuation.
+        Assert.Equal(532, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

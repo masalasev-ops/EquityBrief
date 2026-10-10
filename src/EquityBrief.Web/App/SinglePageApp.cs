@@ -1436,14 +1436,14 @@ public sealed class SinglePageApp : IComponent
         }
 
         // The analysts' figures, after the margins, each labelled as theirs and dated by the fetch that kept it.
-        // see: The name page draws the analysts' consensus, revisions, ratings by month and target, each labelled as theirs and dated, and no written sentence states one
+        // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
         if (report?.Analysts is { } analysts)
         {
             var analystBody = new StringBuilder();
 
             analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
             analystBody.Append(analysts.Target is { } target
-                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? Invariant($", {against:+0.0;-0.0;0.0}% on the price drawn") : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong buy, to five, a strong sell") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
+                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? Invariant($", {against:+0.0;-0.0;0.0}% on the price drawn") : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
                 : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");
             analystBody.Append("<div class=\"sub\">The consensus over the last 90 days</div><div class=\"fig\">").Append(marks.EstimateTrend(analysts)).Append("</div>");
             analystBody.Append("<div class=\"sub\">Ratings by month</div><div class=\"fig\">").Append(marks.RatingBars(analysts)).Append("</div>");
@@ -1465,7 +1465,7 @@ public sealed class SinglePageApp : IComponent
         }
 
         // The dividend's safety for a payer, after the analysts.
-        // see: A payer's dividend is read for its safety against its earnings, its free cash flow and the Treasury's 10-year, with every year it raised
+        // see: A payer's dividend is read for its safety against its earnings and free cash flow and against the Treasury's 10-year, with every year it raised
         if (report?.Dividend is { } dividend)
         {
             Card("dividend", "dividend", "Dividend safety", Cards.Computed(
@@ -1484,7 +1484,7 @@ public sealed class SinglePageApp : IComponent
         }
 
         // The valuation, after the dividend: the night's multiple against its own quarters' and its industry's members'.
-        // see: The valuation reads a stock against its industry's S&P 500 members from the night's readings alone, a multiple, a yield and a growth a member
+        // see: The valuation reads a stock against its own quarters and its industry's S&P 500 members from the night's readings alone
         if (report?.Valuation is { } valuation && (valuation.Quarters.Count > 0 || valuation.Peers is not null || valuation.Multiple is not null))
         {
             var valued = new StringBuilder();
