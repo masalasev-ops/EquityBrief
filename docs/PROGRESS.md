@@ -41869,3 +41869,53 @@ Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and
             retired, 16.3 the dividend estimate and, if the data check confirms it, the market events table, a
             correction changing the night merged at most one a night.
 Carried:    nothing.
+
+### 18.0 planning - phase 18 planned: every stock's page and its exported report brought to the reference's standard, the corrections first, the rulings recorded and the data check read   2026-10-10
+
+Not a checkpoint entry. It lands 18.0, the pass that plans phase 18, and builds none of the page.
+Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418,
+            merged on 2026-10-10, and the 6.4 correction as PR 419, gated and merging once phase 17's monthly run by
+            hand has finished; in progress, this pass; next, in order, the 3.1, 6.10 and 16.3 corrections, the market
+            events table's 2027 rows under 16.3 among them, a correction changing the night merged at most one a night,
+            then 18.1 to 18.5; beside them, in fresh sessions the operator starts one at a time, the sign-offs of phases
+            15, 16 and 17, phase 18 pausing with the checkout on main while each runs and never beside one.
+Ruled:      by the operator on 2026-10-09: the brief, the plan approved with no amendment, R1 to R13 as recommended,
+            and the mockup of the page and its file, "The report design is approved", each word for word in
+            `prompts/2026-10-09-18.0-*.md`. The sign-offs of phases 15, 16 and 17 stay owed and outstanding; nothing
+            here discharges any of them.
+Asked:      by the operator on 2026-10-09: "why is phase 18 not in t he build plan doc ?" This pass, which the plan put
+            after Part A, was moved ahead of the 3.1, 6.10 and 16.3 corrections to answer it, since the plan's rulings,
+            which the corrections' entries cite, stood outside the repository until it lands.
+Planned:    `BUILD_PLAN.md`'s phase 18 section, its checkpoints 18.0 to 18.5, and two operating rows, the day's live
+            quotes under their cap and the short version's refusals once it is written from accepted claims; section
+            20's row; and two decisions the phase rests on that describe no running code, the sign-offs between phase
+            18's pull requests and a prompt change's recordings made with no paid call. The decisions that change what
+            runs are written where they are built.
+Measured:   the data check, read on 2026-10-10 with no provider call. The BLS's CPI page states the September 2026
+            release for 2026-10-14 at 08:30, so the market events table's row stands, where the plan read the schedule
+            page, which lists from the release after the next, as naming none; the schedule page lists 2027's twelve
+            releases, 2027-01-13 to 2027-12-10, which the table lacks and the 16.3 correction adds. The Fed's calendar
+            matches the table's sixteen meetings of 2026 and 2027 and states one of 2028-01-25 and 26, tentative. The
+            exchange's early closes at 13:00 Eastern: 2026-11-27, 2026-12-24, 2027-11-26, 2028-07-03 and 2028-11-24.
+            The Treasury's par yield table, read with no key: the 10-year at 5.24 on 2026-10-09 and 5.22 on 2026-10-08.
+            The fixture's captured fundamentals, fetched 2026-09-12: each estimate trend row with the estimate now and 7,
+            30, 60 and 90 days ago, revisions up and down over 7 and 30 days and the earnings and revenue estimates'
+            average, range and count; the analysts' mean rating and target beside the five counts; and each quarter's
+            operating cash flow, capital spending, free cash flow and dividends paid.
+Not done:   the delayed quote for CVX, one weighted call, which the plan put here: the pass ran on a Saturday outside
+            any session, with the provider's count for 2026-10-10 at 5,494, past the operator's 5,000. Of that count,
+            589 calls made between 01:28Z and 03:30Z are recorded by no run log and were made by neither session at
+            work, and the suite, run whole behind a proxy refusing every outside host, asked for none. 18.1 reads the
+            quote and its delay in the session.
+Tests:      2128, unchanged.
+Claims:     1149, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
+            plan and the decisions sit in no table the harness reads.
+Pins:       none moved: the pass edits no source.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 21cc7fd2, the entry's commit, all six steps, 0
+            warnings, 0 errors, 2128 of 2128 tests ran with none failed, migrations 0 to 83 with none pending, schema
+            version 83, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not run
+            (see: A pull request of documents alone runs the checkpoint script alone, and one changing code runs the
+            phase report as well).
+Carried:    the sign-offs of phases 15, 16 and 17, owed to fresh sessions; the market events table's 2027 releases and
+            the meeting of 2028, which the 16.3 correction writes; and the 589 calls of 2026-10-10 no run log records,
+            put to the operator.
