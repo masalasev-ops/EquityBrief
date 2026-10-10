@@ -115,6 +115,14 @@ public sealed class FactsAssembler : IComponent
         LIMIT 1;
     ";
 
+    // The filing stored before the newest, whose guidance passage is the release before's.
+    const string FilingBeforeFor = @"
+        SELECT payload FROM fundamentals
+        WHERE ticker = $ticker
+        ORDER BY filing_date DESC
+        LIMIT 1 OFFSET 1;
+    ";
+
     // The member's readings on the night its file is about, being its own last session.
     // see: The readings join the facts file for a member holding them, and nothing is added for one without
     const string ReadingFor = @"
@@ -574,6 +582,16 @@ public sealed class FactsAssembler : IComponent
                 reader.GetString(0),
                 FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)))));
 
+        // The release before's guided figures, read off the filing stored before the newest by the reader of the
+        // newest's, so what management said can state the guidance it moved from.
+        // see: The facts file carries the release before's guided figures beside the newest's, under names of their own
+        await ReadAsync(connection, FilingBeforeFor, ticker, cancellation, reader =>
+        {
+            using var before = JsonDocument.Parse(reader.GetString(0));
+
+            facts.AddRange(Guided(before.RootElement, FactOwners.GuidanceBefore));
+        });
+
         // The night's readings of the member's reported quarters, for a member holding quarters, so a
         // written section may quote what "What the numbers say" draws; a member holding none adds
         // nothing, since absent is never a failure and a file of nulls would read as figures.
@@ -910,7 +928,7 @@ public sealed class FactsAssembler : IComponent
     // reads it, named by its place in the passage and never by what it guides. A passage no
     // heading located carries none, because nothing says which paragraph is the guidance.
     // see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it
-    internal static IReadOnlyList<Fact> Guided(JsonElement root)
+    internal static IReadOnlyList<Fact> Guided(JsonElement root, string named = FactOwners.GuidanceFigure)
     {
         if (!root.TryGetProperty("guidance", out var guidance)
             || guidance.ValueKind != JsonValueKind.Object
@@ -926,7 +944,7 @@ public sealed class FactsAssembler : IComponent
             .. ClaimRules.Figures(passage)
                 .Where(figure => figure.Kind == FigureKind.Figure)
                 .Select((figure, at) => new Fact(
-                    $"guidance figure {(at + 1).ToString(CultureInfo.InvariantCulture)}",
+                    named + (at + 1).ToString(CultureInfo.InvariantCulture),
                     (figure.Magnitude * figure.Scale).ToString("0.############", CultureInfo.InvariantCulture),
                     FromFundamentals)),
         ];

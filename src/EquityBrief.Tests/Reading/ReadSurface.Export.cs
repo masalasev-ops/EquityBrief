@@ -41,13 +41,24 @@ public partial class ReadSurface
         Assert.Equal("attachment", response.Content.Headers.ContentDisposition!.DispositionType);
         Assert.Equal($"EquityBrief-KEYS-{newest}.html", response.Content.Headers.ContentDisposition.FileNameStar ?? response.Content.Headers.ContentDisposition.FileName!.Trim('"'));
 
-        var file = await response.Content.ReadAsStringAsync();
+        var exported = await response.Content.ReadAsStringAsync();
 
-        // A document of its own, with nothing a reader needs the application or the network for:
-        // no script, no router's links, no form, no stylesheet or picture fetched from anywhere.
-        Assert.StartsWith("<!doctype html>", file, StringComparison.Ordinal);
+        // A document of its own, opening in the light palette, with nothing a reader needs the application or the network
+        // for: no router's links, no form, no stylesheet or picture fetched from anywhere, and one script, which switches
+        // the palette at the press of the one toggle and does nothing else, so the file with it taken out is the file a
+        // reader with scripts off reads, and every figure is drawn there.
+        // see: A single report is exported as one self-contained file in the page's design, opening light with a dark toggle and stamped with the price it was exported at
+        const string Script = "<script>" + ReportExporter.ThemeScript + "</script>";
+
+        Assert.StartsWith("<!doctype html>", exported, StringComparison.Ordinal);
+        Assert.Contains("<html lang=\"en\" data-eb-theme=\"light\">", exported, StringComparison.Ordinal);
+        Assert.Equal([Script], Blocks(exported, "<script.*?</script>"));
+
+        var file = exported.Replace(Script, string.Empty, StringComparison.Ordinal);
+
         Assert.Contains("data-exported=\"report\" data-ticker=\"KEYS\"", file, StringComparison.Ordinal);
-        Assert.Contains($"with every figure as the store held it on the session of {newest}", file, StringComparison.Ordinal);
+        Assert.Contains($"with every figure as the store held it on the session of {newest}, exported at ", file, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(file, "<button type=\"button\" class=\"theme-toggle\" data-theme-toggle aria-pressed=\"false\">Dark palette</button>"));
 
         foreach (var needs in new[] { "<script", "href=\"#/", "<form", "<link", " src=", "@import", "url(", SinglePageApp.PassRoute, ReportExporter.Route })
         {
@@ -73,7 +84,7 @@ public partial class ReadSurface
         // that a page offering one does not.
         var onThePage = Blocks(page, "data-[a-z-]+=\"[^\"]*\"").GroupBy(value => value).ToDictionary(group => group.Key, group => group.Count());
         var extra = Blocks(file, "data-[a-z-]+=\"[^\"]*\"")
-            .Where(value => !value.StartsWith("data-exported=", StringComparison.Ordinal))
+            .Where(value => !value.StartsWith("data-exported", StringComparison.Ordinal) && value != "data-eb-theme=\"light\"")
             .Where(value => value != "data-controls=\"0\"")
             .GroupBy(value => value)
             .Where(group => group.Count() > onThePage.GetValueOrDefault(group.Key))
@@ -92,11 +103,19 @@ public partial class ReadSurface
         Assert.Contains($"class=\"level-chart\" data-ticker=\"KEYS\" data-sessions=\"{sessions.Length}\"", chart, StringComparison.Ordinal);
         Assert.Equal(sessions, Regex.Matches(chart, "<g class=\"candle\" data-session=\"([^\"]*)\">").Select(match => match.Groups[1].Value).ToArray());
 
-        foreach (var accepted in Rows(store, "SELECT section, as_of FROM research_section WHERE ticker = 'KEYS' AND status = 'accepted' AND section != 'The cause of each large move';"))
+        foreach (var accepted in Rows(store, "SELECT section, as_of FROM research_section WHERE ticker = 'KEYS' AND status = 'accepted' AND section NOT IN ('The cause of each large move', 'The headline');"))
         {
             Assert.Contains($"data-section=\"{WebUtility.HtmlEncode(accepted[0])}\"", file, StringComparison.Ordinal);
             Assert.Contains(accepted[1], file, StringComparison.Ordinal);
         }
+
+        // The headline is the page's lead, its marks taken off, with the day it was written.
+        var headline = Rows(store, "SELECT prose, as_of FROM research_section WHERE ticker = 'KEYS' AND section = 'The headline' AND status = 'accepted' ORDER BY version DESC LIMIT 1;").Single();
+
+        Assert.Contains(
+            "<h1 class=\"lead-line\" data-written=\"model\">" + EquityBrief.Web.App.Cards.Escaped(EquityBrief.Core.Research.ClaimRules.Unmarked(headline[0])) + "</h1><p class=\"written-by\">written on " + headline[1] + "</p>",
+            file,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -118,7 +137,17 @@ public partial class ReadSurface
 
         Assert.Contains("<details open><summary>why</summary>the prose</details><span class=\"unrouted\">next: MSFT</span>", file, StringComparison.Ordinal);
         Assert.Contains("<title>EquityBrief: KEYS, 2026-09-08</title>", file, StringComparison.Ordinal);
-        Assert.DoesNotContain("<script", file, StringComparison.OrdinalIgnoreCase);
+        Assert.Single(Regex.Matches(file, "<script", RegexOptions.IgnoreCase));
+        Assert.Contains("<script>" + ReportExporter.ThemeScript + "</script>", file, StringComparison.Ordinal);
+
+        // Stamped with the instant of the export in New York's time, and a delayed quote the page drew live is marked as
+        // the price at the export, since a file does not move.
+        var stamped = new ReportExporter().Document("KEYS", new DateOnly(2026, 10, 9), "<span class=\"pill live\">LIVE</span>", new DateTimeOffset(2026, 10, 9, 18, 5, 0, TimeSpan.Zero));
+
+        Assert.Contains("data-exported-at=\"2026-10-09T18:05:00Z\"", stamped, StringComparison.Ordinal);
+        Assert.Contains("on the session of 2026-10-09, exported at 14:05 ET on 2026-10-09, the masthead's price as it stood then.", stamped, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"pill live\">AT EXPORT</span>", stamped, StringComparison.Ordinal);
+        Assert.DoesNotContain(">LIVE<", stamped, StringComparison.Ordinal);
 
         Assert.Equal("EquityBrief-KEYS-2026-09-08.html", ReportExporter.FileName("KEYS", new DateOnly(2026, 9, 8)));
         Assert.Equal("EquityBrief-BRK.B.html", ReportExporter.FileName("BRK.B", null));

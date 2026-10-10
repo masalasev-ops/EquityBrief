@@ -290,9 +290,30 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
                     ["additionalProperties"] = false,
                 },
             },
+            ["turnsUp"] = ColumnSchema(EquityBrief.Core.Research.RiskFields.TurnsUp),
+            ["makesWorse"] = ColumnSchema(EquityBrief.Core.Research.RiskFields.MakesWorse),
         },
-        ["required"] = new JsonArray("risks"),
+        ["required"] = new JsonArray("risks", "turnsUp", "makesWorse"),
         ["additionalProperties"] = false,
+    };
+
+    // The lines of one of the two columns the risks close on, each completing the column's opening words and resting on
+    // a listed document.
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    static JsonObject ColumnSchema(string opening) => new()
+    {
+        ["type"] = "array",
+        ["items"] = new JsonObject
+        {
+            ["type"] = "object",
+            ["properties"] = new JsonObject
+            {
+                ["what"] = new JsonObject { ["type"] = "string", ["description"] = $"words completing \"{opening}\", written without a document marker and with no figure" },
+                ["document"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document that says so" },
+            },
+            ["required"] = new JsonArray("what", "document"),
+            ["additionalProperties"] = false,
+        },
     };
 
     static readonly Regex Marker = new(@"\s*\[D\d+\]", RegexOptions.Compiled);

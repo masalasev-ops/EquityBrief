@@ -63,6 +63,9 @@ public partial class ReadSurface
             // and the moves gain, and the two failures a page states.
             .. HistoryPageRows,
 
+            // 18.4, the risks' two columns, the calendar and its timeline, the sources, and the two failures they state.
+            .. WrittenLastPageRows,
+
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
             // version at a checkpoint, and the night's tries on tonight's notice and the Run page.
@@ -496,13 +499,12 @@ public partial class ReadSurface
             CheckReach.Key(Scope.FailureTable, "A pass finds no admissible source for a section"),
 
             // 6.8, the name page once a pass has written what a reader is shown: the
-            // written sections, the dates and sources, what each research state offers
+            // written sections, what each research state offers
             // and the cost beside it, the page's half of section 18's cloud model row
             // and of its two local lane rows, and tonight's fresh prose against reused.
             CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
             CheckReach.Key("15.9 Name", "The short version"),
             CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks"),
-            CheckReach.Key("15.9 Name", "Dates and sources"),
             CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed"),
             CheckReach.Key("15.9 Name", "Research stale, the stored sections rendered with their own dates"),
             CheckReach.Key("15.9 Name", "Research stale, the option to have them rewritten"),
@@ -3902,7 +3904,7 @@ public partial class ReadSurface
 
         Assert.True(twice.Success);
         Assert.Contains(EquityBrief.Worker.Research.ClaimChecker.RejectedOnEveryRetry, twice.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("66.3%", twice.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("43.6%", twice.Groups[1].Value, StringComparison.Ordinal);
 
         // No admissible source: the line says so in the words section 18 uses.
         var none = Regex.Match(region, "<p class=\"left-out\" data-section=\"The two cases\">([^<]*)</p>");
@@ -4057,7 +4059,7 @@ public partial class ReadSurface
         Assert.Contains($"data-subject=\"KEYS\" data-section=\"{ClaimAdmissibility.Computed}\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"KEYS\" data-section=\"The two cases\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"test and measurement\" data-section=\"The industry cycle\"", region, StringComparison.Ordinal);
-        Assert.Contains("66.3%", region, StringComparison.Ordinal);
+        Assert.Contains("43.6%", region, StringComparison.Ordinal);
 
         // The day before is its own night.
         Assert.DoesNotContain("The risks, each with what would confirm it", region, StringComparison.Ordinal);

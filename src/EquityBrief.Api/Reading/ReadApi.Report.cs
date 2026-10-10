@@ -26,7 +26,7 @@ public sealed record ReportInputs(
 
 // The reads of the regions phase 18 added between the card and the earnings reactions. The page draws what they return
 // through the core's functions and computes none of it.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public sealed partial class ReadApi
 {
     const string ReportQuartersOf = @"

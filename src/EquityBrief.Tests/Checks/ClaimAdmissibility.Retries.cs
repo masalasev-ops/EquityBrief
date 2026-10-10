@@ -30,7 +30,7 @@ public partial class ClaimAdmissibility
         const string Figure = "Margins reached 71.3% as costs fell [D1].";
         const string Uncited = "The market is arguing about what comes next.";
 
-        var brief = RetryBrief.For("What the company sells", Kept + " " + Figure + " " + Uncited, OneFigure, [AnAdmittedDocument], null, "a stored reason");
+        var brief = RetryBrief.For(Ungoverned, Kept + " " + Figure + " " + Uncited, OneFigure, [AnAdmittedDocument], null, "a stored reason");
 
         Assert.StartsWith(RetryBrief.Opening, brief, StringComparison.Ordinal);
         Assert.EndsWith(RetryBrief.Closing, brief, StringComparison.Ordinal);

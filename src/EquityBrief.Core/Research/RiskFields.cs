@@ -25,6 +25,10 @@ public sealed record RiskField(
     public bool IsEvent => Fact is null;
 }
 
+// One line of the two columns beneath the risks: words completing "It would turn up if" or "It would get worse if",
+// and the listed document it rests on.
+public sealed record RiskColumnLine(string What, int Document);
+
 // The risks section as fields: read from a model's answer, composed into the prose the page reads its parts
 // by, stored beside it, and checked for what prose alone could not be: that each fact is one the facts file
 // lists, each level one it holds, each kind one of the seven, and that no two risks rest on one fact or one
@@ -52,6 +56,12 @@ public static class RiskFields
     public const string EventWithLevel = "an event risk carrying a direction or a level";
     public const string SharedFact = "two risks confirmed by the same fact";
     public const string SharedKind = "two risks confirmed by events of one kind";
+
+    // The two columns the risks close on, each sentence opening on its column's words, which is how the page tells them
+    // from the risks above them.
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    public const string TurnsUp = "It would turn up if";
+    public const string MakesWorse = "It would get worse if";
 
     static readonly string[] Ordinals = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
 
@@ -128,12 +138,77 @@ public static class RiskFields
         return risks;
     }
 
+    // The two columns an answer holds, each empty where it lists none, or none where a column is there and is not the
+    // shape asked for: a list of lines, each with its words and its document.
+    public static (IReadOnlyList<RiskColumnLine> Up, IReadOnlyList<RiskColumnLine> Worse)? Columns(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return null;
+        }
+
+        try
+        {
+            if (JsonNode.Parse(Fence.Replace(text.Trim(), string.Empty)) is not JsonObject whole)
+            {
+                return null;
+            }
+
+            return Column(whole["turnsUp"]) is { } up && Column(whole["makesWorse"]) is { } worse ? (up, worse) : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    static IReadOnlyList<RiskColumnLine>? Column(JsonNode? node)
+    {
+        if (node is null)
+        {
+            return [];
+        }
+
+        if (node is not JsonArray listed)
+        {
+            return null;
+        }
+
+        var lines = new List<RiskColumnLine>();
+
+        foreach (var item in listed)
+        {
+            if (item is not JsonObject line || Words(line["what"]) is not { } what || Number(line["document"]) is not { } document)
+            {
+                return null;
+            }
+
+            lines.Add(new RiskColumnLine(Lowered(what), document));
+        }
+
+        return lines;
+    }
+
+    // A column's words as they complete its opening, a writer's leading capital taken down unless it opens a name.
+    static string Lowered(string what) =>
+        what.Length > 1 && char.IsUpper(what[0]) && char.IsLower(what[1]) && what.Split(' ')[0] is "The" or "A" or "An" or "Its" or "Their"
+            ? char.ToLowerInvariant(what[0]) + what[1..]
+            : what;
+
     // The prose the page reads the risks by: a paragraph each, the risk in a sentence citing its document and
-    // what would confirm it in a second citing the document that says why.
-    public static string Compose(IReadOnlyList<RiskField> risks) =>
+    // what would confirm it in a second citing the document that says why; then the two columns, a paragraph each,
+    // a sentence a line opening on its column's words.
+    public static string Compose(IReadOnlyList<RiskField> risks, IReadOnlyList<RiskColumnLine>? up = null, IReadOnlyList<RiskColumnLine>? worse = null) =>
         string.Join("\n\n", risks.Select((risk, at) =>
             "The " + (at < Ordinals.Length ? Ordinals[at] : "next") + " risk is " + risk.Risk + Cite(risk.RiskDocument) + ". "
-            + ConfirmedBy(risk) + ", because " + risk.Why + Cite(risk.WhyDocument) + "."));
+            + ConfirmedBy(risk) + ", because " + risk.Why + Cite(risk.WhyDocument) + ".")
+            .Concat(ColumnProse(TurnsUp, up))
+            .Concat(ColumnProse(MakesWorse, worse)));
+
+    static IEnumerable<string> ColumnProse(string opening, IReadOnlyList<RiskColumnLine>? lines) =>
+        lines is { Count: > 0 }
+            ? [string.Join(" ", lines.Select(line => opening + " " + line.What + Cite(line.Document) + "."))]
+            : [];
 
     // What would confirm a risk, as its second sentence opens.
     public static string ConfirmedBy(RiskField risk) =>
@@ -142,22 +217,42 @@ public static class RiskFields
             ? risk.Event + ", " + Article(risk.Kind ?? "other") + " " + (risk.Kind ?? "other") + " event"
             : risk.Fact + " " + risk.Direction + " " + risk.Level);
 
-    // The fields as the row stores them, in the order written.
-    public static string Stored(IReadOnlyList<RiskField> risks) =>
-        new JsonObject
+    // The fields as the row stores them, in the order written, the two columns beside the risks where it holds any.
+    public static string Stored(IReadOnlyList<RiskField> risks, IReadOnlyList<RiskColumnLine>? up = null, IReadOnlyList<RiskColumnLine>? worse = null)
+    {
+        var stored = new JsonObject
         {
             ["risks"] = new JsonArray([.. risks.Select(risk => (JsonNode)Node(risk))]),
-        }.ToJsonString();
+        };
+
+        if (up is { Count: > 0 })
+        {
+            stored["turnsUp"] = Lines(up);
+        }
+
+        if (worse is { Count: > 0 })
+        {
+            stored["makesWorse"] = Lines(worse);
+        }
+
+        return stored.ToJsonString();
+    }
+
+    static JsonArray Lines(IReadOnlyList<RiskColumnLine> lines) =>
+        new([.. lines.Select(line => (JsonNode)new JsonObject { ["what"] = line.What, ["document"] = line.Document })]);
 
     // An answer as a writer stores it: the prose composed from its fields with the fields beside it, or the
-    // answer as it came with none, which the checker refuses by name.
+    // answer as it came with none, which the checker refuses by name. Columns not in the shape asked for are refused
+    // with the rest.
     public static (string Prose, string? Parts) FromAnswer(string answer) =>
-        Read(answer) is { } risks ? (Compose(risks), Stored(risks)) : (answer, null);
+        Read(answer) is { } risks && Columns(answer) is (var up, var worse)
+            ? (Compose(risks, up, worse), Stored(risks, up, worse))
+            : (answer, null);
 
     // What the fields carry that prose alone could not: each finding with the sentence it stands in.
     public static IReadOnlyList<ClaimFinding> Check(string? parts, IReadOnlyList<Fact> facts)
     {
-        if (Read(parts) is not { } risks)
+        if (Read(parts) is not { } risks || Columns(parts) is null)
         {
             return [new ClaimFinding(string.Empty, "the answer", NotFields)];
         }

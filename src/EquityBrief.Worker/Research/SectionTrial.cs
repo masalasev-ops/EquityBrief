@@ -62,9 +62,6 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
     string Asked => review ? ReviewRound : Round;
 
-    // The section written last from the others, as the pass names it.
-    static string Summary => ClaimRules.Sections[^1];
-
     const string TrialReports = @"
         SELECT COUNT(DISTINCT run_id) FROM run_log
         WHERE substr(stage, 1, length($stage)) = $stage
@@ -77,15 +74,8 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
     ";
 
     const string Version = @"
-        SELECT version, as_of, model, status, prose, source_ids FROM research_section
+        SELECT version, as_of, model, status, prose, source_ids, parts FROM research_section
         WHERE ticker = $ticker AND section = $section AND version = $version;
-    ";
-
-    const string NewestAccepted = @"
-        SELECT prose FROM research_section
-        WHERE ticker = $ticker AND section = $section AND status = 'accepted' AND prose != ''
-        ORDER BY version DESC
-        LIMIT 1;
     ";
 
     const string FactsFor = @"
@@ -150,11 +140,16 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
             var sources = await SourcesAsync(connection, version.SourceIds, cancellation);
             var admitted = sources.OfType<StoredDocument>().Where(document => document.Admitted).ToArray();
 
-            IReadOnlyList<(string Section, string Prose)>? summarised = section == Summary
-                ? await HandedToTheSummaryAsync(connection, ticker, pass, cancellation)
-                : null;
+            // The two written last are asked from the claims the pass handed them, stored beside its draft.
+            // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+            var claims = ClaimRules.IsWrittenLast(section) ? AcceptedClaims.Read(version.Parts) : null;
 
-            outcomes.Add(await TryAsync(connection, ticker, section, runId, facts, night, admitted, summarised, version, cancellation));
+            if (ClaimRules.IsWrittenLast(section) && claims is null)
+            {
+                continue;
+            }
+
+            outcomes.Add(await TryAsync(connection, ticker, section, runId, facts, night, admitted, claims, version, cancellation));
         }
 
         return outcomes;
@@ -168,7 +163,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
         IReadOnlyList<Fact> facts,
         DateOnly night,
         IReadOnlyList<StoredDocument> admitted,
-        IReadOnlyList<(string Section, string Prose)>? summarised,
+        IReadOnlyList<Claim>? claims,
         PassVersion version,
         CancellationToken cancellation)
     {
@@ -185,7 +180,9 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
         for (var round = 1; round <= 2; round++)
         {
-            var request = SectionPrompt.PaidRequest(cap.Model, ticker, section, facts, documents, retry, summarised, night);
+            var request = claims is not null
+                ? SectionPrompt.ClaimsRequest(cap.Model, ticker, section, claims, facts, retry)
+                : SectionPrompt.PaidRequest(cap.Model, ticker, section, facts, documents, retry, night);
             var call = await cap.AskAsync(request, runId, round == 1 ? Asked : Asked + ", " + ResearchRunner.SecondRound, cancellation);
 
             calls++;
@@ -199,7 +196,9 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
                 break;
             }
 
-            var (prose, parts) = RiskFields.IsRisks(section) ? RiskFields.FromAnswer(answer.Text) : (answer.Text, null);
+            var (prose, parts) = RiskFields.IsRisks(section)
+                ? RiskFields.FromAnswer(answer.Text)
+                : (answer.Text, claims is null ? null : AcceptedClaims.Stored(claims));
             var verdict = ClaimRules.Check(section, prose, facts, [.. admitted.Cast<StoredDocument?>()], night, parts);
 
             rounds.Add(new { round, prose, verdict = verdict.Passes ? "accepted" : verdict.Reason, price = Money(call.Price) });
@@ -246,7 +245,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
     sealed record Pass(DateOnly AsOf, IReadOnlyList<Written> Written);
 
-    sealed record PassVersion(int Number, DateOnly AsOf, string Model, string Status, string Prose, string SourceIds);
+    sealed record PassVersion(int Number, DateOnly AsOf, string Model, string Status, string Prose, string SourceIds, string? Parts);
 
     async Task<long> CountAsync(SqliteConnection connection, CancellationToken cancellation)
     {
@@ -310,46 +309,9 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
                 reader.GetString(2),
                 reader.GetString(3),
                 reader.GetString(4),
-                reader.GetString(5))
+                reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6))
             : null;
-    }
-
-    // The sections the pass had accepted before it asked for the short version: each section it wrote first in
-    // this pass where the checker accepted that draft, and each it did not write standing accepted from before.
-    async Task<IReadOnlyList<(string Section, string Prose)>> HandedToTheSummaryAsync(SqliteConnection connection, string ticker, Pass pass, CancellationToken cancellation)
-    {
-        var handed = new List<(string Section, string Prose)>();
-
-        foreach (var section in ClaimRules.Sections.Where(section => section != Summary))
-        {
-            if (pass.Written.FirstOrDefault(written => written.Section == section && !written.Retry) is { } first)
-            {
-                if (await VersionAsync(connection, ticker, section, first.Version, cancellation) is { Status: ClaimChecker.Accepted, Prose.Length: > 0 } accepted)
-                {
-                    handed.Add((section, accepted.Prose));
-                }
-
-                continue;
-            }
-
-            if (pass.Written.Any(written => written.Section == section))
-            {
-                continue;
-            }
-
-            await using var command = connection.CreateCommand();
-
-            command.CommandText = NewestAccepted;
-            command.Parameters.AddWithValue("$ticker", ticker);
-            command.Parameters.AddWithValue("$section", section);
-
-            if (await command.ExecuteScalarAsync(cancellation) is string prose)
-            {
-                handed.Add((section, prose));
-            }
-        }
-
-        return handed;
     }
 
     static async Task<(IReadOnlyList<Fact>? Facts, DateOnly Night)> FactsAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)

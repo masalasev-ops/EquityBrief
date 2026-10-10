@@ -66,6 +66,9 @@ public partial class FixtureExpectations
             // 18.3, the typical earnings move's floor and four failures over constructed prints, pulls and moves.
             .. HistoryRows,
 
+            // 18.4, the calendar's days, the figures checked and the two written last with no accepted claim.
+            .. WrittenLastRows,
+
             // 12.5's correction, the sweep: section 17's four rows over constructed candidates, maps and clocks and
             // the fixture's two nights, and section 18's row about a chunk that fails twice.
             CheckReach.Key(Scope.LimitsTable, "Sweep grid"),

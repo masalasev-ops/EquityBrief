@@ -40,8 +40,12 @@ public sealed record ProseFigure(
     int? Day);
 
 // One sentence and the documents it cites, by their position in the section's
-// own source list, and whether it cites the night's stored figures.
-public sealed record ProseSentence(string Text, IReadOnlyList<int> Citations, bool CitesNight = false);
+// own source list, whether it cites the night's stored figures, and the claims it
+// cites by their number in the list the short version and the headline are handed.
+public sealed record ProseSentence(string Text, IReadOnlyList<int> Citations, bool CitesNight = false, IReadOnlyList<int>? Claims = null)
+{
+    public IReadOnlyList<int> ClaimsCited => Claims ?? [];
+}
 
 // One thing wrong with a section, with the text a person needs to see.
 public sealed record ClaimFinding(string Sentence, string Offending, string Reason);
@@ -93,7 +97,18 @@ public static class ClaimRules
         "The two cases",
         "The risks, each with what would confirm it",
         "The short version",
+        "The headline",
     ];
+
+    // The two sections written last, from the claims the checker accepted in every other section, and held to those
+    // claims rather than to documents.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    public const string ShortVersionSection = "The short version";
+    public const string HeadlineSection = "The headline";
+
+    public static readonly string[] WrittenLast = [ShortVersionSection, HeadlineSection];
+
+    public static bool IsWrittenLast(string section) => WrittenLast.Contains(section, StringComparer.Ordinal);
 
     // A section no pass writes: its stored rows stand, no page draws them, and a name
     // holding nothing else holds no research.
@@ -143,6 +158,17 @@ public static class ClaimRules
     public const string FigureNoCitedDocumentHolds = "a figure no document the sentence cites states";
     public const string UnusableAnswer = "an answer written as a JSON object or list rather than prose";
     public const string QuotationNoCitedDocumentHolds = "a quotation no document the sentence cites holds word for word";
+    public const string FigureAnotherRegionOwns = "a figure another region of the page draws";
+    public const string ClaimUncited = "a sentence naming no claim";
+    public const string ClaimOutOfRange = "a citation past the claims listed";
+    public const string NotAClaim = "a citation to a document or the night's figures where the claims alone are cited";
+    public const string FigureNoCitedClaimStates = "a figure no claim the sentence cites states";
+    public const string FigureTheTilesShow = "a figure the tiles under the headline show";
+    public const string QuotationNoCitedClaimHolds = "a quotation no claim the sentence cites holds word for word";
+    public const string DateNoCitedClaimCarries = "a date neither the facts file nor a claim the sentence cites carries";
+    public const string HeadlineFigure = "a figure in the headline";
+    public const string HeadlineSentences = "a headline of more than one sentence";
+    public const string NoClaims = "no claims stored beside it to hold it to";
 
     // The one section read from the newest and the previous results releases, in the release's own words: what management
     // said of its guidance against the release before, what is working and what is not. The words its three parts open on.
@@ -282,6 +308,12 @@ public static class ClaimRules
         DateOnly? night = null,
         string? parts = null)
     {
+        // The short version and the headline rest on the claims handed to them and on no document.
+        if (IsWrittenLast(section))
+        {
+            return CheckWrittenLast(section, prose, facts, parts);
+        }
+
         // A section whose source list holds nothing admitted has no sentence that
         // could be written, so it is not read at all. It goes to fallback on its
         // first check rather than being handed a retry, because a rewrite cannot
@@ -319,6 +351,10 @@ public static class ClaimRules
         // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
         var risks = RiskFields.IsRisks(section);
         IReadOnlyList<string> fieldNames = risks ? RiskFields.NamedByFields(parts) : [];
+
+        // The figures the section's own region draws, which are the only ones it writes as figures.
+        // see: Each figure of the facts file is owned by one region of the page, and a written section writes only the figures its own region owns
+        IReadOnlyList<Fact>? owned = FactOwners.Governs(section) ? FactOwners.Split(section, facts).Own : null;
 
         if (risks)
         {
@@ -395,11 +431,118 @@ public static class ClaimRules
                 var reason = figure.Kind switch
                 {
                     FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
+                    FigureKind.Figure when owned is not null && !Matches(figure, owned) => FigureAnotherRegionOwns,
                     FigureKind.Figure when NamedForAnotherPeriod(figure, facts, named) => FigureNamedForAnotherPeriod,
                     FigureKind.Figure when heldToDocuments && !StatedByACitedDocument(figure, sentence, sources, stated) => FigureNoCitedDocumentHolds,
                     FigureKind.Window when !IsAWindow(figure, facts) => UnknownWindow,
                     FigureKind.Date when calendar => CalendarDate(figure, sentence, sources, night),
                     FigureKind.Date when !IsADate(figure, facts) => UnknownDate,
+                    FigureKind.Unmatchable => UnmatchableFigure,
+                    _ => null,
+                };
+
+                if (reason is not null)
+                {
+                    findings.Add(new ClaimFinding(
+                        sentence.Text,
+                        reason == FigureAnotherRegionOwns ? figure.Text + ", drawn in " + RegionDrawing(figure, facts) : figure.Text,
+                        reason));
+                }
+            }
+        }
+
+        return new ClaimVerdict(findings, NoAdmissibleSource: false);
+    }
+
+    // The region drawing a figure a section may not write: the first fact it rounds to, in the facts file's order.
+    static string RegionDrawing(ProseFigure figure, IReadOnlyList<Fact> facts) =>
+        facts.Where(fact => Matches(figure, [fact])).Select(FactOwners.Of).OfType<string>().FirstOrDefault() ?? "another region";
+
+    // ---- the two sections written last ----
+
+    // The short version or the headline against the claims stored beside it, numbered as it was handed them, and the
+    // facts file. Every sentence cites a claim and nothing else; every figure is one the facts file holds, one a claim the
+    // sentence cites states at the precision the prose writes, and none the tiles show; a quotation is a cited claim's
+    // words; and the headline is one sentence carrying no figure but a digit of the company's own name.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    static ClaimVerdict CheckWrittenLast(string section, string prose, IReadOnlyList<Fact> facts, string? parts)
+    {
+        if (IsJson(prose))
+        {
+            return new ClaimVerdict([new ClaimFinding(string.Empty, Excerpt(prose), UnusableAnswer)], NoAdmissibleSource: false);
+        }
+
+        if (AcceptedClaims.Read(parts) is not { Count: > 0 } claims)
+        {
+            return new ClaimVerdict([new ClaimFinding(string.Empty, "the stored claims", NoClaims)], NoAdmissibleSource: false);
+        }
+
+        var findings = new List<ClaimFinding>();
+        var headline = string.Equals(section, HeadlineSection, StringComparison.Ordinal);
+        var sentences = Sentences(prose);
+        var company = facts.FirstOrDefault(fact => fact.Name == CompanyNameFact)?.Value;
+
+        // The claims as a source list reads them, so a figure and a quotation are held to the cited claims by the rules a
+        // cited document's are held by.
+        IReadOnlyList<StoredDocument?> stated =
+        [
+            .. claims.Select((claim, at) => (StoredDocument?)new StoredDocument(
+                "claim " + (at + 1).ToString(CultureInfo.InvariantCulture), string.Empty, claim.Text, null, default, claim.Text, Admissibility.Accepted)),
+        ];
+
+        if (headline && sentences.Count > 1)
+        {
+            findings.Add(new ClaimFinding(prose.Trim(), prose.Trim(), HeadlineSentences));
+        }
+
+        var read = new Dictionary<int, DocumentFigures>();
+
+        foreach (var sentence in sentences)
+        {
+            var asClaims = sentence with { Citations = sentence.ClaimsCited, CitesNight = false };
+
+            if (sentence.ClaimsCited.Count == 0)
+            {
+                findings.Add(new ClaimFinding(sentence.Text, sentence.Text, ClaimUncited));
+            }
+
+            if (sentence.Citations.Count > 0 || sentence.CitesNight)
+            {
+                findings.Add(new ClaimFinding(sentence.Text, string.Join(", ", sentence.Citations.Select(cited => "D" + cited.ToString(CultureInfo.InvariantCulture)).Concat(sentence.CitesNight ? ["N"] : [])), NotAClaim));
+            }
+
+            foreach (var cited in sentence.ClaimsCited.Where(cited => cited < 1 || cited > claims.Count))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, "C" + cited.ToString(CultureInfo.InvariantCulture), ClaimOutOfRange));
+            }
+
+            if (sentence.Text.Contains(BannedWord, StringComparison.OrdinalIgnoreCase))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, sentence.Text, ClaimOfCandour));
+            }
+
+            if (sentence.Text.Contains(EmDash, StringComparison.Ordinal))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, sentence.Text, EmDashed));
+            }
+
+            foreach (var quoted in Quotations(sentence.Text).Where(quoted => !QuotedByACitedDocument(quoted, asClaims, stated)))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, quoted, QuotationNoCitedClaimHolds));
+            }
+
+            var scanned = company is { Length: > 0 } name ? sentence.Text.Replace(name, " ", StringComparison.Ordinal) : sentence.Text;
+
+            foreach (var figure in Figures(scanned))
+            {
+                var reason = figure.Kind switch
+                {
+                    FigureKind.Figure when headline => HeadlineFigure,
+                    FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
+                    FigureKind.Figure when facts.Any(fact => FactOwners.IsTile(fact) && Matches(figure, [fact])) => FigureTheTilesShow,
+                    FigureKind.Figure when !StatedByACitedDocument(figure, asClaims, stated, read) => FigureNoCitedClaimStates,
+                    FigureKind.Window when !IsAWindow(figure, facts) => UnknownWindow,
+                    FigureKind.Date when !IsADate(figure, facts) && CalendarDate(figure, asClaims, stated, null) is not null => DateNoCitedClaimCarries,
                     FigureKind.Unmatchable => UnmatchableFigure,
                     _ => null,
                 };
@@ -413,6 +556,9 @@ public static class ClaimRules
 
         return new ClaimVerdict(findings, NoAdmissibleSource: false);
     }
+
+    // The fact naming the company, whose digits a headline may carry.
+    const string CompanyNameFact = "company name";
 
     // ---- the cause of a move ----
 
@@ -644,8 +790,16 @@ public static class ClaimRules
     // prose cites it.
     static readonly Regex Citation = new(@"\[D(\d+)\]", RegexOptions.Compiled);
 
-    // Either mark, a document's or the night's figures', which is what a sentence's end and a figure's reading pass over.
-    static readonly Regex Marker = new(@"\[(?:D\d+|N)\]", RegexOptions.Compiled);
+    // A claim the short version and the headline cite, by its number in the list they were handed.
+    static readonly Regex ClaimCitation = new(@"\[C(\d+)\]", RegexOptions.Compiled);
+
+    // Any mark, a document's, a claim's or the night's figures', which is what a sentence's end and a figure's reading
+    // pass over.
+    static readonly Regex Marker = new(@"\[(?:D\d+|C\d+|N)\]", RegexOptions.Compiled);
+
+    // The marks taken out of a sentence handed on as a claim, which carries its own number instead.
+    public static string Unmarked(string sentence) =>
+        Regex.Replace(Marker.Replace(sentence, string.Empty), @"\s+([.!?,;:])", "$1").Trim();
 
     // Words a period ends without ending a sentence. The four captured articles
     // carry "vs." in a title and "Inc." in a company name, and a split after either
@@ -667,7 +821,7 @@ public static class ClaimRules
         var sentences = new List<ProseSentence>();
         var start = 0;
 
-        foreach (Match boundary in Regex.Matches(prose, @"[.!?](?:\s*\[(?:D\d+|N)\])*(?=\s+|$)"))
+        foreach (Match boundary in Regex.Matches(prose, @"[.!?](?:\s*\[(?:D\d+|C\d+|N)\])*(?=\s+|$)"))
         {
             var end = boundary.Index + boundary.Length;
 
@@ -702,6 +856,10 @@ public static class ClaimRules
 
         var night = trimmed.Contains(NightMark, StringComparison.Ordinal);
 
+        var claims = ClaimCitation.Matches(trimmed)
+            .Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
         // A run of markers standing alone after a terminator belongs to the
         // sentence it follows, which is where a writer who puts the citation after
         // the full stop means it to go.
@@ -714,12 +872,13 @@ public static class ClaimRules
                 Text = previous.Text + " " + trimmed,
                 Citations = [.. previous.Citations, .. citations],
                 CitesNight = previous.CitesNight || night,
+                Claims = [.. previous.ClaimsCited, .. claims],
             };
 
             return;
         }
 
-        sentences.Add(new ProseSentence(trimmed, citations, night));
+        sentences.Add(new ProseSentence(trimmed, citations, night, claims));
     }
 
     static bool EndsWithAbbreviation(string before)

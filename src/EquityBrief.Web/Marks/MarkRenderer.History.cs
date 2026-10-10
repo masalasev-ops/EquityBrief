@@ -50,7 +50,8 @@ public sealed record HistoryView(
     IReadOnlyList<TrancheShare> Shares,
     string? NoPlan,
     string? Trail,
-    (DateTimeOffset First, DateTimeOffset Last)? LabelsCover);
+    (DateTimeOffset First, DateTimeOffset Last)? LabelsCover,
+    RiskLines? Risk = null);
 
 // The four marks the reactions, the long view, the levels and the plan draw: each print's reaction against the
 // stock's typical earnings move, the month-end closes over the pulled history with the plan's levels on the same prices,

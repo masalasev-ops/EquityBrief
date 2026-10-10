@@ -120,13 +120,14 @@ public partial class ClaimAdmissibility
     {
         var ask = SectionPrompt.Asks[ClaimRules.ManagementSection];
 
-        // Its three openings, the release before compared only where one is listed and its figures said in words, and the
-        // two lists quoting the newest release's own words exactly.
+        // Its three openings, the release before compared only where one is listed and, from 18.4, a guided figure of either
+        // release written only where the facts list it and the move said in words where they do not, and the two lists
+        // quoting the newest release's own words exactly.
         Assert.Contains("\"" + ClaimRules.GuidanceOpens + "\"", ask, StringComparison.Ordinal);
         Assert.Contains("\"" + ClaimRules.WorkingOpens + "\"", ask, StringComparison.Ordinal);
         Assert.Contains("\"" + ClaimRules.NotWorkingOpens + "\"", ask, StringComparison.Ordinal);
         Assert.Contains("where one is listed, the release before it", ask, StringComparison.Ordinal);
-        Assert.Contains("The release before's figures are not listed under Facts, so say in words how the outlook moved from it.", ask, StringComparison.Ordinal);
+        Assert.Contains("Write a guided figure, the newest release's or the release before's, only where it is listed under Facts, and say in words how the outlook moved where it is not.", ask, StringComparison.Ordinal);
         Assert.Contains("quote the release's own words inside double quotation marks, copied exactly", ask, StringComparison.Ordinal);
     }
 }

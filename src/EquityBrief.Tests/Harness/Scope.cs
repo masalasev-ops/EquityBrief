@@ -2648,7 +2648,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key("15.4 The two surfaces", "The exported report")] = new Scoped(
             Verdict.Pass,
-            "the file the export route offers is a document of its own carrying no script, no router link, no form and nothing fetched, every disclosure open, the name page's own marks and written sections byte for byte with no value the page does not state, and one candle for each session the store holds for the name",
+            "the file the export route offers is a document of its own opening in the light palette, carrying one script, which switches the palette at its one toggle, and no router link, no form and nothing fetched, every disclosure open, the name page's own marks and written sections byte for byte with the script taken out and no value the page does not state, one candle for each session the store holds for the name, and an opening line stamped with the instant of the export in New York's time",
             ByReadSurface),
         [CheckReach.Key(MatrixTable, "Verification harness")] = new Scoped(
             Verdict.Pass,
@@ -2832,15 +2832,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The short version")] = new Scoped(
             Verdict.Pass,
-            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date beneath them with its model on the element, read back against the store, and a name with none draws a summary written by code under the heading its record names, refused, not written or no research, each part read off the page against the store and the plan the trade gate read",
+            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date beneath them with its model on the element, from 18.4 each claim it cites listed beneath it once with a link to the region drawing it, read back against the store and the claims its row holds, and a name with none draws a summary written by code under the heading its record names, refused, not written or no research, each part read off the page against the store and the plan the trade gate read",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = new Scoped(
             Verdict.Pass,
             "every accepted section is drawn once in section 4's order, the key beneath the chart's figures and before the plan, what the company sells and its segments after the plan and before the numbers, the two cases after them and the risks after those, each with the date the store holds and its model on the element, every section figure 12.2 names placed exactly once, and the cycle drawn from the theme record for the name's industry, or absent with the reason the pass stored where the theme's search found nothing to write it from",
-            ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Dates and sources")] = new Scoped(
-            Verdict.Pass,
-            "the region draws every calendar event from the newest session, the dated items as written, and every document a written section cites once each with its date and link, against queries of the test's own, and each section's markers resolve in its stored source order",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed")] = new Scoped(
             Verdict.Pass,
@@ -3612,15 +3608,27 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Masthead")] = new Scoped(
             Verdict.Pass,
-            "in the session the delayed quote is drawn marked live with its own time in New York, its signed change in the rise hue and the previous close, and after the close, on a Saturday, on a page for an earlier night and in the exported file the last stored close with its session",
+            "in the session the delayed quote is drawn marked live with its own time in New York, its signed change in the rise hue and the previous close, and after the close, on a Saturday and on a page for an earlier night the last stored close with its session; the exported file carries no address to ask at and from 18.4 draws the quote it was exported at, marked as the price at the export and not live",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The quote while the page is open")] = new Scoped(
             Verdict.Pass,
             "the page carries the route and the session's edges inside the session alone, a press without the header or outside the session is refused with nothing written and nothing started, and the newest quote is read back with the tiles and each band's distance at its price",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Headline")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Headline, one sentence beneath the masthead carrying no figure but a digit in the company's own name")] = new Scoped(
             Verdict.Pass,
-            "every fixture name's headline is one sentence written by code holding no digit outside the company's name",
+            "every fixture name's headline is one sentence holding no digit outside the company's name, read off the page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Headline, where none is accepted written by code")] = new Scoped(
+            Verdict.Pass,
+            "with no headline accepted every fixture name's lead is the one code writes and is marked as code's, read off the page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Headline, written last from the accepted claims with its claim marks taken off")] = new Scoped(
+            Verdict.Pass,
+            "the headline the fixture's pass wrote last is drawn as the lead with its claim marks taken off, read back against the store on the page and in the exported file",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Headline, the day it was written beneath it")] = new Scoped(
+            Verdict.Pass,
+            "beneath the written headline the day the store dates it, on the page and in the exported file",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Tiles")] = new Scoped(
             Verdict.Pass,
@@ -3859,6 +3867,125 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the year's biggest moves numbered on their last sessions")] = new Scoped(
             Verdict.Pass,
             "each move a numbered circle on its last session linking to its row, read off the chart over constructed moves",
+            ByReadSurface),
+
+        // 18.4, the calendar's days, the figures checked and three failures, and the name page's risks' two columns, its
+        // calendar and its timeline, and its sources.
+        [CheckReach.Key(LimitsTable, "Calendar days")] = new Scoped(
+            Verdict.Pass,
+            "the ninety days after the night worked by hand, an event on the ninetieth day read into the days and one on the ninety-first not, a declared ex-dividend date and an estimated one at each edge; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Figures checked")] = new Scoped(
+            Verdict.Pass,
+            "two figures agreeing at half a million dollars and at a tenth of a per cent of the larger and refused a dollar past each, a quarter ending eight days from the fetch's not compared, worked by hand; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No written section stands accepted when the short version and the headline are reached")] = new Scoped(
+            Verdict.Pass,
+            "a pass handed nothing and one handed only refused documents ask for neither the short version nor the headline, store no row for either and name both as not written with the words the read surface states",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No filed facts are stored for the latest quarter's lines")] = new Scoped(
+            Verdict.Pass,
+            "the sources say no filing's facts are stored and list no line, apart from the line saying every line agrees, worked over constructed regions",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "No dated event falls in the ninety days after the night")] = new Scoped(
+            Verdict.Pass,
+            "the calendar draws no timeline and no table and its line says no event of the name's or the market's falls in the days, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The risks' two columns, beneath the risks")] = new Scoped(
+            Verdict.Pass,
+            "the columns drawn after the fixture's risks' table, which keeps its four rows, read off the page the route serves",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The risks' two columns, what would turn it up ruled across its top in the rise hue and what would make it worse in the fall hue")] = new Scoped(
+            Verdict.Pass,
+            "the column turning it up drawn under the rule the stylesheet sets in the rise hue and the column making it worse under the one in the fall hue, read off the page and the stylesheet",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The risks' two columns, each opening on the line computed at the price the masthead draws and then the writer's lines")] = new Scoped(
+            Verdict.Pass,
+            "each column opens on the line the plan computes at the price drawn, a close above and a close below, and then the writer's lines, read off the page the route serves",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The risks' two columns, a claim to a row")] = new Scoped(
+            Verdict.Pass,
+            "the writer's lines drawn a claim to a row, each opening on its column's words, read off the page over the fixture's answer",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, the ninety days after the night as a timeline")] = new Scoped(
+            Verdict.Pass,
+            "the fixture's page draws the timeline over the ninety days after its night with a dot for each event inside them, read back against a query of the test's own and the committed table",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, a lane each for results")] = new Scoped(
+            Verdict.Pass,
+            "the results' lane named at its start with a report drawn on it at its day, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, the ex-dividend date")] = new Scoped(
+            Verdict.Pass,
+            "an estimated ex-dividend date drawn on its own lane and in the table with its payment a share, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, the FOMC and the CPI")] = new Scoped(
+            Verdict.Pass,
+            "each FOMC decision and CPI release the committed table dates inside the fixture's days drawn on its page, read back against the table, and each on its own lane over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, an estimated date drawn hollow")] = new Scoped(
+            Verdict.Pass,
+            "an estimated date's dot marked estimated and filled with the surface under its hue's ring by the stylesheet's rule, a declared one filled, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, as a table with each event's days after the night")] = new Scoped(
+            Verdict.Pass,
+            "a row an event in the fixture's page's table read back against the store and the committed table, and the days after the night counted in its cell over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, a line for each kind whose table ends inside the days")] = new Scoped(
+            Verdict.Pass,
+            "a kind whose table ends inside the days drawn with the line saying a later one is not ruled out, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Calendar, the dated items the research read beneath")] = new Scoped(
+            Verdict.Pass,
+            "the dated calendar items the fixture's pass accepted drawn inside the calendar as written, read back against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Sources, every document the research read with its date and link")] = new Scoped(
+            Verdict.Pass,
+            "every document a written section of the fixture's pass cites listed once with its date and link, read back against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Sources, the figures checked and not used with the filing's first")] = new Scoped(
+            Verdict.Pass,
+            "a line the filing and the fetch state differently listed with the filing's figure, its concept and the day it was first filed before the fetch's, which the page draws, over constructed regions",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Sources, the line naming what is computed")] = new Scoped(
+            Verdict.Pass,
+            "the line naming what is computed closing the region over every arrangement, on the fixture's page and over constructed regions",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Sources, in the figures' place a line where every one agrees or no filing's facts are stored")] = new Scoped(
+            Verdict.Pass,
+            "where every line agrees within rounding and where no filing's facts are stored, each said in its own words in the table's place, over constructed regions",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, The ninety days after the night on one axis counted in days from it")] = new Scoped(
+            Verdict.Pass,
+            "the axis marked at the night and thirty, sixty and ninety days after it, an event sixty days after the night drawn on the sixtieth day's mark, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, a lane each for the company's results")] = new Scoped(
+            Verdict.Pass,
+            "the results' lane drawn first with a report on it, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, its ex-dividend date")] = new Scoped(
+            Verdict.Pass,
+            "the ex-dividend lane drawn second with an estimated date on it, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, the FOMC's decisions and the CPI's releases")] = new Scoped(
+            Verdict.Pass,
+            "the FOMC's lane and the CPI's beneath it, each with an event on it, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, each named at its lane's start")] = new Scoped(
+            Verdict.Pass,
+            "each lane's name set at its start, every name at one place across and the lanes top to bottom in their order, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, each event a dot on its day with its words beneath the pointer")] = new Scoped(
+            Verdict.Pass,
+            "each event a dot on its own kind's lane in the order of its day with its date and words as its title, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, an estimated date drawn hollow")] = new Scoped(
+            Verdict.Pass,
+            "an estimated date's dot marked estimated and filled with the surface under its hue's ring by the stylesheet's rule, over a constructed view",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, A name with no event in the days says so")] = new Scoped(
+            Verdict.Pass,
+            "a view holding no event draws no timeline and no table and says no event of the name's or the market's falls in the days",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "The dividend calendar refuses, or answers in a form that cannot be read")] = new Scoped(
             Verdict.Pass,
@@ -5267,7 +5394,8 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Range bar")] = "18.1",
         [CheckReach.Key("15.9 Name", "Masthead")] = "18.1",
         [CheckReach.Key("15.9 Name", "The quote while the page is open")] = "18.1",
-        [CheckReach.Key("15.9 Name", "Headline")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Headline, one sentence beneath the masthead carrying no figure but a digit in the company's own name")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Headline, where none is accepted written by code")] = "18.1",
         [CheckReach.Key("15.9 Name", "Tiles")] = "18.1",
         [CheckReach.Key("15.9 Name", "How the rules read it")] = "18.1",
         [CheckReach.Key("15.9 Name", "The decision card")] = "18.1",
@@ -5318,6 +5446,34 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "How it got here, or said to be found in neither")] = "18.3",
         [CheckReach.Key("15.9 Name", "How it got here, the source of each cause named beside it")] = "18.3",
         [CheckReach.Key("15.9 Name", "How it got here, a line stating when the first and the newest labelled story were published")] = "18.3",
+        // 18.4's name page: the headline's two parts it writes last and dates, the risks' two columns, the calendar and its
+        // timeline, and the sources, each as the parts its row states.
+        [CheckReach.Key("15.9 Name", "Headline, written last from the accepted claims with its claim marks taken off")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Headline, the day it was written beneath it")] = "18.4",
+        [CheckReach.Key("15.9 Name", "The risks' two columns, beneath the risks")] = "18.4",
+        [CheckReach.Key("15.9 Name", "The risks' two columns, what would turn it up ruled across its top in the rise hue and what would make it worse in the fall hue")] = "18.4",
+        [CheckReach.Key("15.9 Name", "The risks' two columns, each opening on the line computed at the price the masthead draws and then the writer's lines")] = "18.4",
+        [CheckReach.Key("15.9 Name", "The risks' two columns, a claim to a row")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, the ninety days after the night as a timeline")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, a lane each for results")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, the ex-dividend date")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, the FOMC and the CPI")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, an estimated date drawn hollow")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, as a table with each event's days after the night")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, a line for each kind whose table ends inside the days")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Calendar, the dated items the research read beneath")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Sources, every document the research read with its date and link")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Sources, the figures checked and not used with the filing's first")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Sources, the line naming what is computed")] = "18.4",
+        [CheckReach.Key("15.9 Name", "Sources, in the figures' place a line where every one agrees or no filing's facts are stored")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, The ninety days after the night on one axis counted in days from it")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, a lane each for the company's results")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, its ex-dividend date")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, the FOMC's decisions and the CPI's releases")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, each named at its lane's start")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, each event a dot on its day with its words beneath the pointer")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, an estimated date drawn hollow")] = "18.4",
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline, A name with no event in the days says so")] = "18.4",
         // 17.3's Ledger page under Universe, its three regions.
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
@@ -5755,7 +5911,6 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",
         [CheckReach.Key("15.9 Name", "The short version")] = "6.8",
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = "6.8",
-        [CheckReach.Key("15.9 Name", "Dates and sources")] = "6.8",
         // The lines were drawn from 6.5 and nothing in section 15 claimed them until the
         // 5.8 correction that stopped them carrying the draft a checker refused.
         [CheckReach.Key("15.9 Name", "The case for and the case against")] = "5.8",
@@ -6467,6 +6622,53 @@ internal static class Scope
             "a pass on demand writes the paid lane's sections and leaves the local lane's absent",
             "the local-lane sections absent with their reason",
             "the option to have the paid model write them",
+        ],
+
+        // 18.4's rows, each read as the parts it enumerates and the ones it states beside them: the name page's headline,
+        // which 18.4 writes last and dates, two of its parts standing from 18.1; the risks' two columns, the calendar and
+        // the sources; and the calendar's timeline among the marks, with the line it draws where it holds no event.
+        [CheckReach.Key("15.9 Name", "Headline")] =
+        [
+            "one sentence beneath the masthead carrying no figure but a digit in the company's own name",
+            "written last from the accepted claims with its claim marks taken off",
+            "the day it was written beneath it",
+            "where none is accepted written by code",
+        ],
+        [CheckReach.Key("15.9 Name", "The risks' two columns")] =
+        [
+            "beneath the risks",
+            "what would turn it up ruled across its top in the rise hue and what would make it worse in the fall hue",
+            "each opening on the line computed at the price the masthead draws and then the writer's lines",
+            "a claim to a row",
+        ],
+        [CheckReach.Key("15.9 Name", "Calendar")] =
+        [
+            "the ninety days after the night as a timeline",
+            "a lane each for results",
+            "the ex-dividend date",
+            "the FOMC and the CPI",
+            "an estimated date drawn hollow",
+            "as a table with each event's days after the night",
+            "a line for each kind whose table ends inside the days",
+            "the dated items the research read beneath",
+        ],
+        [CheckReach.Key("15.9 Name", "Sources")] =
+        [
+            "every document the research read with its date and link",
+            "the figures checked and not used with the filing's first",
+            "the line naming what is computed",
+            "in the figures' place a line where every one agrees or no filing's facts are stored",
+        ],
+        [CheckReach.Key("15.5 The mark vocabulary", "Calendar timeline")] =
+        [
+            "The ninety days after the night on one axis counted in days from it",
+            "a lane each for the company's results",
+            "its ex-dividend date",
+            "the FOMC's decisions and the CPI's releases",
+            "each named at its lane's start",
+            "each event a dot on its day with its words beneath the pointer",
+            "an estimated date drawn hollow",
+            "A name with no event in the days says so",
         ],
     };
 

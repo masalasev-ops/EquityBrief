@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-he3mbow6s4ka0f7vzojvti",
+  "object": "chat.completion",
+  "created": 1791662738,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session ending on 2026-08-24 saw shares fall as record third-quarter results and guidance well above Wall Street forecasts initially drove a rise before the market adjusted to supply constraints acting as a governor of near-term revenue conversion, which D1 and D2 both cite.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 9991,
+    "completion_tokens": 61,
+    "total_tokens": 10052,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

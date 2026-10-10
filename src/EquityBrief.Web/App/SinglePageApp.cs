@@ -31,8 +31,9 @@ public sealed record LiveQuoteView(
 // The session the masthead's quote is asked in: its open and close, and whether the page is drawn inside it.
 public sealed record QuoteSession(DateTimeOffset Open, DateTimeOffset Close, bool IsOpen);
 
-// The one sentence under the masthead, carrying no figure, and whether a model wrote it or code did, which it says.
-public sealed record HeadlineView(string Sentence, bool Written);
+// The one sentence under the masthead, carrying no figure, whether a model wrote it or code did, which it says, and the
+// day a written one was written.
+public sealed record HeadlineView(string Sentence, bool Written, DateOnly? WrittenOn = null);
 
 // The four tiles under the headline, worked at the price the masthead draws, and whether that price is the quote.
 public sealed record TilesView(
@@ -102,7 +103,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // the route it is on. A page that assembled a mark from values would be the
 // second renderer the marks decision exists to prevent.
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 //
 // At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
 // for the name screen's chart region, which the server composes from the marks
@@ -870,7 +871,7 @@ public sealed class SinglePageApp : IComponent
     // against the chart's own price axis, and a second request would be a second
     // axis. It computes nothing: every value here arrives already stored, and
     // the only arithmetic is the axis the mark renderer itself derives.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     // see: Marks are defined once and every screen draws from that list
     public string NameRegion(
         MarkRenderer marks,
@@ -901,7 +902,6 @@ public sealed class SinglePageApp : IComponent
         ResearchPausedLine? paused = null,
         IReadOnlyList<WrittenCell>? written = null,
         IReadOnlyList<SourceCell>? sources = null,
-        IReadOnlyList<DateCell>? dates = null,
         ResearchPassLine? pass = null,
         IReadOnlyList<ResearchControl>? controls = null,
         ResearchCost? cost = null,
@@ -939,7 +939,12 @@ public sealed class SinglePageApp : IComponent
         string? rawSegments = null,
         // The typical earnings move, the long view, the chart's report and ex-dividend marks, the ladder figure, the
         // plan's shares and the days the news labels cover, each worked by the core from stored figures.
-        HistoryView? history = null)
+        HistoryView? history = null,
+        // The next ninety days' dated events, and the latest quarter's lines the filing and the provider's fetch state
+        // differently with whether any filing's facts are held to check them against.
+        CalendarView? calendar = null,
+        IReadOnlyList<EquityBrief.Core.Report.FigureConflict>? figuresChecked = null,
+        bool filedFactsHeld = false)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -967,8 +972,7 @@ public sealed class SinglePageApp : IComponent
         // A written section's own id, which its entry in the contents links to. Derived from
         // the section's name rather than from its position, so a name holding fewer sections
         // does not move another section's link.
-        static string SectionId(string section) =>
-            "s-" + new string([.. section.ToLowerInvariant().Select(letter => char.IsLetterOrDigit(letter) ? letter : '-')]);
+        static string SectionId(string section) => MarkRenderer.WrittenId(section);
 
         // The written sections drawn in one place, each where section 4 puts it, in a
         // card whose left column states the day it was written.
@@ -990,7 +994,7 @@ public sealed class SinglePageApp : IComponent
                         name,
                         "Written",
                         section.AsOf,
-                        marks.WrittenSection(ticker, section, documents),
+                        marks.WrittenSection(ticker, section, documents, riskLines: string.Equals(name, MarkRenderer.TheRisks, StringComparison.Ordinal) ? history?.Risk : null),
                         section: name,
                         id: SectionId(name),
                         role: role),
@@ -1019,7 +1023,7 @@ public sealed class SinglePageApp : IComponent
         // previous close, which the worker's quote job asked for and the page's script asks for again at most every
         // five minutes while the page is open; outside it, the last stored close with its change on the day and the
         // session it is from. Levels and the plan are read from completed sessions whichever is shown, and say so.
-        // see: The masthead carries the index and sector beside the price now, the delayed quote in the session and the last stored close outside it
+        // see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it
         // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
         var identity = new StringBuilder();
         var live = night is null && quoteSession is { IsOpen: true } && quote is not null ? quote : null;
@@ -1054,7 +1058,7 @@ public sealed class SinglePageApp : IComponent
         // The headline and the four tiles under the masthead, before the contents: one sentence carrying no figure, and the
         // quarter's earnings, the year's growth, the yield and the distance from the year's high, each worked from stored
         // figures at the price the masthead draws.
-        // see: The headline carries no figure, and code writes it until a written one is accepted
+        // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
         // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
         region.Append(marks.Lead(ticker, headline, tiles));
 
@@ -1166,7 +1170,7 @@ public sealed class SinglePageApp : IComponent
         // The short version, the first written region section 4 lists, with its date beside it. Where no
         // accepted one stands, code writes one from computed parts and its heading says why: the checker
         // left the model's out, the pass did not write it, or no research has been written for the name.
-        // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+        // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
         if (sections.Any(section => string.Equals(section.Section, MarkRenderer.TheShortVersion, StringComparison.Ordinal)))
         {
             Draw("short", AtTheTop);
@@ -1614,16 +1618,39 @@ public sealed class SinglePageApp : IComponent
             Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
 
-        // What the research read, the region section 4 lists before the last: the calendar, the dated items a pass
-        // read out of the documents, and every document the written sections cite.
-        Card("sources", "sources", "What the research read", Cards.Computed(
-            "Dates and sources",
-            marks.DatesAndSources(
-                ticker,
-                dates ?? [],
-                sections.FirstOrDefault(section => string.Equals(section.Section, InTheDates, StringComparison.Ordinal)),
-                documents),
-            title: "What the research read",
+        // The calendar, after the news: the next ninety days' results, ex-dividend date and the Fed's and the CPI's dates as a
+        // timeline and a table, and the dated items a pass read out of the documents.
+        // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
+        if (calendar is not null)
+        {
+            Card("calendar", "calendar", "Calendar", Cards.Computed(
+                "Calendar",
+                marks.TheCalendar(
+                    ticker,
+                    calendar,
+                    sections.FirstOrDefault(section => string.Equals(section.Section, InTheDates, StringComparison.Ordinal)),
+                    documents)
+                    + Cards.Key(
+                        "How to read it.",
+                        "Each event of the ninety days after the night: the company's next results as the earnings calendar dates them, its next ex-dividend date, declared where the calendar carries one and otherwise estimated from its last ex-date at the payments a year its bars' steps show and drawn hollow, and each FOMC decision and CPI release the committed table dates. Beneath them, the dated items the research read out of its documents.",
+                        "An event inside a hold can move the stock on its own day; a result or a Fed decision is when a plan's levels are most often broken."),
+                title: "What is dated ahead",
+                stamp: Cards.Night(session),
+                id: "calendar",
+                region: "calendar"));
+        }
+
+        // The sources, before where the research stands: every document the written sections cite, the latest quarter's
+        // lines two sources state differently and what is computed rather than sourced.
+        // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+        Card("sources", "sources", "Sources", Cards.Computed(
+            "Sources",
+            marks.Sources(ticker, documents, figuresChecked ?? [], filedFactsHeld)
+                + Cards.Key(
+                    "How to read it.",
+                    "Each document is listed with the day it was published and links to it. A line of the latest quarter the company's filing and the provider's fetch state differently by more than half a million dollars or a tenth of a per cent is listed with the filing's figure first; every region draws the fetch's, since every quarter the page reads shares one fetch's basis.",
+                    "A figure listed under figures checked is one two sources disagree on, so read it with that in mind."),
+            title: "What the page rests on",
             stamp: Cards.Night(session),
             id: "sources",
             region: "sources"));
@@ -1706,14 +1733,14 @@ public sealed class SinglePageApp : IComponent
     // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
     // page, the short version, the card, the latest quarter, what management said, the segments, the margins, the
     // analysts, the dividend's safety, the valuation, the earnings reactions, the chart, the long view, how it got here,
-    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, what
-    // the research read, and where the research stands.
+    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, the
+    // calendar, the sources, and where the research stands.
     // see: The name page answers a buyer's questions in the order a buyer asks them
     public static readonly string[] RegionOrder =
     [
         "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "dividend", "valuation",
         "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases", "cycle", "peers",
-        "news", "sources", "research",
+        "news", "calendar", "sources", "research",
     ];
 
     // Where each written section is drawn, which is section 4's order: the short version
@@ -1729,6 +1756,9 @@ public sealed class SinglePageApp : IComponent
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";
 
+    // The headline is drawn under the masthead, where the code's sentence stands until a written one is accepted.
+    public const string InTheLead = "The headline";
+
     // The universe screen's three regions, composed from stored values.
     //
     // Section 15.8 answers where everything sits, including the names nothing
@@ -1740,7 +1770,7 @@ public sealed class SinglePageApp : IComponent
     // name was last on it, and the listing strip. Each is absent and says so
     // rather than being drawn as a zero, which would read as nothing having
     // fired.
-    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+    // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
     public string UniverseRegion(
         MarkRenderer marks,
         IReadOnlyList<UniverseCell> rows,

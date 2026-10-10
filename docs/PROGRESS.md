@@ -42395,3 +42395,89 @@ Mutated:    the rule, stated before the run: the risks' branch taken out, so a r
             was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures 18.4's
             entry below records, the two entries verified by one run.
+
+### 18.4 - the risks' two columns, the calendar, the sources with the figures checked, each written section holding only its own region's figures, the short version and the headline written last from the accepted claims, and the exported file opening light   2026-10-10
+
+Built:      the risks close on two columns, what would turn the stock up and what would make it worse, each opening on
+            the line the plan computes at the price drawn, a close above the nearest resistance band and a close below
+            the invalidation, then the writer's lines a claim to a row, which the risks' answer carries beside its risks
+            on both wires; the calendar draws the ninety days after the night as a table and a timeline, each report the
+            store dates, the ex-dividend date declared or estimated, each FOMC decision and CPI release the committed
+            table dates and a line for a kind whose table ends inside them, beside the dated items the research read;
+            the sources list every document the written sections cite once with its date and link, the latest
+            quarter's lines the filing and the provider's fetch state differently beyond rounding with the filing's
+            first and the fetch's drawn, or a line saying they agree or that no filing's facts are stored, and one line
+            naming what is computed. Each figure of the facts file is owned by the one region of the page drawing it,
+            each prompt naming its own region's figures, and the checker refuses a figure another region draws, naming
+            the region, the two cases and the risks owning none; the facts file carries the release before's guided
+            figures beside the newest's, what management said's own. The short version and the headline are written in
+            a round after every other section's last retry from the accepted claims alone, numbered [C1] onward and
+            handed no document: every figure one a cited claim states and none the tiles show, every date one the facts
+            file holds or a cited claim carries, the headline one sentence with no figure, code writing each where none
+            is accepted; the page leads with the headline and the day it was written, and the Run page rates the short
+            version written last apart from the ones before it. The exported file opens light with a dark toggle whose
+            one script switches the theme alone, draws the same with scripts off and is stamped with the price at its
+            export. Ten decisions written, five superseding one each, the short version's, the headline's, the
+            masthead's, the screen's and the export's; CLAUDE.md's prose rule, sections 4, 6.5, 7, 12, 12.2, 15.2, 15.4,
+            15.5, 15.9, 15.14, 15.17, 17 and 18 of the architecture and the read and write matrix, `SCHEMA.md`, the
+            runbook, the release before's obligation discharged, three rows of the roster and the guide's report section
+            say so, the prior text in `CHANGELOG.md`.
+Found:      by this checkpoint's own tests and checks before its pull request: Claude's answer format for the risks named
+            the risks alone and refused anything beside them, so Claude could never answer the two columns, now named in
+            it; a date the dated calendar items read out of a document reaches the short version only through its claim,
+            and the first rule refused every date the facts file does not hold, now passing one a cited claim carries;
+            a risks answer in another shape met the 6.4 correction's rule for JSON first, the 6.4 correction above; five
+            rows the page gained or changed listed parts that held no verdict of their own, and the calendar's limit
+            named a check that does not hold it; nine constructed answers carried their captures' reasoning with its
+            dashes unescaped where the captures escape them; and a constructed answer's note named a capture it was not
+            made from. Each is fixed.
+Measured:   read-only on the store of 2026-10-10: 258 of the 513 members holding filings carry a located guidance
+            passage on their newest filing and none on the filing before it, which was stored before passages were
+            kept, so the release before's figures reach a member's facts file from its next results release on. In the
+            design, over the same store at a difference past half a per cent, the filing and the fetch differed on
+            revenue in 169 of 974 latest quarters, on operating income in 126 of 756 and on net income in 61 of 1,041,
+            ADM's filed revenue concept $6.39 billion against the fetch's $22.68 billion, which is why the page draws
+            the fetch's and lists the filing's first. The fixture's pass, with no paid call made: seven of the nine
+            sections it could write, one on the local model and six through the spend cap for $0.0452, and every
+            section paid $0.0500; the local model's segment commentary refused at each of its three retries, for growth
+            rates the release states and the facts file does not hold and for figures another region draws, and left
+            out; the short version refused once for the latest quarter's earnings a share, which the tiles show, and
+            accepted at its retry. The local lane recorded again on qwen 3.5-9b for nothing, 29 recordings in place of
+            24; the paid lane's 31 answers to the requests 18.4 moved constructed from its captures, 14 as recorded, 2
+            with the risks' columns written by hand, 2 of the two cases with each figure said in words and 13 written by
+            hand for the short version and the headline, and 9 captures no request asks any more taken out.
+Tests:      2194, fourteen more and three renamed for what they now read: the ownership rule and each fact's owner, the
+            short version's and the headline's checks, their retries and the claims they are handed, the release
+            before's guided figures, the calendar's ninety days, the figures checked, Claude's answer shape for the
+            risks' columns, each constructed answer held to its capture, the Run page's rate for the short version
+            written last, the calendar's timeline and the sources each over a full input and the one it degrades on,
+            and the page's calendar and sources read back.
+Claims:     1266, thirty-one more net, each named as added after phase 17's report: section 17's two rows, section 18's
+            three, the headline as its four parts where it was one, the risks' two columns, the calendar and the sources
+            as their sixteen and the calendar timeline as its eight, less the dates and sources.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the plan's mutation and one on the short version's tiles. First, the
+            ownership rule skipped, the arm refusing a figure another region draws taken out. Predicted red at the
+            ownership test, at the retry's line for it and at the fixture's research record, where the local segment
+            commentary's refusals change, and green at the short version's and the headline's tests. Second, the arm
+            refusing a figure the tiles show taken out. Predicted red at the short version's test, at the retry's line
+            for it and at the fixture's research record, the short version's first draft refused for something else or
+            accepted, and green at the ownership test and the headline's. Result: the first red at the ownership test,
+            $1,846 million no longer refused as drawn in the latest quarter, at the retry's line and at the research
+            record, whose segment commentary asked for a retry no recording answers, the other 65 green; the second red
+            at the short version's test, $2.82 refused as a figure no cited claim states in place of one the tiles show,
+            at the retry's line and at the research record, whose short version asked for a retry no recording answers,
+            the other 65 green, as predicted. Each made on this branch and reverted before anything was committed. The
+            export's opening light, its toggle and its drawing with scripts off are properties added and not mutated.
+Verified:   `tools/ci.ps1` green, 2194 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
+            figures to be filled from the run.
+Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.3, PRs 419 to 426 merged on 2026-10-10;
+            in progress, this checkpoint and the 6.4 correction, one pull request; next, the written reports regenerated
+            once a night is built from a main holding this checkpoint, then 18.5.
+Carried:    the regeneration the 18.5 ruling sets, every stock holding a written report once on these prompts, about
+            $1.30 off-peak under the caps, once the night of 2026-10-12 is built from a main holding this checkpoint;
+            the short version's refusals after it is written from accepted claims, read on the Run page's rate at ten
+            reports; the plan column's top exit words cut at its edge, owed as a 4.6 correction before 18.5's
+            screenshots; and a finding on the claims harness: its part reader reads parts set apart by commas and not by
+            semicolons, so the four marks 18.3 added, which list theirs between semicolons, each pass on one verdict,
+            owed a reading at 18.5's phase report.

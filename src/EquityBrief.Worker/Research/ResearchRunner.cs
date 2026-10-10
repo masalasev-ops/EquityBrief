@@ -81,6 +81,7 @@ public sealed class ResearchRunner(
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
+            new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read | Touch.Insert),
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read | Touch.Insert),
@@ -513,10 +514,9 @@ public sealed class ResearchRunner(
         var written = new List<WrittenSection>();
         var leftForThePaidPath = new List<string>();
 
-        // ---- round one: every section but the short version ----
+        // ---- round one: every section but the two written last ----
 
-        var summary = ClaimRules.Sections[^1];
-        var firstLocal = local.Where(section => section != summary).ToArray();
+        var firstLocal = local.Where(section => !ClaimRules.IsWrittenLast(section)).ToArray();
 
         if (firstLocal.Length > 0)
         {
@@ -542,7 +542,7 @@ public sealed class ResearchRunner(
             }
         }
 
-        var stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [.. paid.Where(section => section != summary)], null, runId, null, written, notWritten, cancellation);
+        var stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [.. paid.Where(section => !ClaimRules.IsWrittenLast(section))], null, runId, null, written, notWritten, cancellation);
         var paused = stopped is not null;
 
         if (written.Count > 0)
@@ -550,71 +550,23 @@ public sealed class ResearchRunner(
             await checker.RunAsync(runId, cancellation: cancellation);
         }
 
-        // ---- round two: the first retry, and the short version from what was accepted ----
+        // ---- the rounds after: every section the checker refused asked again, to its last retry ----
 
-        var afterFirst = await NewestAsync(connection, ticker, cancellation);
-
-        bool RejectedToday(string section) =>
-            afterFirst.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
-            && refused.AsOf == asOf;
-
-        var retryLocal = local.Where(section => section != summary && RejectedToday(section)).ToArray();
-        var retryPaid = paid.Where(section => section != summary && RejectedToday(section)).ToArray();
-        var summaryWarranted = warranted.Contains(summary, StringComparer.Ordinal);
-        var beforeSecond = written.Count;
-
-        // The local lane's round is one call of the writer, since the run log holds one
-        // row a stage for a run: the retries, and the short version where the lane holds it.
-        // The writer hands it no sections, which is the paid lane's alone to do.
-        string[] secondLocal = summaryWarranted && local.Contains(summary, StringComparer.Ordinal)
-            ? [.. retryLocal, summary]
-            : retryLocal;
-
-        if (secondLocal.Length > 0)
-        {
-            var prose = await writerFor(secondLocal).WriteAsync(ticker, handed, runId, SecondRound, cancellation);
-
-            written.AddRange(prose.Written);
-            notWritten.AddRange(prose.NotWritten);
-        }
-
-        if (!paused)
-        {
-            stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, retryPaid, afterFirst, runId, SecondRound, written, notWritten, cancellation);
-            paused = stopped is not null;
-        }
-
-        if (summaryWarranted && !paused && !local.Contains(summary, StringComparer.Ordinal))
-        {
-            stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [summary], null, runId, SecondRound, written, notWritten, cancellation, Accepted(afterFirst, summary));
-            paused = stopped is not null;
-        }
-
-        if (written.Count > beforeSecond)
-        {
-            await checker.RunAsync(runId, SecondRound, cancellation);
-        }
-
-        // ---- the rounds after: every section the checker refused again asked once more ----
-
-        // A section's retries run from round two and the short version's from round three,
-        // since its first draft is written in round two, so the last round is the short
-        // version's last retry. The checker leaves a section out at its last retry, so a
-        // section still refused is one with a retry left.
+        // The checker leaves a section out at its last retry, so a section still refused is one with a retry left.
         // see: A retry names each thing the check refused, and a section refused on its third retry is left out
-        for (var round = 3; !paused && round <= 2 + checker.RetriesAllowed; round++)
+        for (var round = 2; !paused && round <= 1 + checker.RetriesAllowed; round++)
         {
             var before = await NewestAsync(connection, ticker, cancellation);
 
             bool Refused(string section) =>
-                before.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
+                !ClaimRules.IsWrittenLast(section)
+                && before.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
                 && refused.AsOf == asOf;
 
             var againLocal = local.Where(Refused).ToArray();
-            var againPaid = paid.Where(section => section != summary && Refused(section)).ToArray();
-            var againSummary = summaryWarranted && !local.Contains(summary, StringComparer.Ordinal) && Refused(summary);
+            var againPaid = paid.Where(Refused).ToArray();
 
-            if (againLocal.Length == 0 && againPaid.Length == 0 && !againSummary)
+            if (againLocal.Length == 0 && againPaid.Length == 0)
             {
                 break;
             }
@@ -636,15 +588,70 @@ public sealed class ResearchRunner(
                 paused = stopped is not null;
             }
 
-            if (againSummary && !paused)
-            {
-                stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [summary], before, runId, named, written, notWritten, cancellation, Accepted(before, summary));
-                paused = stopped is not null;
-            }
-
             if (written.Count > beforeRound)
             {
                 await checker.RunAsync(runId, named, cancellation);
+            }
+        }
+
+        // ---- the two written last: the short version and the headline, from the claims accepted ----
+
+        // Asked after every other section's last retry, from the claims the checker accepted in each and the plan's own
+        // in words, numbered; each a round of its own with its retries after it, the first in the round after the others'
+        // last.
+        // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+        var last = warranted.Where(ClaimRules.IsWrittenLast).ToArray();
+
+        if (!paused && last.Length > 0)
+        {
+            var claims = AcceptedClaims.Of(Accepted(await NewestAsync(connection, ticker, cancellation)), facts!, await PlanAsync(connection, ticker, night, cancellation));
+
+            if (!AcceptedClaims.AnyWritten(claims))
+            {
+                notWritten.AddRange(last.Select(section => new UnwrittenSection(section, ProseWriter.NoClaimAccepted)));
+            }
+            else
+            {
+                var first = 2 + checker.RetriesAllowed;
+
+                for (var round = first; !paused && round <= first + checker.RetriesAllowed; round++)
+                {
+                    var before = await NewestAsync(connection, ticker, cancellation);
+
+                    bool Due(string section) =>
+                        last.Contains(section, StringComparer.Ordinal)
+                        && (round == first || before.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused && refused.AsOf == asOf);
+
+                    var dueLocal = local.Where(Due).ToArray();
+                    var duePaid = paid.Where(Due).ToArray();
+
+                    if (dueLocal.Length == 0 && duePaid.Length == 0)
+                    {
+                        break;
+                    }
+
+                    var named = Round(round);
+                    var beforeRound = written.Count;
+
+                    if (dueLocal.Length > 0)
+                    {
+                        var prose = await writerFor(dueLocal).WriteAsync(ticker, handed, runId, named, cancellation, claims);
+
+                        written.AddRange(prose.Written);
+                        notWritten.AddRange(prose.NotWritten);
+                    }
+
+                    if (duePaid.Length > 0)
+                    {
+                        stopped = await WrittenLastAsync(connection, ticker, asOf, night, facts!, claims, duePaid, round == first ? null : before, runId, named, written, notWritten, cancellation);
+                        paused = stopped is not null;
+                    }
+
+                    if (written.Count > beforeRound)
+                    {
+                        await checker.RunAsync(runId, named, cancellation);
+                    }
+                }
             }
         }
 
@@ -717,15 +724,92 @@ public sealed class ResearchRunner(
             _ => true,
         };
 
-    // The sections the checker has accepted, in figure 12.2's order, less the one being
-    // written from them.
-    static IReadOnlyList<(string Section, string Prose)> Accepted(IReadOnlyDictionary<string, Newest> newest, string except) =>
+    // The sections the checker has accepted, in figure 12.2's order, less the two written from them.
+    static IReadOnlyList<(string Section, string Prose)> Accepted(IReadOnlyDictionary<string, Newest> newest) =>
     [
         .. ClaimRules.Sections
-            .Where(section => section != except
+            .Where(section => !ClaimRules.IsWrittenLast(section)
                 && newest.GetValueOrDefault(section) is { Status: ClaimChecker.Accepted, Prose.Length: > 0 })
             .Select(section => (section, newest[section].Prose)),
     ];
+
+    // The plan the ladder stored for the name on the night its facts are from, or none where it stored none.
+    const string PlanFor = @"
+        SELECT plan FROM ladder
+        WHERE ticker = $ticker AND as_of = $night;
+    ";
+
+    static async Task<string?> PlanAsync(SqliteConnection connection, string ticker, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PlanFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
+    }
+
+    // The paid lane for the two written last: each asked from the numbered claims through its own cap, its retry told
+    // what the draft before it was refused for, and stored with the claims it was handed and no document.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    async Task<string?> WrittenLastAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly asOf,
+        DateOnly night,
+        IReadOnlyList<Fact> facts,
+        IReadOnlyList<Claim> claims,
+        IReadOnlyList<string> sections,
+        IReadOnlyDictionary<string, Newest>? refusedIn,
+        string runId,
+        string round,
+        List<WrittenSection> written,
+        List<UnwrittenSection> notWritten,
+        CancellationToken cancellation)
+    {
+        for (var at = 0; at < sections.Count; at++)
+        {
+            var section = sections[at];
+            var sectionCap = sectionModels.For(section);
+            var newest = (await NewestAsync(connection, ticker, cancellation)).GetValueOrDefault(section);
+            var version = (newest?.Version ?? 0) + 1;
+
+            var refused = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } inThisPass ? inThisPass : null;
+            var retry = refused is null ? null : RetryBrief.For(section, refused.Prose, facts, [], night, refused.Reason, refused.Parts);
+
+            var request = SectionPrompt.ClaimsRequest(sectionCap.Model, ticker, section, claims, facts, retry);
+            var call = await sectionCap.AskAsync(request, runId, round, cancellation);
+
+            // see: An answer that comes back empty or cut short is asked for once more
+            if (call.Unusable)
+            {
+                call = await sectionCap.AskAsync(request, runId, AskedAgain(round), cancellation);
+            }
+
+            if (call.Paused)
+            {
+                foreach (var stopped in sections.Skip(at))
+                {
+                    notWritten.Add(new UnwrittenSection(stopped, call.Verdict.Line));
+                }
+
+                return call.Verdict.Line;
+            }
+
+            if (call.Answer is not { } answer)
+            {
+                notWritten.Add(new UnwrittenSection(section, call.Unusable ? ProseWriter.NoUsableAnswer : call.Failure ?? "the research model returned nothing"));
+
+                continue;
+            }
+
+            await InsertAsync(connection, ticker, section, version, asOf, sectionCap.Model, answer.Text, [], cancellation, AcceptedClaims.Stored(claims));
+            written.Add(new WrittenSection(section, version, sectionCap.Model, retry is not null));
+        }
+
+        return null;
+    }
 
     // The paid lane for a set of sections. The cap's line where a cap stopped it, in which
     // case every section it had not reached is named as not written with that line.
@@ -742,8 +826,7 @@ public sealed class ResearchRunner(
         string? round,
         List<WrittenSection> written,
         List<UnwrittenSection> notWritten,
-        CancellationToken cancellation,
-        IReadOnlyList<(string Section, string Prose)>? summarised = null)
+        CancellationToken cancellation)
     {
         for (var at = 0; at < sections.Count; at++)
         {
@@ -807,7 +890,6 @@ public sealed class ResearchRunner(
                 facts,
                 [.. admitted.Select(document => PromptDocument.From(document))],
                 retry,
-                summarised,
                 night);
 
             var call = await sectionCap.AskAsync(request, runId, round, cancellation);
@@ -999,11 +1081,13 @@ public sealed class ResearchRunner(
         string model,
         string prose,
         IReadOnlyList<string> sources,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        string? claims = null)
     {
-        // The risks come back as fields, stored beside the prose code composes from them.
+        // The risks come back as fields, stored beside the prose code composes from them, and the two written last beside
+        // the claims they were handed.
         // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
-        var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0 ? RiskFields.FromAnswer(prose) : (prose, null);
+        var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0 ? RiskFields.FromAnswer(prose) : (prose, claims);
 
         await using var insert = connection.CreateCommand();
 

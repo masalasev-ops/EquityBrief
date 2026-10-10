@@ -156,14 +156,14 @@ public class ModelProfilesTests
     }
 
     [Fact]
-    public void EveryResearchModelIsToldToDescribeAndNeverPrescribeAndTheShortVersionAsksForNoPlan()
+    public void EveryResearchModelIsToldToDescribeAndNeverPrescribeAndTheShortVersionSaysThePlanAsItsClaimsSayIt()
     {
-        // The instructions every section is asked under, as each format's feed sends them: the system prompt
-        // in Claude's own interface and the system message in the other format.
+        // The instructions every section written from the documents is asked under, as each format's feed sends them: the
+        // system prompt in Claude's own interface and the system message in the other format.
         foreach (var use in new[] { "deepseek", "claude-sonnet" })
         {
             var settings = Resolved(use);
-            var request = SectionPrompt.PaidRequest(settings.Identity, "KEYS", "The short version", [], [new PromptDocument("a-document", "A release", null, "The release's text.")]);
+            var request = SectionPrompt.PaidRequest(settings.Identity, "KEYS", "The two cases", [], [new PromptDocument("a-document", "A release", null, "The release's text.")]);
 
             using var sent = JsonDocument.Parse(settings.Format == ResearchModelSettings.AnthropicFormat
                 ? AnthropicMessagesFeed.Body(request, settings)
@@ -179,9 +179,14 @@ public class ModelProfilesTests
             Assert.Contains("the sentence opening a paragraph as well as the rest", system, StringComparison.Ordinal);
         }
 
-        // The short version asks for what is true and argued about, and for no plan.
+        // The two written last are told the same from the claims they are handed: describe and never prescribe, and where a
+        // claim says what the plan does, say it as the claim says it, which is what the short version's third paragraph is.
+        Assert.Contains("Describe and never prescribe: propose no trade, no holding, no adding or trimming and no plan for income, and where a claim says what the plan does, say it as the claim says it.", SectionPrompt.FromClaims, StringComparison.Ordinal);
+        Assert.Contains("Write no em dash", SectionPrompt.FromClaims, StringComparison.Ordinal);
+        Assert.Equal(SectionPrompt.FromClaims, SectionPrompt.System([], "The short version"));
+        Assert.Equal(SectionPrompt.FromClaims, SectionPrompt.System([], "The headline"));
+        Assert.Contains("The third says what the plan does, in the words of the plan's claims.", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
         Assert.DoesNotContain("plan therefore", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
-        Assert.Contains("propose nothing", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
     }
 
     [Fact]

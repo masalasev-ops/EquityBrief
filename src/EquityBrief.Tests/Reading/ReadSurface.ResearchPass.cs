@@ -78,11 +78,21 @@ public partial class ReadSurface
             $"<section class=\"written-section\" data-ticker=\"[^\"]*\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(section))}\" data-as-of=\"([^\"]*)\" data-model=\"([^\"]*)\">(.*?)</section>",
             RegexOptions.Singleline);
 
-    // Every accepted section but the cause, which the moves table draws, is drawn once
-    // with the date and model the store holds, its paragraphs making up the stored prose.
+    // Every accepted section but the cause, which the moves table draws, and the headline, which leads the page, is drawn
+    // once with the date and model the store holds, its paragraphs making up the stored prose; the headline is drawn as
+    // the lead with its marks taken off and the day it was written beneath it.
     static void AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(TemporaryStore store, string page, int stated)
     {
-        var accepted = Accepted(store, "KEYS").Where(row => row[0] != ClaimRules.CauseSection).ToArray();
+        foreach (var headline in Accepted(store, "KEYS").Where(row => row[0] == ClaimRules.HeadlineSection))
+        {
+            var lead = Regex.Match(page, "<h1 class=\"lead-line\" data-written=\"model\">([^<]*)</h1><p class=\"written-by\">written on ([^<]*)</p>");
+
+            Assert.True(lead.Success, "the written headline is not drawn as the lead");
+            Assert.Equal(ClaimRules.Unmarked(headline[3]), WebUtility.HtmlDecode(lead.Groups[1].Value));
+            Assert.Equal(headline[1], lead.Groups[2].Value);
+        }
+
+        var accepted = Accepted(store, "KEYS").Where(row => row[0] != ClaimRules.CauseSection && row[0] != ClaimRules.HeadlineSection).ToArray();
 
         Assert.Equal(stated, accepted.Length);
 
@@ -118,6 +128,7 @@ public partial class ReadSurface
         Assert.Equal(ResearchRunner.NoFactsFile, ReadApi.PassNoFactsFile);
         Assert.Equal(ProseWriter.Unavailable, NameScreen.LocalUnavailable);
         Assert.Equal(ProseWriter.CannotHold, NameScreen.CannotHold);
+        Assert.Equal(ProseWriter.NoClaimAccepted, RunScreen.NoClaimAccepted);
 
         var paused = SpendRule.Judge(new SpendLedger([new SpentRow(AWeekLater, 10m)]), SpendCaps.Default, AWeekLater);
 
@@ -137,11 +148,13 @@ public partial class ReadSurface
             .. SinglePageApp.AfterTheRules,
             SinglePageApp.InTheDates,
             SinglePageApp.InTheMovesTable,
+            SinglePageApp.InTheLead,
         ];
 
         Assert.Equal(ClaimRules.Sections.Order(StringComparer.Ordinal), placed.Order(StringComparer.Ordinal));
         Assert.Equal(ClaimRules.CauseSection, SinglePageApp.InTheMovesTable);
         Assert.Equal(ClaimRules.CalendarSection, SinglePageApp.InTheDates);
+        Assert.Equal(ClaimRules.HeadlineSection, SinglePageApp.InTheLead);
     }
 
     [Fact]
@@ -172,12 +185,28 @@ public partial class ReadSurface
         Assert.True(at < page.IndexOf("class=\"level-chart\"", StringComparison.Ordinal));
         Assert.True(at < page.IndexOf("<section class=\"how-it-got-here\"", StringComparison.Ordinal));
         Assert.All(
-            Accepted(store, "KEYS").Select(row => row[0]).Where(section => section is not "The short version" and not ClaimRules.CauseSection),
+            Accepted(store, "KEYS").Select(row => row[0]).Where(section => section is not "The short version" and not ClaimRules.CauseSection and not ClaimRules.HeadlineSection),
             section => Assert.True(at < page.IndexOf($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"", StringComparison.Ordinal), section));
 
         // Three or four paragraphs as the model wrote them, and none of it rendered as markup.
         Assert.InRange(Regex.Matches(body, "<p class=\"prose\">").Count, 1, 6);
         Assert.DoesNotContain("<script", body, StringComparison.OrdinalIgnoreCase);
+
+        // Written last from the accepted claims, each claim it cites listed beneath it once, in the order of its number,
+        // with a link to the region drawing it, read against the claims its row stores.
+        var claims = AcceptedClaims.Read(Rows(store, "SELECT parts FROM research_section WHERE ticker = 'KEYS' AND section = 'The short version' AND status = 'accepted';").Single()[0])!;
+        int[] cited = [.. ClaimRules.Sentences(stored[3]).SelectMany(sentence => sentence.ClaimsCited).Distinct().Order()];
+        var listed = Regex.Matches(body, "<li data-marker=\"C(\\d+)\">\\[C\\d+\\] (.*?) <a href=\"#([^\"]+)\">").ToArray();
+
+        Assert.NotEmpty(cited);
+        Assert.Equal(cited, listed.Select(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture)));
+        Assert.All(listed, match =>
+        {
+            var claim = claims[int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture) - 1];
+
+            Assert.Equal(claim.Text, WebUtility.HtmlDecode(match.Groups[2].Value));
+            Assert.Equal(MarkRenderer.ClaimAnchor(claim.Region), match.Groups[3].Value);
+        });
 
         // A name with no research draws no short version at all, and the page says why above it.
         using var replayed = await FixtureReplay.ReplayedAsync();
@@ -220,10 +249,11 @@ public partial class ReadSurface
 
         Assert.True(written.Success, "KEYS draws no two cases, and this is what reads them.");
 
-        // The fixture's two cases as the recorded writer answered the ask: two paragraphs, the
-        // first opening on the bull case with eleven sentences and the second on the bear case with
-        // eight, counted by hand off the recording, every one ending on the marker of its document,
-        // with [N] after it where the sentence states a figure the facts list.
+        // The fixture's two cases as the recorded writer answered the ask, each figure said in words from
+        // 18.4: two paragraphs, the first opening on the bull case with ten sentences and the second on the
+        // bear case with eight, counted by hand off the answer, every one ending on the marker of its
+        // document, with [N] after it where the sentence states a figure the facts list, or on [N] alone
+        // where it rests on the night's figures alone.
         var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
@@ -237,11 +267,11 @@ public partial class ReadSurface
         var cases = CasesDrawn(written.Value);
 
         Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
-        Assert.Equal([11, 8], [.. cases.Select(one => one.Rows.Count)]);
+        Assert.Equal([10, 8], [.. cases.Select(one => one.Rows.Count)]);
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
-        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"\[D\d+\](?: \[N\])?\.$", row));
+        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"(?:\[D\d+\](?: \[N\])?|\[N\])\.$", row));
 
         var marks = new MarkRenderer();
 
@@ -326,14 +356,45 @@ public partial class ReadSurface
         // listed fact, counted by hand off the recording, which code composed into a paragraph each opening on
         // its ordinal and followed by a sentence opening its confirmation. So every part states its
         // confirmation apart and the section is a table, a risk to a row beside what would confirm it, each
-        // row its paragraph cut and never edited.
+        // row its paragraph cut and never edited. From 18.4 the answer closes on its two columns, two lines
+        // each, a paragraph a column opening on the column's words, which the page sets apart beneath the table.
         var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var risks = paragraphs.Where(paragraph => !paragraph.StartsWith(RiskFields.TurnsUp, StringComparison.Ordinal) && !paragraph.StartsWith(RiskFields.MakesWorse, StringComparison.Ordinal)).ToArray();
         var table = RiskRows(written.Value);
 
-        Assert.Equal(4, paragraphs.Length);
+        Assert.Equal(6, paragraphs.Length);
+        Assert.Equal(4, risks.Length);
         Assert.Contains("<table class=\"risks-table\" data-parts=\"4\"><tr><th>Risk</th><th>What would confirm it</th></tr>", written.Value, StringComparison.Ordinal);
         Assert.Equal(4, table.Count);
-        Assert.Equal([.. paragraphs], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
+        Assert.Equal([.. risks], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
+
+        // Each column beneath the table opens on the line the plan computes and then draws the writer's lines, a claim
+        // to a row, each opening on its column's words, read off the page as the route serves it, which reads the bands
+        // and the plan the lines are computed from.
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var routed = WrittenOnThePage(await client.GetStringAsync("/screens/name/KEYS"), MarkRenderer.TheRisks).Value;
+
+        // Turning it up ruled across its top in the rise hue and making it worse in the fall hue, by the stylesheet's rules.
+        Assert.Contains(".name .two-col>.col-up{border-top:3px solid var(--up)}", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".name .two-col>.col-down{border-top:3px solid var(--down)}", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"two-col risk-cols\"><div class=\"col-up\" data-risk-column=\"up\">", routed, StringComparison.Ordinal);
+        var risksAt = routed.IndexOf("<table class=\"risks-table\"", StringComparison.Ordinal);
+
+        Assert.True(
+            risksAt >= 0 && routed.IndexOf("<div class=\"two-col risk-cols\">", StringComparison.Ordinal) > risksAt,
+            "the two columns are not drawn beneath the risks");
+
+        foreach (var (side, opening, computed, hue) in new[] { ("up", RiskFields.TurnsUp, "A close above ", "col-up"), ("worse", RiskFields.MakesWorse, "A close below ", "col-down") })
+        {
+            var column = Regex.Match(routed, $"<div class=\"{hue}\" data-risk-column=\"{side}\"><h4>[^<]+</h4><p class=\"prose computed-line\" data-computed=\"{side}\">([^<]*)</p>(<ul class=\"claim-rows\".*?</ul>)</div>", RegexOptions.Singleline);
+
+            Assert.True(column.Success, $"the {side} column is not drawn beneath the risks");
+            Assert.StartsWith(computed, WebUtility.HtmlDecode(column.Groups[1].Value), StringComparison.Ordinal);
+            Assert.Equal(2, ClaimRowsDrawn(column.Groups[2].Value).Count);
+            Assert.All(ClaimRowsDrawn(column.Groups[2].Value), row => Assert.StartsWith(opening, row, StringComparison.Ordinal));
+        }
         Assert.Equal(
             ["The first risk", "The second risk", "The third risk", "The fourth risk"],
             [.. table.Select(row => string.Join(' ', row.Risk.Split(' ').Take(3)))]);
@@ -454,32 +515,34 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
-        // Seven accepted over one pass, stated in advance: the segment commentary and the short version
-        // on their retries and the rest at their first draft, what management said among them from 18.2,
-        // while the cause of each large move came back with no text twice over the recordings and is not
-        // written.
+        // Seven accepted over one pass, stated in advance: the short version on its retry and the rest at
+        // their first draft, what management said among them from 18.2 and the headline from 18.4, while
+        // the cause of each large move came back with no text twice over the recordings and is not written,
+        // and the segment commentary is refused at each retry from 18.4 for figures the segments do not draw.
         Assert.Equal(7, Accepted(store, "KEYS").Count);
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // All seven drawn as sections, and the cause of each move, which the moves table draws where
-        // it is written, said to be not written.
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        // Six drawn as sections and the headline as the lead, and the cause of each move, which the moves
+        // table draws where it is written, said to be not written.
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.Contains("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
 
         // Section 4's order: the numbers in the latest quarter, what management said, what the company
-        // sells and its segments, the chart, how it got here, the levels and the plan, then what would
-        // make it wrong and the two cases. Read as the order the page draws them in, so a page drawing
-        // them otherwise says which came where.
+        // sells, the chart, how it got here, the levels and the plan, then what would make it wrong and
+        // the two cases. Read as the order the page draws them in, so a page drawing them otherwise says
+        // which came where. The segment commentary, refused at each retry from 18.4, is drawn as left out.
+        Assert.Equal(-1, Section("The segment commentary"));
+        Assert.Contains("<p class=\"left-out\" data-section=\"The segment commentary\">", page, StringComparison.Ordinal);
+
         (string Part, int At)[] drawn =
         [
             ("the numbers", At("<section class=\"numbers\"")),
             ("what management said", Section("What management said")),
             ("what it sells", Section("What the company sells")),
-            ("the segments", Section("The segment commentary")),
             ("the chart", At("class=\"level-chart\"")),
             ("how it got here", At("<section class=\"how-it-got-here\"")),
             ("the levels", At("class=\"level-summary\"")),
@@ -524,31 +587,56 @@ public partial class ReadSurface
         Assert.DoesNotContain(models, model => words.Contains(model, StringComparison.Ordinal));
     }
 
+    // see: The calendar draws a name's next ninety days of results, ex-dividend dates and the Fed's and the CPI's dates beside the dated items the research read
+    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
     [Fact]
-    public async Task DatesAndSourcesDrawTheCalendarTheDatedItemsAndEveryDocumentTheWrittenSectionsCite()
+    public async Task TheCalendarDrawsTheNinetyDaysAfterTheNightAndTheSourcesEveryDocumentTheWrittenSectionsCite()
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
-        var region = Regex.Match(page, "<section class=\"dates-and-sources\"[^>]*>(.*)</section>", RegexOptions.Singleline).Value;
+        var opens = page.IndexOf("<section class=\"page-calendar\"", StringComparison.Ordinal);
+        var sourcesOpen = page.IndexOf("<section class=\"sources-region\"", StringComparison.Ordinal);
 
-        Assert.NotEmpty(region);
+        Assert.True(opens > 0 && sourcesOpen > opens, "the calendar is not drawn before the sources");
 
-        // The calendar: every event the store holds for the name from its newest session,
-        // by a query of the test's own.
+        var calendar = page[opens..sourcesOpen];
+        var region = page[sourcesOpen..];
+
+        // The ninety days after the night: the company's next report the store dates inside them and each FOMC decision
+        // and CPI release the committed table dates inside them, read by the test's own query and the table, KEYS paying
+        // no dividend.
         var newest = Rows(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'KEYS';").Single()[0];
-        var events = Rows(store, $"SELECT event_date, kind FROM calendar WHERE ticker = 'KEYS' AND event_date >= '{newest}' ORDER BY event_date, kind;");
+        var night = DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var through = night.AddDays(90);
+        var last = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var report = Rows(store, "SELECT MIN(event_date) FROM calendar WHERE ticker = 'KEYS' AND kind = 'earnings' AND event_date > '" + newest + "' AND event_date <= '" + last + "';").Single()[0];
 
+        string[] expected =
+        [
+            .. new[] { report }.Where(date => date != "null").Select(date => date + "|results"),
+            .. EquityBrief.Core.Cards.MarketEvents.Within(night.AddDays(1), through).Inside.Select(one => one.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "|" + one.Kind),
+        ];
+
+        Assert.Contains("data-night=\"" + newest + "\" data-through=\"" + last + "\"", calendar, StringComparison.Ordinal);
+        Assert.NotEmpty(expected);
         Assert.Equal(
-            events.Select(row => $"{row[0]}|{row[1]}"),
-            Regex.Matches(region, "<tr data-date=\"([^\"]*)\" data-kind=\"([^\"]*)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+            expected.Order(StringComparer.Ordinal),
+            Regex.Matches(calendar, "<tr data-date=\"([^\"]*)\" data-kind=\"([^\"]*)\"").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}").Order(StringComparer.Ordinal));
+        Assert.Contains($"data-mark=\"calendar-timeline\" data-items=\"{expected.Length}\"", calendar, StringComparison.Ordinal);
+        Assert.Equal(expected.Length, Regex.Matches(calendar, "<circle class=\"ct-dot ").Count);
 
-        // The dated items the pass read out of the documents, inside the region, as written.
+        // The dated items the pass read out of the documents, inside the calendar, as written.
         var items = Accepted(store, "KEYS").Single(row => row[0] == ClaimRules.CalendarSection);
-        var drawnItems = WrittenOnThePage(region, ClaimRules.CalendarSection);
+        var drawnItems = WrittenOnThePage(calendar, ClaimRules.CalendarSection);
 
         Assert.True(drawnItems.Success);
         Assert.Equal(items[1], drawnItems.Groups[1].Value);
+
+        // The figures the filing and the fetch state differently are listed, or a line says they agree or that no
+        // filing's facts are stored to check them by, and the one line naming what is computed closes the region.
+        Assert.Single(Regex.Matches(region, "<table class=\"figures-checked\">|<p class=\"degraded\" data-conflicts=\"(?:none|unread)\">"));
+        Assert.Contains("<p class=\"computed-line\">Computed by code from stored figures and sourced from no document: ", region, StringComparison.Ordinal);
 
         // Every document a written section cites, once each, with its date and link.
         var cited = Accepted(store, "KEYS")
@@ -698,7 +786,7 @@ public partial class ReadSurface
         Assert.True(state.Success);
         Assert.StartsWith("the research is stale: ", state.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"a filing dated {filed} arrived after it was written", state.Groups[1].Value, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.All(Regex.Matches(page, "<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"[^\"]*\" data-as-of=\"([^\"]*)\"").Select(match => match.Groups[1].Value), date => Assert.Equal("2026-08-01", date));
 
         // The option to have them rewritten, with its cost before it.
@@ -728,7 +816,7 @@ public partial class ReadSurface
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
         Assert.Contains("<p class=\"research-paused\" data-cap=\"day\" data-resumes-at=\"2026-09-16T00:00:00Z\">", page, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
 
         // Stale as well, and still no control, because a press would be refused at the cap.
         Assert.Contains("data-state=\"stale\"", page, StringComparison.Ordinal);
@@ -763,7 +851,7 @@ public partial class ReadSurface
         // page says what the pass came to.
         var page = await ResearchedPage(store, "KEYS", nextDay);
 
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.Matches(
             "<p class=\"research-pass\" data-outcome=\"unavailable\" data-as-of=\"2026-09-09\">the research model did not answer when a pass was asked for on 2026-09-09, so the pass did not start and the stored research is shown as written",
             page);

@@ -19,17 +19,19 @@ namespace EquityBrief.Tests.Reading;
 // distance at its price; the headline carries no figure; the contents' written and filed entries carry their days for
 // the page's script to mark new; and the Run page states the session's quotes against the cap.
 // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
-// see: The masthead carries the index and sector beside the price now, the delayed quote in the session and the last stored close outside it
+// see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it
 public partial class ReadSurface
 {
-    // The rows 18.1 adds that this check reaches: the range bar among the marks, the name page's eight parts, the Run
-    // page's quote runs and the interval between two asks.
+    // The rows 18.1 adds that this check reaches: the range bar among the marks, the name page's eight parts, the
+    // headline's two of them standing from 18.1 once 18.4 read it as its parts, the Run page's quote runs and the interval
+    // between two asks.
     internal static string[] NamePageRows =>
     [
         CheckReach.Key("15.5 The mark vocabulary", "Range bar"),
         CheckReach.Key("15.9 Name", "Masthead"),
         CheckReach.Key("15.9 Name", "The quote while the page is open"),
-        CheckReach.Key("15.9 Name", "Headline"),
+        CheckReach.Key("15.9 Name", "Headline, one sentence beneath the masthead carrying no figure but a digit in the company's own name"),
+        CheckReach.Key("15.9 Name", "Headline, where none is accepted written by code"),
         CheckReach.Key("15.9 Name", "Tiles"),
         CheckReach.Key("15.9 Name", "How the rules read it"),
         CheckReach.Key("15.9 Name", "The decision card"),
@@ -88,12 +90,17 @@ public partial class ReadSurface
             // Each band's distance is the one the quote job stored at the quote's price, from the page's first drawing.
             Assert.Contains(atTheQuote, page, StringComparison.Ordinal);
 
-            // A page about an earlier night and the exported file draw the close and carry no route, whatever the clock.
+            // A page about an earlier night draws the close and carries no route, whatever the clock; the exported file carries
+            // no route either, and from 18.4 draws the quote the page drew at the export, marked as the price at the export
+            // rather than live.
             var earlier = await client.GetStringAsync($"/screens/name/{name}/{night}");
+            var exported = await client.GetStringAsync(ReportExporter.Route + name);
 
             Assert.DoesNotContain("data-quote-route", earlier, StringComparison.Ordinal);
             Assert.Contains("<span class=\"m-price\" data-live=\"no\">", earlier, StringComparison.Ordinal);
-            Assert.DoesNotContain("data-quote-route", await client.GetStringAsync(ReportExporter.Route + name), StringComparison.Ordinal);
+            Assert.DoesNotContain("data-quote-route", exported, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"pill live\">AT EXPORT</span>", exported, StringComparison.Ordinal);
+            Assert.DoesNotContain("<span class=\"pill live\">LIVE</span>", exported, StringComparison.Ordinal);
         }
 
         // Each host below starts at an instant of its own, since a start of the surface writes a row keyed on its instant.
@@ -269,7 +276,8 @@ public partial class ReadSurface
             StringComparison.Ordinal);
 
         // The shell's script marks an entry new where its day is after the day this browser last opened the page, and keeps
-        // that day in the browser alone, read before this visit's is written; the exported file carries no script at all.
+        // that day in the browser alone, read before this visit's is written; the exported file carries no script but the
+        // one that switches its palette, so it marks nothing new.
         var shell = new SinglePageApp().Shell("EquityBrief");
 
         Assert.Contains("if (entry.getAttribute('data-dated') > last && !entry.querySelector('.pill.new'))", shell, StringComparison.Ordinal);
@@ -277,7 +285,10 @@ public partial class ReadSurface
         Assert.True(
             shell.IndexOf("try { last = localStorage.getItem(key); }", StringComparison.Ordinal) < shell.IndexOf("localStorage.setItem(key", StringComparison.Ordinal),
             "The script writes this visit before it reads the last one, so it would mark nothing new.");
-        Assert.DoesNotContain("<script", await client.GetStringAsync(ReportExporter.Route + names[0]), StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "<script",
+            (await client.GetStringAsync(ReportExporter.Route + names[0])).Replace("<script>" + ReportExporter.ThemeScript + "</script>", string.Empty, StringComparison.Ordinal),
+            StringComparison.Ordinal);
     }
 
     // The range bar, the twenty-first mark, over a full input, a price past the year's high and the input it degrades on.

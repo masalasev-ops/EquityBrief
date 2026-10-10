@@ -26,9 +26,13 @@ public partial class ReadSurface
             .Single();
 
         var risks = RiskFields.Read(stored[1]);
+        var columns = RiskFields.Columns(stored[1]);
 
+        // From 18.4 the fields carry the two columns beside the risks, two lines each, which code composes after them.
         Assert.NotNull(risks);
-        Assert.Equal(RiskFields.Compose(risks), stored[0]);
+        Assert.NotNull(columns);
+        Assert.Equal((2, 2), (columns.Value.Up.Count, columns.Value.Worse.Count));
+        Assert.Equal(RiskFields.Compose(risks, columns.Value.Up, columns.Value.Worse), stored[0]);
 
         // A risk to a row, in the order the fields hold them, each confirmation opening as its fields say.
         var table = RiskRows(written.Value);

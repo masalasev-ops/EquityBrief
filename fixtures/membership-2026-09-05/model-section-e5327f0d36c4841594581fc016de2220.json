@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-9pbijl2ae756rgilz75n4f",
+  "object": "chat.completion",
+  "created": 1791663938,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "On guidance management now expects fourth fiscal quarter 2026 revenue to be in the range of $1.930 billion to $1.950 billion with a mid-point representing year-over-year growth of approximately 37 percent, which represents an improvement from the prior outlook that projected third fiscal quarter 2026 revenue between $1.730 billion and $1.750 billion with a mid-point representing year-over-year growth of approximately 29 percent [D1] [D2]. What is working includes record Q3 results and an outlook reflecting the growing relevance of our strategy and portfolio, which is enabling customers to solve complex engineering challenges across our end markets \"Keysight's record Q3 results and outlook reflect the growing relevance of our strategy and portfolio, which is enabling customers to solve complex engineering challenges across our end markets\" [D1]. What is working includes confidence in the ability to sustain momentum and deliver long-term value creation \"We remain confident in our ability to sustain our momentum and deliver long-term value creation\" [D1]. What is working includes strong year-to-date momentum and a robust pipeline of opportunities \"With strong year-to-date momentum and a robust pipeline of opportunities, we are raising our expectations for fiscal 2026\" [D2]. What is not working includes no specific negative items named in the release regarding the current quarter or outlook [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18964,
+    "completion_tokens": 290,
+    "total_tokens": 19254,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -28,7 +28,7 @@ public sealed record HistoryInputs(
 
 // The name page's typical earnings move, long view, chart marks, moves' causes, ladder figure and plan shares, each worked
 // by the core from what the read API handed over; nothing here computes a figure of its own.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static partial class NameScreen
 {
     // The view of the history parts, at the price the masthead draws.
@@ -54,6 +54,17 @@ public static partial class NameScreen
                 ? FormattableString.Invariant($"the plan was read on {ladder.AsOf:yyyy-MM-dd} and the long view on {view.Night:yyyy-MM-dd}, so the plan's levels are drawn once both are read on one night")
                 : null;
 
+        LadderBand[] bands =
+        [
+            .. levels.Select(level =>
+            {
+                var (touches, last) = BandTurns.Of(Members(level.Members).Select(member => (member.Kind, member.Date)));
+
+                return new LadderBand(level.LowEdge, level.HighEdge, level.Role, AwayFromThePrice(bars, level, typicalMove, live), touches, last, PlanUse(level, tranches, exits));
+            }),
+        ];
+        var price = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
+
         return new HistoryView(
             inputs.Newest,
             inputs.Earnings?.Move,
@@ -66,20 +77,38 @@ public static partial class NameScreen
             apart is null ? LongViewLevels(tranches, exits, invalidation, year) : LongViewLevels([], [], null, year),
             apart,
             Events(bars, reactions, dividends, inputs.RawCloses),
-            [
-                .. levels.Select(level =>
-                {
-                    var (touches, last) = BandTurns.Of(Members(level.Members).Select(member => (member.Kind, member.Date)));
-
-                    return new LadderBand(level.LowEdge, level.HighEdge, level.Role, AwayFromThePrice(bars, level, typicalMove, live), touches, last, PlanUse(level, tranches, exits));
-                }),
-            ],
-            live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null),
+            bands,
+            price,
             live is not null,
             PlanSizes.Of(tranches, exits),
             ladder is null ? "no plan is stored for the night, the plan being read for the S&P 500's members alone" : null,
             tranches.Count == 0 ? null : Trail(exits),
-            MoveCauses.LabelsCover(Stories(inputs.Stories)));
+            MoveCauses.LabelsCover(Stories(inputs.Stories)),
+            RiskLinesAt(bands, price, invalidation));
+    }
+
+    // The lines the risks' two columns open on, read off the bands about the price the masthead draws and the plan's
+    // invalidation: a close above the nearest resistance band above the price, and a close below the invalidation or,
+    // where no plan is stored, below the nearest support band beneath the price.
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    static RiskLines RiskLinesAt(IReadOnlyList<LadderBand> bands, decimal? price, decimal? invalidation)
+    {
+        var above = price is { } now
+            ? bands.Where(band => band.Role == "resistance" && band.LowEdge > now).OrderBy(band => band.LowEdge).FirstOrDefault()
+            : null;
+        var below = price is { } then
+            ? bands.Where(band => band.Role == "support" && band.HighEdge < then).OrderByDescending(band => band.HighEdge).FirstOrDefault()
+            : null;
+
+        return new RiskLines(
+            above is { } resistance
+                ? FormattableString.Invariant($"A close above the nearest resistance band, {Figures.Price(resistance.LowEdge)} to {Figures.Price(resistance.HighEdge)}, {MarkRenderer.Away(resistance.Away, above: true)}.")
+                : "No resistance band stands above the price, so no close above one is read.",
+            invalidation is { } floor
+                ? FormattableString.Invariant($"A close below the plan's invalidation at {Figures.Price(floor)}, where the whole position is sold.")
+                : below is { } support
+                    ? FormattableString.Invariant($"A close below the nearest support band, {Figures.Price(support.LowEdge)} to {Figures.Price(support.HighEdge)}, {MarkRenderer.Away(support.Away, above: false)}.")
+                    : "No support band stands beneath the price, so no close below one is read.");
     }
 
     // Each move with the cause the core took for it in its stated order, over the sessions the move spans.
@@ -142,43 +171,8 @@ public static partial class NameScreen
     ];
 
     // The stored plan read back as the ladder's own records: its tranches, its exits and its invalidation.
-    static (IReadOnlyList<Tranche> Tranches, IReadOnlyList<Exit> Exits, decimal? Invalidation) Plan(LadderRow? ladder)
-    {
-        if (ladder is null)
-        {
-            return ([], [], null);
-        }
-
-        using var plan = JsonDocument.Parse(ladder.Plan);
-        var root = plan.RootElement;
-
-        static decimal Edge(JsonElement holder, string name) =>
-            decimal.Parse(holder.GetProperty(name).GetString()!, CultureInfo.InvariantCulture);
-
-        Tranche[] tranches =
-        [
-            .. root.GetProperty("tranches").EnumerateArray().Select(tranche => new Tranche(
-                Edge(tranche, "lowEdge"),
-                Edge(tranche, "highEdge"),
-                Enum.Parse<TrancheCondition>(tranche.GetProperty("condition").GetString()!),
-                tranche.GetProperty("stop").GetString() is { } stop ? decimal.Parse(stop, CultureInfo.InvariantCulture) : null)),
-        ];
-        Exit[] exits =
-        [
-            .. root.GetProperty("exits").EnumerateArray().Select(exit => new Exit(
-                Edge(exit, "lowEdge"),
-                Edge(exit, "highEdge"),
-                exit.GetProperty("traded").GetBoolean(),
-                exit.GetProperty("trailing").GetBoolean(),
-                exit.GetProperty("fraction").GetString() ?? "0",
-                exit.GetProperty("reason").GetString())),
-        ];
-        decimal? invalidation = root.TryGetProperty("invalidation", out var stored) && stored.GetString() is { } price
-            ? decimal.Parse(price, CultureInfo.InvariantCulture)
-            : null;
-
-        return (tranches, exits, invalidation);
-    }
+    static (IReadOnlyList<Tranche> Tranches, IReadOnlyList<Exit> Exits, decimal? Invalidation) Plan(LadderRow? ladder) =>
+        ladder is null ? ([], [], null) : StoredPlan.Read(ladder.Plan);
 
     // What the plan does at a band, in the words its own rows use: the tranche whose zone lies inside it, the share a
     // traded exit at its edges sells or that the trail begins there, or that an exit there is not traded; none where the

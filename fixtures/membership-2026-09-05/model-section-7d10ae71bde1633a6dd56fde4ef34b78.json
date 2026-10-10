@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-agfc99yp3aecj5nvwrlj",
+  "object": "chat.completion",
+  "created": 1791663920,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "On guidance management now expects fourth fiscal quarter 2026 revenue to be in the range of $1.930 billion to $1.950 billion with a mid-point representing year-over-year growth of approximately 37 percent, which represents an improvement from the prior outlook that projected third fiscal quarter 2026 revenue between $1.730 billion and $1.750 billion with a mid-point representing year-over-year growth of approximately 29 percent [D1] [D2]. Non-GAAP earnings per share for the fourth fiscal quarter of 2026 are expected to be in the range of $3.34 to $3.40, based on a weighted diluted share count of approximately 172 million shares [D1]. Certain items impacting the GAAP tax rate pertain to future events and are not currently estimable with a reasonable degree of accuracy; therefore, no reconciliation of GAAP earnings per share to non-GAAP has been provided [D1].\n\nWhat is working includes record Q3 results reflecting the growing relevance of strategy and portfolio enabling customers to solve complex engineering challenges across end markets, strong momentum in commercial communications showing significant growth, solid performance in aerospace defense and government with moderate growth, and double-digit growth across all end markets for the electronic industrial solutions group [D1]. \"Keysight's record Q3 results and outlook reflect the growing relevance of our strategy and portfolio, which is enabling customers to solve complex engineering challenges across our end markets,\" said Satish Dhanasekaran, Keysight's President and CEO [D1].\n\nWhat is not working includes no specific negative items named in the release regarding the current quarter or outlook. \"We remain confident in our ability to sustain our momentum and deliver long-term value creation,\" said Satish Dhanasekaran, Keysight's President and CEO [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19141,
+    "completion_tokens": 390,
+    "total_tokens": 19531,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

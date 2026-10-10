@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Facts;
 using EquityBrief.Core.Providers;
@@ -212,8 +213,13 @@ public partial class FixtureExpectations
         Assert.Equal(ResearchRunner.Written, first.Outcome);
         Assert.Empty(first.Written);
         Assert.Equal(
-            ["What the company sells", "The segment commentary", "The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"],
+            ["What the company sells", "The segment commentary", "The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             first.NotWritten.Where(line => line.Reason == ProseWriter.NothingHanded).Select(line => line.Section).ToArray());
+
+        // The two written last from the accepted claims have none to be written from, so neither is asked for.
+        Assert.Equal(
+            [ClaimRules.ShortVersionSection, ClaimRules.HeadlineSection],
+            first.NotWritten.Where(line => line.Reason == ProseWriter.NoClaimAccepted).Select(line => line.Section).ToArray());
 
         // Opened again the same day: nothing fetched, nothing asked, and the pass's row
         // says why and counts no request.
@@ -280,8 +286,8 @@ public partial class FixtureExpectations
         // gone stale. Not: accepted today, waiting on the checker, left out today. The
         // industry cycle is the theme's, and no pass has written the theme the name's
         // industry is, so it is warranted by the same rule and the pass would refresh the
-        // theme before anything of the name's own.
-        string[] warranted = ["The cause of each large move", "What management said", "The industry cycle", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
+        // theme before anything of the name's own. The headline is never written.
+        string[] warranted = ["The cause of each large move", "What management said", "The industry cycle", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The headline"];
 
         Assert.Equal(ResearchRunner.Unavailable, outcome.Outcome);
         Assert.Equal(warranted, outcome.Warranted);
@@ -403,7 +409,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(Admissibility.NoText, refused[1]);
 
-        foreach (var section in new[] { "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version" })
+        foreach (var section in new[] { "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it" })
         {
             var row = Query(store, $"SELECT prose, source_ids, status, reject_reason FROM research_section WHERE ticker = 'KEYS' AND section = '{section}';").Single().Split('|');
 
@@ -412,6 +418,12 @@ public partial class FixtureExpectations
             Assert.Equal(ClaimChecker.Fallback, row[2]);
             Assert.Contains(ClaimRules.NoAdmissibleSource, row[3], StringComparison.Ordinal);
         }
+
+        // The two written last rest on the accepted claims, of which there are none, so neither is asked for or stored.
+        Assert.Equal(
+            [ClaimRules.ShortVersionSection, ClaimRules.HeadlineSection],
+            outcome.NotWritten.Where(line => line.Reason == ProseWriter.NoClaimAccepted).Select(line => line.Section).ToArray());
+        Assert.Empty(Query(store, $"SELECT section FROM research_section WHERE ticker = 'KEYS' AND section IN ('{ClaimRules.ShortVersionSection}', '{ClaimRules.HeadlineSection}');"));
     }
 
     [Fact]
@@ -546,7 +558,7 @@ public partial class FixtureExpectations
 
         var paused = outcome.NotWritten.Where(line => line.Reason.StartsWith("research is paused:", StringComparison.Ordinal)).Select(line => line.Section).ToArray();
 
-        Assert.Equal(["The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"], paused);
+        Assert.Equal(["The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version", "The headline"], paused);
         Assert.Equal("0", Query(store, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';").Single());
         Assert.Equal(["paused"], Query(store, "SELECT DISTINCT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage LIKE 'research call:%';"));
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage = 'research';"));
@@ -802,25 +814,32 @@ public partial class FixtureExpectations
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-cap-reached' AND stage = 'research';"));
     }
 
-    // The short version is asked after the other sections and handed the ones the checker accepted before
-    // it was asked, and never a draft the checker refused, whose figures it would otherwise copy.
-    // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+    // The short version is asked after every other section's last retry and handed the claims of the sections the checker
+    // accepted, each sentence with its marks taken off and numbered, and never a sentence of a draft the checker refused,
+    // whose figures it would otherwise copy, nor the headline written beside it.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
     [Fact]
-    public async Task TheShortVersionIsHandedTheSectionsTheCheckerAcceptedAndNoDraftItRefused()
+    public async Task TheShortVersionIsHandedTheClaimsOfTheSectionsTheCheckerAcceptedAndNoDraftItRefused()
     {
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         using var store = await FixtureReplay.ResearchedAsync(paid: paid);
 
+        static IEnumerable<string> Sentences(string prose) => ClaimRules.Rows(prose).Select(ClaimRules.Unmarked).Where(sentence => sentence.Length > 0);
+
         var summary = paid.Asked.First(request => request.Section == MarkRendererShortVersion).Prompt;
-        var refused = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section <> '{MarkRendererShortVersion}' AND status IN ('rejected', 'fallback') AND prose <> '';");
-        var accepted = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section <> '{MarkRendererShortVersion}' AND status = 'accepted' AND version = 1 AND prose <> '';");
+        var others = $"section NOT IN ('{MarkRendererShortVersion}', '{ClaimRules.HeadlineSection}')";
+        var accepted = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND {others} AND status = 'accepted' AND prose <> '';").SelectMany(Sentences).ToArray();
+        var refused = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND {others} AND status IN ('rejected', 'fallback') AND prose <> '';").SelectMany(Sentences).Except(accepted).ToArray();
 
         // Both kinds stand in the replay, so neither half of this is read over nothing.
         Assert.NotEmpty(refused);
         Assert.NotEmpty(accepted);
-        Assert.All(refused, prose => Assert.DoesNotContain(prose.Trim(), summary, StringComparison.Ordinal));
-        Assert.All(accepted, prose => Assert.Contains(prose.Trim(), summary, StringComparison.Ordinal));
+        Assert.All(refused, sentence => Assert.DoesNotContain(sentence, summary, StringComparison.Ordinal));
+        Assert.All(accepted, sentence => Assert.Matches("\\n\\[C\\d+\\] " + Regex.Escape(sentence) + "\\n", summary));
+        Assert.All(
+            Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.HeadlineSection}';"),
+            headline => Assert.DoesNotContain(ClaimRules.Unmarked(headline), summary, StringComparison.Ordinal));
     }
 
     const string MarkRendererShortVersion = EquityBrief.Web.Marks.MarkRenderer.TheShortVersion;
@@ -830,8 +849,9 @@ public partial class FixtureExpectations
     {
         // The paid lane's sections are written while the local model is not answering, and
         // the local lane's are left absent with their reason, which the page reads. The short
-        // version is in the local lane here, so every paid call is one the default pass made,
-        // each section written once.
+        // version is in the local lane here, so every paid call but the headline's is one the
+        // default pass made, each section written once, and the headline is written last from
+        // the claims the paid lane's sections stand on.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
@@ -844,7 +864,7 @@ public partial class FixtureExpectations
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         // The cause of each large move, which the recorded model answered with nothing twice, is not among them.
         Assert.Equal(
-            ["What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            ["What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The headline"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalSettings().Model}';").Single());

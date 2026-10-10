@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-0jzoay1blo29ueck2mp09e",
+  "object": "chat.completion",
+  "created": 1791661907,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session ended on 2026-08-24 saw the stock decline as the company reported third quarter results with revenue of $1.85 billion and GAAP net income of $397 million, which D1 attributes to the move.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12264,
+    "completion_tokens": 56,
+    "total_tokens": 12320,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -37,6 +37,45 @@ public sealed partial class ReadApi
         ORDER BY filed, accession;
     ";
 
+    // The SEC's facts as first filed for the name's filer, of periods ending from a day on and filed by the night, which
+    // the sources check the latest quarter's lines against.
+    // see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's
+    const string FiledFactsOf = @"
+        SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact
+        WHERE cik = (SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1)
+          AND period_end >= $from AND filed <= $on
+        ORDER BY concept, period_end, period_start;
+    ";
+
+    public async Task<IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>> FiledFactsAsync(string ticker, DateOnly from, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FiledFactsOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$on", (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<EquityBrief.Core.Ledger.FiledFactRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new EquityBrief.Core.Ledger.FiledFactRow(
+                reader.GetString(0),
+                Day(reader.GetString(1)),
+                Day(reader.GetString(2)),
+                decimal.Parse(reader.GetString(3), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture),
+                Day(reader.GetString(4)),
+                reader.GetString(5),
+                reader.GetString(6)));
+        }
+
+        return rows;
+    }
+
     const string RawClosesOf = @"
         SELECT session_date, close, raw_close FROM bar
         WHERE ticker = $ticker AND session_date <= $on

@@ -17,18 +17,16 @@ public partial class FixtureExpectations
     [Fact]
     public void EachConstructedPaidAnswerIsTheCaptureItNamesWithTheNightsMarkAddedAndNothingElse()
     {
-        var constructed = Directory.GetFiles(Folder(), RecordedResearchModelFeed.FilePrefix + "*.json")
-            .Select(file => (File: Path.GetFileName(file), Node: JsonNode.Parse(File.ReadAllText(file))!.AsObject()))
-            .Where(one => one.Node.FirstOrDefault().Key == "constructed")
-            .OrderBy(one => one.File, StringComparer.Ordinal)
-            .ToArray();
+        var constructed = Constructed().Where(one => !Since184(one.Node)).ToArray();
 
         // Thirteen on DeepSeek's wire and seven on Claude's: each paid request the instructions moved in the default pass,
         // the lane comparison's pass and the pass asked of Claude, the short version's retries among them, while the
         // risks, asked under the fields' own citing line, and every request handed no document keep their captures; and
-        // from 18.2 one on each wire for what management said, a section no capture answers.
-        Assert.Equal(13, constructed.Count(one => one.Node.ContainsKey("choices")));
-        Assert.Equal(7, constructed.Count(one => one.Node.ContainsKey("response")));
+        // from 18.2 one on each wire for what management said, a section no capture answers. From 18.4 ten and five: the
+        // short version's three on DeepSeek's wire and two on Claude's are taken out, since 18.4 writes it from the
+        // accepted claims and no request asks for them, and the requests 18.4 moved are answered by those below.
+        Assert.Equal(10, constructed.Count(one => one.Node.ContainsKey("choices")));
+        Assert.Equal(5, constructed.Count(one => one.Node.ContainsKey("response")));
 
         var sources = new List<string>();
         var unanswered = constructed.Where(one => one.Node["constructed"]!.GetValue<string>().Contains(NoCaptureAnswers, StringComparison.Ordinal)).ToArray();
@@ -103,6 +101,134 @@ public partial class FixtureExpectations
     }
 
     const string NoCaptureAnswers = "written for a section no capture answers";
+
+    // Every constructed answer the fixture holds, each with the note its first key carries.
+    static (string File, JsonObject Node)[] Constructed() =>
+    [
+        .. Directory.GetFiles(Folder(), RecordedResearchModelFeed.FilePrefix + "*.json")
+            .Select(file => (File: Path.GetFileName(file), Node: JsonNode.Parse(File.ReadAllText(file))!.AsObject()))
+            .Where(one => one.Node.FirstOrDefault().Key == "constructed")
+            .OrderBy(one => one.File, StringComparer.Ordinal),
+    ];
+
+    // An answer constructed for a request 18.4 moved says so in its note.
+    static bool Since184(JsonObject node) => node["constructed"]!.GetValue<string>().Contains("18.4", StringComparison.Ordinal);
+
+    // The answers to the requests 18.4 moved, constructed with no paid call: a capture re-keyed whole, its content and usage
+    // as recorded; the risks' capture with the two columns written beside its risks; the two cases' capture with each figure
+    // another region draws said in words; and the short version's and the headline's written by hand in a capture's shell
+    // for requests no capture answers. Each names its capture and is held to it for every part its note does not say it
+    // changed.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
+    // see: Each figure of the facts file is owned by one region of the page, and a written section writes only the figures its own region owns
+    [Fact]
+    public void EachAnswerConstructedFor184IsTheCaptureItNamesChangedOnlyWhereItsNoteSays()
+    {
+        var since = Constructed().Where(one => Since184(one.Node)).ToArray();
+
+        static string Note(JsonObject node) => node["constructed"]!.GetValue<string>();
+
+        var rekeyed = since.Where(one => Note(one.Node).Contains("nothing else changed", StringComparison.Ordinal)).ToArray();
+        var columns = since.Where(one => Note(one.Node).Contains("the two columns written by hand", StringComparison.Ordinal)).ToArray();
+        var inWords = since.Where(one => Note(one.Node).Contains("held each figure to the region of the page drawing it", StringComparison.Ordinal)).ToArray();
+        var byHand = since.Where(one => Note(one.Node).Contains("written by hand for a request no capture answers", StringComparison.Ordinal)).ToArray();
+
+        // Stated in advance: fourteen re-keyed, two with the risks' columns, two of the two cases said in words and thirteen
+        // written by hand, every one of the thirty-one of one kind.
+        Assert.Equal((14, 2, 2, 13), (rekeyed.Length, columns.Length, inWords.Length, byHand.Length));
+        Assert.Equal(since.Length, rekeyed.Length + columns.Length + inWords.Length + byHand.Length);
+
+        JsonObject Source(string file, string note, string pattern)
+        {
+            var named = Regex.Match(note, pattern + @" (research-call-[0-9a-f]{32}\.json)").Groups[1].Value;
+
+            Assert.True(File.Exists(Path.Combine(Folder(), named)), $"{file} names {named}, which the fixture does not hold.");
+
+            var source = JsonNode.Parse(File.ReadAllText(Path.Combine(Folder(), named)))!.AsObject();
+
+            source.Remove("constructed");
+
+            return source;
+        }
+
+        static JsonObject Unmarked(JsonObject node)
+        {
+            var copy = node.DeepClone().AsObject();
+
+            copy.Remove("constructed");
+
+            return copy;
+        }
+
+        // The text an answer gives on its own wire, and its usage, which prices it.
+        static string Said(JsonObject node) => node.ContainsKey("choices")
+            ? node["choices"]![0]!["message"]!["content"]!.GetValue<string>()
+            : node["response"]!["content"]!.AsArray().Single(block => block!["type"]!.GetValue<string>() == "text")!["text"]!.GetValue<string>();
+
+        static JsonNode Usage(JsonObject node) => node.ContainsKey("choices") ? node["usage"]! : node["response"]!["usage"]!;
+
+        // Re-keyed: the capture whole, but for the note.
+        foreach (var (file, node) in rekeyed)
+        {
+            Assert.True(JsonNode.DeepEquals(Source(file, Note(node), "recorded as"), Unmarked(node)), $"{file} differs from the capture it names.");
+        }
+
+        // The risks: the capture's risks as recorded, two lines in each column resting on a listed document and stating no
+        // figure, and the capture's usage.
+        foreach (var (file, node) in columns)
+        {
+            var source = Source(file, Note(node), "recorded as");
+            var answer = JsonNode.Parse(Said(node))!.AsObject();
+
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse(Said(source))!["risks"], answer["risks"]), $"{file}'s risks differ from the capture's.");
+            Assert.True(JsonNode.DeepEquals(Usage(source), Usage(node)), $"{file}'s usage differs from the capture's.");
+
+            foreach (var column in new[] { "turnsUp", "makesWorse" })
+            {
+                var lines = answer[column]!.AsArray();
+
+                Assert.Equal(2, lines.Count);
+                Assert.All(lines, line => Assert.InRange(line!["document"]!.GetValue<int>(), 1, 7));
+                Assert.All(lines, line => Assert.False(StatesAFigure(line!["what"]!.GetValue<string>()), $"{file}: \"{line!["what"]}\" states a figure."));
+            }
+        }
+
+        // The two cases: the capture's usage, and no sentence stating a figure, since their region draws none.
+        foreach (var (file, node) in inWords)
+        {
+            var source = Source(file, Note(node), "recorded as");
+
+            Assert.True(JsonNode.DeepEquals(Usage(source), Usage(node)), $"{file}'s usage differs from the capture's.");
+
+            var sentences = node.ContainsKey("choices")
+                ? Said(node).Split("\n\n").SelectMany(ClaimRules.Sentences).Select(sentence => sentence.Text).ToArray()
+                : [.. JsonNode.Parse(Said(node))!["paragraphs"]!.AsArray().SelectMany(paragraph => paragraph!.AsArray()).Select(sentence => sentence!["sentence"]!.GetValue<string>())];
+
+            Assert.NotEmpty(sentences);
+            Assert.All(sentences, sentence => Assert.False(StatesAFigure(sentence), $"{file}: \"{sentence}\" states a figure."));
+        }
+
+        // Written by hand: the shell's usage, every sentence citing the claims alone, and a headline one sentence carrying
+        // no digit.
+        foreach (var (file, node) in byHand)
+        {
+            var source = Source(file, Note(node), "those of");
+
+            Assert.True(JsonNode.DeepEquals(Usage(source), Usage(node)), $"{file}'s usage differs from its shell's.");
+
+            var sentences = Said(node).Split("\n\n").SelectMany(ClaimRules.Sentences).ToArray();
+
+            Assert.NotEmpty(sentences);
+            Assert.All(sentences, sentence => Assert.True(sentence.ClaimsCited.Count > 0 && sentence.Citations.Count == 0 && !sentence.CitesNight, $"{file}: \"{sentence.Text}\" cites more than the claims."));
+
+            if (Note(node).Contains("The headline", StringComparison.Ordinal))
+            {
+                Assert.Single(sentences);
+                Assert.DoesNotMatch(@"\d", ClaimRules.Unmarked(sentences[0].Text));
+            }
+        }
+    }
 
     // An answer constructed for a section no capture answers holds what the section's ask and the checker hold it to, read
     // against the two releases the pass hands it: every quotation word for word in the newest release, every sentence

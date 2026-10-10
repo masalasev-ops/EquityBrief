@@ -18,7 +18,7 @@ namespace EquityBrief.Api.Reading;
 // here decides whether a reason fired: the builder decided that and wrote it,
 // and this reads it back. What it does is order, count and cut, which is what
 // section 15.7 states the page does.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 // see: The page shows twenty and states the true count
 public static partial class TonightScreen
 {

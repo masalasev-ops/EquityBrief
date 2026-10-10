@@ -8,20 +8,20 @@
   "ticker": "KEYS",
   "verdicts": {
     "a clean computed paragraph": { "status": "accepted", "reason": null },
-    "a poisoned paragraph": { "status": "rejected", "reason": "a figure the facts file does not hold", "offending": "66.3%" },
+    "a poisoned paragraph": { "status": "rejected", "reason": "a figure the facts file does not hold", "offending": "43.6%" },
     "a clean researched paragraph": { "status": "accepted", "reason": null },
     "an unsourced claim": { "status": "rejected", "reason": "a sentence naming no document", "offending": "Analysts expect the next design cycle to be the strongest in five years." },
     "a claim resting on a refused document": { "status": "rejected", "reason": "a citation to a document admissibility refused", "offending": "D2 (algorithmic price forecast)" },
     "a section with no admissible source": { "status": "fallback", "reason": "no admissible source was found", "offending": null },
     "a cause citing a release filed after the move": { "status": "rejected", "reason": "a citation to a document published outside the move it gives the cause of", "offending": "D1 published 2026-08-18, outside the move ending 2026-02-24 measured from 2026-02-17" },
-    "a cause naming no move": { "status": "rejected", "reason": "a cause naming the session of no move the facts file holds", "offending": "Keysight shares moved on record third quarter revenue of $1.85 billion [D1]." },
+    "a cause naming no move": { "status": "rejected", "reason": "a cause naming the session of no move the facts file holds", "offending": "Keysight shares moved on record third quarter revenue [D1]." },
     "a cause of the move the release falls inside": { "status": "accepted", "reason": null }
   },
   "attempts": {
     "rejected twice": ["rejected", "rejected", "rejected", "fallback"],
     "rejected then accepted": ["rejected", "accepted"]
   },
-  "numbersInTheCleanComputedParagraph": { "figures": 8, "windows": 2, "dates": 1 },
+  "numbersInTheCleanComputedParagraph": { "figures": 6, "windows": 0, "dates": 1 },
   "columnsTheCheckerWrites": ["status", "reject_reason"],
   "retriesPerPass": 3,
   "note": "each attempt is the first paragraph of its pair followed by the second asked again at each retry while it is refused, so a pair whose second is refused every time is refused at the first draft and at each retry before the last and falls back at the third retry, and a pair whose second is accepted stops at its first retry. Each draft's reason is kept on its own row, the last on the fallback row, and the run log line for the last check names it and the draft before it. The clean paragraphs are asserted accepted in the same run as the refusals, because a checker that refused everything would satisfy every refusal above and fail only these two."

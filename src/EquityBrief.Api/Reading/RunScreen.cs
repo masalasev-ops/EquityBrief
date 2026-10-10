@@ -20,7 +20,7 @@ namespace EquityBrief.Api.Reading;
 // it does is count and pair: the reason records are counts over the listings and
 // the forward returns, and the base rate is read from the column the filler
 // already wrote beside every return.
-// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+// see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
 public static class RunScreen
 {
     // The swing filter's funnel for a night, counted off the flags each member's row stores: each gate
@@ -206,7 +206,7 @@ public static class RunScreen
 
                 // Withheld here rather than at the page, so no surface can draw a share, a bar or a
                 // verdict for a reason below either floor by forgetting to ask.
-                // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+                // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
                 // see: The record column stays empty until it has earned a number
                 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
                 return record.HasEarnedAVerdict
@@ -1412,16 +1412,22 @@ public static class RunScreen
     }
 
     // Each section's share passed first time and share left out over the reports handed in, newest first, read over
-    // at most the window's number of those that warranted it.
+    // at most the window's number of those that warranted it, the short version written last from the accepted claims
+    // on a row of its own apart from the ones written before.
+    // owes: The short version's refusals after it is written from accepted claims
     public static IReadOnlyList<SectionRate> RatesOver(IReadOnlyList<ReportRow> newest, int window) =>
     [
-        .. ClaimRules.Sections.Select(section =>
-        {
-            var read = newest.Select(report => CellOf(report, section)).Where(cell => cell.Outcome != ReportsView.NotWarranted).Take(window).ToArray();
-
-            return new SectionRate(section, read.Length, read.Count(cell => cell.Outcome == ReportsView.FirstTime), read.Count(cell => cell.Outcome == ReportsView.LeftOut));
-        }),
+        .. ClaimRules.Sections.SelectMany(section => section == ClaimRules.ShortVersionSection
+            ? new[] { Rate(newest, section, section, window, cell => !cell.WrittenLast), Rate(newest, section, ShortVersionWrittenLast, window, cell => cell.WrittenLast) }
+            : [Rate(newest, section, section, window, _ => true)]),
     ];
+
+    static SectionRate Rate(IReadOnlyList<ReportRow> newest, string section, string named, int window, Func<ReportCell, bool> rated)
+    {
+        var read = newest.Select(report => CellOf(report, section)).Where(cell => cell.Outcome != ReportsView.NotWarranted && rated(cell)).Take(window).ToArray();
+
+        return new SectionRate(named, read.Length, read.Count(cell => cell.Outcome == ReportsView.FirstTime), read.Count(cell => cell.Outcome == ReportsView.LeftOut));
+    }
 
     // Of the reports handed in, newest first, the first window's number that drafted the two cases, and how many of those
     // carried a figure on both sides in any draft.
@@ -1494,17 +1500,31 @@ public static class RunScreen
         var bothSides = section == ClaimRules.TwoCasesSection
             && held.Any(one => one.Version is { Prose.Length: > 0 } version && ClaimRules.FiguresOnBothSides(version.Prose) is { Count: > 0 });
 
+        // A short version is written last where a draft of it holds the claims it was handed, or where the pass named it
+        // not written for want of an accepted claim.
+        // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+        var notWrittenBecause = pass.NotWritten.FirstOrDefault(one => one.Section == section).Reason;
+        var writtenLast = section == ClaimRules.ShortVersionSection
+            && (held.Any(one => AcceptedClaims.Read(one.Version?.Parts) is { Count: > 0 }) || notWrittenBecause == NoClaimAccepted);
+
         if (held.FirstOrDefault(one => one.Version is { Status: Accepted }) is { Version: not null } passed)
         {
-            return new ReportCell(section, passed.Retry ? ReportsView.OnRetry : ReportsView.FirstTime, null, cost, drafts.Length, bothSides);
+            return new ReportCell(section, passed.Retry ? ReportsView.OnRetry : ReportsView.FirstTime, null, cost, drafts.Length, bothSides, writtenLast);
         }
 
         var refused = held.Select(one => one.Version?.RejectReason).LastOrDefault(reason => reason is not null);
-        var why = pass.NotWritten.FirstOrDefault(one => one.Section == section).Reason
-            ?? (refused is null ? NotWrittenLine : NameScreen.Refused(refused));
+        var why = notWrittenBecause ?? (refused is null ? NotWrittenLine : NameScreen.Refused(refused));
 
-        return new ReportCell(section, ReportsView.LeftOut, why, cost, drafts.Length, bothSides);
+        return new ReportCell(section, ReportsView.LeftOut, why, cost, drafts.Length, bothSides, writtenLast);
     }
+
+    // The words the pass names a short version or a headline not written by where no written section stands accepted,
+    // stated here as the worker states them, since the read surface holds no reference to the worker; `read-surface`
+    // asserts the two agree.
+    public const string NoClaimAccepted = "no written section stands accepted to write it from";
+
+    // The row the short version written last from the accepted claims is rated under, apart from the ones before it.
+    public const string ShortVersionWrittenLast = "The short version, written last from the accepted claims";
 
     // A section's own calls: its stage names the section, alone or with the round it was asked in.
     static bool CallFor(string stage, string section)

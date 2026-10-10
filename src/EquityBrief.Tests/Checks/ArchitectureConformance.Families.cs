@@ -350,9 +350,11 @@ public partial class ArchitectureConformance
         // the nine marks, and 1235 from 18.3, the page history reader's catalogue and matrix rows, its two stores,
         // section 17's row, section 18's seven and the gap row's part, the name page's two regions, the four marks and
         // the parts the level chart, the chart, the plan, the reactions and the moves gain, less the twelve-month
-        // picture and the reactions' old place.
+        // picture and the reactions' old place, and 1266 from 18.4, section 17's two rows, section 18's three, the
+        // headline as its four parts where it was one, the risks' two columns, the calendar and the sources as their
+        // sixteen and the calendar timeline as its eight, less the dates and sources.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1235),
+            (789, 853, 6, 4, 855, 876, 1266),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
