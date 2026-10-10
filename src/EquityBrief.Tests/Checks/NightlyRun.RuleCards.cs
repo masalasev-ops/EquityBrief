@@ -107,7 +107,7 @@ public partial class NightlyRun
             RuleRows.GatesJson([("market", 3), ("trend and strength", 3), ("setup", 3), ("trigger", 2), ("trade", 2)]),
             Texts(store, $"SELECT gates FROM rule_night WHERE session_date = '{RuleNight}' AND rule = '{FilterVariant}';").Single());
         Assert.Equal(
-            RuleRows.GatesJson([(IndexNightRead.MarketClosed, 3), (IndexNightRead.NoSetup, 2), (IndexNightRead.UnderTheFloors, 1), (IndexNightRead.NoProfit, 1), (IndexNightRead.NoCover, 1)]),
+            RuleRows.GatesJson([(RuleRows.Market, 3), (RuleRows.Setup, 2), (RuleRows.Floors, 1), (RuleRows.Profit, 1), (RuleRows.Cover, 1)]),
             Texts(store, $"SELECT gates FROM rule_night WHERE session_date = '{RuleNight}' AND index_code = 'MID' AND family = 'breakout';").Single());
 
         // The S&P 400 breakout's night reads its stretch over the replayed history and tonight: listed tonight, so no
