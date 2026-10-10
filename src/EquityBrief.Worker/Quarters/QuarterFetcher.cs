@@ -156,6 +156,16 @@ public sealed class QuarterFetcher : IComponent
     // The members a fetch has stored a company for; the verb's companies run asks every other member.
     const string WithACompany = "SELECT DISTINCT ticker FROM company;";
 
+    // The members whose newest storing fetch read no interest expense, being every fetch made before the interest
+    // expense and the rating counts were stored; the verb's refetch asks them again.
+    const string ReadNoInterest = @"
+        SELECT r.ticker
+        FROM reported_quarter r
+        WHERE r.fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = r.ticker)
+        GROUP BY r.ticker
+        HAVING MAX(r.interest_read) = 0;
+    ";
+
     // One ask a member a night: a night run again keeps the ask it made rather than asking twice.
     const string InsertAsk = @"
         INSERT INTO quarter_ask (ticker, session_date, asked_at, reason, awaited, outcome, quarters, weighted, nights, next_ask, detail)
@@ -205,7 +215,9 @@ public sealed class QuarterFetcher : IComponent
     // member that session already asked and takes the next of the fill, so a fill the night spreads over
     // two nights can be taken in one sitting; each run keeps the step's own limit and the day's allowance.
     // With `--companies` it asks instead every member no fetch has stored a company for, as a fill, storing
-    // whatever quarters the answer carries, which gives each member its sector, filer and counts at once.
+    // whatever quarters the answer carries, which gives each member its sector, filer and counts at once. With
+    // `--refetch-unread` it asks instead every member whose newest fetch read no interest expense, in the same way,
+    // stating its asks and their weighted calls before the first request; `--most` caps the asks a run makes.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -214,6 +226,29 @@ public sealed class QuarterFetcher : IComponent
         TextWriter output,
         TextWriter error)
     {
+        var companies = VerbArguments.Has(args, "--companies");
+        var unread = VerbArguments.Has(args, "--refetch-unread");
+        int? most = null;
+
+        if (companies && unread)
+        {
+            error.WriteLine("quarters: --companies and --refetch-unread are two runs; give one of them.");
+
+            return 1;
+        }
+
+        if (VerbArguments.Has(args, "--most"))
+        {
+            if (!int.TryParse(VerbArguments.Value(args, "--most"), NumberStyles.None, CultureInfo.InvariantCulture, out var cap) || cap < 1)
+            {
+                error.WriteLine("quarters: --most takes a whole number of asks above nothing.");
+
+                return 1;
+            }
+
+            most = cap;
+        }
+
         NightFeeds resolved;
 
         try
@@ -231,7 +266,10 @@ public sealed class QuarterFetcher : IComponent
             .RunAsync(
                 VerbArguments.Value(args, "--index") ?? "GSPC",
                 FormattableString.Invariant($"{ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"),
-                companies: VerbArguments.Has(args, "--companies"));
+                companies: companies,
+                unread: unread,
+                most: most,
+                stating: unread ? line => output.WriteLine("quarters: " + line) : null);
 
         output.WriteLine("quarters: " + Detail(outcome));
 
@@ -239,8 +277,18 @@ public sealed class QuarterFetcher : IComponent
     }
 
     // The wider indices are the S&P 400 and 600 the night reads beside its own, whose members' quarters it asks for on
-    // the schedule the index's own are.
-    public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, bool companies = false, IReadOnlyList<string>? wider = null)
+    // the schedule the index's own are. A run by hand may ask instead for the members no fetch stored a company for, or
+    // for those whose newest fetch read no interest expense, at most `most` of them, and is told what it will ask before
+    // its first request.
+    public async Task<QuartersOutcome> RunAsync(
+        string indexCode,
+        string runId,
+        CancellationToken cancellation = default,
+        bool companies = false,
+        IReadOnlyList<string>? wider = null,
+        bool unread = false,
+        int? most = null,
+        Action<string>? stating = null)
     {
         var startedAt = clock.UtcNow;
         var session = clock.SessionDateAt(startedAt);
@@ -254,10 +302,13 @@ public sealed class QuarterFetcher : IComponent
         var reports = await ReportsAsync(connection, session, cancellation);
         var first = await FirstNightAsync(connection, cancellation) ?? session;
         IReadOnlySet<string> withACompany = companies ? await TickersAsync(connection, WithACompany, cancellation) : new HashSet<string>(StringComparer.Ordinal);
+        IReadOnlySet<string> readNone = unread ? await TickersAsync(connection, ReadNoInterest, cancellation) : new HashSet<string>(StringComparer.Ordinal);
 
-        var due = companies
+        // A member asked by hand is asked once a session, as a fill storing whatever quarters the answer carries.
+        var due = companies || unread
             ? [.. members
-                .Where(member => !withACompany.Contains(member.Ticker) && !(asks.GetValueOrDefault(member.Ticker) ?? []).Any(ask => ask.Session == session))
+                .Where(member => (companies ? !withACompany.Contains(member.Ticker) : readNone.Contains(member.Ticker))
+                    && !(asks.GetValueOrDefault(member.Ticker) ?? []).Any(ask => ask.Session == session))
                 .Select(member => new Owed(member.Ticker, Fill, null, null, Company: true))]
             : members
                 .Select(member => Due(member.Ticker, member.Joined, held, asks, reports, session, first))
@@ -269,8 +320,12 @@ public sealed class QuarterFetcher : IComponent
         var ordered = due
             .Where(owed => owed.Reason != Fill)
             .OrderBy(owed => owed.Ticker, StringComparer.Ordinal)
-            .Concat(owedFill.OrderBy(owed => owed.Ticker, StringComparer.Ordinal).Take(companies ? owedFill.Length : FillPerNight))
+            .Concat(owedFill.OrderBy(owed => owed.Ticker, StringComparer.Ordinal).Take(companies || unread ? owedFill.Length : FillPerNight))
+            .Take(most ?? int.MaxValue)
             .ToArray();
+
+        stating?.Invoke(FormattableString.Invariant(
+            $"{ordered.Length} ask(s) of the {due.Length} member(s) {(unread ? "whose newest fetch read no interest expense" : "due")}, at most {ordered.Length * WeightOfAnAsk} weighted call(s)"));
 
         var asked = new List<QuarterAsked>();
         var (atTheLimit, atTheAllowance) = (0, 0);

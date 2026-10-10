@@ -41750,3 +41750,58 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 2121 of 2121 tests ran.
 Carried:    nothing.
+
+### 15.2 - correction: a fetch made before the rating counts were stored reads as not read, where the page said none were filed, and the quarters verb asks again each member whose newest fetch read no interest expense under a cap, stating its asks before its first request   2026-10-09
+
+Corrects:   15.2's second pull request, which stored each quarter's interest expense and the company's five rating
+            counts from the answer the quarters step asks for, after the fills of 2026-10-04 and 2026-10-05 had asked
+            every member. A member whose newest fetch read no interest expense has its coverage read as none, and its
+            page says why, until it reports again; the rating counts of the same fetch were drawn as "none filed",
+            which the provider had not said: CVX's fundamentals of 2026-09-27 file 9 strong buy, 6 buy, 9 hold, 0 sell
+            and 1 strong sell. On the night of 2026-10-08 the coverage was not read for 502 of the S&P 500's 503
+            members, 399 of the S&P 400's 400 and 598 of the S&P 600's 602. On 2026-10-09, over each index's members
+            that day, the newest company fetch of 501 of the S&P 500's 503 was made before the counts were stored, of
+            399 of the S&P 400's 400 and of 596 of the S&P 600's 603; VYLR and HOS hold no company, and two S&P 600
+            members hold a fetch that read the counts and found none.
+Found:      by the operator's phase 18 brief of 2026-10-09, reading CVX's page, and counted over the store read-only.
+Built:      the words. The ratings row says "not read: the newest fetch, of yyyy-mm-dd, was made before rating counts
+            were stored" where the fetch's quarters read no interest expense, since the counts came with it, and keeps
+            "none filed" for a fetch that read them and found none. And the refetch: `quarters --refetch-unread` asks
+            each member of the index whose newest fetch read no interest expense, once a session and in ticker order,
+            as a fill storing whatever the answer carries, prints its asks and the weighted calls they may spend, eleven
+            an ask, before its first request, and `--most` caps the asks a run makes. On 2026-10-09 it would ask 501,
+            399 and 596 members, 1,496 asks and at most 16,456 weighted calls, over four days under the operator's
+            5,000 a day. The decision names the words and the run (see: A fetch made before the interest expense and the
+            rating counts were stored is asked again by hand under a stated cap and its counts read as not read); the
+            member readings row of section 4 and the quarter fetcher's catalogue row say so, the prior text in
+            `CHANGELOG.md`, and the runbook gives the three lines and how the cap is set.
+Tests:      2122, one more: over a constructed store, the refetch capped at one ask asks the first of the two members
+            whose newest fetch read no interest expense, at eleven weighted calls, after printing what it will ask, the
+            line read off the run's output at the moment of its first request; a member whose newest fetch read it though
+            an older one did not, one that read it, one holding no quarter and one asked already that session are not
+            asked; the next run asks the second, one after that asks nothing and makes no request, and a cap that is no
+            whole number above nothing and the two by-hand runs together are refused with nothing asked. The member
+            readings test draws a fetch made before the counts as not read and a fetch that read none as none filed.
+Claims:     1149, unchanged: the two rows keep their verdicts.
+Pins:       none moved; the quarter fetcher, the read surface and the marks are in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone. The refetch asking the
+            members whose newest fetch read no interest expense, broken by the selection reading the opposite flag:
+            predicted red at the refetch test and green at the member readings test and the by-hand verb's test. Its
+            asks stated before its first request, broken by stating them after the asks: predicted red at the refetch
+            test alone. A fetch made before the counts read as not read, broken by drawing it as none filed again:
+            predicted red at the member readings test alone. Result: each red and green as predicted, made on this
+            branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e7cafdba, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2122 of 2122 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2122 of 2122 tests ran.
+Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, merging after the night of 2026-10-09 is read,
+            and the 4.6 and 6.1 corrections as PRs 416 and 417; in progress, this correction, whose first refetch runs
+            after its merge on 2026-10-10 with the provider's counter read first; next, the rest of Part A of the phase
+            18 plan: 6.4 the citation check, 6.10 the written key retired, 3.1 the chart's averages, 16.3 the dividend
+            estimate and, if the data check confirms it, the market events table, a correction changing the night
+            merged at most one a night; then 18.0.
+Carried:    nothing.

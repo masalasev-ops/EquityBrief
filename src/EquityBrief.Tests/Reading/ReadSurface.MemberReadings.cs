@@ -34,21 +34,29 @@ public partial class ReadSurface
         // BB an S&P 400 member read whole, with its row on the session before; AA an S&P 500 member whose company files no
         // count, whose quarters were fetched without their interest expense, whose state and volume average the night
         // stored none of and whose industry no S&P 500 member was read over; CC an S&P 600 member holding no bar on the
-        // night and filing no industry; and DD, a name the night stored nothing for.
+        // night and filing no industry; EE an S&P 600 member whose company filed no count to a fetch that read them; and
+        // DD, a name the night stored nothing for.
         store.Execute(
             "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, company_value, cost, cost_double, profit, coverage, state, year_high, nearness, since_high, volume_ratio, industry, industry_month, industry_quarter, peer_surprise) VALUES " +
             $"('MID', '{MemberNight}', 'BB', '42.5', '18250000.5', '3400000000', 0.25, 0.5, 1, 1, 'improving', '47.25', 0.8994708994708995, 12, 1.37, 'Regional Banks', 0.0123, -0.0456, 3.5), " +
             $"('MID', '{MemberBefore}', 'BB', '41.1', '18000000', '3300000000', 0.25, 0.5, 1, 1, 'steady', '47.25', 0.8698, 9, 0.91, 'Regional Banks', 0.01, -0.04, 2.5), " +
             $"('GSPC', '{MemberNight}', 'AA', '210.75', '950000000', NULL, 0.125, 0.25, 0, NULL, NULL, '230', 0.9163, 40, NULL, 'Tobacco', NULL, NULL, NULL), " +
-            $"('SML', '{MemberNight}', 'CC', NULL, NULL, NULL, NULL, NULL, 0, 0, 'deteriorating', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
+            $"('SML', '{MemberNight}', 'CC', NULL, NULL, NULL, NULL, NULL, 0, 0, 'deteriorating', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL), " +
+            $"('SML', '{MemberNight}', 'EE', NULL, NULL, NULL, NULL, NULL, 0, 0, 'steady', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);");
 
         // The companies' fetches: BB's on 2026-10-01 and again after the night, AA's made before the rating counts were
-        // stored, and none of CC's.
+        // stored, its quarters read without their interest expense, EE's made after with its quarters read with theirs,
+        // and none of CC's.
         store.Execute(
             "INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell) VALUES " +
             "('BB', '2026-10-01T23:50:00Z', NULL, 'Financials', NULL, 'Regional Banks', NULL, 6, 5, 1, 1, 0), " +
             "('BB', '2026-10-06T23:50:00Z', NULL, 'Financials', NULL, 'Regional Banks', NULL, 7, 5, 1, 1, 0), " +
-            "('AA', '2026-09-30T23:50:00Z', NULL, 'Consumer Staples', NULL, 'Tobacco', NULL, NULL, NULL, NULL, NULL, NULL);");
+            "('AA', '2026-09-30T23:50:00Z', NULL, 'Consumer Staples', NULL, 'Tobacco', NULL, NULL, NULL, NULL, NULL, NULL), " +
+            "('EE', '2026-10-03T23:50:00Z', NULL, 'Industrials', NULL, 'Machinery', NULL, NULL, NULL, NULL, NULL, NULL);");
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income, interest_expense, interest_read) VALUES " +
+            "('AA', '2026-09-30T23:50:00Z', '2026-09-30', '2026-06-30', '2026-07-25', '100', '150', NULL, 0), " +
+            "('EE', '2026-10-03T23:50:00Z', '2026-10-03', '2026-06-30', '2026-07-30', '80', '120', '10', 1);");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -129,7 +137,13 @@ public partial class ReadSurface
         Reads(aa, "industry-month", "none", "not available: no S&P 500 member of its industry read over the span");
         Reads(aa, "industry-quarter", "none", "not available: no S&P 500 member of its industry read over the span");
         Reads(aa, "peer-surprise", "none", "none: no S&P 500 member of its industry reported a surprise in them");
-        Reads(aa, "ratings", "none", "none filed: the newest fetch, of 2026-09-30, stored no rating counts");
+
+        // A fetch made before the rating counts were stored read none, which is not the company filing none.
+        Reads(aa, "ratings", "none", "not read: the newest fetch, of 2026-09-30, was made before rating counts were stored");
+        Assert.DoesNotContain("none filed: the newest fetch", Cell(aa, "ratings"), StringComparison.Ordinal);
+
+        // EE's fetch read the counts and the provider filed none.
+        Reads(await CardOf("/screens/name/EE"), "ratings", "none", "none filed: the newest fetch, of 2026-10-03, stored no rating counts");
 
         // CC, under the S&P 600, holding no bar on the night: every reading its bars give says so, and what its quarters
         // and its industry give is drawn as stored.

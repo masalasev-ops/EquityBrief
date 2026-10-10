@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - ARCHITECTURE.html - the member readings row says when a fetch was made before the rating counts were stored, and the quarter fetcher's row names the refetch
+Authorised by: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read
+Was:
+> and as context the analysts' five rating counts with their total, as the newest fetch on or before the night filed them and dated by it; drawn where the night stored the name's readings</td><td>Computed by the member reader from the stored bars, the quarters the quarter fetcher stored and the calendar, and the counts as the quarter fetcher stored them (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it) (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it)</td>
+
+> <code>quarters --companies</code> asks every member no fetch has stored a company for, once, as a fill outside the night (see: The night values a member from its newest fetch, tonight's close brought to the count's basis by the fetch's own close).
+Now:
+> and as context the analysts' five rating counts with their total, as the newest fetch on or before the night filed them and dated by it, or that the fetch was made before the counts were stored and read none; drawn where the night stored the name's readings</td><td>Computed by the member reader from the stored bars, the quarters the quarter fetcher stored and the calendar, and the counts as the quarter fetcher stored them (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it) (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it) (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read)</td>
+
+> <code>quarters --companies</code> asks every member no fetch has stored a company for, once, as a fill outside the night (see: The night values a member from its newest fetch, tonight's close brought to the count's basis by the fetch's own close), and <code>quarters --refetch-unread</code> every member whose newest fetch read no interest expense, once a session, at most as many as the operator's cap and stating its asks and their weighted calls before its first request (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read).
+Why: the page said no counts were filed for members whose fetch was made before counts were stored, 501, 399 and 597 of the three indices on 2026-10-08, and the refetch that reads them is a run the catalogue names.
+
 ### 2026-10-09 - ARCHITECTURE.html - the fact strip states the year's high and low with the sessions they were made on
 Corrects: 6.1's fact strip stated the high and low of the year's largest move, with no date, beside the night's close; CVX's of 2026-01-05, 146.01 to 161.25, stood beside a close of 211.55 on 2026-10-08, and 913 of the 1,506 members' strips that night did not hold their own close. Found by the operator's phase 18 brief of 2026-10-09.
 Was:
