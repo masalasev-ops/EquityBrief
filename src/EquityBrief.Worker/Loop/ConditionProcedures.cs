@@ -36,14 +36,15 @@ public static class ConditionProcedures
         var spreads = ConditionSearch.Spreads(finishedUnits);
         var walks = new Dictionary<string, IReadOnlyList<(int Entry, double? Edge)>>(StringComparer.Ordinal);
 
-        // The rule's own walk over the listings a condition keeps, each condition walked once.
+        // The rule's walk with a condition set as the hooks an approval would store, on top of those it stands at, each
+        // condition walked once.
         IReadOnlyList<(int Entry, double? Edge)> UnitsUnder(ConditionFound condition)
         {
             var key = condition.Words();
 
             if (!walks.TryGetValue(key, out var held))
             {
-                held = [.. rule.Keeping(at => condition.Conditions.All(one => one.Holds(ReadingsOf(at)))).Select(one => (one.Entry, one.Edge))];
+                held = [.. rule.Hooked(condition.Parameters(), ReadingsOf).Select(one => (one.Entry, one.Edge))];
                 walks[key] = held;
             }
 
@@ -72,6 +73,8 @@ public static class ConditionProcedures
                 LoopProcedures.Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one is null ? null : UnitsUnder(one))], own))
             {
                 Finding = named is null ? null : Finding(named, finished, spreads, finishedUnits.Count, ownEdge),
+                Change = named is null ? null : LoopChange.OfHooks(named.Parameters()),
+                Reference = LoopProcedures.Reference(read, own),
             });
         }
 

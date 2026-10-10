@@ -17,7 +17,7 @@ public sealed partial class ReadApi
         WHERE index_code = $index AND month = $month ORDER BY rowid DESC LIMIT 1;";
 
     const string LoopProposalsOf = @"
-        SELECT family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding
+        SELECT family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change
         FROM loop_proposal WHERE run_id = $run_id AND index_code = $index ORDER BY family, proposal;";
 
     const string LoopFindingsOf = @"
@@ -194,7 +194,8 @@ public sealed partial class ReadApi
                 Optional(reader, 14),
                 reader.GetInt32(15),
                 reader.GetInt64(16) == 1,
-                reader.IsDBNull(17) ? null : reader.GetString(17)));
+                reader.IsDBNull(17) ? null : reader.GetString(17),
+                reader.IsDBNull(18) ? null : reader.GetString(18)));
         }
 
         return rows;

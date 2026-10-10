@@ -22,7 +22,8 @@ public sealed record IndexRuleSettings(
     IReadOnlyDictionary<string, string> Drift,
     IReadOnlyDictionary<string, string> Heavyweights,
     IReadOnlyList<string>? ReadByLiveRule = null,
-    string? Fundamentals = null)
+    string? Fundamentals = null,
+    IReadOnlyDictionary<string, string>? Approved = null)
 {
     // The settings as the night stored them, each family's dials read off its key.
     public static IndexRuleSettings Read(string stored)
@@ -54,6 +55,9 @@ public sealed record IndexRuleSettings(
                 : [],
             root.TryGetProperty("fundamentals", out var fundamentals) && fundamentals.ValueKind == JsonValueKind.Object && fundamentals.TryGetProperty("words", out var words)
                 ? words.GetString()
+                : null,
+            root.TryGetProperty("approved", out var approved) && approved.ValueKind == JsonValueKind.Object
+                ? approved.EnumerateObject().Where(change => change.Value.ValueKind == JsonValueKind.String).ToDictionary(change => change.Name, change => change.Value.GetString()!, StringComparer.Ordinal)
                 : null);
     }
 }
@@ -114,15 +118,20 @@ public static class RuleWords
 
     public static string Pullback(IndexRuleSettings settings, string index) =>
         Invariant($"A stock dips into a support band and turns back up, on the sweep's base setting: {settings.Pullback}; held at most {settings.PullbackCap} sessions. ")
-        + Differs(settings, index);
+        + Differs(settings, index) + Approved(settings, SetupFamilies.Pullback);
 
     public static string Breakout(IndexRuleSettings settings, string index) =>
         Breakout(Dial(settings.Breakout, "high"), Dial(settings.Breakout, "volume"), Dial(settings.Breakout, "ceiling"), Dial(settings.Breakout, "stop"))
-        + " " + Differs(settings, index);
+        + " " + Differs(settings, index) + Approved(settings, BreakoutRule.Name);
 
     public static string Drift(IndexRuleSettings settings, string index) =>
         Drift(Dial(settings.Drift, "window"), Dial(settings.Drift, "reaction"), Dial(settings.Drift, "volume"), Dial(settings.Drift, "target"))
-        + " " + Differs(settings, index);
+        + " " + Differs(settings, index) + Approved(settings, DriftRule.Name);
+
+    // The change an approval set on the family, where the night read it at one.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    public static string Approved(IndexRuleSettings settings, string family) =>
+        settings.Approved is { } approved && approved.TryGetValue(family, out var words) ? $" It stands at a change approved on the Loop page: {words}." : string.Empty;
 
     // The fundamentals-first family on any index, in the words its night's settings state, its business read from the
     // facts the company filed before the night as first filed; on the S&P 400 and 600 with the floors their rules read.

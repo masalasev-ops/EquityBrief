@@ -180,8 +180,8 @@ public sealed class DecisionCards : IComponent
     ";
 
     const string InsertCard = @"
-        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar)
-        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar);
+        INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved)
+        VALUES ($index, $night, $family, $ticker, $place, $entry, $stop, $target, $rule, $settings, $lines, $record, $sector, $trail, $cap, $round_trip, $book_holdings, $hits, $score_rank, $similar, $approved);
     ";
 
     // The newest tester run on an index; of it, a family's score fitted on all finished data, the one cut after the run's
@@ -326,7 +326,7 @@ public sealed class DecisionCards : IComponent
                 : new MarketReading(breadth, floor, true);
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score);
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, large ? null : ApprovedOf(indexSettings, pick.Family));
         }
 
         foreach (var pick in indexPicks)
@@ -364,14 +364,17 @@ public sealed class DecisionCards : IComponent
 
     sealed record Bought(string Ticker, string Sector, decimal? Entry);
 
-    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null)
+    // A rule standing at a change an approval set is not the rule its stored record replayed, so its card reads no
+    // record and carries the change's words in its place.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null)
     {
         var named = NameOf(index);
         var words = SetupFamilies.Named(family)?.Label.ToLowerInvariant() ?? SetupFamilies.SectorHeavyweights.Heading.ToLowerInvariant();
         var (state, dollarVolume, value) = await ReadingAsync(connection, transaction, index, ticker, night, cancellation);
         var quarters = await QuartersAsync(connection, transaction, ticker, night, cancellation);
         var sector = sectors.GetValueOrDefault(ticker);
-        var record = await RecordAsync(connection, transaction, index, family, cancellation);
+        var record = approved is null ? await RecordAsync(connection, transaction, index, family, cancellation) : null;
         var held = record is null ? null : RuleRecordFigures.HeldBy(record.EndedBy, settings.HeldShare);
         var report = await ReportAsync(connection, transaction, ticker, night, cancellation);
         var noStop = plan.Stop is null;
@@ -412,10 +415,18 @@ public sealed class DecisionCards : IComponent
             ("$hits", HitsJson(await HitsAsync(connection, transaction, ticker, night, plan, cancellation))),
             ("$score_rank", score?.Rank is { } rank ? (object)rank : DBNull.Value),
             ("$similar", score?.Similar is { } similar ? similar.Json() : DBNull.Value),
+            ("$approved", (object?)approved ?? DBNull.Value),
         ], cancellation);
 
         return 1;
     }
+
+    // The words of the change an approval set for a family on an S&P 400 or 600 night, as the night's settings state them.
+    public static string? ApprovedOf(JsonElement? settings, string family) =>
+        settings is { } read && read.TryGetProperty("approved", out var approved) && approved.ValueKind == JsonValueKind.Object
+            && approved.TryGetProperty(family, out var change) && change.GetString() is { Length: > 0 } words
+                ? words
+                : null;
 
     // A card's rank under its index's learned score, none until the score has passed the tester on the index, and its
     // part of setups like the pick, none for a family no score reaches.
@@ -795,6 +806,11 @@ public sealed class DecisionCards : IComponent
             {
                 gates.Add("the business, " + stated + ", closing above its 200-day average with the 50-day above it, at a pullback's buy point");
             }
+        }
+
+        if (ApprovedOf(settings, family) is { } approved)
+        {
+            gates.Add("its change approved on the Loop page, " + approved);
         }
 
         return gates;

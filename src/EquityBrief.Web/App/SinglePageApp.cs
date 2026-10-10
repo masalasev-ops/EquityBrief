@@ -83,6 +83,12 @@ public sealed class SinglePageApp : IComponent
 
     public const string LoopRoute = "#/loop";
 
+    // The Loop page's presses, approve or decline of a proposal and approve of a restore, each refused without the page's
+    // own header as every press is.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    public const string LoopDecidePostRoute = MarkRenderer.LoopDecideRoute;
+    public const string LoopRestorePostRoute = MarkRenderer.LoopRestoreRoute;
+
     // Tonight's list, section 15.3's first route. `#/` resolves to the newest
     // night and `#/night/<date>` to an earlier one, which is the pair 15.7
     // names and which 15.3's own list lacked until 5.0.
@@ -443,6 +449,27 @@ public sealed class SinglePageApp : IComponent
           if (!said || said.getAttribute('data-resume') !== 'started') {
             for (const button of form.querySelectorAll('button')) { button.disabled = false; }
           }
+        });
+        // The Loop page's presses, approve or decline of a proposal and approve of a restore: the form's fields sent with
+        // the page's own header, the page drawn again, and what the read surface said put in the line of what was pressed.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('loop-press')) { return; }
+          event.preventDefault();
+          const key = form.getAttribute('data-loop-key');
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body: new URLSearchParams(new FormData(form)),
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const holder = Array.from(screen.querySelectorAll('.loop-decision')).find((one) => one.getAttribute('data-loop-key') === key);
+          const place = holder ? holder.querySelector('.loop-said') : null;
+          if (place) { place.innerHTML = said; } else { const top = screen.querySelector('section.loop'); if (top) { top.insertAdjacentHTML('afterbegin', said); } }
         });
         // A link followed or a row picked is a new place, and back or forward returns to where
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
@@ -2576,7 +2603,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopFindingRow>? findings = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopModelRow>? models = null,
-        IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null)
+        IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null,
+        LoopDecided? decided = null)
     {
         static string Named(string word) => word switch
         {
@@ -2627,6 +2655,11 @@ public sealed class SinglePageApp : IComponent
             foreach (var proposal in own)
             {
                 body.Append(marks.LoopProposal(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)]));
+
+                if (decided is not null)
+                {
+                    body.Append(marks.LoopDecision(reading.Code, run, proposal, decided));
+                }
             }
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
@@ -2648,10 +2681,44 @@ public sealed class SinglePageApp : IComponent
                 region: "loop-" + family));
         }
 
+        // What the operator decided on this index and what the apply step did, and the live alarm's periods.
+        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+        if (decided is not null)
+        {
+            region.Append(Cards.Computed(
+                "Loop",
+                marks.LoopHistory(decided),
+                title: "Your decisions",
+                stamp: Cards.Night(night),
+                region: "loop-decisions"));
+            region.Append(Cards.Computed(
+                "Loop",
+                marks.LoopAlarm(reading.Code, decided) + Cards.Key(
+                    "The live alarm.",
+                    "Each month a live rule's mean edge after costs over the trades that ended in it is read against the fifth percentile of ten thousand draws of as many of its reference's trades, the rule today's over the newest run's test years in weekly blocks; two counted months running under it flag the rule, a sector heavyweights' book read by quarter.",
+                    "The rule today was chosen on those same test years, so its reference reads high and the alarm is for a rule that has broken, not one drifting a little."),
+                title: "The live alarm",
+                stamp: Cards.Night(night),
+                region: "loop-alarm"));
+        }
+
         region.Append("</section>");
 
         return region.ToString();
     }
+
+    // A line above an index's Tonight for each family whose live rule the alarm flags on its newest period, naming the
+    // period and linking the Loop page, where a restore waits where an approval changed the rule; none where none is
+    // flagged.
+    // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+    public static string LoopAlarmNotice(UniverseChoice reading, IReadOnlyList<(string Family, DateOnly Period, int Streak)> flags) =>
+        flags.Count == 0
+            ? string.Empty
+            : Invariant($"<div class=\"loop-alarm-notice\" data-flagged=\"{flags.Count}\" data-universe=\"{reading.Word}\">")
+                + string.Concat(flags.Select(flag => Invariant(
+                    $"<p data-family=\"{Escaped(flag.Family)}\" data-period=\"{flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}\" data-streak=\"{flag.Streak}\"><b>The live alarm flags the {Escaped(flag.Family)} rule on the {Escaped(reading.Name)}.</b> Its edge after costs stood under its reference's low {flag.Streak} counted periods running, the newest from {flag.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}. It changes nothing by itself; <a href=\"{LoopRoute}?universe={reading.Word}\">the Loop page</a> holds the periods and any restore waiting for your approval.</p>")))
+                + "</div>";
 
     public string YourTradesRegion(string indexName, IReadOnlyList<YourTradeView> trades)
     {

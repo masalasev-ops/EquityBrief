@@ -72,9 +72,7 @@ public static class ScoreProcedures
                     return null;
                 }
 
-                var hooks = RuleHooks.Of(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null));
-
-                return [.. rule.Hooked(hooks, ReadingsOf).Select(one => (one.Entry, one.Edge))];
+                return [.. rule.Hooked(score.Model.HookParameters(share is { } least ? score.Model.FloorAt(read.Index, least) : null), ReadingsOf).Select(one => (one.Entry, one.Edge))];
             }
 
             proposals.Add(new LoopProposalRead(
@@ -89,6 +87,10 @@ public static class ScoreProcedures
                 LoopProcedures.Evidence(read.Folds, read.Calendar, [.. fitted.Select(Walked)], own))
             {
                 Finding = named is null ? null : RidgeScore.Words(named.Model),
+                Change = named is null || (share is { } least && named.Model.FloorAt(read.Index, least) is null)
+                    ? null
+                    : LoopChange.OfHooks(named.Model.HookParameters(share is { } left ? named.Model.FloorAt(read.Index, left) : null)),
+                Reference = LoopProcedures.Reference(read, own),
             });
         }
 

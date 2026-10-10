@@ -67,6 +67,7 @@ public sealed class RuleCards : IComponent
             new StoreTouch(Store.HeavyweightRuleHolding, Touch.Read),
             new StoreTouch(Store.IndexFamilyNight, Touch.Read),
             new StoreTouch(Store.IndexFamilyResult, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
@@ -461,7 +462,13 @@ public sealed class RuleCards : IComponent
             return 0;
         }
 
-        var settings = live is null ? BreakoutRule.Live : BreakoutCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters));
+        // The live rule's settings where one stands, the setting an approval stored for the provisional breakout where one
+        // did, and the provisional setting otherwise.
+        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        var stored = live is null ? await IndexFamilies.StoredSettingsAsync(connection, index, cancellation, transaction) : null;
+        var settings = live is not null ? BreakoutCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters))
+            : stored?.GetValueOrDefault(BreakoutRule.Name)?.Places is { } places ? BreakoutAt(places)
+            : BreakoutRule.Live;
         var market = new Gate(FamilyRule.Market, open, open ? "the index's breadth at or above the floor" : "the index's breadth under the floor", FamilyRule.Values());
         var members = new List<FormingMember>();
 
@@ -488,6 +495,14 @@ public sealed class RuleCards : IComponent
         var earnings = await NextEarningsAsync(connection, transaction, night, cancellation);
 
         return await InsertFormingAsync(connection, transaction, index, night, rule, FormingList.Order(members), earnings, cancellation);
+    }
+
+    // The breakout's settings at a setting of its sweep's grid.
+    static BreakoutSettings BreakoutAt(IReadOnlyList<int> places)
+    {
+        int[] setting = [.. places];
+
+        return new BreakoutSettings((int)BreakoutSweep.Grid.Value(setting, 0), BreakoutSweep.Grid.Value(setting, 1), BreakoutSweep.Grid.Value(setting, 2), BreakoutSweep.Grid.Value(setting, 3));
     }
 
     // The members passing each gate and every gate before it, in the rule's order, read off each member's answers by

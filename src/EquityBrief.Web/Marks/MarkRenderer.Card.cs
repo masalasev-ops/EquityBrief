@@ -67,8 +67,9 @@ public sealed record CardScoreView(int? Rank, EquityBrief.Core.Cards.CardSimilar
 // A pick's card on a night: the index, the night, the family that listed it and the stock, the rule the card names, the
 // plan's prices, the checklist's lines and the rule's record, none where the rule has not been replayed; and, where the
 // page draws them, the plan in the operator's money or that the account is not set, the rule's management of the trade,
-// the trades taken from it and whether its presses are drawn, which an export never does; and for a family a learned
-// score reaches, the score's part.
+// the trades taken from it and whether its presses are drawn, which an export never does; for a family a learned score
+// reaches, the score's part; and the words of a change an approval set on the rule, whose stored record replays the
+// setting before it and is drawn as no record of this rule.
 public sealed record DecisionCardView(
     string Index,
     DateOnly Night,
@@ -87,7 +88,8 @@ public sealed record DecisionCardView(
     bool Pressable = false,
     CardHitsView? Hits = null,
     CardOperatorRecordView? OperatorRecord = null,
-    CardScoreView? Score = null)
+    CardScoreView? Score = null,
+    string? Approved = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -390,8 +392,17 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
+    // What a card says in place of the record of a rule standing at a change an approval set.
+    public static string ApprovedRecord(string approved) =>
+        $"Not this rule's record: the rule stands at a change approved on the Loop page, {approved}, and the record stored for it replays its setting before the change, so none is drawn as this rule's.";
+
     static string RuleRecord(DecisionCardView card)
     {
+        if (card.Record is null && card.Approved is { } approved)
+        {
+            return $"<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"{Escaped(approved)}\"><h5>The record of {Escaped(InASentence(card.Rule))}</h5><p class=\"degraded\">{Escaped(ApprovedRecord(approved))}</p></section>";
+        }
+
         if (card.Record is not { } record)
         {
             return $"<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of {Escaped(InASentence(card.Rule))}</h5><p class=\"degraded\">Not replayed yet: the rule's record is read once its replay over the pulled history has run, by the command a freeze's remedy runs.</p></section>";

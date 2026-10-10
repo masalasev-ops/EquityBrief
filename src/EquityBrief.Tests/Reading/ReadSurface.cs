@@ -338,6 +338,9 @@ public partial class ReadSurface
             // 17.8's fundamentals-first family's card on Tonight, on every index.
             .. FundamentalsPageClaims,
 
+            // 17.9's Loop page regions for the operator's word and the alarm, Tonight's line and the card's row.
+            .. ApprovalPageClaims,
+
             // The 12.2 correction's one open trade per stock on the pages: Still open on tonight's page, the
             // two marks on Past picks and section 18's row for a still open trade with no outcome row.
             .. OpenTradeClaims,

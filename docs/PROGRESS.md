@@ -41345,3 +41345,253 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    a finding outside this correction, found by the same reviewers: the Run page's runs by hand leave out the
             filings refresh's and the members' runs by hand, so after either is run in the daytime the dateless Run
             page opens on that day until the next night writes its rows. A correction of its own after #413.
+
+### 15.1 - correction: the S&P 400's and 600's page trades are given the benchmark of their plan on every member once their cap has passed, as the schema has stated since 15.1 and nothing wrote   2026-10-09
+
+Corrects:   15.1's second half, whose index families' step ends and keeps each S&P 400 and 600 list's trades and wrote no
+            benchmark for them. SCHEMA has stated since 15.1 that a page trade carries the same plan's benchmark on every
+            member of its index once its cap's sessions have passed, as a registered rule's trade does, and no code wrote
+            `benchmark` or `members` on `index_family_trade`.
+Found:      while building 17.9's live alarm, whose units on the S&P 400's and 600's provisional rules are their page
+            trades' edges after costs, read once a trade's benchmark is written. On the live store the S&P 600's eleven
+            page trades, the earliest bought on 2026-10-02, hold none and none has reached its cap, so no page or record
+            had yet read one.
+Built:      after the step walks the night's trades, each page trade of the index holding no benchmark whose cap's
+            sessions have passed is given the benchmark of its plan entered at the close on every member of the index on
+            its night, through the functions a registered rule's trade is benchmarked by: the exit menu's where the trade
+            names an exit, otherwise the breakout's for a trailing plan and the drift's for a fixed one. Its stop's
+            distance is read in typical moves off the trade where it stored one and off its stock's typical move on its
+            night where it did not. A trade older than the year the night reads is left as it stands.
+Tests:      one more: a fixed, a trailing and an older fixed plan held three sessions over closes of 100 each given nothing
+            over the seven members; a fixed plan held one session given the benchmark a registered rule's trade of the
+            same plan is given, over the same seven; and a trade whose cap has not passed given none.
+Claims:     no row of the architecture moved.
+Pins:       the index families' file is pinned by every S&P 400 and 600 rule evaluator, so their versions moved, once,
+            with 17.9's changes to the same sources, and are stated in its entry. No rule stands registered on either
+            index, so nothing restarts.
+Mutated:    the rule, stated before the run: the one property the correction adds, broken by making the step's call to the
+            page trades' benchmark unreachable. Predicted red at the new test. Result: red at its first assertion, the three
+            trades held three sessions read with no benchmark and no members. Made on this branch and reverted before
+            anything was committed, and the test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    none.
+
+### 17.3 - the history build and the point-in-time check run on each index from main's build after the merges of 17.3 to 17.8   2026-10-09
+
+Ran:        from main at 5277a7fa, the merge of PR 413, with no night, queue, report pass, labeller or store copy running:
+            `filings --whole`, 2,104 filers asked and 599,798 facts stored in 1,414 seconds, free requests to the SEC's
+            archive; then `tools/ledger-build --index GSPC` from 14:38:57 to 14:54:41 UTC, its clean copy of 5277a7fa
+            built under the data root, and from that copy's worker the S&P 400 from 14:54:42 to 15:05:39 and the S&P 600
+            from 15:05:39 to 15:22:17, each over the 1,950 sessions from 2019-01-02 to 2026-10-05. No provider request
+            and no model call.
+Setups:     171,950, all from the history. The S&P 500 69,276, 9,258 passing the live rule: pullbacks 30,712, breakouts
+            22,297, drifts 5,927 and the heavyweights' 10,340. The S&P 400 43,509, 4,799 passing: pullbacks 23,465,
+            breakouts 15,649 and drifts 4,395. The S&P 600 59,165, 6,214 passing: pullbacks 33,048, breakouts 20,343
+            and drifts 5,774.
+Size:       the setups' stored values 93.6 MB and the 17,644 setup nights' 0.9 MB, 94.5 MB against the budget of 0.5 GB,
+            so no floor was raised; the store's file 1.84 GB after the build and the facts.
+Checked:    `ledger-check` on each index, 200 history setups an index sampled 25 a year by seed 17, each rebuilt from the
+            history cut at its session: 478 differences on the S&P 500, 558 on the S&P 400 and 551 on the S&P 600, each
+            run ending non-zero. 1,571 of them are the six readings the build takes from a family's own gates, a
+            pullback's reward to risk, freshness and band strength, a breakout's volume multiple and range ratio and a
+            drift's freshness, volume multiple and reaction, which the rebuild does not read and states as none. The
+            other 16 differ in the sixth significant figure, the depth, the gap down, the tightness and the RSI's two on
+            five S&P 500 setups of 2019 to 2021 and one S&P 600 setup of 2025-01-31.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    a 17.3 correction of its own: the check rebuilds the six family readings or leaves them out by name, and the
+            sixteen differences are traced to their source before the check is held to them or to a tolerance.
+
+### 17.9 - approval and the live alarm: the Loop page's presses, the apply step writing an S&P 400 or 600 family's setting before the next night on that index alone, the tester walking each rule at the setting it stands at, and the alarm on each live rule's periods   2026-10-09
+
+Built:      the operator's word on the Loop page. Approve and Decline beside each passing proposal of the newest tester
+            run on the S&P 400 and 600, a decline asking its reason, and a restore beside a flagged rule's alarm, each a
+            press under the page's own header writing one row to `loop_decision`, and refusing with nothing written a run
+            that is not the newest, a proposal that did not pass or states no change, an S&P 500 rule, a book, a second
+            word on one proposal, a second approval in a family a run and a proposal declined before over no more blocks
+            than its run reads. The apply step, in the swing filter's step after the heavyweights' books and before the
+            index families, and the verb `loop-apply` by hand: each approved change no apply has answered written on top
+            of the setting standing as a row of the append-only `provisional_setting` on its index alone, each answer in
+            `loop_applied`, and a change to an S&P 500 rule, a book or a family whose live rule stands registered refused
+            with why. Under `EquityBrief:Loop:Adopt`, shipped as `on approval`, a proposal holding no decision is applied
+            only where the setting reads `automatic`, then the strongest of a family once a run. The S&P 400's and 600's
+            families, cards and forming list read the stored setting from the next night: a swing family's places on its
+            grid, the drift's stop floor, and the exit and hooks over the menu, each trade keeping its exit and its stop's
+            distance in typical moves. The tester walks each rule at the setting it stands at, a proposal's hooks set on
+            top as an approval sets them, and stores each proposal's change and each live rule's test-window units in
+            `loop_reference`. The live alarm, a night stage after the rule cards: each live rule's settled months,
+            quarters for a book, against a stationary bootstrap of its reference at the period's own count, 10,000 draws
+            at seed 20261011 in blocks of weeks four long on average, written once to `loop_alarm` and flagged two counted
+            periods running under the fifth percentile, a period under five units neither counting nor breaking the run;
+            a flag drawn above its index's Tonight and on the Loop page with its restore. A card whose rule stands at an
+            approved change draws no record as its own, the record stored replaying the setting before the change. The
+            Run page groups the two stages. Migration 83. Section 13.16 and figure 13.7, two catalogue and matrix rows,
+            section 14's step, Tonight's, the card's and the Loop page's rows, five stores, section 17's alarm and setting
+            and section 18's two rows; the two decisions; SCHEMA, the runbook, CLAUDE.md's layout and Merge for the
+            ledger's history build, the roster and the changelog.
+Departed:   This checkpoint amends its own done condition, its text in the plan rewritten and the prior text in the
+            changelog. An approved change reaches an S&P 400 or 600 provisional rule alone; one to an S&P 500 rule, a book
+            or a family whose live rule stands registered is refused with why. The S&P 500's page is drawn by its
+            families' own code at their frozen settings, so how a change reaches it, registered with every S&P 500
+            family's pins moved or read from the store, is the operator's to rule, put on 2026-10-09. The old loop's
+            decisions govern the S&P 500's registered rules, which no approval changes until that ruling, so their
+            reconciliation lands with it and no decision moved to Previously decided here. The guide's section on the
+            loop, the check holding each figure's key in both documents and section 18's row for a monthly run that fails
+            move to 17.10, which builds the monthly run.
+Tests:      2109, thirteen more and the 15.1 correction's one: the adopt setting shipped and read; an approval on the
+            S&P 600 applied there alone, the S&P 500's refused with why and a decline answered by nothing; each refusal of
+            the apply step and a restore writing the setting before the change; a declined proposal put again only over
+            more blocks and a change on top of another replacing its own parts alone; the S&P 400's night reading the
+            breakout's stop at its own stored setting and not the S&P 600's; the alarm's rule worked by hand and its
+            reader writing each settled period once; a rule standing at approved hooks walked at them; and five read back
+            off the rendered pages: the presses writing one decision or refusing with nothing written, the page drawing
+            the presses, the decisions, the settings and the alarm, a change approved on the S&P 600 read on its cards
+            alone with the S&P 400's and 500's pages the same byte for byte, a page whose every proposal failed drawing
+            every family's card with no press, and a card at an approved change drawing no record as its own.
+Claims:     1145, from 1127: the two catalogue and two matrix rows, five stores, section 17's two rows, section 18's two,
+            the Loop page's three regions, Tonight's line and the card's row.
+Pins:       the four S&P 400 and 600 rule evaluators', the index night's and the index families' sources moving with this
+            checkpoint and the 15.1 correction: the pullback 1318c9a575b5 to 76acc1a48419, the breakout e4ce98f158b9 to
+            c66f249ae3a8, the drift ae24c3f78e90 to 285c79d96f7a and the heavyweights 34fc5ff8ccd6 to 81aa1113c30f. No
+            rule stands registered on either index, so nothing restarts; no S&P 500 evaluator's moved.
+Mutated:    the rule, stated before the run: each property the done condition names that one edit can break alone. A
+            change applied only on the operator's word, broken by the apply step taking every passing proposal as
+            approved whatever the setting reads: predicted red at the adopt setting's test. An approval on one index
+            changing no other, broken by the stored setting read whatever its index: predicted red at the S&P 400's night
+            test and the S&P 600's cards test. No engine writing the register, broken by the tester declaring an insert
+            into it: predicted red at component-access. The alarm's two periods running, broken by flagging at one:
+            predicted red at the rule's hand-worked test and at pinned-constants. A page whose every proposal failed
+            drawing every family's card, broken by the Loop page leaving out a family with no passing proposal: predicted
+            red at that page's test. Results: the first red at the adopt setting's test, the S&P 600's breakout proposal
+            ranked 2 applied with no decision under on approval, and at the S&P 600's apply test, the S&P 400's breakout
+            and the S&P 600's drift applied undecided; the second red at the S&P 400's night test, its pick's stop read
+            at 98.0458, three moves under its buy as the setting stored for the S&P 600 puts it, for its own 100.0229,
+            and at the S&P 600's cards test and its apply test, the S&P 600's breakout change read as another index's
+            setting; the third red at component-access three times, the write against SCHEMA's ownership and
+            the code, against the catalogue row and against the matrix row; the fourth red at the rule's test, January
+            and May flagged on one counted month, at the reader's test, July flagged, and at pinned-constants, section 17's
+            2 against the constant; the fifth red at the page's test, no pullback card drawn. Each made on this branch and
+            reverted before anything was committed, and the tests green. Not mutated: the presses' refusals, a decline
+            put again only over more blocks, a restore writing the setting before the change, the tester walking a rule
+            at its standing hooks and the card's record drawn as none, each held by its own test above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    the merge waits until the night of 2026-10-09, the first of 17.3 to 17.8, has been read; after it, from main,
+            migration 83 by the night's own first step and the apply step's and the alarm's rows read on its first
+            nights, the alarm's first two months read as they come (owes: The alarm's first two months). The operator's
+            ruling on the S&P 500's apply path, its reconciliation of the old loop's decisions and its 63 sessions as a
+            variant (owes: A replaced rule's 63 sessions as a variant).
+
+### 17.7 - the tester run on each index from main's build after the merges of 17.3 to 17.8, its scores written and read back on the Loop page   2026-10-09
+
+Ran:        from the clean copy of 5277a7fa the history build made, after the point-in-time checks, with no night, queue,
+            report pass, labeller or store copy running: `loop-test --index GSPC` from 15:51:33 to 15:52:05 UTC, the S&P
+            400 from 15:52:05 to 15:58:51 and the S&P 600 from 15:58:51 to 16:08:23. No provider request and no model
+            call.
+Results:    against the bar of 0.0042, none passed. The S&P 500's run `loop-test-GSPC-20261009T155133Z`, 28 proposals,
+            the breakout's 13, the drift's 13 and the heavyweights' 2, its smallest adjusted p 0.1067, the breakout's
+            learned score leaving its lowest fifth off. The S&P 400's `loop-test-MID-20261009T155205Z`, 45 proposals, the
+            pullback's 13, the breakout's 14, the drift's 14 and the heavyweights' 4, its smallest 0.1801, the
+            pullback's list ordered by its learned score. The S&P 600's `loop-test-SML-20261009T155851Z`, 45 proposals,
+            its smallest 0.1477, the drift's learned score leaving its lowest fifth off. Each run wrote six scores a
+            family it fits, one a fold and one on all finished data: the S&P 500's breakout and drift, and the S&P 400's
+            and 600's pullback, breakout and drift.
+Read back:  each index's Loop page from the read surface's Release build of main draws its newest run, its four
+            families' cards and its 28, 45 and 45 proposals, the learned score's three a family among them. The card's
+            score part is written by the night's own step, so the cards are read after the night of 2026-10-09.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    the cards' score part read back after the night of 2026-10-09.
+
+### 17.8 - the fundamentals-first search run on each index from main's build after the merges of 17.3 to 17.8, none of its 27 settings passing   2026-10-09
+
+Ran:        from the same clean copy after the tester's runs: `sweep-fundamentals --index GSPC` from 16:08:23 to 16:16:57
+            UTC, the S&P 400 from 16:16:57 to 16:22:42 and the S&P 600 from 16:22:42 to 16:30:44, each over the 27
+            settings written before any run and the pullback's base listings through 2026-10-08. It writes nothing. No
+            provider request and no model call.
+Results:    0 of 27 passed the family floors on every index, against about 3.6 that luck alone passes. The S&P 500 over
+            274 base listings: the most trades 54, growth above nothing with either margin and cash at 0.8, at -0.123
+            risks; the provisional setting 51 at -0.153, above nothing in 1 of 8 years. The S&P 400 over 1,703: the most
+            236 at the same setting, at +0.070; the provisional 220 at +0.034 in 5 of 8 years with 2 of the last 3. The
+            S&P 600 over 1,976: the most 233, at -0.062; the provisional 223 at -0.045 in 4 of 8 with none of the last 3.
+            No setting on any index reaches the floor of 300 trades over this history, and on the S&P 500 none could,
+            since its base listed 274.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    the report to the operator with no freeze: the family keeps listing on its provisional setting on every
+            index, and what follows a search no setting of which can reach the trade floor is the operator's to rule.
+
+### 17.3 - correction: the point-in-time check reads the history through the session the build read it through, and rebuilds a swing setup's own readings by its family's gates over the cut   2026-10-09
+
+Corrects:   17.3's point-in-time check, which could not pass on any index: it rebuilt the readings every setup carries
+            and left a swing setup's six own readings as none, and it read the history through its newest sampled setup
+            where the build read it through its own end. Discharges the correction the history build's record carried.
+Found:      by its first runs from main after the merges, recorded above: 478, 558 and 551 differences, 1,571 of them the
+            six readings as none and 16 in the sixth significant figure. The history reader prices the years the pull
+            holds before the store's at the median ratio of the two over the sessions both hold to the end it reads, so
+            the S&P 500's history read through its newest sampled setup, 2026-09-21, priced them a rounding apart from the
+            build's read through 2026-10-05.
+Built:      the check reads the history through the newest session the history build's rows reach on the index and names
+            it on its row; a swing setup's readings are rebuilt by its family's own gates over the cut, its own beside
+            every setup's, a setup those gates do not pass at its session named as one; a heavyweights' setup keeps the
+            readings every setup carries, which are all it has. Each run of the check and of the history build is named by
+            its index beside its instant, as the tester's are. The catalogue row, section 13.11, the runbook and the roster
+            say so, the prior text in the changelog.
+Checked:    the corrected check from this branch's build over the live store, reading it and writing its run log row
+            alone: on the S&P 500 from 16:55:49 to 17:08:18 UTC, 200 of 200 sampled setups rebuilt with every reading the
+            same, exit 0; on the S&P 400 from 17:08:40 to 17:28:30, the same. The S&P 600's, started in the same second as
+            the S&P 400's, named no difference and then failed writing its row on the run log's key, both runs named to
+            the second alone: the naming above corrects it.
+Tests:      2111, two more: a breakout's own readings rebuilt by its family's gates over the cut equal to those read off
+            the whole history, the readings every setup carries leaving them none, a range ratio a hundredth over named
+            and a family whose gates pass no setup of the stock reading none; and a member pulled at 100 and stored from
+            its 11th session at 200 and a point more a session, its pulled years priced at 204.5 read through the 20th
+            session and 209.5 through the 30th, worked by hand, the check reading the history through the 30th, where the
+            build's rows end, though its one sampled setup stands on the 16th, naming it on its line, and a check of the
+            S&P 400 started in the same second writing a row of its own.
+Claims:     no row moved: the setup ledger's catalogue row reworded.
+Pins:       none moved: the readings' own sources are unchanged.
+Mutated:    the rule, stated before each run: each property the correction adds, broken alone. A swing setup's own readings
+            rebuilt by its family's gates, broken by rebuilding every family's setup from the readings every setup
+            carries, as before: predicted red at the breakout's test. The history read through the build's end, broken by
+            the check reading through its newest sampled setup again: predicted red at the history's test. A run named by
+            its index, broken by naming the check's run to the second alone again: predicted red at the history's test's
+            second check. Results: the first red at the breakout's test, its volume multiple rebuilt as none; the second
+            red at the history's test, the check's line naming the history read through 2026-01-26, the sampled setup's
+            session, and not 2026-02-13, where the build's rows end; the third red there, the S&P 400's check failing on
+            the run log's key as the S&P 600's did over the live store. Each made on this branch and reverted before
+            anything was committed, and the tests green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 72262ad8, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1145 claims, 1145 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1156
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
+Carried:    after the merge, from main: `ledger-check` on each index, its row read.

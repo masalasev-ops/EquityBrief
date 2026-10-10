@@ -157,6 +157,12 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.MatrixTable, "Filings refresher"),
             CheckReach.Key(Scope.MatrixTable, "Rule recorder"),
 
+            // 17.9, the apply step and the live alarm.
+            CheckReach.Key(Scope.CatalogueTable, "Loop apply"),
+            CheckReach.Key(Scope.MatrixTable, "Loop apply"),
+            CheckReach.Key(Scope.CatalogueTable, "Live alarm reader"),
+            CheckReach.Key(Scope.MatrixTable, "Live alarm reader"),
+
             // 17.4, the walk-forward tester.
             CheckReach.Key(Scope.CatalogueTable, "Walk-forward tester"),
             CheckReach.Key(Scope.MatrixTable, "Walk-forward tester"),

@@ -129,6 +129,8 @@ public partial class FixtureExpectations
             .. ScoreClaims,
             // 17.8, the fundamentals-first family: section 17's two rows and section 18's one.
             .. FundamentalsClaims,
+            // 17.9, approval and the live alarm: section 17's two rows and section 18's two.
+            .. ApprovalClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

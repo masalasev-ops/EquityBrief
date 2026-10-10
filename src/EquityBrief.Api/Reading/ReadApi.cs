@@ -513,7 +513,8 @@ public sealed record DecisionCardRow(
     int? BookHoldings = null,
     string? Hits = null,
     int? ScoreRank = null,
-    string? Similar = null);
+    string? Similar = null,
+    string? Approved = null);
 
 // The operator's own record of one family on one index as the night's follower wrote it: the unit its results are read
 // in, the trades won at the target and lost at the stop where the rule sets a target, every trade ended, those open, and
@@ -805,6 +806,10 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopFinding, Touch.Read),
             new StoreTouch(Store.LoopReading, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
+            new StoreTouch(Store.LoopDecision, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.LoopApplied, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.LoopAlarm, Touch.Read),
             new StoreTouch(Store.SweepAnswer, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.EstimateReading, Touch.Read),
@@ -3322,7 +3327,7 @@ public sealed partial class ReadApi : IComponent
     // ---- the decision cards ----
     // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 
-    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar";
+    const string CardColumns = "index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record, sector, trail, cap, round_trip, book_holdings, hits, score_rank, similar, approved";
 
     const string DecisionCardsOn = "SELECT " + CardColumns + @" FROM decision_card
         WHERE index_code = $index AND session_date = $on
@@ -3390,7 +3395,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(16) ? null : reader.GetInt32(16),
                 reader.IsDBNull(17) ? null : reader.GetString(17),
                 reader.IsDBNull(18) ? null : reader.GetInt32(18),
-                reader.IsDBNull(19) ? null : reader.GetString(19)));
+                reader.IsDBNull(19) ? null : reader.GetString(19),
+                reader.IsDBNull(20) ? null : reader.GetString(20)));
         }
 
         return rows;
@@ -3415,6 +3421,12 @@ public sealed partial class ReadApi : IComponent
         INSERT INTO taken_trade (ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through)
         VALUES ($ticker, $taken_at, $index, $family, $night, $sector, $fill, $fill_date, $provisional, $entered, $stop, $target, $trail, $cap, NULL, NULL, NULL);
     ";
+
+    // The operator's word on a loop proposal or a restore, the Loop page's presses' one write.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    const string InsertDecision = @"
+        INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
+        VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";
 
     const string DeleteUnfollowed = @"
         DELETE FROM taken_trade

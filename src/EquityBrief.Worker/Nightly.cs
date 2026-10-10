@@ -101,7 +101,8 @@ public static class Nightly
         TryPlan? tries = null,
         Build? build = null,
         CardSettings? cards = null,
-        FormingSettings? forming = null)
+        FormingSettings? forming = null,
+        string? adopt = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -130,7 +131,8 @@ public static class Nightly
             tries,
             build: build,
             cards: cards,
-            forming: forming);
+            forming: forming,
+            adopt: adopt);
     }
 
     // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
@@ -153,7 +155,8 @@ public static class Nightly
         bool resume = false,
         Build? build = null,
         CardSettings? cards = null,
-        FormingSettings? forming = null)
+        FormingSettings? forming = null,
+        string? adopt = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -440,6 +443,24 @@ public static class Nightly
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token, hookReadings);
                 var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
+                // Each change the operator approved on the Loop page, and with the adopt setting reading automatic each
+                // proposal that passed and holds no decision, applied before the S&P 400's and 600's families read the
+                // night, so the family reads it from tonight on that index alone. A failure is named on the step's row,
+                // and the families read the settings as they stood.
+                // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+                string applied;
+
+                try
+                {
+                    var applying = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, adopt).RunAsync(runId, night.Token);
+
+                    applied = applying.Applications.Count == 0 ? "no approved change waiting" : $"{applying.Applied} approved change(s) applied and {applying.Refused} refused";
+                }
+                catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                {
+                    applied = "the approved changes not applied tonight, " + failed.Message;
+                }
+
                 // The S&P 400's and 600's provisional rules, read after the S&P 500's list is drawn so each index's list
                 // holds back a stock whose S&P 500 trade is still open. A failure in their part is caught and named on
                 // their own row, and the step goes on.
@@ -465,6 +486,23 @@ public static class Nightly
                 // see: The forming list advises and never lists a stock
                 var ruleCards = await new RuleCards(clock, store.DatabaseFile, forming).RunAsync(runId, register, nightStartedAt, night.Token);
 
+                // Each live rule's periods read against its reference once they have closed with every unit in them
+                // settled, a rule two counted periods running under its low flagged. A failure is named on the step's
+                // row, and the step goes on.
+                // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+                string alarmed;
+
+                try
+                {
+                    var alarm = await new EquityBrief.Worker.Loop.LiveAlarmReader(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+
+                    alarmed = $"{alarm.Written} alarm period(s) read, {alarm.Flagged} live rule(s) flagged";
+                }
+                catch (Exception failed) when (failed is Microsoft.Data.Sqlite.SqliteException or ArgumentException or InvalidOperationException)
+                {
+                    alarmed = "the live alarm not read tonight, " + failed.Message;
+                }
+
                 // Each trade the operator took followed to the night under its rule's own management, and their record. A
                 // failure is named on its own row, and the step goes on.
                 // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
@@ -478,13 +516,15 @@ public static class Nightly
                     $"; {kept.Kept} kept by the registered family rules" +
                     $"; {held.Held} held by the sector heavyweights" +
                     $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own" +
+                    $"; {applied}" +
                     $"; {string.Join(", ", indices.Nights.Select(one => one.Fault is null ? $"{one.Listed} on the {one.Index} list" : $"the {one.Index} list not computed tonight"))}" +
                     $"; {decisionCards.Cards} decision card(s)" +
                     (decisionCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", decisionCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} cards not computed tonight")) : string.Empty) +
                     $"; {ruleCards.Rules} rule row(s), {ruleCards.Picks} variant pick(s) and {ruleCards.Forming} forming" +
                     (ruleCards.Indices.Any(one => one.Fault is not null) ? ", " + string.Join(", ", ruleCards.Indices.Where(one => one.Fault is not null).Select(one => $"the {one.Index} rule rows not computed tonight")) : string.Empty) +
+                    $"; {alarmed}" +
                     (takenFollowed.Fault is null ? $"; {takenFollowed.Followed} taken trade(s) followed" : "; the taken trades not followed tonight");
-            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, IndexFamilies.Stage, DecisionCards.Stage, RuleCards.Stage, TakenFollower.Stage]),
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage, EquityBrief.Worker.Loop.LoopApply.Stage, IndexFamilies.Stage, DecisionCards.Stage, RuleCards.Stage, EquityBrief.Worker.Loop.LiveAlarmReader.Stage, TakenFollower.Stage]),
             // Section 14's step 16. The setup ledger, after the families have drawn every index's list, since it
             // stores the live rule's own pass and the night's pick beside each setup. It appends tonight's setups
             // on each index and closes the windows of the setups stored before that ended on tonight's close. A

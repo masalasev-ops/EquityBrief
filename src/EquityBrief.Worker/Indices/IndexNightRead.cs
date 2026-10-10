@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
@@ -152,6 +153,50 @@ public static class IndexNightRead
             BreakoutRule.Name => new(Breakouts(inputs, BreakoutAsFrozen, inputs.Sessions), inputs.Open, FailsOnProvisional),
             FundamentalsRule.Name => Fundamentals(inputs, FundamentalsRule.Provisional, readings),
             _ => new(Drifts(inputs, DriftAsFrozen, 0, null, inputs.Sessions), inputs.Open, FailsOnProvisional),
+        };
+    }
+
+    // Why a member the family's own rule lists is left off by the hooks an approval set.
+    public const string NotByItsHooks = "a condition or a score floor its approved setting adds";
+
+    // A swing family at the setting an approval stored for it on the index: the breakout's or the drift's setting on its
+    // sweep's grid where it states one, the drift's stop floor with it, and the pullback at its base; each member held to
+    // the provisional floors and gate, and the family's list kept and ordered by the setting's hooks over the night's
+    // readings, a member they leave off naming why, and every member left off on a night handed no readings where the
+    // hooks read them.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    public static IndexFamilyRead Stored(IndexNightInputs inputs, string family, LoopChange setting, Func<string, IReadOnlyList<double?>?>? readings)
+    {
+        string? FailsOnProvisional(int name) => FailsOn(inputs, name, 1m, MemberReadings.LowestPrice, IndexQuality.Profit);
+
+        int[]? places = setting.Places is { } held ? [.. held] : null;
+        IndexFamilyRead read = family switch
+        {
+            SetupFamilies.Pullback => new(Pullbacks(inputs, SweepIdeas.BaseRule, PullbackCap, inputs.Sessions), inputs.Open, FailsOnProvisional),
+            BreakoutRule.Name => new(Breakouts(inputs, places ?? BreakoutAsFrozen, inputs.Sessions), inputs.Open, FailsOnProvisional),
+            DriftRule.Name => new(Drifts(inputs, places ?? DriftAsFrozen, setting.StopFloor ?? 0, null, inputs.Sessions), inputs.Open, FailsOnProvisional),
+            _ => Provisional(inputs, family, readings),
+        };
+
+        return Hooked(inputs, read, RuleHooks.Of(setting.Hooks), readings);
+    }
+
+    // A family's read with its list kept and ordered by hooks: those the hooks keep first in their order, then those they
+    // leave off, each of which fails on them after the family's own floors.
+    public static IndexFamilyRead Hooked(IndexNightInputs inputs, IndexFamilyRead read, RuleHooks hooks, Func<string, IReadOnlyList<double?>?>? readings)
+    {
+        if (!hooks.ReadsReadings)
+        {
+            return read;
+        }
+
+        var kept = hooks.Order(read.Listed, one => readings?.Invoke(inputs.Series[one.Name].Name.Ticker));
+        var keeps = kept.Select(one => one.Name).ToHashSet();
+
+        return read with
+        {
+            Listed = [.. kept, .. read.Listed.Where(one => !keeps.Contains(one.Name))],
+            FailsOn = name => read.FailsOn(name) ?? (keeps.Contains(name) || read.Listed.All(one => one.Name != name) ? null : NotByItsHooks),
         };
     }
 

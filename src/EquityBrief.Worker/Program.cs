@@ -51,6 +51,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-check" => await LedgerCheckRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
+    "loop-apply" => await LoopApplyRun(),
     "sweep-fundamentals" => await SweepFundamentalsRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
@@ -65,7 +66,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 32 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 33 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -141,7 +142,8 @@ static int NoVerb()
         "not yet written, waiting for the night and holding the drain's lock while it writes, with '--again' writing " +
         "the span again, " +
         "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
-        "history cut at each one's session and names every reading that differs from the one stored, " +
+        "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
+        "family's gates, and names every reading that differs from the one stored, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
@@ -150,6 +152,9 @@ static int NoVerb()
         "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
         "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
         "'--print' printing each verdict and writing nothing, " +
+        "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
+        "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
+        "stands at from the next night and every other refused with why, " +
         "'sweep-fundamentals --index <GSPC, MID or SML>' searches the fundamentals-first family's 27 registered settings " +
         "over the pullback's listings on the index's history, each walked after its round trip, and prints each setting's " +
         "trades, edge and years against the family floors with what luck passes, writing nothing, " +
@@ -623,6 +628,27 @@ static async Task<int> LoopTestRun(string[] args)
 
     return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
         .RunAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
+}
+
+// The apply step by hand, as the night runs it before the S&P 400's and 600's families: every change the operator
+// approved on the Loop page that no apply has answered, applied or refused with why, under the configured adopt setting.
+// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+static async Task<int> LoopApplyRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var outcome = await new EquityBrief.Worker.Loop.LoopApply(clock, store.DatabaseFile, configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting])
+        .RunAsync(FormattableString.Invariant($"{EquityBrief.Worker.Loop.LoopApply.Verb}-by-hand-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    foreach (var one in outcome.Applications)
+    {
+        Console.Out.WriteLine($"{EquityBrief.Worker.Loop.LoopApply.Verb}: {one.Index} {one.Family}, {one.Proposal}, {(one.Applied ? "applied" : "refused")}: {one.Words}");
+    }
+
+    Console.Out.WriteLine(FormattableString.Invariant($"{EquityBrief.Worker.Loop.LoopApply.Verb}: {outcome.Applied} applied and {outcome.Refused} refused"));
+
+    return 0;
 }
 
 // The fundamentals-first family's search by hand on one index, its 27 settings registered before it ran, printed and
@@ -1331,7 +1357,8 @@ static async Task<int> NightlyRun(string[] args)
         resume: rest is not null,
         build: build,
         cards: EquityBrief.Core.Cards.CardSettings.From(key => configuration[key]),
-        forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]));
+        forming: EquityBrief.Core.Cards.FormingSettings.From(key => configuration[key]),
+        adopt: configuration[EquityBrief.Core.Loop.LoopDecisions.AdoptSetting]);
 }
 
 // A night refused before its first step, on stderr and on the run log.

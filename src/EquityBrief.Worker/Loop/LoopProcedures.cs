@@ -55,6 +55,14 @@ public sealed record LoopProposalRead(
 {
     // What an engine found that the proposal answers, in words; none for a search.
     public string? Finding { get; init; }
+
+    // The change in the form an approval applies it, none where the procedure chose no setting.
+    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    public LoopChange? Change { get; init; }
+
+    // The rule today's units over the test years as each entered and its edge, the live alarm's reference.
+    // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+    public IReadOnlyList<AlarmUnit>? Reference { get; init; }
 }
 
 // Part 0's procedures as the tester runs them inside each fold: the breakout's and the drift's grids on the S&P 400 and
@@ -111,15 +119,19 @@ public static class LoopProcedures
         return count > 0 ? sum / count : null;
     }
 
-    // The breakout's or the drift's grid on an index as a procedure.
-    public static LoopProposalRead Swing(LoopRead read, string family, Action<string> progress)
+    // The breakout's or the drift's grid on an index as a procedure, against the rule as it stands: its provisional
+    // setting, or the setting and stop floor an approval stored for it.
+    public static LoopProposalRead Swing(LoopRead read, string family, Action<string> progress, LoopChange? standing = null)
     {
         var drift = family == DriftRule.Name;
         var floor = drift ? DriftStopFloor : 0;
+        var currentFloor = standing?.StopFloor ?? 0;
         var lastTwo = drift && read.Index == IndexSweepRunner.DriftLastTwoYearsIndex;
         var adapter = FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, floor);
-        var currentAdapter = floor > 0 ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar) : adapter;
-        int[] provisional = family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
+        var currentAdapter = currentFloor == floor ? adapter
+            : currentFloor > 0 ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, currentFloor)
+            : FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar);
+        int[] provisional = standing?.Places is { } places ? [.. places] : family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
         var settings = adapter.Grid.Settings;
         var walked = new IReadOnlyList<Walked>[settings.Count];
 
@@ -155,20 +167,44 @@ public static class LoopProcedures
 
         static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<Walked> trades) => [.. trades.Select(one => (one.Entry, one.Edge))];
 
-        var floorWords = floor > 0 ? FormattableString.Invariant($", its stop held at least {floor:0.##} typical move under the buy") : string.Empty;
+        static string FloorWords(double held) => held > 0 ? FormattableString.Invariant($", its stop held at least {held:0.##} typical move under the buy") : string.Empty;
+
+        var floorWords = FloorWords(floor);
         var cap = walked.SelectMany(one => one).Concat(current).Select(one => one.Trade.Listing.Cap).DefaultIfEmpty(0).Max();
 
         return new LoopProposalRead(
             family,
             Grid,
             proposal is null ? null : RuleReplay.SwingWords(family, proposal) + floorWords,
-            RuleReplay.SwingWords(family, provisional),
+            RuleReplay.SwingWords(family, provisional) + FloorWords(currentFloor),
             Risks,
             cap,
             [.. chosen.Select(one => (one.Fold, one.Setting is null ? null : RuleReplay.SwingWords(family, one.Setting) + floorWords))],
             proposal is null ? 0 : chosen.Count(one => one.Setting is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),
-            Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : Units(walked[placeOf[adapter.Grid.Key(one.Setting)]]))], Units(current)));
+            Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : Units(walked[placeOf[adapter.Grid.Key(one.Setting)]]))], Units(current)))
+        {
+            Change = proposal is null ? null : LoopChange.OfSetting(proposal, adapter.Grid.Key(proposal), floor),
+            Reference = Reference(read, Units(current)),
+        };
     }
+
+    // The rule today's units that entered over the test years and hold an edge, as each entered: the live alarm's
+    // reference.
+    // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+    public static IReadOnlyList<AlarmUnit> Reference(LoopRead read, IReadOnlyList<(int Entry, double? Edge)> current) =>
+    [
+        .. current
+            .Where(one => one.Edge is not null && read.Folds.Any(fold => LoopFolds.Tests(fold, read.Calendar[one.Entry])))
+            .Select(one => new AlarmUnit(read.Calendar[one.Entry], one.Edge!.Value)),
+    ];
+
+    // A book's holdings that entered over the test years and hold an edge after their round trip, as each entered.
+    public static IReadOnlyList<AlarmUnit> Reference(LoopRead read, HeavyweightBook book) =>
+    [
+        .. book.Costed
+            .Where(trade => trade.Edge is not null && read.Folds.Any(fold => LoopFolds.Tests(fold, read.Calendar[trade.Entry])))
+            .Select(trade => new AlarmUnit(read.Calendar[trade.Entry], trade.Edge!.Value)),
+    ];
 
     // The setting a search chooses from what a fold learns on: the best edge among the settings meeting the floors in
     // proportion to its years, the S&P 400 drift's last two of them above nothing as well, ties to the fewest dials moved
@@ -349,7 +385,11 @@ public static class LoopProcedures
             BookMonths.LongestMonth,
             [.. chosen.Select(one => (one.Fold, one.Setting is null ? null : Words(one.Setting, designA)))],
             proposal is null ? 0 : chosen.Count(one => one.Setting?.Place == proposal.Place),
-            BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : books[one.Setting.Place - 1].Months)], current.Months));
+            BookEvidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : books[one.Setting.Place - 1].Months)], current.Months))
+        {
+            Change = proposal is null ? null : new LoopChange(null, proposal.Key, null, LoopChange.NoHooks),
+            Reference = Reference(read, current),
+        };
     }
 
     static string Words(HeavyweightSixSetting setting, bool designA) =>

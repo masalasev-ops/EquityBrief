@@ -821,6 +821,13 @@ app.MapGet("/screens/tonight/{night?}", async (
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = Cards.Universe(reading, await read.MembersByIndexAsync(dated), night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/");
 
+    // The live alarm's flag on each family of the index chosen, as its newest period stands, drawn on the newest night.
+    // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+    if (night is not { Length: > 0 })
+    {
+        notice += SinglePageApp.LoopAlarmNotice(reading, await read.LoopFlagsAsync(reading.Code));
+    }
+
     if (reading != Universes.Large)
     {
         var indexNight = await read.IndexNightAsync(reading.Code, dated);
@@ -1415,6 +1422,41 @@ app.MapPost(SinglePageApp.ExitPostRoute + "{ticker}/{takenAt}", async (string ti
     return Said(written.Written, written.Line);
 });
 
+// The Loop page's presses: approve or decline of a proposal of an index's newest run, a decline with its reason, and
+// approve of a restore of a family the live alarm flagged, each one row of the decisions table, applied by the worker.
+// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+app.MapPost(SinglePageApp.LoopDecidePostRoute + "{index}/{run}/{family}", async (string index, string run, string family, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was decided");
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+    var decision = form?["decision"].ToString();
+
+    if (form?["proposal"].ToString() is not { Length: > 0 } proposal || decision is not ("approve" or "decline"))
+    {
+        return Said(false, "Nothing was decided: the press named no proposal or no decision.");
+    }
+
+    var written = await read.DecideAsync(index, run, family, proposal, decision == "approve", form["reason"].ToString());
+
+    return Said(written.Written, written.Line);
+});
+
+app.MapPost(SinglePageApp.LoopRestorePostRoute + "{index}/{family}/{setting}", async (string index, string family, long setting, HttpRequest request, ReadApi read) =>
+{
+    if (!FromAPage(request))
+    {
+        return Refused("nothing was restored");
+    }
+
+    var written = await read.RestoreAsync(index, family, setting);
+
+    return Said(written.Written, written.Line);
+});
+
 // Whether a press came from a page of this tool, by the header every press carries.
 static bool FromAPage(HttpRequest request) =>
     string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal);
@@ -1667,8 +1709,12 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var spreads = run is null ? [] : await read.LoopReadingsAsync(run);
     var models = run is null ? [] : await read.LoopModelsAsync(run);
     var ranks = night is { } ranked ? await read.LoopRanksAsync(reading.Code, ranked) : [];
+    var decisions = await read.LoopDecisionsAsync(reading.Code);
+    var settings = await read.LoopSettingsAsync(reading.Code);
+    var alarms = await read.LoopAlarmsAsync(reading.Code);
+    var newest = await read.NewestLoopRunAsync(reading.Code);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks), "text/html; charset=utf-8");
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest)), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>

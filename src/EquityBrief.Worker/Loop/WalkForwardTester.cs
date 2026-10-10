@@ -55,6 +55,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopFinding, Touch.Insert),
             new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.LoopModel, Touch.Insert),
+            new StoreTouch(Store.LoopReference, Touch.Insert),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -78,8 +80,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     ";
 
     const string InsertProposal = @"
-        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding)
-        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed, $finding);
+        INSERT INTO loop_proposal (run_id, index_code, family, proposal, words, current_words, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, detectable, stable_folds, passed, finding, change)
+        VALUES ($run_id, $index_code, $family, $proposal, $words, $current_words, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $detectable, $stable_folds, $passed, $finding, $change);
+    ";
+
+    const string InsertReference = @"
+        INSERT INTO loop_reference (run_id, index_code, family, place, entered, edge)
+        VALUES ($run_id, $index_code, $family, $place, $entered, $edge);
     ";
 
     const string InsertFinding = @"
@@ -187,24 +194,40 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
+        // Each family is tested against the rule as it stands: on the S&P 400 or 600 at the setting an approval stored
+        // for it where one did, and at its provisional setting otherwise; on the S&P 500, whose approvals are refused, at
+        // its own. A family an approval set hooks on is not searched on its grid, whose walk reads no hook.
+        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        var standing = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StandingAsync(databaseFile, index, cancellation);
+
         if (!large)
         {
-            proposals.Add(LoopProcedures.Swing(read, BreakoutRule.Name, output.WriteLine));
-            proposals.Add(LoopProcedures.Swing(read, DriftRule.Name, output.WriteLine));
+            foreach (var family in new[] { BreakoutRule.Name, DriftRule.Name })
+            {
+                if (standing.TryGetValue(family, out var stood) && stood.Hooks.Count > 0)
+                {
+                    output.WriteLine($"{Verb}: the {family}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {stood.Words()} and the grid's walk reads no hook");
+
+                    continue;
+                }
+
+                proposals.Add(LoopProcedures.Swing(read, family, output.WriteLine, standing.GetValueOrDefault(family)));
+            }
+
             proposals.AddRange(LoopProcedures.Heavyweights(read, lay, output.WriteLine));
         }
 
+        var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
         var rules = new List<RuleWalk>();
 
         if (!large)
         {
-            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine));
+            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings));
         }
 
-        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large));
-        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large));
+        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings));
+        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings));
 
-        var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
         var scores = new List<FittedScore>();
 
         foreach (var rule in rules)
@@ -258,6 +281,15 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             : FormattableString.Invariant($"{Verb}: run {runId}, {tested.Count(one => one.Passed)} of {tested.Count} proposal(s) passed, for {runMonth}"));
 
         return 0;
+    }
+
+    // The setting an approval stored for each family of an S&P 400 or 600, the newest a family.
+    static async Task<IReadOnlyDictionary<string, LoopChange>> StandingAsync(string databaseFile, string index, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await EquityBrief.Worker.Indices.IndexFamilies.StoredSettingsAsync(connection, index, cancellation);
     }
 
     // A family's finished setups on all three indices as the learned score learns on them, none on a store whose ledger
@@ -401,6 +433,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                 ("$stable_folds", proposal.StableFolds),
                 ("$passed", verdict.Passes && proposal.Words is not null ? 1 : 0),
                 ("$finding", (object?)proposal.Finding ?? DBNull.Value),
+                ("$change", (object?)proposal.Change?.Json ?? DBNull.Value),
             ], cancellation);
 
             foreach (var (fold, chosen) in proposal.Folds)
@@ -420,6 +453,27 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                     ("$proposed_units", year.ProposedUnits),
                     ("$current_total", year.CurrentTotal),
                     ("$proposed_total", year.ProposedTotal),
+                ], cancellation);
+            }
+        }
+
+        // Each family's reference, the rule today's units over the test years, once a family: the first proposal of the
+        // family carrying one, every proposal of a family being tested against the same rule.
+        // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
+        foreach (var family in tested.Select(one => one.Proposal).Where(one => one.Reference is not null).GroupBy(one => one.Family, StringComparer.Ordinal))
+        {
+            var place = 0;
+
+            foreach (var unit in family.First().Reference!.OrderBy(one => one.Entered))
+            {
+                await ExecuteAsync(connection, transaction, InsertReference,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", family.Key),
+                    ("$place", ++place),
+                    ("$entered", unit.Entered.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                    ("$edge", unit.Edge),
                 ], cancellation);
             }
         }

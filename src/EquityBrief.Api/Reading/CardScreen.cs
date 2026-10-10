@@ -74,7 +74,8 @@ public static class CardScreen
                 ? new CardOperatorRecordView(kept.Unit, kept.Won, kept.Lost, kept.Ended, kept.Open, kept.Average, EquityBrief.Core.Cards.TakenWalk.RecordMinimum, heavyweights || EquityBrief.Core.Families.SetupFamilies.Named(row.Family) is { Trails: true },
                     new CardSameNightsView(kept.SameNights, kept.RuleListed, kept.RuleWon, kept.RuleLost, kept.RuleEnded, kept.RuleAverage))
                 : null,
-            row.Similar is { } similar ? new CardScoreView(row.ScoreRank, EquityBrief.Core.Cards.CardSimilar.Read(similar)) : null);
+            row.Similar is { } similar ? new CardScoreView(row.ScoreRank, EquityBrief.Core.Cards.CardSimilar.Read(similar)) : null,
+            row.Approved);
     }
 
     // What could hit the trade, as the night stored it on the card.
