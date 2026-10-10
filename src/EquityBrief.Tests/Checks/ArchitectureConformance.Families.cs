@@ -340,11 +340,12 @@ public partial class ArchitectureConformance
         // catalogue and matrix rows, their five stores, section 17's two rows, section 18's two, the Loop page's three
         // regions, Tonight's alarm line and the card's row for a rule standing at an approved change, 1149 from 17.10,
         // the monthly run's catalogue and matrix rows, section 17's row and section 18's, 1154 from the 3.1
-        // correction, the chart averages' night step, catalogue and matrix rows, store and the chart's part, and 1147
-        // from the 6.10 correction, which took out the overnight queue's catalogue and matrix rows, its step, section
-        // 17's row, section 18's row and part, and the run page's region.
+        // correction, the chart averages' night step, catalogue and matrix rows, store and the chart's part, 1147 from
+        // the 6.10 correction, which took out the overnight queue's catalogue and matrix rows, its step, section 17's
+        // row, section 18's row and part, and the run page's region, and 1148 from the 16.3 correction, section 17's
+        // row on the dividend's steps.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1147),
+            (789, 853, 6, 4, 855, 876, 1148),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

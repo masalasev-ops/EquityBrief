@@ -122,7 +122,7 @@ public sealed record DividendFiled(decimal? ForwardAnnualRate, decimal? ForwardY
 {
     // How many dividends the company paid in each year the answer files, oldest first, which a pick's card reads the
     // company's usual interval between ex-dates from.
-    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    // see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
     public IReadOnlyList<DividendsInYear> ByYear { get; init; } = [];
 
     // Two filings are the same where every value and every year's count are.

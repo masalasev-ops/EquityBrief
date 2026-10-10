@@ -1183,7 +1183,7 @@ public static class SchemaMigrations
     // the dividend part of each answer the quarters fetch stores, the forward rate, the last declared ex-date and each
     // year's count, which a pick's card estimates the next ex-date from where the calendar declares none.
     // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
-    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    // see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
     const string CreateTakenRecords = @"
         ALTER TABLE taken_trade ADD COLUMN ended_on TEXT;
         ALTER TABLE taken_trade ADD COLUMN end_price TEXT;

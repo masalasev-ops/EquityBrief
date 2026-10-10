@@ -63,6 +63,8 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.DividendReading, Touch.Read),
+            new StoreTouch(Store.Fundamentals, Touch.Read),
+            new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
@@ -559,9 +561,24 @@ public sealed class DecisionCards : IComponent
         WHERE ticker = $ticker AND fetched_at = (SELECT MAX(fetched_at) FROM dividend_reading WHERE ticker = $ticker);
     ";
 
+    // The newest fundamentals fetch's copy and its newest filing, whose dividend part stands in where the quarters fetch
+    // has kept none, the copy's read over the filing's as the facts file reads them.
+    const string DividendFetchedOf = @"
+        SELECT (SELECT payload FROM fundamentals_snapshot WHERE ticker = $ticker ORDER BY fetched_at DESC LIMIT 1),
+               (SELECT payload FROM fundamentals WHERE ticker = $ticker ORDER BY filing_date DESC LIMIT 1);
+    ";
+
+    // The stored closes to the night, adjusted and raw, whose ratio steps on each ex-dividend date.
+    const string ClosesOf = @"
+        SELECT session_date, close, raw_close FROM bar
+        WHERE ticker = $ticker AND session_date <= $night AND raw_close IS NOT NULL
+        ORDER BY session_date;
+    ";
+
     // What could hit the trade before it ends, from the stored reactions, the night's close and typical move, the
-    // calendar's declared ex-dates, the dividend the quarters fetch kept and the market events table.
-    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    // calendar's declared ex-dates, the dividend the quarters fetch kept or the newest fundamentals fetch filed, and the
+    // market events table.
+    // see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
     static async Task<CardHits> HitsAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, Plan plan, CancellationToken cancellation)
     {
         var moves = new List<double>();
@@ -600,6 +617,8 @@ public sealed class DecisionCards : IComponent
             }
         }
 
+        kept ??= await DividendFetchedAsync(connection, transaction, ticker, night, cancellation);
+
         decimal? close = null;
         double? typical = null;
 
@@ -614,6 +633,68 @@ public sealed class DecisionCards : IComponent
         }
 
         return CardHitsReading.Read(night, plan.Cap, CardHitsReading.Reactions(moves, close, typical, plan.Entry, plan.Stop), declared, kept, plan.Entry, plan.Stop, declaredSessions: CalendarFetcher.DividendSessions);
+    }
+
+    // The dividend the newest fundamentals fetch files, for a company whose dividend the quarters fetch has not kept: a
+    // rate of nothing as a company paying none, and a rate and its ex-date only where the bars' steps show how many it
+    // pays a year, since the part files no count. None otherwise, so a hold past the calendar's sessions stays unread.
+    static async Task<DividendKept?> DividendFetchedAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, CancellationToken cancellation)
+    {
+        var filed = false;
+        decimal? rate = null;
+        DateOnly? exDate = null;
+
+        await using (var command = Command(connection, transaction, DividendFetchedOf, [("$ticker", ticker)]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            if (await reader.ReadAsync(cancellation))
+            {
+                foreach (var column in new[] { 0, 1 })
+                {
+                    if (filed || reader.IsDBNull(column))
+                    {
+                        continue;
+                    }
+
+                    using var payload = JsonDocument.Parse(reader.GetString(column));
+
+                    if (payload.RootElement.TryGetProperty("dividend", out var part) && part.ValueKind == JsonValueKind.Object)
+                    {
+                        filed = true;
+                        rate = part.TryGetProperty("forwardAnnualRate", out var forward) && forward.ValueKind == JsonValueKind.String ? Money(forward.GetString()!) : null;
+                        exDate = part.TryGetProperty("exDividendDate", out var ex) && ex.ValueKind == JsonValueKind.String ? Date(ex.GetString()!) : null;
+                    }
+                }
+            }
+        }
+
+        if (rate is not { } paid)
+        {
+            return null;
+        }
+
+        if (paid <= 0m)
+        {
+            return new DividendKept(0m, null, []);
+        }
+
+        if (exDate is null)
+        {
+            return null;
+        }
+
+        var closes = new List<(DateOnly Session, decimal Close, decimal RawClose)>();
+
+        await using (var command = Command(connection, transaction, ClosesOf, [("$ticker", ticker), ("$night", Stamp(night))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                closes.Add((Date(reader.GetString(0)), Money(reader.GetString(1)), Money(reader.GetString(2))));
+            }
+        }
+
+        return CardHitsReading.PaymentsAYear(closes) is { } payments ? new DividendKept(paid, exDate, []) { PaymentsAYear = payments } : null;
     }
 
     // What could hit the trade as a card stores it.

@@ -42045,3 +42045,66 @@ Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and
             events table's 2027 rows; then 18.1 to 18.5.
 Carried:    the first night after this merges, read the morning after: no queue row, and the steps after the close
             starting after the filings refresh.
+
+### 16.3 - correction: a pick's card estimates its ex-dividend date from the newest fundamentals fetch where the quarters fetch kept no dividend, its interval read from the steps the dividends leave in the bars, and the market events table gains 2027's CPI releases and the FOMC decision of 2028-01-26   2026-10-10
+
+Corrects:   16.3's card read only the dividend the quarters fetch kept, which that fetch keeps from the night after a
+            company next reports and kept for none before migration 71, so CVX's card on 2026-10-07 said no dividend
+            of the company's was stored while its numbers section drew an ex-date of 2026-08-19 and a forward rate of
+            7.12 from the newest fundamentals fetch; and the market events table's CPI releases ended at 2026-12-10, so
+            every hold ending after it said a later release was not ruled out.
+Found:      by phase 18's plan of 2026-10-09, reading CVX's page and the store, and by 18.0's data check of
+            2026-10-10, reading the BLS's and the Fed's pages.
+Ruled:      by the operator on 2026-10-09 with phase 18's plan, as its corrections A3 and A9 and its ruling R4, and
+            on 2026-10-10, word for word: "please feel free to merge Prs at appropriate times. Do not wait for me.
+            Finish phase 18".
+Built:      where the calendar declares no date inside the hold and the quarters fetch has kept no dividend of the
+            company's, the card reads the dividend part of the newest fundamentals fetch, the newest copy's over the
+            newest filing's, and how many it pays a year from its stored bars: each rise in the ratio of the adjusted
+            close to the raw close from one session to the next of at least 0.0002 and under 0.20 is a step, and the
+            median of the days between two in turn is read as the nearest of a monthly, quarterly, half-yearly or
+            yearly interval by their ratio. A fetch filing a rate of nothing draws no date and nothing unread; one
+            filing no rate or no ex-date, or bars showing fewer than two steps, leave a later date unread as before.
+            The market events table gains 2027's twelve CPI releases as the BLS's schedule page listed them and the
+            FOMC decision of 2028-01-26, each row stating the day it was read. One decision superseded and one written
+            (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from
+            the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends
+            leave in the bars); sections 7, 15.18, 16 and 17 of the architecture, `SCHEMA.md`, the runbook, 16.3's
+            text in the build plan and two rows of the checks roster say so, the prior text in `CHANGELOG.md`.
+Measured:   read-only over the store on 2026-10-10, its newest session 2026-10-09. Against the kept counts of the
+            S&P 500's 357 payers whose kept dividend files one, the steps read 342 the same; 14 of the other 15 kept
+            1, 3, 5, 10 or 13 for a company whose steps run quarterly or monthly, and PWR's steps are too small to
+            read. The plan's rule, a floor of 0.0005 and a year over the median gap rounded, read 327, BAX, EME and
+            FIX as twice a year and a quarterly payer with gaps of 77 and 105 days as five times, so the floor and the
+            reading were set by this measure. 89 of the 90 members whose kept dividend files a rate of nothing show
+            no step. With the correction the newest fundamentals fetch estimates for 48 members of the S&P 500, 1 of
+            the S&P 400 and 2 of the S&P 600 and reads 12 of the S&P 500 and 5 of the S&P 600 as paying none; 2, 398
+            and 590 hold no fundamentals fetch and wait for the quarters fetch, and 441, 1 and 5 hold a kept dividend.
+Tests:      2114, three more: the steps' reading worked by hand; the card's estimate read back off Tonight over the
+            fetch's copy, its filing alone, a copy paying none over a filing paying and bars showing no interval; and
+            the card of a night of 2027-09-24, whose hold ends 2027-12-23, naming the CPI table's end and not the
+            FOMC table's, read back off Tonight. The events table's test holds 2027's twelve dates typed from the
+            BLS's page and each row's read day, and the hold that ran past the CPI table from 2026 runs past neither.
+Claims:     1148, one more: section 17's dividend step, named as added after phase 17's report.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the plan's mutation for A3, the count off by one. The payments a year
+            the steps give read one more where the card takes its count: predicted red at the card's estimate read
+            back off Tonight and at the steps' test's estimate, and green at every test of the kept count. Result: the
+            two red, the estimate reading 2026-10-22 and 0.216 a share, and the seven others green, as predicted, made
+            on this branch and reverted before anything was committed. The table's 2027 rows were not mutated; the
+            test typing them from the page fails on any row moved.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f5dfae27, the
+            commit after the entry's, the second reading the first's suite result. A first run over fc091883, the
+            entry's commit, stopped at the suite: nightly-run's check that no source names a night's step by a number
+            read the steps' test saying "steps 182" and "steps 91", which f5dfae27 words otherwise.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2114 of 2114 tests ran with none failed, migrations 0 to
+            84 with none pending, schema version 84, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1148 claims, 1148 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1159
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2114 of 2114 tests ran.
+Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418;
+            gated and merging once phase 17's monthly run by hand has finished, the 6.4 correction, 18.0 and the 3.1
+            and 6.10 corrections as PRs 419 to 422; in progress, this correction, which changes the night and merges
+            before a weeknight's night, at most one such correction a night; next, 18.1 to 18.5.
+Carried:    the first night after this merges, read the morning after: each card whose company holds no kept
+            dividend estimated from its newest fundamentals fetch where its bars show the interval.

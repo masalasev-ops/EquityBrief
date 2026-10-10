@@ -146,7 +146,7 @@ public sealed class QuarterFetcher : IComponent
     ";
 
     // The dividend part of the same answer, kept where the answer files one.
-    // see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+    // see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
     const string InsertDividend = @"
         INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year)
         VALUES ($ticker, $fetched_at, $forward_rate, $last_ex_date, $by_year)

@@ -3527,6 +3527,10 @@ internal static class Scope
             Verdict.Pass,
             "the hold's end worked by hand at three, twenty-one and sixty-three sessions, and a hold with no cap read at twenty-one; the figure read off the document against the constant",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Dividend step")] = new Scoped(
+            Verdict.Pass,
+            "a rise of 0.00020004 read as a step and one of 0.00019004 not, a rise of exactly a fifth no step and one of 0.199 a step, gaps of 77, 105 and 77 days read as four a year and a median of 28 as twelve, worked by hand; the figures read off the document against the constants",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The dividend calendar refuses, or answers in a form that cannot be read")] = new Scoped(
             Verdict.Pass,
             "a refusing calendar stores nothing, removes none of the window's dates and is named on the calendar's row with the earnings stored, and an answer with no rows cannot be read",
@@ -3537,7 +3541,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "A hold running past the market events table's last date")] = new Scoped(
             Verdict.Pass,
-            "a hold through 2027-01-05 names the CPI table's end and not the FOMC table's, worked by hand, and the card draws the line, read back off Tonight",
+            "a hold through 2028-01-05 names the CPI table's end of 2027-12-10 and not the FOMC table's of 2028-01-26, worked by hand, and the card of a night of 2027-09-24 draws the line, read back off Tonight",
             ByExpectations),
         [CheckReach.Key(StoresTable, "Taken records")] = new Scoped(
             Verdict.Pass,
@@ -6402,6 +6406,7 @@ internal static class Scope
         ["Dividend calendar sessions"] = "16.3",
         ["Operator's record minimum"] = "16.3",
         ["Card hold with no cap"] = "16.3",
+        ["Dividend step"] = "16.3",
         // The heavyweights' sweep, 14.5.
         ["Heavyweights' sweep grid"] = "14.5",
         // Four of the five searches' rows and the pulls' provider stop, 17.1; the heavyweights' six settings a design

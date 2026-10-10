@@ -56,8 +56,8 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document gains after phase 17's report, named beside the pair and never counted in it: the 3.1
-    // correction's chart averages.
-    internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows];
+    // correction's chart averages and the 16.3 correction's dividend step.
+    internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims];
 
     // The rows the document loses after phase 17's report, each counted by the report of the phase that added it: the
     // 6.10 correction's overnight queue, its catalogue and matrix rows, its step, section 17's row, section 18's row for
@@ -78,7 +78,7 @@ public partial class ArchitectureConformance
     public void EachRowTheQueuesRetirementTookOutIsNoClaimAndEveryOtherClaimStands()
     {
         // Each taken out row is in no claim's key, the step by the words it opened on, and the claims now are the
-        // report's after phase 17 with the chart averages' rows added and these taken out.
+        // report's after phase 17 with the chart averages' rows and the dividend step added and these taken out.
         var keys = Report().Claims.Select(claim => CheckReach.Key(claim.Table, claim.Subject)).ToArray();
 
         Assert.All(TakenOutAfterPhaseSeventeen, taken => Assert.DoesNotContain(keys, key => key == taken || key.StartsWith(taken + " ", StringComparison.Ordinal)));

@@ -658,6 +658,9 @@ public class PinnedConstants
             new("Dividend calendar sessions", "21", Worker.Calendar.CalendarFetcher.DividendSessions, "CalendarFetcher.DividendSessions"),
             new("Operator's record minimum", "20", Core.Cards.TakenWalk.RecordMinimum, "TakenWalk.RecordMinimum"),
             new("Card hold with no cap", "21", Core.Cards.CardHitsReading.UncappedSessions, "CardHitsReading.UncappedSessions"),
+            // The dividend's steps a card reads its interval from where none is kept, the 16.3 correction of 2026-10-10.
+            new("Dividend step", "0.0002", Core.Cards.CardHitsReading.SmallestStep, "CardHitsReading.SmallestStep"),
+            new("Dividend step", "0.20", Core.Cards.CardHitsReading.LargestStep, "CardHitsReading.LargestStep"),
         ];
     }
 

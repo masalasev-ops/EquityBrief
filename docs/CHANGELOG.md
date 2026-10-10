@@ -25,6 +25,68 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - RUNBOOK.md - the market events table holds 2027's CPI releases and the FOMC decision of 2028-01-26, each row with the day it was read
+Authorised by: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider
+Was:
+> carried in the build, each kind naming the page it was read from and the day it was read (see: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider). It holds 2026's and 2027's FOMC decisions and 2026's CPI releases; a hold running past a kind's last date says so on the card. When the BLS publishes a year's CPI release dates, or the Fed a year's meetings, add them to the table by hand from the page it names, through a pull request like any other change, since a night reads the table its commit carries.
+Now:
+> carried in the build, each kind naming the page it was read from and each row the day it was read (see: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider). It holds 2026's and 2027's FOMC decisions with the one of 2028-01-26, read on 2026-10-10, and 2026's and 2027's CPI releases, 2027's read on 2026-10-10; a hold running past a kind's last date says so on the card. When the BLS publishes a year's CPI release dates, or the Fed a year's meetings, add them to the table by hand from the page it names, each row with the day it was read, through a pull request like any other change, since a night reads the table its commit carries.
+Why: phase 18's data check read the BLS's schedule listing 2027's twelve releases and the Fed's calendar adding a meeting on 2028-01-25 and 26, and the rows added then were read on another day than the rows before them.
+
+### 2026-10-10 - ARCHITECTURE.html - the card's ex-dividend estimate reads the newest fundamentals fetch where no dividend is kept, in sections 7, 15.18, 16 and 17
+Authorised by: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
+Was:
+> membership, bar store, calendar, companies, reported quarters, gate results, family results, family picks, heavyweight holdings, member readings, index family nights, index family results, index family picks, index heavyweight holdings, rule records, earnings reactions, indicators, dividend readings, market series, filed facts, setups, setup nights, loop runs, loop proposals, loop models
+
+> and what could hit the trade before its hold ends, the stock's stored reactions, the next ex-dividend date and the market events inside the hold; a night run again replaces its own cards
+
+> The next ex-dividend date inside the hold, declared where the night's ask of the provider's dividend calendar found one and otherwise estimated from the company's last declared date and its usual interval, with the payment a share in the plan's risk (see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not). Where the calendar declares none and the store keeps none of the company's dividend yet, which the quarters fetch keeps from the night after the company next reports, a hold running past the sessions the calendar is asked for says a later date is not ruled out, rather than that there is none.
+
+> <td>forever, each fetch's as it answered (see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not)</td>
+Now:
+> membership, bar store, calendar, companies, reported quarters, gate results, family results, family picks, heavyweight holdings, member readings, index family nights, index family results, index family picks, index heavyweight holdings, rule records, earnings reactions, indicators, dividend readings, fundamentals, fundamentals snapshots, market series, filed facts, setups, setup nights, loop runs, loop proposals, loop models
+
+> and what could hit the trade before its hold ends, the stock's stored reactions, the next ex-dividend date, estimated where the calendar declares none from the dividend the quarters fetch kept or else from the newest fundamentals fetch's with its interval read from the bars' steps, and the market events inside the hold; a night run again replaces its own cards
+
+> The next ex-dividend date inside the hold, declared where the night's ask of the provider's dividend calendar found one and otherwise estimated from the company's last declared date and its usual interval, with the payment a share in the plan's risk: the dividend the quarters fetch kept, its interval a year over the count of its last whole year that paid, or where it has kept none the dividend part of the newest fundamentals fetch, its interval read from the steps the company's dividends leave in the ratio of its stored bars' adjusted and raw closes (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars). Where the calendar declares none and the store holds no dividend of the company's to estimate from, the quarters fetch keeping one from the night after the company next reports and a fundamentals fetch standing in only where the bars show its interval, a hold running past the sessions the calendar is asked for says a later date is not ruled out, rather than that there is none; a fetch filing a rate of nothing is a company paying none, and its card says no date falls inside the hold.
+
+> <td>forever, each fetch's as it answered (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars)</td>
+
+> section 17 gains the row "Dividend step", its floor 0.0002 and its ceiling 0.20
+Why: the card read only the dividend the quarters fetch kept, so CVX's card on 2026-10-07 said none was stored while its numbers drew the fetch's ex-date and rate; the card now reads the newest fundamentals fetch where none is kept, with the interval its bars' steps show.
+
+### 2026-10-10 - SCHEMA.md and RUNBOOK.md - the decision cards read the raw close and the newest fundamentals fetch's dividend, and the runbook says when a card estimates from it
+Authorised by: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
+Was:
+> The arithmetic that draws or computes reads the adjusted set, and one reader reads this column: the forward return filler, for the listing session's factor a stored plan is scaled by, because a plan keeps the scale the series had on its night and a later restatement moves the series and not the plan (see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor).
+
+> **The quarters fetch keeps the dividend part of the answer it already asks for, at no further request** (see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not). No row is deleted or updated.
+
+> The facts assembler reads the newest copy over the newest filing's own parts, and the read surface does the same for the newest copy fetched on or before the night a page is about, so an earlier night's page draws what the store held that night (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day).
+
+> Where it declares none inside a hold, the card estimates the next date from the dividend part the quarters fetch keeps in `dividend_reading`. A calendar that refuses is named on the calendar's row and stores nothing.
+Now:
+> The arithmetic that draws or computes reads the adjusted set, and two readers read this column: the forward return filler, for the listing session's factor a stored plan is scaled by, because a plan keeps the scale the series had on its night and a later restatement moves the series and not the plan (see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor); and the decision cards, for the steps the factor takes on each ex-dividend date, from which a card reads how many dividends a year a company pays where the quarters fetch has kept none of its dividend (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars).
+
+> **The quarters fetch keeps the dividend part of the answer it already asks for, at no further request** (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars). No row is deleted or updated.
+
+> The same sentence, followed by: The decision cards read the newest copy's dividend over the newest filing's for a company whose dividend the quarters fetch has not kept (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars).
+
+> Where it declares none inside a hold, the card estimates the next date from the dividend part the quarters fetch keeps in `dividend_reading`, or where none is kept from the newest fundamentals fetch's ex-date and forward rate, reading how many dividends a year from the steps they leave in the ratio of the stored bars' `close` to their `raw_close` (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars). A card saying a later date is not ruled out is one whose company neither source can estimate from yet. A calendar that refuses is named on the calendar's row and stores nothing.
+Why: the cards now read the raw close and the fundamentals fetch's dividend, so the schema names them among each column's and table's readers and the runbook says which card still reads unread.
+
+### 2026-10-10 - .claude/rules/checks.md - fixture-expectations and read-surface say what they assert of the card's ex-dividend estimate from the newest fundamentals fetch and of the market events table's 2027 rows
+Authorised by: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
+Was:
+> and the replay keeps each fixture name's dividend part as its captured answer files it; and from 17.2 a card's stretch mark
+
+> and Past picks draws the operator's trades on the chosen index, open ones first with their exit press, and says so where the index holds none; and from 17.2
+Now:
+> and the replay keeps each fixture name's dividend part as its captured answer files it; and from the 16.3 correction of 2026-10-10 the payments a year a dividend's steps give are worked by hand, gaps of 77, 105 and 77 days reading four and a median of 28 days twelve, a rise of 0.00020004 a step and one of 0.00019004 not, a rise of exactly a fifth no step and one of 0.199 a step, and fewer than two steps none, with a year's count kept read before them, and the market events table holds 2027's twelve CPI releases as the BLS's schedule page listed them and the FOMC decision of 2028-01-26, each row stating the day it was read; and from 17.2 a card's stretch mark
+
+> and Past picks draws the operator's trades on the chosen index, open ones first with their exit press, and says so where the index holds none; and from the 16.3 correction of 2026-10-10 a card whose company the quarters fetch has kept no dividend of draws the date estimated from the newest fundamentals fetch's copy, or its filing where no copy is stored, at the payments a year its bars' steps show, a copy paying none read over a filing paying drawing no date and nothing unread, and a fetch whose bars show no interval leaving a later date unread; and from 17.2
+Why: the two checks assert the estimate's new source and its step reading, and each row says what its check asserts.
+
 ### 2026-10-10 - CLAUDE.md - the key under each figure and the overnight queue leave the hard rules and the layout
 Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
 Was:
