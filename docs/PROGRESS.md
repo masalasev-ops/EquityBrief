@@ -42031,7 +42031,13 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             the run page's region, the queue row an earlier night wrote, the night's step order and the two staleness
             tests. Result: the one red and the five green, as predicted, made on this branch and reverted before
             anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 6de74c1f, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2111 of 2111 tests ran with none failed, migrations 0 to
+            84 with none pending, schema version 84, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1147 claims, 1147 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1158
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2111 of 2111 tests ran.
 Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418;
             gated and merging once phase 17's monthly run by hand has finished, the 6.4 correction, 18.0 and the 3.1
             correction as PRs 419 to 421; in progress, this correction, which changes the night and merges before a
