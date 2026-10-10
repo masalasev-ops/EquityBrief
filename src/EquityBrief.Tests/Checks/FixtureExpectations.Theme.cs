@@ -578,7 +578,7 @@ public partial class FixtureExpectations
         // which the recorded model answered with nothing twice, the cycle is omitted with the one
         // line saying the theme could not be refreshed, and the theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(6, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
             [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", CauseNotWritten()],
@@ -870,13 +870,21 @@ public partial class FixtureExpectations
             {"results":[{"url":"https://www.spglobal.com/instruments","title":"Instruments","content":"A snippet.","raw_content":"Orders for test and measurement instruments kept rising as laboratories and factories spent on new equipment.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
             """);
 
-        // The cycle in words, and the key under each figure, which is the one section written
-        // from the facts file alone and so the one a name with no document still has written.
+        // Every section of the name but what the company sells accepted already on the pass's day, so the
+        // pass writes that one from the company's own filing beside the cycle.
+        foreach (var section in ClaimRules.Sections.Where(section => section != Evidence.Sells && section != ClaimRules.CycleSection))
+        {
+            store.Execute(
+                "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) " +
+                $"VALUES ('KEYS', '{section}', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
+        }
+
+        // The cycle in words, and what the company sells resting on its filing.
         var model = new ScriptedModel(
             "Orders for test and measurement instruments kept rising across the industry [D1].",
-            "Each line on the chart is drawn from the name's own stored sessions.");
+            "Keysight sells electronic design and test instruments, software and services [D1].");
 
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: [], paid: model, localModel: new NothingAnsweringLocal(), archive: new NoRelease(), news: new NoArticles(), search: new RecordedSearchFeed(folder.Path)).RunAsync("KEYS", "research-theme-checked");
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: [], paid: model, localModel: new NothingAnsweringLocal(), news: new NoArticles(), search: new RecordedSearchFeed(folder.Path)).RunAsync("KEYS", "research-theme-checked");
 
         // A theme refreshed inside a name's pass runs its check under the name's run, and the
         // name's own check after it is a row of its own rather than a second row under one
@@ -887,8 +895,8 @@ public partial class FixtureExpectations
             [$"1|{ClaimChecker.Accepted}"],
             Query(store, "SELECT version, status FROM theme_section;"));
         Assert.Equal(
-            [$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"],
-            Query(store, "SELECT section, status FROM research_section WHERE ticker = 'KEYS';"));
+            [$"{Evidence.Sells}|{ClaimChecker.Accepted}"],
+            Query(store, "SELECT section, status FROM research_section WHERE ticker = 'KEYS' AND model <> 'a writer';"));
 
         var stages = Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-theme-checked';");
 

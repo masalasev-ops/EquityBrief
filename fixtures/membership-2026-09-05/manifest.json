@@ -568,39 +568,11 @@
       "trimmedTo": "nothing. The response's Date header and its whole body as they arrived, wrapped as the feed's recordings of this interface are: one text block, stop reason end_turn, 66 input tokens and 33 output tokens with no thinking, priced at 0.000462 dollars by claude-sonnet's configured rates."
     },
     {
-      "file": "model-section-e75ab93878df1448f005522d80ba3a39.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed e75ab93878df1448f005522d80ba3a39, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:27:42Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1877 prompt tokens and 282 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-9ab259351f6be8f1289f1b7aaa10935e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 9ab259351f6be8f1289f1b7aaa10935e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:27:47Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1878 prompt tokens and 278 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-f63b68b7e91d713928257ce440bb78eb.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed f63b68b7e91d713928257ce440bb78eb, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:27:51Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1877 prompt tokens and 229 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-249853d5e0e18e6ba4dcae92c011eb28.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The two cases on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 0 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed 249853d5e0e18e6ba4dcae92c011eb28",
       "fetchedAt": "2026-09-30T10:27:54Z",
       "trimmedTo": "nothing. The whole response to one paid call, 354 uncached and 0 cached prompt tokens and 47 completion tokens, 37 of them reasoning, created at 2026-09-30T10:27:55Z, off-peak, and priced at 0.0000813 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-8543b4c1aefbd515d272c5fd00bd0a6f.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 8543b4c1aefbd515d272c5fd00bd0a6f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:27:56Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1847 prompt tokens and 245 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "research-call-cc5b7c78e025ffb3d70acf60ddee515f.json",
@@ -624,13 +596,6 @@
       "trimmedTo": "nothing. The whole response to one section call, 12028 prompt tokens and 96 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-346e910ca9cb68f343c2944a4555dd6e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 346e910ca9cb68f343c2944a4555dd6e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:28:13Z",
-      "trimmedTo": "nothing. The whole response to one section call, 5494 prompt tokens and 216 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-520c9326b0f144e4e9de792b411ef9cb.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The cause of each large move on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 2 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed 520c9326b0f144e4e9de792b411ef9cb",
@@ -652,25 +617,11 @@
       "trimmedTo": "nothing. The whole response to one paid call, 16738 uncached and 256 cached prompt tokens and 11573 completion tokens, 10807 of them reasoning, created at 2026-09-30T10:28:28Z, off-peak, and priced at 0.009455268 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-14cda07e9d0dd99bd67dbea1d55d0485.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 14cda07e9d0dd99bd67dbea1d55d0485, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:29:21Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2045 prompt tokens and 267 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-c54b50e1ca1cd2422bb1bbedd6120465.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The risks, each with what would confirm it on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 7 document(s), the instructions of 2026-09-30 opening on the answer's form, the answer asked for as the risks' fields in the format's JSON mode, max_tokens 32768, keyed c54b50e1ca1cd2422bb1bbedd6120465",
       "fetchedAt": "2026-09-30T10:29:24Z",
       "trimmedTo": "nothing. The whole response to one paid call, 17342 uncached and 0 cached prompt tokens and 6570 completion tokens, 6115 of them reasoning, created at 2026-09-30T10:29:25Z, off-peak, and priced at 0.0065433 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-474cc3661051144b7590a0f6a477c3c1.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 474cc3661051144b7590a0f6a477c3c1, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:29:57Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2050 prompt tokens and 191 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "model-section-2a30cdf1ad6ae4be69df9214f3502e03.json",
@@ -687,13 +638,6 @@
       "trimmedTo": "nothing. The whole response to one section call, 12111 prompt tokens and 60 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-451a16a621208a7b44679e4a6a73d3fa.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 451a16a621208a7b44679e4a6a73d3fa, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:30:05Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2017 prompt tokens and 254 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-fef0d1051c9414a86a833bb6183835eb.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The short version on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 7 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed fef0d1051c9414a86a833bb6183835eb",
@@ -706,13 +650,6 @@
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document(s): the request SectionPrompt builds under the instructions of the 6.4 correction of 2026-10-09, which teach [N], keyed bbb6f9a38f075a98c954572019f07531, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T01:36:57Z",
       "trimmedTo": "nothing. The whole response to one section call, 11940 prompt tokens and 110 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-55965bb7843b6543f178a3bda888e8fb.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 55965bb7843b6543f178a3bda888e8fb, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:30:42Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2046 prompt tokens and 250 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "research-call-7222e0a0558444417eec0a0c9c6826b6.json",
@@ -729,13 +666,6 @@
       "trimmedTo": "nothing. The whole response to one section call, 12023 prompt tokens and 96 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-dff332bc6ab64fd08dab43eca827cad1.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed dff332bc6ab64fd08dab43eca827cad1, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:31:19Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1639 prompt tokens and 173 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-4af28be3348b6f562cc791908337f46a.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The industry cycle on the Semiconductors industry, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 6 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed 4af28be3348b6f562cc791908337f46a",
@@ -748,13 +678,6 @@
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its retry, told each thing its first draft was refused for, handed 1 document(s): the request SectionPrompt builds under the instructions of the 6.4 correction of 2026-10-09, which teach [N], keyed 9134516ad195215016e8957100196461, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-10-10T01:37:04Z",
       "trimmedTo": "nothing. The whole response to one section call, 12340 prompt tokens and 60 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-8c0248ffd384145b42235e2eea18e59e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 8c0248ffd384145b42235e2eea18e59e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:31:34Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2043 prompt tokens and 287 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "research-call-e0fb9af4829fb004dc46f17af7668f32.json",
@@ -771,39 +694,11 @@
       "trimmedTo": "nothing. The whole response to one section call, 12156 prompt tokens and 85 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-90f0cc1a55bc28bf0e32f4ccd4832fef.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 90f0cc1a55bc28bf0e32f4ccd4832fef, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:31:43Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2049 prompt tokens and 217 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-264fe5abbef4b8ff5b23205698d17e4e.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 264fe5abbef4b8ff5b23205698d17e4e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:31:46Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2017 prompt tokens and 208 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-bb1c42f740441951dd533afed73ac2ba.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed bb1c42f740441951dd533afed73ac2ba, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:32:16Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1879 prompt tokens and 269 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-262b7adc7c9f6ee96443f94ad2d61d2b.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for What the company sells on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 1 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed 262b7adc7c9f6ee96443f94ad2d61d2b",
       "fetchedAt": "2026-09-30T10:32:20Z",
       "trimmedTo": "nothing. The whole response to one paid call, 9827 uncached and 256 cached prompt tokens and 976 completion tokens, 805 of them reasoning, created at 2026-09-30T10:32:20Z, off-peak, and priced at 0.002060418 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-c57194a15e22243a6875508e1b13496c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed c57194a15e22243a6875508e1b13496c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:32:26Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1879 prompt tokens and 255 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "research-call-e9effc8c4c57de21f548e90a539c9bd5.json",
@@ -813,32 +708,11 @@
       "trimmedTo": "nothing. The whole response to one paid call, 9910 uncached and 256 cached prompt tokens and 1382 completion tokens, 1253 of them reasoning, created at 2026-09-30T10:32:29Z, off-peak, and priced at 0.002316468 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-3f3aae3e089bf2cee005bf80147d6782.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 3f3aae3e089bf2cee005bf80147d6782, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:32:36Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1875 prompt tokens and 261 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-e7370c9176e1086e6da70835cd49a6f4.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The segment commentary on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its retry, told each thing its first draft was refused for, 1 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed e7370c9176e1086e6da70835cd49a6f4",
       "fetchedAt": "2026-09-30T10:32:39Z",
       "trimmedTo": "nothing. The whole response to one paid call, 313 uncached and 10112 cached prompt tokens and 711 completion tokens, 594 of them reasoning, created at 2026-09-30T10:32:40Z, off-peak, and priced at 0.000503886 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "research-call-e2ffe173766d4bf714e27cfc9391339a.json",
-      "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The key under each figure on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its first draft, 0 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed e2ffe173766d4bf714e27cfc9391339a",
-      "fetchedAt": "2026-09-30T10:32:43Z",
-      "trimmedTo": "nothing. The whole response to one paid call, 4546 uncached and 256 cached prompt tokens and 753 completion tokens, 476 of them reasoning, created at 2026-09-30T10:32:44Z, off-peak, and priced at 0.001134468 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-e5c38e38bbf5553ba2a93b39fa67de6c.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed e5c38e38bbf5553ba2a93b39fa67de6c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:32:47Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2046 prompt tokens and 226 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "research-call-ae8b90a6026f09da7263b7c79852a956.json",
@@ -848,25 +722,11 @@
       "trimmedTo": "nothing. The whole response to one paid call, 2046 uncached and 16512 cached prompt tokens and 8069 completion tokens, 7381 of them reasoning, created at 2026-09-30T10:32:51Z, off-peak, and priced at 0.005197836 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-782627b48fc28aed73058989928652f4.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed 782627b48fc28aed73058989928652f4, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:33:25Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2044 prompt tokens and 227 completion tokens, named for the request's key so a replay asking the same request reads it."
-    },
-    {
       "file": "research-call-a456cc2ebae1404fae47d2d1bd780b53.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
       "query": "POST chat/completions for The short version on KEYS, the paid lane's call as the research feed builds it from the fixture's deepseek profile with the provider's default, which is thinking: model deepseek-flash, its retry, told each thing its first draft was refused for, 7 document(s), the instructions of 2026-09-30, max_tokens 32768, keyed a456cc2ebae1404fae47d2d1bd780b53",
       "fetchedAt": "2026-09-30T10:33:28Z",
       "trimmedTo": "nothing. The whole response to one paid call, 2255 uncached and 16640 cached prompt tokens and 7454 completion tokens, 6560 of them reasoning, created at 2026-09-30T10:33:28Z, off-peak, and priced at 0.00486057 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "model-section-bee59d1f81023bcaa7be2451ca1f4298.json",
-      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed bee59d1f81023bcaa7be2451ca1f4298, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-30T10:34:00Z",
-      "trimmedTo": "nothing. The whole response to one section call, 2049 prompt tokens and 244 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
       "file": "model-section-0c358e9de7a91418b8baa4c3a8e19b51.json",

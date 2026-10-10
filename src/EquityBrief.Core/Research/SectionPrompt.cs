@@ -134,12 +134,6 @@ public static class SectionPrompt
             "Name the business segments whose figures moved most or changed direction, at most four, one sentence each, saying what each reported for the quarter "
             + "and what the documents listed give as the cause. Never go through every segment, because the numbers table already shows each of them. "
             + "Use only the segment facts and the documents listed.",
-        // Handed its facts as a reader reads them and asked to copy them, because asked to
-        // round them the model cut digits off, and asked nothing it copied six places.
-        // see: The key under each figure is handed its facts as a reader reads them, rounded by code
-        ["The key under each figure"] =
-            "In three to five sentences, say what the close, the averages, the latest quarter and the valuation listed in the facts show, for a reader who has not seen the figures. "
-            + "Write every number in digits. Each figure listed is already rounded, so copy it and its name as they are listed. Write no figure you work out yourself.",
         // Asked with no figure and no full date, because a theme has no facts file and every
         // figure in a theme section is refused: which way the industry's prices are moving
         // and why, in words, each sentence resting on a document.
@@ -300,12 +294,8 @@ public static class SectionPrompt
 
         prompt.Append("Facts:\n");
 
-        var read = string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal);
-
-        foreach (var stored in facts)
+        foreach (var fact in facts)
         {
-            var fact = read ? FactReading.Read(stored) : stored;
-
             prompt.Append("- ").Append(fact.Name).Append(" = ").Append(fact.Value).Append('\n');
         }
 

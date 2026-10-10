@@ -493,9 +493,8 @@ public sealed record FreshNight(DateOnly Session, int Listed, int Repeated)
     public int New => Listed - Repeated;
 }
 
-// One night of research as the Run page draws it: the passes the paid model wrote that night and the drafts
-// the overnight queue wrote.
-public sealed record ResearchNight(DateOnly Session, int PaidPasses, int Drafts);
+// One night of research as the Run page draws it: the passes the paid model wrote that night.
+public sealed record ResearchNight(DateOnly Session, int PaidPasses);
 
 // Research and spend as the Run page pictures them: the night's spend against the caps and the seven nights
 // up to it.
@@ -803,8 +802,8 @@ public sealed record ListingCell(
     // from the 7.0 ruling, and null for a name whose series is trusted.
     SuspectPrices? Suspect = null,
     // The day the name's newest researched section was written, and null for a name
-    // holding none. The key under each figure is not one of them, so most of the index
-    // is null here even though the overnight queue writes that key for every name.
+    // holding none. A stored key under each figure is not one of them, so most of the
+    // index is null here though one was written for every name.
     // see: A researched name is one holding an accepted section besides the key under each figure
     DateOnly? ResearchedOn = null,
     // The reward to risk the night's plan computes from its first tranche, which breaks a tie in
@@ -1097,26 +1096,6 @@ public sealed record StageRow(
     string Outcome,
     string Detail,
     bool ByHand = false);
-
-// The overnight queue as the run page draws it for one night.
-//
-// `Outcome` is null where the queue wrote no row for the night, and the counts are then
-// zero. `NotRun` is every traded session with no queue row, from the one after the newest
-// earlier night the queue ran on up to and including this night, and `NeverRan` says the
-// store holds no queue row on or before this night at all, which is stated rather than
-// read as a night it failed.
-// see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
-public sealed record QueueNight(
-    DateOnly Night,
-    string? Outcome,
-    int Queued,
-    int Completed,
-    int Left,
-    double LimitHours,
-    string? Reason,
-    string? Awake,
-    IReadOnlyList<DateOnly> NotRun,
-    bool NeverRan);
 
 // One refused document, as the run page draws it: the category that refused it,
 // what it was called, and where it is.
@@ -4008,8 +3987,8 @@ public sealed partial class MarkRenderer : IComponent
 
         drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
 
-        // A researched section written before the checker held a figure to the documents its sentence cites says so.
-        if (Core.Research.ClaimRules.IsResearched(section.Section) && section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
+        // A section written before the checker held a figure to the documents its sentence cites says so.
+        if (section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
         {
             drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
         }
@@ -4262,20 +4241,6 @@ public sealed partial class MarkRenderer : IComponent
         return at < 0 ? (part, null) : (part[..(at + 1)], part[(at + 2)..]);
     }
 
-    // The one section dated by the close it explains rather than by the day it was written.
-    public const string KeySection = "The key under each figure";
-
-    // Where the key under each figure would be, when the one on file explains another
-    // night's figures than the page draws: which night it was written for, and why it is
-    // not drawn beside these.
-    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-    public string KeyForAnotherNight(string ticker, string section, DateOnly writtenFor, DateOnly? session) =>
-        FormattableString.Invariant($"<p class=\"key-elsewhere\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(section)}\" data-written-for=\"{writtenFor:yyyy-MM-dd}\">")
-        + (session is { } on
-            ? FormattableString.Invariant($"Not drawn: the newest key explains the figures of {writtenFor:yyyy-MM-dd}, and the figures on this page are {on:yyyy-MM-dd}'s.")
-            : FormattableString.Invariant($"Not drawn: the newest key explains the figures of {writtenFor:yyyy-MM-dd}, and no session is stored for this name."))
-        + "</p>";
-
     // Dates and sources, section 15.9's region and the one section 4 calls what the research read: the
     // calendar, the dated items a pass read out of the documents, and every document the
     // written sections cite with its date and link.
@@ -4387,59 +4352,6 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(Invariant, $"<p class=\"refused\" data-category=\"{Escaped(document.Category)}\" ");
             region.Append(Invariant, $"data-url=\"{Escaped(document.Url)}\">");
             region.Append(Invariant, $"{Escaped(document.Category)}: {Escaped(document.Title)}, {Escaped(document.Url)}</p>");
-        }
-
-        region.Append("</section>");
-
-        return region.ToString();
-    }
-
-    // The overnight queue, section 15.10's fifth region: whether the queue ran after the
-    // night's arithmetic, how many queued passes completed and how many were left for the
-    // next night, and every traded session since it last ran on which it did not.
-    //
-    // A night it did not run is a line of its own naming the night, because a queue that
-    // silently failed looks identical to a quiet night and the absence has to be read off
-    // the page rather than inferred from a region with nothing in it.
-    // see: The overnight run holds the machine awake and reports whether it ran
-    public string OvernightQueue(QueueNight queue)
-    {
-        var region = new StringBuilder();
-        var ran = queue.Outcome is not null;
-
-        region.Append(Invariant, $"<section class=\"overnight-queue\" data-night=\"{queue.Night:yyyy-MM-dd}\" data-queue=\"{(ran ? "ran" : queue.NeverRan ? "never" : "not run")}\" ");
-        region.Append(Invariant, $"data-outcome=\"{Escaped(queue.Outcome ?? "none")}\" data-queued=\"{queue.Queued}\" data-completed=\"{queue.Completed}\" data-left=\"{queue.Left}\" data-not-run=\"{queue.NotRun.Count}\">");
-
-        if (ran && queue.Outcome == "failed")
-        {
-            region.Append(Invariant, $"<p data-outcome=\"failed\">the overnight queue failed on {queue.Night:yyyy-MM-dd}: {Escaped(queue.Reason ?? "the run log states no reason")}</p>");
-        }
-        else if (ran)
-        {
-            region.Append(Invariant, $"<p data-queue=\"ran\">the overnight queue ran on {queue.Night:yyyy-MM-dd}: {queue.Completed} of {queue.Queued} queued pass(es) completed, {queue.Left} left for the next night</p>");
-
-            if (queue.Outcome == "limit")
-            {
-                region.Append(Invariant, $"<p data-outcome=\"limit\">it started no pass once its limit of {queue.LimitHours.ToString("0.##", CultureInfo.InvariantCulture)} hour(s) had passed</p>");
-            }
-            else if (queue.Outcome == "unavailable")
-            {
-                region.Append(Invariant, $"<p data-outcome=\"unavailable\">it could not run: {Escaped(queue.Reason ?? "the local model is unavailable")}</p>");
-            }
-
-            if (queue.Awake is { Length: > 0 } awake)
-            {
-                region.Append(Invariant, $"<p data-awake=\"{Escaped(awake)}\">the machine was {Escaped(awake)}</p>");
-            }
-        }
-        else if (queue.NeverRan)
-        {
-            region.Append(Invariant, $"<p data-queue=\"never\">the overnight queue has not run on any night this store holds, up to {queue.Night:yyyy-MM-dd}</p>");
-        }
-
-        foreach (var night in queue.NotRun)
-        {
-            region.Append(Invariant, $"<p class=\"not-run\" data-night=\"{night:yyyy-MM-dd}\">the overnight queue did not run on {night:yyyy-MM-dd}</p>");
         }
 
         region.Append("</section>");
@@ -7388,8 +7300,7 @@ public sealed partial class MarkRenderer : IComponent
     }
 
     // Research and spend, section 15.10's ninth region: the month's spend against the month cap, the passes
-    // the paid model wrote on each of the seven nights up to the night, and the reports and the overnight
-    // drafts written over them.
+    // the paid model wrote on each of the seven nights up to the night, and the reports written over them.
     // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
     public string ResearchRegion(ResearchPicture picture)
     {
@@ -7417,14 +7328,13 @@ public sealed partial class MarkRenderer : IComponent
             var night = picture.Nights[at];
             var height = High * night.PaidPasses / most;
 
-            region.Append(Invariant, $"<g data-session=\"{night.Session:yyyy-MM-dd}\" data-paid=\"{night.PaidPasses}\" data-drafts=\"{night.Drafts}\">");
+            region.Append(Invariant, $"<g data-session=\"{night.Session:yyyy-MM-dd}\" data-paid=\"{night.PaidPasses}\">");
             region.Append(Invariant, $"<rect class=\"pb-bar\" x=\"{Number((at * step) + 8)}\" y=\"{Number(High - height)}\" width=\"{Number(step - 16)}\" height=\"{Number(Math.Max(height, 1))}\" rx=\"3\"></rect>");
             region.Append(Invariant, $"<text class=\"pb-day\" x=\"{Number((at * step) + (step / 2))}\" y=\"{High + 14}\" text-anchor=\"middle\">{night.Session:ddd}</text></g>");
         }
 
         region.Append("</svg><div class=\"rp-tiles\">");
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"paid reports\"><b>{picture.Nights.Sum(night => night.PaidPasses)}</b><span>reports written by the paid model</span></div>");
-        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"overnight drafts\"><b>{picture.Nights.Sum(night => night.Drafts)}</b><span>drafts written overnight on this machine</span></div>");
         region.Append("</div>");
         region.Append(LabellerParagraph(picture.Labeller));
         region.Append("</div>");
@@ -7625,7 +7535,6 @@ public sealed partial class MarkRenderer : IComponent
         "The cause of each large move" => "Moves",
         "What the company sells" => "Business",
         "The segment commentary" => "Segments",
-        "The key under each figure" => "Key",
         "The industry cycle" => "Cycle",
         "The dated calendar items" => "Calendar",
         "The two cases" => "Two cases",

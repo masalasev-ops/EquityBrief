@@ -448,7 +448,6 @@ public partial class ReadSurface
         string[] written =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.UnderTheFigures,
             .. SinglePageApp.BeforeTheNumbers,
             .. SinglePageApp.AfterTheNumbers.Where(section => section != ClaimRules.CycleSection),
             .. SinglePageApp.AfterThePlan,
@@ -589,7 +588,7 @@ public partial class ReadSurface
         {
             (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
             (universe, new[] { "sectors", "index" }),
-            (run, new[] { "operational", "records", "shadow", "stale", "queue", "harness" }),
+            (run, new[] { "operational", "records", "shadow", "stale", "harness" }),
             (page, new[] { "facts", "how-it-got-here", "chart", "plan", "sources" }),
         };
 

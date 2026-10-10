@@ -1,21 +1,19 @@
 {
   "stage": "prose",
   "derivation": "derived",
-  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's. The release passes are written over releaseLane, which held the cause of each large move until 6.8's fixture comparison moved that section to the paid lane on this machine; the writer takes whatever lane it is handed, so those passes read as they were recorded, and lane is the configured default the replay's pass and the research runner hand it. A second pass the same day passes every section over, the key under each figure as already written for the newest facts file and the rest as written today, because the key is dated by the night whose figures it explains and every other section by the day it was written.",
+  "derivedFrom": "the decision that the local lane is a configured list of section names the writer takes whole, the decision that a cause of a move rests only on a document published inside that move, section 18's rows for a section the machine cannot hold and for the local model unavailable, and the fixture's own dates: the KEYS release exhibit filed on 2026-08-18 by the archive's own index, and KEYS's eight stored moves. Which sections a pass asks for, which it leaves unwritten and why, which move the release falls inside, and which sections a context of 8,000 tokens holds, were each worked out from those rules and dates before the tests that read this file were run. The local lane's half of section 19.1's research record, whose paid half is 6.8's. The release passes are written over releaseLane, which held the cause of each large move until 6.8's fixture comparison moved that section to the paid lane on this machine; the writer takes whatever lane it is handed, so those passes read as they were recorded, and lane is the configured default the replay's pass and the research runner hand it. A second pass the same day passes over every section the checker accepted as written today. From the 6.10 correction of 2026-10-10 neither lane holds the key under each figure, which no pass writes any more, so the replay's pass, handed no document, writes nothing and asks no model, and the context too small for the release refuses every section the release lane holds where it asked the key.",
   "tables": [
     "research_section"
   ],
   "frozen": "the claim checker's verdict on each section the recorded model wrote, and nothing else. What a model writes is not a function of any rule here, so each verdict below is what the checker reached over the recorded answer, named as a reading of a recording rather than as a figure the rules produce. Every other value in this file is derived.",
   "lane": [
     "What the company sells",
-    "The segment commentary",
-    "The key under each figure"
+    "The segment commentary"
   ],
   "releaseLane": [
     "The cause of each large move",
     "What the company sells",
-    "The segment commentary",
-    "The key under each figure"
+    "The segment commentary"
   ],
   "replay": {
     "names": [
@@ -24,18 +22,13 @@
     ],
     "namesNote": "every name holding a facts file on the replayed night except KEYS, which is the name the prose fixture constructs its own sections for from version one. AAPL holds none that night: the corporate action check refetches its year as of 2026-08-10, before the night's bar, and the assembler writes tonight's file for the names with a bar tonight.",
     "handed": "nothing, because the store holds no document before 6.8 fetches one",
-    "written": [
-      "The key under each figure"
-    ],
+    "written": [],
     "notWritten": {
       "What the company sells": "no document was handed to the writer for it",
       "The segment commentary": "no document was handed to the writer for it"
     },
-    "modelCallsPerName": 1,
-    "verdicts": {
-      "MSFT": "accepted",
-      "NFLX": "accepted"
-    }
+    "modelCallsPerName": 0,
+    "verdicts": {}
   },
   "release": {
     "ticker": "KEYS",
@@ -54,15 +47,13 @@
         "written": [
           "The cause of each large move",
           "What the company sells",
-          "The segment commentary",
-          "The key under each figure"
+          "The segment commentary"
         ],
-        "modelCalls": 4,
+        "modelCalls": 3,
         "verdicts": {
           "The cause of each large move": "rejected",
           "What the company sells": "accepted",
-          "The segment commentary": "rejected",
-          "The key under each figure": "accepted"
+          "The segment commentary": "rejected"
         }
       },
       {
@@ -75,8 +66,7 @@
           "The segment commentary"
         ],
         "skipped": {
-          "What the company sells": "it was already written today",
-          "The key under each figure": "it was already written for the newest facts file"
+          "What the company sells": "it was already written today"
         },
         "modelCalls": 2,
         "verdicts": {
@@ -90,23 +80,6 @@
     ],
     "causeNamesNote": "the sessions each draft of the cause section names as a move's end, which is the one move the release falls inside and no other. Both drafts of the recordings made on 2026-09-30 were refused for a figure the release states and the facts file does not hold, so the cause is refused again at its first retry and kept for the next, and what either draft names is read all the same, because which move a draft ties the release to is the pairing's work and not the checker's"
   },
-  "keyFactsAsRead": {
-    "note": "each worked by hand from the rule the decision that the key under each figure is handed its facts as a reader reads them states, over KEYS's stored values where the fixture carries them and a few chosen to reach each branch: an indicator named with its window as days before it, money and counts of a million or more in millions, billions or trillions with the word to at most two places, a growth or a margin as a percentage to one place, any other figure past two places to two, rounding half away from zero, and a reading the claim checker would not match to the stored value handed as stored. The last is a growth of 12.5, twelve and a half times, whose percentage the checker reads only of a fraction below ten.",
-    "facts": [
-      { "name": "close", "value": "333.42", "readName": "close", "readValue": "333.42" },
-      { "name": "sma200", "value": "289.30685", "readName": "200-day average", "readValue": "289.31" },
-      { "name": "rsi14", "value": "47.740381", "readName": "14-day relative strength index", "readValue": "47.74" },
-      { "name": "macd_hist", "value": "-0.257949", "readName": "MACD histogram", "readValue": "-0.26" },
-      { "name": "session volume", "value": "3604363", "readName": "session volume", "readValue": "3.6 million" },
-      { "name": "latest quarter revenue", "value": "1846000000.00", "readName": "latest quarter revenue", "readValue": "1.85 billion" },
-      { "name": "net debt", "value": "-1234567890.00", "readName": "net debt", "readValue": "-1.23 billion" },
-      { "name": "latest quarter gross margin", "value": "0.658722", "readName": "latest quarter gross margin", "readValue": "65.9 per cent" },
-      { "name": "latest quarter revenue growth on a year earlier", "value": "1.058511", "readName": "latest quarter revenue growth on a year earlier", "readValue": "105.9 per cent" },
-      { "name": "latest quarter net income growth on a year earlier", "value": "12.5", "readName": "latest quarter net income growth on a year earlier", "readValue": "12.5" },
-      { "name": "immediate support strength", "value": "2", "readName": "immediate support strength", "readValue": "2" },
-      { "name": "latest quarter end", "value": "2026-07-31", "readName": "latest quarter end", "readValue": "2026-07-31" }
-    ]
-  },
   "cannotHold": {
     "contextTokens": 9250,
     "refused": [
@@ -114,20 +87,16 @@
       "What the company sells",
       "The segment commentary"
     ],
-    "asked": [
-      "The key under each figure"
-    ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 18,057 characters in all with the instructions of 2026-09-30, which name the reader, say what to do with a figure no fact holds and say the ask again after the facts, 1,521 of them digits and none outside ASCII, which the rule counts as a token each, and 16,536 others at 2.75 characters a token, 6,013.1 rounded up to 6,014 tokens, so 7,535 in all, which fits with the answer's budget, 8,559, in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
-    "releaseTokens": 9370,
-    "askedTokens": 7535
+    "asked": [],
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. So no section of the release lane is asked. Until the 6.10 correction of 2026-10-10 the key under each figure, which carried the facts file alone and fitted, was the one section asked.",
+    "releaseTokens": 9370
   },
   "unavailable": {
     "modelCalls": 1,
     "notWritten": [
       "The cause of each large move",
       "What the company sells",
-      "The segment commentary",
-      "The key under each figure"
+      "The segment commentary"
     ],
     "outcome": "unavailable",
     "why": "the first call finds nothing answering, and every section after it is left unwritten without being asked, because a runtime that is not answering does not answer the next call either and waiting out a timeout per section would spend the evening on it"

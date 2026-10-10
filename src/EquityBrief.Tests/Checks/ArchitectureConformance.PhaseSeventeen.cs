@@ -59,6 +59,33 @@ public partial class ArchitectureConformance
     // correction's chart averages.
     internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows];
 
+    // The rows the document loses after phase 17's report, each counted by the report of the phase that added it: the
+    // 6.10 correction's overnight queue, its catalogue and matrix rows, its step, section 17's row, section 18's row for
+    // a night the machine slept and the part of the local model's row the queue recorded, and the run page's region.
+    // The step is named by how it opened, since its whole text cites the decisions its retirement superseded.
+    internal static readonly string[] TakenOutAfterPhaseSeventeen =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Overnight queue"),
+        CheckReach.Key(Scope.MatrixTable, "Overnight queue"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue"),
+        CheckReach.Key(Scope.LimitsTable, "Overnight queue"),
+        CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
+        CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the overnight queue records that it could not run"),
+        CheckReach.Key("15.10 Run", "Overnight queue"),
+    ];
+
+    [Fact]
+    public void EachRowTheQueuesRetirementTookOutIsNoClaimAndEveryOtherClaimStands()
+    {
+        // Each taken out row is in no claim's key, the step by the words it opened on, and the claims now are the
+        // report's after phase 17 with the chart averages' rows added and these taken out.
+        var keys = Report().Claims.Select(claim => CheckReach.Key(claim.Table, claim.Subject)).ToArray();
+
+        Assert.All(TakenOutAfterPhaseSeventeen, taken => Assert.DoesNotContain(keys, key => key == taken || key.StartsWith(taken + " ", StringComparison.Ordinal)));
+        Assert.All(AfterPhaseSeventeen, added => Assert.Contains(added, keys));
+        Assert.Equal(1149 + AfterPhaseSeventeen.Length - TakenOutAfterPhaseSeventeen.Length, keys.Length);
+    }
+
     [Fact]
     public void ThePhaseSeventeenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
     {
@@ -93,7 +120,7 @@ public partial class ArchitectureConformance
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood
         // before it and the rows after its report, none out of scope and none unexamined.
         var report = Report();
-        var total = actual + AfterPhaseSeventeen.Length;
+        var total = actual + AfterPhaseSeventeen.Length - TakenOutAfterPhaseSeventeen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));

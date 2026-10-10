@@ -30,7 +30,7 @@ public partial class NightlyRun
         Assert.StartsWith("Evaluate the list reasons", steps[readings + 1], StringComparison.Ordinal);
         Assert.StartsWith("Close the arithmetic", steps[quarters - 1], StringComparison.Ordinal);
         Assert.StartsWith("Read the archive's daily index", steps[quarters + 1], StringComparison.Ordinal);
-        Assert.StartsWith("Run the overnight queue", steps[quarters + 2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for six reports taken in turn", steps[quarters + 2], StringComparison.Ordinal);
 
         // And the night running it, over the fixture.
         using var store = new TemporaryStore();
@@ -44,7 +44,7 @@ public partial class NightlyRun
         var asked = stages.IndexOf(QuarterFetcher.Stage);
 
         Assert.True(read > stages.IndexOf(SwingReader.Stage) && read < stages.IndexOf(ShortlistBuilder.Stage), string.Join(", ", stages));
-        Assert.True(asked > stages.IndexOf(EquityBrief.Worker.Nights.NightClose.Stage) && asked < stages.IndexOf(EquityBrief.Worker.Research.OvernightQueue.Stage), string.Join(", ", stages));
+        Assert.True(asked > stages.IndexOf(EquityBrief.Worker.Nights.NightClose.Stage) && asked < stages.IndexOf(EquityBrief.Worker.Ledger.FilingsRefresher.Stage), string.Join(", ", stages));
 
         // The readings wrote a row for every member, and each reads no fundamentals yet: the night holds
         // no quarter fetched before it.
@@ -80,14 +80,14 @@ public partial class NightlyRun
     }
 
     [Fact]
-    public async Task TheQueueTakesImprovingBusinessesFirstWhereTheNightStoredItsReadingsAndTheFiltersOrderWithinAState()
+    public async Task TheListTakesImprovingBusinessesFirstWhereTheNightStoredItsReadingsAndTheFiltersOrderWithinAState()
     {
         // Over a copy of the fixture's night the filter is made to pass all four, NFLX ranked first, MSFT
         // second, AAPL third and KEYS fourth, and three of the night's readings are replaced by ones a later
         // night stores: NFLX holding one quarter, too few, MSFT improving and KEYS deteriorating, AAPL keeping
         // the night's own, no fundamentals yet. Worked by hand: MSFT first, then the two reading no state in
         // the filter's order, NFLX before AAPL, and KEYS last, whatever its rank.
-        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(FixtureFolder(), new RecordingAwake()) with { LocalModel = new FixtureExpectations.NothingAnsweringLocal() });
+        var night = await FixtureReplay.NightAsync();
 
         using var store = night.Store;
 
@@ -110,25 +110,12 @@ public partial class NightlyRun
         var clock = FixedClock.At(Night, SessionZones.UnitedStates);
 
         // The page's list is drawn again over the rows as changed, as the night's own step draws it, and
-        // it lists the four under the pullback family in that order, which the queue then follows.
+        // it lists the four under the pullback family in that order.
         await new EquityBrief.Worker.Families.FamilyLister(clock, store.DatabaseFile).RunAsync("state-first-list");
 
         Assert.Equal(
             [["MSFT", "1"], ["NFLX", "2"], ["AAPL", "3"], ["KEYS", "4"]],
             StoreRows(store, "SELECT ticker, place FROM family_pick WHERE session_date = '2026-09-08' AND state = 'listed' ORDER BY place;"));
-
-        var queue = await new OvernightQueue(
-            new StalenessJudge(clock, store.DatabaseFile),
-            sections => new ProseWriter(new FixtureExpectations.NothingAnsweringLocal(), FixtureExpectations.LocalSettings(), sections, clock, store.DatabaseFile),
-            new ClaimChecker(clock, store.DatabaseFile),
-            ProseWriter.DefaultLane,
-            TimeSpan.FromHours(OvernightQueue.DefaultHours),
-            new RecordingAwake(),
-            clock,
-            store.DatabaseFile).RunAsync("state-first", new DateOnly(2026, 9, 8));
-
-        Assert.Equal(["MSFT", "NFLX", "AAPL", "KEYS"], queue.Listed);
-        Assert.Equal(["MSFT", "NFLX", "AAPL", "KEYS"], queue.Queued);
     }
 
     [Fact]

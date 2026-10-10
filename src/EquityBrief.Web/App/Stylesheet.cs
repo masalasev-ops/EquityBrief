@@ -430,7 +430,6 @@ p.trend-state{display:inline-block;margin:0 0 4px;font:600 11.5px var(--sans);bo
 .written-section .prose{max-width:66ch;margin:0 0 10px}
 .card.spined[data-section='The short version'] .prose{font:19px/1.55 var(--serif);max-width:60ch}
 .written-by{margin-top:10px;font-size:12.5px;color:var(--soft)}
-.key-elsewhere{font-size:13.5px;color:var(--soft)}
 .section-sources,.sources{margin:10px 0 0;padding-left:20px;font-size:13px;color:var(--ink-2)}
 .section-sources li,.sources li{margin:3px 0}
 .research p{margin:0 0 8px}
@@ -520,7 +519,7 @@ td.not-measured{font-size:12.5px;color:var(--ink-2)}
 td.not-measured::before{content:"";display:inline-block;width:22px;height:10px;margin-right:6px;vertical-align:-1px;border:1.3px dashed var(--dash-ink);border-radius:2px}
 .harness{display:block}
 .harness p:first-child{font:600 20px var(--serif)}
-.overnight-queue p,.shadow-candidates p,.stale-and-failed p,.fell-back p,.refused-documents p{margin:0 0 8px}
+.shadow-candidates p,.stale-and-failed p,.fell-back p,.refused-documents p{margin:0 0 8px}
 .verdicts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid var(--ink);margin:0}
 .verdicts div{padding:12px 16px 12px 0;border-bottom:1px solid var(--hair)}
 .verdicts dt{font:600 15px var(--serif)} .verdicts dd{margin:2px 0 0}

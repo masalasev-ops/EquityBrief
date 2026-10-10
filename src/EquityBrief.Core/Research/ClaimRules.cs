@@ -65,8 +65,8 @@ public sealed record ClaimVerdict(IReadOnlyList<ClaimFinding> Findings, bool NoA
 // Two rules and they fail apart. Every figure in the prose is a rounding of a
 // value the facts file holds, at the precision the prose states.
 // see: Every number in written prose must exist in the facts file
-// And every sentence of a researched section names a stored document that
-// admissibility admitted, by a marker the section's source list resolves.
+// And every sentence names a stored document that admissibility admitted, by a
+// marker the section's source list resolves, or the night's stored figures.
 // see: Every researched claim must name a stored source document
 // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
 //
@@ -87,7 +87,6 @@ public static class ClaimRules
         "The cause of each large move",
         "What the company sells",
         "The segment commentary",
-        "The key under each figure",
         "The industry cycle",
         "The dated calendar items",
         "The two cases",
@@ -95,14 +94,10 @@ public static class ClaimRules
         "The short version",
     ];
 
-    // The one section held to the number rule alone. The lane table says it is a
-    // fixed explanation over known values with nothing to weigh, so a sentence in
-    // it rests on the facts file rather than on a document, and asking it to cite
-    // one would be asking it to invent a source for arithmetic.
-    public const string ComputedSection = "The key under each figure";
-
-    public static bool IsResearched(string section) =>
-        !string.Equals(section, ComputedSection, StringComparison.Ordinal);
+    // A section no pass writes: its stored rows stand, no page draws them, and a name
+    // holding nothing else holds no research.
+    // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+    public const string RetiredKey = "The key under each figure";
 
     // The one section held to a third rule, because every sentence in it is about a
     // move the facts file dates. A document published months after a move cannot
@@ -275,19 +270,17 @@ public static class ClaimRules
         DateOnly? night = null,
         string? parts = null)
     {
-        var researched = IsResearched(section);
-
-        // A researched section whose source list holds nothing admitted has no
-        // sentence that could be written, so it is not read at all. It goes to
-        // fallback on its first check rather than being handed a retry, because a
-        // rewrite cannot create a source.
-        if (researched && !sources.Any(source => source is { Admitted: true }))
+        // A section whose source list holds nothing admitted has no sentence that
+        // could be written, so it is not read at all. It goes to fallback on its
+        // first check rather than being handed a retry, because a rewrite cannot
+        // create a source.
+        if (!sources.Any(source => source is { Admitted: true }))
         {
             return new ClaimVerdict([], NoAdmissibleSource: true);
         }
 
-        // An answer that is JSON is no section in any of them, the key's empty answer stored as an error object among
-        // them, and its sentences are not read.
+        // An answer that is JSON is no section in any of them, an empty answer stored as an error object among them, and
+        // its sentences are not read.
         if (IsJson(prose))
         {
             return new ClaimVerdict([new ClaimFinding(string.Empty, Excerpt(prose), UnusableAnswer)], NoAdmissibleSource: false);
@@ -326,14 +319,14 @@ public static class ClaimRules
                 findings.AddRange(CauseFindings(sentence, moves, sources));
             }
 
-            if (researched && sentence.Citations.Count == 0 && !sentence.CitesNight)
+            if (sentence.Citations.Count == 0 && !sentence.CitesNight)
             {
                 findings.Add(new ClaimFinding(sentence.Text, sentence.Text, Uncited));
             }
 
-            // A figure in a researched sentence citing documents and not the night's figures is one a document it
-            // cites states, as well as one the facts file holds.
-            var heldToDocuments = researched && sentence.Citations.Count > 0 && !sentence.CitesNight;
+            // A figure in a sentence citing documents and not the night's figures is one a document it cites states, as
+            // well as one the facts file holds.
+            var heldToDocuments = sentence.Citations.Count > 0 && !sentence.CitesNight;
 
             if (sentence.Text.Contains(BannedWord, StringComparison.OrdinalIgnoreCase))
             {

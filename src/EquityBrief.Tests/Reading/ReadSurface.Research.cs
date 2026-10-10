@@ -280,21 +280,15 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted') " +
             "ORDER BY section;");
 
-        // Three written over the two passes, stated in advance: what the company sells and
-        // the key under each figure on the first draft and the segment commentary on its
-        // retry, with the cause of each large move left out after two refusals.
-        Assert.Equal(3, written.Count);
+        // Two written over the two passes, stated in advance: what the company sells on the
+        // first draft and the segment commentary on its retry, with the cause of each large
+        // move left out after two refusals.
+        Assert.Equal(2, written.Count);
 
         foreach (var row in written)
         {
-            var key = row[0] == ClaimRules.ComputedSection;
-            var spine = key ? SinglePageApp.KeyDated : "Written";
-
-            Assert.Contains($"<span class=\"dl-k\">{spine}</span><b>{row[1]}</b>", region, StringComparison.Ordinal);
-            Assert.Contains(
-                $"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]}</p>",
-                region,
-                StringComparison.Ordinal);
+            Assert.Contains($"<span class=\"dl-k\">Written</span><b>{row[1]}</b>", region, StringComparison.Ordinal);
+            Assert.Contains($"<p class=\"written-by\">written on {row[1]}</p>", region, StringComparison.Ordinal);
         }
 
         // A name with nothing written draws no written card and still stamps its computed

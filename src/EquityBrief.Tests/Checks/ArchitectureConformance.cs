@@ -1410,7 +1410,8 @@ public partial class ArchitectureConformance
         // 143 at 17.8: the fundamentals-first family's card on Tonight.
         // 148 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the
         // decision card's rule standing at an approved change.
-        Assert.Equal(148, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 147 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
+        Assert.Equal(147, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1529,7 +1530,8 @@ public partial class ArchitectureConformance
         // 506 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the decision
         // card's rule standing at an approved change.
         // 507 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
-        Assert.Equal(507, inDocument.Length);
+        // 506 at the 6.10 correction of 2026-10-10: the run page's overnight queue region taken out.
+        Assert.Equal(506, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1630,7 +1632,8 @@ public partial class ArchitectureConformance
         // 447 at the 13.10 correction of 2026-10-08: the checklist's two parts on the store's copies.
         // 462 at 17.2: the fourteen parts a card's rule row states and the checklist's part on a live rule past its mark.
         // 463 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
-        Assert.Equal(463, checkedElements);
+        // 462 at the 6.10 correction of 2026-10-10: the local model row's part on what the overnight queue recorded.
+        Assert.Equal(462, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

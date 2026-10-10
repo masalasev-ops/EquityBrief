@@ -124,14 +124,14 @@ public partial class ReadSurface
         using var store = await Populated();
 
         // AAPL holds two accepted sections a pass wrote, a draft the checker refused and a section
-        // it left out, and MSFT holds the key alone, which the queue writes every night.
+        // it left out, and MSFT holds a key under each figure alone, which the queue wrote every night.
         store.Execute(
             "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES " +
             "('AAPL', 'What the company sells', 1, '2026-09-04', 'm', 'accepted', 'x', '[]', NULL), " +
             "('AAPL', 'The risks, each with what would confirm it', 1, '2026-09-05', 'm', 'accepted', 'x', '[]', NULL), " +
             "('AAPL', 'The two cases', 1, '2026-09-07', 'm', 'rejected', 'x', '[]', 'refused'), " +
             "('AAPL', 'The short version', 1, '2026-09-08', 'm', 'fallback', '', '[]', 'no admissible source'), " +
-            $"('MSFT', '{ClaimRules.ComputedSection}', 1, '2026-09-08', 'm', 'accepted', 'x', '[]', NULL);");
+            $"('MSFT', '{ClaimRules.RetiredKey}', 1, '2026-09-08', 'm', 'accepted', 'x', '[]', NULL);");
 
         var api = Api(store);
 

@@ -67,18 +67,17 @@ public sealed class ProseWriter(
     // This machine's lane, which is the list's value and not a fact about the
     // component: the extraction work figure 12.2 puts on the left.
     //
-    // Three from 6.8, where the fixture comparison ran every section both ways over
-    // one evidence set and moved the cause of each large move to the paid lane. The
-    // local model left it out in every pass it wrote it in, having copied figures
-    // from the articles that the facts file does not hold and done so again when told
-    // why, while the paid model wrote it accepted on its first draft; the three that
-    // stay were accepted from the local model as they were from the paid one.
+    // The fixture comparison of 6.8 ran every section both ways over one evidence set
+    // and moved the cause of each large move to the paid lane. The local model left it
+    // out in every pass it wrote it in, having copied figures from the articles that the
+    // facts file does not hold and done so again when told why, while the paid model
+    // wrote it accepted on its first draft; the two that stay were accepted from the
+    // local model as they were from the paid one.
     // see: The fixture comparison moved the cause of each large move into the paid lane on this machine
     public static readonly string[] DefaultLane =
     [
         "What the company sells",
         "The segment commentary",
-        "The key under each figure",
     ];
 
     // The reasons a section in the lane is not written, stated once so the run log
@@ -100,16 +99,6 @@ public sealed class ProseWriter(
     public const string AwaitingTheChecker = "an earlier draft is still waiting on the claim checker";
     public const string WrittenToday = "it was already written today";
     public const string LeftOutToday = "it was left out today and a new pass is what writes it again";
-    public const string WrittenForTheNight = "it was already written for the newest facts file";
-    public const string LeftOutForTheNight = "it was left out for the newest facts file and the next night's is what writes it again";
-
-    // The date a section's row carries: the day it was written, and for the key under each
-    // figure the night of the facts file it was written from, because that night's figures
-    // are what it explains and a key written in the day from the night before is not about
-    // the figures the night after draws.
-    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-    public static DateOnly DatedOn(string section, DateOnly writtenOn, DateOnly factsNight) =>
-        string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal) ? factsNight : writtenOn;
 
     const string FactsFor = @"
         SELECT payload, session_date FROM facts
@@ -210,9 +199,7 @@ public sealed class ProseWriter(
             }
 
             var newest = await NewestAsync(connection, ticker, section, cancellation);
-            var dated = DatedOn(section, asOf, night ?? asOf);
-            var byNight = string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal);
-            var today = newest is { } found && found.AsOf == dated;
+            var today = newest is { } found && found.AsOf == asOf;
 
             if (newest is { Status: "pending" })
             {
@@ -223,14 +210,14 @@ public sealed class ProseWriter(
 
             if (today && newest!.Status == "accepted")
             {
-                skipped.Add(new UnwrittenSection(section, byNight ? WrittenForTheNight : WrittenToday));
+                skipped.Add(new UnwrittenSection(section, WrittenToday));
 
                 continue;
             }
 
             if (today && newest!.Status == "fallback")
             {
-                skipped.Add(new UnwrittenSection(section, byNight ? LeftOutForTheNight : LeftOutToday));
+                skipped.Add(new UnwrittenSection(section, LeftOutToday));
 
                 continue;
             }
@@ -240,7 +227,7 @@ public sealed class ProseWriter(
 
             var handed = documents.TryGetValue(section, out var given) ? given : [];
 
-            if (ClaimRules.IsResearched(section) && handed.Count == 0)
+            if (handed.Count == 0)
             {
                 notWritten.Add(new UnwrittenSection(section, NothingHanded));
 
@@ -265,7 +252,7 @@ public sealed class ProseWriter(
                 retry ? RetryBrief.For(section, newest!.Prose, facts, ResearchRunner.Resolved(newest.SourceIds, handed), night, newest.Reason, newest.Parts) : null,
                 night: night);
 
-            if (ClaimRules.IsResearched(section) && admitted.Length == 0)
+            if (admitted.Length == 0)
             {
                 planned.Add((section, request with { Prompt = string.Empty }, [.. handed.Select(document => document.Id)], retry, (newest?.Version ?? 0) + 1));
 
@@ -387,7 +374,7 @@ public sealed class ProseWriter(
             insert.Parameters.AddWithValue("$ticker", ticker);
             insert.Parameters.AddWithValue("$section", section);
             insert.Parameters.AddWithValue("$version", version);
-            insert.Parameters.AddWithValue("$as_of", DatedOn(section, asOf, night ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            insert.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             insert.Parameters.AddWithValue("$model", modelName);
             insert.Parameters.AddWithValue("$prose", stored);
             insert.Parameters.AddWithValue("$source_ids", JsonSerializer.Serialize(ids));

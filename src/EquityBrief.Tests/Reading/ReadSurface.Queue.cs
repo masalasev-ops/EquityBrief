@@ -1,25 +1,17 @@
-using System.Text.Json;
 using EquityBrief.Api.Reading;
-using EquityBrief.Core.Bars;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
-using EquityBrief.Web.Marks;
-using EquityBrief.Worker;
-using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, 6.10: the run page's overnight queue region, drawn off the queue's row and
-// the exchange's calendar, and the two places the queue's row is kept out of what it is not:
-// the night's duration and the stages that failed.
+// read-surface, the 6.10 correction of 2026-10-10: the overnight queue is retired, so the run page draws
+// no region for it and no night's drafts, and a queue row an earlier night wrote is still read as that
+// night ran: its time is no part of the night's duration and a queue at its limit is no stage that failed.
+// see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
 public partial class ReadSurface
 {
-    static QueueRow Row(DateOnly night, string outcome = OvernightQueue.Ran) =>
-        new(night, new DateTimeOffset(night.ToDateTime(new TimeOnly(21, 30)), TimeSpan.Zero), outcome,
-            JsonSerializer.Serialize(new { night = night.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), queued = new[] { "AAPL", "KEYS" }, completed = new[] { new { ticker = "AAPL" } }, left = new[] { "KEYS" }, limitHours = 1, awake = "held awake" }));
-
     [Fact]
-    public async Task TheRunPageSaysTheQueueRanAndHowManyQueuedPassesCompletedAndWereLeft()
+    public async Task TheRunPageDrawsNoQueueRegionAndNoNightsDrafts()
     {
         var night = await FixtureReplay.NightAsync();
 
@@ -32,106 +24,61 @@ public partial class ReadSurface
 
         var body = await client.GetStringAsync("/screens/run/2026-09-08");
 
-        // The counts read off the queue's own row rather than written here.
-        using var detail = JsonDocument.Parse(Text(store, $"SELECT detail FROM run_log WHERE stage = '{OvernightQueue.Stage}';"));
+        // The page drew, and drew the regions either side of where the queue's stood.
+        Assert.Contains("class=\"stale-and-failed\"", body, StringComparison.Ordinal);
+        Assert.Contains("class=\"harness\"", body, StringComparison.Ordinal);
 
-        var queued = detail.RootElement.GetProperty("queued").GetArrayLength();
-        var completed = detail.RootElement.GetProperty("completed").GetArrayLength();
-        var left = detail.RootElement.GetProperty("left").GetArrayLength();
-
-        Assert.True(queued > 0, "The fixture night queued nothing, so the region's counts say nothing.");
-
-        Assert.Contains($"class=\"overnight-queue\" data-night=\"2026-09-08\" data-queue=\"ran\"", body, StringComparison.Ordinal);
-        Assert.Contains($"data-queued=\"{queued}\" data-completed=\"{completed}\" data-left=\"{left}\" data-not-run=\"0\"", body, StringComparison.Ordinal);
-        Assert.Contains($"the overnight queue ran on 2026-09-08: {completed} of {queued} queued pass(es) completed, {left} left for the next night", body, StringComparison.Ordinal);
-        Assert.Contains("the machine was held awake", body, StringComparison.Ordinal);
-
-        // And it sits where section 15.10 puts it, after stale and failed and before the harness.
-        Assert.True(
-            body.IndexOf("class=\"stale-and-failed\"", StringComparison.Ordinal) < body.IndexOf("class=\"overnight-queue\"", StringComparison.Ordinal)
-            && body.IndexOf("class=\"overnight-queue\"", StringComparison.Ordinal) < body.IndexOf("class=\"harness\"", StringComparison.Ordinal),
-            "The overnight queue's region is not between stale and failed and the harness.");
+        Assert.DoesNotContain("overnight-queue", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("the overnight queue", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-figure=\"overnight drafts\"", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("drafts written overnight", body, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task ANightTheQueueDidNotRunIsNamedOnThePageAsANightItDidNotRun()
+    public async Task APageOverAStoreHoldingAnAcceptedKeyDrawsNoKeyAndNoLineThatItWasLeftOut()
     {
-        // Over the store a night wrote: the queue ran on 2026-09-08, and the page for
-        // 2026-09-10, two traded sessions later, names both nights it did not run, the
-        // 9th and the 10th, each on a line of its own, rather than drawing an empty region.
-        var night = await FixtureReplay.NightAsync();
+        // KEYS holding the queue's accepted key for the night, then a later version of it left out, and MSFT the
+        // accepted key alone: the name pages draw neither, by its prose or its name, the stale and failed region
+        // names no key that fell back, and a name holding the key alone is no researched name.
+        using var store = await FixtureReplay.ReplayedAsync();
 
-        using var store = night.Store;
+        const string Prose = "Keysight closed at 333.42, a key the retired queue wrote for the night.";
+        const string Reason = "a reason only a stored key carries";
+
+        store.Execute(
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES " +
+            $"('KEYS', '{EquityBrief.Core.Research.ClaimRules.RetiredKey}', 1, '2026-09-08', 'a writer', 'accepted', '{Prose}', '[]', NULL), " +
+            $"('KEYS', '{EquityBrief.Core.Research.ClaimRules.RetiredKey}', 2, '2026-09-08', 'a writer', 'fallback', '', '[]', '{Reason}'), " +
+            $"('MSFT', '{EquityBrief.Core.Research.ClaimRules.RetiredKey}', 1, '2026-09-08', 'a writer', 'accepted', '{Prose}', '[]', NULL);");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var body = await client.GetStringAsync("/screens/run/2026-09-10");
+        foreach (var ticker in new[] { "KEYS", "MSFT" })
+        {
+            var page = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
 
-        Assert.Contains("data-queue=\"not run\"", body, StringComparison.Ordinal);
-        Assert.Contains("data-not-run=\"2\"", body, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"not-run\" data-night=\"2026-09-09\">the overnight queue did not run on 2026-09-09</p>", body, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"not-run\" data-night=\"2026-09-10\">the overnight queue did not run on 2026-09-10</p>", body, StringComparison.Ordinal);
+            Assert.Contains($"data-ticker=\"{ticker}\"", page, StringComparison.Ordinal);
+            Assert.DoesNotContain(EquityBrief.Core.Research.ClaimRules.RetiredKey, page, StringComparison.Ordinal);
+            Assert.DoesNotContain(Prose, page, StringComparison.Ordinal);
+            Assert.DoesNotContain(Reason, page, StringComparison.Ordinal);
+        }
 
-        // The projection over constructed rows, against the exchange's own calendar. From a
-        // queue that ran on Thursday 2026-09-03 to a page for Wednesday 2026-09-09: Friday the
-        // 4th traded, the weekend and Labor Day on the 7th did not, Tuesday the 8th traded, and
-        // the page's own night has no row.
-        var gap = RunScreen.Queue([Row(new DateOnly(2026, 9, 3))], new DateOnly(2026, 9, 9), ExchangeClosures.IsSession);
+        var run = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-08"));
 
-        Assert.Null(gap.Outcome);
-        Assert.False(gap.NeverRan);
-        Assert.Equal([new DateOnly(2026, 9, 4), new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 9)], gap.NotRun);
+        Assert.Contains("class=\"stale-and-failed\"", run, StringComparison.Ordinal);
+        Assert.DoesNotContain(Reason, run, StringComparison.Ordinal);
 
-        // With a row on the page's night, that night ran and the two before it did not.
-        var ranTonight = RunScreen.Queue([Row(new DateOnly(2026, 9, 3)), Row(new DateOnly(2026, 9, 9), OvernightQueue.StoppedAtItsLimit)], new DateOnly(2026, 9, 9), ExchangeClosures.IsSession);
-
-        Assert.Equal(OvernightQueue.StoppedAtItsLimit, ranTonight.Outcome);
-        Assert.Equal([new DateOnly(2026, 9, 4), new DateOnly(2026, 9, 8)], ranTonight.NotRun);
-        Assert.Equal((2, 1, 1), (ranTonight.Queued, ranTonight.Completed, ranTonight.Left));
-
-        var drawn = new MarkRenderer().OvernightQueue(ranTonight);
-
-        Assert.Contains("it started no pass once its limit of 1 hour(s) had passed", drawn, StringComparison.Ordinal);
-        Assert.Contains("the overnight queue did not run on 2026-09-04", drawn, StringComparison.Ordinal);
-
-        // A store whose queue never ran names no night, and says so, rather than naming every
-        // night it holds from before the queue existed.
-        var never = RunScreen.Queue([], new DateOnly(2026, 9, 9), ExchangeClosures.IsSession);
-
-        Assert.True(never.NeverRan);
-        Assert.Empty(never.NotRun);
-        Assert.Contains("the overnight queue has not run on any night this store holds, up to 2026-09-09", new MarkRenderer().OvernightQueue(never), StringComparison.Ordinal);
-
-        // A row under a later night says nothing about an earlier page.
-        Assert.True(RunScreen.Queue([Row(new DateOnly(2026, 9, 10))], new DateOnly(2026, 9, 9), ExchangeClosures.IsSession).NeverRan);
+        Assert.DoesNotContain(await Api(store).ResearchedAsync(), row => row.Ticker is "KEYS" or "MSFT");
     }
 
     [Fact]
-    public async Task AQueueTheLocalModelStoppedSaysOnThePageThatItCouldNotRun()
-    {
-        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Path.Combine(Repository.Root, "fixtures", "membership-2026-09-05"), new RecordingAwake()) with { LocalModel = new FixtureExpectations.NothingAnsweringLocal() });
-
-        using var store = night.Store;
-        using var host = new Host(store.Root);
-        using var client = host.CreateClient();
-
-        var body = await client.GetStringAsync("/screens/run/2026-09-08");
-
-        Assert.Contains("data-outcome=\"unavailable\"", body, StringComparison.Ordinal);
-        Assert.Contains("it could not run: " + ProseWriter.Unavailable, body, StringComparison.Ordinal);
-
-        // A queue the local model stopped is a stage a person has to look at, and it is on the
-        // stale and failed region's list.
-        Assert.Contains($"data-stage=\"{OvernightQueue.Stage}\" data-outcome=\"{OvernightQueue.Unavailable}\"", body, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task TheNightsDurationIsTheArithmeticsAndAQueueAtItsLimitIsNotAStageThatFailed()
+    public async Task AnEarlierNightsQueueRowIsNoPartOfItsDurationAndAQueueAtItsLimitIsNoStageThatFailed()
     {
         // A night whose arithmetic took three minutes and whose queue then ran for an hour, at
         // its limit, with the quarters step before the queue and the report asked for after it,
         // as the night of 2026-09-28 ran. The header's duration is the three minutes the wall
-        // clock row bounds, and the queue that stopped at its limit did what its limit is for.
+        // clock row bounds, and the queue that stopped at its limit did what its limit was for.
         using var store = new TemporaryStore().Migrated();
 
         void Logged(string stage, string started, string ended, string outcome) =>
@@ -143,7 +90,7 @@ public partial class ReadSurface
         Logged("listings", "2026-09-09T01:11:00Z", "2026-09-09T01:12:00Z", "ok");
         Logged("close", "2026-09-09T01:12:00Z", "2026-09-09T01:13:00Z", "ok");
         Logged("quarters", "2026-09-09T01:13:00Z", "2026-09-09T01:13:30Z", "ok");
-        Logged(OvernightQueue.Stage, "2026-09-09T01:13:30Z", "2026-09-09T02:13:30Z", OvernightQueue.StoppedAtItsLimit);
+        Logged(RunScreen.QueueStage, "2026-09-09T01:13:30Z", "2026-09-09T02:13:30Z", RunScreen.QueueAtItsLimit);
         Logged("report", "2026-09-09T02:13:30Z", "2026-09-09T02:13:31Z", "ok");
 
         var api = Api(store);
@@ -156,35 +103,7 @@ public partial class ReadSurface
         Assert.Empty(RunScreen.Failed(stages));
 
         // A queue the local model stopped is one.
-        Assert.Single(RunScreen.Failed([.. stages.Select(stage => stage.Stage == OvernightQueue.Stage ? stage with { Outcome = OvernightQueue.Unavailable } : stage)]));
-    }
-
-    [Fact]
-    public async Task AQueueRowIsReadUnderTheNightItsDetailNamesAndTheNewestOfANightsRowsIsDrawn()
-    {
-        // A queue that started after midnight in New York, which an hour's limit after a late
-        // night can do, is read under the night whose arithmetic it followed rather than under
-        // the clock's night for the instant it started.
-        using var store = new TemporaryStore().Migrated();
-
-        store.Execute(
-            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
-            $"VALUES ('night-late', '{OvernightQueue.Stage}', '2026-09-09T04:30:00Z', '2026-09-09T05:10:00Z', 'ok', 0, 1, 0, '0', " +
-            "'{\"night\":\"2026-09-08\",\"queued\":[\"AAPL\"],\"completed\":[{\"ticker\":\"AAPL\",\"runId\":\"night-late-queue-AAPL\"}],\"left\":[],\"limitHours\":1}');");
-
-        var started = new DateTimeOffset(2026, 9, 9, 4, 30, 0, TimeSpan.Zero);
-
-        Assert.Equal(new DateOnly(2026, 9, 9), ((EquityBrief.Core.Time.IClock)EquityBrief.Core.Time.FixedClock.At(started, EquityBrief.Core.Time.SessionZones.UnitedStates)).SessionDateAt(started));
-        Assert.Equal(new DateOnly(2026, 9, 8), Assert.Single(await Api(store).QueueRowsAsync()).Night);
-
-        // Two rows for one night, being a night run twice: the row written last is what the page
-        // draws, whatever the instants, since a night run again for its session stamps its stages
-        // from that session's evening and so carries an earlier instant than the row it replaces.
-        var earlier = Row(new DateOnly(2026, 9, 8), OvernightQueue.Unavailable) with { StartedAt = new DateTimeOffset(2026, 9, 9, 1, 0, 0, TimeSpan.Zero) };
-        var later = Row(new DateOnly(2026, 9, 8)) with { StartedAt = new DateTimeOffset(2026, 9, 9, 2, 0, 0, TimeSpan.Zero) };
-
-        Assert.Equal(OvernightQueue.Unavailable, RunScreen.Queue([later, earlier], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
-        Assert.Equal(OvernightQueue.Ran, RunScreen.Queue([earlier, later], new DateOnly(2026, 9, 8), ExchangeClosures.IsSession).Outcome);
+        Assert.Single(RunScreen.Failed([.. stages.Select(stage => stage.Stage == RunScreen.QueueStage ? stage with { Outcome = "unavailable" } : stage)]));
     }
 
     static string Text(TemporaryStore store, string sql)

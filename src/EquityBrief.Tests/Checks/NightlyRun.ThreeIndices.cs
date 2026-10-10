@@ -77,7 +77,7 @@ public partial class NightlyRun
 
         var feeds = WithFunds(Funds(Holdings("Mid-Cap", "Sep 04, 2026", "AA", "XRAY", "AAPL"), Holdings("Small-Cap", "Sep 04, 2026", "AAL")));
 
-        var (code, output, error) = await NightAsync(store, feeds, ThreeIndicesRun, FixedClock.At(Night, SessionZones.UnitedStates), SilentQueue());
+        var (code, output, error) = await NightAsync(store, feeds, ThreeIndicesRun, FixedClock.At(Night, SessionZones.UnitedStates));
 
         Assert.True(code == 0, error);
 

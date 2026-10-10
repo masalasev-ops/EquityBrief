@@ -6,7 +6,7 @@
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written. The local model's answers were recorded again on 2026-10-10 under the prompt that teaches [N], and the paid lane's answers were constructed from their recordings of 2026-09-30 with [N] marked, no paid call made: in the comparison with every section local, the short version's first draft is refused and each of its three retries, one request since no retry's draft reaches the checker, stops at its budget of 1024 tokens and is asked once more and stops there again, so it is left out with no usable answer where it had fallen back after its last retry, and that half asks 22 calls where it asked 19: the short version's 7 where it asked 4.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written. The local model's answers were recorded again on 2026-10-10 under the prompt that teaches [N], and the paid lane's answers were constructed from their recordings of 2026-09-30 with [N] marked, no paid call made: in the comparison with every section local, the short version's first draft is refused and each of its three retries, one request since no retry's draft reaches the checker, stops at its budget of 1024 tokens and is asked once more and stops there again, so it is left out with no usable answer where it had fallen back after its last retry, and that half asks 22 calls where it asked 19: the short version's 7 where it asked 4. From the 6.10 correction of 2026-10-10 no pass asks for the key under each figure, so the pass's local lane makes 3 calls where it made 4, the comparison's local half 21 where it made 22, and its paid half 10 where it made 11, spending 0.0376086 where it spent 0.038743068, less the key's one call of 0.001134468.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -16,8 +16,7 @@
   "lanes": {
     "local": [
       "What the company sells",
-      "The segment commentary",
-      "The key under each figure"
+      "The segment commentary"
     ],
     "paid": [
       "The cause of each large move",
@@ -60,7 +59,6 @@
   },
   "versions": [
     { "section": "The dated calendar items", "version": 1, "lane": "paid", "status": "accepted" },
-    { "section": "The key under each figure", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "rejected" },
     { "section": "The segment commentary", "version": 2, "lane": "local", "status": "accepted" },
@@ -89,7 +87,7 @@
     "research"
   ],
   "modelCalls": {
-    "local": 4,
+    "local": 3,
     "paid": 7
   },
   "spend": "0.03369171",
@@ -108,29 +106,27 @@
       "accepted": {
         "What the company sells": 1,
         "The segment commentary": 2,
-        "The key under each figure": 1,
         "The dated calendar items": 1,
         "The two cases": 1,
         "The risks, each with what would confirm it": 1,
         "The short version": 2
       },
       "fallback": [],
-      "calls": 11,
-      "spend": "0.038743068"
+      "calls": 10,
+      "spend": "0.0376086"
     },
     "local": {
       "accepted": {
         "The cause of each large move": 1,
         "What the company sells": 1,
         "The segment commentary": 2,
-        "The key under each figure": 1,
         "The dated calendar items": 2
       },
       "fallback": [
         "The two cases",
         "The risks, each with what would confirm it"
       ],
-      "calls": 22,
+      "calls": 21,
       "spend": "0"
     }
   }

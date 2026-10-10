@@ -205,19 +205,15 @@ public class FixtureReplay
         return store;
     }
 
-    // A whole night over the fixture, as the scheduler runs one, the overnight queue included, over the
-    // recorded local model unless a test hands the night another queue.
+    // A whole night over the fixture, as the scheduler runs one.
     //
     // Apart from the replay above, which calls each stage itself so every table a stage
-    // writes can be read against an expectation: this is the night in order, which is where
-    // what the overnight queue came to is read. The queue writes nothing the replay's own
-    // prose pass does not, so the tables the replay populates are the same with or without it.
+    // writes can be read against an expectation: this is the night in order.
     internal const string NightRunId = "fixture-night";
 
     // A test handing `before` has it run over the migrated store before the night starts, which is how
     // a store already holding rows no night writes is set up.
     internal static async Task<(TemporaryStore Store, int Code, string Output, string Error)> NightAsync(
-        NightQueue? queue = null,
         IClock? clock = null,
         string runId = NightRunId,
         Action<TemporaryStore>? before = null)
@@ -239,8 +235,7 @@ public class FixtureReplay
             clock ?? FixedClock.At(Night, SessionZones.UnitedStates),
             output,
             error,
-            runId,
-            queue: queue ?? NightQueue.FromFixture(Folder(), new RecordingAwake()));
+            runId);
 
         return (store, code, output.ToString(), error.ToString());
     }

@@ -123,18 +123,19 @@ public static class Staleness
     {
         var reading = Pulse(night, pulse);
 
+        // A stored key under each figure is no research and nothing to go stale: it was written for
+        // every name whatever was researched, so counting it would leave no name missing.
+        // see: A researched name is one holding an accepted section besides the key under each figure
         var accepted = newestVersions
             .Where(section => string.Equals(section.Status, Accepted, StringComparison.Ordinal))
+            .Where(section => !string.Equals(section.Section, ClaimRules.RetiredKey, StringComparison.Ordinal))
             .ToArray();
 
-        // A record is at least one accepted section that is research. A name whose
-        // sections all fell back has rows and no research, which the page already
-        // draws as sections left out, and for staleness it is missing: there is
-        // nothing written to go stale. The key under each figure is not a record
-        // either, because it is written for every name each night whatever was
-        // researched, so counting it would leave no name missing.
-        // see: A researched name is one holding an accepted section besides the key under each figure
-        if (!accepted.Any(section => ClaimRules.IsResearched(section.Section)))
+        // A record is at least one accepted section. A name whose sections all fell
+        // back has rows and no research, which the page already draws as sections
+        // left out, and for staleness it is missing: there is nothing written to go
+        // stale.
+        if (accepted.Length == 0)
         {
             return new StalenessVerdict(night, ResearchState.Missing, [], [], null, reading) { Sections = newestVersions };
         }

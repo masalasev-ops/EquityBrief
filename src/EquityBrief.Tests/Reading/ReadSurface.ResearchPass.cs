@@ -80,32 +80,15 @@ public partial class ReadSurface
 
     // Every accepted section but the cause, which the moves table draws, is drawn once
     // with the date and model the store holds, its paragraphs making up the stored prose.
-    // The key under each figure is dated by the night whose figures it explains, so it is
-    // drawn beside that night's figures alone, and a page of another night's says which
-    // night it was written for in its place.
     static void AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(TemporaryStore store, string page, int stated)
     {
         var accepted = Accepted(store, "KEYS").Where(row => row[0] != ClaimRules.CauseSection).ToArray();
-        var session = Rows(store, "SELECT MAX(session_date) FROM bar WHERE ticker = 'KEYS';").Single()[0];
 
         Assert.Equal(stated, accepted.Length);
 
         foreach (var row in accepted)
         {
             var drawn = WrittenOnThePage(page, row[0]);
-            var key = row[0] == ClaimRules.ComputedSection;
-
-            if (key && row[1] != session)
-            {
-                Assert.False(drawn.Success, $"{row[0]}, written for {row[1]}, is drawn beside the figures of {session}");
-                Assert.Contains(
-                    $"<p class=\"key-elsewhere\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(row[0])}\" data-written-for=\"{row[1]}\">"
-                    + $"Not drawn: the newest key explains the figures of {row[1]}, and the figures on this page are {session}'s.</p>",
-                    page,
-                    StringComparison.Ordinal);
-
-                continue;
-            }
 
             Assert.True(drawn.Success, $"{row[0]} is not drawn");
             Assert.Equal(row[1], drawn.Groups[1].Value);
@@ -116,7 +99,7 @@ public partial class ReadSurface
             var paragraphs = Regex.Matches(drawn.Groups[3].Value, "<p class=\"prose[^\"]*\">([^<]*)</p>").Select(match => WebUtility.HtmlDecode(match.Groups[1].Value));
 
             Assert.Equal(Regex.Replace(row[3], @"\s+", " ").Trim(), Regex.Replace(string.Join(" ", paragraphs), @"\s+", " ").Trim());
-            Assert.Contains($"<p class=\"written-by\">{(key ? "written for the close of" : "written on")} {row[1]}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
+            Assert.Contains($"<p class=\"written-by\">written on {row[1]}</p>", drawn.Groups[3].Value, StringComparison.Ordinal);
             Assert.Single(Regex.Matches(page, $"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{Regex.Escape(WebUtility.HtmlEncode(row[0]))}\""));
         }
     }
@@ -151,7 +134,6 @@ public partial class ReadSurface
             .. SinglePageApp.AtTheTop,
             .. SinglePageApp.BeforeTheNumbers,
             .. SinglePageApp.AfterTheNumbers,
-            .. SinglePageApp.UnderTheFigures,
             .. SinglePageApp.AfterThePlan,
             SinglePageApp.InTheDates,
             SinglePageApp.InTheMovesTable,
@@ -472,30 +454,29 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
-        // Seven accepted over one pass, stated in advance: the segment commentary and the short version
+        // Six accepted over one pass, stated in advance: the segment commentary and the short version
         // on their retries and the rest at their first draft, while the cause of each large move came
         // back with no text twice over the recordings and is not written.
-        Assert.Equal(7, Accepted(store, "KEYS").Count);
+        Assert.Equal(6, Accepted(store, "KEYS").Count);
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // All seven drawn as sections, and the cause of each move, which the moves table draws where
+        // All six drawn as sections, and the cause of each move, which the moves table draws where
         // it is written, said to be not written.
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.Contains("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
 
-        // Section 4's order: how it got here, the chart with the key beneath its figures and
-        // the plan, then what the company sells and its segments, the numbers, the two cases,
-        // and what would make it wrong. Read as the order the page draws them in, so a page
-        // drawing them otherwise says which came where.
+        // Section 4's order: how it got here, the chart and the plan, then what the company
+        // sells and its segments, the numbers, the two cases, and what would make it wrong.
+        // Read as the order the page draws them in, so a page drawing them otherwise says
+        // which came where.
         (string Part, int At)[] drawn =
         [
             ("how it got here", At("<section class=\"how-it-got-here\"")),
             ("the chart", At("class=\"level-summary\"")),
-            ("the key", Section("The key under each figure")),
             ("the plan", At("<section class=\"plan-arithmetic\"")),
             ("what it sells", Section("What the company sells")),
             ("the segments", Section("The segment commentary")),
@@ -714,7 +695,7 @@ public partial class ReadSurface
         Assert.True(state.Success);
         Assert.StartsWith("the research is stale: ", state.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"a filing dated {filed} arrived after it was written", state.Groups[1].Value, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.All(Regex.Matches(page, "<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"[^\"]*\" data-as-of=\"([^\"]*)\"").Select(match => match.Groups[1].Value), date => Assert.Equal("2026-08-01", date));
 
         // The option to have them rewritten, with its cost before it.
@@ -744,7 +725,7 @@ public partial class ReadSurface
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
         Assert.Contains("<p class=\"research-paused\" data-cap=\"day\" data-resumes-at=\"2026-09-16T00:00:00Z\">", page, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
 
         // Stale as well, and still no control, because a press would be refused at the cap.
         Assert.Contains("data-state=\"stale\"", page, StringComparison.Ordinal);
@@ -779,7 +760,7 @@ public partial class ReadSurface
         // page says what the pass came to.
         var page = await ResearchedPage(store, "KEYS", nextDay);
 
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
         Assert.Matches(
             "<p class=\"research-pass\" data-outcome=\"unavailable\" data-as-of=\"2026-09-09\">the research model did not answer when a pass was asked for on 2026-09-09, so the pass did not start and the stored research is shown as written",
             page);
@@ -1073,7 +1054,7 @@ public partial class ReadSurface
             "('FFFF', 'The short version', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL), " +
             "('GGGG', 'The two cases', 1, '2026-09-01', 'm', 'accepted', 'p', '[]', NULL), " +
             "('GGGG', 'The two cases', 2, '2026-09-10', 'm', 'accepted', 'p', '[]', NULL), " +
-            // The key under each figure, which the overnight queue writes for every name
+            // The key under each figure, which the overnight queue wrote for every name
             // each night whatever was researched. HHHH holds it and nothing else and is a
             // name with no report; AAAA holds it beside research and is still one name.
             // Counting it would make this figure a count of the index: on the operator's

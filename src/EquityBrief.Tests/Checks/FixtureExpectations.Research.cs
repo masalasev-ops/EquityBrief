@@ -197,13 +197,12 @@ public partial class FixtureExpectations
     {
         using var store = await FixtureReplay.ReplayedForResearchAsync();
 
-        // A year with no article and no release: the pass writes the key under each
-        // figure, which rests on the facts file alone, and hands every other section
-        // nothing, so none of them gets a row a second open could read as written.
+        // A year with no article and no release: the pass hands every section nothing, so
+        // none of them gets a row a second open could read as written.
         var first = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-nothing");
 
         Assert.Equal(ResearchRunner.Written, first.Outcome);
-        Assert.Equal(["The key under each figure"], first.Written.Select(section => section.Section).Distinct().ToArray());
+        Assert.Empty(first.Written);
         Assert.Equal(
             ["What the company sells", "The segment commentary", "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"],
             first.NotWritten.Where(line => line.Reason == ProseWriter.NothingHanded).Select(line => line.Section).ToArray());
@@ -221,8 +220,8 @@ public partial class FixtureExpectations
         Assert.Equal(0, news.Requests + archive.Requests + paid.Probes + paid.Requests);
         Assert.Equal([$"{ResearchRunner.NotWarranted}|0"], Query(store, "SELECT outcome, network_requests FROM run_log WHERE run_id = 'research-nothing-again' AND stage = 'research';"));
 
-        // The page's explicit ask still starts a pass, which fetches again, and what it
-        // writes is still decided section by section: the key accepted today is not paid for.
+        // The page's explicit ask still starts a pass, which fetches again and writes nothing,
+        // every section still handed nothing.
         var asked = new NoArticles();
         var paidForLocal = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: asked)
             .RunAsync("KEYS", "research-nothing-paid-for-local", new ResearchPassRequest(PaidForLocal: true));
@@ -234,7 +233,6 @@ public partial class FixtureExpectations
         var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
 
         Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 8)).Count, asked.Requests);
-        Assert.DoesNotContain("The key under each figure", paidForLocal.Warranted);
         Assert.Empty(paidForLocal.Written);
 
         // And a day later a plain open starts one, since the day's pass is what closed it.
@@ -258,11 +256,10 @@ public partial class FixtureExpectations
             "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES " +
             "('KEYS', 'What the company sells', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL), " +
             "('KEYS', 'The segment commentary', 1, '2026-09-01', 'a writer', 'pending', 'prose', '[]', NULL), " +
-            "('KEYS', 'The key under each figure', 1, '2026-09-08', 'a writer', 'fallback', 'prose', '[]', 'left out'), " +
             "('KEYS', 'The dated calendar items', 1, '2026-09-01', 'a writer', 'fallback', 'prose', '[]', 'left out'), " +
             "('KEYS', 'The two cases', 1, '2026-09-08', 'a writer', 'rejected', 'prose', '[]', 'refused'), " +
             "('KEYS', 'The risks, each with what would confirm it', 1, '2026-08-01', 'a writer', 'accepted', 'prose', '[]', NULL), " +
-            "('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
+            "('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'fallback', 'prose', '[]', 'left out');");
 
         // A research model that does not answer, so the pass records what it warranted
         // and stops before it fetches or writes anything.
@@ -347,22 +344,24 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheKeyUnderEachFigureIsWarrantedOnAnyDayAfterTheOneItWasWrittenFor()
+    public void EveryAcceptedSectionStandsOnALaterDayUntilATriggerFires()
     {
-        // The key explains a night's figures and is dated by that night, so one accepted for an
-        // earlier night is written again though nothing fired, where any other section accepted
-        // then stands, and one accepted for tonight is not written twice.
-        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+        // No section is written again for a night's figures alone, the key under each figure that
+        // was being retired: an accepted section of every kind stands on a later day where nothing
+        // fired, and one accepted today is not written twice.
+        // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
         var today = new DateOnly(2026, 9, 8);
         var earlier = new DateOnly(2026, 9, 4);
         var stands = new StalenessVerdict(today, ResearchState.Stands, [], [], earlier, new PulseReading(0, 0, null, 0, false, null));
 
         SectionStanding Accepted(string section, DateOnly on) => new(section, on, ClaimChecker.Accepted);
 
-        Assert.True(ResearchRunner.Warranted(ClaimRules.ComputedSection, Accepted(ClaimRules.ComputedSection, earlier), stands, today));
-        Assert.False(ResearchRunner.Warranted(ClaimRules.ComputedSection, Accepted(ClaimRules.ComputedSection, today), stands, today));
-        Assert.False(ResearchRunner.Warranted(Evidence.Sells, Accepted(Evidence.Sells, earlier), stands, today));
-        Assert.False(ResearchRunner.Warranted(Evidence.Segments, Accepted(Evidence.Segments, earlier), stands, today));
+        Assert.DoesNotContain(ClaimRules.RetiredKey, ClaimRules.Sections);
+        Assert.All(ClaimRules.Sections, section =>
+        {
+            Assert.False(ResearchRunner.Warranted(section, Accepted(section, earlier), stands, today), section);
+            Assert.False(ResearchRunner.Warranted(section, Accepted(section, today), stands, today), section);
+        });
     }
 
     [Fact]
@@ -498,9 +497,10 @@ public partial class FixtureExpectations
         // A first pass held inside its first model call, so the lock in force is the one
         // the runner itself took rather than one this test took for it. The 6.8 sweep
         // found the difference: a lock taken here more strictly than the runner takes its
-        // own refuses a second pass whatever the runner does.
+        // own refuses a second pass whatever the runner does. Handed the company's release,
+        // so its local lane has a section to call the model for.
         var held = new HeldLocal();
-        var first = FixtureReplay.Researcher(store, ResearchClock, lane: ClaimRules.Sections, localModel: held, archive: new NoRelease(), news: new NoArticles())
+        var first = FixtureReplay.Researcher(store, ResearchClock, lane: ClaimRules.Sections, localModel: held, news: new NoArticles())
             .RunAsync("KEYS", "research-running");
 
         await held.Entered.WaitAsync(TimeSpan.FromMinutes(1));
@@ -850,10 +850,9 @@ public partial class FixtureExpectations
         // summarises and not a summary of a set no recording was made over.
         store.Execute("INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
-        // A context too small for the two sections handed the release and large enough for
-        // the key, the one the prose expectation works by hand: the two are refused before any
-        // local call and left for the paid path, which writes them in this pass from the
-        // recordings the comparison made.
+        // A context too small for the two sections handed the release, the one the prose
+        // expectation works by hand: the two are refused before any local call and left for the
+        // paid path, which writes them in this pass from the recordings the comparison made.
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var local = new RecordedLocalModelFeed(Folder());
         var context = Expected("prose").GetProperty("cannotHold").GetProperty("contextTokens").GetInt32();

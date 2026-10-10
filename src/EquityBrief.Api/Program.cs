@@ -768,9 +768,9 @@ static string? PhaseReport(WebApplicationBuilder builder, string? checkout)
     return File.Exists(path) ? File.ReadAllText(path) : null;
 }
 
-// Whether the exchange traded on a day, for the run page's overnight queue region, and
-// a day the closure table cannot place is one the region does not name, rather than a
-// page that fails to draw for a night nobody asked about.
+// Whether the exchange traded on a day, for tonight's notice, and a day the closure table
+// cannot place is one it did not, rather than a page that fails to draw for a night nobody
+// asked about.
 static bool Traded(DateOnly day)
 {
     try
@@ -1919,7 +1919,6 @@ app.MapGet("/screens/run/{night?}", async (
             await read.StaleNamesAsync(index, dated),
             RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
             RunScreen.FellBack(await read.FellBackAsync(dated)),
-            RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder, checkout)),
             RunScreen.Shadow(
                 await read.RegisteredCandidatesAsync(),

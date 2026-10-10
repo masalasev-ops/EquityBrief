@@ -345,7 +345,7 @@ public partial class ReadSurface
         // Every table the page drew before sits whole in a folded section beneath the pictures.
         var detail = page[At("<section class=\"run-detail\">")..];
 
-        foreach (var card in new[] { "operational", "market", "funnel", "records", "overlap", "shadow", "stale", "queue", "harness" })
+        foreach (var card in new[] { "operational", "market", "funnel", "records", "overlap", "shadow", "stale", "harness" })
         {
             Assert.Matches($"<details class=\"fold\" data-fold=\"[a-z-]+\"><summary>[^<]+</summary>(?:(?!</details>).)*data-card=\"{card}\"", Regex.Replace(detail, "\\s+", " "));
         }

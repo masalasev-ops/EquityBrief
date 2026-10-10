@@ -95,7 +95,6 @@ public static class Nightly
         string? runId = null,
         IBulkPriceFeed? bulk = null,
         TimeSpan? deadline = null,
-        NightQueue? queue = null,
         IDrainLauncher? launcher = null,
         bool askForTheFirstName = true,
         TryPlan? tries = null,
@@ -119,7 +118,6 @@ public static class Nightly
         return await RunAsync(
             store,
             bulk is null ? feeds : feeds with { Bulk = bulk },
-            queue ?? NightQueue.FromFixture(fixtureFolder),
             indexCode,
             clock,
             output,
@@ -141,7 +139,6 @@ public static class Nightly
     public static async Task<int> RunAsync(
         StoreLocation store,
         NightFeeds feeds,
-        NightQueue queue,
         string indexCode,
         IClock clock,
         TextWriter output,
@@ -208,10 +205,6 @@ public static class Nightly
         // family reads the night's own index alone.
         // see: The universe is the S&P 1500's three indices with each member tagged by its index, and membership is fetched
         var wider = MembershipLoader.WiderOf(feeds.Funds, indexCode);
-
-        // The local model calls the overnight queue made, which the night's last line states apart
-        // from the arithmetic's, whose model calls are none.
-        var queueCalls = 0;
 
         // The order is section 14's, for the steps that exist. Migrate is not
         // one of its steps: it is what makes the store able to hold the night,
@@ -629,7 +622,7 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
-            // Section 14's step 24, after the arithmetic has closed and before the overnight queue. The
+            // Section 14's step 24, after the arithmetic has closed and before the night's requests. The
             // reported quarters of the members due, one request for a member's fundamentals and one for
             // its closes where the answer is stored, the fourth carve-out the nightly rule names. It is
             // handed no token from the night's deadline, which bounds the arithmetic: it is bounded by its
@@ -649,7 +642,7 @@ public static class Nightly
 
                 return QuarterFetcher.Detail(outcome);
             }),
-            // Section 14's step 25, after the quarters fetch and before the overnight queue. The archive's daily index
+            // Section 14's step 25, after the quarters fetch and before the night's requests. The archive's daily index
             // for each weekday since the refresh last read one, and the facts of the members whose filer filed a
             // report, an amendment or a results announcement, the seventh carve-out the nightly rule names: free and
             // from the SEC rather than the provider, its documents on its own row. It is handed no token from the
@@ -678,40 +671,12 @@ public static class Nightly
 
                 return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again");
             }),
-            // Section 14's step 26, after the arithmetic has closed and recorded its
-            // counts. It calls the local model and nothing else, and no figure above it
-            // moves whether it ran. It is handed no token from the night's deadline: that
-            // deadline bounds the arithmetic, and the queue is bounded by its own limit,
-            // which a night that took three minutes would otherwise cut to twelve.
-            // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
-            // see: The overnight queue is bounded by time, not by a count of names
-            // see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
-            new("queue", async () =>
-            {
-                var outcome = await new OvernightQueue(
-                    new StalenessJudge(clock, store.DatabaseFile),
-                    sections => new ProseWriter(queue.LocalModel, queue.Settings, sections, clock, store.DatabaseFile),
-                    new ClaimChecker(clock, store.DatabaseFile),
-                    queue.Lane,
-                    queue.Limit,
-                    queue.Awake,
-                    clock,
-                    store.DatabaseFile).RunAsync(runId, clock.SessionDateAt(clock.UtcNow), wider: wider);
-
-                queueCalls = outcome.ModelCalls;
-
-                return $"{outcome.Completed.Count} of {outcome.Queued.Count} queued pass(es) completed, " +
-                    $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
-                    $"{outcome.Outcome}, {outcome.Awake}";
-            }, [OvernightQueue.Stage]),
-            // Section 14's step 27, after the overnight queue, which writes the first name's key
-            // before any other name's, so a pass started earlier would meet the queue on that
-            // name. The night asks for six reports taken in turn across the S&P 500's, 400's and
-            // 600's pages and starts the drain as a press does: it writes a row a name and starts
-            // one process, and each pass is the drain's own run, its calls and requests on its own
-            // rows, at the off-peak rate. It is handed no token from the night's deadline, which
-            // bounds the arithmetic and may have passed while the queue ran. A night run again for
-            // an earlier session asks for nothing, since its list is not tonight's.
+            // Section 14's step 26, after the filings refresh. The night asks for six reports taken
+            // in turn across the S&P 500's, 400's and 600's pages and starts the drain as a press
+            // does: it writes a row a name and starts one process, and each pass is the drain's own
+            // run, its calls and requests on its own rows, at the off-peak rate. It is handed no token
+            // from the night's deadline, which bounds the arithmetic. A night run again for an earlier
+            // session asks for nothing, since its list is not tonight's.
             // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
             new("report", async () =>
             {
@@ -861,8 +826,7 @@ public static class Nightly
         var live = feeds.ReachesTheNetwork;
 
         output.WriteLine(
-            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls in the arithmetic and " +
-            $"{queueCalls} local model call(s) from the overnight queue, " +
+            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls, " +
             $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
             $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
 

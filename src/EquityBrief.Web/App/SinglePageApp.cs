@@ -809,28 +809,6 @@ public sealed class SinglePageApp : IComponent
                     continue;
                 }
 
-                // The key under each figure is dated by the night whose figures it explains,
-                // so it is drawn only beside that night's, and elsewhere the card says which
-                // night it was written for.
-                // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-                if (UnderTheFigures.Contains(name, StringComparer.Ordinal))
-                {
-                    Card(
-                        SectionId(name),
-                        name,
-                        Cards.Dated(
-                            name,
-                            KeyDated,
-                            section.AsOf,
-                            section.AsOf == session
-                                ? marks.WrittenSection(ticker, section, documents, dated: "written for the close of")
-                                : marks.KeyForAnotherNight(ticker, name, section.AsOf, session),
-                            section: name,
-                            id: SectionId(name)));
-
-                    continue;
-                }
-
                 Card(
                     SectionId(name),
                     name,
@@ -1108,9 +1086,6 @@ public sealed class SinglePageApp : IComponent
 
         Card("chart", "The daily chart and its levels", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its levels", stamp: Cards.Night(session), id: "chart", region: "chart"));
 
-        // The key under each figure, beneath the figures it explains.
-        Draw(UnderTheFigures);
-
         // The plan region: the plan column and the two tables it is read beside, the event
         // setups and the sizing arithmetic.
         var planned = new StringBuilder();
@@ -1292,19 +1267,14 @@ public sealed class SinglePageApp : IComponent
         "</details></section>";
 
     // Where each written section is drawn, which is section 4's order: the short version
-    // at the top, the key beneath the chart's figures, what the company sells after the
-    // plan and before the numbers, the cycle and the two cases after them, the risks after
-    // those, and the dated items with the dates. The cause of each large move is drawn in the moves table, in
-    // the row of the move each sentence names, and `read-surface` asserts every section
-    // figure 12.2 names is placed exactly once across these and that table.
+    // at the top, what the company sells after the plan and before the numbers, the cycle
+    // and the two cases after them, the risks after those, and the dated items with the
+    // dates. The cause of each large move is drawn in the moves table, in the row of the
+    // move each sentence names, and `read-surface` asserts every section figure 12.2 names
+    // is placed exactly once across these and that table.
     public static readonly string[] AtTheTop = ["The short version"];
     public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
     public static readonly string[] AfterTheNumbers = ["The industry cycle", MarkRenderer.TheTwoCases];
-    public static readonly string[] UnderTheFigures = [MarkRenderer.KeySection];
-
-    // What the key's card states its date as, which is the night whose figures it explains
-    // rather than the day it was written.
-    public const string KeyDated = "For the close of";
     public static readonly string[] AfterThePlan = [MarkRenderer.TheRisks];
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";
@@ -1449,7 +1419,7 @@ public sealed class SinglePageApp : IComponent
 
         body.Append(Cards.Key(
             "What is listed.",
-            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. The key under each figure is not counted, because the overnight queue writes it for every name in the index each night.",
+            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. A key under each figure, which the overnight queue once wrote for every name in the index, is not counted.",
             "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
 
         return Invariant($"<section class=\"researched\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\">")
@@ -2024,7 +1994,6 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<string> stale,
         IReadOnlyList<RefusedDocument> refused,
         IReadOnlyList<LeftOutSection> fellBack,
-        QueueNight queue,
         HarnessCounts? harness,
         ShadowRegion shadow,
         PricedCalls? priced = null,
@@ -2184,7 +2153,7 @@ public sealed class SinglePageApp : IComponent
                 "Research",
                 marks.ResearchRegion(written),
                 title: "Written reports and what they cost",
-                lede: "What the paid model spent this month against its cap, and the reports and drafts written over the last week.",
+                lede: "What the paid model spent this month against its cap, and the reports written over the last week.",
                 stamp: Cards.Night(night),
                 region: "research-picture"));
         }
@@ -2360,20 +2329,13 @@ public sealed class SinglePageApp : IComponent
             region.Append(Folded);
         }
 
-        region.Append(Fold("health", "What the night could not do, the overnight queue and the code checks"));
+        region.Append(Fold("health", "What the night could not do and the code checks"));
         region.Append(Cards.Computed(
             "Stale and failed",
             marks.StaleAndFailed(stale, failed, refused, fellBack),
             title: "What the night could not do",
             stamp: Cards.Night(night),
             region: "stale"));
-
-        region.Append(Cards.Computed(
-            "Overnight queue",
-            marks.OvernightQueue(queue),
-            title: "The local model's overnight pass",
-            stamp: Cards.Night(night),
-            region: "queue"));
 
         region.Append(Cards.Computed(
             "Harness",

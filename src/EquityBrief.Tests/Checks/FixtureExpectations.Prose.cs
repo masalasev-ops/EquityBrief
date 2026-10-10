@@ -202,15 +202,18 @@ public partial class FixtureExpectations
     [Fact]
     public async Task ASectionTheCheckerRefusedIsAskedOnceMoreToldWhyAndTheSecondDraftStands()
     {
-        // The local lane's retry over a scripted runtime: the key's first draft quotes a close no
-        // facts file holds and is refused, and the next pass asks once more, told why, and stores
-        // the second draft, which quotes the close the file holds and is accepted.
+        // The local lane's retry over a scripted runtime: the segment commentary's first draft quotes
+        // a close no facts file holds, citing the night's figures, and is refused, and the next pass
+        // asks once more, told why, and stores the second draft, which quotes the close the file holds
+        // and is accepted.
+        const string Section = "The segment commentary";
+
         var (store, document) = await WithRelease();
 
         using (store)
         {
-            var feed = new TwoDrafts("Keysight closed at 999.99 on the night.", "Keysight closed at 333.42 on the night.");
-            var writer = new ProseWriter(feed, LocalSettings(), [ClaimRules.ComputedSection], ProseClock, store.DatabaseFile);
+            var feed = new TwoDrafts("Keysight closed at 999.99 on the night [N].", "Keysight closed at 333.42 on the night [N].");
+            var writer = new ProseWriter(feed, LocalSettings(), [Section], ProseClock, store.DatabaseFile);
             var checker = new ClaimChecker(ProseClock, store.DatabaseFile);
 
             await writer.WriteAsync("KEYS", Handed(document), "prose-refused-1");
@@ -218,18 +221,18 @@ public partial class FixtureExpectations
             var again = await writer.WriteAsync("KEYS", Handed(document), "prose-refused-2");
             var second = await checker.RunAsync("claims-refused-2");
 
-            Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Rejected}"], first.Checked.Select(section => $"{section.Section}|{section.Status}"));
-            Assert.Equal([ClaimRules.ComputedSection], again.Written.Where(section => section.Retry).Select(section => section.Section));
+            Assert.Equal([$"{Section}|{ClaimChecker.Rejected}"], first.Checked.Select(section => $"{section.Section}|{section.Status}"));
+            Assert.Equal([Section], again.Written.Where(section => section.Retry).Select(section => section.Section));
             Assert.DoesNotContain("previous draft", feed.Asked[0].Prompt, StringComparison.Ordinal);
             Assert.Contains(RetryBrief.Opening, feed.Asked[1].Prompt, StringComparison.Ordinal);
             Assert.Contains(
-                $"- \"999.99\" in the sentence \"Keysight closed at 999.99 on the night.\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
+                $"- \"999.99\" in the sentence \"Keysight closed at 999.99 on the night [N].\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
                 feed.Asked[1].Prompt,
                 StringComparison.Ordinal);
-            Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"], second.Checked.Select(section => $"{section.Section}|{section.Status}"));
+            Assert.Equal([$"{Section}|{ClaimChecker.Accepted}"], second.Checked.Select(section => $"{section.Section}|{section.Status}"));
             Assert.Equal(
                 [$"1|{ClaimChecker.Rejected}", $"2|{ClaimChecker.Accepted}"],
-                Query(store, $"SELECT version, status FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.ComputedSection}' ORDER BY version;"));
+                Query(store, $"SELECT version, status FROM research_section WHERE ticker = 'KEYS' AND section = '{Section}' ORDER BY version;"));
         }
     }
 
@@ -466,12 +469,13 @@ public partial class FixtureExpectations
             var outcome = await new ProseWriter(feed, LocalSettings(context), ReleaseLane, ProseClock, store.DatabaseFile)
                 .WriteAsync("KEYS", Handed(document), "prose-cannot-hold");
 
-            // Asked for the section that fits and for nothing else. Each refused section
-            // has a recording keyed on the request a full context makes, since a context
-            // is not part of what the model is asked, so a writer that attempted one
-            // would have written it: not being asked is what shows the refusal came
-            // before the call rather than after it failed.
+            // Asked for no section, since none fits. Each refused section has a recording
+            // keyed on the request a full context makes, since a context is not part of what
+            // the model is asked, so a writer that attempted one would have written it: not
+            // being asked is what shows the refusal came before the call rather than after it
+            // failed.
             Assert.Equal(Listed(hold.GetProperty("asked")), feed.Asked.Select(request => request.Section).ToArray());
+            Assert.Empty(feed.Asked);
             Assert.Equal(Listed(hold.GetProperty("refused")), outcome.NotWritten.Select(section => section.Section).ToArray());
             Assert.All(outcome.NotWritten, section => Assert.StartsWith(ProseWriter.CannotHold + ": ", section.Reason, StringComparison.Ordinal));
 
@@ -483,11 +487,10 @@ public partial class FixtureExpectations
 
             Assert.Equal(outcome.NotWritten.Select(section => (section.Section, section.Reason)).ToArray(), Lines(detail, "notWritten"));
 
-            // The derivation the expectation states, held against the prompts rather than
-            // taken on its word, each counted as the rule counts it, each digit and each byte
+            // The derivation the expectation states, held against the release rather than
+            // taken on its word, counted as the rule counts it, each digit and each byte
             // outside ASCII a token and the rest at the stated characters a token: the
-            // release's text alone, which every refused prompt carries whole, exceeds the room,
-            // and the asked prompt fits inside it.
+            // release's text alone, which every refused prompt carries whole, exceeds the room.
             var room = context - OpenAiCompatibleModelFeed.AnswerTokens;
 
             static decimal Counted(string text)
@@ -502,12 +505,6 @@ public partial class FixtureExpectations
 
             Assert.True(release > room, $"The release counts {release} tokens, which fit in {room}.");
             Assert.Equal(hold.GetProperty("releaseTokens").GetInt32(), release);
-
-            var asked = feed.Asked.Single();
-            var counted = Counted(asked.System + asked.Prompt);
-
-            Assert.True(counted <= room, $"The facts-only prompt counts {counted} tokens against {room}.");
-            Assert.Equal(hold.GetProperty("askedTokens").GetInt32(), counted);
         }
     }
 
@@ -580,108 +577,12 @@ public partial class FixtureExpectations
             }
         }
 
+        // The replay's own pass, which is handed no document and so asks for nothing.
         var replayed = new RecordedLocalModelFeed(Folder());
 
         using (await FixtureReplay.ReplayedAsync(replayed))
         {
-            asked.AddRange(replayed.Asked);
-        }
-
-        // From 6.10, the overnight queue over a whole fixture night.
-        var queued = new RecordedLocalModelFeed(Folder());
-        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = queued });
-
-        using (night.Store)
-        {
-            Assert.True(night.Code == 0, night.Error);
-            asked.AddRange(queued.Asked);
-        }
-
-        // And the queue on the three later nights the nightly run's tests make, the session
-        // after the fixture's night, the night after one that did not run, and that night
-        // where the caught-up file carried nothing for one member, each of which writes the
-        // key under each figure for every name for the night's own facts file.
-        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-        var shortOf = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).First();
-
-        foreach (var (at, runId, holed) in new[]
-        {
-            (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-two", false),
-            (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-miss", false),
-            (new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), "token-night-after-a-short-catch-up", true),
-        })
-        {
-            using var later = new TemporaryStore();
-
-            var (first, _, firstError) = await NightlyRun.NightAsync(later, runId: "token-night-one");
-
-            Assert.True(first == 0, firstError);
-
-            var laterQueued = new RecordedLocalModelFeed(Folder());
-            IBulkPriceFeed bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8));
-            var feeds = NightFeeds.FromFixture(Folder()) with { Bulk = holed ? new HoledBulkFeed(bulk, new DateOnly(2026, 9, 9), [shortOf]) : bulk };
-            var (code, _, error) = await NightlyRun.NightAsync(later, feeds, runId, FixedClock.At(at, SessionZones.UnitedStates), NightQueue.FromFixture(Folder()) with { LocalModel = laterQueued });
-
-            Assert.True(code == 0, error);
-            asked.AddRange(laterQueued.Asked);
-        }
-
-        // And the two nights of the rebalance the nightly run's tests make, one member leaving the
-        // index on the second and another joining it there, so on each night one Technology member
-        // is out of the index and the other two each read a group of one.
-        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
-
-        using (var rebalanced = new TemporaryStore())
-        {
-            NightFeeds Rebalanced(IBulkPriceFeed? bulk)
-            {
-                var feeds = NightFeeds.FromFixture(Folder());
-
-                return feeds with
-                {
-                    Membership = new RebalancedMembershipFeed(feeds.Membership, members[0], members[1], new DateOnly(2026, 9, 9)),
-                    Bulk = bulk ?? feeds.Bulk,
-                };
-            }
-
-            foreach (var (at, runId, bulk) in new (DateTimeOffset, string, IBulkPriceFeed?)[]
-            {
-                (new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), "token-night-announced", null),
-                (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-effective", new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8))),
-            })
-            {
-                var rebalancedQueued = new RecordedLocalModelFeed(Folder());
-                var (code, _, error) = await NightlyRun.NightAsync(rebalanced, Rebalanced(bulk), runId, FixedClock.At(at, SessionZones.UnitedStates), NightQueue.FromFixture(Folder()) with { LocalModel = rebalancedQueued });
-
-                Assert.True(code == 0, error);
-                asked.AddRange(rebalancedQueued.Asked);
-            }
-        }
-
-        // And the session after the fixture's night where the feed stops listing a member, the
-        // nightly run's own test, so the Technology members left beside it read a group of one
-        // while holding the quarters the fixture's night stored for them.
-        using (var unlisted = new TemporaryStore())
-        {
-            var (first, _, firstError) = await NightlyRun.NightAsync(unlisted, runId: "token-night-listed");
-
-            Assert.True(first == 0, firstError);
-
-            var unlistedQueued = new RecordedLocalModelFeed(Folder());
-            var feeds = NightFeeds.FromFixture(Folder());
-            var (code, _, error) = await NightlyRun.NightAsync(
-                unlisted,
-                feeds with
-                {
-                    Membership = new RebalancedMembershipFeed(feeds.Membership, members[0], null, null, drop: true),
-                    Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8)),
-                },
-                "token-night-unlisted",
-                FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
-                NightQueue.FromFixture(Folder()) with { LocalModel = unlistedQueued });
-
-            Assert.True(code == 0, error);
-            asked.AddRange(unlistedQueued.Asked);
+            Assert.Empty(replayed.Asked);
         }
 
         var (store, document) = await WithRelease();
@@ -700,31 +601,17 @@ public partial class FixtureExpectations
 
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
-        // Two from the replay, MSFT's key under each figure and NFLX's; five from the release's
-        // passes, what the company sells, the segment commentary and the cause, and the segment
-        // commentary and the cause again after the checker refused their first drafts, the key
-        // being the research pass's own request; four from the research pass with the configured lanes, the segment
+        // Five from the release's passes, what the company sells, the segment commentary and the
+        // cause, and the segment commentary and the cause again after the checker refused their
+        // first drafts; three from the research pass with the configured lanes, the segment
         // commentary among them asked again after the checker refused its first draft; thirteen
         // from the comparison with every section in the local lane, the cause, the dated calendar
         // items, the two cases, the risks and the short version, each of the last four asked
         // again after the checker refused its first draft, the two cases and the risks each asked
         // twice more, refused at every retry to the last, and the short version's three retries
         // one request, since each stopped at its budget and no draft after its first reached the
-        // checker; two
-        // from the queue over the fixture's night, AAPL's key and
-        // KEYS's, MSFT's and NFLX's being the replay's requests asked again; eight from the two
-        // later nights, every member's key on each, each member reading the quarters the
-        // fixture's night stored; and one from the night after a short catch-up, the key of the
-        // member the caught-up file left out, over the facts file its missing session left it,
-        // the other three being the missed night's requests asked again; and four from the
-        // rebalance's two nights, whose Technology names each read a group of one: AAPL's key
-        // and MSFT's on the fixture's night, before KEYS joins, and KEYS's and MSFT's on the
-        // next session, AAPL having left, NFLX's on each being a request the other nights asked,
-        // since its group holds nobody either way; and one from the session the feed stops
-        // listing AAPL, KEYS's key over the group of one the rebalance's joiner reads but with
-        // the quarters the fixture's night stored for it, which the joiner does not yet hold,
-        // MSFT's and NFLX's there being requests the rebalance asked.
-        Assert.Equal(40, recorded.Length);
+        // checker.
+        Assert.Equal(21, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

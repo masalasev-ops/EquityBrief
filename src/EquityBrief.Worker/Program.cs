@@ -1356,7 +1356,6 @@ static async Task<int> NightlyRun(string[] args)
     }
 
     NightFeeds feeds;
-    NightQueue queue;
 
     try
     {
@@ -1376,12 +1375,6 @@ static async Task<int> NightlyRun(string[] args)
             configuration[EodhdBulkPriceFeed.BaseAddressKey],
             configuration[ProviderCredentials.ApiKeyName],
             configuration[ArchiveAgent.ContactName]);
-
-        // The overnight queue's local model, from the night's own source, with the lane, the limit
-        // and the hold. Resolved here with the feeds rather than at the queue's own step, so a lane
-        // naming a section nobody can write or a limit that is not a number refuses the
-        // night before its first step rather than after its arithmetic.
-        queue = NightQueue.From(configuration, source, fixture, new MachineAwake());
     }
     catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
     {
@@ -1408,7 +1401,7 @@ static async Task<int> NightlyRun(string[] args)
     // A night the scheduler starts tries again from a step that stopped; a run of the rest of one tries once.
     // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
     return await Nightly.RunAsync(
-        store, feeds, queue, index, clock, Console.Out, Console.Error, runId,
+        store, feeds, index, clock, Console.Out, Console.Error, runId,
         launcher: launcher,
         askForTheFirstName: named is null,
         tries: rest is null ? Nightly.TryPlan.Standard : Nightly.TryPlan.Once,
