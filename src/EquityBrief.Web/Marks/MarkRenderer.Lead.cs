@@ -18,7 +18,7 @@ public sealed partial class MarkRenderer
 
         lead.Append(Formatted($"<section class=\"lead\" data-ticker=\"{Escaped(ticker)}\">"));
         lead.Append(headline is { } said
-            ? Formatted($"<h1 class=\"headline\" data-written=\"{(said.Written ? "model" : "code")}\">{Escaped(said.Sentence)}</h1>")
+            ? Formatted($"<h1 class=\"lead-line\" data-written=\"{(said.Written ? "model" : "code")}\">{Escaped(said.Sentence)}</h1>")
             : string.Empty);
 
         lead.Append(tiles is { } shown ? LeadTiles(shown) : string.Empty);

@@ -13,8 +13,15 @@ public static class Stylesheet
 {
     public const string Css = """
 /* COLOUR RULES. Every token is one of these kinds; none of them carries a meaning not written here.
-   --sup, --sup-fill, --sup-ink   A level BELOW the price. Nothing else may use this hue.
-   --res, --res-fill, --res-ink   A level ABOVE the price. Nothing else may use this hue.
+   --sup, --sup-fill, --sup-ink   A level BELOW the price, and the left rule of a name page's region that buys. Nothing
+                 else may use this hue.
+   --res, --res-fill, --res-ink   A level ABOVE the price, and the left rule of a name page's part that sells. Nothing
+                 else may use this hue, and as text it is --res-ink, at 4.5 to 1 or more on every ground.
+   --up, --up-fill      A figure that ROSE, on the name page and its file alone, its sign always written beside it.
+   --down, --down-fill  A figure that FELL, on the name page and its file alone, its sign always written beside it.
+                 Never a failure, which is --fail's, and never a level.
+   --warn, --warn-fill  Caution: the left rule of a name page's risks with the word written beside it, and a pick's
+                 card's warning. Never a level and never a failure.
    --dash-ink    The stroke of a dashed outline, which always means not yet measured or not stored.
                  A neutral grey: it is never a fill, and it is never used without the dash.
    --accent      Neutral slate. The top rule of a section computed tonight, the computed badge, and controls.
@@ -33,6 +40,7 @@ public static class Stylesheet
  --s1:#e4e1d9; --s2:#bab5a9; --s3:#7f7a6f; --s4:#2f2f2d;
  --sup:#2e7a53; --sup-fill:rgba(46,122,83,.12); --sup-ink:#1f5b3c;
  --res:#bd631d; --res-fill:rgba(189,99,29,.12); --res-ink:#8a4511;
+ --up:#3d5fb8; --up-fill:rgba(61,95,184,.12); --down:#8f3a8c; --down-fill:rgba(143,58,140,.12); --warn:#6e5a00; --warn-fill:rgba(110,90,0,.12);
  --dash-ink:#6a6d71; --shadow:0 1px 2px rgba(40,34,20,.06),0 2px 8px rgba(40,34,20,.04);
  --stat:#2f6db0; --stat-2:#8db4de; --stat-fill:rgba(47,109,176,.12);
  --wait:#6a55a3; --wait-fill:rgba(106,85,163,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
@@ -50,6 +58,7 @@ public static class Stylesheet
  --s1:#262a2e; --s2:#4b5157; --s3:#868c92; --s4:#dcd8cf;
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
+ --up:#86b0ff; --up-fill:rgba(134,176,255,.14); --down:#f582c8; --down-fill:rgba(245,130,200,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
  --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
  --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
@@ -60,6 +69,7 @@ public static class Stylesheet
  --s1:#262a2e; --s2:#4b5157; --s3:#868c92; --s4:#dcd8cf;
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
+ --up:#86b0ff; --up-fill:rgba(134,176,255,.14); --down:#f582c8; --down-fill:rgba(245,130,200,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
  --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
  --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
@@ -114,7 +124,7 @@ form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--
 .watch-said:empty{display:none}
 .watch-said{margin:0 0 10px}
 .watch-table .co{display:block;color:var(--soft);font-size:12px}
-.watch-table td.listed{color:var(--support);font-weight:600}
+.watch-table td.listed{color:var(--ink);font-weight:700}
 .watch-table td.stopped{color:var(--soft)}
 .watch-table .btn-2{padding:0 8px;line-height:20px}
 .level-summary td.strength{white-space:nowrap}
@@ -339,8 +349,8 @@ span[data-last-asked-at]::before{content:none}
 .news-region{position:relative}
 .news-bar{display:block;width:100%;max-width:520px;height:14px;margin:4px 0 8px}
 .nb-track{fill:var(--s2)}
-.nb-positive{fill:var(--sup)}
-.nb-negative{fill:var(--res)}
+.name .nb-positive{fill:var(--up)}
+.name .nb-negative{fill:var(--down)}
 .news-counts-line{margin:0 0 8px;font-size:13.5px}
 .news-unlabelled,.news-none{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
 .news-region>.news-tab{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
@@ -358,8 +368,7 @@ span[data-last-asked-at]::before{content:none}
 .news-tab[value="all"]:checked~.news-rows .news-row:not([data-tabs~="all"]),.news-tab[value="positive"]:checked~.news-rows .news-row:not([data-tabs~="positive"]),.news-tab[value="negative"]:checked~.news-rows .news-row:not([data-tabs~="negative"]),.news-tab[value="neutral"]:checked~.news-rows .news-row:not([data-tabs~="neutral"]),.news-tab[value="opinion"]:checked~.news-rows .news-row:not([data-tabs~="opinion"]){display:none}
 .news-model{margin:8px 0 0;font-size:11.5px;color:var(--soft)}
 .list-table td.news-counts{white-space:nowrap;font-variant-numeric:tabular-nums}
-.list-table .np{color:var(--sup)}
-.list-table .nn{color:var(--res)}
+.list-table .np,.list-table .nn{color:var(--ink);font-weight:600}
 .family-state{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
 .family-state .provisional{font-weight:600;color:var(--ink)}
 .family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
@@ -377,9 +386,9 @@ span[data-last-asked-at]::before{content:none}
 .card-lines{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
 .card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);gap:8px;align-items:baseline}
 .card-mark{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;text-align:center}
-.card-mark[data-verdict='tick']{color:var(--sup-ink);background:var(--sup-fill)}
+.card-mark[data-verdict='tick']{color:var(--ink);background:var(--plot);border:1px solid var(--ink-2)}
 .card-mark[data-verdict='note']{color:var(--ink-2);background:var(--plot);border:1px solid var(--hair-2)}
-.card-mark[data-verdict='warning']{color:var(--res-ink);background:var(--res-fill)}
+.card-mark[data-verdict='warning']{color:var(--warn);background:var(--warn-fill);border:1px solid var(--warn)}
 .card-record{border:1px solid var(--hair-2);border-radius:6px;padding:10px 12px}
 .card-record.outline{border-style:dashed}
 .card-record h5{margin:0 0 6px;font:600 13px var(--sans)}
@@ -498,6 +507,53 @@ ul.claim-rows>li:last-child,ul.risks>li:last-child{border-bottom:0}
    side by side, a risk to a row */
 table.risks-table{max-width:120ch}
 table.risks-table th:first-child{width:50%}
+/* the name page and its file: a reading column a thousand pixels wide, the lead under the masthead, and each region
+   ruled down its left by its role, a buy in the support hue, a sale in the resistance hue, caution in amber with the
+   word written, and everything else in slate, a written region in plum-grey. A figure that rose or fell is drawn in
+   its own hue here and nowhere else, its sign always beside it. */
+main .name,.exported .name{max-width:1000px;margin-inline:auto}
+.m-ix{font:500 13px var(--sans);color:var(--ink-2)}
+.m-price{display:inline-flex;align-items:baseline;gap:8px}
+.pill.live{border-color:var(--ink);color:var(--ink);font-weight:700;letter-spacing:.06em}
+.pill.new{margin-left:8px;border-color:var(--accent);color:var(--ink);font-size:10.5px;padding:0 6px}
+.lead{margin:22px 0 4px}
+.lead-line{font:600 24px/1.3 var(--serif);margin:0 0 14px;max-width:62ch}
+.lead-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 6px}
+.lead-tile{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.lead-tile .k{font:600 10.5px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.lead-tile .v{font:600 26px/1.15 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
+.lead-tile .v.none{font-size:16px;font-weight:500;color:var(--soft)}
+.lead-tile .s{font-size:12.5px;line-height:1.4;color:var(--ink-2)}
+.range-bar{display:block;margin:4px 0 2px}
+.range-bar .rb-track{stroke:var(--s2);stroke-width:4;stroke-linecap:round}
+.range-bar .rb-dot{fill:var(--ink);stroke:var(--surface);stroke-width:2}
+.name .up,.m-price .up{color:var(--up)}
+.name .down,.m-price .down{color:var(--down)}
+.name .card{border-top-width:1px;border-top-color:var(--hair);border-left:4px solid var(--accent)}
+.name .card.spined{border-left-color:var(--research)}
+.name .card.spined.fund{border-left-color:var(--s3)}
+.name .card[data-role='buy']{border-left-color:var(--sup)}
+.name .card[data-role='caution']{border-left-color:var(--warn)}
+.name .role-word{display:block;margin:0 0 4px;font:700 10.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--warn)}
+.name .exit-table td:first-child{box-shadow:inset 3px 0 0 var(--res);padding-left:10px}
+.name .tranche-table td:first-child{box-shadow:inset 3px 0 0 var(--sup);padding-left:10px}
+.read-fold>summary,.rule-part>summary{cursor:pointer;font:600 14px var(--sans);color:var(--ink);padding:6px 0}
+.rule-part{border-top:1px solid var(--hair);padding:4px 0}
+.rule-part[open]>summary{margin-bottom:8px}
+.technicals{margin-top:6px}
+/* tables on the name page: numbers right-aligned in tabular figures, the key row marked, group rows, and bands as pills */
+.name td.num,.name th.num{text-align:right;font-variant-numeric:tabular-nums}
+.name tr.key-row td{background:var(--plot);font-weight:600}
+.name tr.group-row td{font:600 11px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soft);background:var(--page)}
+.band-pill{border-width:1.5px}
+.band-pill.sup{background:var(--sup-fill);border-color:var(--sup);color:var(--sup-ink)}
+.band-pill.res{background:var(--res-fill);border-color:var(--res);color:var(--res-ink)}
+/* two columns read side by side: what is working beside what is not, and what would turn it up beside what would make it worse */
+.two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.two-col>div{border:1px solid var(--hair);border-radius:8px;padding:12px 14px;background:var(--surface)}
+.name .two-col>.col-up{border-top:3px solid var(--up)}
+.name .two-col>.col-down{border-top:3px solid var(--down)}
+@media (max-width:700px){ .lead-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .two-col{grid-template-columns:1fr} .lead-line{font-size:20px} }
 table.risks-table td{vertical-align:top;padding-top:10px;padding-bottom:10px}
 .written-section table.risks-table .prose{margin:0;max-width:none;font-size:14.5px}
 nav.walk{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--ink)}

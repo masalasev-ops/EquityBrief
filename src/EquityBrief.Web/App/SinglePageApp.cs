@@ -50,7 +50,12 @@ public sealed record QuoteRunsView(
     DateTimeOffset To,
     IReadOnlyList<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)> Asked,
     IReadOnlyList<(string Outcome, int Runs)> Outcomes,
-    int Cap);
+    int Cap)
+{
+    // The word a run that stored a quote writes. The worker's own constant cannot be referenced from here, so it is
+    // stated and `read-surface` asserts the two agree.
+    public const string Quoted = "quoted";
+}
 
 // A current member as the masthead's search offers it: its ticker, its company's name, and the
 // day its newest researched section was written, null where it holds none.
@@ -954,7 +959,7 @@ public sealed class SinglePageApp : IComponent
         // The written sections drawn in one place, each where section 4 puts it, in a
         // card whose left column states the day it was written.
         // see: A research record is written and dated per section, not as a whole
-        void Draw(string place, IReadOnlyList<string> placed)
+        void Draw(string place, IReadOnlyList<string> placed, string? role = null)
         {
             foreach (var name in placed)
             {
@@ -973,7 +978,8 @@ public sealed class SinglePageApp : IComponent
                         section.AsOf,
                         marks.WrittenSection(ticker, section, documents),
                         section: name,
-                        id: SectionId(name)),
+                        id: SectionId(name),
+                        role: role),
                     section.AsOf);
             }
         }
@@ -1287,7 +1293,7 @@ public sealed class SinglePageApp : IComponent
                     "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
-        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan"));
+        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
 
         // The earnings reaction record, beside the earnings setups the plan closes on: what each
         // print over the calendar's year behind did on the session it moved.
@@ -1345,7 +1351,7 @@ public sealed class SinglePageApp : IComponent
 
         // The risks, the two cases they test and the industry cycle, after how the rules read the name, where section 4
         // lists them.
-        Draw("risks", [MarkRenderer.TheRisks]);
+        Draw("risks", [MarkRenderer.TheRisks], Cards.Caution);
         Draw("two-cases", [MarkRenderer.TheTwoCases]);
         Draw("cycle", [EquityBrief.Core.Research.ClaimRules.CycleSection]);
 
@@ -1353,7 +1359,7 @@ public sealed class SinglePageApp : IComponent
         // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
         if (decision is not null)
         {
-            Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
+            Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
 
         // What the research read, the region section 4 lists before the last: the calendar, the dated items a pass

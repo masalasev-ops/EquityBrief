@@ -2063,7 +2063,10 @@ app.MapGet("/screens/run/{night?}", async (
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
                 RunScreen.Research(week),
-                NewsScreen.Line(dated, NewsScreen.RunFor(labellerRuns, dated))),
+                NewsScreen.Line(dated, NewsScreen.RunFor(labellerRuns, dated)),
+                // The quotes the name pages asked for in the night's own session, against the day's cap.
+                // owes: The day's live quotes stay under their cap on the first five sessions
+                RegularSession.On(dated, clock.SessionZone) is { } quoted ? await read.QuoteRunsAsync(quoted.Open, quoted.Close) : null),
             worries: RunScreen.Worries(
                 await read.StaleNamesAsync(index, dated),
                 how,

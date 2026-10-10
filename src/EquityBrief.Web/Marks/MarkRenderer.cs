@@ -497,8 +497,8 @@ public sealed record FreshNight(DateOnly Session, int Listed, int Repeated)
 public sealed record ResearchNight(DateOnly Session, int PaidPasses);
 
 // Research and spend as the Run page pictures them: the night's spend against the caps and the seven nights
-// up to it.
-public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights, LabellerLine? Labeller = null);
+// up to it, the labeller's line, and the delayed quotes the name pages asked for in the night's session.
+public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights, LabellerLine? Labeller = null, EquityBrief.Web.App.QuoteRunsView? Quotes = null);
 
 // The news labeller's line on the Run page for a night: whether it ran, on which profile and model, what the
 // night's labelling cost and the month's against its limit, the articles labelled, the unreadable answers by
@@ -2035,8 +2035,9 @@ public sealed partial class MarkRenderer : IComponent
                 ? Formatted($"{days:0.0} typical days")
                 : "not measured";
 
-            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td>");
-            table.Append(Invariant, $"<td class=\"away\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
+            // The band's role as a pill in its own hue, its word written in it, so the hue is never the only channel.
+            table.Append(Invariant, $"<td class=\"num\">{Escaped(edges)}</td><td><span class=\"pill band-pill {(band.Role == LevelSeries.Resistance ? "res" : "sup")}\">{Escaped(role)}</span></td>");
+            table.Append(Invariant, $"<td class=\"away num\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
             // The strength with a bar of a fixed length a point beside it, so two bands
             // compare at a glance and two names' tables compare the same way.
             table.Append(Invariant, $"<td class=\"strength\" data-strength=\"{band.Strength}\"><span class=\"str-bar\" style=\"width:{band.Strength * StrengthBarPerPoint}px\" aria-hidden=\"true\"></span>{band.Strength}</td><td>");
@@ -7344,6 +7345,7 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"paid reports\"><b>{picture.Nights.Sum(night => night.PaidPasses)}</b><span>reports written by the paid model</span></div>");
         region.Append("</div>");
         region.Append(LabellerParagraph(picture.Labeller));
+        region.Append(QuotesParagraph(picture.Quotes));
         region.Append("</div>");
 
         return region.ToString();
@@ -7353,6 +7355,36 @@ public sealed partial class MarkRenderer : IComponent
     // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
     // and the stop; the line it was refused with; or that no run is recorded for the night.
     // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
+    // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
+    // whose session held none says so, and a night on no session draws nothing.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    // owes: The day's live quotes stay under their cap on the first five sessions
+    static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
+    {
+        if (quotes is null)
+        {
+            return string.Empty;
+        }
+
+        var day = DayOf(DateOnly.FromDateTime(quotes.From.UtcDateTime));
+
+        if (quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
+        {
+            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"0\" data-cap=\"{quotes.Cap}\">No delayed quote was asked in the session of {day}, against a cap of {quotes.Cap}.</p>");
+        }
+
+        var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
+        var median = delays.Length == 0 ? (double?)null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
+        var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
+
+        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
+            + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
+            + (median is { } typical ? Formatted($", each asked a median {typical:0} minutes after its own time and at most {delays[^1]:0}") : string.Empty)
+            + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
+            + "</p>";
+    }
+
     static string LabellerParagraph(LabellerLine? line)
     {
         if (line is null)

@@ -21,13 +21,15 @@ public static class Cards
         string? lede = null,
         string? stamp = null,
         string? id = null,
-        string? region = null)
+        string? region = null,
+        string? role = null)
     {
         var card = new StringBuilder();
 
         card.Append("<section class=\"card\"");
         card.Append(id is null ? string.Empty : $" id=\"{Escaped(id)}\"");
         card.Append(region is null ? string.Empty : $" data-card=\"{Escaped(region)}\"");
+        card.Append(role is null ? string.Empty : $" data-role=\"{Escaped(role)}\"");
         card.Append("><div class=\"card-h\"><div>");
         card.Append($"<div class=\"lbl\">{Escaped(label)}</div>");
         card.Append(title is null ? string.Empty : $"<h2>{title}</h2>");
@@ -51,14 +53,17 @@ public static class Cards
         string? section = null,
         bool filed = false,
         string? note = null,
-        string? id = null)
+        string? id = null,
+        string? role = null)
     {
         var card = new StringBuilder();
 
         card.Append($"<section class=\"card spined{(filed ? " fund" : string.Empty)}\"");
         card.Append(id is null ? string.Empty : $" id=\"{Escaped(id)}\"");
         card.Append(section is null ? string.Empty : $" data-section=\"{Escaped(section)}\"");
+        card.Append(role is null ? string.Empty : $" data-role=\"{Escaped(role)}\"");
         card.Append("><div class=\"spine\">");
+        card.Append(role == Caution ? "<span class=\"role-word\">Caution</span>" : string.Empty);
         card.Append($"<div class=\"lbl\">{Escaped(label)}</div>");
         card.Append("<div class=\"dl\">");
         card.Append($"<span class=\"dl-k\">{Escaped(dateKey)}</span>");
@@ -70,6 +75,15 @@ public static class Cards
 
         return card.ToString();
     }
+
+    // The roles a name page's region is ruled down its left by: a buy in the support hue, a sale in the resistance hue and
+    // caution in amber with its word, everything else in slate.
+    // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
+    public const string Buy = "buy";
+
+    public const string Sell = "sell";
+
+    public const string Caution = "caution";
 
     // The stamp on a computed region: the night its figures are from.
     public static string Night(DateOnly? night) =>
