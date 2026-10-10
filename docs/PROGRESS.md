@@ -41980,3 +41980,62 @@ Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and
             the night merged at most one a night; then 18.1 to 18.5.
 Carried:    the two operating rows, the kept bars brought to the store's scale before the warm-up reaches them and the
             step's time over its first five nights.
+
+### 6.10 - correction: the written key under each figure and the overnight queue that wrote it retired, its stored rows drawn on no page, and no step of the night calling a model   2026-10-10
+
+Corrects:   6.10's overnight queue and the key under each figure it wrote for every name each night. From the local
+            lane's move to Gemma at 16.1 the queue stored the model's empty answer, `{"error": "no text at all"}`, as an
+            accepted key, which 627 name pages drew beneath the chart when phase 18's plan was written, and the queue
+            overran its hour, 1,113 of 1,505 names done on 2026-10-08 with 1,189 model calls. The figures it explained
+            already carry a "How to read it" and a "What to take from it" written by code.
+Found:      by phase 18's plan of 2026-10-09, reading CVX's page and the store.
+Ruled:      by the operator on 2026-10-09 with phase 18's plan, as its correction A5, and on 2026-10-10, word for word:
+            "please feel free to merge Prs at appropriate times. Do not wait for me. Finish phase 18".
+Built:      the key leaves the section list, its prompt, the shipped section map and the local lane's default, with the
+            fact reading only it used and its dating by the night; the queue's step leaves the night, with the queue,
+            the machine's awake hold and the queue's setting, so the report requests, the labeller and the store's copy
+            start after the filings refresh; the run page draws no queue region and no night's drafts, while a queue row
+            an earlier night wrote is no part of its night's duration and at its limit no stage that failed; the name
+            page's reads, the run page's sections that fell back and the staleness judge leave a stored key out, so no
+            page draws one or its being left out, and a name holding nothing else holds no research. The claim checker
+            holds every section to a document or the night's figures, and the constructed paragraphs that stood in the
+            key stand in the segment commentary citing [N]. The paid short version is handed the sections already
+            written, so its six recorded requests no longer carry the key's paragraph and are answered by stand-ins
+            built from the same captures by a hook reverted before this commit, no paid call made; the twenty
+            recordings only the key asked, nineteen local and one paid, and A4's six superseded stand-ins go, with
+            their manifest entries and the queue's expectation file. Nine decisions superseded and two written (see: The
+            key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn
+            nowhere) (see: The night calls no model in any step, and a process it starts calls one on its own run);
+            CLAUDE.md, sections 4, 6, 7, 8, 12, 14, 15, 17 and 18 of the architecture with figure 12.2 and the matrix,
+            `SCHEMA.md`, the runbook, 6.10's text in the build plan, the guide and five rows of the checks roster say
+            so, the prior text in `CHANGELOG.md`.
+Measured:   read-only over the store at 07:05Z on 2026-10-10: 11,754 key rows over 1,506 names, 11,037 of them accepted
+            over 1,498 names, 4,554 of those accepted holding a JSON object, the newest accepted key a JSON object for
+            1,492 names, and 1,466 names holding an accepted key and no other accepted section; 26 queue rows, from
+            2026-09-14 to 2026-10-09. The research record over the fixture's recordings: the pass's local lane makes 3
+            calls where it made 4, the lane comparison's local half 21 where it made 22, and its paid half 10 where it
+            made 11, spending 0.0376086 where it spent 0.038743068, the key's one call of 0.001134468 less.
+Tests:      2111, twenty-two fewer: the key's five, the queue's thirteen and its order's one, two of the run page's queue
+            region's five and its failed row's one, and the night over settings flagging two local models, retired with
+            what they held; one more, every row the retirement took out being no claim. The page over a store holding an
+            accepted key and that key left out later draws neither, nor the line saying it was left out, and the night
+            over the fixture runs no queue step and calls no model; the tests over the key's section, the queue's region
+            and the night's step order hold the rest.
+Claims:     1147, seven fewer: the queue's catalogue and matrix rows, its step, section 17's row, section 18's row for a
+            night the machine slept and the queue's part of the local model's row, and the run page's queue region, each
+            named as taken out after phase 17's report; the run page's research part names the reports alone.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone. No page draws a stored key,
+            broken by the name page's section states reading the stored key again, the exclusion taken out of their
+            query: predicted red at the page over a store holding an accepted key and that key left out, and green at
+            the run page's region, the queue row an earlier night wrote, the night's step order and the two staleness
+            tests. Result: the one red and the five green, as predicted, made on this branch and reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418;
+            gated and merging once phase 17's monthly run by hand has finished, the 6.4 correction, 18.0 and the 3.1
+            correction as PRs 419 to 421; in progress, this correction, which changes the night and merges before a
+            weeknight's night, at most one such correction a night; next, 16.3 the dividend estimate with the market
+            events table's 2027 rows; then 18.1 to 18.5.
+Carried:    the first night after this merges, read the morning after: no queue row, and the steps after the close
+            starting after the filings refresh.
