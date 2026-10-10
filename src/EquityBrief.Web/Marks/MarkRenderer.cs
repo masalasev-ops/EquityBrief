@@ -3930,7 +3930,20 @@ public sealed partial class MarkRenderer : IComponent
 
         var paragraphs = section.Prose.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        if (TwoCases(section.Section, paragraphs) is { } cases)
+        if (ManagementParts(section.Section, paragraphs) is { } said)
+        {
+            // What management said: the guidance against the release before, then what is working beside what is not, each
+            // in the release's own words, a claim to a row.
+            drawn.Append("<div class=\"management-guidance\" data-said=\"guidance\">");
+            ClaimRows(drawn, said.Guidance);
+            drawn.Append("</div><div class=\"two-col management-cols\">");
+            drawn.Append("<div class=\"col-up\" data-said=\"working\"><h4>What is working</h4>");
+            ClaimRows(drawn, said.Working);
+            drawn.Append("</div><div class=\"col-down\" data-said=\"not working\"><h4>What is not working</h4>");
+            ClaimRows(drawn, said.NotWorking);
+            drawn.Append("</div></div>");
+        }
+        else if (TwoCases(section.Section, paragraphs) is { } cases)
         {
             foreach (var (label, rows) in cases)
             {
@@ -4012,7 +4025,7 @@ public sealed partial class MarkRenderer : IComponent
 
             if (citesNight)
             {
-                drawn.Append("<li data-marker=\"N\">[N] <a href=\"#numbers\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
+                drawn.Append("<li data-marker=\"N\">[N] <a href=\"#quarter\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
             }
 
             for (var at = 0; at < section.SourceIds.Count; at++)
@@ -4113,6 +4126,30 @@ public sealed partial class MarkRenderer : IComponent
         drawn.Append("</ul></section>");
 
         return drawn.ToString();
+    }
+
+    // The section holding what management said with its results.
+    public const string WhatManagementSaid = EquityBrief.Core.Research.ClaimRules.ManagementSection;
+
+    // What management said cut into its three parts where the rows say where each opens: the guidance from the first row,
+    // what is working from the row opening on it, and what is not from the row opening on that, in that order. None where
+    // the rows say otherwise, and the prose is drawn as it was written, since a cut guessed at would put one part's words
+    // under another's.
+    // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+    static (IReadOnlyList<string> Guidance, IReadOnlyList<string> Working, IReadOnlyList<string> NotWorking)? ManagementParts(string section, IReadOnlyList<string> paragraphs)
+    {
+        if (!string.Equals(section, WhatManagementSaid, StringComparison.Ordinal) || paragraphs.Count == 0)
+        {
+            return null;
+        }
+
+        var rows = Claims(paragraphs);
+        var working = Array.FindIndex(rows, row => row.StartsWith(EquityBrief.Core.Research.ClaimRules.WorkingOpens, StringComparison.Ordinal));
+        var notWorking = Array.FindIndex(rows, row => row.StartsWith(EquityBrief.Core.Research.ClaimRules.NotWorkingOpens, StringComparison.Ordinal));
+
+        return rows.Length > 0 && rows[0].StartsWith(EquityBrief.Core.Research.ClaimRules.GuidanceOpens, StringComparison.Ordinal) && working > 0 && notWorking > working
+            ? (rows[..working], rows[working..notWorking], rows[notWorking..])
+            : null;
     }
 
     // The section holding the case for a name and the case against it.

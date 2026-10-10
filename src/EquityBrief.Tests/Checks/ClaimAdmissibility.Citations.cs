@@ -115,7 +115,7 @@ public partial class ClaimAdmissibility
             new EquityBrief.Web.Marks.WrittenCell("The short version", "The close was 205.15 [N]. It sells fuel [D1].", new DateOnly(2026, 10, 9), "a writer", ["r"]),
             [document]);
 
-        Assert.Contains("<ol class=\"section-sources\" data-cites=\"1\"><li data-marker=\"N\">[N] <a href=\"#numbers\">the figures the night stored</a>", cites, StringComparison.Ordinal);
+        Assert.Contains("<ol class=\"section-sources\" data-cites=\"1\"><li data-marker=\"N\">[N] <a href=\"#quarter\">the figures the night stored</a>", cites, StringComparison.Ordinal);
         Assert.Contains("<li data-marker=\"D1\" data-document=\"r\">[D1] ", cites, StringComparison.Ordinal);
 
         // A section citing [N] alone still lists it, and one citing documents alone lists no [N].

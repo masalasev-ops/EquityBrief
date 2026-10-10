@@ -134,6 +134,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
         "src/EquityBrief.Core/Providers/OpenFigiMappingFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
+        "src/EquityBrief.Core/Providers/TreasuryParYieldFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -305,12 +306,13 @@ public partial class NightlyCost
         // from 15.3, the funds' quarter-end filings at the archive and the provider's symbol lists, which the history
         // pull asks by hand and no night does, nineteen from 16.3, the dividend calendar, one request a session for
         // the 21 sessions after the night, twenty from 17.1, OpenFIGI's mapping of a holding's identifier to the
-        // tickers it traded under, which the holdings pull asks by hand and no night does, and twenty-one from 18.1, the
-        // delayed quote, one request a listing on a name page's ask in the session, which no night asks.
+        // tickers it traded under, which the holdings pull asks by hand and no night does, twenty-one from 18.1, the
+        // delayed quote, one request a listing on a name page's ask in the session, which no night asks, and twenty-two
+        // from 18.2, the Treasury's par yield table, one free request a night to the Treasury and none to the provider.
         Assert.True(
-            MayHoldAClient.Length <= 21,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-one feed " +
-            "implementations. A twenty-second is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 22,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-two feed " +
+            "implementations. A twenty-third is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

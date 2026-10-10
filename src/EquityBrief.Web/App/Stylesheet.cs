@@ -553,6 +553,28 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .two-col>div{border:1px solid var(--hair);border-radius:8px;padding:12px 14px;background:var(--surface)}
 .name .two-col>.col-up{border-top:3px solid var(--up)}
 .name .two-col>.col-down{border-top:3px solid var(--down)}
+.two-col h4{margin:0 0 6px;font:600 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+/* the quarter's, the margins', the analysts', the dividend's and the valuation's pictures: one axis each, a row above
+   naming each series, a change by its sign in the rise or the fall hue, and every other series a step of one neutral */
+.m-gridline{stroke:var(--hair);stroke-width:.6}
+.mark-short{font-size:13px;color:var(--ink-2);margin:6px 0}
+.written-part{margin-top:14px;padding-top:6px;border-top:1px solid var(--hair)}
+.segments-raw>summary,.margins-table>summary{cursor:pointer;font:600 13.5px var(--sans);color:var(--ink);padding:6px 0}
+.analyst-target,.valuation-line{font-size:14px;color:var(--ink-2);margin:10px 0}
+.name .gb-rev-up{fill:var(--up)} .name .gb-rev-down{fill:var(--down)}
+.name .gb-eps-up{fill:var(--up-fill);stroke:var(--up);stroke-width:1.5} .name .gb-eps-down{fill:var(--down-fill);stroke:var(--down);stroke-width:1.5}
+.gb-rev.lg-swatch{fill:var(--ink-2)} .gb-eps.lg-swatch{fill:none;stroke:var(--ink-2);stroke-width:1.5}
+.ml-gross,.ml-operating,.ml-net,.et-0,.et-1,.yl-yield,.yl-ten,.mb-line{fill:none;stroke-linejoin:round;stroke-width:2}
+.ml-gross{stroke:var(--s3)} .ml-operating{stroke:var(--ink-2)} .ml-net{stroke:var(--ink)}
+.ml-gross-dot,.lg-swatch.ml-gross{fill:var(--s3);stroke:none} .ml-operating-dot,.lg-swatch.ml-operating{fill:var(--ink-2);stroke:none} .ml-net-dot,.lg-swatch.ml-net{fill:var(--ink);stroke:none}
+.sb-bar{fill:var(--s3)} .name .sb-up{fill:var(--up)} .name .sb-down{fill:var(--down)} .sb-change{font-size:11px;font-weight:600}
+.et-0{stroke:var(--ink)} .et-1{stroke:var(--s3)} .et-0-dot,.lg-swatch.et-0{fill:var(--ink);stroke:none} .et-1-dot,.lg-swatch.et-1{fill:var(--s3);stroke:none}
+.name .rt-strong-buy{fill:var(--up)} .name .rt-buy{fill:var(--up);fill-opacity:.5} .rt-hold{fill:var(--s2)} .name .rt-sell{fill:var(--down);fill-opacity:.5} .name .rt-strong-sell{fill:var(--down)}
+.m-dash{fill:none;stroke:var(--dash-ink);stroke-width:1.3;stroke-dasharray:4 3}
+.name .db-raised{fill:var(--up)} .name .db-cut{fill:var(--down)} .db-level{fill:var(--s3)} .db-partial{fill-opacity:.55}
+.yl-yield{stroke:var(--ink)} .yl-ten{stroke:var(--s3)} .yl-yield-dot,.lg-swatch.yl-yield{fill:var(--ink);stroke:none} .yl-ten-dot,.lg-swatch.yl-ten{fill:var(--s3);stroke:none}
+.mb-band,.lg-swatch.mb-band{fill:var(--s1)} .mb-line{stroke:var(--ink-2);stroke-width:1.6} .mb-dot,.lg-swatch.mb-line{fill:var(--ink-2);stroke:none} .mb-night,.lg-swatch.mb-night{fill:var(--ink)}
+.pd-dot{fill:var(--s3)} .pd-own{fill:var(--ink);stroke:var(--surface);stroke-width:2} .pd-median{stroke:var(--soft);stroke-width:1.5}
 @media (max-width:700px){ .lead-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .two-col{grid-template-columns:1fr} .lead-line{font-size:20px} }
 table.risks-table td{vertical-align:top;padding-top:10px;padding-bottom:10px}
 .written-section table.risks-table .prose{margin:0;max-width:none;font-size:14.5px}

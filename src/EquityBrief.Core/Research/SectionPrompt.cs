@@ -134,6 +134,18 @@ public static class SectionPrompt
             "Name the business segments whose figures moved most or changed direction, at most four, one sentence each, saying what each reported for the quarter "
             + "and what the documents listed give as the cause. Never go through every segment, because the numbers table already shows each of them. "
             + "Use only the segment facts and the documents listed.",
+        // What management said with its results, in three parts the page draws apart: the guidance against the release
+        // before, and what is working and what is not in the release's own words, each quoted word for word since the
+        // checker holds a quotation to the document it cites. A release's own figures are not in the facts file, so
+        // they are said without the number as every section says them.
+        // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+        ["What management said"] =
+            "From the newest results release and, where one is listed, the release before it, write three paragraphs. "
+            + "The first begins \"" + ClaimRules.GuidanceOpens + "\" and says what management now expects for the coming period and how that differs from what the release before expected, or that a release gives none. "
+            + "The release before's figures are not listed under Facts, so say in words how the outlook moved from it. "
+            + "The second begins \"" + ClaimRules.WorkingOpens + "\" and gives at most four things the newest release says are going well, a sentence each. "
+            + "The third begins \"" + ClaimRules.NotWorkingOpens + "\" and gives at most four things the newest release says are going badly or weighing on results, a sentence each, or says that it names none. "
+            + "In the second and third paragraphs quote the release's own words inside double quotation marks, copied exactly, and say nothing a release does not say.",
         // Asked with no figure and no full date, because a theme has no facts file and every
         // figure in a theme section is refused: which way the industry's prices are moving
         // and why, in words, each sentence resting on a document.

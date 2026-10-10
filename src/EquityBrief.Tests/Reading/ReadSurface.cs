@@ -5353,14 +5353,20 @@ public partial class ReadSurface
     {
         using var store = await WithFundamentals();
 
-        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+        var filings = await Api(store).FundamentalsAsync(Name);
+        var region = NameScreen.Numbers(filings);
 
         // Section 18's row: a filing not parsed for a name shows what the provider
         // has and marks the rest absent, because a blank cell reads as a zero. This
         // fetch had no archive, so the two parts it supplies are absent and the
         // reason drawn beside each is that the archive was not read, which is not
-        // the same statement as a provider that files none.
-        Assert.Contains("data-absent=\"segments\"", region, StringComparison.Ordinal);
+        // the same statement as a provider that files none. The segment table as filed
+        // is the segments region's from 18.2.
+        Assert.Contains("data-absent=\"segments\"", NameScreen.RawSegments(filings)!, StringComparison.Ordinal);
+        Assert.Contains(
+            FormattableString.Invariant($"data-reason=\"{FundamentalsFetcher.NotRead}\""),
+            NameScreen.RawSegments(filings)!,
+            StringComparison.Ordinal);
         Assert.Contains("data-absent=\"guidance\"", region, StringComparison.Ordinal);
         Assert.Contains(
             FormattableString.Invariant($"data-reason=\"{FundamentalsFetcher.NotRead}\""),
@@ -5385,7 +5391,7 @@ public partial class ReadSurface
     {
         using var store = await WithFundamentals(withTheArchive: true);
 
-        var region = NameScreen.Numbers(await Api(store).FundamentalsAsync(Name));
+        var region = NameScreen.RawSegments(await Api(store).FundamentalsAsync(Name))!;
 
         using var payload = JsonDocument.Parse(StoredPayload(store, Name));
 

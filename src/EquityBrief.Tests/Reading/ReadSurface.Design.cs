@@ -450,7 +450,8 @@ public partial class ReadSurface
         string[] written =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.AfterTheNumbers,
+            .. SinglePageApp.AfterTheQuarter,
+            .. SinglePageApp.InTheSegments,
             .. SinglePageApp.AfterTheRules.Where(section => section != ClaimRules.CycleSection),
         ];
 

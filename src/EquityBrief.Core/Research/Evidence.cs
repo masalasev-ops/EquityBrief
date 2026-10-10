@@ -44,6 +44,7 @@ public static class Evidence
     public const string CauseSection = ClaimRules.CauseSection;
     public const string Sells = "What the company sells";
     public const string Segments = "The segment commentary";
+    public const string Management = ClaimRules.ManagementSection;
 
     // The sections built across the evidence, which are handed the company's own
     // filing and what was published since it.
@@ -55,12 +56,19 @@ public static class Evidence
         "The short version",
     ];
 
+    // The release before the company's own filing is handed to what management said alone, beside the own filing, and
+    // to no section built across the evidence or the cause of a move, which read the documents as they did before it.
+    // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
     public static IReadOnlyDictionary<string, IReadOnlyList<StoredDocument>> ForSections(
         IReadOnlyList<Fact> facts,
         IReadOnlyList<EvidenceDocument> documents,
-        string? ownFilingId)
+        string? ownFilingId,
+        string? previousFilingId = null)
     {
         var handed = new Dictionary<string, IReadOnlyList<StoredDocument>>(StringComparer.Ordinal);
+        var previous = documents.FirstOrDefault(document => previousFilingId is not null && string.Equals(document.Stored.Id, previousFilingId, StringComparison.Ordinal));
+
+        documents = [.. documents.Where(document => !ReferenceEquals(document, previous))];
 
         var cause = Moves(facts, documents);
 
@@ -75,6 +83,7 @@ public static class Evidence
         {
             handed[Sells] = [own.Stored];
             handed[Segments] = [own.Stored];
+            handed[Management] = previous is null ? [own.Stored] : [own.Stored, previous.Stored];
         }
 
         var across = Across(documents, own);

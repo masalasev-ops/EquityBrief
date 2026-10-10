@@ -869,6 +869,27 @@
       "trimmedTo": "nothing. The whole response to one section call, 19877 prompt tokens and 400 completion tokens, named for the request's key so a replay asking the same request reads it."
     },
     {
+      "file": "model-section-07f07383991efd75e2729a2917ca455c.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its first draft, handed 2 document(s), the newest results release and the one before it: the request SectionPrompt builds under the instructions of 18.2, keyed 07f07383991efd75e2729a2917ca455c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-10T12:49:46Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18235 prompt tokens and 305 completion tokens, named for the request's key so a replay asking the same request reads it."
+    },
+    {
+      "file": "model-section-d6c0ed2e2c3a32e560fd67a7b410a51d.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, its retry, told each thing its first draft was refused for, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.2, keyed d6c0ed2e2c3a32e560fd67a7b410a51d, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-10T12:49:49Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18709 prompt tokens and 239 completion tokens, named for the request's key so a replay asking the same request reads it."
+    },
+    {
+      "file": "model-section-2c5051d7679f632d948404a6e1ed0c45.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What management said on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 2 document(s): the request SectionPrompt builds under the instructions of 18.2, keyed 2c5051d7679f632d948404a6e1ed0c45, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-10-10T12:49:51Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18749 prompt tokens and 239 completion tokens, named for the request's key so a replay asking the same request reads it; the section's last retry is the same request, since the draft this one answered and the draft before it were refused for the same figures, and reads it again."
+    },
+    {
       "file": "phase14-shares-AAPL.json",
       "endpoint": "fundamentals/AAPL.US",
       "query": "fundamentals/AAPL.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
@@ -1294,6 +1315,41 @@
       "query": "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
       "fetchedAt": "2026-10-09T03:52:30Z",
       "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 209 lines: Apple's 8-K/A of 2026-09-01, an amendment whose one item is 5.02 and carries no results. The page's navigation and its tables of documents and data files are cut."
+    },
+    {
+      "file": "previous-filing-types-AAPL-8k.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/0000320193-26-000011-index.htm",
+      "fetchedAt": "2026-10-10T11:44:44Z",
+      "trimmedTo": "nothing. The filing index page of Apple's results announcement before the newest, the 8-K of 2026-04-30 whose items are 2.02 and 9.01, which the submissions capture lists second among its two results announcements. Its table of documents types the release as EX-99.1, a8-kex991q2202603282026.htm."
+    },
+    {
+      "file": "previous-release-AAPL.htm",
+      "endpoint": "Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/000032019326000011/a8-kex991q2202603282026.htm",
+      "fetchedAt": "2026-10-10T11:44:51Z",
+      "trimmedTo": "nothing. The release exhibit of that announcement whole, the second fiscal quarter to 2026-03-28, which like the newest states no guidance."
+    },
+    {
+      "file": "previous-filing-types-KEYS-8k.htm",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000019/0001601046-26-000019-index.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000019/0001601046-26-000019-index.htm",
+      "fetchedAt": "2026-10-10T11:43:52Z",
+      "trimmedTo": "nothing. The filing index page of Keysight's results announcement before the newest, the 8-K of 2026-05-19 whose items are 2.02 and 9.01, which the submissions capture lists second among its two results announcements. Its table of documents types the release as EX-99.1, exhibit991-q226pressrelease.htm, at sequence 2."
+    },
+    {
+      "file": "previous-release-KEYS.htm",
+      "endpoint": "Archives/edgar/data/1601046/000160104626000019/exhibit991-q226pressrelease.htm",
+      "query": "https://www.sec.gov/Archives/edgar/data/1601046/000160104626000019/exhibit991-q226pressrelease.htm",
+      "fetchedAt": "2026-10-10T11:44:00Z",
+      "trimmedTo": "nothing. The release exhibit of that announcement whole, the previous quarter's: the second fiscal quarter to 2026-04-30, with an Outlook guiding the third quarter's revenue to $1.730 billion to $1.750 billion and its non-GAAP earnings a share to $2.43 to $2.49, which the newest release's own Outlook is read against."
+    },
+    {
+      "file": "treasury-2026.csv",
+      "endpoint": "resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv",
+      "query": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page&_format=csv",
+      "fetchedAt": "2026-10-10T11:17:21Z",
+      "trimmedTo": "nothing. The Treasury's daily par yield curve for 2026 as sent, keyless: a header naming fourteen tenors in quotes, the 10-year under \"10 Yr\", and 195 sessions newest first from 2026-10-09 back to 2026-01-02, each date written month first with a slash, the 10-year 4.80 on the fixture's night of 2026-09-08 and 5.24 on 2026-10-09. The same request for 2027, asked the same morning, answered 200 with no body at all, and 2025's leaves the 1.5 month column empty on its early rows, which is why a reader takes a session the 10-year cell is empty on as none and an empty answer as no session yet."
     }
   ]
 }

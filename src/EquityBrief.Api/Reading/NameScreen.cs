@@ -454,11 +454,93 @@ public static class NameScreen
             html.Append("<div class=\"sub\">Dividend</div>").Append(dividend);
         }
 
-        html.Append("<div class=\"sub\">Segments</div>").Append(Segments(newest.RootElement, Attribution(filings[0].Source), currency));
-
         html.Append(FoldHide).Append("</details></section>");
 
         return html.ToString();
+    }
+
+    // The filing's segment table as filed, from the newest filing, which the segments region folds beneath the table the
+    // stated rule made of it; none where no filing is stored.
+    // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
+    public static string? RawSegments(IReadOnlyList<FilingRow> filings)
+    {
+        if (filings.Count == 0)
+        {
+            return null;
+        }
+
+        using var newest = JsonDocument.Parse(filings[0].Payload);
+
+        return Segments(newest.RootElement, Attribution(filings[0].Source), Text(newest.RootElement, "currency") ?? string.Empty);
+    }
+
+    // What the regions between the card and the earnings reactions draw, each worked by the core's function for it from
+    // what the read API handed: the latest quarter, the growth and the margins of the newest fetch's quarters, the segment
+    // table the stated rule makes of the newest filing's, the analysts' figures, the dividend's safety at the price drawn,
+    // and the valuation from the night's reading of the quarters and of the stock's industry's members.
+    // see: A screen reads and renders, and each figure it works out has one function in the core
+    public static ReportView Report(
+        string ticker,
+        ReportInputs inputs,
+        IReadOnlyList<FilingRow> filings,
+        FundamentalReadingRow? reading,
+        decimal? price,
+        decimal? forwardRate,
+        IReadOnlyList<BarRow> bars,
+        DateOnly night)
+    {
+        string currency = "USD";
+        EquityBrief.Core.Report.SegmentReading? segments = null;
+
+        if (filings.Count > 0)
+        {
+            using var newest = JsonDocument.Parse(filings[0].Payload);
+
+            currency = Text(newest.RootElement, "currency") is { Length: > 0 } stated ? stated : currency;
+
+            if (newest.RootElement.TryGetProperty("segments", out var table) && table.ValueKind == JsonValueKind.Object)
+            {
+                var breakdown = EquityBrief.Core.Report.SegmentTable.FromStored(table);
+                var ended = breakdown.Periods.Count == 0 ? (DateOnly?)null : breakdown.Periods.Max(period => period.Ended);
+                var reported = ended is { } end
+                    ? inputs.Quarters
+                        .Where(quarter => Math.Abs(quarter.PeriodEnd.DayNumber - end.DayNumber) <= EquityBrief.Core.Quarters.QuarterFetch.NearDays)
+                        .Select(quarter => quarter.Revenue)
+                        .FirstOrDefault()
+                    : null;
+
+                segments = EquityBrief.Core.Report.SegmentTable.Read(breakdown, reported);
+            }
+        }
+
+        var readings = reading is null ? null : Readings.FromJson(reading.Readings);
+        var peers = inputs.Industry is { } industry ? EquityBrief.Core.Report.PeerValuation.Of(industry, ticker, inputs.Peers) : null;
+
+        return new ReportView(
+            EquityBrief.Core.Report.QuarterLines.Latest(inputs.Quarters, inputs.RevenueEstimate),
+            EquityBrief.Core.Report.QuarterLines.Growth(inputs.Quarters),
+            inputs.FetchedOn,
+            currency,
+            EquityBrief.Core.Report.QuarterLines.Margins(inputs.Quarters),
+            segments,
+            EquityBrief.Core.Report.AnalystView.Of(inputs.TrendFetchedOn, inputs.Trend, inputs.Ratings, night, price),
+            EquityBrief.Core.Report.DividendSafety.Of(
+                forwardRate,
+                price,
+                inputs.Quarters.MaxBy(quarter => quarter.PeriodEnd)?.EpsTrailing,
+                [.. inputs.Quarters.Select(quarter => new EquityBrief.Core.Report.CashQuarter(quarter.PeriodEnd, quarter.FreeCashFlow, quarter.DividendsPaid))],
+                inputs.Dividends,
+                inputs.TenYears,
+                [.. bars.Select(bar => (bar.SessionDate, bar.Close))],
+                night),
+            new ValuationView(
+                readings?.Valuation.Multiple is { } multiple ? EquityBrief.Core.Prices.Statistic.FromRatio(multiple) : null,
+                readings?.Valuation.Low is { } low ? EquityBrief.Core.Prices.Statistic.FromRatio(low) : null,
+                readings?.Valuation.High is { } high ? EquityBrief.Core.Prices.Statistic.FromRatio(high) : null,
+                readings?.Valuation.Position,
+                readings?.Valuation.Absent ?? (readings is null ? "no reading of its quarters was stored on the night" : null),
+                EquityBrief.Core.Report.QuarterLines.Multiples(inputs.Quarters),
+                peers));
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's
@@ -1141,7 +1223,9 @@ public static class NameScreen
         IReadOnlyList<EquityBrief.Core.Tiles.TileQuarter>? tileQuarters = null,
         decimal? forwardRate = null,
         string? indexCode = null,
-        bool asksForQuotes = false)
+        bool asksForQuotes = false,
+        // What the latest quarter, the margins, the analysts, the dividend and the valuation read, as the read API handed it.
+        ReportInputs? reportInputs = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1232,10 +1316,11 @@ public static class NameScreen
             .FirstOrDefault();
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
         var quarters = tileQuarters ?? [];
+        var tilesNight = night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue);
         var tiles = new TilesView(
             EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
-            EquityBrief.Core.Tiles.NameTiles.SalesGrowth(quarters),
-            shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.Yield(forwardRate, yieldAt) : null,
+            EquityBrief.Core.Tiles.NameTiles.Growth(reportInputs?.Trend ?? [], reportInputs?.TrendFetchedOn, quarters),
+            shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.YieldBeside(forwardRate, yieldAt, reportInputs?.TenYears ?? [], tilesNight) : null,
             shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
             shownPrice,
             live is not null);
@@ -1313,7 +1398,11 @@ public static class NameScreen
             quoteSession: quoteSession,
             headline: Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
             tiles: tiles,
-            asksForQuotes: asksForQuotes);
+            asksForQuotes: asksForQuotes,
+            report: reportInputs is { } inputs
+                ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
+                : null,
+            rawSegments: RawSegments(filings));
     }
 
     // The sentence under the masthead until a written one is accepted: whether a rule picked the name tonight and which,

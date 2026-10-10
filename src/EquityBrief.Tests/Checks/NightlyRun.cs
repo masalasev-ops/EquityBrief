@@ -1337,15 +1337,17 @@ public partial class NightlyRun
     {
         // Section 14's order at the end of the night, read off the document, and the night
         // running it: the close records the arithmetic's counts, the quarters step asks for the
-        // members due after it, the filings refresh after that, the night's own request after the
-        // refresh and the labeller's start and the store's copy last, on the night's own output and
-        // on the run log's order, with no overnight queue among them.
+        // members due after it, the filings refresh after that, the Treasury's 10-year after the
+        // refresh, the night's own request after that and the labeller's start and the store's copy
+        // last, on the night's own output and on the run log's order, with no overnight queue among them.
         // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+        // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^7], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Read the Treasury's par yield table", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -1360,10 +1362,12 @@ public partial class NightlyRun
         var close = output.IndexOf("  close:", StringComparison.Ordinal);
         var quarters = output.IndexOf("  quarters:", StringComparison.Ordinal);
         var filings = output.IndexOf("  filings:", StringComparison.Ordinal);
+        var treasury = output.IndexOf("  treasury:", StringComparison.Ordinal);
 
         Assert.True(close >= 0 && quarters > close, $"The quarters step did not run after the close: {output}");
         Assert.True(filings > quarters, $"The filings refresh did not run after the quarters step: {output}");
-        Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > filings, $"The night's request did not run after the filings refresh: {output}");
+        Assert.True(treasury > filings, $"The Treasury's 10-year was not read after the filings refresh: {output}");
+        Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > treasury, $"The night's request did not run after the Treasury's 10-year: {output}");
         Assert.DoesNotContain("  queue:", output, StringComparison.Ordinal);
 
         var stages = RunLog(store, "night-with-no-queue").Select(row => row.Stage).ToArray();
@@ -1371,9 +1375,10 @@ public partial class NightlyRun
         Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Treasury.TreasuryReader.Stage, stages[^4]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^6]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^7]);
         Assert.DoesNotContain(EquityBrief.Api.Reading.RunScreen.QueueStage, stages);
 
         // The night's last line states that it called no model, and no row of the night says otherwise.
@@ -2282,9 +2287,11 @@ public partial class NightlyRun
         // from 16.3 the taken trades' follower asks whether a stock is a member of
         // any index on the night, which ends a trade whose stock has left them all;
         // and from 18.1 the read surface reads the index that held a name on the
-        // page's night, which its masthead names.
+        // page's night, which its masthead names; and from 18.2 the dividend keeper
+        // reads an index's members on today's session, whose dividends its history
+        // run asks for.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

@@ -62,13 +62,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
     "quote" => await QuoteRun(args),
+    "dividends" => await DividendsRun(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 35 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 36 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -178,7 +179,11 @@ static int NoVerb()
         "the labeller too, and " +
         "'quote --ticker <TICKER> --asked <yyyy-MM-ddTHH:mm:ssZ>' asks the provider once for the name's delayed quote " +
         "inside the regular session and under the day's cap and stores it with each band's distance at its price, as a " +
-        "name page's press starts it. '--live' " +
+        "name page's press starts it, and " +
+        "'dividends --history --from <yyyy-MM-dd>' asks each member the index holds today for its dividends from that date, " +
+        "one request a member, stating its asks and their weighted calls before the first request, and keeps each beside " +
+        "the ones the nights kept, with '--index <GSPC, MID or SML>' naming the index and '--names' with codes between " +
+        "commas asking only those members. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -1729,4 +1734,33 @@ static int Migrate()
     }
 
     return 0;
+}
+
+// The dividends history run: each member an index holds today asked once for its dividends from a date, on the
+// operator's command and never by a night, which fills the years before the nights began keeping them.
+// see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
+static async Task<int> DividendsRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var source = args.Contains("--live") ? NightFeeds.LiveSource
+        : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
+        : configuration[NightFeeds.SourceKey];
+    var fixture = Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey];
+    var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
+
+    return await EquityBrief.Worker.Dividends.DividendKeeper.RunAsync(
+        args,
+        () => FeedSource.Resolve<IDividendHistoryFeed>(
+            source,
+            fixture,
+            RecordedDividendHistoryFeed.FromFolder,
+            () => EodhdCorporateActionFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a dividends history run"),
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
 }

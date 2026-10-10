@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Time;
@@ -48,6 +49,7 @@ public sealed class QuarterFetcher : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read | Touch.Insert),
             new StoreTouch(Store.Company, Touch.Read | Touch.Insert),
             new StoreTouch(Store.DividendReading, Touch.Insert),
+            new StoreTouch(Store.EstimateTrend, Touch.Insert),
             new StoreTouch(Store.QuarterAsk, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -123,26 +125,46 @@ public sealed class QuarterFetcher : IComponent
         WHERE kind = 'earnings' AND event_date < $session;
     ";
 
+    // Each quarter with its gross profit and the cash flow statement's lines beside the figures the readings read, the row
+    // marked as read with them, since a row stored before they were kept holds none whatever was filed.
+    // see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries
     const string InsertQuarter = @"
         INSERT INTO reported_quarter (
             ticker, fetched_at, session_date, period_end, filing_date, report_date,
             revenue, operating_income, net_income, operating_cash_flow, eps_actual, eps_estimate,
             eps_trailing, sales_growth, sales_growth_before, operating_margin, margin_year_earlier,
-            close_after, close_after_session, basis_session, basis_close, shares, interest_expense, interest_read)
+            close_after, close_after_session, basis_session, basis_close, shares, interest_expense, interest_read,
+            gross_profit, capital_spending, free_cash_flow, dividends_paid, lines_read)
         VALUES (
             $ticker, $fetched_at, $session_date, $period_end, $filing_date, $report_date,
             $revenue, $operating_income, $net_income, $operating_cash_flow, $eps_actual, $eps_estimate,
             $eps_trailing, $sales_growth, $sales_growth_before, $operating_margin, $margin_year_earlier,
-            $close_after, $close_after_session, $basis_session, $basis_close, $shares, $interest_expense, 1)
+            $close_after, $close_after_session, $basis_session, $basis_close, $shares, $interest_expense, 1,
+            $gross_profit, $capital_spending, $free_cash_flow, $dividends_paid, 1)
         ON CONFLICT (ticker, fetched_at, period_end) DO NOTHING;
     ";
 
     // The company one storing fetch answered for: its filer, its GICS classification and the analysts' five rating counts,
-    // beside the quarters.
+    // their mean rating and their mean target, beside the quarters.
     const string InsertCompany = @"
-        INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell)
-        VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry, $strong_buy, $buy, $hold, $sell, $strong_sell)
+        INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry, strong_buy, buy, hold, sell, strong_sell, rating_mean, target_price)
+        VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry, $strong_buy, $buy, $hold, $sell, $strong_sell, $rating_mean, $target_price)
         ON CONFLICT (ticker, fetched_at) DO NOTHING;
+    ";
+
+    // The earnings trend's four forward periods the same answer files, a row a period.
+    const string InsertTrend = @"
+        INSERT INTO estimate_trend (
+            ticker, fetched_at, period, period_end, eps_average, eps_low, eps_high, eps_year_ago, eps_analysts,
+            revenue_average, revenue_low, revenue_high, revenue_year_ago, revenue_analysts,
+            eps_now, eps_7_days_ago, eps_30_days_ago, eps_60_days_ago, eps_90_days_ago,
+            up_last_7_days, up_last_30_days, down_last_7_days, down_last_30_days)
+        VALUES (
+            $ticker, $fetched_at, $period, $period_end, $eps_average, $eps_low, $eps_high, $eps_year_ago, $eps_analysts,
+            $revenue_average, $revenue_low, $revenue_high, $revenue_year_ago, $revenue_analysts,
+            $eps_now, $eps_7_days_ago, $eps_30_days_ago, $eps_60_days_ago, $eps_90_days_ago,
+            $up_last_7_days, $up_last_30_days, $down_last_7_days, $down_last_30_days)
+        ON CONFLICT (ticker, fetched_at, period) DO NOTHING;
     ";
 
     // The dividend part of the same answer, kept where the answer files one.
@@ -571,8 +593,45 @@ public sealed class QuarterFetcher : IComponent
             command.Parameters.AddWithValue("$basis_close", Figure(fetch.BasisClose));
             command.Parameters.AddWithValue("$shares", Figure(quarter.Shares));
             command.Parameters.AddWithValue("$interest_expense", Figure(quarter.InterestExpense));
+            command.Parameters.AddWithValue("$gross_profit", Figure(quarter.GrossProfit));
+            command.Parameters.AddWithValue("$capital_spending", Figure(quarter.CapitalSpending));
+            command.Parameters.AddWithValue("$free_cash_flow", Figure(quarter.FreeCashFlow));
+            command.Parameters.AddWithValue("$dividends_paid", Figure(quarter.DividendsPaid));
 
             written += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        foreach (var period in fetched.Trend)
+        {
+            await using var trend = connection.CreateCommand();
+
+            trend.Transaction = (SqliteTransaction)transaction;
+            trend.CommandText = InsertTrend;
+            trend.Parameters.AddWithValue("$ticker", ticker);
+            trend.Parameters.AddWithValue("$fetched_at", Instant(fetchedAt));
+            trend.Parameters.AddWithValue("$period", period.Period);
+            trend.Parameters.AddWithValue("$period_end", Stamp(period.PeriodEnd));
+            trend.Parameters.AddWithValue("$eps_average", Figure(period.EpsAverage));
+            trend.Parameters.AddWithValue("$eps_low", Figure(period.EpsLow));
+            trend.Parameters.AddWithValue("$eps_high", Figure(period.EpsHigh));
+            trend.Parameters.AddWithValue("$eps_year_ago", Figure(period.EpsYearAgo));
+            trend.Parameters.AddWithValue("$eps_analysts", (object?)period.EpsAnalysts ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$revenue_average", Figure(period.RevenueAverage));
+            trend.Parameters.AddWithValue("$revenue_low", Figure(period.RevenueLow));
+            trend.Parameters.AddWithValue("$revenue_high", Figure(period.RevenueHigh));
+            trend.Parameters.AddWithValue("$revenue_year_ago", Figure(period.RevenueYearAgo));
+            trend.Parameters.AddWithValue("$revenue_analysts", (object?)period.RevenueAnalysts ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$eps_now", Figure(period.EpsNow));
+            trend.Parameters.AddWithValue("$eps_7_days_ago", Figure(period.Eps7DaysAgo));
+            trend.Parameters.AddWithValue("$eps_30_days_ago", Figure(period.Eps30DaysAgo));
+            trend.Parameters.AddWithValue("$eps_60_days_ago", Figure(period.Eps60DaysAgo));
+            trend.Parameters.AddWithValue("$eps_90_days_ago", Figure(period.Eps90DaysAgo));
+            trend.Parameters.AddWithValue("$up_last_7_days", (object?)period.UpLast7Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$up_last_30_days", (object?)period.UpLast30Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$down_last_7_days", (object?)period.DownLast7Days ?? DBNull.Value);
+            trend.Parameters.AddWithValue("$down_last_30_days", (object?)period.DownLast30Days ?? DBNull.Value);
+
+            await trend.ExecuteNonQueryAsync(cancellation);
         }
 
         await using (var company = connection.CreateCommand())
@@ -591,6 +650,8 @@ public sealed class QuarterFetcher : IComponent
             company.Parameters.AddWithValue("$hold", (object?)fetched.Ratings.Hold ?? DBNull.Value);
             company.Parameters.AddWithValue("$sell", (object?)fetched.Ratings.Sell ?? DBNull.Value);
             company.Parameters.AddWithValue("$strong_sell", (object?)fetched.Ratings.StrongSell ?? DBNull.Value);
+            company.Parameters.AddWithValue("$rating_mean", fetched.Ratings.Rating is { } mean ? Statistic.FromRatio(mean) : DBNull.Value);
+            company.Parameters.AddWithValue("$target_price", Figure(fetched.Ratings.TargetPrice));
 
             await company.ExecuteNonQueryAsync(cancellation);
         }

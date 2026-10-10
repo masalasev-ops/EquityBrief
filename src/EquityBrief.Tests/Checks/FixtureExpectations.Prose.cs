@@ -604,14 +604,16 @@ public partial class FixtureExpectations
         // Five from the release's passes, what the company sells, the segment commentary and the
         // cause, and the segment commentary and the cause again after the checker refused their
         // first drafts; three from the research pass with the configured lanes, the segment
-        // commentary among them asked again after the checker refused its first draft; thirteen
-        // from the comparison with every section in the local lane, the cause, the dated calendar
-        // items, the two cases, the risks and the short version, each of the last four asked
-        // again after the checker refused its first draft, the two cases and the risks each asked
-        // twice more, refused at every retry to the last, and the short version's three retries
-        // one request, since each stopped at its budget and no draft after its first reached the
-        // checker.
-        Assert.Equal(21, recorded.Length);
+        // commentary among them asked again after the checker refused its first draft; sixteen
+        // from the comparison with every section in the local lane, the cause, what management
+        // said, the dated calendar items, the two cases, the risks and the short version, each of
+        // the last five asked again after the checker refused its first draft, what management
+        // said, the two cases and the risks each asked twice more, refused at every retry to the
+        // last, what management said's last retry the request its second was, since the two drafts
+        // before them were one draft refused for the same figures, and the short version's three
+        // retries one request, since each stopped at its budget and no draft after its first
+        // reached the checker.
+        Assert.Equal(24, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

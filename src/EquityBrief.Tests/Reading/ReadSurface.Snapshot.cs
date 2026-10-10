@@ -114,12 +114,18 @@ public partial class ReadSurface
 
         Assert.True(folded.Success, "The other filed figures are not folded beneath the snapshot.");
 
-        foreach (var (heading, table) in new[] { ("Balance sheet", "numbers-balance-sheet"), ("Valuation", "numbers-valuation"), ("Segments", "numbers-segments") })
+        foreach (var (heading, table) in new[] { ("Balance sheet", "numbers-balance-sheet"), ("Valuation", "numbers-valuation") })
         {
             Assert.Contains($"<div class=\"sub\">{heading}</div><div class=\"tbl-wrap\"><table class=\"{table}\"", folded.Groups[1].Value, StringComparison.Ordinal);
         }
 
         Assert.Contains("<button type=\"button\" class=\"fold-hide\">Hide</button>", folded.Groups[1].Value, StringComparison.Ordinal);
+
+        // The filing's segment table as filed is the segments region's from 18.2, folded beneath the table the rule
+        // made of it, and the numbers carry none of it.
+        Assert.DoesNotContain("<table class=\"numbers-segments\"", region, StringComparison.Ordinal);
+
+        region = NameScreen.RawSegments(await Api(store).FundamentalsAsync(Name))!;
 
         // The segments name each group once, over its lines, grouped by the table's own groups: one
         // heading for the company's own lines and one for each group holding a figure for the quarter
@@ -188,16 +194,18 @@ public partial class ReadSurface
             },
         });
 
-        var region = NameScreen.Numbers([new FilingRow("ZZZZ", new DateOnly(2026, 7, 29), payload, "{}")]);
+        FilingRow[] filings = [new FilingRow("ZZZZ", new DateOnly(2026, 7, 29), payload, "{}")];
+        var region = NameScreen.Numbers(filings);
+        var raw = NameScreen.RawSegments(filings)!;
 
         // Each group named once over its lines, and the colon line drawn as the heading it is rather
-        // than as a figure not filed.
+        // than as a figure not filed, in the filing's table as filed.
         Assert.Equal(
             ["The company", "Operating Segments | Insurance"],
-            [.. Regex.Matches(region, "<tr class=\"segment-group\" data-segment=\"[^\"]*\"><th colspan=\"2\">([^<]*)</th></tr>").Select(group => group.Groups[1].Value)]);
-        Assert.Contains("<tr class=\"segment-heading\" data-segment=\"The company\"><td colspan=\"2\">Operating expenses:</td></tr>", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-segment-figure=\"absent\"", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("<td>The company</td>", region, StringComparison.Ordinal);
+            [.. Regex.Matches(raw, "<tr class=\"segment-group\" data-segment=\"[^\"]*\"><th colspan=\"2\">([^<]*)</th></tr>").Select(group => group.Groups[1].Value)]);
+        Assert.Contains("<tr class=\"segment-heading\" data-segment=\"The company\"><td colspan=\"2\">Operating expenses:</td></tr>", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-segment-figure=\"absent\"", raw, StringComparison.Ordinal);
+        Assert.DoesNotContain("<td>The company</td>", raw, StringComparison.Ordinal);
 
         // The passage folded, a point to an item where it marks its points and the one beneath another
         // set in, what stands before the first mark opening it, the items the passage cut and never edited.

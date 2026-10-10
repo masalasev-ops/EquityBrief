@@ -87,6 +87,7 @@ public static class ClaimRules
         "The cause of each large move",
         "What the company sells",
         "The segment commentary",
+        "What management said",
         "The industry cycle",
         "The dated calendar items",
         "The two cases",
@@ -141,6 +142,15 @@ public static class ClaimRules
     public const string TwoCasesWithoutSides = "two cases not written as the bull case and the bear case";
     public const string FigureNoCitedDocumentHolds = "a figure no document the sentence cites states";
     public const string UnusableAnswer = "an answer written as a JSON object or list rather than prose";
+    public const string QuotationNoCitedDocumentHolds = "a quotation no document the sentence cites holds word for word";
+
+    // The one section read from the newest and the previous results releases, in the release's own words: what management
+    // said of its guidance against the release before, what is working and what is not. The words its three parts open on.
+    // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+    public const string ManagementSection = "What management said";
+    public const string GuidanceOpens = "On guidance";
+    public const string WorkingOpens = "What is working";
+    public const string NotWorkingOpens = "What is not working";
 
     // The mark a sentence cites the night's stored figures by: those the night computed and those code copied from a
     // filing or the provider, which is the facts file. A figure in a sentence citing it is held to the facts file
@@ -354,6 +364,18 @@ public static class ClaimRules
                 }
             }
 
+            // A quotation is a document's own words, word for word in a document the sentence cites, so a paraphrase set in
+            // quotation marks is refused as a figure no document states is. A sentence citing nothing is refused whole by its
+            // own rule, and its quotations are not read again, which would name every string of an answer cut short as JSON.
+            // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+            if (sentence.Citations.Count > 0 || sentence.CitesNight)
+            {
+                foreach (var quoted in Quotations(sentence.Text).Where(quoted => !QuotedByACitedDocument(quoted, sentence, sources)))
+                {
+                    findings.Add(new ClaimFinding(sentence.Text, "\"" + quoted + "\"", QuotationNoCitedDocumentHolds));
+                }
+            }
+
             var scanned = fieldNames.Aggregate(sentence.Text, (text, name) => text.Replace(name, " ", StringComparison.OrdinalIgnoreCase));
 
             foreach (var figure in Figures(WithoutHeldPeriods(scanned, facts)))
@@ -529,6 +551,41 @@ public static class ClaimRules
 
         return false;
     }
+
+    // ---- a quotation a cited document holds ----
+
+    // A span set in straight or curly double quotation marks and holding a letter, with the punctuation a sentence closes a
+    // quotation on taken off its end.
+    static readonly Regex Quoted = new("\"(?<words>[^\"]+)\"|“(?<words>[^”]+)”", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+
+    public static IReadOnlyList<string> Quotations(string sentence) =>
+    [
+        .. Quoted.Matches(sentence)
+            .Select(match => match.Groups["words"].Value.Trim().TrimEnd('.', ',', ';', ':').Trim())
+            .Where(words => words.Any(char.IsLetter)),
+    ];
+
+    // Whether an admitted document the sentence cites holds a quotation word for word: its words in its order, read
+    // without regard to case, to curly or straight quotation marks and apostrophes, or to how its spaces fall.
+    public static bool QuotedByACitedDocument(string quoted, ProseSentence sentence, IReadOnlyList<StoredDocument?> sources)
+    {
+        var wanted = Plain(quoted);
+
+        return wanted.Length > 0 && sentence.Citations
+            .Distinct()
+            .Where(cited => cited >= 1 && cited <= sources.Count)
+            .Select(cited => sources[cited - 1])
+            .OfType<StoredDocument>()
+            .Where(source => source.Admitted && source.Body is { Length: > 0 })
+            .Any(source => Plain(source.Body!).Contains(wanted, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // Text with its quotation marks and apostrophes made straight and every run of white space one space.
+    static string Plain(string text) =>
+        Regex.Replace(
+            text.Replace('‘', '\'').Replace('’', '\'').Replace('“', '"').Replace('”', '"'),
+            @"\s+",
+            " ").Trim();
 
     // ---- an answer that is not prose ----
 

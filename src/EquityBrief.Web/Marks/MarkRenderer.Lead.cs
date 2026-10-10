@@ -48,13 +48,22 @@ public sealed partial class MarkRenderer
                 + (tile.OnTheYear is { } year ? "; " + Signed(year, "year") + " on a year" : tile.YearBefore is null ? "; no quarter a year before" : "; a year before read no change"));
 
     static string GrowthTile(EquityBrief.Core.Tiles.GrowthTile? growth) =>
-        growth is not { } tile
-            ? LeadTile("growth", "Sales, the last four quarters on the four before", "<span class=\"v none\">not read</span>", "Eight quarters of sales are not stored for it yet.")
-            : LeadTile(
+        growth switch
+        {
+            null => LeadTile("growth", "Sales, the last four quarters on the four before", "<span class=\"v none\">not read</span>", "Eight quarters of sales are not stored for it yet."),
+            { Basis: EquityBrief.Core.Tiles.GrowthTile.Consensus } tile => LeadTile(
+                "growth",
+                "Earnings a share this fiscal year, the analysts' consensus",
+                Signed(tile.Percent, "growth", "v"),
+                "on the year before, for the year to " + DayOf(tile.Through)
+                    + (tile.Analysts is { } count ? Formatted($", {count} analysts") : string.Empty)
+                    + (tile.FetchedOn is { } fetched ? ", as fetched on " + DayOf(fetched) : string.Empty)),
+            { } tile => LeadTile(
                 "growth",
                 "Sales, the last four quarters on the four before",
                 Signed(tile.Percent, "growth", "v"),
-                "through the quarter to " + DayOf(tile.Through) + ", from its filings");
+                "through the quarter to " + DayOf(tile.Through) + ", from its filings"),
+        };
 
     static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live) =>
         yield is not { } tile
@@ -63,7 +72,10 @@ public sealed partial class MarkRenderer
                 "yield",
                 "Dividend yield",
                 Formatted($"<span class=\"v\" data-value=\"{tile.Percent.ToString(Invariant)}\">{tile.Percent.ToString("0.00", Invariant)}%</span>"),
-                Formatted($"<span data-rate=\"{tile.Rate.ToString(Invariant)}\">{Figures.PerShare(tile.Rate)}</span> a year at {(price is { } at ? Formatted($"<span data-price=\"{at.ToString(Invariant)}\">{Figures.Price(at)}</span>") : "the price")}, {(live ? "the quote" : "the last close")}"));
+                Formatted($"<span data-rate=\"{tile.Rate.ToString(Invariant)}\">{Figures.PerShare(tile.Rate)}</span> a year at {(price is { } at ? Formatted($"<span data-price=\"{at.ToString(Invariant)}\">{Figures.Price(at)}</span>") : "the price")}, {(live ? "the quote" : "the last close")}")
+                    + (tile.TenYear is { } ten && tile.TenYearOn is { } on
+                        ? Formatted($"; the 10-year <span data-ten-year=\"{ten.ToString(Invariant)}\">{ten.ToString("0.00", Invariant)}%</span> on ") + DayOf(on)
+                        : "; the 10-year not read yet"));
 
     static string HighTile(EquityBrief.Core.Tiles.HighTile? high, bool live) =>
         high is not { } tile

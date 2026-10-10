@@ -5,13 +5,20 @@ namespace EquityBrief.Core.Providers;
 // flow earnings are read against. Money, so decimal here and TEXT in storage, and nullable
 // because the provider files a quarter with some of them missing rather than filing zero.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+//
+// The cash flow statement's capital spending, free cash flow and dividends paid, which the latest quarter's lines and
+// the dividend's safety read, each with the sign the provider files it under.
+// see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries
 public sealed record QuarterFigures(
     decimal? Revenue,
     decimal? GrossProfit,
     decimal? NetIncome,
     decimal? OperatingIncome = null,
     decimal? OperatingCashFlow = null,
-    decimal? InterestExpense = null);
+    decimal? InterestExpense = null,
+    decimal? CapitalSpending = null,
+    decimal? FreeCashFlow = null,
+    decimal? DividendsPaid = null);
 
 // The balance sheet as of a filing. Five figures rather than the statement's
 // thirty, because these are the ones section 4's numbers row names and a column
@@ -178,6 +185,11 @@ public sealed record CompanyFundamentals(
     // the answer carries no earnings object at all.
     // see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before
     public Quarters.EstimateReading? Estimates { get; init; }
+
+    // The answer's earnings trend for the current and next quarter and fiscal year, each period's newest end, empty
+    // where the answer files none of the four.
+    // see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries
+    public IReadOnlyList<Quarters.EstimatePeriod> Trend { get; init; } = [];
 }
 
 // One name's fundamentals, in one request.

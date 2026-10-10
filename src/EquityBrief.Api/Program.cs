@@ -431,7 +431,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         tileQuarters: await read.TileQuartersAsync(ticker, on),
         forwardRate: await read.ForwardRateAsync(ticker, on),
         indexCode: await read.IndexOfAsync(ticker, night ?? clock.SessionDateAt(clock.UtcNow)),
-        asksForQuotes: !export && on is null);
+        asksForQuotes: !export && on is null,
+        // What the latest quarter, the margins, the analysts, the dividend and the valuation read, as of the page's night.
+        reportInputs: await read.ReportInputsAsync(ticker, on, night ?? (bars.Count > 0 ? bars[^1].SessionDate : clock.SessionDateAt(clock.UtcNow))));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -599,10 +601,12 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
     // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
     var quarters = await read.TileQuartersAsync(named, null);
     var year = await read.YearExtremesAsync(named, null);
+    var today = clock.SessionDateAt(now);
+    var inputs = await read.ReportInputsAsync(named, null, today);
     var tiles = new TilesView(
         EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
-        EquityBrief.Core.Tiles.NameTiles.SalesGrowth(quarters),
-        EquityBrief.Core.Tiles.NameTiles.Yield(await read.ForwardRateAsync(named, null), quote.Price),
+        EquityBrief.Core.Tiles.NameTiles.Growth(inputs.Trend, inputs.TrendFetchedOn, quarters),
+        EquityBrief.Core.Tiles.NameTiles.YieldBeside(await read.ForwardRateAsync(named, null), quote.Price, inputs.TenYears, today),
         year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(quote.Price, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
         quote.Price,
         Live: true);

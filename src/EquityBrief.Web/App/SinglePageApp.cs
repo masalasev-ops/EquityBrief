@@ -925,7 +925,11 @@ public sealed class SinglePageApp : IComponent
         QuoteSession? quoteSession = null,
         HeadlineView? headline = null,
         TilesView? tiles = null,
-        bool asksForQuotes = false)
+        bool asksForQuotes = false,
+        // The latest quarter line by line, the margins, the segment table, the analysts' figures, the dividend's safety
+        // and the valuation, each worked by the core from stored figures, and the filing's segment table as filed.
+        ReportView? report = null,
+        string? rawSegments = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1330,24 +1334,185 @@ public sealed class SinglePageApp : IComponent
                 region: "news"));
         }
 
-        // What the company sells and the segment commentary, after the numbers, where section 4 lists them.
-        Draw("segments", AfterTheNumbers);
+        // The latest quarter, which section 4 lists after the card: each line against the estimate kept before the report
+        // and the same quarter a year earlier, the eight newest quarters' growth, and what the numbers say with every figure
+        // from the filing folded beneath. The numbers arrive already written, for the reason the event book does: what they
+        // hold is stored figures and the sentences that state an absence, rather than a mark.
+        // see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+        var quarterBody = new StringBuilder();
 
-        // The numbers, which section 4 lists after the card. It arrives already written, for the
-        // reason the event book does: what it holds is stored figures and the sentences
-        // that state an absence, rather than a mark.
-        Card("numbers", "numbers", "The numbers", Cards.Dated(
-            "The numbers",
+        quarterBody.Append(report is null ? string.Empty : marks.QuarterTable(ticker, report));
+        quarterBody.Append(report is null ? string.Empty : Cards.Key(
+            "How to read it.",
+            "Each line of the newest quarter the company reported: what it reported, the analysts' average estimate kept before the report where one was, the difference in the line's own unit and in per cent of the estimate, the same quarter a year earlier and the change on it, and for gross, operating and net income their margin on revenue then and a year earlier. A rise is drawn in indigo and a fall in plum, with its sign always written.",
+            "A line beating its estimate says the quarter came in ahead of what was expected, and the change on a year says whether the business grew; neither moves the plan, which is read from the price."));
+        quarterBody.Append(report is null ? string.Empty : "<div class=\"sub\">Growth on a year, the eight newest quarters</div><div class=\"fig\">" + marks.GrowthBars(ticker, report.Growth) + "</div>" + Cards.Key(
+            "How to read it.",
+            "Each quarter's revenue, the filled bar, and earnings a share, the outlined bar, against the same quarter a year earlier, in per cent about the zero rule. A bar above the rule rose and is drawn in indigo, one below it fell and is drawn in plum.",
+            "Growth that slows quarter by quarter reads as a business losing pace even while each quarter still grows."));
+        quarterBody.Append(numbers);
+
+        Card("quarter", "quarter", "The latest quarter", Cards.Dated(
+            "The latest quarter",
             "Filed",
             filedOn,
-            numbers + Cards.Key(
+            quarterBody + Cards.Key(
                 "Where these come from.",
-                "Each figure is from the company's own filing, dated as the filing is. The estimate is the analysts' average before the report.",
+                "Each figure is from the company's own filing, dated as the filing is, as the newest fetch of its quarters stored it. The estimate is the analysts' average before the report.",
                 "These are the company's reported results. Nothing in the plan is computed from them."),
+            title: report?.Quarter is { } latest ? "The quarter to " + Cards.Day(latest.Quarter) + ", line by line" : "The latest quarter, line by line",
             filed: true,
             note: "from the filing",
-            id: "numbers"),
+            id: "quarter"),
             filedOn);
+
+        // What management said with its results, the written section read from the newest and the previous results
+        // releases, after the quarter where section 4 lists it.
+        Draw("management", AfterTheQuarter);
+
+        // The segments, which section 4 lists after what management said: the segment table the stated rule made of the
+        // filing's, each segment's share of revenue, what the company sells and the segment commentary where written, and
+        // the filing's table as filed folded beneath.
+        // see: The segment table is the segments whose revenue sums to the company's total within rounding, and the raw table where none do
+        if (report?.Segments is not null || rawSegments is not null || sections.Any(section => InTheSegments.Contains(section.Section, StringComparer.Ordinal)))
+        {
+            var segmentBody = new StringBuilder();
+
+            if (report?.Segments is { } segments)
+            {
+                segmentBody.Append(marks.SegmentsTable(segments, report.Currency));
+                segmentBody.Append(segments.Clean ? "<div class=\"fig\">" + marks.ShareBars(segments) + "</div>" : string.Empty);
+                segmentBody.Append(Cards.Key(
+                    "How to read it.",
+                    "Each segment the filing reports, its revenue for the quarter and its change on the same quarter a year earlier, its operating income where the filing states one, and its share of the company's revenue. The table stands only where the segments' revenue sums to the company's within rounding, totals, eliminations and corporate amounts left out; otherwise the filing's own table is drawn as filed with what the rows summed to.",
+                    "A segment growing faster than the company is where the growth is coming from, and one shrinking is what is holding it back."));
+            }
+
+            foreach (var part in InTheSegments)
+            {
+                if (sections.FirstOrDefault(section => string.Equals(section.Section, part, StringComparison.Ordinal)) is { } partWritten)
+                {
+                    segmentBody.Append(Invariant($"<div class=\"written-part\" id=\"{SectionId(part)}\" data-section=\"{Escaped(part)}\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{Cards.Day(partWritten.AsOf)}</b></div>"));
+                    segmentBody.Append(marks.WrittenSection(ticker, partWritten, documents)).Append("</div>");
+                }
+            }
+
+            segmentBody.Append(rawSegments is null ? string.Empty : "<details class=\"segments-raw\"><summary>The filing's segment table as filed</summary>" + rawSegments + "</details>");
+
+            // Dated by the filing, or by its newest written part where no filing is stored, and marked new by the newer of
+            // the two.
+            var writtenOn = sections.Where(section => InTheSegments.Contains(section.Section, StringComparer.Ordinal)).Select(section => (DateOnly?)section.AsOf).Max();
+            var segmentsNew = new[] { filedOn, writtenOn }.Max();
+
+            Card("segments", "segments", "Segments", Cards.Dated(
+                "Segments",
+                filedOn is null && writtenOn is not null ? "Written" : "Filed",
+                filedOn ?? writtenOn,
+                segmentBody.ToString(),
+                title: "What it sells and where the revenue comes from",
+                filed: filedOn is not null,
+                note: filedOn is null ? null : "from the filing",
+                id: "segments"),
+                segmentsNew);
+        }
+
+        // The margins of the twelve newest quarters, after the segments.
+        if (report is { Margins.Count: > 0 } withMargins)
+        {
+            Card("margins", "margins", "Margins", Cards.Dated(
+                "Margins",
+                "Fetched",
+                withMargins.FetchedOn,
+                "<div class=\"fig\">" + marks.MarginLines(ticker, withMargins.Margins) + "</div>" + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Gross, operating and net income as a share of revenue in each of the {withMargins.Margins.Count} newest quarters the newest fetch stored, one line each on one axis, named at its end."),
+                    "Margins widening while revenue grows say each dollar of sales is earning more; margins narrowing say costs are rising faster than sales.")
+                    + "<details class=\"margins-table\"><summary>The margins quarter by quarter</summary>" + marks.MarginTable(withMargins.Margins) + "</details>",
+                title: "Gross, operating and net margins",
+                filed: true,
+                note: "from the filings",
+                id: "margins"),
+                withMargins.FetchedOn);
+        }
+
+        // The analysts' figures, after the margins, each labelled as theirs and dated by the fetch that kept it.
+        // see: The name page draws the analysts' consensus, revisions, ratings by month and target, each labelled as theirs and dated, and no written sentence states one
+        if (report?.Analysts is { } analysts)
+        {
+            var analystBody = new StringBuilder();
+
+            analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
+            analystBody.Append(analysts.Target is { } target
+                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? Invariant($", {against:+0.0;-0.0;0.0}% on the price drawn") : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong buy, to five, a strong sell") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
+                : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");
+            analystBody.Append("<div class=\"sub\">The consensus over the last 90 days</div><div class=\"fig\">").Append(marks.EstimateTrend(analysts)).Append("</div>");
+            analystBody.Append("<div class=\"sub\">Ratings by month</div><div class=\"fig\">").Append(marks.RatingBars(analysts)).Append("</div>");
+            analystBody.Append(Cards.Key(
+                "How to read it.",
+                "Every figure here is the analysts' and not the company's: their average estimate of earnings a share and revenue for this and the next quarter and fiscal year with the range of their estimates and how many make one, how many raised or cut it over 7 and 30 days, the consensus as it stood 90, 60, 30 and 7 days before the fetch, and how many rate the stock at each grade in each month a fetch fell in. A month no fetch fell in is a dashed outline.",
+                "Estimates rising before a report say the analysts expect more than they did; nothing on the page reads them, and no written section states one."));
+
+            Card("analysts", "analysts", "Analysts", Cards.Dated(
+                "Analysts",
+                "Fetched",
+                analysts.FetchedOn,
+                analystBody.ToString(),
+                title: "What the analysts expect, labelled as theirs",
+                filed: true,
+                note: "the analysts' figures",
+                id: "analysts"),
+                analysts.FetchedOn);
+        }
+
+        // The dividend's safety for a payer, after the analysts.
+        // see: A payer's dividend is read for its safety against its earnings, its free cash flow and the Treasury's 10-year, with every year it raised
+        if (report?.Dividend is { } dividend)
+        {
+            Card("dividend", "dividend", "Dividend safety", Cards.Computed(
+                "Dividend safety",
+                marks.DividendTable(dividend, tiles?.Price, tiles?.Live == true, report.Currency)
+                    + "<div class=\"sub\">The dividend a share each year</div><div class=\"fig\">" + marks.DividendBars(dividend) + "</div>"
+                    + "<div class=\"sub\">The yield against the 10-year</div><div class=\"fig\">" + marks.YieldLines(dividend) + "</div>"
+                    + Cards.Key(
+                        "How to read it.",
+                        "The rate is the forward annual dividend a share the company's newest fetch files, and the yield is it over the price the masthead draws. The payout on earnings is the rate over the last four quarters' earnings a share, and the payout on free cash flow the dividends paid over the last four quarters over their free cash flow. The bars are the dividends a share each year the store kept, a raise in indigo and a cut in plum, the year so far starred; the lines are the year's dividends over each session's close beside the Treasury's own 10-year par yield.",
+                        "A payout under the earnings and the cash leaves room to keep paying; one above either is paid from something else, and a yield above the 10-year is paid for the risk of holding a stock."),
+                title: "Whether the dividend is covered",
+                stamp: Cards.Night(session),
+                id: "dividend",
+                region: "dividend"));
+        }
+
+        // The valuation, after the dividend: the night's multiple against its own quarters' and its industry's members'.
+        // see: The valuation reads a stock against its industry's S&P 500 members from the night's readings alone, a multiple, a yield and a growth a member
+        if (report?.Valuation is { } valuation && (valuation.Quarters.Count > 0 || valuation.Peers is not null || valuation.Multiple is not null))
+        {
+            var valued = new StringBuilder();
+
+            valued.Append(valuation.Multiple is { } multiple
+                ? Invariant($"<p class=\"valuation-line\" data-multiple=\"{multiple}\" data-position=\"{Escaped(valuation.Position ?? "none")}\">At the night's close it trades at {multiple:0.0} times its last four quarters' earnings, against {valuation.Low:0.0} to {valuation.High:0.0} over its own quarters: {Escaped(valuation.Position ?? "not placed")}.</p>")
+                : Invariant($"<p class=\"degraded\" data-absent=\"multiple\">No multiple was read on the night: {Escaped(valuation.NotRead ?? "the night stored no reading of its quarters")}.</p>"));
+            valued.Append("<div class=\"fig\">").Append(marks.MultipleBand(ticker, valuation)).Append("</div>");
+
+            if (valuation.Peers is { } peerValues)
+            {
+                valued.Append(Invariant($"<div class=\"sub\">Against {Escaped(peerValues.Industry)}'s S&amp;P 500 members on the night</div><div class=\"fig\">")).Append(marks.PeerDots(ticker, peerValues)).Append("</div>");
+                valued.Append(marks.PeerTable(peerValues));
+            }
+
+            valued.Append(Cards.Key(
+                "How to read it.",
+                "Each quarter's multiple is the close after its report over its four quarters' earnings a share, from one fetch, and the band is their range; the dot at the right is the night's close over the newest four quarters' earnings. Beneath, each S&P 500 member sharing the stock's industry on the night, with the stock's own row marked: its multiple as the night read it, its dividend's yield at its close and its newest quarter's sales on a year earlier, and the median of each over the members holding it.",
+                "A multiple near the bottom of its own range or of its industry's says the market pays less for its earnings than it has or than it does for its peers; it is not a forecast, and nothing on the page is decided by it."));
+
+            Card("valuation", "valuation", "Valuation", Cards.Computed(
+                "Valuation",
+                valued.ToString(),
+                title: "What the market pays for its earnings",
+                stamp: Cards.Night(session),
+                id: "valuation",
+                region: "valuation"));
+        }
 
         // The risks, the two cases they test and the industry cycle, after how the rules read the name, where section 4
         // lists them.
@@ -1452,24 +1617,27 @@ public sealed class SinglePageApp : IComponent
         "</details></section>";
 
     // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
-    // page, the short version, the card, the numbers, the segments, the earnings reactions, the chart, how it got here,
-    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news,
-    // what the research read, and where the research stands.
+    // page, the short version, the card, the latest quarter, what management said, the segments, the margins, the
+    // analysts, the dividend's safety, the valuation, the earnings reactions, the chart, how it got here, the levels, the
+    // plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, what the research
+    // read, and where the research stands.
     // see: The name page answers a buyer's questions in the order a buyer asks them
     public static readonly string[] RegionOrder =
     [
-        "how-to-read", "short", "card", "numbers", "segments", "reactions", "chart", "how-it-got-here", "levels", "plan",
-        "rules", "risks", "two-cases", "cycle", "peers", "news", "sources", "research",
+        "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "dividend", "valuation",
+        "reactions", "chart", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases", "cycle", "peers", "news",
+        "sources", "research",
     ];
 
     // Where each written section is drawn, which is section 4's order: the short version
-    // at the top, what the company sells and the segment commentary after the numbers, the
-    // risks, the two cases and the cycle after how the rules read the name, and the dated
-    // items with the dates. The cause of each large move is drawn in the moves table, in the
-    // row of the move each sentence names, and `read-surface` asserts every section figure
-    // 12.2 names is placed exactly once across these and that table.
+    // at the top, what management said after the quarter, what the company sells and the
+    // segment commentary inside the segments, the risks, the two cases and the cycle after how
+    // the rules read the name, and the dated items with the dates. The cause of each large move
+    // is drawn in the moves table, in the row of the move each sentence names, and `read-surface`
+    // asserts every section figure 12.2 names is placed exactly once across these and that table.
     public static readonly string[] AtTheTop = ["The short version"];
-    public static readonly string[] AfterTheNumbers = ["What the company sells", "The segment commentary"];
+    public static readonly string[] AfterTheQuarter = [MarkRenderer.WhatManagementSaid];
+    public static readonly string[] InTheSegments = ["What the company sells", "The segment commentary"];
     public static readonly string[] AfterTheRules = [MarkRenderer.TheRisks, MarkRenderer.TheTwoCases, "The industry cycle"];
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";

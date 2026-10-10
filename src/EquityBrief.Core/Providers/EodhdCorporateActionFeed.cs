@@ -17,15 +17,19 @@ namespace EquityBrief.Core.Providers;
 // One reader for both would have silently dropped every row of one of them.
 //
 // The history pull asks the per-name splits endpoint through the same feed, one
-// request a name and never from a night, read by `SplitAnswers.Parse`.
+// request a name and never from a night, read by `SplitAnswers.Parse`; and the dividends
+// history run the per-name dividends endpoint, one request a name and never from a night,
+// read by `DividendAnswers.Parse`.
 public sealed class EodhdCorporateActionFeed(
     HttpClient client,
     ProviderCredentials credentials,
-    ProviderRequest? request = null) : ICorporateActionFeed, ISplitHistoryFeed
+    ProviderRequest? request = null) : ICorporateActionFeed, ISplitHistoryFeed, IDividendHistoryFeed
 {
     public const string Endpoint = "eod-bulk-last-day";
 
     public const string SplitsEndpoint = "splits";
+
+    public const string DividendsEndpoint = "div";
 
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -86,6 +90,46 @@ public sealed class EodhdCorporateActionFeed(
             .ConfigureAwait(false);
 
         return SplitAnswers.Parse(body, ticker);
+    }
+
+    public async Task<IReadOnlyList<DividendPaid>> DividendsAsync(
+        string ticker,
+        DateOnly from,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        var body = await request
+            .SendAsync(token => FetchDividendsAsync(ticker, from, token), cancellation)
+            .ConfigureAwait(false);
+
+        return DividendAnswers.Parse(body, ticker);
+    }
+
+    async Task<string> FetchDividendsAsync(string ticker, DateOnly from, CancellationToken cancellation)
+    {
+        try
+        {
+            using var response = await client
+                .GetAsync(
+                    EodhdQuery.WithKey(
+                        FormattableString.Invariant($"{DividendsEndpoint}/{ticker}{EodhdHistoricalBarFeed.ExchangeSuffix}?from={from:yyyy-MM-dd}&fmt=json"),
+                        credentials),
+                    cancellation)
+                .ConfigureAwait(false);
+
+            return response.IsSuccessStatusCode
+                ? await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false)
+                : throw EodhdQuery.Refused((int)response.StatusCode, $"dividends history feed for {ticker}");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception failure) when (failure is not ProviderRefusal)
+        {
+            throw EodhdQuery.Unreachable($"dividends history feed for {ticker}", failure, credentials);
+        }
     }
 
     async Task<string> FetchSplitsAsync(string ticker, DateOnly from, CancellationToken cancellation)

@@ -143,7 +143,10 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                     Money(quarter.Value, "netIncome"),
                     Money(quarter.Value, "operatingIncome"),
                     Money(flow.Value, "totalCashFromOperatingActivities"),
-                    Money(quarter.Value, "interestExpense")),
+                    Money(quarter.Value, "interestExpense"),
+                    Money(flow.Value, "capitalExpenditures"),
+                    Money(flow.Value, "freeCashFlow"),
+                    Money(flow.Value, "dividendsPaid")),
                 new BalanceSheet(
                     Money(balance.Value, "totalAssets"),
                     Money(balance.Value, "totalLiab"),
@@ -175,6 +178,9 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Estimates = root.TryGetProperty("Earnings", out var earnings) && earnings.ValueKind == JsonValueKind.Object
                 ? Quarters.EstimateReading.FromTrend(earnings.TryGetProperty("Trend", out var trend) ? trend : default)
                 : null,
+            Trend = root.TryGetProperty("Earnings", out var trended) && trended.ValueKind == JsonValueKind.Object && trended.TryGetProperty("Trend", out var periods)
+                ? Quarters.EstimatePeriod.FromTrend(periods)
+                : [],
         };
     }
 

@@ -264,15 +264,21 @@ public static class Nightly
                     "member-session(s) a caught-up file carried nothing for, " +
                     $"{outcome.Requests} request(s); market series {series.Detail}";
             }, [BarFetcher.Stage, MarketSeriesFetcher.Stage]),
+            // And the dividends the answer carried for the names the night stores, kept for the name page's dividend
+            // history with no request of their own.
+            // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
             new("actions", async () =>
             {
                 var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, night.Token, wider);
 
+                var kept = await new Dividends.DividendKeeper(clock, store.DatabaseFile)
+                    .KeepTheNightAsync(outcome.Paid ?? [], runId, night.Token);
+
                 return $"{outcome.Actions} action(s), {outcome.Refetched} refetched, " +
                     $"{outcome.Suspect.Count} suspect, {(outcome.Spent ?? []).Count} left suspect with retries spent, " +
-                    $"{outcome.Requests} request(s)";
-            }),
+                    $"{outcome.Requests} request(s); {kept.Handed} dividend(s) for the names stored, {kept.Kept} kept new";
+            }, [CorporateActionChecker.Stage, Dividends.DividendKeeper.Stage]),
             // The calendar, one request for the whole index's dated events over
             // the window. The earnings date is needed nightly by the ladder
             // builder and the shortlist builder, so it is here rather than on
@@ -670,6 +676,18 @@ public static class Nightly
                     .BusinessAgainAsync(clock.SessionDateAt(clock.UtcNow), outcome.Refreshed);
 
                 return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again");
+            }),
+            // Section 14's step after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
+            // request to the Treasury and none to the provider, every session to the night's kept that the store does not
+            // hold. It is handed no token from the night's deadline, and a refused or unreadable answer keeps nothing and
+            // stops no step. A night run again for an earlier session reads it too, since the table holds that session.
+            // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
+            new("treasury", async () =>
+            {
+                var read = await new Treasury.TreasuryReader(clock, store.DatabaseFile)
+                    .RunAsync(feeds.Treasury, clock.SessionDateAt(clock.UtcNow), runId);
+
+                return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
             // Section 14's step 26, after the filings refresh. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and starts the drain as a press
