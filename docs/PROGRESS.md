@@ -41854,12 +41854,18 @@ Mutated:    the rule, stated before the run: each refusal the correction adds, b
             predicted red at the JSON test alone. Result: each red and green as predicted, made on this branch and
             reverted before anything was committed. Added and not mutated: [N] read as a citation, the page's two lines
             and Claude's facts flag.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f25f882a, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2128 of 2128 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2128 of 2128 tests ran.
 Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418,
             merged on 2026-10-10; in progress, this correction; next, 18.0, the pass that writes phase 18 into the build
             plan with its rulings and carried obligations, moved ahead of the rest of Part A after the operator asked on
-            2026-10-09 why phase 18 was not in the build plan, since the 3.1 correction's obligations name phase 18's
-            checkpoints; then 3.1 the chart's averages, 6.10 the written key retired, 16.3 the dividend estimate and,
-            if the data check confirms it, the market events table, a correction changing the night merged at most one
-            a night.
+            2026-10-09 why phase 18 was not in the build plan, since the plan's rulings, which the corrections' entries
+            cite, stand outside the repository until it lands; then 3.1 the chart's averages, 6.10 the written key
+            retired, 16.3 the dividend estimate and, if the data check confirms it, the market events table, a
+            correction changing the night merged at most one a night.
 Carried:    nothing.
