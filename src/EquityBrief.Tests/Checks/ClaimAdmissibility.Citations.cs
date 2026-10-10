@@ -130,10 +130,34 @@ public partial class ClaimAdmissibility
         const string Before = "<p class=\"written-before\"";
 
         Assert.Contains(
-            FormattableString.Invariant($"{Before} data-check=\"{check:yyyy-MM-dd}\">Written before the citation check of {check:yyyy-MM-dd}"),
+            FormattableString.Invariant($"{Before} data-check=\"{check:yyyy-MM-dd}\">Written before the citation check, which holds from the night of {check:yyyy-MM-dd}"),
             marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check.AddDays(-1), "a writer", ["r"]), [document]),
             StringComparison.Ordinal);
         Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check, "a writer", ["r"]), [document]), StringComparison.Ordinal);
+    }
+
+    // The check holds from the first night built after it merged, since a pass runs from the newest night's build and no
+    // night runs on a day the exchange is closed: a merge on a Saturday leaves that day's passes and the Sunday's on the
+    // build of the Friday before, and the first night built with the check is the next session's, read off the closure table.
+    [Fact]
+    public void TheCitationCheckHoldsFromTheFirstNightBuiltAfterItMergedAndAWeekendsPassesAreDrawnAsWrittenBeforeIt()
+    {
+        var merged = new DateOnly(2026, 10, 10);
+        var firstNight = Enumerable.Range(0, 7).Select(merged.AddDays).First(EquityBrief.Core.Bars.ExchangeClosures.IsSession);
+
+        Assert.Equal(new DateOnly(2026, 10, 12), firstNight);
+        Assert.Equal(firstNight, ClaimRules.CitationCheckFrom);
+
+        var marks = new EquityBrief.Web.Marks.MarkRenderer();
+        var document = new EquityBrief.Web.Marks.SourceCell("r", "Results release", "https://www.sec.gov/Archives/edgar/data/93410/release.htm", new DateOnly(2026, 7, 31));
+
+        foreach (var weekend in new[] { merged, merged.AddDays(1) })
+        {
+            Assert.Contains(
+                "Written before the citation check, which holds from the night of 2026-10-12",
+                marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", weekend, "a writer", ["r"]), [document]),
+                StringComparison.Ordinal);
+        }
     }
 
     [Fact]

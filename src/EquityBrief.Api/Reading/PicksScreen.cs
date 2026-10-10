@@ -16,7 +16,7 @@ namespace EquityBrief.Api.Reading;
 // over the risk as a share of the buy. And where the price stood against the buy, read as ratios so a
 // split since the listing moves neither side. Not in the read API, whose claim is that it computes
 // nothing, and not in the page, whose claim is the same.
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
 public static class PicksScreen
 {

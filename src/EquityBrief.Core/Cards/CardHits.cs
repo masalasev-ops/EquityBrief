@@ -90,6 +90,26 @@ public static class CardHitsReading
     // alike. None where the bars show fewer than two steps.
     public static int? PaymentsAYear(IReadOnlyList<(DateOnly Session, decimal Close, decimal RawClose)> bars)
     {
+        var steps = Steps(bars);
+
+        if (steps.Count < 2)
+        {
+            return null;
+        }
+
+        var gap = Median(steps.Zip(steps.Skip(1), DaysBetween));
+
+        return UsualPaymentsAYear.MinBy(payments => Math.Abs(Math.Log(gap * payments / 365.25)));
+
+        static double DaysBetween(DateOnly earlier, DateOnly later) => later.DayNumber - earlier.DayNumber;
+    }
+
+    // The sessions the stored bars show a dividend's step on, oldest first: each session the ratio of the adjusted close to
+    // the raw close rises on from the session before by at least the smallest step and under the largest, which is an
+    // ex-date the provider's adjustment carries. The chart marks them where no dividend of the company's is kept.
+    // see: The chart marks each report and each ex-dividend date over its sessions, the ex-dates a kept dividend's and before the first kept one the steps the dividends leave in the bars
+    public static IReadOnlyList<DateOnly> Steps(IReadOnlyList<(DateOnly Session, decimal Close, decimal RawClose)> bars)
+    {
         var steps = new List<DateOnly>();
 
         for (var at = 1; at < bars.Count; at++)
@@ -110,16 +130,7 @@ public static class CardHitsReading
             }
         }
 
-        if (steps.Count < 2)
-        {
-            return null;
-        }
-
-        var gap = Median(steps.Zip(steps.Skip(1), DaysBetween));
-
-        return UsualPaymentsAYear.MinBy(payments => Math.Abs(Math.Log(gap * payments / 365.25)));
-
-        static double DaysBetween(DateOnly earlier, DateOnly later) => later.DayNumber - earlier.DayNumber;
+        return steps;
     }
 
     // The next ex-date inside the hold: the first the calendar declares after the night, and where it declares none the

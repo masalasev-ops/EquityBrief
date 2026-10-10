@@ -59,6 +59,10 @@ public partial class ReadSurface
             // 18.2, the name page's seven regions between the card and the earnings reactions and their nine marks.
             .. ReportPageRows,
 
+            // 18.3, the long view and the ladder figure, their four marks, the parts the chart, the plan, the reactions
+            // and the moves gain, and the two failures a page states.
+            .. HistoryPageRows,
+
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
             // version at a checkpoint, and the night's tries on tonight's notice and the Run page.
@@ -375,7 +379,6 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Peers, its trend state"),
             CheckReach.Key("15.9 Name", "Peers, the distance row mark"),
             CheckReach.Key("15.9 Name", "Peers, a key saying how to read it"),
-            CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
             CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind"),
             CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date"),
             CheckReach.Key("15.9 Name", "Earnings reactions, its timing"),
@@ -396,7 +399,6 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "A pass as it runs"),
             CheckReach.Key("15.9 Name", "The numbers snapshot"),
             CheckReach.Key("15.9 Name", "Regenerate Report"),
-            CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, stops are horizontal rules"),
@@ -1659,8 +1661,7 @@ public partial class ReadSurface
         var marks = new MarkRenderer();
         var table = marks.MovesTable(
             Name,
-            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
-            NameScreen.TwelveMonths(await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue)));
+            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))]);
 
         Assert.NotEmpty(moves);
         Assert.Contains($"data-moves=\"{moves.Count}\"", table, StringComparison.Ordinal);
@@ -1686,7 +1687,7 @@ public partial class ReadSurface
 
         // And a name with no stored moves says so rather than drawing an empty
         // table, which a reader would read as a name that never moved.
-        Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", [], []), StringComparison.Ordinal);
+        Assert.Contains("no moves are stored", marks.MovesTable("NOSUCH", []), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -4760,95 +4761,56 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task HowItGotHereDrawsTheTwelveMonthPictureAboveTheTableOfMoves()
+    public async Task TheChartNumbersTheYearsBiggestMovesAndHowItGotHereDrawsTheTableAlone()
     {
-        // Section 15.9 puts the twelve-month picture in this region, above the
-        // table of the biggest moves. The region drew the table alone until 5.8.
+        // The year's biggest moves are numbered on the chart, each on its last session and linking to its own row of the
+        // table of moves; how it got here draws the table and no picture.
         using var store = await FixtureExpectations.WithListings();
 
         var api = Api(store);
-        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
         var moves = await api.MovesAsync(Name);
-        var year = NameScreen.TwelveMonths(bars);
 
-        Assert.NotEmpty(year);
         Assert.NotEmpty(moves);
 
-        var region = new MarkRenderer().MovesTable(
-            Name,
-            [.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))],
-            year);
+        var page = await NameRoute(store, Name);
+        var chart = CardIn(page, "chart");
+        var got = CardIn(page, "how-it-got-here");
 
-        // The picture is inside the region the document puts it in, and above
-        // the table, which is the order the region is read in: the year first,
-        // then which moves made it.
-        Assert.Contains("class=\"twelve-months\"", region, StringComparison.Ordinal);
-        Assert.True(
-            region.IndexOf("class=\"twelve-months\"", StringComparison.Ordinal)
-                < region.IndexOf(" data-session-date=", StringComparison.Ordinal),
-            "the twelve-month picture is drawn below the table of moves.");
+        Assert.DoesNotContain("class=\"level-chart\"", got, StringComparison.Ordinal);
+        Assert.DoesNotContain("twelve-months", page, StringComparison.Ordinal);
+        Assert.Equal(moves.Count, Regex.Matches(chart, "class=\"move-mark\"").Count);
 
-        // It is the level chart mark rather than a drawing of its own, and it is
-        // given the year and no bands: nothing on any screen is a one-off
-        // drawing, and what this region asks is what the year did.
-        Assert.Contains($"data-picture-sessions=\"{year.Count}\"", region, StringComparison.Ordinal);
-        Assert.Contains($"class=\"level-chart\" data-ticker=\"{Name}\" data-sessions=\"{year.Count}\"", region, StringComparison.Ordinal);
+        foreach (var move in moves)
+        {
+            var row = FormattableString.Invariant($"move-{Name}-{move.Rank}");
 
-        // And no bands, which is what separates this picture from the chart
-        // region below it: that one is about where the levels are, this one is
-        // about what the year did.
-        Assert.DoesNotContain("class=\"level-bands\"", region, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"<a href=\"#{row}\"><g class=\"move-mark\" data-session=\"{move.SessionDate:yyyy-MM-dd}\">"), chart, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"<tr id=\"{row}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\""), got, StringComparison.Ordinal);
+        }
 
-        // The window is twelve months back from the newest stored session and
-        // not from the machine clock, so a page opened on a Sunday draws the
-        // year to Friday.
-        Assert.Equal(bars[^1].SessionDate, year[^1].SessionDate);
-        Assert.All(year, bar => Assert.True(bar.SessionDate > bars[^1].SessionDate.AddYears(-1)));
-        Assert.Contains(bars[^1].SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), region, StringComparison.Ordinal);
+        // Each stored reaction's session is tagged R beneath its candle, a tag for each and none other, the served page
+        // taking each move's cause in its stated order.
+        var reactions = await api.ReactionsAsync(Name, null);
+        var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
+        DateOnly[] tagged = [.. reactions.Select(reaction => reaction.Session).Where(session => session >= bars[0].SessionDate && session <= bars[^1].SessionDate).Order()];
 
-        // A session older than the window is outside the picture. The committed
-        // fixture holds a year and no more, so the boundary is constructed: one
-        // bar two years back and one on the newest session, and the picture is
-        // the second alone.
-        var older = NameScreen.TwelveMonths(
-            [
-                new BarRow(Name, bars[^1].SessionDate.AddYears(-2), 1m, 2m, 0.5m, 1.5m, 10),
-                bars[^1],
-            ]);
-
-        Assert.Equal([bars[^1].SessionDate], [.. older.Select(bar => bar.SessionDate)]);
-
-        // The window is measured from the newest stored session and from nothing
-        // else, asserted over a series that ended years ago. Measured from the
-        // machine clock this is empty, and over the committed fixture the two
-        // readings cannot be told apart: its newest session is days from today,
-        // so both windows hold the same bars and a picture drawn to the wrong
-        // year looks exactly right.
-        var settled = new DateOnly(2020, 6, 30);
-
-        var stale = NameScreen.TwelveMonths(
-            [
-                new BarRow(Name, settled.AddYears(-1).AddDays(-1), 1m, 2m, 0.5m, 1.5m, 10),
-                new BarRow(Name, settled.AddYears(-1).AddDays(1), 1m, 2m, 0.5m, 1.5m, 10),
-                new BarRow(Name, settled, 1m, 2m, 0.5m, 1.5m, 10),
-            ]);
-
+        Assert.NotEmpty(tagged);
         Assert.Equal(
-            [settled.AddYears(-1).AddDays(1), settled],
-            [.. stale.Select(bar => bar.SessionDate)]);
+            tagged.Select(session => session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+            Regex.Matches(chart, "<g class=\"ev-mark ev-report\" data-kind=\"report\" data-session=\"([^\"]+)\"><title>Results reported ").Select(match => match.Groups[1].Value));
+        Assert.Contains("data-cause-column=\"taken\"", got, StringComparison.Ordinal);
+    }
 
-        // And a name with fewer sessions than a chart needs gets the sentence
-        // stating its count rather than a picture drawn through nothing, which
-        // is how every mark here degrades.
-        var sparse = new MarkRenderer().MovesTable("NOSUCH", [], [.. year.Take(MarkRenderer.FewestBars - 1)]);
+    // One card of a rendered page, from its opening tag to the next card's.
+    static string CardIn(string page, string id)
+    {
+        var start = page.IndexOf($"<section class=\"card\" id=\"{id}\"", StringComparison.Ordinal);
 
-        Assert.Contains($"data-picture-sessions=\"{MarkRenderer.FewestBars - 1}\"", sparse, StringComparison.Ordinal);
-        Assert.Contains("and a chart needs at least", sparse, StringComparison.Ordinal);
-        Assert.DoesNotContain("class=\"level-chart\"", sparse, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"the page draws no {id} card");
 
-        // A name with no stored session at all is the same shape rather than a
-        // caption naming a date nobody has.
-        Assert.Contains("no stored session", new MarkRenderer().MovesTable("NOSUCH", [], []), StringComparison.Ordinal);
+        var next = page.IndexOf("<section class=\"card\" ", start + 1, StringComparison.Ordinal);
+
+        return next < 0 ? page[start..] : page[start..next];
     }
 
     [Fact]

@@ -42,6 +42,8 @@ public enum Store
     PulledHolding,
     Indicator,
     ChartAverage,
+    EarningsMove,
+    LongView,
     Swing,
     VolumeProfile,
     Level,

@@ -62,14 +62,16 @@ internal static class ComponentVocabulary
     // page asked for beside the stored sessions, each a price, and the research requests column the pages' asks for them
     // beside the asks for a report, each a press's request the worker answers. From 18.2 the bars column holds the
     // Treasury's 10-year a session, a fetched series of sessions as the market series are, and the fundamentals column the
-    // estimate trend each quarters fetch keeps and each dividend kept, each a provider's answer about a company.
+    // estimate trend each quarters fetch keeps and each dividend kept, each a provider's answer about a company. From 18.3
+    // the computed tables column holds each name's typical earnings move and its long view, figures the night works out
+    // for the name page as it works out the chart's averages.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
-        ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
+        ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
         ("Facts", [DataStore.Facts]),
@@ -187,6 +189,8 @@ internal static class ComponentVocabulary
         ["family trades"] = DataStore.FamilyTrade,
         ["indicators"] = DataStore.Indicator,
         ["chart averages"] = DataStore.ChartAverage,
+        ["earnings moves"] = DataStore.EarningsMove,
+        ["long views"] = DataStore.LongView,
         ["live quotes"] = DataStore.LiveQuote,
         ["quote requests"] = DataStore.QuoteRequest,
         ["swings"] = DataStore.Swing,

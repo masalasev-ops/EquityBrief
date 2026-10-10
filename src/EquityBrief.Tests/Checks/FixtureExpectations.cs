@@ -63,6 +63,9 @@ public partial class FixtureExpectations
             // 18.2, the report's windows, the dividends history run and the six failures.
             .. ReportRows,
 
+            // 18.3, the typical earnings move's floor and four failures over constructed prints, pulls and moves.
+            .. HistoryRows,
+
             // 12.5's correction, the sweep: section 17's four rows over constructed candidates, maps and clocks and
             // the fixture's two nights, and section 18's row about a chunk that fails twice.
             CheckReach.Key(Scope.LimitsTable, "Sweep grid"),

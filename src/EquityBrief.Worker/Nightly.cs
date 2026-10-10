@@ -321,16 +321,37 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written for {outcome.NamesComputed} name(s), " +
                     $"{outcome.NotAvailable} not available";
             }),
-            // The chart's averages over the sessions before the store's year, from the pulled history, which only the
-            // chart draws.
-            // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+            // The name page's figures over the sessions before the store's year, from the pulled history: the chart's
+            // averages, and after them each name's typical earnings move and its long view, which only the page draws.
+            // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
             new("chart-averages", async () =>
             {
                 var outcome = await new ChartAverager(clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
 
-                return FormattableString.Invariant($"{outcome.NamesWarmed} name(s) read from a pull, {outcome.NamesWithout} with none, {outcome.RowsWritten} row(s)");
-            }),
+                // The typical earnings moves and the long views are the page's alone, so a reader that cannot finish is
+                // named on its own row, every name keeping the rows an earlier night wrote, and the night goes on to the
+                // rules; a stop at the night's deadline is the night's and stops it as any step's does.
+                // see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year
+                var reader = new PageHistoryReader(clock, store.DatabaseFile);
+                var historyStarted = clock.UtcNow;
+                string history;
+
+                try
+                {
+                    var read = await reader.RunAsync(runId, night.Token);
+
+                    history = FormattableString.Invariant($"earnings moves and long views {read.NamesRead} name(s) read from a pull, {read.NamesWithout} with none, {read.MovesStated} typical earnings move(s) stated, {read.RowsWritten} row(s)");
+                }
+                catch (Exception failed) when (failed is not OperationCanceledException)
+                {
+                    await reader.RecordNotReadAsync(runId, historyStarted, failed.Message, night.Token);
+
+                    history = "the earnings moves and long views not read tonight, " + failed.Message;
+                }
+
+                return FormattableString.Invariant($"{outcome.NamesWarmed} name(s) read from a pull, {outcome.NamesWithout} with none, {outcome.RowsWritten} row(s); ") + history;
+            }, [ChartAverager.Stage, PageHistoryReader.Stage]),
             new("swings", async () =>
             {
                 var outcome = await new SwingFinder(clock, store.DatabaseFile)

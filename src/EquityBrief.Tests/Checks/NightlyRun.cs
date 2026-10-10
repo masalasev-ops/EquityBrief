@@ -34,9 +34,10 @@ namespace EquityBrief.Tests.Checks;
 // list. A step that printed "skipped" would be a step a reader counts as run.
 public partial class NightlyRun
 {
-    // Section 14's step after the indicators, as the document states it.
+    // Section 14's step after the indicators, as the document states it, which from 18.3 reads the typical earnings
+    // moves and the long views after the chart's averages.
     internal const string ChartAveragesStep =
-        "Compute the chart's averages for every name on the stored sessions the indicators leave empty, reading the sessions before its first stored bar from the history pulled before the store's year at the store's scale, which the chart alone draws (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads).";
+        "Compute the chart's averages for every name on the stored sessions the indicators leave empty, reading the sessions before its first stored bar from the history pulled before the store's year at the store's scale; then read each name's typical earnings move over every print the store holds and its month-end closes over that history and the stored year at the store's scale, a reader that cannot finish named on its own row while the night goes on; figures the name page alone draws (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws) (see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year) (see: The long view draws the month-end closes over the pulled history at the bar store's scale with the plan's levels on the same prices).";
 
     // Section 14's step after the filings refresh, from 18.2, as the document states it.
     internal const string TreasuryStep =
@@ -59,6 +60,9 @@ public partial class NightlyRun
         [
             // 18.2, the Treasury's 10-year after the filings refresh.
             CheckReach.Key(NightlyRunSteps.Heading, TreasuryStep),
+
+            // 18.3, the page history reader that cannot finish while the night goes on.
+            CheckReach.Key(Scope.FailureTable, "The page history reader cannot finish"),
 
             // 12.3's build of the night from a clean copy of the committed code: the checkout the script refuses.
             CheckReach.Key(Scope.FailureTable, "The night's checkout is off main or holds a commit the remote's main lacks"),

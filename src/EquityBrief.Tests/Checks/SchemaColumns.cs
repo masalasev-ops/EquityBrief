@@ -30,6 +30,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Treasury yields"),
     ];
 
+    // 18.3's two: each name's typical earnings move and its long view.
+    internal static string[] PageHistoryStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Earnings moves"),
+        CheckReach.Key(Scope.StoresTable, "Long views"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -39,6 +46,9 @@ public class SchemaColumns
 
             // 18.2, the report's three stores.
             .. ReportStoreRows,
+
+            // 18.3, the typical earnings moves and the long views.
+            .. PageHistoryStoreRows,
 
             // The 3.1 correction, the chart's averages.
             CheckReach.Key(Scope.StoresTable, "Chart averages"),

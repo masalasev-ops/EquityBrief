@@ -61,9 +61,11 @@ public partial class ArchitectureConformance
     internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims, .. PhaseEighteenRows];
 
     // The rows phase 18 lands, by checkpoint: 18.1's quote job, its two stores, the day's cap and its three failures, and
-    // the name page's parts, the range bar, the Run page's quote runs and the interval; and 18.2's dividend keeper and
+    // the name page's parts, the range bar, the Run page's quote runs and the interval; 18.2's dividend keeper and
     // Treasury reader, their three stores, the Treasury's step, the report's windows and the dividends history run, its six
-    // failures, and the name page's seven regions and nine marks.
+    // failures, and the name page's seven regions and nine marks; and 18.3's page history reader, its two stores, the
+    // typical earnings move's floor and seven failures with the gap row's part, and the name page's two regions, four
+    // marks and the parts the chart, the plan, the reactions and the moves gain.
     internal static string[] PhaseEighteenRows =>
     [
         .. ComponentAccess.QuoteJobRows,
@@ -75,11 +77,19 @@ public partial class ArchitectureConformance
         CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.TreasuryStep),
         .. FixtureExpectations.ReportRows,
         .. Reading.ReadSurface.ReportPageRows,
+        .. ComponentAccess.PageHistoryRows,
+        .. SchemaColumns.PageHistoryStoreRows,
+        .. FixtureExpectations.HistoryRows,
+        CheckReach.Key(Scope.FailureTable, "The page history reader cannot finish"),
+        CheckReach.Key(Scope.FailureTable, "A gap in one name's series, typical earnings move and long view"),
+        .. Reading.ReadSurface.HistoryPageRows,
     ];
 
     // The rows the document loses after phase 17's report, each counted by the report of the phase that added it: the
     // 6.10 correction's overnight queue, its catalogue and matrix rows, its step, section 17's row, section 18's row for
-    // a night the machine slept and the part of the local model's row the queue recorded, and the run page's region.
+    // a night the machine slept and the part of the local model's row the queue recorded, and the run page's region;
+    // and 18.3's twelve-month picture, which the chart's numbered moves replace, and the reactions' place beside the
+    // earnings setups, which 18.1 moved and 18.3 states.
     // The step is named by how it opened, since its whole text cites the decisions its retirement superseded.
     internal static readonly string[] TakenOutAfterPhaseSeventeen =
     [
@@ -90,6 +100,8 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
         CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the overnight queue records that it could not run"),
         CheckReach.Key("15.10 Run", "Overnight queue"),
+        CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
     ];
 
     [Fact]

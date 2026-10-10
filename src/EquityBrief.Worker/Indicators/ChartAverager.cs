@@ -22,7 +22,7 @@ public sealed record ChartAveragesOutcome(int NamesWarmed, int NamesWithout, int
 // the joined series with the indicator arithmetic as it stands, keeping only the values the indicator rows leave empty.
 // Only the chart draws them; no rule, level, listing, gate or card reads them, and the indicator engine is not edited, so
 // no rule's version moves.
-// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
 public sealed class ChartAverager : IComponent
 {
     public static ComponentAccess Access => new(

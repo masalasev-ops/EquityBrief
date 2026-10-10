@@ -13,7 +13,7 @@ namespace EquityBrief.Web.App;
 // figures the page does and no value the store does not.
 // see: A single report can still be exported as a self-contained file
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 public sealed partial class ReportExporter : IComponent
 {
     // It reads the read API and touches no store; what it writes is a file the person

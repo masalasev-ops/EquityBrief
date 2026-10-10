@@ -19,7 +19,7 @@ namespace EquityBrief.Api.Reading;
 // whose claim is that it computes nothing and which `read-surface` asserts over
 // the shipped source. Not in the page, whose claim is the same. Code owns it and
 // the file that owns it is named for the screen it serves.
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 // see: Code owns every number
 // see: Distances are stated as typical days' moves
 public static class UniverseScreen

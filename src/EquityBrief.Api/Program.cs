@@ -358,6 +358,21 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             gate.Trigger ? null : EquityBrief.Core.Filter.NearMiss.FiredSessionsBefore(await read.TriggerEventsAsync(ticker, shown)))
         : null;
 
+    // The stored stories of the thirty days before the night with their labels, which the news region draws and each
+    // move's cause reads.
+    var stories = night is { } storiedOn ? await read.NewsAsync(ticker, storiedOn) : [];
+
+    // What the typical earnings move, the long view, the chart's marks and the moves' causes read. The typical move and
+    // the long view are the newest night's alone, so a page for an earlier night draws neither.
+    var historyInputs = new HistoryInputs(
+        on is null ? await read.EarningsMoveAsync(ticker) : null,
+        on is null ? await read.LongViewAsync(ticker) : null,
+        bars.Count > 0 ? await read.FiledBetweenAsync(ticker, bars[0].SessionDate, bars[^1].SessionDate) : [],
+        await read.RawClosesAsync(ticker, on),
+        stories,
+        clock.SessionZone,
+        Newest: on is null);
+
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
         fundamentals,
@@ -410,7 +425,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // label the labeller wrote for it, whether the name was on the night's list and the labeller's own run
         // for the night, which say why a name holds no label.
         news: night is { } storied
-            ? NewsScreen.Build(ticker, storied, await read.NewsAsync(ticker, storied), gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
+            ? NewsScreen.Build(ticker, storied, stories, gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
             : null,
         // The name's rows on the page's list for the night, where the setup families drew it.
         familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null,
@@ -433,7 +448,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         indexCode: await read.IndexOfAsync(ticker, night ?? clock.SessionDateAt(clock.UtcNow)),
         asksForQuotes: !export && on is null,
         // What the latest quarter, the margins, the analysts, the dividend and the valuation read, as of the page's night.
-        reportInputs: await read.ReportInputsAsync(ticker, on, night ?? (bars.Count > 0 ? bars[^1].SessionDate : clock.SessionDateAt(clock.UtcNow))));
+        reportInputs: await read.ReportInputsAsync(ticker, on, night ?? (bars.Count > 0 ? bars[^1].SessionDate : clock.SessionDateAt(clock.UtcNow))),
+        historyInputs: historyInputs);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -618,11 +634,16 @@ app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi 
         price = SinglePageApp.PriceNow([], null, quote),
         asOf = SinglePageApp.QuoteAsOf(quote, quote.Night),
         tiles = marks.LeadTiles(tiles),
+        // The price as the ladder figure writes it, and each band's distance in the level table's words and the figure's,
+        // on the side of the quote's price the band stands.
+        // see: Distances are stated as typical days' moves
+        priceText = Figures.Price(quote.Price),
         distances = quote.Distances.Select(band => new
         {
             low = band.Low.ToString(CultureInfo.InvariantCulture),
             high = band.High.ToString(CultureInfo.InvariantCulture),
             away = band.Days is { } days ? days.ToString("0.0", CultureInfo.InvariantCulture) + " typical days" : "not measured",
+            ladder = MarkRenderer.Away(band.Days, band.Low > quote.Price),
             value = band.Days is { } held ? held.ToString(CultureInfo.InvariantCulture) : "none",
         }),
     });

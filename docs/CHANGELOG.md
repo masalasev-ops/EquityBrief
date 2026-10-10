@@ -25,6 +25,166 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - BUILD_PLAN.md - 18.5's screenshots read the written reports the operator's regeneration writes on 18.4's prompts
+Authorised by: the operator's ruling of 2026-10-10, recorded as the 18.5 ruling "the written reports regenerated once after 18.4 merges, on its prompts, under the caps and off-peak" in PROGRESS.md
+Was:
+> ... each read back against the store and set beside the reference, with the written sections as stored, each marked where it was written before the citation check, and no paid report written for them; ...
+Now:
+> ... each read back against the store and set beside the reference, with the written sections as the regeneration the operator ruled on 2026-10-10 writes them: every stock holding a written report regenerated once on 18.4's prompts, on the paid lane under the spend caps and off-peak, about $1.30 for the 32 of that day and up to about $2 with retries, asked once a night has been built from a main holding 18.4, since a pass runs from the newest night's build, and no other paid report written for the screenshots; ...
+Why: the operator asked on 2026-10-10 that every written report be regenerated and chose once, after 18.4 merges, so no report is paid for twice.
+
+### 2026-10-10 - .claude/rules/checks.md - gap-refusal counts the typical earnings moves and the long views among the computed tables, read-surface holds thirty-four marks and 18.3's parts, and fixture-expectations and nightly-run gain 18.3's clauses
+Authorised by: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year
+Was:
+> gap-refusal: ... so the eight computed tables, the chart's averages among them, withhold every row for it while the ladder, the listing, the swing readings and the gate results still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the twelve, ...
+
+> read-surface: ... each of the thirty marks is asserted over a full input ... each named where one is, with nothing written inside the chart's plot, the averages and the two hues named in a row above it ... and a name's earnings reaction record is drawn as the card after the plan's, which closes on the earnings setups, each print's report date, ...
+Now:
+> gap-refusal: ... so the ten computed tables, the chart's averages, the earnings moves and the long views among them, withhold every row for it ... over the fourteen, ...
+
+> read-surface: ... each of the thirty-four marks ... with no average's or band's name written inside the chart's plot ... drawn as the card after the valuation's and before the chart ...; and from 18.3 the four marks are each asserted over a full input and over the input they degrade on; ...
+
+> fixture-expectations and nightly-run: each closes on a clause from 18.3 naming what its new tests assert.
+Why: 18.3 adds two computed tables a gapped name keeps no row of, four marks and the moves numbered on the chart's plot, and the tests that hold them. The reactions' place has been after the valuation since 18.1, which moved the region and left the clause saying the plan's, so that half corrects a statement false before this change.
+
+### 2026-10-10 - RUNBOOK.md - the pulled history is read on a night for the name page's figures, and a section on 18.3's reactions, long view, causes, ladder and shares
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+Was:
+> ... The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it but the chart's averages before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull):
+Now:
+> ... nothing a night runs reads it but the chart averages step, for the chart's averages, each stock's typical earnings move and its long view before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull):
+
+> A section "The reactions, the long view, the moves' causes, the ladder and the plan's shares" after the report's quarter section, which had no prior text.
+Why: 18.3's reader reads the pulled bars and the pulled earnings on the night for the page, and the operator reads its row and its partial outcome on the Run page.
+
+### 2026-10-10 - BUILD_PLAN.md - the retention done condition cites the bar store's decision by its new name, and the two operating rows the 3.1 correction opened name the page history reader beside the chart averager
+Authorised by: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name page's figures alone
+Was:
+> ... retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone); ...
+
+> | **Kept bars brought to the bar store's scale before the warm-up reaches them** | 3.1 correction | operating | 1 night whose stored year starts after the newest pull's last session, read on the run page's row for the chart averages step, which 3.1 builds, its names read from a pull falling to none. At the trigger ...
+
+> | **The chart averages step reads within its time on the first five nights** | 3.1 correction | operating | 5 scheduled nights after the 3.1 correction merges, read on the run page's table of the night's stages, which 3.1 builds with the step's row in its indicators group. At the trigger the step's time, about 120 seconds, proposed, is settled against the five nights' durations |
+
+> ... (see: A screen reads and renders, and each figure it works out has one function in the core) ...
+Now:
+> ... (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name page's figures alone); ...
+
+> the kept bars row: ... its names read from a pull falling to none, for the chart's averages and from 18.3 for the typical earnings moves and the long views alike. ...
+
+> the step's time row: ... with the step's row in its indicators group, and from 18.3 the page history reader's row beside it. At the trigger the step's time, the chart averager's and the page history reader's together, about 120 seconds, proposed, ...
+
+> ... (see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core) ...
+Why: the step reads the pull for two more figures, so both rows read on it measure the step whole, and the decisions cited were superseded.
+
+### 2026-10-10 - SCHEMA.md - earnings_move and long_view declared with their one writer, the pulled tables read on a night for the name page's figures, and the move causes, the filed facts, the dividends and the raw close named for the page's new reads
+Authorised by: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year
+Was:
+> bar: ... The arithmetic that draws or computes reads the adjusted set, and two readers read this column: the forward return filler, ...; and the decision cards, ... (see: A pick's next ex-dividend date ...).
+
+> pulled_bar: **This is not the bar table, and no night reads it but the chart averages step** (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull). ... No stored bar may be removed that way, and these rows may because no night, listing, score or page ever read one. ...
+
+> pulled_earnings: ... Kept apart from `calendar` for the reason `pulled_bar` is kept apart from `bar`, and removed with it by the same pull.
+
+> chart_average: ... (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads). ...
+
+> move: The cause of each move is not stored here. It is a researched claim and lives in `research_section` with its source.
+
+> filed_fact: ... From 17.8 the index families read them as well, through the ledger's catalogue, ... (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). ...
+
+> dividend_event: ... The name page reads a payer's rows for the years it raised and its trailing yield; no rule, list or gate reads the table.
+Now:
+> Two ownership rows, `earnings_move` and `long_view`, each written by PageHistoryReader alone; two table sections after `chart_average`; the raw close's readers stated as among them, the read surface added; the pulled bars and the pulled earnings read on a night by the chart averages step for the name page's figures; the move's cause taken by one function in the core where research wrote none; the name page among the filed facts' readers; and the kept dividends' ex-dates the chart marks.
+Why: 18.3's reader writes two tables and reads the pulled earnings beside the pulled bars, and the page reads the filings, the dividends and the raw closes for the causes and the chart's marks. Two sentences were already false: the raw close had more readers than the two named, and the pulled bars had been read on a night since the 3.1 correction.
+
+### 2026-10-10 - ARCHITECTURE.html - 15.2 and 15.14 state the arithmetic a page alone draws beside the figures at a price the store does not hold, the read API's row names it, and every citation of the screen decision takes its new name
+Authorised by: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+Was:
+> 15.2: <p><b>Reads and renders, nothing else.</b> No screen computes a level, calls a model, or makes a network request of a provider. Every number on every screen is already in the facts file, the ladder, the listings, the research store, the quotes the quote job stored or the run log, but for the ones a screen draws at a price or an account the store does not hold, each worked by one function in the core: a pick's plan in the operator's money, from the account they keep in a file no store row may hold, and its sixth line, from their taken trades; each band's distance in typical days from the price a name's page draws; and the four tiles under a name's headline at that price. A screen that wants any other number the store does not carry is not a screen change; it is a change to a compute component, and it goes through a checkpoint like anything else.</p>
+
+> 15.14: <li>No screen computes a level, a stop or a rate. Every figure is read but for the ones a screen draws at a price or an account the store does not hold, each worked by one function in the core, and every part of a page states where it came from and as of when. ...
+
+> the read API's row: ... read-only access for the app; performs no fetching, and no computation but a pick's plan in the operator's money and its open trades in its sector, each band's distance and the four tiles at the price a name's page draws, each by one function in the core (see: A screen reads and renders, and each figure it works out has one function in the core), ...
+
+> section 4's decision card row, 15.1's reason and 15.17's paragraph: (see: A screen reads and renders, and each figure it works out has one function in the core)
+Now:
+> 15.2 states the two kinds, a figure at a price or an account the store does not hold and the arithmetic over stored figures that the page alone draws and no rule reads, naming each; 15.14 reads every figure as read or worked by one function in the core from what is read; the read API's row adds the arithmetic the name page alone draws; and each citation names the new decision.
+Why: the plan's sizing arithmetic, 18.2's regions and 18.3's are worked when the page is drawn, and the decision said every number but four was in the store.
+
+### 2026-10-10 - ARCHITECTURE.html - the name page's typical earnings move, chart marks, long view, causes, ladder figure and plan shares: section 4, the catalogue and matrix, 15.5, 15.9, and sections 16, 17 and 18
+Authorised by: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year
+Was:
+> section 4: Then the contents, in two columns, numbering from one up to twenty-three regions in the order of this table, ... Five regions are written by the paid model when a report is asked for. The other eighteen need no paid call to be drawn, though three of them carry a part a model writes, what the company sells and the segment commentary in the segments, the causes of the moves and the dated items the research read, and twelve of the eighteen change every night.
+
+> <tr><td>Earnings reactions</td><td>One row per print over the calendar's year behind: the report date, its timing, the session it moved, the estimate, the actual, the surprise and that session's move</td>...
+
+> <tr><td>The chart</td><td>Candles with the level bands and the three averages, the volume-at-price histogram beside them on the same prices, and the momentum panel beneath</td><td>Computed: indicator engine, the chart averages step, swing finder, volume profile builder, level builder (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads)</td>...
+
+> <tr><td>How it got here</td><td>A twelve-month price picture, a table of the biggest moves with what caused each one, and each move beside its group's median move over the same sessions</td><td>... the cause column filled by the model from news of that date</td><td>the tables are free, the cause column is paid</td><td>the moves and the medians nightly, the causes with the research record</td></tr>
+
+> <tr><td>Levels</td><td>Each band from the highest to the lowest with its role as a pill, ...
+
+> <tr><td>The plan</td><td>The plan figure, ... and the sizing arithmetic with the last two prints' moves against the first tranche's stop; and folded beneath it, ...
+
+> A name whose report has never been asked for therefore still has a complete short report: every region but the five the paid model writes, with the segments' written parts and the moves table's cause column empty and no dated items beside the calendar, ...
+
+> 15.5: <p>Thirty marks. ... <tr><td><b>Level chart</b></td><td>Daily candles with the level bands shaded behind them, the moving averages drawn, and a volume pane beneath on a shared time axis. The bands are the point: ...
+
+> 15.9: <tr><td>How it got here</td><td>the twelve-month picture, and the table of the biggest moves with the cause of each where research has been written</td></tr>
+
+> <tr><td>The chart</td><td>... and the level summary table with each band's members and dates; that table is drawn in the levels region after how it got here with each band's role as a pill</td></tr>
+
+> <tr><td>How far each band is</td><td>on every row of the level summary: the gap ...
+
+> <tr><td>The plan</td><td>the plan column mark, the tranche table with conditions and stops, the exit table with actions, the earnings setups, and the sizing arithmetic. The region is headed Entry and exit plan; ...
+
+> <tr><td>Earnings reactions</td><td>beside the earnings setups: one row per print over the calendar's year behind; each row carrying its report date, its timing, the session it moved on, the estimate, the actual, the provider's surprise, and that session's move; a print with no filed estimate saying none was filed; and a key saying how to read it</td></tr>
+
+> <p>Four parts are display only on this page, reaching no reason, no gate of the swing filter, no plan and no candidate: each move beside its group's median, drawn in the table of the biggest moves; the peers, a region of their own beneath that table; the earnings reactions, a region of their own after the plan, beside its earnings setups, which the earnings drift family alone reads as a rule; and the dividend, drawn in the numbers. ... The exported report draws the four as the page does, ...
+
+> Reads: ... which the latest quarter, the segments, the margins, the analysts, the dividend's safety and the valuation read, from 18.2.
+
+> section 16, Filed facts: ... read by the night's ledger (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session)</td></tr>
+
+> section 18, the gap row: <td>that name's chart shows the gap and its level and plan sections say not computed</td>
+Now:
+> section 4: twenty-four regions, the other nineteen, thirteen of the nineteen; the reactions with the typical earnings move and its bars; the chart with its report and ex-dividend tags and its numbered moves; a new row, The long view; how it got here with each cause in its stated order and its source; the levels with the ladder figure; the plan with each tranche's share, risk and reward to risk and the trail; the key's sentence on a name never researched. The catalogue and the matrix gain the page history reader. 15.5 holds thirty-four marks, the level chart naming its tags and numbered moves and four rows added: Reaction range, Long view, Ladder figure, Reward to risk bars. 15.9 rewrites how it got here, the chart, the distances, the plan and the reactions, adds The long view and The ladder figure, counts seven display-only parts and reads the page's new stores. Section 16 gains Earnings moves and Long views and names the index families and the name page among the filed facts' readers; section 17 gains Typical earnings move at 4 prints; section 18 gains seven failures and the gap row names the two figures a gapped name keeps none of.
+Why: 18.3 builds the reactions' typical move, the chart's marks, the long view, the moves' causes, the ladder figure and the plan's shares. Three statements were already false and are corrected with it: the reactions' place, which 18.1 moved after the valuation; the display-only paragraph's places; and the filed facts' readers, which the index families joined at 17.8.
+
+### 2026-10-10 - ARCHITECTURE.html - the matrix's key says which components read the pulled history and when
+Corrects: the key said no component but the history pull touched the pulled history, false since the 3.1 correction's chart averager read it on the night and the sweep's, the ledger's, the refresher's, the tester's and the recorder's readers read it by hand; found by 18.3's review of every passage naming the pulled history.
+Was:
+> The pulled history column holds bars the operator pulled for the years before the store's own, and no component but the history pull touches it, which is what lets a pull be removed whole without moving any figure a night computed.
+Now:
+> The pulled history column holds bars the operator pulled for the years before the store's own, and no component but the history pull writes it: on a night the chart averager and the page history reader read it for figures the name page alone draws, and the rest read it by hand, so a pull is removed whole without moving any figure a rule, a listing or a score read.
+Why: the property the key protects is that removing a pull moves no rule's figure, which still holds, and not that nothing reads it, which has not been true since 3.1.
+
+### 2026-10-10 - ARCHITECTURE.html - the pulled history is read on a night for the name page's figures: sections 6.2, 7, 14 and 16
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+Was:
+> 6.2: ... the history the operator pulls for the years before it sits beside it in tables of its own that no score reads and no night or page reads but the chart's averages before the store's year (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone).
+
+> 7, the chart averager's row: ... (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads)
+
+> 7, the history pull's row: ... no night reads any of its tables but the chart averages step, which reads the pulled bars, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull); ...
+
+> 14, before the first night: ... One year is what the bar store keeps, and the history the operator pulls before it is read by no step below but the chart's averages (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone). ...
+
+> 14, step 7: <li>Compute the chart's averages for every name on the stored sessions the indicators leave empty, reading the sessions before its first stored bar from the history pulled before the store's year at the store's scale, which the chart alone draws (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads).</li>
+
+> 16, the pulled history's row: ... no night reads any of the twelve tables but the chart averages step, which reads the pulled bars, so removing one moves nothing a listing or a score read and nothing a night or a page read but the chart's averages before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull) ...
+Now:
+> Each passage names the chart's averages, each stock's typical earnings move and its long view as what the night reads the pulled history for, the history pull's and the store's rows naming the pulled earnings beside the pulled bars, and step 7 reads the two figures after the averages, a reader that cannot finish named on its own row while the night goes on; each cites the superseding decisions.
+Why: the operator's ruling of 2026-10-09 lets the one night step read the pulled history for the page's figures, and 18.3 reads two more there.
+
+### 2026-10-10 - CLAUDE.md - the bars rule names the chart's averages, the typical earnings move and the long view as what the night reads the pulled history for
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+Was:
+> ... History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures only the chart draws and no rule, level, listing or gate reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads). ...
+Now:
+> ... it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws). ...
+Why: the step reads two more figures for the page from 18.3, and the decisions the rule cited were superseded to say so.
+
 ### 2026-10-10 - CLAUDE.md - the nightly hard rule's list names the Treasury's daily par yields, one request a night to the Treasury and not the provider
 Authorised by: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
 Was:

@@ -698,7 +698,7 @@ public class RegisterAppendOnly
         // nothing; and the chart averages step's, which computes the chart's averages over the history pulled before
         // the store's year into a store of its own that the read surface alone reads, so no evaluation reaches what it
         // computes. The files left out are named, each shown to be one the reader finds and to hand nothing on.
-        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
         const string Sweep = "src/EquityBrief.Worker/Sweep/SweepColumns.cs";
         const string ChartAverages = "src/EquityBrief.Worker/Indicators/ChartAverager.cs";
 
