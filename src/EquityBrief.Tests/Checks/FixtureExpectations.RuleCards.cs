@@ -191,7 +191,7 @@ public partial class FixtureExpectations
         Assert.Equal([(SwingGates.Market, 3), (SwingGates.Trend, 2), (SwingGates.Setup, 1)], RuleCards.Funnel(order, answers));
 
         // An index rule's parts off the first each member failed: five members, one passing, one failing at the setup,
-        // one at the floors, one at the profit check and one at the cover.
+        // one at the floors, one at the profit check and one at the cover, each count named as the part it passed.
         var parts = RuleCards.IndexFunnel(
         [
             ("breakout", true, null),
@@ -201,8 +201,37 @@ public partial class FixtureExpectations
             ("breakout", false, IndexNightRead.NoCover),
         ]);
 
-        Assert.Equal([(IndexNightRead.MarketClosed, 5), (IndexNightRead.NoSetup, 4), (IndexNightRead.UnderTheFloors, 3), (IndexNightRead.NoProfit, 2), (IndexNightRead.NoCover, 1)], parts);
+        Assert.Equal([(RuleRows.Market, 5), (RuleRows.Setup, 4), (RuleRows.Floors, 3), (RuleRows.Profit, 2), (RuleRows.Cover, 1)], parts);
         Assert.Equal(RuleRows.ReadGates(RuleRows.GatesJson(parts)), parts);
+    }
+
+    [Fact]
+    public void AnIndexRulesFunnelNamesEachPartItCountsAndAFunnelStoredUnderTheReasonsIsReadAsTheParts()
+    {
+        // Each reason the index families' step and the fundamentals-first family give a member is read as its part.
+        Assert.Equal(
+            [RuleRows.Market, RuleRows.Setup, RuleRows.Floors, RuleRows.Profit, RuleRows.Cover, RuleRows.Readings, RuleRows.Profit, RuleRows.Revenue, RuleRows.Margin, RuleRows.Cash, RuleRows.Trend],
+            [.. new[] { IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend }.Select(RuleRows.PartOf)]);
+
+        // A night whose market check was open, read by the fundamentals-first family: 596 members with no setup, four
+        // failing the profit check and one passing. Every one passed the market and one the profit and each part after.
+        var funnel = RuleCards.IndexFunnel(
+        [
+            .. Enumerable.Repeat<(string, bool, string?)>((FundamentalsRule.Name, false, IndexNightRead.NoSetup), 596),
+            .. Enumerable.Repeat<(string, bool, string?)>((FundamentalsRule.Name, false, FundamentalsRule.NoProfit), 4),
+            (FundamentalsRule.Name, true, null),
+        ], FundamentalsRule.Name);
+
+        Assert.Equal(
+            [(RuleRows.Market, 601), (RuleRows.Setup, 5), (RuleRows.Floors, 5), (RuleRows.Readings, 5), (RuleRows.Profit, 1), (RuleRows.Revenue, 1), (RuleRows.Margin, 1), (RuleRows.Cash, 1), (RuleRows.Trend, 1)],
+            funnel);
+
+        // A funnel stored under the reasons is read as the parts with its counts as stored; a gate no index rule names is
+        // read as stored.
+        Assert.Equal(
+            [(RuleRows.Market, 601), (RuleRows.Setup, 5), (RuleRows.Cover, 3)],
+            RuleRows.ReadGates(RuleRows.GatesJson([(IndexNightRead.MarketClosed, 601), (IndexNightRead.NoSetup, 5), (IndexNightRead.NoCover, 3)])));
+        Assert.Equal([("trend and strength", 68)], RuleRows.ReadGates(RuleRows.GatesJson([("trend and strength", 68)])));
     }
 
     static RuleCards.FilterRow FilterRowOf(string ticker, double strength, int band, decimal entry, decimal clearStop, decimal? clearTarget, double? clearReward, decimal swingStop = 0m, decimal? swingTarget = null, double? swingReward = null) =>

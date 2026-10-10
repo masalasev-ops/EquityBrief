@@ -137,7 +137,12 @@ public partial class ReadSurface
         Assert.Single(System.Text.RegularExpressions.Regex.Matches(card, "<option "));
         Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{RuleScreen.ProvisionalChoice}</option>", card, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</span>", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-gate=\"the market check closed\" data-passed=\"3\">", card, StringComparison.Ordinal);
+
+        // Its funnel, stored under the reasons a member fails each part, is drawn as the parts: the market passed by 3 and
+        // the interest cover by 1, and no line naming the market check closed.
+        Assert.Contains("<li data-gate=\"market\" data-passed=\"3\">market: <b>3</b></li>", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-gate=\"interest cover\" data-passed=\"1\">interest cover: <b>1</b></li>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("the market check closed:", card, StringComparison.Ordinal);
 
         // The breakouts forming under it: M3 half a move under its high, the volume needed against tonight's, the
         // gates it still fails and its report inside the window, under the closing line.

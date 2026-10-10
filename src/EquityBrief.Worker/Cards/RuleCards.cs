@@ -519,18 +519,19 @@ public sealed class RuleCards : IComponent
         return counts;
     }
 
-    // The members passing each part of an index rule and every part before, read off the first part each failed; the
-    // fundamentals-first family's parts its own, the business's after the floors.
+    // The members passing each part of an index rule and every part before, read off the first part each failed and
+    // named as the part, not as the reason a member fails it; the fundamentals-first family's parts its own, the
+    // business's after the floors.
     public static IReadOnlyList<(string Gate, int Passed)> IndexFunnel(IReadOnlyList<(string Family, bool Passed, string? Reason)> answers, string? family = null)
     {
-        string[] parts = family == FundamentalsRule.Name
+        string[] reasons = family == FundamentalsRule.Name
             ? [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, FundamentalsRule.NoReadings, FundamentalsRule.NoProfit, FundamentalsRule.NoRevenue, FundamentalsRule.NoMargin, FundamentalsRule.NoCash, FundamentalsRule.NoTrend]
             : [IndexNightRead.MarketClosed, IndexNightRead.NoSetup, IndexNightRead.UnderTheFloors, IndexNightRead.NoProfit, IndexNightRead.NoCover];
         var counts = new List<(string, int)>();
 
-        foreach (var (part, at) in parts.Select((part, at) => (part, at)))
+        foreach (var (reason, at) in reasons.Select((reason, at) => (reason, at)))
         {
-            counts.Add((part, answers.Count(answer => answer.Passed || (answer.Reason is { } reason && Array.IndexOf(parts, reason) > at))));
+            counts.Add((RuleRows.PartOf(reason), answers.Count(answer => answer.Passed || (answer.Reason is { } failed && Array.IndexOf(reasons, failed) > at))));
         }
 
         return counts;
