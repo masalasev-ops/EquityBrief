@@ -329,9 +329,11 @@ public class EodhdBulkPriceFeedTests
         // the funds' quarter-end filings at the archive and the provider's symbol
         // lists, which only the history pull asks, eighteen until 16.3 added
         // the dividend calendar, one request a session for 21 sessions a night,
-        // and nineteen until 17.1 added OpenFIGI's mapping of a holding's
-        // identifier to its tickers, keyless, which only the holdings pull asks.
-        Assert.Equal(20, Checks.NightlyCost.MayHoldAClient.Length);
+        // nineteen until 17.1 added OpenFIGI's mapping of a holding's
+        // identifier to its tickers, keyless, which only the holdings pull asks,
+        // and twenty until 18.1 added the delayed quote, one request a listing on
+        // a name page's ask in the session, which no night asks.
+        Assert.Equal(21, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));
