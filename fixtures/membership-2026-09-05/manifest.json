@@ -1350,6 +1350,12 @@
       "query": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/2026/all?type=daily_treasury_yield_curve&field_tdr_date_value=2026&page&_format=csv",
       "fetchedAt": "2026-10-10T11:17:21Z",
       "trimmedTo": "nothing. The Treasury's daily par yield curve for 2026 as sent, keyless: a header naming fourteen tenors in quotes, the 10-year under \"10 Yr\", and 195 sessions newest first from 2026-10-09 back to 2026-01-02, each date written month first with a slash, the 10-year 4.80 on the fixture's night of 2026-09-08 and 5.24 on 2026-10-09. The same request for 2027, asked the same morning, answered 200 with no body at all, and 2025's leaves the 1.5 month column empty on its early rows, which is why a reader takes a session the 10-year cell is empty on as none and an empty answer as no session yet."
+    },
+    {
+      "file": "quote-CVX.json",
+      "endpoint": "real-time/CVX.US",
+      "query": "real-time/CVX.US?fmt=json",
+      "fetchedAt": "2026-10-10T15:51:54Z"
     }
   ]
 }
