@@ -49,6 +49,24 @@ public static class LoopDecisions
         : Families.Contains(family, StringComparer.Ordinal) ? null
         : FamilyRefused;
 
+    // The one proposal of a family a run puts to the operator: of those that passed and state a change, leaving out one
+    // an earlier run's decline holds back, the lowest adjusted p-value, a tie settled by the proposal's name; none where
+    // none is left.
+    public static string? PutOf(IEnumerable<(string Proposal, double? Adjusted, bool Passed, bool Changes, bool HeldBack)> family) =>
+        family.Where(one => one.Passed && one.Changes && !one.HeldBack)
+            .OrderBy(one => one.Adjusted ?? double.PositiveInfinity)
+            .ThenBy(one => one.Proposal, StringComparer.Ordinal)
+            .Select(one => one.Proposal)
+            .FirstOrDefault();
+
+    public static LoopProposalRow? PutOf(IEnumerable<LoopProposalRow> family, Func<LoopProposalRow, bool>? heldBack = null)
+    {
+        var rows = family.ToArray();
+        var put = PutOf(rows.Select(one => (one.Proposal, one.Adjusted, one.Passed, one.Change is not null, heldBack?.Invoke(one) ?? false)));
+
+        return rows.FirstOrDefault(one => one.Proposal == put);
+    }
+
     // Whether a declined proposal is put to the operator again: a later run read more complete blocks than the run it
     // was declined on, and it passed with them.
     public static bool PutAgain(int blocksDeclined, int blocksNow, bool passedNow) => passedNow && blocksNow > blocksDeclined;

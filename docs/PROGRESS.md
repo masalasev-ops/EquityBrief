@@ -41595,3 +41595,75 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
             carried and 43 passed, 2111 of 2111 tests ran.
 Carried:    after the merge, from main: `ledger-check` on each index, its row read.
+
+### 17.10 - the phase 17 report: the monthly run from a clean copy of main's commit, one proposal a family put to the operator, the guide's account of how the picks get better with each loop figure's key naming its boxes, and the pair checked against the actual   2026-10-09
+
+Queue:      done, 17.0 to 17.8 merged, 17.9 built and pushed on its branch, waiting for the night of 2026-10-09 to be
+            read; in progress, 17.10 on a branch stacked on it; next, the merges of 17.9 and 17.10, then the monthly
+            run by hand and the screens from main, then phase 17's sign-off by a session that committed none of it.
+Built:      the monthly run, `loop-month` and `tools/monthly` with its wrapper: from a clean copy of main's commit,
+            refused off main, its steps in order, each index's point-in-time check, the SEC's facts asked whole, each
+            index's tester run and the month's report under `data/loop/<month>/`, each step a run log row under a stage
+            of its own, a step that does not hold stopping the run with why and a run started again for the month going
+            on from the first step no try held; before each step it waits while the night holds its lock or a step of
+            thirty minutes would run into the night's window, and holds the drain's lock while the step runs. One
+            proposal a family put to the operator: of a run's passing proposals that state a change, the lowest adjusted
+            p-value, a tie settled by the name, leaving out one an earlier decline holds back, read by one rule in the
+            core; the Loop page offers its presses there alone, another passing proposal saying which is put, a word on
+            another refused, and the month's report names the same one. The guide's account of how EquityBrief gets
+            better: the loop's four figures drawn in its own style, each key naming every box it draws, and three worked
+            examples with placeholders and no figure. The four loop figures' keys in the architecture rewritten to name
+            every box they draw. A check holding both, and phase 17's pair checked against the actual. Section 13.16's
+            paragraph, the monthly run's catalogue and matrix rows, section 17's and 18's rows, the decision, the
+            runbook's section with the scheduler's steps for the first Saturday at noon UTC on both machines, CLAUDE.md's
+            layout and Merge rule, the Run page reading a monthly run as a run by hand, the roster and the changelog.
+Departed:   the run by hand and the screenshots wait for the merges: `tools/monthly` refuses a checkout off main by
+            design, a branch's build cannot write rows the store's schema does not yet hold, and the live read surface
+            serves main's build while the store is not copied, on the operator's ruling of 2026-09-26. Each is recorded
+            after the merges of 17.9 and 17.10, as 17.3's history build was.
+Pair:       before phase 17, 1036 claims; the plan's pair after 17.10, 1154 within 1115 to 1195; the actual 1149, 113
+            rows, five short of the pair by the net of what each checkpoint landed fewer or more than its count: 17.2
+            four more, 17.2a three not landed while it waits on the operator's approval of the growth proposal, 17.3
+            one more, 17.4 three more, 17.5 two fewer, 17.7 four fewer, 17.8 eight fewer and 17.9 four more, each
+            checkpoint's rows named in the pair check with what it landed.
+Operating:  phase 17 opened six operating rows, all at 17.0, and `obligation-reconciles` states phase 17 at six: "The
+            night's added time over phase 17's first five nights", "The ledger's growth over the five nights after it
+            lands", "The night's growth after the store's growth change", which waits on 17.2a, "The first scheduled
+            monthly run", "The alarm's first two months" and "A replaced rule's 63 sessions as a variant", which waits
+            on the operator's ruling of how an approval reaches the S&P 500 or on the first approval applied on the
+            S&P 400 or 600.
+Tests:      2117, six more: the monthly run's steps in order with a stop, a resume and another month; its waits for the
+            night's window and lock by a clock its own wait moves and the drain's lock held while each step runs; its
+            report putting each family's strongest passing proposal, a held back one, one stating no change and an
+            older run's left to no one; the script's check mode over temporary repositories; each loop figure's key
+            naming every box in both documents with the examples holding placeholders; and phase 17's pair. Two 17.9
+            page tests changed with the one proposal put: a second passing exit drawn as not put, and a decline of it
+            refused.
+Claims:     1149, from 1145: the monthly run's catalogue and matrix rows, section 17's row and section 18's.
+Pins:       none moved: no source a rule version or an evaluator pins is edited.
+Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the branch in this
+            checkout, filtered to the tests that read it and reverted. M1 the run reading no step a try held: predicted
+            red at the steps test. M2 the proposal put ordered by the highest adjusted p-value: predicted red at the
+            report test. M3 the page handed no proposal put: predicted red at the page test. M4 figure 13.3's key
+            without one of its boxes: predicted red at the key test. M5 the script's refusal off main removed: predicted
+            red at the script test. M6 phase 17 stated as opening five operating rows: predicted red at the operating
+            rows test. Results: M1 red at the steps test, the run started again running the three checks a try had
+            held before the facts; M2 red at the report test, no line putting the breakout's exit ranked 2, the
+            strongest, to you; M3 red at the page test, the second exit drawn with no line saying it is not put; M4 red
+            at the key test, "Figure 13.3.'s key does not name: Business readings read again"; M5 red at the script
+            test, the off-main check exiting 0 for 1; M6 red at the operating rows test, phase 17 stated at five against
+            the six rows its table holds. Each reverted, and the tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 17891088, the
+            pull request's last commit but its fill, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2117 of 2117 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2117 of 2117 tests ran.
+Carried:    after the merges of 17.9 and 17.10, from main: the monthly run by hand recorded per family per index with its
+            time; the screenshots of the cards with a variant chosen, the Ledger and Loop pages and the decision card on
+            each index at a wide screen and a phone's width, each read back against the store; the scheduler registered
+            from the runbook and its first run read when it comes (owes: The first scheduled monthly run). 17.2a once
+            the operator approves the growth proposal. The operator's rulings owed: how an approval reaches the S&P
+            500, the FastTree challenger, the valuation reading and the S&P 600 heavyweights' two settings. Phase 17's
+            sign-off by a session that committed none of it.

@@ -793,6 +793,57 @@ It prints each answer, makes no request and writes nothing but `provisional_sett
 
 The live alarm reads each live rule's trades by the month they ended in, a sector heavyweights book's holdings by quarter, once the month has closed and every trade in it holds its edge, against the reference of the newest tester run on its index: the rule today's trades over that run's test years (see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running). Two counted months running under the floor flag the rule above its index's Tonight and on the Loop page, where each month stands against its floor. The flag changes nothing by itself. Where an approval changed the flagged rule, the Loop page offers to restore the setting before the newest change, and your approval of the restore is applied as a change is. A family no tester run has stored a reference for is read by no alarm, so the alarm starts on each index after its first run of 17.9's tester.
 
+### The monthly run
+
+From 17.10 the loop runs once a month: each index's point-in-time check, the SEC's facts asked whole, each index's tester run and the month's report, a step at a time (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month). Run it from the repository root on main, as the night is run, and it builds and runs a clean copy of main's commit:
+
+```powershell
+tools/monthly.ps1
+```
+
+```bash
+tools/monthly
+```
+
+`--month <yyyy-MM>` names the month, and with none it is the month of today's session; `--check` prints what it would build and run and runs nothing. A checkout off main, or holding a commit origin/main does not have, is refused before any worker exists. Each step writes one run log row under a stage of its own, `loop-month-` and the step's name, beneath a run named `loop-month-`, the month and the instant it started: `check-GSPC`, `check-MID` and `check-SML`, `facts`, `test-GSPC`, `test-MID` and `test-SML`, and `report`. A step that does not hold stops the run and says why on its row and on the run's output: a point-in-time check naming a difference, the archive refusing the facts or a tester run that does not finish. Running it again for the month goes on from the first step no try held. It waits while a night holds its lock or a step would run into the night's window, and holds the drain's lock while a step runs, so a press on a page waits for the step to end. The facts need the archive's contact in `appsettings.Secrets.json`, as the filings refresh does, and without it the run stops at that step and says so. A whole run takes the three checks, about an hour together, the facts, about 25 minutes, and the three tester runs, about 20 minutes together.
+
+The report is `data/loop/<month>/report.txt`: for each family on each index the one proposal put to you, the strongest that passed by its adjusted p-value with its change in words, or that none passed, and an index with no tester run for the month named as such. The Loop page draws the same runs, with the presses on the proposals put to you. Nothing is merged to main while the monthly run is writing, as for a night.
+
+**Scheduling it.** The first Saturday of every month at 12:00 UTC, after Friday's night, its queue, its labeller and its copy have finished. On Windows the trigger is weekly on Saturday with its start boundary pinned in UTC, as the night's is, and the action runs the script only on the month's first seven days, its output kept in `data/monthly.log`:
+
+```powershell
+$root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
+$action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
+             -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"if ((Get-Date).ToUniversalTime().Day -le 7) { & '$root\tools\monthly.ps1' *>> '$root\data\monthly.log' }`"" `
+             -WorkingDirectory $root
+$trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Saturday -At 8am
+$trigger.StartBoundary = '2026-11-07T12:00:00Z'
+$settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
+             -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
+             -ExecutionTimeLimit (New-TimeSpan -Hours 6)
+Register-ScheduledTask -TaskName 'EquityBrief monthly' -Action $action `
+             -Trigger $trigger -Settings $settings
+```
+
+Name the principal as the night's registration does where the machine may be signed out on a Saturday. On macOS the job runs every hour and the script decides, as the night's does:
+
+```xml
+<!-- ~/Library/LaunchAgents/dev.equitybrief.monthly.plist -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>dev.equitybrief.monthly</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>[ "$(date -u +%u)" = 6 ] &amp;&amp; [ "$(date -u +%d)" -le 7 ] &amp;&amp; [ "$(date -u +%H)" = 12 ] &amp;&amp; exec "$HOME/EquityBrief/tools/monthly" &gt;&gt; "$HOME/EquityBrief/data/monthly.log" 2&gt;&amp;1</string>
+  </array>
+  <key>StartCalendarInterval</key><dict><key>Minute</key><integer>0</integer></dict>
+  <key>RunAtLoad</key><false/>
+</dict></plist>
+```
+
+Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.monthly.plist`. The scheduler's first run is read on the Loop page when it comes.
+
 ### The fundamentals-first family
 
 From 17.8 a fifth family lists on every index from its first night, on its provisional setting: a company whose four newest quarters and newest quarter are profitable, whose revenue grew on the year-earlier quarter faster than the quarter before grew, whose gross or operating margin widened on the year and whose cash from operations is at least its net income, closing above its 200-day average with the 50-day above it, bought at the pullback's buy point (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). Its business is read from the SEC's facts as the night's filings refresh leaves them, a filing read from the session after the day it was filed. The index families' step reads it on the S&P 400 and 600 beside their own families and on the S&P 500 alone for this family, after the S&P 500's own families, whose picks it holds back. Its card stands after each index's own families' on Tonight; on the S&P 500 the card says the S&P 400's and 600's step read it.

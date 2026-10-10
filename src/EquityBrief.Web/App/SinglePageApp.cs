@@ -2649,6 +2649,7 @@ public sealed class SinglePageApp : IComponent
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
+            var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
 
             body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
 
@@ -2658,7 +2659,7 @@ public sealed class SinglePageApp : IComponent
 
                 if (decided is not null)
                 {
-                    body.Append(marks.LoopDecision(reading.Code, run, proposal, decided));
+                    body.Append(marks.LoopDecision(reading.Code, run, proposal, decided, put));
                 }
             }
 

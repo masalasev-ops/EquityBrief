@@ -3479,6 +3479,23 @@ internal static class Scope
             Verdict.Pass,
             "a card whose rule stands at an approved change drawing in the record's place the line that the record stored replays the setting before the change, read back off the rendered card",
             ByReadSurface),
+        // 17.10, the monthly run: its catalogue and matrix rows, section 17's row and section 18's.
+        [CheckReach.Key(CatalogueTable, "Monthly run")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the loop runs, proposals and decisions and the run log it reads and the run log it writes, each reconciled against the row",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Monthly run")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "The monthly run")] = new Scoped(
+            Verdict.Pass,
+            "the steps in order over constructed steps, the waits for the night's window and lock by a clock its own wait moves, the drain's lock held while a step runs, and the report putting each family's strongest passing proposal to the operator over a constructed store",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A monthly run that fails")] = new Scoped(
+            Verdict.Pass,
+            "a step that does not hold writing its row with why and stopping the run, and a run started again for the month going on from the first step no try held and running none twice",
+            ByExpectations),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the choice kept in the link under the family's own key by a handler merging the key into the query the link holds")] = new Scoped(
