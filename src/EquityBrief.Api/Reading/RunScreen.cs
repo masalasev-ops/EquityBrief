@@ -860,122 +860,13 @@ public static class RunScreen
         }
     }
 
-    // The overnight queue's own stage, and the outcome it writes where it stopped at its
-    // limit with names left. Stated here for the reason the no-session word is, the read
-    // surface holding no reference to the worker, and `nightly-run` asserts both agree. A
-    // queue at its limit did what its limit is for, so it is not a stage that failed; a
-    // queue the local model stopped is, and stays on the list.
+    // The stage the overnight queue wrote on the nights it ran, and the outcome it wrote where it
+    // stopped at its limit with names left, kept so a page for one of those nights reads its rows as
+    // it did: a queue at its limit did what its limit was for, so it is not a stage that failed, and
+    // its time sits after the close.
     public const string QueueStage = "overnight queue";
 
     public const string QueueAtItsLimit = "limit";
-
-    // The night a queue row's detail names, or none where it names none or is not JSON.
-    public static DateOnly? QueueNightOf(string detail)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(detail);
-
-            return document.RootElement.TryGetProperty("night", out var night) && night.ValueKind == JsonValueKind.String
-                && DateOnly.TryParseExact(night.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on)
-                    ? on
-                    : null;
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
-    }
-
-    // The overnight queue for one night, read off the queue's rows and the exchange's
-    // calendar: what the newest row for the night came to, with its counts, and every
-    // traded session with no row from the one after the newest earlier night the queue ran
-    // on, up to and including this night. A store with no row on or before the night says
-    // the queue never ran rather than naming every night it holds from before the queue
-    // existed.
-    // see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar
-    public static QueueNight Queue(IReadOnlyList<QueueRow> rows, DateOnly night, Func<DateOnly, bool> traded)
-    {
-        // The night's row written last, which is what the night came to: the rows arrive in the
-        // order they were written, and a night run again for its session writes a later row with an
-        // earlier instant than the one it replaces.
-        var tonight = rows
-            .Where(row => row.Night == night)
-            .LastOrDefault();
-
-        var earlier = rows.Where(row => row.Night < night).Select(row => (DateOnly?)row.Night).Max();
-
-        if (tonight is null && earlier is null)
-        {
-            return new QueueNight(night, null, 0, 0, 0, 0, null, null, [], NeverRan: true);
-        }
-
-        var notRun = new List<DateOnly>();
-
-        if (earlier is { } since)
-        {
-            for (var day = since.AddDays(1); day < night; day = day.AddDays(1))
-            {
-                if (traded(day))
-                {
-                    notRun.Add(day);
-                }
-            }
-        }
-
-        if (tonight is null && traded(night))
-        {
-            notRun.Add(night);
-        }
-
-        if (tonight is null)
-        {
-            return new QueueNight(night, null, 0, 0, 0, 0, null, null, notRun, NeverRan: false);
-        }
-
-        // A step that failed writes its message rather than the queue's record, and the page says the
-        // queue failed with that message rather than failing to draw.
-        if (!IsRecord(tonight.Detail))
-        {
-            return new QueueNight(night, tonight.Outcome, 0, 0, 0, 0, tonight.Detail, null, notRun, NeverRan: false);
-        }
-
-        using var detail = JsonDocument.Parse(tonight.Detail);
-        var root = detail.RootElement;
-
-        int Count(string name) =>
-            root.TryGetProperty(name, out var list) && list.ValueKind == JsonValueKind.Array ? list.GetArrayLength() : 0;
-
-        string? Text(string name) =>
-            root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
-
-        return new QueueNight(
-            night,
-            tonight.Outcome,
-            Count("queued"),
-            Count("completed"),
-            Count("left"),
-            root.TryGetProperty("limitHours", out var hours) && hours.ValueKind == JsonValueKind.Number ? hours.GetDouble() : 0,
-            Text("reason"),
-            Text("awake"),
-            notRun,
-            NeverRan: false);
-    }
-
-    // Whether a queue row's detail is the queue's own record rather than a message.
-    static bool IsRecord(string detail)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(detail);
-
-            return document.RootElement.ValueKind == JsonValueKind.Object;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
 
     // The documents a night's passes refused, grouped by the category that
     // refused each.
@@ -1427,8 +1318,7 @@ public static class RunScreen
     }
 
     // Research over the seven nights up to the night: on each, the passes the paid model wrote, being the
-    // research runs that made a paid call that answered, and the drafts the overnight queue completed, read
-    // off the words its row writes.
+    // research runs that made a paid call that answered.
     public static IReadOnlyList<ResearchNight> Research(IReadOnlyList<(DateOnly Night, IReadOnlyList<RunStageRow> Log)> nights) =>
     [
         .. nights.Select(night => new ResearchNight(
@@ -1440,12 +1330,7 @@ public static class RunScreen
                     && row.Outcome == Ok)
                 .Select(row => row.RunId)
                 .Distinct(StringComparer.Ordinal)
-                .Count(),
-            night.Log
-                .Where(row => row.Stage == QueueStage)
-                .Sum(row => Regex.Match(row.Detail, @"^(\d+) of \d+ queued pass\(es\) completed") is { Success: true } done
-                    ? int.Parse(done.Groups[1].Value, CultureInfo.InvariantCulture)
-                    : 0))),
+                .Count())),
     ];
 
     // How each report came out. A report is a research pass whose paid model answered at least once, dated by the

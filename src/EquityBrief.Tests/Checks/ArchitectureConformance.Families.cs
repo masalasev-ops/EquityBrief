@@ -228,7 +228,7 @@ public partial class ArchitectureConformance
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood
         // before it and the rows after it, none out of scope and none unexamined.
         var report = Report();
-        var total = actual + AfterPhaseFourteen.Length;
+        var total = actual + AfterPhaseFourteen.Length - TakenOutAfterPhaseSeventeen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
@@ -297,7 +297,7 @@ public partial class ArchitectureConformance
 
         // Every row the phase added reached once and passing, and the rows added after it named apart.
         var report = Report();
-        var total = now + AfterPhaseThirteen.Length;
+        var total = now + AfterPhaseThirteen.Length - TakenOutAfterPhaseSeventeen.Length;
 
         Assert.Equal(PhaseThirteenRows.Length, PhaseThirteenRows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(PhaseThirteenRows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
@@ -339,10 +339,12 @@ public partial class ArchitectureConformance
         // section 18's one and the family's card on Tonight, and 1145 from 17.9, the apply step's and the alarm's
         // catalogue and matrix rows, their five stores, section 17's two rows, section 18's two, the Loop page's three
         // regions, Tonight's alarm line and the card's row for a rule standing at an approved change, 1149 from 17.10,
-        // the monthly run's catalogue and matrix rows, section 17's row and section 18's, and 1154 from the 3.1
-        // correction, the chart averages' night step, catalogue and matrix rows, store and the chart's part.
+        // the monthly run's catalogue and matrix rows, section 17's row and section 18's, 1154 from the 3.1
+        // correction, the chart averages' night step, catalogue and matrix rows, store and the chart's part, and 1147
+        // from the 6.10 correction, which took out the overnight queue's catalogue and matrix rows, its step, section
+        // 17's row, section 18's row and part, and the run page's region.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1154),
+            (789, 853, 6, 4, 855, 876, 1147),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

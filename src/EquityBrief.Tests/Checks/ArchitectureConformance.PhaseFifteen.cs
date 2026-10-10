@@ -111,7 +111,7 @@ public partial class ArchitectureConformance
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood
         // before it and the rows after its report, none out of scope and none unexamined.
         var report = Report();
-        var total = actual + AfterPhaseFifteen.Length;
+        var total = actual + AfterPhaseFifteen.Length - TakenOutAfterPhaseSeventeen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));

@@ -395,39 +395,6 @@ public partial class FixtureExpectations
     // ---- settings naming no model the lane can call ----
 
     [Fact]
-    public async Task SettingsFlaggingTwoModelsLeaveTheNightRunningEveryStepWithItsQueueRowSayingWhy()
-    {
-        // A live night's queue as its settings give it, the fixture's arithmetic around it: its lane unread, so its
-        // feed reaches no runtime, and the night closes with the queue's row naming the profiles.
-        var two = Configured([.. LocalProfile("gemma-4", Gemma, "true"), .. LocalProfile("qwen-3.5", Qwen, "true")]);
-        var queue = NightQueue.From(two, FeedSource.Live, null, new RecordingAwake());
-        const string line = "2 local model profiles are flagged IsDefault true, gemma-4 and qwen-3.5: the lane calls one, so flag one.";
-
-        Assert.Equal(line, queue.Settings.Unreadable);
-
-        var night = await FixtureReplay.NightAsync(queue);
-
-        using var store = night.Store;
-
-        Assert.True(night.Code == 0, night.Error);
-
-        var row = QueueRow(store);
-
-        Assert.Equal(OvernightQueue.Unavailable, row.GetProperty("outcome").GetString());
-        Assert.StartsWith(ProseWriter.Unavailable, row.GetProperty("reason").GetString()!, StringComparison.Ordinal);
-        Assert.EndsWith(line, row.GetProperty("reason").GetString()!, StringComparison.Ordinal);
-        Assert.Empty(row.GetProperty("completed").EnumerateArray());
-        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM research_section;"));
-
-        // No model is called: the lane's sections are left before any call.
-        Assert.Equal(["0"], Query(store, $"SELECT model_calls FROM run_log WHERE run_id = '{FixtureReplay.NightRunId}' AND stage = '{OvernightQueue.Stage}';"));
-
-        // A key on the lane is still refused before the night starts.
-        Assert.Throws<InvalidOperationException>(() =>
-            NightQueue.From(Configured([.. LocalProfile("gemma-4", Gemma, "true"), (LocalModelSettings.ApiKeyKey, "a-key")]), FeedSource.Live, null, new RecordingAwake()));
-    }
-
-    [Fact]
     public async Task APassWhoseLaneIsUnreadWritesThePaidLaneAndLeavesTheLocalLaneAbsentWithTheLine()
     {
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();

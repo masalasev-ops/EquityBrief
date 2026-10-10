@@ -71,8 +71,6 @@ public class PinnedConstants
         string progress,
         IReadOnlyList<(string Row, string Stated)> stated)
     {
-        decimal Figure(string row, int at) => StatedFigures.ValueOf(stated.Where(figure => figure.Row == row).ElementAt(at).Stated);
-
         bool Recorded(string figure) => Regex.IsMatch(progress, $@"(?<![\d.,]){Regex.Escape(figure)}(?![\d]|[.,]\d)");
 
         bool Landed(string checkpoint) => Regex.IsMatch(progress, $@"^### {Regex.Escape(checkpoint)} - ", RegexOptions.Multiline);
@@ -85,7 +83,6 @@ public class PinnedConstants
         const string Clock = "Nightly wall clock, at index size";
         const string Retry = "Per-request timeout and the night's deadline";
         const string Budget = "Weighted-call budget";
-        const string QueueRow = "Overnight queue";
         const string Admissible = "Source admissibility";
         const string Significance = "Significance threshold";
         const string Versions = "Rule versions scored at once";
@@ -257,11 +254,6 @@ public class PinnedConstants
             new("Tranches, exits", "5", LadderSeries.MostExits, "LadderSeries.MostExits"),
             new("Earnings horizon", "20", ShortlistSeries.EarningsHorizonSessions, "ShortlistSeries.EarningsHorizonSessions"),
             new("List display", "20", SinglePageApp.TonightDrawn, "SinglePageApp.TonightDrawn"),
-            new(QueueRow, "1", OvernightQueue.DefaultHours, "OvernightQueue.DefaultHours"),
-            new(QueueRow, "6.10", null, Checkpoint, () => Landed("6.10")),
-            new(QueueRow, "503", null, Measured, () => Recorded("503")),
-            new(QueueRow, "43", Math.Round(Figure(QueueRow, 2) * Figure(QueueRow, 4) / 60m), "the names at the slowest pass, in minutes"),
-            new(QueueRow, "5.13", null, Measured, () => Recorded("5.13")),
             new("Research passes per name per open", "1", null, "a count the runner keeps by refusing a second pass on the same day, which no constant holds", () => FixtureExpectations.Reach.Covers(Scope.LimitsTable, "Research passes per name per open")),
             new("Research staleness triggers", "90", Staleness.BaselineDays, "Staleness.BaselineDays"),
             new("Spend cap", "10", SpendCaps.DefaultDay, "SpendCaps.DefaultDay"),

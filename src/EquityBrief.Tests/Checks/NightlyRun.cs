@@ -119,9 +119,6 @@ public partial class NightlyRun
             // leaves the night's writes a turn.
             CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
 
-            // 6.10, the overnight queue, run after the close.
-            CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the indices the night reads whose research is missing or stale, the names on tonight's list first in the order it is drawn in, then the S&P 400's and the S&P 600's lists each in its page's order (see: The overnight queue drafts the three indices' lists before every other member, the S&P 500's first), then the names close to a buy point in the order that list is drawn in, then every other name, the S&P 500's first (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing) (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)."),
-
             // 5.7. The row states a figure the night is bounded by and the
             // deadline follows it by three, which is a relationship between two
             // stated numbers and is assertable here. What the figure should be
@@ -805,7 +802,6 @@ public partial class NightlyRun
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             night,
-            NightQueue.FromFixture(FixtureFolder()),
             "GSPC",
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,
@@ -1337,61 +1333,52 @@ public partial class NightlyRun
     }
 
     [Fact]
-    public async Task TheOvernightQueueRunsAfterTheArithmeticHasClosedAndTheNightsRequestAfterIt()
+    public async Task TheNightsRequestRunsAfterTheFilingsRefreshAndNoQueueRuns()
     {
         // Section 14's order at the end of the night, read off the document, and the night
         // running it: the close records the arithmetic's counts, the quarters step asks for the
-        // members due after it, the filings refresh after that, the queue after the refresh, the
-        // night's own request after the queue and the labeller's start last, on the night's own
-        // output and on the run log's order.
+        // members due after it, the filings refresh after that, the night's own request after the
+        // refresh and the labeller's start and the store's copy last, on the night's own output and
+        // on the run log's order, with no overnight queue among them.
+        // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^7], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^6], StringComparison.Ordinal);
-        Assert.StartsWith("Read the archive's daily index", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Run the overnight queue", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Read the archive's daily index", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
+        Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
         using var store = new TemporaryStore();
 
-        var (code, output, error) = await NightAsync(store, runId: "night-with-queue");
+        var (code, output, error) = await NightAsync(store, runId: "night-with-no-queue");
 
         Assert.True(code == 0, error);
 
         var close = output.IndexOf("  close:", StringComparison.Ordinal);
         var quarters = output.IndexOf("  quarters:", StringComparison.Ordinal);
         var filings = output.IndexOf("  filings:", StringComparison.Ordinal);
-        var queue = output.IndexOf("  queue:", StringComparison.Ordinal);
 
         Assert.True(close >= 0 && quarters > close, $"The quarters step did not run after the close: {output}");
         Assert.True(filings > quarters, $"The filings refresh did not run after the quarters step: {output}");
-        Assert.True(queue > filings, $"The queue did not run after the filings refresh: {output}");
-        Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > queue, $"The night's request did not run after the queue: {output}");
+        Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > filings, $"The night's request did not run after the filings refresh: {output}");
+        Assert.DoesNotContain("  queue:", output, StringComparison.Ordinal);
 
-        var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
+        var stages = RunLog(store, "night-with-no-queue").Select(row => row.Stage).ToArray();
 
         Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
         Assert.Equal(NewsLabeller.NightStage, stages[^2]);
         Assert.Equal("report", stages[^3]);
-        Assert.Equal(OvernightQueue.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^5]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^6]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^7]);
+        Assert.Equal(EquityBrief.Worker.Ledger.FilingsRefresher.Stage, stages[^4]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^6]);
+        Assert.DoesNotContain(EquityBrief.Api.Reading.RunScreen.QueueStage, stages);
 
-        // The night's last line states the queue's local calls apart from the arithmetic's,
-        // read off the queue's own row.
-        var calls = Scalar(store, $"SELECT model_calls FROM run_log WHERE run_id = 'night-with-queue' AND stage = '{OvernightQueue.Stage}';");
-
-        Assert.True(calls > 0, "The fixture night's queue made no call, so the line's figure says nothing.");
-        Assert.Contains($"0 model calls in the arithmetic and {calls} local model call(s) from the overnight queue", output, StringComparison.Ordinal);
-
-        // And the words the read surface and the carve state for the queue are the queue's own,
-        // since neither can reference the component that writes them.
-        Assert.Equal(OvernightQueue.Stage, EquityBrief.Api.Reading.RunScreen.QueueStage);
-        Assert.Equal(OvernightQueue.StoppedAtItsLimit, EquityBrief.Api.Reading.RunScreen.QueueAtItsLimit);
-        Assert.Equal(OvernightQueue.Stage, NightlyCost.QueueStage);
+        // The night's last line states that it called no model, and no row of the night says otherwise.
+        Assert.Contains("nightly: green over a capture, 0 model calls, ", output, StringComparison.Ordinal);
+        Assert.Equal(0, Scalar(store, "SELECT IFNULL(SUM(model_calls), 0) FROM run_log WHERE run_id = 'night-with-no-queue';"));
     }
 
     // The frozen windows guardrail over whole recorded nights rather than over the reader
@@ -1412,7 +1399,7 @@ public partial class NightlyRun
             Assert.Null(await opener.OpenAsync(EquityBrief.Core.Rules.LadderRules.NearExitSkip, "three typical days", threeDays, prefix + "-version"));
         }
 
-        // The order: after every stage of the arithmetic the step replays, and before the close and the queue.
+        // The order: after every stage of the arithmetic the step replays, and before the close and the quarters step.
         using (var clean = new TemporaryStore().Migrated())
         {
             await OpenAsync(clean, "clean");
@@ -1425,7 +1412,7 @@ public partial class NightlyRun
             var at = stages.IndexOf(EquityBrief.Worker.Rules.RuleVersionScorer.Stage);
 
             Assert.All(["levels", "ladders", "listings", "facts", "forward-returns", "news-pulse"], stage => Assert.InRange(stages.IndexOf(stage), 0, at - 1));
-            Assert.All([NightClose.Stage, OvernightQueue.Stage], stage => Assert.True(stages.IndexOf(stage) > at, $"{stage} ran before the version step."));
+            Assert.All([NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage], stage => Assert.True(stages.IndexOf(stage) > at, $"{stage} ran before the version step."));
             Assert.True(Scalar(clean, "SELECT COUNT(*) FROM version_score;") > 0, "The night scored no version, so the order above is of a step that did nothing.");
         }
 
@@ -1445,7 +1432,7 @@ public partial class NightlyRun
         Assert.Contains($"'{EquityBrief.Core.Rules.LadderRules.NearExitSkip}'", stopped.Error, StringComparison.Ordinal);
         Assert.Equal(NightClose.Failed, failed.Outcome);
         Assert.Contains($"'{EquityBrief.Core.Rules.LadderRules.NearExitSkip}'", failed.Detail, StringComparison.Ordinal);
-        Assert.DoesNotContain(log, row => row.Stage == NightClose.Stage || row.Stage == OvernightQueue.Stage);
+        Assert.DoesNotContain(log, row => row.Stage == NightClose.Stage || row.Stage == EquityBrief.Worker.Quarters.QuarterFetcher.Stage);
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM version_score;"));
         Assert.Equal(windows, await new EquityBrief.Worker.Rules.RuleVersionScorer(before, store.DatabaseFile).VersionsAsync());
 
@@ -1516,10 +1503,9 @@ public partial class NightlyRun
         var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var filings = steps.ToList().FindIndex(step => step.StartsWith("Read the archive's daily index", StringComparison.Ordinal)) + 1;
-        var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 3, queue);
-        Assert.Equal((close + 1, close + 2, close + 3), (quarters, filings, queue));
+        Assert.Equal(steps.Count - 3, filings);
+        Assert.Equal((close + 1, close + 2), (quarters, filings));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
@@ -1528,7 +1514,7 @@ public partial class NightlyRun
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);
         var section = architecture[from..architecture.IndexOf("<h2>15.", from, StringComparison.Ordinal)];
 
-        Assert.Empty(NoteFaults(section, close, quarters, filings, queue));
+        Assert.Empty(NoteFaults(section, close, quarters, filings));
 
         // The night's own list: its steps in section 14's number, each comment naming a step
         // by its number sitting on that step.
@@ -1832,8 +1818,7 @@ public partial class NightlyRun
         TemporaryStore store,
         NightFeeds feeds,
         string runId,
-        IClock clock,
-        NightQueue? queue = null)
+        IClock clock)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -1841,7 +1826,6 @@ public partial class NightlyRun
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             feeds,
-            queue ?? NightQueue.FromFixture(FixtureFolder()),
             "GSPC",
             clock,
             output,
@@ -2175,16 +2159,11 @@ public partial class NightlyRun
             Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(FixtureFolder()), new DateOnly(2026, 9, 8)),
         };
 
-        // The overnight queue over a local model that does not answer. This night's facts are built
-        // from a constructed session, so its queue would ask for drafts nobody recorded,
-        // and what this asserts is the arithmetic before it: a queue that could not run
-        // leaves every figure above it as it is.
         var (code, output, error) = await NightAsync(
             store,
             tonight,
             "night-of-the-join",
-            FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
-            NightQueue.FromFixture(FixtureFolder()) with { LocalModel = new FixtureExpectations.NothingAnsweringLocal() });
+            FixedClock.At(new DateTimeOffset(2026, 9, 10, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates));
 
         Assert.True(code == 0, error);
 
@@ -2296,16 +2275,14 @@ public partial class NightlyRun
         // 15.1's second half the index families read the S&P 400's and 600's
         // members on the session to read their provisional rules, and the read
         // surface reads each index's members on the night twice: to count them
-        // beside the Universe selector, and to draw an index's members; and from
-        // 15.1's third pull request the overnight queue reads the S&P 400's and
-        // 600's members on the session to draft them after the S&P 500's; and
+        // beside the Universe selector, and to draw an index's members; and
         // from 15.2's second half the member reader reads the three indices'
         // members on the session to read each of them; and from 16.1 the decision
         // cards read each index's members on the session to rank its sectors; and
         // from 16.3 the taken trades' follower asks whether a stock is a member of
         // any index on the night, which ends a trade whose stock has left them all.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "OvernightQueue", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

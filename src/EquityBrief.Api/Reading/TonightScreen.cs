@@ -587,7 +587,7 @@ public static partial class TonightScreen
     // well as by the read, so a row after the night counts for neither, and a name is
     // counted once however many sections it carries.
     //
-    // The key under each figure is not one of them. It is written for every name each
+    // A stored key under each figure is not one of them. It was written for every name each
     // night whatever was researched, so counting it made this figure a count of the index
     // rather than of the reports: on the operator's store it stood at 502 where one name
     // held research.
@@ -595,7 +595,7 @@ public static partial class TonightScreen
     public static NightProse Prose(DateOnly night, IReadOnlyList<WrittenOnRow> rows)
     {
         var byName = rows
-            .Where(row => row.AsOf <= night && ClaimRules.IsResearched(row.Section))
+            .Where(row => row.AsOf <= night && !string.Equals(row.Section, ClaimRules.RetiredKey, StringComparison.Ordinal))
             .GroupBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
 

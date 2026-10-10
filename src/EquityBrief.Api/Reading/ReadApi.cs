@@ -189,11 +189,6 @@ public sealed record RunStageRow(
 // written for, the section, the version, the status the checker gave it, its prose and why it was refused.
 public sealed record WrittenVersion(string Owner, string Section, int Version, string Status, string Prose, string? RejectReason);
 
-// One row the overnight queue wrote, as the store holds it: the night its detail names,
-// the instant it started, what it came to, and the detail the run page reads the counts
-// from.
-public sealed record QueueRow(DateOnly Night, DateTimeOffset StartedAt, string Outcome, string Detail);
-
 // One row of a pass as it runs: the component that wrote it, what it came to, and whether it
 // has ended. A row with no end is the step the pass is on.
 public sealed record PassStageRow(string Stage, string Outcome, DateTimeOffset StartedAt, bool Ended);
@@ -943,11 +938,14 @@ public sealed partial class ReadApi : IComponent
         WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND instr(stage, $trial) = 0 AND instr(stage, $review) = 0;
     ";
 
-    // The newest accepted version of each of a name's sections.
+    // The newest accepted version of each of a name's sections, a stored key under each figure
+    // left out as it is from every read the pages draw.
+    // see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
     const string WrittenSectionsForName = @"
         SELECT r.section, r.version, r.as_of, r.model, r.prose, r.source_ids
         FROM research_section r
         WHERE r.ticker = $ticker
+          AND r.section <> $retired
           AND r.status = 'accepted'
           AND r.as_of <= $on
           AND r.version = (
@@ -1051,6 +1049,7 @@ public sealed partial class ReadApi : IComponent
         SELECT r.section, r.version, r.as_of, r.status, r.reject_reason
         FROM research_section r
         WHERE r.ticker = $ticker
+          AND r.section <> $retired
           AND r.as_of <= $night
           AND r.version = (
               SELECT MAX(s.version) FROM research_section s
@@ -1084,7 +1083,7 @@ public sealed partial class ReadApi : IComponent
     const string FellBackOnNight = @"
         SELECT ticker, section, version, reject_reason
         FROM research_section
-        WHERE status = 'fallback' AND as_of = $night
+        WHERE status = 'fallback' AND as_of = $night AND section <> $retired
         UNION ALL
         SELECT theme, section, version, reject_reason
         FROM theme_section
@@ -1566,13 +1565,13 @@ public sealed partial class ReadApi : IComponent
               LIMIT 1)";
 
     // The day a member's newest researched section was written. A researched section is an
-    // accepted one a research pass wrote, and the key under each figure is not one: the
-    // overnight queue writes it for every listed name each night, so counting it would call
-    // most of the index researched.
+    // accepted one a research pass wrote, and a stored key under each figure is not one: it
+    // was written for every name each night, so counting it would call most of the index
+    // researched.
     // see: A researched name is one holding an accepted section besides the key under each figure
     const string ResearchedOn = @"
                (SELECT MAX(r.as_of) FROM research_section r
-                WHERE r.ticker = m.ticker AND r.status = 'accepted' AND r.section <> $computed)";
+                WHERE r.ticker = m.ticker AND r.status = 'accepted' AND r.section <> $retired)";
 
     // Every current member with its company's name and the day its newest researched
     // section was written, which is what the masthead's search offers.
@@ -1595,7 +1594,7 @@ public sealed partial class ReadApi : IComponent
                MAX(r.as_of),
                COUNT(DISTINCT r.section)
         FROM research_section r
-        WHERE r.status = 'accepted' AND r.section <> $computed
+        WHERE r.status = 'accepted' AND r.section <> $retired
         GROUP BY r.ticker
         ORDER BY MAX(r.as_of) DESC, r.ticker;
     ";
@@ -1610,19 +1609,6 @@ public sealed partial class ReadApi : IComponent
     // is depends on the offset that evening. The clock is the one thing allowed
     // to answer that question, and it answers it here rather than in SQL.
     // see: Nothing is written against one operating system
-    // Every row the overnight queue wrote, in the order they were written. The whole log's
-    // worth rather than a window, because a night the queue did not run is read against
-    // the newest night before it on which it did, however long ago that was. Written order
-    // rather than the instant each started, because a night run again for its session stamps
-    // its stages from that session's evening, so the row written last can carry the earliest
-    // instant, and the row written last is the one that says what the night came to.
-    const string QueueRows = @"
-        SELECT started_at, outcome, IFNULL(detail, '')
-        FROM run_log
-        WHERE stage = $stage
-        ORDER BY rowid;
-    ";
-
     // Where a pass a page started stands, which is every row of its run in the order they
     // were written.
     //
@@ -2091,32 +2077,6 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
-    // The overnight queue's rows, each under the night its own detail names, which is the
-    // session its arithmetic closed, and under the clock's night for a row whose detail
-    // names none.
-    public async Task<IReadOnlyList<QueueRow>> QueueRowsAsync()
-    {
-        await using var connection = Open();
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = QueueRows;
-        command.Parameters.AddWithValue("$stage", RunScreen.QueueStage);
-
-        var rows = new List<QueueRow>();
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            var started = DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture);
-            var detail = reader.GetString(2);
-
-            rows.Add(new QueueRow(RunScreen.QueueNightOf(detail) ?? clock.SessionDateAt(started), started, reader.GetString(1), detail));
-        }
-
-        return rows;
-    }
-
     // The documents one night's passes refused, newest first.
     //
     // A pass is on demand rather than nightly, so what this bounds is the day the
@@ -2195,10 +2155,10 @@ public sealed partial class ReadApi : IComponent
         var run = await LastListingsRunAsync(night);
 
         // The arithmetic's span, which the wall clock row bounds. Every step after the close sits
-        // under the same run: the overnight queue runs for up to its own limit, and the report the
-        // night asks for is written after it, so a span over either would read an hour of queue
-        // against a limit of minutes.
-        // see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
+        // under the same run, each under a limit of its own, and the night's copy of the store waits
+        // for the labeller it started, so a span over them would read their hours against a limit of
+        // minutes.
+        // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
         var afterTheClose = RunScreen.StepGroups[^1].Stages;
         var stages = rows.Where(row => row.RunId == run && !afterTheClose.Contains(row.Stage)).ToArray();
 
@@ -4946,7 +4906,7 @@ public sealed partial class ReadApi : IComponent
         command.Parameters.AddWithValue("$session", OnNight(night));
         command.Parameters.AddWithValue("$on", On(night));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
-        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
 
         var rows = new List<UniverseRow>();
 
@@ -4981,7 +4941,7 @@ public sealed partial class ReadApi : IComponent
         command.CommandText = Findable;
         command.Parameters.AddWithValue("$index_code", indexCode);
         command.Parameters.AddWithValue("$session", OnNight(night));
-        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
 
         var rows = new List<FindableRow>();
 
@@ -5005,7 +4965,7 @@ public sealed partial class ReadApi : IComponent
         await using var command = connection.CreateCommand();
 
         command.CommandText = Researched;
-        command.Parameters.AddWithValue("$computed", ClaimRules.ComputedSection);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
 
         var rows = new List<ResearchedRow>();
 
@@ -5199,6 +5159,7 @@ public sealed partial class ReadApi : IComponent
 
         command.CommandText = SectionStatesForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
         command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<SectionStateRow>();
@@ -5374,6 +5335,7 @@ public sealed partial class ReadApi : IComponent
 
         command.CommandText = WrittenSectionsForName;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
         command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<WrittenSectionRow>();
@@ -5697,6 +5659,7 @@ public sealed partial class ReadApi : IComponent
         await using var command = connection.CreateCommand();
 
         command.CommandText = FellBackOnNight;
+        command.Parameters.AddWithValue("$retired", ClaimRules.RetiredKey);
         command.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         var rows = new List<FellBackRow>();

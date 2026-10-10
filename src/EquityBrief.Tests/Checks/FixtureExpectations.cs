@@ -297,11 +297,6 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.FailureTable, "A search returns a site the applicable list does not carry"),
             CheckReach.Key(Scope.FailureTable, "The search tool is unavailable"),
 
-            // 6.10, the overnight queue over whole fixture nights: section 17's row, and what the
-            // queue records where the local model does not answer.
-            CheckReach.Key(Scope.LimitsTable, "Overnight queue"),
-            CheckReach.Key(Scope.FailureTable, "The local model is unavailable, the overnight queue records that it could not run"),
-
             // 6.8, the research runner over the fixture's recordings: the record one
             // pass writes, one pass an open, figure 12.1's two boxes the runner is, and
             // the paid path's half of section 18's two local lane rows.
@@ -2473,7 +2468,7 @@ public partial class FixtureExpectations
         // membership file's name note after them, and the version scores file's note on
         // which versions move a name at 10.4. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.aNameWithNoRecordNote", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.handedNote", "theme-record.note", "theme-record.resultsNote", "version-scores.movesANameNote"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.aNameWithNoRecordNote", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.handedNote", "theme-record.note", "theme-record.resultsNote", "version-scores.movesANameNote"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

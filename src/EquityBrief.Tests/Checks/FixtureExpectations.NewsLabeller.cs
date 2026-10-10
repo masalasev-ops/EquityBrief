@@ -89,6 +89,17 @@ public partial class FixtureExpectations
             wait ?? ((_, _) => Task.CompletedTask));
     }
 
+    // A clock that stands still until a call or a wait moves it on, so how long a run takes is a number the test
+    // chose and a limit's boundary falls where the test put it.
+    sealed class CallClock(DateTimeOffset start) : IClock
+    {
+        public DateTimeOffset UtcNow { get; private set; } = start;
+
+        public TimeZoneInfo SessionZone { get; } = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+
+        public void Advance(TimeSpan by) => UtcNow += by;
+    }
+
     // A wait that moves the clock by what it is asked to wait, as the labeller's own wait moves the machine's.
     static Func<TimeSpan, CancellationToken, Task> Moving(CallClock clock) => (span, _) =>
     {

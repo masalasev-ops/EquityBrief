@@ -140,9 +140,9 @@ public partial class NightlyRun
             [[night, expected.GetProperty("rule").GetString()!]],
             StoreRows(store, "SELECT session_date, rule FROM list_rule;"));
 
-        // No request and no drain started, and the step still runs after the close, the quarters step, the
-        // filings refresh and the queue, with the labeller's start after it, its own row saying why and
-        // recording no model call and no request.
+        // No request and no drain started, and the step still runs after the close, the quarters step and
+        // the filings refresh, with the labeller's start after it, its own row saying why and recording no
+        // model call and no request.
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(expected.GetProperty("count").GetInt32(), StoreRows(store, "SELECT ticker FROM research_request;").Count);
         Assert.Equal(0, launcher.Started);
@@ -150,8 +150,8 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, OvernightQueue.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
-            stages.Select(row => row.Stage).TakeLast(7));
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, EquityBrief.Worker.Ledger.FilingsRefresher.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
+            stages.Select(row => row.Stage).TakeLast(6));
         Assert.Equal("ok", stages[^3].Outcome);
         Assert.Equal(expected.GetProperty("line").GetString(), stages[^3].Detail);
         Assert.Equal(

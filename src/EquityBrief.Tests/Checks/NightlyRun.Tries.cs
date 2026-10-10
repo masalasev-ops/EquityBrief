@@ -45,7 +45,6 @@ public partial class NightlyRun
         var code = await Nightly.RunAsync(
             new StoreLocation(Path.GetDirectoryName(store.DatabaseFile)!),
             feeds with { News = new FailingNews(feeds.News, failures) },
-            NightQueue.FromFixture(FixtureFolder()),
             "GSPC",
             FixedClock.At(Night, SessionZones.UnitedStates),
             output,

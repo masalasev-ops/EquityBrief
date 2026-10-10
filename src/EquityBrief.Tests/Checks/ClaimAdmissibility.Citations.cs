@@ -64,9 +64,6 @@ public partial class ClaimAdmissibility
         Assert.Contains(
             ("$67.2 billion", ClaimRules.FigureNoCitedDocumentHolds),
             ClaimRules.Check(Section, "Revenue was $67.2 billion [D2].", NightFacts, [millions, refused]).Findings.Select(finding => (finding.Offending, finding.Reason)));
-
-        // The rule holds researched sections alone: the key under each figure rests on the facts file.
-        Assert.True(ClaimRules.Check(ClaimRules.ComputedSection, "The close was 205.15.", NightFacts, []).Passes);
     }
 
     [Fact]
@@ -128,8 +125,7 @@ public partial class ClaimAdmissibility
             marks.WrittenSection("CVX", new("The short version", "It sells fuel [D1].", new DateOnly(2026, 10, 9), "a writer", ["r"]), [document]),
             StringComparison.Ordinal);
 
-        // A researched section written the day before the check says it was written before it, one written on the day
-        // does not, and the key, which rests on the facts file alone, never does.
+        // A section written the day before the check says it was written before it, and one written on the day does not.
         var check = ClaimRules.CitationCheckFrom;
         const string Before = "<p class=\"written-before\"";
 
@@ -138,7 +134,6 @@ public partial class ClaimAdmissibility
             marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check.AddDays(-1), "a writer", ["r"]), [document]),
             StringComparison.Ordinal);
         Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check, "a writer", ["r"]), [document]), StringComparison.Ordinal);
-        Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new(ClaimRules.ComputedSection, "The close was 205.15.", check.AddDays(-1), "a writer", []), []), StringComparison.Ordinal);
     }
 
     [Fact]

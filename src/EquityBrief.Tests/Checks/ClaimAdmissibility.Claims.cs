@@ -42,6 +42,9 @@ public partial class ClaimAdmissibility
 
     internal static Written SectionNamed(string name) => Sections().Single(section => section.Name == name);
 
+    // The section the constructed paragraphs stating the night's figures stand in.
+    internal static string Computed => SectionNamed("a clean computed paragraph").Section;
+
     internal static string Ticker => Prose().GetProperty("ticker").GetString()!;
 
     internal static string AsOf => Prose().GetProperty("asOf").GetString()!;
@@ -173,7 +176,7 @@ public partial class ClaimAdmissibility
         Pending(store, SectionNamed("a poisoned paragraph"), 1);
         await Checker(store).RunAsync("check-poisoned");
 
-        var row = Assert.Single(Stored(store, ClaimRules.ComputedSection));
+        var row = Assert.Single(Stored(store, Computed));
 
         Assert.Equal(ClaimChecker.Rejected, row.Status);
 
@@ -191,7 +194,7 @@ public partial class ClaimAdmissibility
         Pending(store, SectionNamed("a clean computed paragraph"), 1);
         await Checker(store).RunAsync("check-clean");
 
-        var row = Assert.Single(Stored(store, ClaimRules.ComputedSection));
+        var row = Assert.Single(Stored(store, Computed));
 
         Assert.Equal(ClaimChecker.Accepted, row.Status);
         Assert.Null(row.Reason);
@@ -339,7 +342,7 @@ public partial class ClaimAdmissibility
             await Checker(store).RunAsync("check-" + version.ToString(CultureInfo.InvariantCulture));
         }
 
-        var statuses = Stored(store, ClaimRules.ComputedSection).Select(row => row.Status).ToArray();
+        var statuses = Stored(store, Computed).Select(row => row.Status).ToArray();
         string[] pass = [.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Fallback];
 
         Assert.Equal([.. pass, .. pass], statuses);
@@ -357,7 +360,7 @@ public partial class ClaimAdmissibility
         Pending(store, poisoned, drafts + 2, asOf: "2026-09-09");
         await Checker(store).RunAsync("check-later-day");
 
-        Assert.Equal(ClaimChecker.Rejected, Stored(store, ClaimRules.ComputedSection).Single(row => row.Version == drafts + 2).Status);
+        Assert.Equal(ClaimChecker.Rejected, Stored(store, Computed).Single(row => row.Version == drafts + 2).Status);
     }
 
     [Fact]
@@ -446,7 +449,7 @@ public partial class ClaimAdmissibility
         Pending(store, clean, 1);
         await Checker(store).RunAsync("check-its-own-day");
 
-        Assert.Equal(ClaimChecker.Accepted, Assert.Single(Stored(store, ClaimRules.ComputedSection)).Status);
+        Assert.Equal(ClaimChecker.Accepted, Assert.Single(Stored(store, Computed)).Status);
 
         // The same prose dated on the later day is held to that day's file and
         // refused, which is the direction a query taking the newest file would get
@@ -454,7 +457,7 @@ public partial class ClaimAdmissibility
         Pending(store, clean, 2, asOf: "2026-09-09");
         await Checker(store).RunAsync("check-later-file");
 
-        Assert.Equal(ClaimChecker.Rejected, Stored(store, ClaimRules.ComputedSection).Single(row => row.Version == 2).Status);
+        Assert.Equal(ClaimChecker.Rejected, Stored(store, Computed).Single(row => row.Version == 2).Status);
     }
 
     [Fact]
@@ -619,7 +622,7 @@ public partial class ClaimAdmissibility
         var named = rows.Select(row => row[0]).ToArray();
 
         Assert.Equal(named, ClaimRules.Sections);
-        Assert.Contains(ClaimRules.ComputedSection, named);
+        Assert.DoesNotContain(ClaimRules.RetiredKey, named);
 
         // From 6.6 the table says what code works out, what the model is asked to
         // write and what each section must pass, so the parts of a row the code
@@ -644,12 +647,10 @@ public partial class ClaimAdmissibility
         Assert.Contains("latest period of the segment table", segments[2], StringComparison.Ordinal);
         Assert.DoesNotContain("for the quarter", segments[3], StringComparison.Ordinal);
 
-        // The rules column, against the checker. The one section held to no citation
-        // is the one row saying it cites no document, and the one section held to its
-        // move's span is the one row naming a document published inside that move.
-        Assert.Equal(
-            [.. ClaimRules.Sections.Where(section => !ClaimRules.IsResearched(section))],
-            rows.Where(row => row[4].Contains("It cites no document", StringComparison.Ordinal)).Select(row => row[0]).ToArray());
+        // The rules column, against the checker. No section is held to no citation, so
+        // no row says it cites no document, and the one section held to its move's span
+        // is the one row naming a document published inside that move.
+        Assert.DoesNotContain(rows, row => row[4].Contains("cites no document", StringComparison.Ordinal));
 
         Assert.Equal(
             [ClaimRules.CauseSection],
@@ -854,10 +855,10 @@ public partial class ClaimAdmissibility
             [ClaimRules.CitationOutOfRange, ClaimRules.NotStored],
             [.. verdict.Findings.Select(finding => finding.Reason)]);
 
-        // The computed section is not asked for a citation, and is still refused a
-        // figure the file does not hold.
-        Assert.True(ClaimRules.Check(ClaimRules.ComputedSection, "It is an ordinary sentence.", [], []).Passes);
-        Assert.False(ClaimRules.Check(ClaimRules.ComputedSection, "It closed at 12.34.", [], []).Passes);
+        // A sentence citing the night's figures is not asked for a document, and is still
+        // refused a figure the file does not hold.
+        Assert.True(ClaimRules.Check("What the company sells", "It is an ordinary sentence [N].", [], [admitted]).Passes);
+        Assert.False(ClaimRules.Check("What the company sells", "It closed at 12.34 [N].", [], [admitted]).Passes);
     }
 
     [Fact]

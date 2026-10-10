@@ -146,7 +146,7 @@ public partial class ReadSurface
         Assert.Equal((ReportsView.LeftOut, "the research model returned nothing", 0m), (CellOf(ecl, ClaimRules.Sections[^1]).Outcome, CellOf(ecl, ClaimRules.Sections[^1]).Why, CellOf(ecl, ClaimRules.Sections[^1]).Cost));
         Assert.Equal((ReportsView.LeftOut, CycleDeclined, 0.0006m), (CellOf(ecl, ClaimRules.CycleSection).Outcome, CellOf(ecl, ClaimRules.CycleSection).Why, CellOf(ecl, ClaimRules.CycleSection).Cost));
 
-        foreach (var stood in new[] { "What the company sells", "The segment commentary", "The key under each figure", "The dated calendar items" })
+        foreach (var stood in new[] { "What the company sells", "The segment commentary", "The dated calendar items" })
         {
             Assert.Equal((ReportsView.NotWarranted, 0m), (CellOf(ecl, stood).Outcome, CellOf(ecl, stood).Cost));
         }
@@ -201,7 +201,7 @@ public partial class ReadSurface
     {
         // Twenty-two reports. The cause passed first time on the oldest twelve and was left out on the newest ten, so
         // over the newest twenty it passed on ten and was left out on ten; over all twenty-two it would be twelve.
-        // The calendar was warranted by the newest three alone, and the key under each figure by none.
+        // The calendar was warranted by the newest three alone, and what the company sells by none.
         var (rows, versions) = Reports(22, day => day >= 20
             ? [(ClaimRules.CauseSection, day <= 12), (ClaimRules.CalendarSection, true)]
             : [(ClaimRules.CauseSection, day <= 12)]);
@@ -212,7 +212,8 @@ public partial class ReadSurface
         Assert.Equal(20, ReportsView.RateWindow);
         Assert.Equal((20, 10, 10), (RateOf(ClaimRules.CauseSection).Reports, RateOf(ClaimRules.CauseSection).FirstTime, RateOf(ClaimRules.CauseSection).LeftOut));
         Assert.Equal((3, 3, 0), (RateOf(ClaimRules.CalendarSection).Reports, RateOf(ClaimRules.CalendarSection).FirstTime, RateOf(ClaimRules.CalendarSection).LeftOut));
-        Assert.Equal((0, 0, 0), (RateOf("The key under each figure").Reports, RateOf("The key under each figure").FirstTime, RateOf("The key under each figure").LeftOut));
+        Assert.Equal((0, 0, 0), (RateOf(Evidence.Sells).Reports, RateOf(Evidence.Sells).FirstTime, RateOf(Evidence.Sells).LeftOut));
+        Assert.DoesNotContain(view.Rates, rate => rate.Section == ClaimRules.RetiredKey);
 
         // The table draws the reports of the seven nights, and every report is held for the rates.
         Assert.Equal((7, 22), (view.Reports.Count, view.Held));

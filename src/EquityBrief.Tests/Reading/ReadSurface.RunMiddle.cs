@@ -28,7 +28,7 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words"),
         CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap"),
         CheckReach.Key("15.10 Run", "Research and spend, the reports the paid model wrote on each of the last seven nights"),
-        CheckReach.Key("15.10 Run", "Research and spend, the reports and the overnight drafts written over those nights"),
+        CheckReach.Key("15.10 Run", "Research and spend, the reports written over those nights"),
         CheckReach.Key("15.10 Run", "Anything to worry about, a checklist of plain items each turning red with its reason where it fails"),
         CheckReach.Key("15.10 Run", "Anything to worry about, every stock holding the night's prices and every step of the night finished"),
         CheckReach.Key("15.10 Run", "Anything to worry about, no research document refused and no section fallen back"),
@@ -86,10 +86,10 @@ public partial class ReadSurface
     }
 
     // Two nights: on the first, two research passes each made a paid call that answered, a third's call was
-    // refused and a by-hand command's row is no pass, and the queue completed four of six; on the second, one
-    // pass and a queue that completed none.
+    // refused and a by-hand command's row is no pass, and the queue an earlier night ran completed four of six;
+    // on the second, one pass and a queue that failed. A queue's row counts for nothing and draws nothing.
     [Fact]
-    public void TheResearchRegionCountsThePaidPassesAndTheOvernightDraftsOfEachNight()
+    public void TheResearchRegionCountsThePaidPassesOfEachNightAndNoQueuesDrafts()
     {
         (DateOnly, IReadOnlyList<RunStageRow>)[] week =
         [
@@ -111,14 +111,14 @@ public partial class ReadSurface
 
         var research = RunScreen.Research(week);
 
-        Assert.Equal([(2, 4), (1, 0)], research.Select(night => (night.PaidPasses, night.Drafts)));
+        Assert.Equal([2, 1], research.Select(night => night.PaidPasses));
 
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().ResearchRegion(new ResearchPicture(new NightSpend(0.02m, 0.26m, 10m, 50m), research)));
 
         Assert.Contains("<b>$0.26</b> spent this month, of the $50.00 month cap", drawn, StringComparison.Ordinal);
-        Assert.Contains("<g data-session=\"2026-09-24\" data-paid=\"2\" data-drafts=\"4\">", drawn, StringComparison.Ordinal);
+        Assert.Contains("<g data-session=\"2026-09-24\" data-paid=\"2\">", drawn, StringComparison.Ordinal);
         Assert.Contains("<div class=\"tile\" data-figure=\"paid reports\"><b>3</b>", drawn, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"tile\" data-figure=\"overnight drafts\"><b>4</b>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("drafts", drawn, StringComparison.Ordinal);
     }
 
     // Each item held, failed with its reason, or not read. Whether every step finished is the night's own state,

@@ -43,10 +43,10 @@ public partial class FixtureExpectations
         var shipped = new ConfigurationBuilder().AddJsonFile(ResearchFeeds.ShippedConfiguration).Build();
         var words = ResearchProfileWords(shipped);
 
-        // Stated in advance: the job's word, nine sections' and the review's name DeepSeek, eleven, and the trial's
+        // Stated in advance: the job's word, eight sections' and the review's name DeepSeek, ten, and the trial's
         // names none.
-        Assert.Equal(12, words.Count);
-        Assert.Equal(11, words.Count(word => word.Profile == "deepseek"));
+        Assert.Equal(11, words.Count);
+        Assert.Equal(10, words.Count(word => word.Profile == "deepseek"));
         Assert.Equal([ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":" + ModelProfiles.UseField], words.Where(word => word.Profile.Length == 0).Select(word => word.Setting));
 
         // No word names a profile answered on Claude's wire format, read off the profile's own format rather than its

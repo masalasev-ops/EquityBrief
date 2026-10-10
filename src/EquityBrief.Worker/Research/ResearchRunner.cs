@@ -534,12 +534,9 @@ public sealed class ResearchRunner(
 
         var afterFirst = await NewestAsync(connection, ticker, cancellation);
 
-        // Read on the date the section's row carries, which for the key under each figure is the
-        // night of its facts file rather than the day this pass runs.
-        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
         bool RejectedToday(string section) =>
             afterFirst.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
-            && refused.AsOf == ProseWriter.DatedOn(section, asOf, night);
+            && refused.AsOf == asOf;
 
         var retryLocal = local.Where(section => section != summary && RejectedToday(section)).ToArray();
         var retryPaid = paid.Where(section => section != summary && RejectedToday(section)).ToArray();
@@ -591,7 +588,7 @@ public sealed class ResearchRunner(
 
             bool Refused(string section) =>
                 before.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
-                && refused.AsOf == ProseWriter.DatedOn(section, asOf, night);
+                && refused.AsOf == asOf;
 
             var againLocal = local.Where(Refused).ToArray();
             var againPaid = paid.Where(section => section != summary && Refused(section)).ToArray();
@@ -670,22 +667,13 @@ public sealed class ResearchRunner(
     // left out on an earlier day, or never written, is written. A regenerate on the day
     // a report was written writes the sections left out today as well.
     // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
-    //
-    // Over the judge's own standings from 6.10, so the overnight queue asks the question
-    // this pass asks rather than a second statement of it.
-    // The key under each figure explains a night's figures and is dated by that night, so it is
-    // asked for on any day after it, where every other section stands until a trigger fires. The
-    // prose writer passes it over where the newest facts file is the one it was written from; the
-    // paid lane, which writes it where the page asks the paid model for the local lane or the
-    // machine cannot hold it, writes it from that file again, dated by the same night.
-    // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
     public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf, bool fillLeftOut = false) =>
         newest switch
         {
             null => true,
             { Status: ClaimChecker.Pending } => false,
             { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf
-                && (verdict.StaleSections.Contains(section, StringComparer.Ordinal) || string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal)),
+                && verdict.StaleSections.Contains(section, StringComparer.Ordinal),
             { Status: ClaimChecker.Fallback } left => left.AsOf != asOf || fillLeftOut,
             _ => true,
         };
@@ -746,7 +734,7 @@ public sealed class ResearchRunner(
             // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
             var sectionCap = sectionModels.For(section);
 
-            if (ClaimRules.IsResearched(section) && given.Count == 0)
+            if (given.Count == 0)
             {
                 notWritten.Add(new UnwrittenSection(section, ProseWriter.NothingHanded));
 
@@ -770,11 +758,6 @@ public sealed class ResearchRunner(
             var newest = (await NewestAsync(connection, ticker, cancellation)).GetValueOrDefault(section);
             var version = (newest?.Version ?? 0) + 1;
 
-            // Dated as the prose writer dates it, so the key this lane writes in the day from the
-            // night before is drawn beside that night's figures and not the next night's.
-            // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-            var dated = ProseWriter.DatedOn(section, asOf, night);
-
             // The retry names each thing the draft before it was refused for, read again over the facts file
             // and the source list it was checked against, the documents this pass handed the section. A draft
             // refused on the same day by an earlier pass is a draft before it too, since the checker reads
@@ -782,16 +765,16 @@ public sealed class ResearchRunner(
             // see: A retry names each thing the check refused, and a section refused on its third retry is left out
             var refused = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } inThisPass
                 ? inThisPass
-                : newest is { Status: ClaimChecker.Rejected } earlier && earlier.AsOf == dated ? earlier : null;
+                : newest is { Status: ClaimChecker.Rejected } earlier && earlier.AsOf == asOf ? earlier : null;
             var retry = refused is null
                 ? null
                 : RetryBrief.For(section, refused.Prose, facts, Resolved(refused.SourceIds, given), night, refused.Reason, refused.Parts);
 
             // Nothing admitted: inserted empty, citing what was handed, so the checker
             // leaves it out saying no admissible source was found and no call is paid for.
-            if (ClaimRules.IsResearched(section) && admitted.Length == 0)
+            if (admitted.Length == 0)
             {
-                await InsertAsync(connection, ticker, section, version, dated, sectionCap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
+                await InsertAsync(connection, ticker, section, version, asOf, sectionCap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
                 written.Add(new WrittenSection(section, version, sectionCap.Model, retry is not null));
 
                 continue;
@@ -834,7 +817,7 @@ public sealed class ResearchRunner(
                 continue;
             }
 
-            await InsertAsync(connection, ticker, section, version, dated, sectionCap.Model, answer.Text, request.DocumentIds, cancellation);
+            await InsertAsync(connection, ticker, section, version, asOf, sectionCap.Model, answer.Text, request.DocumentIds, cancellation);
             written.Add(new WrittenSection(section, version, sectionCap.Model, retry is not null));
         }
 

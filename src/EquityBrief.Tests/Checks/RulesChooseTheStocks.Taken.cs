@@ -25,7 +25,6 @@ public partial class RulesChooseTheStocks
     [
         .. Deciding,
         (nameof(IndexFamilies), IndexFamilies.Access),
-        (nameof(OvernightQueue), OvernightQueue.Access),
         (nameof(RequestDrain), RequestDrain.Access),
         // From 17.3 the setup ledger, which every engine reads, so a taken trade reaching it would reach them all.
         // see: The operator's taken trades never feed a pick, a rule, an engine or a test
@@ -45,8 +44,8 @@ public partial class RulesChooseTheStocks
     {
         var components = PickMaking;
 
-        // The scope, in numbers: the deciding list and the seven named beside it.
-        Assert.Equal(Deciding.Length + 7, components.Length);
+        // The scope, in numbers: the deciding list and the six named beside it.
+        Assert.Equal(Deciding.Length + 6, components.Length);
         Assert.Empty(components.SelectMany(component => ReadsTheOperatorsOwn(component.Name, component.Access)));
 
         var sources = Folders

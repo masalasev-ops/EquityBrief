@@ -203,10 +203,6 @@ public partial class ReadSurface
             // of section 18's row a reader sees.
             CheckReach.Key(Scope.FailureTable, "A theme refresh fails while a name's pass depends on it"),
 
-            // 6.10, the run page's overnight queue region, and the night the machine slept,
-            // which is a claim about what that region states.
-            CheckReach.Key("15.10 Run", "Overnight queue"),
-
             // 9.1, what a row on tonight's list says about the name's research, which is
             // read back off the row against the store rather than off the page.
             CheckReach.Key("15.7 Tonight", "Research, per row"),
@@ -254,7 +250,6 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of distinct trials"),
             CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it"),
             CheckReach.Key(Scope.LimitsTable, "Power stated at a look"),
-            CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
 
             // 5.6, the run page. Every one of these is a claim about a surface,
             // which is why they are reached by a check that draws the surface
@@ -3895,7 +3890,7 @@ public partial class ReadSurface
 
         // Refused at every retry: the line names the section and carries both the words
         // that say it was the last retry and the figure the facts file did not hold.
-        var twice = Regex.Match(region, "<p class=\"left-out\" data-section=\"The key under each figure\">([^<]*)</p>");
+        var twice = Regex.Match(region, $"<p class=\"left-out\" data-section=\"{ClaimAdmissibility.Computed}\">([^<]*)</p>");
 
         Assert.True(twice.Success);
         Assert.Contains(EquityBrief.Worker.Research.ClaimChecker.RejectedOnEveryRetry, twice.Groups[1].Value, StringComparison.Ordinal);
@@ -4051,7 +4046,7 @@ public partial class ReadSurface
         var region = new MarkRenderer().StaleAndFailed([], [], [], fellBack);
 
         Assert.Contains("data-fell-back=\"3\"", region, StringComparison.Ordinal);
-        Assert.Contains("data-subject=\"KEYS\" data-section=\"The key under each figure\"", region, StringComparison.Ordinal);
+        Assert.Contains($"data-subject=\"KEYS\" data-section=\"{ClaimAdmissibility.Computed}\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"KEYS\" data-section=\"The two cases\"", region, StringComparison.Ordinal);
         Assert.Contains("data-subject=\"test and measurement\" data-section=\"The industry cycle\"", region, StringComparison.Ordinal);
         Assert.Contains("66.3%", region, StringComparison.Ordinal);
@@ -4288,18 +4283,17 @@ public partial class ReadSurface
             await api.StaleNamesAsync("GSPC"),
             RunScreen.Refused(await api.RefusedDocumentsAsync(night)),
             RunScreen.FellBack(await api.FellBackAsync(night)),
-            RunScreen.Queue(await api.QueueRowsAsync(), night, _ => true),
             RunScreen.Harness(null),
             RunScreen.Shadow(await api.RegisteredCandidatesAsync(), await api.CandidateNightsAsync(), await api.CandidateSetupsAsync(), night, Utc("2026-09-08T22:00:00Z")),
             orders: RunScreen.Orders(listings, night));
 
-        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "overnight-queue", "harness" })
+        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "harness" })
         {
             Assert.Contains($"class=\"{region}\"", page, StringComparison.Ordinal);
         }
 
         // In that order, so the evidence page reads as section 15.10 states it.
-        var at = new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "overnight-queue", "harness" }
+        var at = new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "harness" }
             .Select(region => page.IndexOf($"class=\"{region}\"", StringComparison.Ordinal))
             .ToArray();
 
