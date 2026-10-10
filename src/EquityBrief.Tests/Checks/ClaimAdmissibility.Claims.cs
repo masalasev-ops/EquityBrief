@@ -761,7 +761,8 @@ public partial class ClaimAdmissibility
         StoredDocument Published(DateOnly on) =>
             new("d1", "https://www.sec.gov/Archives/edgar/data/1/1/release.htm", "a release", on, FetchedAt, "text", Admissibility.Accepted);
 
-        const string Sentence = "The move ending 2026-08-24 fell 13.98 per cent after the release [D1].";
+        // The move's size is the night's figure and cited as one, so the release is held to the move's span alone.
+        const string Sentence = "The move ending 2026-08-24 fell 13.98 per cent after the release [D1] [N].";
 
         var early = ClaimRules.Check(ClaimRules.CauseSection, Sentence, facts, [Published(new DateOnly(2026, 8, 14))]);
 
@@ -875,7 +876,18 @@ public partial class ClaimAdmissibility
             new("segment Productivity Operating income 12 months to 2026-06-30", "37000000000", "fundamental"),
         ];
 
-        StoredDocument?[] sources = [new StoredDocument("a", "https://a.test/a", "a", new DateOnly(2026, 7, 30), FetchedAt, "text", Admissibility.Accepted)];
+        // The release the sentences cite states each figure they write, so the period is the one thing read here.
+        StoredDocument?[] sources =
+        [
+            new StoredDocument(
+                "a",
+                "https://a.test/a",
+                "a",
+                new DateOnly(2026, 7, 30),
+                FetchedAt,
+                "Productivity revenue was $80 billion and total revenue $270 billion for the year; revenue was $76.4 billion and Productivity operating income $37 billion.",
+                Admissibility.Accepted),
+        ];
 
         (string Offending, string Reason)[] Findings(IReadOnlyList<Fact> file, string prose) =>
             [.. ClaimRules.Check("The segment commentary", prose, file, sources).Findings.Select(finding => (finding.Offending, finding.Reason))];

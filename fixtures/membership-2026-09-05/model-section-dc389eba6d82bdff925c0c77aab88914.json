@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-65ktmnonalt7ga28gagcu6",
+  "object": "chat.completion",
+  "created": 1791597661,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc operates within the Technology sector as a mission-critical design enablement partner for engineering challenges across communications, industrial automation, aerospace and defense, automotive, semiconductor, and general electronics markets [D1]. The company reported revenue of 1846000000.00 for the third quarter ended July 31, 2026, which represents a growth on a year earlier of 0.365385 according to the filing [D1]. GAAP net income was 397000000.00 or 2.30 per share compared with 191000000.00 or 1.10 per share in the third quarter of 2025 as stated in the results release [D1]. Non-GAAP net income was 531000000.00 or 3.07 per share compared with 297000000.00 or 1.72 per share in the third quarter of 2025 according to the filing [D1]. Cash flow from operations was 437000000.00 compared to 322000000.00 last year as reported in the document [D1]. Free cash flow was 403000000.00 compared to 291000000.00 in the third quarter of 2025 per the company filing [D1]. As of July 31, 2026, cash, cash equivalents, and restricted cash totaled 2620000000.00 according to the results release [D1]. Orders were 2091000000.00 which is up 56% on a reported basis as stated by Executive VP & CFO Neil Dougherty in the earnings call summary [D3]. Revenue of 1846000000.00 was up 36% on a reported basis per the executive vice president and chief financial officer [D3]. The company delivered net income of 531000000.00 and earnings per share of 3.07 as confirmed by the executive vice president and chief financial officer [D3]. Gross margin was 69% and operating expenses were 661000000.00 according to the executive vice president and chief financial officer [D3]. Within the Communications Solutions Group, the Commercial Communications business generated its first 1006000000.00 quarter with revenue of 1006000000.00 up 56% led by outstanding growth in wireline and supported by strong growth in wireless per the executive vice president and chief financial officer [D3]. This will result in fiscal year 2026 revenue growth of 32% and EPS growth of approximately 60% at the midpoint as stated by the executive vice president and chief financial officer [D3].\n\nThe market is arguing that AI infrastructure demand drives orders higher with wireline revenue surpassing wireless revenue for the first time in the company's history [D2]. Keysight guidance comes in well above Wall Street forecasts with management forecasting revenue of between 1930000000.00 and 1950000000.00 for the fourth quarter [D2]. Adjusted earnings per share are expected to range from 3.34 to 3.40, compared with Wall Street expectations of approximately 2.68 per share [D2]. Margins expand as free cash flow reaches 403000000.00 providing the company with additional financial flexibility while it continued to return capital through its share repurchase programme [D2]. The broader market offered a modestly favourable backdrop with S&P 500 futures gaining 0.1%, Dow Jones futures advancing 0.02% and Nasdaq futures rising 0.1% in pre-market trading [D2]. Positive sentiment was also visible among companies exposed to testing, measurement and photonics reflecting continued expectations for heavy capital expenditure by hyperscale technology companies building AI infrastructure [D2]. That theme has already contributed to bullish analyst expectations for the stock with several price targets sitting substantially above its current trading level including a 400 target from Morgan Stanley [D2].\n\nManagement described Q3 as a record quarter driven by AI infrastructure demand particularly wireline, strength in aerospace and defense modernization, and broad-based EISG growth while raising Q4 and full-year FY 2026 outlook [D3]. In Q&A the dominant constraint shifted from demand visibility to supply",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "length"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 20858,
+    "completion_tokens": 1024,
+    "total_tokens": 21882,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

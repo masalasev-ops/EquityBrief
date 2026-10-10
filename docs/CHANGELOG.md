@@ -25,6 +25,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-09 - CLAUDE.md - the prose rule names [N] and the figure a cited document states
+Authorised by: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+Was:
+> **Every number in written prose must exist in the facts file.** Enforced by the claim checker, with up to three retries and then the section is omitted. (see: Every number in written prose must exist in the facts file) (see: A retry names each thing the check refused, and a section refused on its third retry is left out)
+Now:
+> **Every number in written prose must exist in the facts file.** Enforced by the claim checker, with up to three retries and then the section is omitted. A sentence stating the night's stored figures cites them as [N], and a figure in a sentence citing documents alone is also one those documents state. (see: Every number in written prose must exist in the facts file) (see: A retry names each thing the check refused, and a section refused on its third retry is left out) (see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state)
+Why: a writer handed one document cited it for figures it does not state, CVX's close and averages among them, and the checker passed them since each was in the facts file.
+
+### 2026-10-09 - .claude/rules/checks.md - the claim-admissibility row adds the figure a cited document states, [N] and the JSON answer
+Authorised by: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+Was:
+> and a fact's name carrying digits read past by the number rule, over constructed answers, with the retry told the seven kinds |
+Now:
+> and a fact's name carrying digits read past by the number rule, over constructed answers, with the retry told the seven kinds; and from the 6.4 correction of 2026-10-09 a figure in a researched sentence citing documents alone is one a document it cites states, worked by hand over constructed releases, read at the scale a table states in millions or in thousands and as written where none is stated, a percentage only against a percentage and a refused document stating nothing, while a sentence citing [N] is held to the facts file alone and is not refused as uncited, and an answer written as a JSON object or list is refused in every section, with the retry told what to do about each |
+Why: the row states what the check asserts, and the correction adds these assertions.
+
+### 2026-10-09 - ARCHITECTURE.html - figure 12.1's check names [N] and the figure a cited document states, and its key says why
+Authorised by: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+Was:
+> <div class="box research"><b>Check every claim</b>a number must be in the facts file; a claim must name a source document that is in the store; a section failing twice is left out rather than guessed</div>
+Now:
+> <div class="box research"><b>Check every claim</b>a number must be in the facts file, and in a cited document where a sentence cites documents alone; a claim must name a source document that is in the store, or [N] for the night's figures; a section refused on its third retry is left out rather than guessed</div>
+
+> and a paragraph added to the figure's key after the one opening "The claim checker is what makes model-written analysis usable.", stating the rule, [N] on the page and the JSON answer.
+Why: the checker's rule changed; the box's "failing twice" also read one retry where 12.6's correction made three, and is repaired in the same edit.
+
 ### 2026-10-09 - ARCHITECTURE.html - the member readings row says when a fetch was made before the rating counts were stored, and the quarter fetcher's row names the refetch
 Authorised by: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read
 Was:

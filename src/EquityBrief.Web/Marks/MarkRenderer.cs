@@ -4004,9 +4004,25 @@ public sealed partial class MarkRenderer : IComponent
 
         drawn.Append(Invariant, $"<p class=\"written-by\">{Escaped(dated)} {section.AsOf:yyyy-MM-dd}</p>");
 
-        if (section.SourceIds.Count > 0)
+        // A researched section written before the checker held a figure to the documents its sentence cites says so.
+        if (Core.Research.ClaimRules.IsResearched(section.Section) && section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
+        {
+            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
+        }
+
+        // A sentence resting on the night's own figures cites them as [N], which is listed beside the documents and
+        // links to the card drawing them.
+        // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
+        var citesNight = section.Prose.Contains(Core.Research.ClaimRules.NightMark, StringComparison.Ordinal);
+
+        if (section.SourceIds.Count > 0 || citesNight)
         {
             drawn.Append(Invariant, $"<ol class=\"section-sources\" data-cites=\"{section.SourceIds.Count}\">");
+
+            if (citesNight)
+            {
+                drawn.Append("<li data-marker=\"N\">[N] <a href=\"#numbers\">the figures the night stored</a>, computed by the night or copied by code from a filing or the provider</li>");
+            }
 
             for (var at = 0; at < section.SourceIds.Count; at++)
             {

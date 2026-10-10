@@ -6,7 +6,7 @@
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written. The local model's answers were recorded again on 2026-10-10 under the prompt that teaches [N], and the paid lane's answers were constructed from their recordings of 2026-09-30 with [N] marked, no paid call made: in the comparison with every section local, the short version's first draft is refused and each of its three retries, one request since no retry's draft reaches the checker, stops at its budget of 1024 tokens and is asked once more and stops there again, so it is left out with no usable answer where it had fallen back after its last retry, and that half asks 22 calls where it asked 19: the short version's 7 where it asked 4.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -128,10 +128,9 @@
       },
       "fallback": [
         "The two cases",
-        "The risks, each with what would confirm it",
-        "The short version"
+        "The risks, each with what would confirm it"
       ],
-      "calls": 19,
+      "calls": 22,
       "spend": "0"
     }
   }

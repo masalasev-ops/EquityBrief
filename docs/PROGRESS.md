@@ -41805,3 +41805,67 @@ Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, mergi
             estimate and, if the data check confirms it, the market events table, a correction changing the night
             merged at most one a night; then 18.0.
 Carried:    nothing.
+
+### 6.4 - correction: a figure in a sentence citing documents alone is one a cited document states, the night's own figures are cited as [N], and an answer written as JSON is refused in every section   2026-10-09
+
+Corrects:   6.4's claim checker, which held every figure in a researched sentence to the facts file and asked the
+            sentence only to name a stored document. A writer handed one document cited it for every figure it wrote,
+            and each passed: CVX's short version of 2026-10-08, handed the results release alone after the news fetch
+            timed out, cited the release for the close, the three averages, the RSI and the MACD, none of which the
+            release states. And an answer written as JSON passed as prose: the overnight queue stored the key under
+            each figure as {"error": "no text at all"}. Over the store of 2026-10-09 at 21:26Z, the newest accepted
+            section of each name and section, 1,685 sections: 1,486 keys are answers written as JSON, and 80 of the 190
+            researched sections would be refused now, 67 of them by the cited-document rule alone.
+Found:      by the operator's phase 18 brief of 2026-10-09, reading CVX's page; counted read-only.
+Built:      the checker reads [N], set at a sentence's end as a document's marker is, as citing the night's stored
+            figures, held to the facts file alone. A figure in a sentence citing documents and not [N] is also one a
+            cited document states, read at the precision the sentence writes, a figure written bare read as well at a
+            scale the document states its tables in, and a percentage only against a percentage; a document
+            admissibility refused states nothing. An answer that parses as a JSON object or list is refused in every
+            section, and a retry is told what to do about each. The prompt teaches [N], and Claude's answer as
+            sentences carries a facts flag a sentence, read back as [N]. The page lists [N] among a section's sources,
+            linked to the numbers, and beneath each researched section dated before 2026-10-11, the day after this
+            correction merges, draws that it was written before the citation check; stored sections stay as written.
+            The decision supersedes the claim decision (see: A sentence names the night's stored figures by [N] and a
+            document by its marker, and a figure in a sentence citing documents alone is one they state); CLAUDE.md's
+            prose rule, figure 12.1 and its key, section 12, the claim-admissibility row and the guide say so, the
+            prior text in `CHANGELOG.md`.
+Recorded:   no paid call and no Claude call, by the operator's ruling of 2026-10-09 (R7). 17 answers of the local
+            model, qwen/qwen3.5-9b in LM Studio on the operator's machine, at no cost from 01:35Z to 02:01Z on
+            2026-10-10, in place of 19, the lane comparison's short version now asking one request at each of its
+            three retries. 18 paid answers constructed, 12 on DeepSeek's wire and 6 on Claude's, each the capture of
+            the same draft of the same section as the pass asked it before, with [N] marked or the facts flag set on
+            each sentence stating a figure and nothing else changed; the 18 captures stay as their sources. One
+            expectation moved with what the local model wrote: in the comparison with every section local, each of
+            the short version's retries stops at its budget of 1,024 tokens, so it is left out with no usable answer
+            where it fell back, 22 calls where 19.
+Tests:      2128, six more: five worked by hand over constructed facts and documents, a figure a release's table
+            states in millions passing where the night's close cited to it is refused, a percentage read only against
+            a percentage, [N] as a sentence's citation, the page's [N] source line and written-before line, and a JSON
+            answer refused in every section; and each constructed answer read against the capture it names. The token
+            estimate counts 40 local recordings where 42, and the two cases' drawing reads [N] after a document's
+            marker.
+Claims:     1149, unchanged: figure 12.1's box and the claim-admissibility row keep their verdicts.
+Pins:       none moved; the claim rules, the research feeds, the prompt and the marks are in no pin list.
+Mutated:    the rule, stated before the run: each refusal the correction adds, broken alone. A figure in a sentence
+            citing documents alone being one they state, broken by the read of the cited documents answering yes
+            whatever they state, the brief's mutation: predicted red at the scale test and the percentage test and green
+            at the other 54 claim-admissibility tests. A JSON answer refused, broken by the refusal never firing:
+            predicted red at the JSON test alone. Result: each red and green as predicted, made on this branch and
+            reverted before anything was committed. Added and not mutated: [N] read as a citation, the page's two lines
+            and Claude's facts flag.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f25f882a, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2128 of 2128 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2128 of 2128 tests ran.
+Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418,
+            merged on 2026-10-10; in progress, this correction; next, 18.0, the pass that writes phase 18 into the build
+            plan with its rulings and carried obligations, moved ahead of the rest of Part A after the operator asked on
+            2026-10-09 why phase 18 was not in the build plan, since the plan's rulings, which the corrections' entries
+            cite, stand outside the repository until it lands; then 3.1 the chart's averages, 6.10 the written key
+            retired, 16.3 the dividend estimate and, if the data check confirms it, the market events table, a
+            correction changing the night merged at most one a night.
+Carried:    nothing.

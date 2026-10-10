@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-ayho7v9qb0ttm6vojp40cg",
+  "object": "chat.completion",
+  "created": 1791596217,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The Communications Solutions Group reported revenue of $1,345 million representing a 43 percent increase from the prior year driven by 56 percent growth in commercial communications and 14 percent growth in aerospace, defense, and government [D1]. The Electronic Industrial Solutions Group reported revenue of $501 million reflecting a 21 percent increase from the prior year caused by growth across the semiconductor, general electronics, automotive, and energy markets [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12023,
+    "completion_tokens": 96,
+    "total_tokens": 12119,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

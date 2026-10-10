@@ -126,7 +126,7 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **Code owns every number.** Every figure in a report is computed from stored data or copied from a provider payload with the filing date it came from. No model is ever asked for a number, a date or an estimate. (see: Code owns every number)
 
-**Every number in written prose must exist in the facts file.** Enforced by the claim checker, with up to three retries and then the section is omitted. (see: Every number in written prose must exist in the facts file) (see: A retry names each thing the check refused, and a section refused on its third retry is left out)
+**Every number in written prose must exist in the facts file.** Enforced by the claim checker, with up to three retries and then the section is omitted. A sentence stating the night's stored figures cites them as [N], and a figure in a sentence citing documents alone is also one those documents state. (see: Every number in written prose must exist in the facts file) (see: A retry names each thing the check refused, and a section refused on its third retry is left out) (see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state)
 
 **Every researched claim names a stored source document, and that document passed admissibility.** Having a source and having a believable source are different tests and both run. A document that fails admissibility is not stored, so a claim resting on it cannot be written. (see: A stored source is not automatically an admissible one)
 

@@ -24,7 +24,7 @@ public sealed record PromptDocument(string Id, string Title, DateOnly? Published
 // copied or rounded from a fact listed, every sentence of a researched section
 // cites a listed document, and numbers from eleven up are written in digits.
 // see: The model never fetches; components fetch and hand it documents
-// see: A claim is a sentence, every sentence in a researched section names the document it rests on, and a window written in words is read as its number
+// see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
 public static class SectionPrompt
 {
     public const string Lane = "local";
@@ -73,9 +73,14 @@ public static class SectionPrompt
     // one, and was refused for citing past a source list that held nothing. The sentence
     // opening a paragraph is named because those were the ones a writer left uncited: a
     // risk's own sentence ahead of the confirmation it cited, and a short version's framing.
+    // The night's figures have a mark of their own, because a writer told only to cite a
+    // document cited the one it was handed for the close and the averages, which no
+    // document states.
+    // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
     public const string Citing =
-        "End every sentence with the document it rests on, written as [D1] for the first document listed, [D2] for the second, and so on, "
-        + "the sentence opening a paragraph as well as the rest. Write no sentence that no listed document supports, and none about what you are writing or leaving out. "
+        "End every sentence with what it rests on: [N] for figures listed under Facts, and the document for what a document says, written as [D1] for the first document listed, [D2] for the second, and so on, "
+        + "a sentence stating both ending with both, the sentence opening a paragraph as well as the rest. A figure in a sentence ending with documents' markers alone must be one those documents state. "
+        + "Write no sentence that neither the facts nor a listed document supports, and none about what you are writing or leaving out. "
         + Kinds;
 
     // Each document is listed with its kind, and a point rests on what a company filed or a reporter reported: an
