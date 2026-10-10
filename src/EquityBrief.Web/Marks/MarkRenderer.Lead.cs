@@ -21,18 +21,19 @@ public sealed partial class MarkRenderer
             ? Formatted($"<h1 class=\"headline\" data-written=\"{(said.Written ? "model" : "code")}\">{Escaped(said.Sentence)}</h1>")
             : string.Empty);
 
-        if (tiles is { } shown)
-        {
-            lead.Append(Formatted($"<div class=\"lead-tiles\" data-live=\"{(shown.Live ? "yes" : "no")}\">"));
-            lead.Append(EarningsTile(shown.Earnings));
-            lead.Append(GrowthTile(shown.Growth));
-            lead.Append(YieldTile(shown.Yield, shown.Price, shown.Live));
-            lead.Append(HighTile(shown.High, shown.Live));
-            lead.Append("</div>");
-        }
+        lead.Append(tiles is { } shown ? LeadTiles(shown) : string.Empty);
 
         return lead.Append("</section>").ToString();
     }
+
+    // The four tiles alone, which the page's script draws again at a newer quote.
+    public string LeadTiles(TilesView tiles) =>
+        Formatted($"<div class=\"lead-tiles\" data-live=\"{(tiles.Live ? "yes" : "no")}\">")
+        + EarningsTile(tiles.Earnings)
+        + GrowthTile(tiles.Growth)
+        + YieldTile(tiles.Yield, tiles.Price, tiles.Live)
+        + HighTile(tiles.High, tiles.Live)
+        + "</div>";
 
     static string EarningsTile(EquityBrief.Core.Tiles.EarningsTile? earnings) =>
         earnings is not { } tile

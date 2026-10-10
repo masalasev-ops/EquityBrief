@@ -406,8 +406,76 @@ public sealed class SinglePageApp : IComponent
           fresh = false;
           drawing = false;
           paintTheme();
+          quoting();
+          marking();
         }
         addEventListener('hashchange', show);
+        // A name page shown inside the regular session asks for its delayed quote once the interval since the name's
+        // newest ask has passed, and reads the newest stored quote back every fifteen seconds while it is shown, drawing
+        // the masthead's price, its line, the tiles and each band's distance at it. A page about an earlier night, the
+        // exported file and a page outside the session carry no route and ask for nothing.
+        // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+        let quoteTimer = null;
+        function quoting() {
+          if (quoteTimer) { clearInterval(quoteTimer); quoteTimer = null; }
+          const head = screen.querySelector('.screen-mast[data-quote-route]');
+          if (!head) { return; }
+          const route = head.getAttribute('data-quote-route');
+          const open = Date.parse(head.getAttribute('data-session-open'));
+          const close = Date.parse(head.getAttribute('data-session-close'));
+          const every = Number(head.getAttribute('data-interval-minutes')) * 60000;
+          let asked = head.getAttribute('data-asked') ? Date.parse(head.getAttribute('data-asked')) : 0;
+          let drawn = asked;
+          async function tick() {
+            const now = Date.now();
+            if (!document.body.contains(head)) { clearInterval(quoteTimer); quoteTimer = null; return; }
+            if (document.visibilityState !== 'visible' || now < open || now >= close) { return; }
+            if (now - asked >= every) {
+              asked = now;
+              await fetch(route, { method: 'POST', headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' } }).catch(() => { });
+            }
+            const reply = await fetch(route).then((response) => response.ok ? response.json() : null).catch(() => null);
+            if (!reply || !reply.live || Date.parse(reply.askedAt) <= drawn) { return; }
+            drawn = Date.parse(reply.askedAt);
+            asked = Math.max(asked, drawn);
+            for (const place of [identity, head]) {
+              const price = place.querySelector('.m-price');
+              if (price) { price.innerHTML = reply.price; price.setAttribute('data-live', 'yes'); }
+              const when = place.querySelector('.m-when');
+              if (when) { when.innerHTML = reply.asOf; }
+            }
+            const tiles = screen.querySelector('.lead-tiles');
+            if (tiles) { tiles.outerHTML = reply.tiles; }
+            for (const band of reply.distances) {
+              const cell = screen.querySelector('.level-summary tr.band[data-low-edge="' + CSS.escape(band.low) + '"][data-high-edge="' + CSS.escape(band.high) + '"] td.away');
+              if (cell) { cell.textContent = band.away; cell.setAttribute('data-away', band.value); cell.setAttribute('data-at', 'quote'); }
+            }
+          }
+          tick();
+          quoteTimer = setInterval(tick, 15000);
+        }
+        // A written or filed entry of a name page's contents dated after the day this browser last opened the page is
+        // marked new. The day is kept in this browser alone, so the store records no visit, and the first visit and the
+        // exported file mark nothing.
+        // see: A section newer than the reader's last visit is marked new by the browser alone, and the store records no visit
+        function marking() {
+          const nav = screen.querySelector('nav.contents[data-ticker]');
+          if (!nav) { return; }
+          const key = 'eb-visited-' + nav.getAttribute('data-ticker');
+          let last = null;
+          try { last = localStorage.getItem(key); } catch (error) { }
+          if (last) {
+            for (const entry of nav.querySelectorAll('li[data-dated]')) {
+              if (entry.getAttribute('data-dated') > last && !entry.querySelector('.pill.new')) {
+                const pill = document.createElement('span');
+                pill.className = 'pill new';
+                pill.textContent = 'NEW';
+                entry.appendChild(pill);
+              }
+            }
+          }
+          try { localStorage.setItem(key, new Date().toISOString().slice(0, 10)); } catch (error) { }
+        }
         // A name's year in the peers table or the universe table, what a column holds in its heading,
         // what the night measured a reason on tonight's list over, what a member's numbers say
         // beside its state and why a story was labelled as it was, each shown by the stylesheet while its cell is under the pointer or holds
@@ -944,13 +1012,12 @@ public sealed class SinglePageApp : IComponent
         identity.Append(Invariant($"<span class=\"m-price\" data-live=\"{(live is null ? "no" : "yes")}\">{PriceNow(bars, mast, live)}</span>"));
         identity.Append(watched is { } held ? WatchControl(ticker, held) : string.Empty);
 
-        var asOf = live is { } quoted
+        var asOf = "<span class=\"m-when\">" + (live is { } quoted
             ? QuoteAsOf(quoted, session)
             : session is { } last
-                ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}")
-                : "No session is stored for this name";
+                ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}. Levels and the plan come from completed sessions to {last:yyyy-MM-dd}")
+                : "No session is stored for this name") + "</span>";
 
-        asOf += live is null && session is not null ? Invariant($". Levels and the plan come from completed sessions to {session:yyyy-MM-dd}") : string.Empty;
         asOf += mast?.Sector is { Length: > 0 } sector
             ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
             : string.Empty;
