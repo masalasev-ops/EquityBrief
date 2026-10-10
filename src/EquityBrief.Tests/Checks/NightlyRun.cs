@@ -2280,9 +2280,11 @@ public partial class NightlyRun
         // members on the session to read each of them; and from 16.1 the decision
         // cards read each index's members on the session to rank its sectors; and
         // from 16.3 the taken trades' follower asks whether a stock is a member of
-        // any index on the night, which ends a trade whose stock has left them all.
+        // any index on the night, which ends a trade whose stock has left them all;
+        // and from 18.1 the read surface reads the index that held a name on the
+        // page's night, which its masthead names.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

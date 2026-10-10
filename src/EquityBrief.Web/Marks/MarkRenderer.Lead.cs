@@ -40,7 +40,7 @@ public sealed partial class MarkRenderer
             ? LeadTile("earnings", "The latest quarter's earnings a share", "<span class=\"v none\">not stored</span>", "No reported quarter is stored for it yet.")
             : LeadTile(
                 "earnings",
-                Formatted($"Quarter to {tile.Quarter:yyyy-MM-dd}, earnings a share"),
+                "Quarter to " + DayOf(tile.Quarter) + ", earnings a share",
                 Formatted($"<span class=\"v\" data-value=\"{tile.Actual.ToString(Invariant)}\">{Figures.PerShare(tile.Actual)}</span>"),
                 (tile.Estimate is { } estimate
                     ? Formatted($"estimate <span data-estimate=\"{estimate.ToString(Invariant)}\">{Figures.PerShare(estimate)}</span>") + (tile.AgainstEstimate is { } against ? ", " + Signed(against, "against") : string.Empty)
@@ -54,7 +54,7 @@ public sealed partial class MarkRenderer
                 "growth",
                 "Sales, the last four quarters on the four before",
                 Signed(tile.Percent, "growth", "v"),
-                Formatted($"through the quarter to {tile.Through:yyyy-MM-dd}, from its filings"));
+                "through the quarter to " + DayOf(tile.Through) + ", from its filings");
 
     static string YieldTile(EquityBrief.Core.Tiles.YieldTile? yield, decimal? price, bool live) =>
         yield is not { } tile
@@ -72,7 +72,9 @@ public sealed partial class MarkRenderer
                 "high",
                 "From the 52-week high",
                 Signed(tile.FromHigh, "from-high", "v") + RangeBar(tile),
-                Formatted($"high <span data-high=\"{tile.High.ToString(Invariant)}\">{Figures.Price(tile.High)}</span> on {tile.HighOn:yyyy-MM-dd}; low <span data-low=\"{tile.Low.ToString(Invariant)}\">{Figures.Price(tile.Low)}</span> on {tile.LowOn:yyyy-MM-dd}; {(live ? "at the quote" : "at the last close")}"));
+                Formatted($"high <span data-high=\"{tile.High.ToString(Invariant)}\">{Figures.Price(tile.High)}</span> on ") + DayOf(tile.HighOn)
+                + Formatted($"; low <span data-low=\"{tile.Low.ToString(Invariant)}\">{Figures.Price(tile.Low)}</span> on ") + DayOf(tile.LowOn)
+                + (live ? "; at the quote" : "; at the last close"));
 
     // Where the price sits between the year's low and high: a line from the low to the high and a dot at the price, held
     // inside the line where the price is past either end.

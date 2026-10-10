@@ -6359,7 +6359,7 @@ public sealed partial class ReadApi : IComponent
 
     const string IndexOf = @"
         SELECT index_code FROM membership
-        WHERE ticker = $ticker AND ""left"" IS NULL
+        WHERE ticker = $ticker AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)
         ORDER BY CASE index_code WHEN 'GSPC' THEN 0 WHEN 'MID' THEN 1 ELSE 2 END
         LIMIT 1;
     ";
@@ -6444,14 +6444,15 @@ public sealed partial class ReadApi : IComponent
         return null;
     }
 
-    // The index that holds the name today, the S&P 500 first where two do.
-    public async Task<string?> IndexOfAsync(string ticker)
+    // The index that held the name on a session, the S&P 500 first where two did.
+    public async Task<string?> IndexOfAsync(string ticker, DateOnly session)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = IndexOf;
         command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         return await command.ExecuteScalarAsync() as string;
     }

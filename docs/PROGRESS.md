@@ -42162,7 +42162,8 @@ Mutated:    the rule, stated before the run: the brief's two mutations. First, a
             Second, the colour of a fall used for a failure: the rule drawing a fall names the failure's red. Predicted
             red at the palette's test that no rule drawing a rise or a fall names the failure's hue, and green at the
             contrast test, the red reading at 4.5 or more on every ground. Result: to be filled from the run.
-Verified:   to be filled from the run over the tree carrying this entry.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to
+            be filled from the run.
 Queue:      done, phase 17 through 17.10 and the 4.6, 6.1 and 15.2 corrections; gated and merging once phase 17's
             monthly run by hand has finished, the 6.4 correction, 18.0 and the 3.1, 6.10 and 16.3 corrections as PRs
             419 to 423, those changing the night one a night; in progress, this checkpoint, its pull request opened

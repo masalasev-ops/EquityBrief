@@ -2795,7 +2795,7 @@ public sealed partial class MarkRenderer : IComponent
         // see: A section newer than the reader's last visit is marked new by the browser alone, and the store records no visit
         foreach (var entry in entries)
         {
-            var dated = entry.Dated is { } day ? Formatted($" data-dated=\"{day:yyyy-MM-dd}\"") : string.Empty;
+            var dated = entry.Dated is { } day ? " data-dated=\"" + DayOf(day) + "\"" : string.Empty;
 
             nav.Append(Invariant, $"<li{dated}><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
         }
@@ -7371,7 +7371,7 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
-        var median = delays.Length == 0 ? (double?)null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
+        double? median = delays.Length == 0 ? null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
         var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
 
         return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")

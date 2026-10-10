@@ -47,9 +47,9 @@ public static class NameTiles
             newest.PeriodEnd,
             actual,
             newest.EpsEstimate,
-            Percent(QuarterFetch.Grown(actual, newest.EpsEstimate)),
+            QuarterFetch.Grown(actual, newest.EpsEstimate) is { } against ? Statistic.FromRatio(against) * 100 : null,
             before,
-            Percent(QuarterFetch.Grown(actual, before)));
+            QuarterFetch.Grown(actual, before) is { } onTheYear ? Statistic.FromRatio(onTheYear) * 100 : null);
     }
 
     // The four newest quarters' revenue against the four before them, each found within a week of three months apart, and
@@ -70,7 +70,7 @@ public static class NameTiles
 
         var grown = QuarterFetch.Grown(eight.Take(4).Sum(revenue => revenue!.Value), eight.Skip(4).Sum(revenue => revenue!.Value));
 
-        return Percent(grown) is { } percent ? new GrowthTile(GrowthTile.Sales, percent, newest.PeriodEnd) : null;
+        return grown is { } part ? new GrowthTile(GrowthTile.Sales, Statistic.FromRatio(part) * 100, newest.PeriodEnd) : null;
     }
 
     // The forward annual rate over the price, none for a company paying nothing or a price of nought.
@@ -89,6 +89,4 @@ public static class NameTiles
         .Where(quarter => Math.Abs(quarter.PeriodEnd.DayNumber - end.DayNumber) <= QuarterFetch.NearDays)
         .OrderBy(quarter => Math.Abs(quarter.PeriodEnd.DayNumber - end.DayNumber))
         .FirstOrDefault();
-
-    static double? Percent(decimal? fraction) => fraction is { } part ? Statistic.FromRatio(part) * 100 : null;
 }

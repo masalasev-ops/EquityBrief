@@ -430,7 +430,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         quoteSession: session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null,
         tileQuarters: await read.TileQuartersAsync(ticker, on),
         forwardRate: await read.ForwardRateAsync(ticker, on),
-        indexCode: await read.IndexOfAsync(ticker),
+        indexCode: await read.IndexOfAsync(ticker, night ?? clock.SessionDateAt(clock.UtcNow)),
         asksForQuotes: !export && on is null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
