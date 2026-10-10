@@ -25,6 +25,144 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - CLAUDE.md - the key under each figure and the overnight queue leave the hard rules and the layout
+Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+Was:
+> EquityBrief.Worker      the nightly run and the overnight queue, sole writer
+
+> paid passes the night sets off after its overnight queue whose calls and requests sit on the drain's own runs and not on the night's,
+
+> The key under each figure, which explains the night's figures, is written for every name for each night's facts file and drawn only beside the figures it explains. (see: Nothing expires on a timer) (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)
+
+> At the cap, research pauses and the page says so. The overnight queue never makes a paid call at all. (see: The spend cap is a stop, not an allowance)
+
+> while a night is running, the overnight queue, the report pass and the news labeller the night starts included,
+Now:
+> EquityBrief.Worker      the nightly run and the request drain, sole writer
+
+> paid passes the night sets off after its close whose calls and requests sit on the drain's own runs and not on the night's,
+
+> (see: Nothing expires on a timer), the key's sentence and its citation removed
+
+> At the cap, research pauses and the page says so. (see: The spend cap is a stop, not an allowance)
+
+> while a night is running, the report pass and the news labeller the night starts included,
+Why: the key was the queue's only work and both are retired, so no rule names either.
+
+### 2026-10-10 - ARCHITECTURE.html - the key under each figure and the overnight queue are retired from sections 4, 6, 7, 8, 12, 14, 15, 17 and 18, the figures and the matrix
+Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+Was:
+> A name's report is the page drawn for it: up to twenty-three regions, ... and fourteen of the sixteen change every night, the numbers in what they say first.
+
+> <tr><td>The key under each figure</td><td>A paragraph explaining the night's figures in words, drawn only beside the night it was written for</td><td>The local model, through the overnight queue, from the night's facts file, and the paid model where it writes the name's report (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)</td><td>free each night, paid where the paid model rewrites it</td><td>nightly</td></tr>
+
+> so the night's own report, asked after the overnight queue, can wait until the window ends
+
+> Quarter fetcher: nightly, after the arithmetic has closed and before the overnight queue
+
+> <tr><td><b>Overnight queue</b></td><td>research</td><td>nightly, after the arithmetic has closed</td><td>membership, listings, family nights, family picks, index family picks, gate results, filter versions, fundamental readings</td><td>run log</td><td>works through the names on tonight's list whose research is missing or stale, in the order the list is drawn in, then from 17.8 the S&amp;P 500's fundamentals-first picks, then the S&amp;P 400's and the S&amp;P 600's lists each in its page's order, then the names close to a buy point in the order that list is drawn in, then every other member, the S&amp;P 500's first and then the 400's and the 600's (see: The overnight queue drafts the three indices' lists before every other member, the S&amp;P 500's first), and has the staleness judge and the prose writer do the deciding and the writing, until the configured time limit; makes no paid call, holds the machine awake while it works, and reports whether it ran. It writes no research itself, which is what keeps the research store at the two inserters SCHEMA declares</td></tr>
+
+> Request drain: on demand, until the queue is empty, and once a night after the overnight queue ... After the night's overnight queue it writes the night's own requests, six in all,
+
+> The order is applied where the list is read, tonight's page, the overnight queue, the night's own request and Past picks, by one rule
+
+> the run page's overlap, the facts retention, the overnight queue and the night's own request.
+
+> Figure 12.2's Extract box: the business explainer, the segments / and the key under each figure
+
+> The business explainer and the segment commentary are extraction from a filing already fetched, and the key under each figure explains values already computed.
+
+> <tr><td>The key under each figure</td><td>local</td><td>nothing new: every value the figure draws, the close, the averages, the levels, momentum, the latest quarter and the valuation, is already computed and in the facts file, which is the night's, so the key is written for each night's facts file, for every name, and dated by that night (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)</td><td>three to five sentences on what those values show, for a reader who has not seen the figure, copying each value as it is handed, named as a reader reads it and rounded by code, money in millions or billions and growth and margins as percentages (see: The key under each figure is handed its facts as a reader reads them, rounded by code)</td><td>every figure is a rounding of one in the facts file. It cites no document, because it explains values already known and has nothing to weigh</td></tr>
+
+> The three local sections each have their answer in one place: one filing, the segment table, or values already computed.
+
+> <li>Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the indices the night reads whose research is missing or stale, the names on tonight's list first in the order it is drawn in, then the S&amp;P 400's and the S&amp;P 600's lists each in its page's order (see: The overnight queue drafts the three indices' lists before every other member, the S&amp;P 500's first), then the names close to a buy point in the order that list is drawn in, then every other name, the S&amp;P 500's first (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing) (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).</li>
+
+> Step 26 is carved out of the first by name and calls the local model only (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name). The night's own requests, after the queue, call no model and make no request:
+
+> A researched name is one holding a section the claim checker accepted besides the key under each figure, which the overnight queue writes for every name each night
+
+> The key under each figure is drawn beneath the chart only where it was written for the night whose figures the page draws. A key written for another night is not drawn: its card names the night it was written for and says so, because a paragraph explaining another night's close beside these figures explains figures the page does not show (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures).
+
+> Research and spend: the reports and the overnight drafts written over those nights;
+
+> <tr><td>Overnight queue</td><td>whether the queue ran on the previous night and on which night it did not, with how many queued passes completed and how many were left for the next night</td></tr>
+
+> The matrix's Overnight queue row: R on membership, computed tables and listings, W on the run log.
+
+> Model calls in the nightly run: 0 in the arithmetic, being every step up to the close, and none in the quarters step after it, with the queue carved out by name and making local calls only, and the night's own request after it making none, ... (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name) ... the whole design rests on the nightly half being free, and the carve is what keeps that true where the queue makes it false as written. The queue's calls are local and cost nothing, it runs after the arithmetic has closed and recorded its counts, and no figure above it moves whether it ran or not. Carved rather than loosened, ... | run log, on the arithmetic's stages
+
+> Per-request timeout: and the quarters step and the queue each bounded by its own limit instead ... (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed)
+
+> Waiting on another writer: the night, a pass started from a name page and the overnight queue all write the one store file
+
+> Filings refresh: after the quarters fetch and before the overnight queue
+
+> <tr><td>Overnight queue</td><td>the local model writes the sections in the local lane that rest on no document, for every name in the indices the night reads whose research is missing or stale, the names on tonight's list first in the order it is drawn in and then each wider index's list in its page's order, starting no pass once a configured number of hours has passed, which is 1: at the slowest pass 6.10 measured on this machine an hour covers every member of the index, the 503 the first live night loaded coming to 43 minutes at 5.13 seconds a pass; no paid call and no request is ever made by the queue ...</td><td>a name count cannot bound the time because pass durations vary widely ... A pass runs past the limit it started inside, by at most one pass</td><td>run log duration and spend, which must be zero for the queue</td></tr>
+
+> Quarters step: after the close and before the overnight queue
+
+> <tr><td>The machine slept and the overnight queue did not run</td><td>nothing is written; the next run reports the gap</td><td>the run page states that the queue did not run and on which night, and each name's page names the earlier night its key under each figure was written for rather than drawing the key</td><td>a queue that silently fails looks identical to a quiet night, so the absence has to be stated rather than inferred from an empty result (see: The overnight run holds the machine awake and reports whether it ran) (see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar)</td></tr>
+
+> The local model is unavailable: the sections in the local lane are left unwritten, the overnight queue records that it could not run, and a pass on demand writes the paid lane's sections and leaves the local lane's absent ... (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)
+
+> before the first call of a pass, or of a night's overnight queue, ... unavailable for the rest of the pass or the night
+
+> the night runs every step and its overnight queue's row says it could not run and why, and a pass on demand writes the paid lane's sections and leaves the local lane's absent; a key on the lane still refuses the night and the pass before they start | the overnight queue's line on the run page, or the local-lane sections absent with that line as their reason | ... a slip in them costing the night's arithmetic would cost far more than the drafts it is about
+
+> the night goes on to the overnight queue (the quarters step at its limit, and the archive refusing the filings refresh); tonight's page, the overnight queue, the night's own request and Past picks draw that night in the swing filter's own order
+Now:
+> twenty-two regions and thirteen of the sixteen, with a sentence saying no region draws a key under each figure; the key's row, the queue's catalogue, matrix, step, limits, failure and run page rows removed; each passage naming the queue names the close, the filings refresh or the night's report requests instead; figure 12.2's Extract box reads the business explainer and the segment commentary; the lane paragraph names two local sections and the key's retirement; the note's step 26 sentence says no step calls a model; the model calls row reads 0 in every step of the night; the local model rows speak of a pass alone
+Why: the key was the queue's only work, its stored answers were error objects drawn on hundreds of pages, and each figure already carries its own key in code.
+
+### 2026-10-10 - SCHEMA.md and RUNBOOK.md - the key under each figure and the overnight queue are retired
+Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+Was:
+> SCHEMA research_section.as_of: date this section was written, and for the key under each figure the night of the facts file it was written from (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures)
+
+> SCHEMA: **The overnight queue writes one row under the night's run, and each name it gives a pass is a run of its own.** From 6.10 the queue's row carries the stage `overnight queue`: `ok` where it ran through every name it queued, `limit` where it started no pass once its hours had passed and left names for the next night, and `unavailable` where the local model could not be called, which stops it at that name: the runtime not answering, a load refused or past its allowance, a model the runtime does not hold, or settings naming no model the lane can call. `model_calls` is every call its passes made, the one that found the local model not answering included and none where the settings name no model, `network_requests` and `rows_written` are zero, since it fetches nothing and writes no research itself, and `spend` is zero. `detail` names the night, the names listed and queued, every pass it ran with the run that pass was written under, the pass it stopped at, the names it left, and whether the machine was held awake. Each pass's staleness, prose and claims rows are under that pass's own run, so a night's model calls are read off the queue's row and the runs it names (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name).
+
+> RUNBOOK: Five steps a night ... | the overnight queue | after the quarters step, same invocation | the local model writes the local lane's sections that rest on no document, for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed | nothing, and no request |
+
+> RUNBOOK: **The overnight queue holds the machine awake while it works.** A laptop left to itself sleeps, and a nightly job that silently did not run is worse than no nightly job. On Windows it takes a power request and on macOS a power assertion, released when the queue ends, and on any other machine it takes none; the queue's row on the run log says which. The run page states the night's outcome, including how many queued passes completed and how many were left, and names every traded session since the queue last ran on which it did not run (see: A night the overnight queue did not run is a traded session with no queue row, read on the run page against the exchange calendar). **All five are idempotent.**
+
+> RUNBOOK: and the overnight queue and the report follow the close; | a local model | prose, and the overnight queue's sections |; and the next pass or night calls that model; the night still runs every step, its overnight queue's line on the run page says the queue could not run with the line naming the profiles, and a report written meanwhile has its paid sections and leaves the local ones absent with that line. Fix the flags and the next night drafts what was missed.; Before the first call of a pass, or of a night's overnight queue, ...; so loading Gemma 4 by hand before a night does not leave the night calling it at 32,000 tokens ... for the rest of the pass or the night.; the local lane's default: what the company sells, the segment commentary, the key under each figure; and the overnight queue is allowed to call this lane because it costs nothing.
+
+> RUNBOOK: ### The overnight queue's settings, its paragraph, its table row `EquityBrief:Queue:Hours` defaulting to `1`, **An hour covers the whole index at the rate measured on this machine.** and **Where to read what it did.**
+
+> RUNBOOK: after the quarters fetch and before the overnight queue; | The run page says the queue did not run | the machine slept, or the night stopped before the overnight queue | expected to be visible rather than silent. Listed names open without a draft, as normal, and the next night that runs drafts them. Where the page says the queue could not run, its reason says why: ...
+Now:
+> SCHEMA: the as_of note says no pass writes a key any more and cites the retirement; the queue's paragraph says the queue wrote one row a night until the correction and that the rows stand, read as their night ran. RUNBOOK: four steps a night and all four idempotent, the queue's table row, its awake paragraph, its settings section and its setting removed, a paragraph saying no step writes a key or runs a queue, the local model's rows speaking of a pass, and the failure row reading a report's local sections absent with the local model unavailable
+Why: the queue and the key it wrote are retired, and no setting, schedule or failure is the queue's any more.
+
+### 2026-10-10 - BUILD_PLAN.md - 6.10's citations of the decisions the retirement supersedes are repointed, and 11.0's key citation names the region card
+Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+Was:
+> for the reason 2.1 states (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name).
+
+> until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). It makes no paid call and no request, and no part of the arithmetic depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).
+
+> each with its key under it (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures).
+Now:
+> (see: The night calls no model in any step, and a process it starts calls one on its own run); the queue's paragraph citing the retirement once; (see: Every region is a card that states where its figures came from and how to read them); and 6.10 gains its correction paragraph
+Why: a spec cites no superseded decision, and 6.10's own text says what its correction retired.
+
+### 2026-10-10 - .claude/rules/checks.md - the rows naming the overnight queue or the key under each figure say what the checks assert once both are retired
+Authorised by: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere
+Was:
+> rules-choose-the-stocks: nor the S&P 400's and 600's families, the overnight queue or the drain, declares a read
+
+> fixture-expectations: and the overnight queue takes the names the filter passed first in its order, not in the order of their tickers or of the reasons they fired, then the names one gate short nearest first, then every other member, and the night's closing count ...; the nine sections' words ... eleven naming DeepSeek; a fixture night whose queue was read from settings flagging two closing with the queue's row unavailable and naming the profiles and a pass writing the paid lane's sections with the local lane's absent with the line
+
+> nightly-run: and after the overnight queue the night asks for a report on the first name the swing filter passed; and the quarters step after the close and before the overnight queue; and after the overnight queue the night asks for a report on each stock the sector heavyweights bought; and from 15.1's third pull request the overnight queue, handed the indices the night reads, drafts the S&P 500's list, then the S&P 400's in its page's order and then the S&P 600's before every other member, the S&P 500's first among those in their own order and then the 400's, the night handing its queue those indices, and a pass over an S&P 400 member's facts file as the night stores it writes its sections, each accepted, written by the local model and handed no document; the filings refresh runs after the quarters step and before the overnight queue; and the overnight queue and the night's requests taking the S&P 500's picks of the family after its own families'
+
+> read-surface: and the key under each figure is drawn only beside the night whose figures it explains, a key written for another night replaced by its card naming that night; each night's paid reports and overnight drafts worked by hand; and the near-miss rule named by no source but the read surface's and the queue's
+
+> nightly-cost: and every model call a whole recorded night makes sits on the overnight queue's own row or on a pass that row names, with nothing spent anywhere, because the queue is carved out of the model-call rule by name and out of nothing else.
+Now:
+> each clause naming the queue names the close, the filings refresh or the night's report request instead or is removed; the fixture-expectations row counts eight sections and ten naming DeepSeek; the read-surface row says a page over a store holding an accepted key draws no key and the run page no queue region while an earlier night's queue row is read as that night ran; the nightly-run row says a fixture night runs no queue and calls no model; the nightly-cost row says a whole recorded night makes no model call and spends nothing
+Why: the tests behind the removed clauses were retired with the queue, and the rows state what the checks now assert.
+
 ### 2026-10-10 - ARCHITECTURE.html - section 14 gains the chart averages step after the indicators, its note numbers each step after it one later, and 15.9's chart row names the averages the step fills and the line beneath
 Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
 Was:
