@@ -42171,8 +42171,9 @@ Mutated:    the rule, stated before the run: the brief's two mutations. First, a
             as predicted; the second red at the palette's test as predicted and red too at the Run page's test that
             each status hue is drawn by the Run page's rules alone, which the prediction did not name, the contrast
             test green. Each made on this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to
-            be filled from the run.
+Verified:   `tools/ci.ps1` green, 2128 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            committed unchanged as 2ba92220: 1167 claims and 1167 PASS, none failing, out of scope or unexamined, and
+            43 checks run and passed, the second reading the suite result the first wrote over that commit.
 Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2 and 6.4 corrections, 18.0 and the 3.1, 6.10 and 16.3
             corrections, PRs 419 to 423 merged on 2026-10-10; in progress, this checkpoint, its pull request opened
             on the operator's word of 2026-10-10 with the quote captured outside the session, and 18.2 after it;
