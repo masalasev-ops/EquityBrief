@@ -165,6 +165,8 @@ public partial class ClaimAdmissibility
     {
         var document = Release("text");
 
+        // The risks are asked for as an object, so JSON that is not their fields is refused as that and the retry told to
+        // answer with the object asked for; every other section is told to answer in prose.
         foreach (var section in ClaimRules.Sections)
         {
             foreach (var answer in new[] { "{\"error\": \"no text at all\"}", " [1, 2] " })
@@ -172,9 +174,15 @@ public partial class ClaimAdmissibility
                 var verdict = ClaimRules.Check(section, answer, NightFacts, [document]);
 
                 Assert.False(verdict.NoAdmissibleSource, section);
-                Assert.Equal([(answer.Trim(), ClaimRules.UnusableAnswer)], verdict.Findings.Select(finding => (finding.Offending, finding.Reason)));
+                Assert.Equal(
+                    RiskFields.IsRisks(section) ? new[] { ("the answer", RiskFields.NotFields) } : new[] { (answer.Trim(), ClaimRules.UnusableAnswer) },
+                    verdict.Findings.Select(finding => (finding.Offending, finding.Reason)));
             }
         }
+
+        Assert.Equal(
+            "- the answer: " + RiskFields.NotFields + ". Answer with the JSON object the section asks for and nothing else.",
+            RetryBrief.Line(Assert.Single(ClaimRules.Check(RiskFields.Section, "{\"risks\": \"supply\"}", NightFacts, [document]).Findings)));
 
         // Prose that opens on a mark is prose, and a bracket that is not JSON is read as written.
         Assert.True(ClaimRules.Check("What the company sells", "[N] The close was 205.15.", NightFacts, [document]).Passes);

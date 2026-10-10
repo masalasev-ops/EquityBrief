@@ -292,10 +292,13 @@ public static class ClaimRules
         }
 
         // An answer that is JSON is no section in any of them, an empty answer stored as an error object among them, and
-        // its sentences are not read.
+        // its sentences are not read. The risks are asked for as an object, so one that is not their fields is refused as
+        // that, and its retry told to answer with the object the section asks for rather than in prose.
         if (IsJson(prose))
         {
-            return new ClaimVerdict([new ClaimFinding(string.Empty, Excerpt(prose), UnusableAnswer)], NoAdmissibleSource: false);
+            return new ClaimVerdict(
+                [RiskFields.IsRisks(section) ? new ClaimFinding(string.Empty, "the answer", RiskFields.NotFields) : new ClaimFinding(string.Empty, Excerpt(prose), UnusableAnswer)],
+                NoAdmissibleSource: false);
         }
 
         var findings = new List<ClaimFinding>();

@@ -42370,3 +42370,28 @@ Carried:    the night of 2026-10-12 is the first to run 3.1's, 6.10's, 16.3's, 1
             the morning after; the step's time read on 3.1's row with the reader's beside it; a quote crossing a band
             after the page is drawn rewords that band's distance on the figure without moving its row; and the plan
             column's top exit words cut at its edge, owed as a 4.6 correction before 18.5's screenshots.
+
+### 6.4 - correction: a risks answer written as JSON that is not its fields is refused as not its fields and its retry told to answer with the object asked for, where it was refused as no prose and told to answer in prose   2026-10-10
+
+Corrects:   the rule the 6.4 correction of 2026-10-09 added, which refuses an answer written as a JSON object or list in
+            every section as one that is not prose and tells its retry "Answer in plain prose, with no JSON." The risks
+            are the one section asked for as a JSON object, and an answer the risks' fields cannot be read from is stored
+            as it came, so it met that rule before the risks' own check: its retry was told to write the prose the
+            section's ask forbids, where before the rule it was refused as a risks answer not returned as its fields and
+            told to answer with the object.
+Found:      by 18.4's build, whose risks' answer gains two columns, reading what an answer in another shape is refused
+            for.
+Built:      a risks answer written as JSON is refused as not its fields, whatever JSON it is, and its retry told "Answer
+            with the JSON object the section asks for and nothing else."; every other section's rule is unchanged.
+Tests:      none more; the test of answers written as JSON reads the risks' refusal and its retry's line beside every
+            other section's.
+Claims:     none more; the roster's row for the claim check says what the test asserts, written with 18.4's below.
+Pins:       none moved; the claim checker is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: the risks' branch taken out, so a risks answer written as JSON is refused as
+            no prose again. Predicted red at the test of answers written as JSON, at the risks section and its retry's
+            line, and green at the risks' field tests, whose answers are the fields. Result: red at that test at the
+            risks section, refused as an answer written as JSON rather than as its fields, and the risks' field tests
+            green with the rest of the claim check's 66, as predicted; made on this branch and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures 18.4's
+            entry below records, the two entries verified by one run.
