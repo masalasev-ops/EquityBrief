@@ -19,16 +19,30 @@ public sealed record DividendAhead(DateOnly Date, bool Declared, decimal? Amount
 public sealed record CardHits(DateOnly HoldThrough, ReactionFigures Reactions, DividendAhead? Dividend, IReadOnlyList<MarketEvent> Events, IReadOnlyList<string> PastTheTable, bool DividendUnread = false);
 
 // The company's dividend as the quarters fetch kept it: the forward rate a share, the last declared ex-date and each year's
-// count.
-public sealed record DividendKept(decimal? ForwardRate, DateOnly? LastExDate, IReadOnlyList<DividendsInYear> ByYear);
+// count. Where the newest fundamentals fetch stands in for it, no year's count is filed and the payments a year are the
+// ones the bars' steps show.
+public sealed record DividendKept(decimal? ForwardRate, DateOnly? LastExDate, IReadOnlyList<DividendsInYear> ByYear)
+{
+    public int? PaymentsAYear { get; init; }
+}
 
 // What could hit a pick, worked out by the night from stored rows alone.
-// see: A pick's next ex-dividend date is the calendar's where it declares one and the last declared date plus the usual interval where it does not
+// see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars
 // see: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider
 public static class CardHitsReading
 {
     // The sessions a hold is read over where the rule caps none: a month, to the sector heavyweights' next rebalance.
     public const int UncappedSessions = 21;
+
+    // The rise in the ratio of the adjusted close to the raw close from one stored session to the next that is read as a
+    // dividend's step: at least a fiftieth of a per cent, which a session with no dividend does not reach, and under a
+    // fifth, which a split of six for five or wider reaches.
+    public const decimal SmallestStep = 0.0002m;
+
+    public const decimal LargestStep = 0.20m;
+
+    // The payments a year the steps are read as: monthly, quarterly, half-yearly or yearly.
+    public static IReadOnlyList<int> UsualPaymentsAYear { get; } = [12, 4, 2, 1];
 
     // The hold's last session: the cap's count of sessions after the night on the exchange's calendar.
     public static DateOnly HoldThrough(DateOnly night, int? cap)
@@ -69,13 +83,52 @@ public static class CardHitsReading
         return new ReactionFigures(sizes.Length, medianTypical, risks is null ? null : Median(risks), risks?.Count(risk => risk > 1) ?? 0);
     }
 
+    // How many dividends a year the stored bars show, oldest session first: each rise in the ratio of the adjusted close to
+    // the raw close from one session to the next of at least the smallest step and under the largest is an ex-date the
+    // provider's adjustment carries, and the median of the days between two in turn is read as the nearest of a monthly,
+    // quarterly, half-yearly or yearly interval by their ratio, so a quarter of 77 days and one of 105 read as quarterly
+    // alike. None where the bars show fewer than two steps.
+    public static int? PaymentsAYear(IReadOnlyList<(DateOnly Session, decimal Close, decimal RawClose)> bars)
+    {
+        var steps = new List<DateOnly>();
+
+        for (var at = 1; at < bars.Count; at++)
+        {
+            var (_, closeBefore, rawBefore) = bars[at - 1];
+            var (session, close, raw) = bars[at];
+
+            if (closeBefore <= 0m || rawBefore <= 0m || raw <= 0m)
+            {
+                continue;
+            }
+
+            var rise = close / raw / (closeBefore / rawBefore) - 1m;
+
+            if (rise >= SmallestStep && rise < LargestStep)
+            {
+                steps.Add(session);
+            }
+        }
+
+        if (steps.Count < 2)
+        {
+            return null;
+        }
+
+        var gap = Median(steps.Zip(steps.Skip(1), DaysBetween));
+
+        return UsualPaymentsAYear.MinBy(payments => Math.Abs(Math.Log(gap * payments / 365.25)));
+
+        static double DaysBetween(DateOnly earlier, DateOnly later) => later.DayNumber - earlier.DayNumber;
+    }
+
     // The next ex-date inside the hold: the first the calendar declares after the night, and where it declares none the
     // company's last declared ex-date carried forward by its usual interval, a year over the count of its last whole
-    // year that paid, to the first date after the night. None where neither falls inside the hold or the company pays
-    // none.
+    // year that paid or over the payments a year its bars' steps show, to the first date after the night. None where
+    // neither falls inside the hold or the company pays none.
     public static DividendAhead? Dividend(DateOnly night, DateOnly through, IReadOnlyList<DateOnly> declared, DividendKept? kept, decimal? buy, decimal? stop)
     {
-        var count = kept?.ByYear.Where(year => year.Year < night.Year && year.Count > 0).OrderBy(year => year.Year).LastOrDefault()?.Count;
+        var count = kept?.ByYear.Where(year => year.Year < night.Year && year.Count > 0).OrderBy(year => year.Year).LastOrDefault()?.Count ?? kept?.PaymentsAYear;
         decimal? amount = kept?.ForwardRate is { } rate && rate > 0m && count is { } paid ? rate / paid : null;
 
         DividendAhead Ahead(DateOnly on, bool isDeclared) => new(

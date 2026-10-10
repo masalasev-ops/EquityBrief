@@ -103,6 +103,8 @@ public partial class FixtureExpectations
             .. LocalModelClaims,
             // 16.3, what could hit a pick and the operator's record: section 17's three values and section 18's three rows.
             .. FollowerClaims,
+            // The 16.3 correction of 2026-10-10, the dividend's steps a card reads its interval from: section 17's row.
+            .. DividendStepClaims,
             // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
             .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.

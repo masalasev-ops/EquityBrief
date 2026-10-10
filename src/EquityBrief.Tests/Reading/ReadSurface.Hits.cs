@@ -1,4 +1,5 @@
 using EquityBrief.Worker.Cards;
+using EquityBrief.Worker.Indices;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -35,14 +36,14 @@ public partial class ReadSurface
         var card = await CardRowOf(client, "MID", "breakout", "M1");
 
         // The breakout's cap of 63 sessions after Friday 2026-10-02 ends on Monday 2027-01-04: inside it the CPI releases
-        // of 10-14, 11-10 and 12-10 and the FOMC decisions of 10-28 and 12-09, and the CPI table ends before it.
+        // of 10-14, 11-10 and 12-10 and the FOMC decisions of 10-28 and 12-09, and both tables run past it.
         Assert.Contains("<section class=\"card-hits\" data-through=\"2027-01-04\"><h5>What could hit it before 2027-01-04</h5>", card, StringComparison.Ordinal);
         Assert.Contains("<li data-hit=\"reactions\">Its 3 stored earnings reactions moved a median 1.0 typical moves, 0.74 of this plan's risk; 1 moved further than the stop's distance.</li>", card, StringComparison.Ordinal);
         Assert.Contains("<li data-hit=\"dividend\" data-declared=\"yes\">Ex-dividend 2026-10-14, declared.</li>", card, StringComparison.Ordinal);
         Assert.Equal(
             ["CPI release on 2026-10-14.", "FOMC decision on 2026-10-28.", "CPI release on 2026-11-10.", "FOMC decision on 2026-12-09.", "CPI release on 2026-12-10."],
             System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\">([^<]*)</li>").Select(match => match.Groups[1].Value));
-        Assert.Contains("<li data-hit=\"past\">The hold runs past the last CPI release the table holds, so one after it is not ruled out.</li>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-hit=\"past\"", card, StringComparison.Ordinal);
 
         // The operator's record under the rule's heading, a trailing rule's trades ended rather than won or lost, and the
         // outline until twenty have ended, with the rule's own picks on the same two nights counted the same way beneath
@@ -53,6 +54,42 @@ public partial class ReadSurface
             card,
             StringComparison.Ordinal);
         Assert.DoesNotContain("card-mine", System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task APicksCardSaysWhereItsHoldRunsPastTheMarketEventsTable()
+    {
+        // M1's breakout listed again on Friday 2027-09-24: its 63 sessions, past Thanksgiving and the Christmas holiday
+        // observed on 12-24, end on Thursday 2027-12-23, after the CPI table's last release of 12-10 and before the FOMC
+        // table's decision of 2028-01-26, so the card names the CPI table's end alone.
+        using var store = TakenStore();
+        const string Night = "2027-09-24";
+
+        store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('M1', '{Night}', '50', '51', '49', '50', 1000000, 'test', '{Night}T21:00:00Z', '50');");
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
+            $"('MID', '{Night}', 3, 0.52, 1, '{IndexFamilies.Settings("MID")}', 0);");
+        store.Execute(
+            "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
+            $"('MID', '{Night}', 'M1', 'breakout', 1, 1, '50', '47.30', NULL, '2.70', 63, 2.4, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            $"('MID', '{Night}', 'M1', 'breakout', 'listed', 1, '[]', NULL, NULL, NULL);");
+
+        await new DecisionCards(new WaitedClock(new DateTimeOffset(2027, 9, 24, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = await CardRowOf(client, "MID", "breakout", "M1", Night);
+
+        Assert.Contains("<section class=\"card-hits\" data-through=\"2027-12-23\">", card, StringComparison.Ordinal);
+        Assert.Equal(
+            ["CPI release on 2027-10-14.", "FOMC decision on 2027-10-27.", "CPI release on 2027-11-10.", "FOMC decision on 2027-12-08.", "CPI release on 2027-12-10."],
+            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"event\">([^<]*)</li>").Select(match => match.Groups[1].Value));
+        Assert.Equal(
+            ["<li data-hit=\"past\">The hold runs past the last CPI release the table holds, so one after it is not ruled out.</li>"],
+            System.Text.RegularExpressions.Regex.Matches(card, "<li data-hit=\"past\">[^<]*</li>").Select(match => match.Value));
     }
 
     [Fact]
@@ -84,6 +121,57 @@ public partial class ReadSurface
             using var client = host.CreateClient();
 
             Assert.Contains("<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>", await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task APicksCardEstimatesItsExDividendDateFromTheNewestFundamentalsFetchWhereNoDividendIsKept()
+    {
+        // M1 keeps no dividend from the quarters fetch. Its newest fundamentals fetch files a forward rate of 1.08 a share
+        // and an ex-date of 2026-08-10, and its stored closes step on 2025-11-10, 2026-02-09, 2026-05-11 and 2026-08-10,
+        // 91 days apart, against a raw close of 50.00: four a year, so 2026-08-10 plus 91 days is 2026-11-09, inside the
+        // breakout's hold through 2027-01-04, 1.08 / 4 = 0.27 a share and 0.27 / 2.70 = 0.10 of the risk.
+        const string Steps =
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+            "('M1', '2025-11-07', '48.92', '51', '48', '48.92', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2025-11-10', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+            "('M1', '2026-02-06', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-02-09', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+            "('M1', '2026-05-08', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-05-11', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+            "('M1', '2026-08-07', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-08-10', '50', '51', '48', '50', 1000000, 'test', '2026-10-02T21:00:00Z', '50');";
+        const string Paying = "{\"dividend\":{\"forwardAnnualRate\":\"1.08\",\"forwardYield\":\"0.0216\",\"payoutRatio\":\"0.3\",\"exDividendDate\":\"2026-08-10\",\"payDate\":\"2026-08-13\"}}";
+        const string PayingNone = "{\"dividend\":{\"forwardAnnualRate\":\"0\",\"forwardYield\":\"0\",\"payoutRatio\":\"0\",\"exDividendDate\":null,\"payDate\":null}}";
+        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\">Ex-dividend 2026-11-09, estimated from the company's last declared date and its usual interval, 0.27 a share, 0.10 of the risk.</li>";
+        const string None = "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>";
+        const string Unread = "<li data-hit=\"dividend\" data-declared=\"unread\">";
+
+        string Copy(string payload) => $"INSERT INTO fundamentals_snapshot (ticker, fetched_at, payload) VALUES ('M1', '2026-10-01T23:00:00Z', '{payload}');";
+        string Filing(string payload) => $"INSERT INTO fundamentals (ticker, filing_date, fetched_at, payload, source) VALUES ('M1', '2026-07-31', '2026-09-01T23:00:00Z', '{payload}', '{{}}');";
+
+        // The fetch's copy with the steps; its filing alone where no copy is stored; a copy filing a rate of nothing read
+        // over a filing paying, a company paying none, so no date and nothing unread; and the copy with no steps but the
+        // night's one close, so no interval is read and a later date stays unread.
+        (string[] Rows, string Expected)[] cases =
+        [
+            ([Copy(Paying), Steps], Estimated),
+            ([Filing(Paying), Steps], Estimated),
+            ([Copy(PayingNone), Filing(Paying), Steps], None),
+            ([Copy(Paying)], Unread),
+        ];
+
+        foreach (var (rows, expected) in cases)
+        {
+            using var store = TakenStore();
+
+            foreach (var row in rows)
+            {
+                store.Execute(row);
+            }
+
+            await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            Assert.Contains(expected, await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
         }
     }
 
