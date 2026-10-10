@@ -895,6 +895,23 @@ public sealed class SetupLedger : IComponent
     // The newest session the history build read on the index, which the check reads the history through.
     const string HistoryEnd = "SELECT MAX(session_date) FROM setup_night WHERE index_code = $index AND source = $source;";
 
+    // The first and the newest sessions the history build wrote on the index.
+    const string HistorySpan = "SELECT MIN(session_date), MAX(session_date) FROM setup_night WHERE index_code = $index AND source = $source;";
+
+    // The span the history build wrote on the index, which writing it again covers, none where it wrote none.
+    public async Task<(DateOnly From, DateOnly Through)?> HistorySpanAsync(string index, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var command = Command(connection, null, HistorySpan, [("$index", index), ("$source", HistorySource)]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) && !reader.IsDBNull(0) && !reader.IsDBNull(1)
+            ? (Date(reader.GetString(0)), Date(reader.GetString(1)))
+            : null;
+    }
+
     // The point-in-time check by hand: a seeded sample of each year's history setups on the index, each one's readings
     // rebuilt from the history read through the build's own end and cut at its own session, a swing setup's own readings
     // by its family's gates there, and held to the readings stored, every reading that differs named. It reads the store
