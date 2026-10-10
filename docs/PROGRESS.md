@@ -41911,9 +41911,11 @@ Tests:      2128, unchanged.
 Claims:     1149, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
             plan and the decisions sit in no table the harness reads.
 Pins:       none moved: the pass edits no source.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry, filled from the run. Documents alone, so
-            `tools/verify-phase.ps1` does not run (see: A pull request of documents alone runs the checkpoint script
-            alone, and one changing code runs the phase report as well).
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 21cc7fd2, the entry's commit, all six steps, 0
+            warnings, 0 errors, 2128 of 2128 tests ran with none failed, migrations 0 to 83 with none pending, schema
+            version 83, against `data-ci` and never `data`. Documents alone, so `tools/verify-phase.ps1` did not run
+            (see: A pull request of documents alone runs the checkpoint script alone, and one changing code runs the
+            phase report as well).
 Carried:    the sign-offs of phases 15, 16 and 17, owed to fresh sessions; the market events table's 2027 releases and
             the meeting of 2028, which the 16.3 correction writes; and the 589 calls of 2026-10-10 no run log records,
             put to the operator.
