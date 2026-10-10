@@ -40,7 +40,7 @@ public static class Stylesheet
  --s1:#e4e1d9; --s2:#bab5a9; --s3:#7f7a6f; --s4:#2f2f2d;
  --sup:#2e7a53; --sup-fill:rgba(46,122,83,.12); --sup-ink:#1f5b3c;
  --res:#bd631d; --res-fill:rgba(189,99,29,.12); --res-ink:#8a4511;
- --up:#3d5fb8; --up-fill:rgba(61,95,184,.12); --down:#8f3a8c; --down-fill:rgba(143,58,140,.12); --warn:#6e5a00; --warn-fill:rgba(110,90,0,.12);
+ --up:#3b5db3; --up-fill:rgba(59,93,179,.12); --down:#8f3a8c; --down-fill:rgba(143,58,140,.12); --warn:#6e5a00; --warn-fill:rgba(110,90,0,.12);
  --dash-ink:#6a6d71; --shadow:0 1px 2px rgba(40,34,20,.06),0 2px 8px rgba(40,34,20,.04);
  --stat:#2f6db0; --stat-2:#8db4de; --stat-fill:rgba(47,109,176,.12);
  --wait:#6a55a3; --wait-fill:rgba(106,85,163,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
@@ -276,9 +276,9 @@ span[data-last-asked-at]::before{content:none}
 .list-table .why-fired{margin:0 0 6px;font-weight:600}
 .list-table .why-fired::first-letter{text-transform:uppercase}
 .list-table .reason-values{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:0}
-.list-table .reason-values dt{color:var(--s2)}
+.list-table .reason .why .reason-values dt{color:var(--s2)}
 .list-table .reason-values dd{margin:0;font-variant-numeric:tabular-nums;text-align:right}
-.list-table .no-values{margin:0;color:var(--s2)}
+.list-table .reason .why .no-values{margin:0;color:var(--s2)}
 .list-table .reason .record{display:block;margin-top:8px;padding-top:8px;border-top:1px solid var(--s3)}
 .list-table tfoot td{border-bottom:0;border-top:1px solid var(--ink);vertical-align:top;padding-top:6px;height:auto}
 .list-table tfoot .reason{background:none;color:var(--ink-2);height:auto;display:block;cursor:default}
@@ -785,7 +785,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .ck-locked{border:1.5px dashed var(--dash-ink);border-radius:8px;padding:4px 10px;color:var(--soft);font-size:13px;text-align:center}
 .report-table td.rc{white-space:nowrap;font-weight:600}
 .report-table td.rc small{display:block;font-weight:400;font-size:12px;color:var(--soft)}
-.report-table td.rc-first{color:var(--stat)} .report-table td.rc-retry{color:var(--stat-2)} .report-table td.rc-out{color:var(--fail)} .report-table td.rc-earlier{color:var(--soft);font-weight:400}
+.report-table td.rc-first{color:var(--stat)} .report-table td.rc-retry{color:var(--stat);font-style:italic} .report-table td.rc-out{color:var(--fail)} .report-table td.rc-earlier{color:var(--soft);font-weight:400}
 .report-table small.both{color:var(--wait)!important}
 .report-key,.both-sides{font-size:13px;color:var(--ink-2);margin:8px 0}
 .report-why{margin:8px 0;padding-left:0;list-style:none;font-size:13px;color:var(--ink-2);display:grid;gap:4px}
