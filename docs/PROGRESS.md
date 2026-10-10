@@ -42508,3 +42508,27 @@ Mutated:    the rule, stated before the run: the carrying taken out, a clause to
             was committed.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures the
             18.4 correction's entry below records, the two entries verified by one run.
+
+### 18.4 - correction: the risks' computed lines name a band of one price at its price, where they named it as running from that price to itself   2026-10-10
+
+Corrects:   18.4's lines the risks' two columns open on, which named the nearest band by its two edges, so a band whose
+            edges are one price, as CVX's resistance at 217.78 is, read "the nearest resistance band, 217.78 to 217.78".
+Found:      by reading CVX's page on the operator's surface after 18.4 merged on 2026-10-10.
+Built:      a band of one price is named at it, "the nearest resistance band at 217.78", and a wider one by its edges as
+            before, the same for the support band beneath the price where no plan is stored.
+Tests:      one more, the lines worked by hand over constructed bands: a band of one price, a wider band past it, and the
+            plan's invalidation in the support band's place.
+Claims:     none more; the roster's row for the page says what the test asserts.
+Pins:       none moved; the read surface is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: a band named by its two edges whatever they are. Predicted red at the new
+            test and green at the risks' page test, which reads the lines' openings. Result: red at the new test,
+            "217.78 to 217.78" where "at 217.78" was worked, and the page test green beside the 4.6 correction's, as
+            predicted; made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2196 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
+            figures to be filled from the run.
+Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.4, PRs 419 to 427 merged on 2026-10-10;
+            in progress, the 4.6 correction and this one, one pull request; next, the written reports regenerated once a
+            night is built from a main holding 18.4, then 18.5.
+Carried:    the regeneration once the night of 2026-10-12 is built from a main holding 18.4; the short version's refusals
+            after it is written from accepted claims, read on the Run page's rate at ten reports; and the finding on the
+            claims harness's part reader, owed a reading at 18.5's phase report.

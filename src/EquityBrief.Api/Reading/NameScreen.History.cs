@@ -91,7 +91,7 @@ public static partial class NameScreen
     // invalidation: a close above the nearest resistance band above the price, and a close below the invalidation or,
     // where no plan is stored, below the nearest support band beneath the price.
     // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
-    static RiskLines RiskLinesAt(IReadOnlyList<LadderBand> bands, decimal? price, decimal? invalidation)
+    public static RiskLines RiskLinesAt(IReadOnlyList<LadderBand> bands, decimal? price, decimal? invalidation)
     {
         var above = price is { } now
             ? bands.Where(band => band.Role == "resistance" && band.LowEdge > now).OrderBy(band => band.LowEdge).FirstOrDefault()
@@ -102,14 +102,20 @@ public static partial class NameScreen
 
         return new RiskLines(
             above is { } resistance
-                ? FormattableString.Invariant($"A close above the nearest resistance band, {Figures.Price(resistance.LowEdge)} to {Figures.Price(resistance.HighEdge)}, {MarkRenderer.Away(resistance.Away, above: true)}.")
+                ? FormattableString.Invariant($"A close above the nearest resistance band{Named(resistance)}, {MarkRenderer.Away(resistance.Away, above: true)}.")
                 : "No resistance band stands above the price, so no close above one is read.",
             invalidation is { } floor
                 ? FormattableString.Invariant($"A close below the plan's invalidation at {Figures.Price(floor)}, where the whole position is sold.")
                 : below is { } support
-                    ? FormattableString.Invariant($"A close below the nearest support band, {Figures.Price(support.LowEdge)} to {Figures.Price(support.HighEdge)}, {MarkRenderer.Away(support.Away, above: false)}.")
+                    ? FormattableString.Invariant($"A close below the nearest support band{Named(support)}, {MarkRenderer.Away(support.Away, above: false)}.")
                     : "No support band stands beneath the price, so no close below one is read.");
     }
+
+    // A band as its line names it: the one price a band of one price stands at, and otherwise its two edges.
+    static string Named(LadderBand band) =>
+        band.LowEdge == band.HighEdge
+            ? " at " + Figures.Price(band.LowEdge)
+            : ", " + Figures.Price(band.LowEdge) + " to " + Figures.Price(band.HighEdge);
 
     // Each move with the cause the core took for it in its stated order, over the sessions the move spans.
     // see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
