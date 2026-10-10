@@ -1485,9 +1485,35 @@ public sealed partial class MarkRenderer : IComponent
     static string Zone(PlanRow row) =>
         row.LowEdge == row.HighEdge ? Price(row.LowEdge) : Formatted($"{Price(row.LowEdge)} to {Price(row.HighEdge)}");
 
-    // A row's sentence as the lines it is drawn on, one clause to a line.
+    // A row's sentence as the lines it is drawn on, one clause to a line and a clause longer than a line holds carried on
+    // at a word, so no line runs past the drawing's edge.
     static string[] Clauses(string detail) =>
-        [.. detail.Split(", ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+        [.. detail.Split(", ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).SelectMany(Wrapped)];
+
+    // The characters a line of a row's words holds. The words start at the axis and 28 in a drawing 440 wide, so 262
+    // pixels are left, which an eleven pixel note fills at about 46 characters; 40 leave room for wider letters.
+    public const int PlanLineChars = 40;
+
+    static IEnumerable<string> Wrapped(string clause)
+    {
+        var line = new StringBuilder();
+
+        foreach (var word in clause.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (line.Length > 0 && line.Length + 1 + word.Length > PlanLineChars)
+            {
+                yield return line.ToString();
+                line.Clear();
+            }
+
+            line.Append(line.Length > 0 ? " " : string.Empty).Append(word);
+        }
+
+        if (line.Length > 0)
+        {
+            yield return line.ToString();
+        }
+    }
 
     // Each label's line, pushed down from the one above it until none overlap, and the
     // whole run moved up where it would leave the picture. Bands a label may not sit in,

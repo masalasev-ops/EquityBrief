@@ -42486,3 +42486,25 @@ Carried:    the regeneration the 18.5 ruling sets, every stock holding a written
             screenshots; and a finding on the claims harness: its part reader reads parts set apart by commas and not by
             semicolons, so the four marks 18.3 added, which list theirs between semicolons, each pass on one verdict,
             owed a reading at 18.5's phase report.
+
+### 4.6 - correction: the plan column carries a row's words on at a word so no line runs past its edge, where the top exit's ran past it and were cut   2026-10-10
+
+Corrects:   the plan column's words, which the 4.6 correction of 2026-10-09 lengthened: a row's words are drawn a clause to
+            a line, and the top exit's first clause, "the last 1/3 is held on a stop trailed under the price", runs 54
+            characters from 178 pixels into a drawing 440 wide, past its edge, where the page cuts it.
+Found:      by 18.3's reading of the rendered page at 1440 on 2026-10-10, carried as owed before 18.5's screenshots.
+Built:      a clause longer than a line holds is carried on at a word, a line holding at most 40 characters, which an
+            eleven pixel note sets inside the 262 pixels to the drawing's edge with room for wider letters; the labels'
+            placement already spaces a row's lines however many there are.
+Tests:      one more, the top exit's words over a plan worked by hand, every line beside the column at most 40
+            characters and the clause read back whole and in order.
+Claims:     none more; the roster's row for the page says what the test asserts, written with the 18.4 correction's
+            below.
+Pins:       none moved; the plan column is drawn by the read surface, which no rule's version, the swing filter or a
+            candidate evaluator pins.
+Mutated:    the rule, stated before the run: the carrying taken out, a clause to a line again. Predicted red at the new
+            test and green at the other exit words' and plan column's tests. Result: red at the new test alone, a line
+            of 54 characters, and the other six green, as predicted; made on this branch and reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures the
+            18.4 correction's entry below records, the two entries verified by one run.

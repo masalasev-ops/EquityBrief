@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Web.Marks;
@@ -76,6 +78,42 @@ public partial class ReadSurface
 
         // The shares the words name sum to the whole position, the skipped exit naming none.
         Assert.Equal(1m, Math.Round(SharesNamed(exits), 6));
+    }
+
+    [Fact]
+    public void TheTopExitsWordsAreCarriedOnAtAWordSoNoLineRunsPastThePlanColumnsEdge()
+    {
+        // The plan above, its top exit's first clause 54 characters, which ran past the column's edge and were cut.
+        var plan = new LadderRow(
+            "ZZZZ",
+            new DateOnly(2026, 10, 8),
+            "uptrend",
+            """
+            {"tranches":[{"lowEdge":"90.0000","highEdge":"92.0000","condition":"ReachesTheZone","stop":"88.0000"}],
+             "exits":[{"lowEdge":"100.0000","highEdge":"101.0000","traded":true,"trailing":false,"fraction":"1/2","reason":null},
+                      {"lowEdge":"110.0000","highEdge":"111.0000","traded":true,"trailing":true,"fraction":"1/2","reason":null}],
+             "invalidation":"88.0000","events":[]}
+            """);
+
+        var rows = NameScreen.PlanRows(plan);
+        var column = new MarkRenderer().PlanColumn("ZZZZ", 98m, rows);
+
+        // Every line of words to the right of the column, where they start at the axis and 28, holds at most the
+        // characters a line holds.
+        var right = Regex.Matches(column, "<text class=\"(?:plan-label )?m-row(?:note)?\" x=\"178\" y=\"[^\"]+\" text-anchor=\"start\">([^<]*)</text>")
+            .Select(line => WebUtility.HtmlDecode(line.Groups[1].Value))
+            .ToArray();
+
+        Assert.Equal(54, $"the last 1/2 {HeldOnTheTrail}".Split(", ")[0].Length);
+        Assert.NotEmpty(right);
+        Assert.All(right, line => Assert.True(line.Length <= MarkRenderer.PlanLineChars, $"\"{line}\" holds {line.Length} characters."));
+
+        // The top exit's words carried on at a word and read back whole, in order, its first clause over two lines.
+        var top = Regex.Match(column, "<g class=\"plan-row\" data-kind=\"exit\" data-low-edge=\"110.0000\".*?</g>", RegexOptions.Singleline).Value;
+
+        Assert.Equal(
+            ["Trail from 110.00 to 111.00", "the last 1/2 is held on a stop trailed", "under the price", "not sold at a price"],
+            Regex.Matches(top, "<text [^>]*>([^<]*)</text>").Select(line => WebUtility.HtmlDecode(line.Groups[1].Value)));
     }
 
     [Fact]
