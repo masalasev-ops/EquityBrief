@@ -240,7 +240,8 @@ public partial class ReadSurface
 
         // The fixture's two cases as the recorded writer answered the ask: two paragraphs, the
         // first opening on the bull case with eleven sentences and the second on the bear case with
-        // eight, counted by hand off the recording, every one ending on the marker of its document.
+        // eight, counted by hand off the recording, every one ending on the marker of its document,
+        // with [N] after it where the sentence states a figure the facts list.
         var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
@@ -258,7 +259,7 @@ public partial class ReadSurface
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
-        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"\[D\d+\]\.$", row));
+        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"\[D\d+\](?: \[N\])?\.$", row));
 
         var marks = new MarkRenderer();
 

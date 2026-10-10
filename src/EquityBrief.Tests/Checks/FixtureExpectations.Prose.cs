@@ -704,11 +704,13 @@ public partial class FixtureExpectations
         // passes, what the company sells, the segment commentary and the cause, and the segment
         // commentary and the cause again after the checker refused their first drafts, the key
         // being the research pass's own request; four from the research pass with the configured lanes, the segment
-        // commentary among them asked again after the checker refused its first draft; fifteen
+        // commentary among them asked again after the checker refused its first draft; thirteen
         // from the comparison with every section in the local lane, the cause, the dated calendar
         // items, the two cases, the risks and the short version, each of the last four asked
-        // again after the checker refused its first draft, and the two cases, the risks and the
-        // short version each asked twice more, refused at every retry to the last; two
+        // again after the checker refused its first draft, the two cases and the risks each asked
+        // twice more, refused at every retry to the last, and the short version's three retries
+        // one request, since each stopped at its budget and no draft after its first reached the
+        // checker; two
         // from the queue over the fixture's night, AAPL's key and
         // KEYS's, MSFT's and NFLX's being the replay's requests asked again; eight from the two
         // later nights, every member's key on each, each member reading the quarters the
@@ -722,7 +724,7 @@ public partial class FixtureExpectations
         // listing AAPL, KEYS's key over the group of one the rebalance's joiner reads but with
         // the quarters the fixture's night stored for it, which the joiner does not yet hold,
         // MSFT's and NFLX's there being requests the rebalance asked.
-        Assert.Equal(42, recorded.Length);
+        Assert.Equal(40, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

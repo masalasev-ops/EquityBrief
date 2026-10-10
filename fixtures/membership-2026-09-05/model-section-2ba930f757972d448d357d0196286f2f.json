@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-8uw9hqy4bark4wcgl9sq4o",
+  "object": "chat.completion",
+  "created": 1791597609,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies announced participation in the Goldman Sachs Communacopia + Technology Conference on Friday, September 11, 2026 [D6]. Keysight Technologies announced participation in the 2026 Truist Technology Symposium on Tuesday, September 15, 2026 [D6]. Keysight Technologies collaborated with the Centre for Assuring Autonomy at the University of York to advance AI safety assurance for software-defined vehicles on September 3, 2026 [D7].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18950,
+    "completion_tokens": 107,
+    "total_tokens": 19057,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
