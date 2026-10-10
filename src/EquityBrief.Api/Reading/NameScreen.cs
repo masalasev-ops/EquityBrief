@@ -185,14 +185,15 @@ public static class NameScreen
     //
     // Every figure is stored. The multiples were copied from the provider with the
     // earnings basis they were struck on, the market value likewise, the close and
-    // the extremes are bars, and the averages, the momentum readings and the
-    // typical daily move are the indicator engine's own rows.
+    // the year's high and low are bars, and the averages, the momentum readings and
+    // the typical daily move are the indicator engine's own rows.
     // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: The fact strip states the year's high and low with the sessions they were made on
     public static string FactStrip(
         string ticker,
         decimal? close,
         DateOnly? nextEvent,
-        MoveExtremes? extremes,
+        YearExtremes? year,
         IReadOnlyList<FilingRow> filings,
         IReadOnlyList<IndicatorRow> indicators)
     {
@@ -222,8 +223,8 @@ public static class NameScreen
         html.Append("<dl class=\"facts\">");
         Fact("Close", close is { } shownClose ? Read(shownClose) : NotOnFile);
         Fact("Market value", Scaled(newest is null ? null : Text(newest.RootElement, "marketCapitalisation")));
-        Fact("High of the move", extremes is { } highs ? Read(highs.High) : NotOnFile, extremes is { } over ? Invariant($"over {over.Sessions} session(s)") : null);
-        Fact("Low of the move", extremes is { } lows ? Read(lows.Low) : NotOnFile);
+        Fact("Year's high", year is { } top ? Read(top.High) : NotOnFile, year is { } madeHigh ? $"on {Day(madeHigh.HighOn)}" : null);
+        Fact("Year's low", year is { } bottom ? Read(bottom.Low) : NotOnFile, year is { } madeLow ? $"on {Day(madeLow.LowOn)}" : null);
         Fact("Next dated event", nextEvent is { } coming ? Day(coming) : NotOnFile);
         Fact("Price to earnings", Tenths(Text(multiples, "trailingPe")), Text(multiples, "forwardPe") is { } forward ? $"forward {Tenths(forward)}" : null);
         Fact("20-day average", Hundredths(latest, IndicatorSeries.Sma20));
@@ -256,10 +257,10 @@ public static class NameScreen
         html.Append(CultureInfo.InvariantCulture, $" data-trailing-multiple=\"{Text(valuation, "trailingPe") ?? "none"}\"");
         html.Append(CultureInfo.InvariantCulture, $" data-forward-multiple=\"{Text(valuation, "forwardPe") ?? "none"}\"");
 
-        // the high and low of the move, over the sessions that move spans
-        html.Append(extremes is { } move
-            ? FormattableString.Invariant($" data-move-high=\"{move.High}\" data-move-low=\"{move.Low}\" data-move-sessions=\"{move.Sessions}\"")
-            : " data-move-high=\"none\" data-move-low=\"none\"");
+        // the year's high and low, each with the session it was made on, over the sessions the store holds
+        html.Append(year is { } span
+            ? FormattableString.Invariant($" data-year-high=\"{span.High}\" data-year-high-on=\"{Day(span.HighOn)}\" data-year-low=\"{span.Low}\" data-year-low-on=\"{Day(span.LowOn)}\" data-year-sessions=\"{span.Sessions}\"")
+            : " data-year-high=\"none\" data-year-low=\"none\"");
 
         // next earnings date
         html.Append(nextEvent is { } dated
@@ -285,9 +286,9 @@ public static class NameScreen
         // whose attributes and words disagree is two statements, so both come from
         // the values above.
         html.Append(CultureInfo.InvariantCulture, $"close {(close is { } closed ? Read(closed) : NotOnFile)}, market capitalisation {Scaled(capitalisation)}, ");
-        html.Append(extremes is { } drawn
-            ? FormattableString.Invariant($"the move's high {Read(drawn.High)} and low {Read(drawn.Low)} over {drawn.Sessions} session(s), ")
-            : "the move's high and low not on file, ");
+        html.Append(year is { } drawn
+            ? FormattableString.Invariant($"the year's high {Read(drawn.High)} on {Day(drawn.HighOn)} and low {Read(drawn.Low)} on {Day(drawn.LowOn)} over {drawn.Sessions} session(s), ")
+            : "the year's high and low not on file, ");
         html.Append(CultureInfo.InvariantCulture, $"next dated event: {(nextEvent is { } on ? Day(on) : "not on file")}, ");
         html.Append(CultureInfo.InvariantCulture, $"trailing multiple {Tenths(Text(valuation, "trailingPe"))}, ");
         html.Append(CultureInfo.InvariantCulture, $"forward multiple {Tenths(Text(valuation, "forwardPe"))}");
@@ -1084,7 +1085,7 @@ public static class NameScreen
         CalendarRow? nextEvent,
         IReadOnlyList<MoveRow> moves,
         IReadOnlyList<FilingRow>? fundamentals = null,
-        MoveExtremes? extremes = null,
+        YearExtremes? year = null,
         ListingRow? listing = null,
         string? previousOnTheList = null,
         string? nextOnTheList = null,
@@ -1224,7 +1225,7 @@ public static class NameScreen
                 ticker,
                 bars.Count > 0 ? bars[^1].Close : null,
                 nextEvent?.EventDate,
-                extremes,
+                year,
                 filings,
                 indicators),
             PlanRows(ladder),

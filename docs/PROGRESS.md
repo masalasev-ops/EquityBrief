@@ -41712,3 +41712,41 @@ Queue:      done, phase 17 through 17.10, its last two as PRs 414 and 415, mergi
             check confirms it, the market events table, a correction changing the night merged at most one a night;
             then 18.0. The plan and the operator's words are in `prompts/2026-10-09-18.0-*.md`.
 Carried:    nothing.
+
+### 6.1 - correction: the fact strip states the year's high and low with the sessions they were made on, where it stated the year's largest move's without saying when   2026-10-09
+
+Corrects:   6.1's fact strip, which stated the high and low of the sessions the year's largest move spans, the move the
+            moves table ranks first, beside the night's close with no date. A move is a few sessions anywhere in the
+            stored year, so the strip read as the range the close sits in when it was a range months old: CVX's of
+            2026-01-05, 146.01 to 161.25, beside a close of 211.55 on 2026-10-08. That night 913 of the 1,506 members'
+            strips did not hold their own close, 294 on the S&P 500, 241 on the S&P 400 and 378 on the S&P 600, and
+            1,187 named a move that ended more than 63 sessions before.
+Found:      by the operator's phase 18 brief of 2026-10-09, which read the figures as stale or mis-scaled; read-only, the
+            figures were that move's own and correctly read, and the fault was which move and that it carried no date.
+            The check the brief asked for, a move's high and low holding a close inside its own window, held for every
+            member on today's code, so the check that fails is the night's close against the strip.
+Built:      the read surface reads the year's highest high and lowest low among the stored bars up to the night, chosen
+            as prices with the newer of two equal ones taken, each with the session it was made on, and the strip
+            states them as "Year's high" and "Year's low" with those sessions, in its sentence and on its element. The
+            largest move keeps its place in the moves table. Section 4's and 15.9's rows name the year's high and low,
+            the prior text in `CHANGELOG.md`, and the new decision names the strip's figures (see: The fact strip
+            states the year's high and low with the sessions they were made on).
+Tests:      2121, one more: every fixture name given its largest move at the window of five sessions whose highs are
+            lowest, its strip still holding the night's close between its high and its low. The year's extremes are
+            read as prices over NFLX's split year, whose text order differs, and every part of the strip against the
+            bars by a second path; the strip's other tests read the new parts.
+Claims:     1149, unchanged: 15.9's fact strip part is renamed and keeps its verdict.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone. The strip's high and low
+            being the year's and holding the night's close, broken by reading the largest move's five sessions again:
+            predicted red at the bracket test and the two tests reading the year's extremes, and green at the
+            not-on-file and route tests. Result: the three red and the two green, as predicted, made on this branch and
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: ddfdd1bc, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2121 of 2121 tests ran with none failed, migrations 0 to
+            83 with none pending, schema version 83, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1149 claims, 1149 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1160
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2121 of 2121 tests ran.
+Carried:    nothing.

@@ -328,10 +328,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     var reading = await read.FundamentalReadingAsync(ticker, on);
     var readQuarters = reading?.FetchedAt is { } fetched ? await read.QuartersOfAFetchAsync(ticker, fetched) : [];
 
-    // The high and the low of the sessions the largest move spans, which the fact
-    // strip states beside the close. A name with no annotated move has none, and
-    // the strip says so rather than drawing a blank.
-    var extremes = await read.MoveExtremesAsync(ticker, on);
+    // The year's high and low among the stored bars up to the night, each with its
+    // session, which the fact strip states beside the close. A name holding no bar
+    // has none, and the strip says so rather than drawing a blank.
+    var year = await read.YearExtremesAsync(ticker, on);
 
     // The written sections and the documents they cite, which the dates-and-sources
     // region draws with the calendar from the newest stored session on. The industry
@@ -359,7 +359,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
         fundamentals,
-        extremes,
+        year,
         listings.FirstOrDefault(listing => listing.Ticker == ticker),
         at is > 0 ? ordered[at.Value - 1].Ticker : null,
         at is { } position && position + 1 < ordered.Count ? ordered[position + 1].Ticker : null,

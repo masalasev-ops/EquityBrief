@@ -281,7 +281,7 @@ public partial class ReadSurface
             // why the whole strip is owed here and not at a phase 3 checkpoint.
             CheckReach.Key("15.9 Name", "Fact strip, close"),
             CheckReach.Key("15.9 Name", "Fact strip, market capitalisation"),
-            CheckReach.Key("15.9 Name", "Fact strip, the high and low of the move"),
+            CheckReach.Key("15.9 Name", "Fact strip, the year's high and low with the sessions they were made on"),
             CheckReach.Key("15.9 Name", "Fact strip, next earnings date"),
             CheckReach.Key("15.9 Name", "Fact strip, the multiples"),
             CheckReach.Key("15.9 Name", "Fact strip, the averages"),
@@ -1714,7 +1714,7 @@ public partial class ReadSurface
             await api.NextEventAsync(listed.Ticker, DateOnly.MinValue),
             await api.MovesAsync(listed.Ticker),
             await api.FundamentalsAsync(listed.Ticker),
-            await api.MoveExtremesAsync(listed.Ticker),
+            await api.YearExtremesAsync(listed.Ticker),
             listed,
             "PREV",
             "NEXT");
@@ -5537,13 +5537,13 @@ public partial class ReadSurface
         var bars = await api.BarsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
         var indicators = await api.IndicatorsAsync(Name, DateOnly.MinValue, DateOnly.MaxValue);
         var filings = await api.FundamentalsAsync(Name);
-        var extremes = await api.MoveExtremesAsync(Name);
+        var year = await api.YearExtremesAsync(Name);
 
         var strip = NameScreen.FactStrip(
             Name,
             bars[^1].Close,
             (await api.NextEventAsync(Name, bars[^1].SessionDate))?.EventDate,
-            extremes,
+            year,
             filings,
             indicators);
 
@@ -5561,20 +5561,22 @@ public partial class ReadSurface
         Assert.Contains($"data-trailing-multiple=\"{valuation.GetProperty("trailingPe").GetString()}\"", strip, StringComparison.Ordinal);
         Assert.Contains($"data-forward-multiple=\"{valuation.GetProperty("forwardPe").GetString()}\"", strip, StringComparison.Ordinal);
 
-        // The high and the low of the sessions the move spans, against the bars of
-        // exactly those sessions read by a second path.
-        Assert.NotNull(extremes);
+        // The year's high and low with the sessions they were made on, against every
+        // stored bar read by a second path, the newer of two equal ones taken.
+        Assert.NotNull(year);
 
-        var span = bars
-            .Where(bar => bar.SessionDate <= extremes!.Ended)
-            .OrderByDescending(bar => bar.SessionDate)
-            .Take(extremes!.Sessions)
-            .ToArray();
+        var highest = bars.Max(bar => bar.High);
+        var lowest = bars.Min(bar => bar.Low);
 
-        Assert.Equal(span.Max(bar => bar.High), extremes.High);
-        Assert.Equal(span.Min(bar => bar.Low), extremes.Low);
-        Assert.Contains(FormattableString.Invariant($"data-move-high=\"{extremes.High}\""), strip, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"data-move-low=\"{extremes.Low}\""), strip, StringComparison.Ordinal);
+        Assert.Equal(highest, year!.High);
+        Assert.Equal(bars.Last(bar => bar.High == highest).SessionDate, year.HighOn);
+        Assert.Equal(lowest, year.Low);
+        Assert.Equal(bars.Last(bar => bar.Low == lowest).SessionDate, year.LowOn);
+        Assert.Equal(bars.Count, year.Sessions);
+        Assert.Contains(FormattableString.Invariant($"data-year-high=\"{year.High}\""), strip, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"data-year-low=\"{year.Low}\""), strip, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"data-year-high-on=\"{year.HighOn:yyyy-MM-dd}\""), strip, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"data-year-low-on=\"{year.LowOn:yyyy-MM-dd}\""), strip, StringComparison.Ordinal);
 
         // The next dated event, kept from what the strip said before this row was
         // decomposed, so the part that already worked still reads the same way.
@@ -5618,8 +5620,8 @@ public partial class ReadSurface
         Assert.Contains("data-market-capitalisation=\"none\"", strip, StringComparison.Ordinal);
         Assert.Contains("data-trailing-multiple=\"none\"", strip, StringComparison.Ordinal);
         Assert.Contains("data-forward-multiple=\"none\"", strip, StringComparison.Ordinal);
-        Assert.Contains("data-move-high=\"none\"", strip, StringComparison.Ordinal);
-        Assert.Contains("data-move-low=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-year-high=\"none\"", strip, StringComparison.Ordinal);
+        Assert.Contains("data-year-low=\"none\"", strip, StringComparison.Ordinal);
         Assert.Contains("data-next-event=\"none\"", strip, StringComparison.Ordinal);
         Assert.Contains("not on file", strip, StringComparison.Ordinal);
 
@@ -5646,7 +5648,7 @@ public partial class ReadSurface
         Assert.Contains("class=\"fact-strip\"", page, StringComparison.Ordinal);
         Assert.Contains("data-market-capitalisation=", page, StringComparison.Ordinal);
         Assert.Contains("data-trailing-multiple=", page, StringComparison.Ordinal);
-        Assert.Contains("data-move-high=", page, StringComparison.Ordinal);
+        Assert.Contains("data-year-high=", page, StringComparison.Ordinal);
         Assert.Contains("data-sma200=", page, StringComparison.Ordinal);
         Assert.Contains("data-atr14=", page, StringComparison.Ordinal);
     }

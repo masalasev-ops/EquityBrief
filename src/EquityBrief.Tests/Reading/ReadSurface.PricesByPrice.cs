@@ -23,66 +23,82 @@ public partial class ReadSurface
     ];
 
     [Fact]
-    public async Task TheFactStripStatesTheHighestHighAndTheLowestLowOfTheMoveItNames()
+    public async Task TheFactStripStatesTheYearsHighAndLowChosenAsPricesWithTheSessionsTheyWereMadeOn()
     {
         using var store = await FixtureExpectations.WithListings();
 
         // A name whose stored year crosses a split, so its sessions are spelled with two digits
-        // and with three and the two readings of one window differ.
+        // and with three and the year's extremes read one way as prices and another as text.
         const string Ticker = "NFLX";
-        const int Spans = 5;
 
         var sessions = Sessions(store, Ticker);
 
-        Assert.True(sessions.Count > Spans, $"{Ticker} holds {sessions.Count} session(s), too few to span a move.");
-
-        // The first window whose extremes read one way as prices and another as text, found
-        // rather than picked, so the case is the store's and not the test's invention.
-        var windows = Enumerable
-            .Range(Spans - 1, sessions.Count - Spans + 1)
-            .Select(last => sessions.Skip(last - Spans + 1).Take(Spans).ToArray())
-            .Select(window => (
-                Ends: window[^1].Date,
-                Highest: window.Max(bar => Stored(bar.High)),
-                Lowest: window.Min(bar => Stored(bar.Low)),
-                ByText: (
-                    High: window.MaxBy(bar => bar.High, StringComparer.Ordinal).High,
-                    Low: window.MinBy(bar => bar.Low, StringComparer.Ordinal).Low)))
-            .Where(window => Stored(window.ByText.High) != window.Highest || Stored(window.ByText.Low) != window.Lowest)
-            .ToArray();
+        var highest = sessions.Max(bar => Stored(bar.High));
+        var lowest = sessions.Min(bar => Stored(bar.Low));
+        var highOn = sessions.Last(bar => Stored(bar.High) == highest).Date;
+        var lowOn = sessions.Last(bar => Stored(bar.Low) == lowest).Date;
 
         Assert.True(
-            windows.Length > 0,
-            $"No window of {Spans} sessions in {Ticker} reads differently as text, so this proves nothing.");
-
-        var move = windows[0];
-
-        // That window made the name's largest move, which is the one the strip states. The rank
-        // puts it above every move the night stored, and nothing else about the row is read.
-        store.Execute(
-            "INSERT OR REPLACE INTO move (ticker, session_date, sessions, change_pct, rank) " +
-            $"VALUES ('{Ticker}', '{move.Ends}', {Spans}, 12.5, 0);");
+            Stored(sessions.MaxBy(bar => bar.High, StringComparer.Ordinal).High) != highest
+                || Stored(sessions.MinBy(bar => bar.Low, StringComparer.Ordinal).Low) != lowest,
+            $"{Ticker}'s year reads the same as text and as prices, so this proves nothing.");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var page = await client.GetStringAsync($"/screens/name/{Ticker}");
 
-        // The two figures, each the extreme of those sessions and neither the text answer.
+        // The two figures, each the year's extreme as a price with the session it was made on.
         Assert.Contains(
-            $"<div><dt>High of the move</dt><dd>{EquityBrief.Web.Marks.Figures.Price(move.Highest)} <small>over {Spans} session(s)</small></dd></div>",
+            $"<div><dt>Year's high</dt><dd>{EquityBrief.Web.Marks.Figures.Price(highest)} <small>on {highOn}</small></dd></div>",
             page,
             StringComparison.Ordinal);
 
         Assert.Contains(
-            $"<div><dt>Low of the move</dt><dd>{EquityBrief.Web.Marks.Figures.Price(move.Lowest)}</dd></div>",
+            $"<div><dt>Year's low</dt><dd>{EquityBrief.Web.Marks.Figures.Price(lowest)} <small>on {lowOn}</small></dd></div>",
             page,
             StringComparison.Ordinal);
+    }
 
-        // And the high is above the low, which is what the text answer could not promise: the
-        // page stated a high below its own low for 24 of the index's names on the night this
-        // was found.
-        Assert.True(move.Highest > move.Lowest, $"{Ticker}'s window ends {move.Ends} and holds no range.");
+    [Fact]
+    public async Task TheFactStripsHighAndLowBracketTheNightsCloseWhereverTheYearsLargestMoveFell()
+    {
+        // The strip stated the year's largest move's high and low beside the close, with no date:
+        // CVX's of 2026-01-05, 146.01 to 161.25, beside a close of 211.55 on 2026-10-08, and 913 of
+        // the 1,506 members' strips that night did not hold their own close. Each fixture name is
+        // given its largest move at the window of five sessions whose highs are lowest, and the
+        // strip still holds the night's close between its high and its low.
+        using var store = await FixtureExpectations.WithListings();
+
+        var names = new[] { "AAPL", "MSFT", "KEYS", "NFLX" };
+
+        foreach (var ticker in names)
+        {
+            var sessions = Sessions(store, ticker);
+            var lowestWindow = Enumerable
+                .Range(4, sessions.Count - 4)
+                .Select(last => sessions.Skip(last - 4).Take(5).ToArray())
+                .MinBy(window => window.Max(bar => Stored(bar.High)))!;
+
+            store.Execute(
+                "INSERT OR REPLACE INTO move (ticker, session_date, sessions, change_pct, rank) " +
+                $"VALUES ('{ticker}', '{lowestWindow[^1].Date}', 5, 12.5, 0);");
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var ticker in names)
+        {
+            var page = await client.GetStringAsync($"/screens/name/{ticker}");
+            var strip = Regex.Match(page, "<p class=\"fact-strip\"[^>]*>").Value;
+
+            var close = Stored(Regex.Match(strip, "data-close=\"([^\"]+)\"").Groups[1].Value);
+            var high = Stored(Regex.Match(strip, "data-year-high=\"([^\"]+)\"").Groups[1].Value);
+            var low = Stored(Regex.Match(strip, "data-year-low=\"([^\"]+)\"").Groups[1].Value);
+
+            Assert.True(low <= close && close <= high, $"{ticker}'s strip states {low} to {high} beside a close of {close}.");
+        }
     }
 
     // How far each band sits from tonight's close, counted in the moves the name usually
