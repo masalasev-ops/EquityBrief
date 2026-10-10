@@ -704,7 +704,24 @@ public static class SchemaMigrations
         new Migration(81, "create loop_reading", CreateLoopReadings),
         new Migration(82, "create loop_model, and add decision_card's score_rank and similar", CreateLoopModels),
         new Migration(83, "add loop_proposal.change, index_family_trade's exit and risk_moves and decision_card.approved, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
+        new Migration(84, "create chart_average", CreateChartAverages),
     ];
+
+    // The chart's averages over the sessions the indicator rows leave empty, read through the sessions before the store's
+    // year from the pulled history: a row an average a name, its sessions and values as a list, the pull they came from,
+    // or why none was read.
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+    const string CreateChartAverages = @"
+        CREATE TABLE chart_average (
+            ticker    TEXT NOT NULL,
+            name      TEXT NOT NULL CHECK (name IN ('sma20', 'sma50', 'sma200')),
+            night     TEXT NOT NULL,
+            sessions  TEXT NOT NULL,
+            pull      TEXT,
+            reason    TEXT,
+            PRIMARY KEY (ticker, name)
+        ) STRICT;
+    ";
 
     // What an approval reads and writes, and the alarm: the change each proposal makes in the form an approval applies;
     // the rule today's trades over a run's test years, the alarm's reference; the operator's decisions, each once a
@@ -2078,7 +2095,7 @@ public static class SchemaMigrations
     // The history pulled on the operator's command for the sessions before the store's rolling year,
     // held apart from the bar and calendar tables every night reads. Every row carries the run id of
     // the pull that wrote it, which is what removes a pull whole.
-    // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
     const string CreatePulledHistory = @"
         CREATE TABLE pulled_bar (
             ticker       TEXT    NOT NULL,

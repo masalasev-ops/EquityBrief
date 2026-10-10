@@ -19,6 +19,9 @@ public class SchemaColumns
         "schema-columns",
         ["docs/SCHEMA.md"],
         [
+            // The 3.1 correction, the chart's averages.
+            CheckReach.Key(Scope.StoresTable, "Chart averages"),
+
             // 5.5, the forward returns and the news pulse.
             CheckReach.Key(Scope.StoresTable, "Forward returns"),
             CheckReach.Key(Scope.StoresTable, "News pulse"),

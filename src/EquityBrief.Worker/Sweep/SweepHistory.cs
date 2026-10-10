@@ -91,7 +91,7 @@ public sealed record HeavyweightHistory(
 // action and the store's bars are the newer adjustment; the ratios and the distances in typical moves every
 // gate reads are unchanged by the factor. A session is a day at least half the names whose series span it hold,
 // as the history pull reads its own calendar.
-// see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
 public sealed class SweepHistory : IComponent
 {

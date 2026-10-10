@@ -40,6 +40,7 @@ public enum Store
     PulledSnapshot,
     PulledHolding,
     Indicator,
+    ChartAverage,
     Swing,
     VolumeProfile,
     Level,

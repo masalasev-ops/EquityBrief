@@ -25,6 +25,82 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - ARCHITECTURE.html - section 14 gains the chart averages step after the indicators, its note numbers each step after it one later, and 15.9's chart row names the averages the step fills and the line beneath
+Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+Was:
+> The arithmetic, being steps 1 to 22, calls no model and makes no per-name network request. Step 23 is carved out of the second of those by name
+
+> Step 24 is carved out of the second by name and calls no model: it reads the archive's daily index
+
+> Step 25 is carved out of the first by name and calls the local model only
+
+> <tr><td>The chart</td><td>the level chart, the volume profile beside it on the same price axis, the momentum panel beneath, and the level summary table with each band's members and dates</td></tr>
+Now:
+> The arithmetic, being steps 1 to 23, calls no model and makes no per-name network request. Step 24 is carved out of the second of those by name
+
+> Step 25 is carved out of the second by name and calls no model: it reads the archive's daily index
+
+> Step 26 is carved out of the first by name and calls the local model only
+
+> <tr><td>The chart</td><td>the level chart, its averages drawn on the sessions the indicators leave empty from what the night read through the sessions before the store's year with a line beneath naming the pull or why none was read, the volume profile beside it on the same price axis, the momentum panel beneath, and the level summary table with each band's members and dates</td></tr>
+Why: the step is a night step of its own, written into section 14's list after the indicators, which moves every later step's number, and the chart draws what it stores.
+
+### 2026-10-10 - .claude/rules/checks.md - gap-refusal holds the chart's averages as an eighth computed table, and register-append-only names the chart averages step's file as a second left out
+Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+Was:
+> so the seven computed tables withhold every row for it while the ladder, the listing, the swing readings and the gate results still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the eleven
+
+> but the sweep's, which computes over the history in memory by hand and hands nothing to an evaluation or a store, named as the one left out
+Now:
+> so the eight computed tables, the chart's averages among them, withhold every row for it while the ladder, the listing, the swing readings and the gate results still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the twelve
+
+> but two named as left out, the sweep's, which computes over the history in memory by hand and hands nothing to an evaluation or a store, and the chart averages step's, which computes the chart's averages into a store the read surface alone reads, read off every component's declaration
+Why: the step computes over each name's stored series and stops at a gap as the other computed stages do, and it computes the indicators' arithmetic for the chart alone, which no evaluation reads.
+
+### 2026-10-09 - CLAUDE.md - the bars rule names the chart averages step as the one night step reading the pulled history
+Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+Was:
+> it sits in tables of its own that no night reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+Now:
+> it sits in tables of its own that no night reads but the chart averages step, whose figures only the chart draws and no rule, level, listing or gate reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads).
+Why: the chart's 200-day line had no value on the year's first 199 sessions, and the step that fills them reads the pulled bars on the night.
+
+### 2026-10-09 - ARCHITECTURE.html - sections 6.2, 7's history pull row, 14 and 16 name the chart averages step as the one night step reading the pulled history
+Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+Was:
+> and the history the operator pulls for the years before it sits beside it in tables of its own that no night, score or page reads (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone)
+
+> no night reads any of its tables, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull);
+
+> One year is what the bar store keeps, and the history the operator pulls before it is read by no step below (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone).
+
+> no night reads any of the twelve tables, so removing one moves nothing a night, a listing, a score or a page read (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull)
+Now:
+> and the history the operator pulls for the years before it sits beside it in tables of its own that no score reads and no night or page reads but the chart's averages before the store's year (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone)
+
+> no night reads any of its tables but the chart averages step, which reads the pulled bars, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull);
+
+> One year is what the bar store keeps, and the history the operator pulls before it is read by no step below but the chart's averages (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone).
+
+> no night reads any of the twelve tables but the chart averages step, which reads the pulled bars, so removing one moves nothing a listing or a score read and nothing a night or a page read but the chart's averages before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull)
+Why: the two decisions these passages cite are superseded, and the night's new step reads the pulled bars for the chart alone.
+
+### 2026-10-09 - BUILD_PLAN.md, RUNBOOK.md and SCHEMA.md - each cites the decisions the chart averages step supersedes by their new names
+Authorised by: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+Was:
+> BUILD_PLAN.md: retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone)
+
+> RUNBOOK.md: The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull):
+
+> SCHEMA.md: **This is not the bar table, and no night reads it** (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+Now:
+> BUILD_PLAN.md: retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone)
+
+> RUNBOOK.md: The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it but the chart's averages before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull):
+
+> SCHEMA.md: **This is not the bar table, and no night reads it but the chart averages step** (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull).
+Why: the decisions they cite are superseded by the chart averages step's.
+
 ### 2026-10-09 - CLAUDE.md - the prose rule names [N] and the figure a cited document states
 Authorised by: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
 Was:

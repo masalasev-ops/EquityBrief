@@ -531,6 +531,19 @@ public class GapRefusal
     }
 
     [Fact]
+    public async Task TheChartAveragerWritesNoRowForAGappedNameAndNamesTheGap()
+    {
+        using var store = await WithAHoleAsync();
+        var cut = CutSession(store);
+
+        await new ChartAverager(GapClock(), store.DatabaseFile).RunAsync("gap-chart-averages");
+
+        Assert.Equal(0, GapCount(store, "SELECT COUNT(*) FROM chart_average WHERE ticker = 'AAPL';"));
+        Assert.Equal(ChartAverager.Averages.Count, GapCount(store, "SELECT COUNT(*) FROM chart_average WHERE ticker = 'MSFT';"));
+        Assert.Contains($"stopped at a gap (AAPL {cut})", GapDetail(store, ChartAverager.Stage));
+    }
+
+    [Fact]
     public async Task TheSwingFinderWritesNoRowForAGappedNameAndNamesTheGap()
     {
         using var store = await WithAHoleAsync();

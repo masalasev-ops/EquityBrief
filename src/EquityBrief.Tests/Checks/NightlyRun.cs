@@ -34,6 +34,21 @@ namespace EquityBrief.Tests.Checks;
 // list. A step that printed "skipped" would be a step a reader counts as run.
 public partial class NightlyRun
 {
+    // Section 14's step after the indicators, as the document states it.
+    internal const string ChartAveragesStep =
+        "Compute the chart's averages for every name on the stored sessions the indicators leave empty, reading the sessions before its first stored bar from the history pulled before the store's year at the store's scale, which the chart alone draws (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads).";
+
+    // The rows the 3.1 correction adds: the step, its component's catalogue and matrix rows, its store and the chart's
+    // part drawing what it stores.
+    internal static string[] ChartAverageRows =>
+    [
+        CheckReach.Key(NightlyRunSteps.Heading, ChartAveragesStep),
+        CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
+        CheckReach.Key(Scope.MatrixTable, "Chart averager"),
+        CheckReach.Key(Scope.StoresTable, "Chart averages"),
+        Reading.ReadSurface.ChartAveragesPart,
+    ];
+
     internal static CheckReach Reach => new(
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
@@ -92,6 +107,7 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's, the eleven sector funds' and the four index and credit funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only), and each member's declared ex-dividend dates over the 21 sessions after the night, one request a session (see: The night asks the dividend calendar for each of the next 21 sessions, one request a session)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
+            CheckReach.Key(NightlyRunSteps.Heading, ChartAveragesStep),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Build the volume profile for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Build the levels for every name."),

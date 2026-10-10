@@ -55,8 +55,9 @@ public partial class ArchitectureConformance
         ("17.10", 0),
     ];
 
-    // The rows the document gains after phase 17's report, named beside the pair and never counted in it.
-    internal static string[] AfterPhaseSeventeen => [];
+    // The rows the document gains after phase 17's report, named beside the pair and never counted in it: the 3.1
+    // correction's chart averages.
+    internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows];
 
     [Fact]
     public void ThePhaseSeventeenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()

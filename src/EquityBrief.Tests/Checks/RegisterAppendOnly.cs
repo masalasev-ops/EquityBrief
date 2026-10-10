@@ -693,20 +693,32 @@ public class RegisterAppendOnly
         }
 
         // Every shipped file that computes a reading, hands one to an evaluation or runs one is among the sources,
-        // but the sweep's: it computes the indicators of the history it replays in memory, by hand and never
+        // but two: the sweep's, which computes the indicators of the history it replays in memory, by hand and never
         // from a night, and hands them to no evaluation and to no store, its component declaring that it writes
-        // nothing. The one file left out is named, and shown to be one the reader finds.
+        // nothing; and the chart averages step's, which computes the chart's averages over the history pulled before
+        // the store's year into a store of its own that the read surface alone reads, so no evaluation reaches what it
+        // computes. The files left out are named, each shown to be one the reader finds and to hand nothing on.
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
         const string Sweep = "src/EquityBrief.Worker/Sweep/SweepColumns.cs";
+        const string ChartAverages = "src/EquityBrief.Worker/Indicators/ChartAverager.cs";
 
         var found = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
             .Where(file => EvaluationCall.IsMatch(SourceStatements.WithoutComments(File.ReadAllText(file))))
             .Select(file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
-        var onThePath = found.Where(path => path != Sweep).ToArray();
+        var onThePath = found.Where(path => path != Sweep && path != ChartAverages).ToArray();
 
         Assert.Contains(Sweep, found);
         Assert.DoesNotContain(EquityBrief.Worker.Sweep.SweepHistory.Access.Stores, touch => touch.Touch != EquityBrief.Core.Components.Touch.Read);
+        Assert.Contains(ChartAverages, found);
+        Assert.Equal(
+            ["ChartAverager:Insert, Delete", "ReadApi:Read"],
+            ShippedComponents.All()
+                .SelectMany(component => component.Access.Stores
+                    .Where(touch => touch.Store == EquityBrief.Core.Components.Store.ChartAverage)
+                    .Select(touch => $"{component.Name}:{touch.Touch}"))
+                .Order(StringComparer.Ordinal));
         Assert.True(onThePath.Length >= 3, $"Found {onThePath.Length} file(s) on the evaluation path, expected at least 3.");
 
         // A file on the path is a shared source, or one only the family rules' evaluation runs through and every

@@ -1528,7 +1528,8 @@ public partial class ArchitectureConformance
         // 501 at 17.8: the fundamentals-first family's card on Tonight.
         // 506 at 17.9: the Loop page's word on a proposal, decisions and live alarm, Tonight's alarm line and the decision
         // card's rule standing at an approved change.
-        Assert.Equal(506, inDocument.Length);
+        // 507 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
+        Assert.Equal(507, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1628,7 +1629,8 @@ public partial class ArchitectureConformance
         // count's part on the members holding four dated rating counts.
         // 447 at the 13.10 correction of 2026-10-08: the checklist's two parts on the store's copies.
         // 462 at 17.2: the fourteen parts a card's rule row states and the checklist's part on a live rule past its mark.
-        Assert.Equal(462, checkedElements);
+        // 463 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
+        Assert.Equal(463, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

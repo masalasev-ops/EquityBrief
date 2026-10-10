@@ -50,6 +50,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_snapshot` | HistoryPull | none | HistoryPull |
 | `pulled_holding` | HistoryPull | HistoryPull | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+| `chart_average` | ChartAverager | none | ChartAverager |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
 | `level` | LevelBuilder | LevelBuilder | LevelBuilder |
@@ -293,7 +294,7 @@ Grain: one row per ticker per session a pull reached.
 
 Primary key: `ticker`, `session_date`.
 
-**This is not the bar table, and no night reads it** (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
+**This is not the bar table, and no night reads it but the chart averages step** (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
 
 **`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no night, listing, score or page ever read one. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
 
@@ -498,6 +499,22 @@ Grain: one row per ticker, session and indicator name.
 Primary key: `ticker`, `session_date`, `name`.
 
 `bar_count` is a column rather than a note because an average of sixty bars labelled two hundred day is a lie, and the only way to see it later is to have stored what it was computed over.
+
+### chart_average
+Grain: one row per ticker and average the chart draws.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `name` | TEXT | `sma20`, `sma50` or `sma200`, held by a check |
+| `night` | TEXT | the session date of the night that wrote the row |
+| `sessions` | TEXT | a JSON list of pairs, each a stored session and the average's value on it, for the sessions the `indicator` rows leave null and the warm-up fills; empty where there is no warm-up |
+| `pull` | TEXT | the pull the warm-up was read from, null where none was |
+| `reason` | TEXT | why no warm-up was read, null where one was |
+
+Primary key: `ticker`, `name`.
+
+The chart's averages over the sessions the `indicator` rows leave empty, computed by the chart averages step over each name's sessions before its first stored bar from `pulled_bar`, at the bar store's scale, and the stored year (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads). Each night replaces a name's rows whole, and a name the bar store no longer holds keeps none. The values sit in one list a row because the chart is their one reader and draws them a name at a time; no rule, level, listing, gate or card reads this table.
 
 ### swing
 Grain: one row per ticker, session and direction.

@@ -7,6 +7,7 @@ using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Indicators;
 
 namespace EquityBrief.Tests.Bars;
 
@@ -18,7 +19,7 @@ namespace EquityBrief.Tests.Bars;
 // throughout, BBB leaving on 2026-08-03, CCC joining on 2026-08-17, and DDD leaving on 2026-06-30,
 // before any span below begins, so it is never asked for. Every bar and print is constructed here,
 // and every count is derived from the exchange's calendar over the span rather than read back.
-// see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
 public class HistoryPullTests
 {
     const string Index = "GSPC";
@@ -469,10 +470,13 @@ public class HistoryPullTests
     }
 
     // The ruling's own claim, asserted by behaviour: a night run over a store already holding pulled
-    // history computes what it computes over a store holding none. The pulled rows are built to move
-    // everything a reader of them would compute: the years before the fixture's at a price of one, every
-    // session of its year again at a price no name trades at, and a print on every tenth weekday. The
-    // two stores are compared table by table, every table a night writes and the run log's rows aside.
+    // history computes what it computes over a store holding none, but the chart's averages, the one
+    // figure the night reads through the pulled bars and only the chart draws. The pulled rows are built
+    // to move everything a reader of them would compute: the years before the fixture's at a price of one,
+    // every session of its year again at a price no name trades at, and a print on every tenth weekday.
+    // The two stores are compared table by table, every table a night writes and the run log's rows aside,
+    // the chart averages read from the hostile pull in the one and from none in the other.
+    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
     [Fact]
     public async Task ANightOverAStoreHoldingPulledHistoryComputesExactlyWhatItComputesWithoutIt()
     {
@@ -564,7 +568,7 @@ public class HistoryPullTests
                 int.Parse(Rows(plain, "SELECT COUNT(*) FROM level;")[0], CultureInfo.InvariantCulture) > 0,
                 "The fixture night stored no band, so a comparison of bands would pass on nothing.");
 
-            foreach (var table in tables)
+            foreach (var table in tables.Where(table => table != "chart_average"))
             {
                 var sql = $"SELECT * FROM {table};";
 
@@ -573,11 +577,24 @@ public class HistoryPullTests
                     $"The night over the store holding pulled history wrote {table} differently.");
             }
 
+            // The chart's averages, the one table set aside, read the hostile pull on the one store and no pull on the
+            // other, three averages a name on each.
+            const string Averages = "SELECT ticker || '|' || name || '|' || COALESCE(pull, '') || '|' || COALESCE(reason, '') FROM chart_average ORDER BY ticker, name;";
+
+            Assert.Equal(
+                [.. tickers.SelectMany(ticker => ChartAverager.Averages.Order(StringComparer.Ordinal).Select(name => $"{ticker}|{name}||{ChartAverager.NoPull}"))],
+                Rows(plain, Averages));
+            Assert.All(Rows(pulled, Averages), row => Assert.Contains("|history-pull-hostile|", row, StringComparison.Ordinal));
+            Assert.Equal(tickers.Length * ChartAverager.Averages.Count, Rows(pulled, Averages).Count);
+
             // And the night left the pulled rows as it found them.
             Assert.Equal(held, Rows(pulled, "SELECT COUNT(*) FROM pulled_bar;"));
 
-            // The pages read nothing of them either: each name's page, its chart among it, and tonight's
-            // list and the universe drawn over the two stores are the same pages.
+            // The pages read nothing else of them: with the chart's averages set aside on both stores, each name's page,
+            // its chart among it, and tonight's list and the universe drawn over the two stores are the same pages.
+            plain.Execute("DELETE FROM chart_average;");
+            pulled.Execute("DELETE FROM chart_average;");
+
             using var plainHost = new Reading.ReadSurface.Host(plain.Root);
             using var pulledHost = new Reading.ReadSurface.Host(pulled.Root);
             using var plainClient = plainHost.CreateClient();
@@ -599,7 +616,7 @@ public class HistoryPullTests
     // history pull, the migration that creates its two tables and the sweep's history, which reads them by
     // hand and never from a night, are the only files outside the suite that name either table or its store,
     // so no stage, score, record or page can read them without this failing first.
-    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
+    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the chart's averages alone
     [Fact]
     public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
     {
@@ -621,8 +638,9 @@ public class HistoryPullTests
         // the night; the setup ledger reads the pulled market series and companies in its history build, by hand, and on
         // the night the night's own tables; and the filings refresher reads the pulled companies' filers in its whole
         // refresh by hand, and on the night the night's own companies; and the walk-forward tester declares the pulled
-        // tables its procedures read through the sweep's history, by hand and never on the night.
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // tables its procedures read through the sweep's history, by hand and never on the night. The chart averager is
+        // the one reader on the night, of the pulled bars alone, for figures only the chart draws.
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Indicators/ChartAverager.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

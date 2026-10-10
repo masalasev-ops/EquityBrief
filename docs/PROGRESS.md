@@ -41919,3 +41919,64 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: 21cc7fd2, th
 Carried:    the sign-offs of phases 15, 16 and 17, owed to fresh sessions; the market events table's 2027 releases and
             the meeting of 2028, which the 16.3 correction writes; and the 589 calls of 2026-10-10 no run log records,
             put to the operator.
+
+### 3.1 - correction: the chart's averages drawn from its first session where the night reads the sessions before the store's year from the pulled history, and the chart says where they came from   2026-10-10
+
+Corrects:   3.1's averages on the chart, which the indicator engine computes over the bar store's one year alone, so
+            the 20, 50 and 200-day lines had no value on the year's first 19, 49 and 199 sessions: CVX's 200-day line
+            had a value on 53 of the 252 sessions drawn on 2026-10-08, the first on 2026-07-27.
+Found:      by the operator's phase 18 brief of 2026-10-09, reading CVX's page.
+Ruled:      by the operator on 2026-10-10, word for word: "please feel free to merge Prs at appropriate times. Do not
+            wait for me. Finish phase 18".
+Built:      a night step after the indicators, the chart averages step, reading each name's sessions before its first
+            stored bar from the newest pull holding that session, brought to the bar store's scale by the ratio of the
+            two closes on it and stopped at the first session the pull or the exchange's calendar lacks, and computing
+            the three averages with the indicator arithmetic over those sessions and the year; it stores the values on
+            the sessions the indicator rows leave empty in a table of its own, migration 84, with the pull or why none
+            was read, replacing a name's rows each night and keeping none for a name with a gap, which its row names.
+            The indicator engine is not edited, so no rule's version moves, and no rule, level, listing, gate or card
+            reads the table: the register check names the step's file as the second left out of the evaluation path,
+            with the stores it touches read off every component's declaration. The chart draws the stored values where
+            the indicator rows leave a session empty and says beneath it which pull they came from, or that the
+            averages start partway and why. Two decisions superseded and the step's own written (see: The chart's
+            averages are read over the sessions before the store's year from the pulled history at the store's scale,
+            by a step only the chart reads); CLAUDE.md's bars rule, section 14's step with the note's numbers moved,
+            sections 7 and 16's rows and 15.9's chart part, `SCHEMA.md`, 3.1's text in the build plan with two
+            operating rows, and the roster's gap-refusal and register-append-only rows say so, the prior text in
+            `CHANGELOG.md`.
+Measured:   read-only over the store at 05:17Z on 2026-10-10: 1,505 of the 1,510 names holding bars have a pull
+            holding their first stored session, 2025-10-09 for 1,499 of them, and 5 hold no pulled history before it.
+            The exchange's calendar starts on 2025-01-01, so a warm-up holds about 193 sessions until the store's first
+            session passes 2025-10-17, from about the night of 2026-10-20, and the 200-day line starts a few sessions in
+            until then.
+Tests:      2133, five more: three over constructed stores worked by hand, the 200-day average on the year's first
+            session read through 199 pulled sessions, a pull at 0.98 of the store's prices brought to the store's, and a
+            name with no pull and one whose pull misses the session before the year each saying why; the name page over
+            the fixture's night drawing the 50-day line on every session and the 200-day line on all the pull reaches,
+            and naming the pull, and a name with none drawing the 200-day line from its 200th session and saying why;
+            and the step writing no row for a gapped name and naming the gap. The night over a store holding hostile
+            pulled history writes every table as it does without it but the chart averages, which read the hostile pull.
+Claims:     1154, five more: the night's step, the step's catalogue and matrix rows, its store's row and the chart's
+            part, named after phase 17's report.
+Pins:       none moved; the indicator engine is untouched, and the citations moved in pinned files are comments, which
+            no pin reads.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone. The averages read through
+            the pulled sessions, broken by the step keeping none of them, as though it read the bar store alone, the
+            brief's mutation: predicted red at the two store tests reading the averages through the pull and at the page
+            test, and green at the no-pull test, the gap test and the hostile night. Result: the three red and the three
+            green, as predicted, made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f712c137, the
+            entry's commit, the second reading the first's suite result.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2133 of 2133 tests ran with none failed, migrations 0 to
+            84 with none pending, schema version 84, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1154 claims, 1154 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1165
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2133 of 2133 tests ran.
+Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and 15.2 corrections as PRs 416 to 418,
+            merged on 2026-10-10, and the 6.4 correction and 18.0 as PRs 419 and 420, gated and merging once phase 17's
+            monthly run by hand has finished; in progress, this correction, which changes the night and merges before a
+            weeknight's night with migration 84 applied, its first night read the morning after; next, 6.10 the written
+            key retired and 16.3 the dividend estimate with the market events table's 2027 rows, a correction changing
+            the night merged at most one a night; then 18.1 to 18.5.
+Carried:    the two operating rows, the kept bars brought to the store's scale before the warm-up reaches them and the
+            step's time over its first five nights.

@@ -26,6 +26,10 @@ public partial class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // The 3.1 correction, the chart's averages from the history pulled before the store's year.
+            CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
+            CheckReach.Key(Scope.MatrixTable, "Chart averager"),
+
             // 12.4, the shape proposer and the shape command.
             CheckReach.Key(Scope.CatalogueTable, "Shape proposer"),
             CheckReach.Key(Scope.MatrixTable, "Shape proposer"),
