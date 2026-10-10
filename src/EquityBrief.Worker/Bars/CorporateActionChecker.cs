@@ -31,7 +31,10 @@ public sealed record ActionCheckOutcome(
     IReadOnlyList<string>? Returning = null,
     // Members whose stored year misses a session the exchange traded, other than those
     // an action, a retry or a return asked for, whose years this night asked for whole.
-    IReadOnlyList<string>? Missing = null);
+    IReadOnlyList<string>? Missing = null,
+    // The dividends the night's answer carried for the names the night stores, whole, which the dividend keeper keeps.
+    // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
+    IReadOnlyList<DividendPaid>? Paid = null);
 
 // A suspect name whose nightly retries are spent: when it was last asked for, as the UTC
 // instant its row carries, and the reason that refetch failed for.
@@ -435,7 +438,8 @@ public sealed class CorporateActionChecker : IComponent
             retried,
             spent,
             returning,
-            missing);
+            missing,
+            [.. today.Where(action => action.Paid is not null && members.Contains(action.Ticker)).Select(action => action.Paid!)]);
 
         await AppendAsync(connection, runId, observed, outcome);
 

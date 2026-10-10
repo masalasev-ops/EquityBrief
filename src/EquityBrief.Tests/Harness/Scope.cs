@@ -2427,9 +2427,9 @@ internal static class Scope
             Verdict.Pass,
             "a real captured action on a current member triggers a full-year refetch, the replacement is atomic, a failure of the check itself marks the name suspect with its reason rather than passing, a suspect name is asked for again on the nights its retries allow and not after, a new action starts its count again, and the run page's stale and failed region names a suspect name on every night it stays suspect, with when it was last asked for and why from the night its retries are spent",
             ByActions),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Check splits and dividends, and refetch the full year for any name affected.")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.CorporateActions.ActionsStep)] = new Scoped(
             Verdict.Pass,
-            "the action feed is read once per kind and only current members with an action are refetched",
+            "the action feed is read once per kind and only current members with an action are refetched, and of the captured answer's four dividends the one a member the night stores paid is handed to the keeper and kept once as the answer files it",
             ByActions),
         [CheckReach.Key(FailureTable, "A gap in one name's series, chart")] = new Scoped(
             Verdict.Pass,
@@ -3609,6 +3609,137 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The quote runs")] = new Scoped(
             Verdict.Pass,
             "a session's quotes against the cap with the median and longest delay and the runs by what each came to, worked by hand, and a session that asked none saying so",
+            ByReadSurface),
+
+        // 18.2, the dividend keeper and the Treasury reader, their three stores and the Treasury's step, the report's windows
+        // and the dividends history run, its six failures, and the name page's seven regions and nine marks.
+        [CheckReach.Key(CatalogueTable, "Dividend keeper")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership it reads, the dividend events it reads and inserts, the run log it writes and the splits and dividends feed it asks, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Dividend keeper")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Treasury reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the Treasury yields it reads and inserts, the run log it writes and the Treasury's feed it asks, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Treasury reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Estimate trends")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Dividend events")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Treasury yields")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.NightlyRun.TreasuryStep)] = new Scoped(
+            Verdict.Pass,
+            "the night reads the Treasury after the filings refresh and before its request, one request keeping each session of the year to the night's and none after it, read off the night's output, its run log's order and the store",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "Report windows")] = new Scoped(
+            Verdict.Pass,
+            "the growth over the eight newest of thirteen quarters and the margins over the twelve newest, the consensus at its five points, the rating counts over the twelve months to the night with a month no fetch fell in holding none, and the trailing yield over the 365 days to the night, each worked by hand; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Dividend history run")] = new Scoped(
+            Verdict.Pass,
+            "two members today stated at one weighted call each before the first request, the one served kept and the other named, and 25,001 refused past the stop with no request and no row; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The Treasury refuses, or answers in a form that cannot be read")] = new Scoped(
+            Verdict.Pass,
+            "a refusing feed keeps nothing and the step's row is partial with the refusal's words, the sessions kept before standing, and an answer naming no 10-year column, one that is no table and a line whose date or yield cannot be read are refused",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A segment table whose segments sum to no total")] = new Scoped(
+            Verdict.Pass,
+            "Netflix's captured report, one country against the company, sums to no total and draws no table with what it summed to and why, a table missing its total by two units of its rounding is refused and one missing by one stands, and segments summing only with their eliminations are refused",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A quarter stored before its cash flow lines were kept")] = new Scoped(
+            Verdict.Pass,
+            "a quarter stored before the lines were kept reads its gross profit and free cash flow as not read, and a line the provider filed as none on a fetch that read them as not filed",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A month of the analysts' ratings no fetch fell in")] = new Scoped(
+            Verdict.Pass,
+            "a month whose one fetch filed no counts and a month whose fetch fell after the night each hold none, worked by hand over constructed fetches",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The dividends history run past the stop")] = new Scoped(
+            Verdict.Pass,
+            "one member more than the stop allows is stated and refused before the first request, with no dividend and no run row written",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No results release before the newest")] = new Scoped(
+            Verdict.Pass,
+            "an archive listing one announcement asks for nothing and reads no release before the newest, a pass holding none hands what management said the newest alone, and the release before is handed to no other section",
+            ByExpectations),
+        [CheckReach.Key("15.9 Name", "The latest quarter")] = new Scoped(
+            Verdict.Pass,
+            "each line's reported figure and its year earlier read back off the replayed fixture's page against the store, the region dated by the newest filing, and the growth bars against figures worked from the stored quarters; over constructed lines each difference in its unit and in per cent with its sign in the rise or the fall hue and each value whole, and a line the fetch did not read and one not filed each saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What management said")] = new Scoped(
+            Verdict.Pass,
+            "the guidance is drawn above what is working beside what is not, each the section's own sentences in their order, and prose not opening on the three words in order is drawn as written; on the fixture's page given every written region the region stands after the latest quarter in section 4's order dated as written, and a page whose pass wrote none draws none",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Segments")] = new Scoped(
+            Verdict.Pass,
+            "the segments' revenue and the company's total read back off the replayed fixture's page against the figures the captured report states, with the share bars and the filing's table folded beneath, dated by the filing; on a page holding no filing, dated by its newest written part with each written part under the day it was written; and a table summing to no total standing with what its rows summed to and why",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Margins")] = new Scoped(
+            Verdict.Pass,
+            "each quarter's three margins read back off the replayed fixture's page against figures worked from the stored quarters, the quarters folded beneath a row each, the region dated by the fetch",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Analysts")] = new Scoped(
+            Verdict.Pass,
+            "each period of the trend and its revisions in the page's order, the mean target and the mean rating in one line, both years' trends as lines and the fetch's month's rating counts with every other month dashed, read back off the replayed fixture's page against the store, labelled as the analysts' and dated by the fetch; a store whose fetch kept no trend saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend safety")] = new Scoped(
+            Verdict.Pass,
+            "the forward rate, the yield at the last close, the 10-year on the night with the spread's sign, both payouts with what each was read from and the years raised read back off the replayed fixture's page against figures worked from the store, the 10-year line over every session the store holds, and a payer keeping no dividend saying it reads no years; over constructed figures each part at the quote, and each figure the store cannot read saying why",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Valuation")] = new Scoped(
+            Verdict.Pass,
+            "each quarter's multiple read back off the replayed fixture's page against the close after its report over its four quarters' earnings worked from the store, the line saying why no multiple was read on the night, and over a constructed reading and two constructed members the multiple placed in its own range, the members' dots and their table with the stock's own row marked and the medians",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Growth bars")] = new Scoped(
+            Verdict.Pass,
+            "each quarter's two growths a bar in the rise or the fall hue with its value whole and a title, about one zero rule beneath a row naming both, and a single quarter saying the bars need two",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Margin lines")] = new Scoped(
+            Verdict.Pass,
+            "three lines with each point whole and a title, a margin no quarter holds drawn as no point, each line named at its end, and a single quarter saying the lines need two",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Share bars")] = new Scoped(
+            Verdict.Pass,
+            "each segment's share a bar of its length with a title and its change in the rise or the fall hue with its sign, and a table summing to no total saying why none is drawn",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Estimate trend")] = new Scoped(
+            Verdict.Pass,
+            "the fiscal year's five points whole with a title, the year filed at one point drawn as none, and neither year at two points saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Rating bars")] = new Scoped(
+            Verdict.Pass,
+            "a month's counts stacked a grade a bar with its count whole and a title, a grade of none drawn as none, eleven months dashed saying no fetch fell in, and no month with a fetch saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Dividend bars")] = new Scoped(
+            Verdict.Pass,
+            "a year not compared and one held level each in grey, a cut, a raise and a year so far starred, each with its total, payments and title, and a single year saying the bars need two",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Yield lines")] = new Scoped(
+            Verdict.Pass,
+            "the trailing yield and the 10-year each a line over the sessions, its newest point whole with a title, and a single session saying no line is drawn",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Multiple band")] = new Scoped(
+            Verdict.Pass,
+            "each quarter's multiple whole on its dot within the band of their range and the night's beside them, and a single quarter saying the band needs two",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Peer dots")] = new Scoped(
+            Verdict.Pass,
+            "each member's multiple a dot with a title, the stock's own larger and named, the median a rule, and a single member holding a multiple saying the dots need two",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "The dividend calendar refuses, or answers in a form that cannot be read")] = new Scoped(
             Verdict.Pass,
@@ -4846,6 +4977,9 @@ internal static class Scope
         // 17.9's two, which the plan describes as the worker step applying approved decisions and as the alarm.
         ["Loop apply"] = "17.9",
         ["Live alarm reader"] = "17.9",
+        // 18.2's two, which the plan describes by the dividends the night keeps and the yield it reads.
+        ["Dividend keeper"] = "18.2",
+        ["Treasury reader"] = "18.2",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4943,6 +5077,10 @@ internal static class Scope
         ["Alarm periods"] = "17.9",
         // 18.1's request, which the plan names as the request the read surface writes; the live quotes derive from it.
         ["Quote requests"] = "18.1",
+        // 18.2's three, which the plan names as the trend the fetch keeps, the bulk dividends and the Treasury yield.
+        ["Estimate trends"] = "18.2",
+        ["Dividend events"] = "18.2",
+        ["Treasury yields"] = "18.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4984,6 +5122,23 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Reading column")] = "18.1",
         [CheckReach.Key("15.9 Name", "Rules by role")] = "18.1",
         [CheckReach.Key("15.10 Run", "The quote runs")] = "18.1",
+        // 18.2's name page: its seven regions between the card and the earnings reactions and the nine marks they draw.
+        [CheckReach.Key("15.9 Name", "The latest quarter")] = "18.2",
+        [CheckReach.Key("15.9 Name", "What management said")] = "18.2",
+        [CheckReach.Key("15.9 Name", "Segments")] = "18.2",
+        [CheckReach.Key("15.9 Name", "Margins")] = "18.2",
+        [CheckReach.Key("15.9 Name", "Analysts")] = "18.2",
+        [CheckReach.Key("15.9 Name", "Dividend safety")] = "18.2",
+        [CheckReach.Key("15.9 Name", "Valuation")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Growth bars")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Margin lines")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Share bars")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Estimate trend")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Rating bars")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Dividend bars")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Yield lines")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Multiple band")] = "18.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Peer dots")] = "18.2",
         // 17.3's Ledger page under Universe, its three regions.
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
@@ -6364,6 +6519,13 @@ internal static class Scope
         ["A quote asked outside the regular session"] = "18.1",
         ["The day's quotes reach their cap"] = "18.1",
         ["The provider answers a quote with no price, or does not answer"] = "18.1",
+        // 18.2's six, which the plan names by the raw table drawn where none sums and the Treasury yield read once.
+        ["The Treasury refuses, or answers in a form that cannot be read"] = "18.2",
+        ["A segment table whose segments sum to no total"] = "18.2",
+        ["A quarter stored before its cash flow lines were kept"] = "18.2",
+        ["A month of the analysts' ratings no fetch fell in"] = "18.2",
+        ["The dividends history run past the stop"] = "18.2",
+        ["No results release before the newest"] = "18.2",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -6556,6 +6718,9 @@ internal static class Scope
         // 18.1's cap and interval, which the plan names as the day's cap and the five minutes.
         ["Live quotes a day"] = "18.1",
         ["Quote interval"] = "18.1",
+        // 18.2's two, which the plan names as the eight quarters, the twelve and the pull of the dividends' history.
+        ["Report windows"] = "18.2",
+        ["Dividend history run"] = "18.2",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -6597,6 +6762,8 @@ internal static class Scope
         ["Append tonight's setups to the ledger"] = "17.3",
         // 17.3's step, the filings refresh after the quarters fetch.
         ["Read the archive's daily index"] = "17.3",
+        // 18.2's step, the Treasury's 10-year after the filings refresh.
+        ["Ask the Treasury"] = "18.2",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Ask for six reports taken in turn"] = "11.4",

@@ -34,6 +34,8 @@ public sealed class RecordedFilingsArchiveFeed(string folder) : IFilingsArchiveF
         (ArchiveDocument.SegmentReport, "segment-report-", ".htm"),
         (ArchiveDocument.ReleaseExhibit, "release-", ".htm"),
         (ArchiveDocument.CompanyFacts, "company-facts-", ".json"),
+        (ArchiveDocument.PreviousFilingIndex, "previous-filing-types-", ".htm"),
+        (ArchiveDocument.PreviousReleaseExhibit, "previous-release-", ".htm"),
     ];
 
     public int Requests { get; private set; }
@@ -71,6 +73,27 @@ public sealed class RecordedFilingsArchiveFeed(string folder) : IFilingsArchiveF
             },
             ticker,
             cik,
+            cancellation);
+    }
+
+    // The previous release over the same captures, by the route the live feed runs.
+    public Task<FiledRelease?> PreviousReleaseAsync(
+        string ticker,
+        string cik,
+        IReadOnlyList<IndexedFiling> results,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        return SecEdgarArchive.PreviousReleaseAsync(
+            (request, _) =>
+            {
+                asked.Add(request);
+
+                return Task.FromResult<string?>(File.ReadAllText(Held(request, ticker)));
+            },
+            cik,
+            results,
             cancellation);
     }
 

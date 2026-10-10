@@ -578,7 +578,7 @@ public partial class FixtureExpectations
         // which the recorded model answered with nothing twice, the cycle is omitted with the one
         // line saying the theme could not be refreshed, and the theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(6, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
             [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", CauseNotWritten()],

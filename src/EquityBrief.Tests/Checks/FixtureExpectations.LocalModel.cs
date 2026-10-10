@@ -418,7 +418,7 @@ public partial class FixtureExpectations
             outcome.NotWritten.Where(section => section.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)),
             section => Assert.Contains(unread.Unreadable!, section.Reason, StringComparison.Ordinal));
         Assert.Equal(
-            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            ["What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
     }

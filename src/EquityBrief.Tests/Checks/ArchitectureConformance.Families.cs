@@ -343,11 +343,13 @@ public partial class ArchitectureConformance
         // correction, the chart averages' night step, catalogue and matrix rows, store and the chart's part, 1147 from
         // the 6.10 correction, which took out the overnight queue's catalogue and matrix rows, its step, section 17's
         // row, section 18's row and part, and the run page's region, 1148 from the 16.3 correction, section 17's
-        // row on the dividend's steps, and 1167 from 18.1, the quote job's catalogue and matrix rows, its two stores,
+        // row on the dividend's steps, 1167 from 18.1, the quote job's catalogue and matrix rows, its two stores,
         // section 17's two rows, section 18's three, the range bar, the name page's eight parts and the run page's
-        // quote runs.
+        // quote runs, and 1199 from 18.2, the dividend keeper's and the Treasury reader's catalogue and matrix rows,
+        // three stores, the Treasury's step, section 17's two rows, section 18's six, the name page's seven regions and
+        // the nine marks.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1167),
+            (789, 853, 6, 4, 855, 876, 1199),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

@@ -132,6 +132,14 @@ public partial class FixtureExpectations
         Assert.Equal(Listed(handed.GetProperty("What the company sells")), Titles("What the company sells"));
         Assert.Equal(Listed(handed.GetProperty("The segment commentary")), Titles("The segment commentary"));
 
+        // What management said is handed the newest release and the one before it, and no other section the one before.
+        var before = Query(store, "SELECT id FROM source_document WHERE title LIKE 'Previous results release,%';").Single();
+
+        Assert.Equal(Listed(handed.GetProperty("What management said")), Titles("What management said"));
+        Assert.DoesNotContain(
+            Query(store, $"SELECT source_ids FROM research_section WHERE ticker = '{ticker}' AND section <> 'What management said';"),
+            ids => ids.Contains(before, StringComparison.Ordinal));
+
         foreach (var section in Evidence.AcrossTheEvidence)
         {
             Assert.Equal(Listed(handed.GetProperty("acrossTheEvidence")), Titles(section));
@@ -204,7 +212,7 @@ public partial class FixtureExpectations
         Assert.Equal(ResearchRunner.Written, first.Outcome);
         Assert.Empty(first.Written);
         Assert.Equal(
-            ["What the company sells", "The segment commentary", "The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"],
+            ["What the company sells", "The segment commentary", "The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"],
             first.NotWritten.Where(line => line.Reason == ProseWriter.NothingHanded).Select(line => line.Section).ToArray());
 
         // Opened again the same day: nothing fetched, nothing asked, and the pass's row
@@ -273,7 +281,7 @@ public partial class FixtureExpectations
         // industry cycle is the theme's, and no pass has written the theme the name's
         // industry is, so it is warranted by the same rule and the pass would refresh the
         // theme before anything of the name's own.
-        string[] warranted = ["The cause of each large move", "The industry cycle", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
+        string[] warranted = ["The cause of each large move", "What management said", "The industry cycle", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"];
 
         Assert.Equal(ResearchRunner.Unavailable, outcome.Outcome);
         Assert.Equal(warranted, outcome.Warranted);
@@ -538,7 +546,7 @@ public partial class FixtureExpectations
 
         var paused = outcome.NotWritten.Where(line => line.Reason.StartsWith("research is paused:", StringComparison.Ordinal)).Select(line => line.Section).ToArray();
 
-        Assert.Equal(["The cause of each large move", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"], paused);
+        Assert.Equal(["The cause of each large move", "What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The short version"], paused);
         Assert.Equal("0", Query(store, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{paid.Identity}';").Single());
         Assert.Equal(["paused"], Query(store, "SELECT DISTINCT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage LIKE 'research call:%';"));
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage = 'research';"));
@@ -586,7 +594,8 @@ public partial class FixtureExpectations
 
         Assert.Equal(8, moves.Count);
 
-        var release = Query(store, "SELECT published_on FROM source_document WHERE url LIKE 'https://www.sec.gov/%'").Single();
+        // The newest release, and not the one before it, which only what management said is handed.
+        var release = Query(store, "SELECT published_on FROM source_document WHERE url LIKE 'https://www.sec.gov/%' AND title LIKE 'Results release,%'").Single();
         var filed = DateOnly.ParseExact(release, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         Assert.Equal(new DateOnly(2026, 8, 18), filed);
@@ -835,7 +844,7 @@ public partial class FixtureExpectations
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         // The cause of each large move, which the recorded model answered with nothing twice, is not among them.
         Assert.Equal(
-            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            ["What management said", "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalSettings().Model}';").Single());

@@ -32,6 +32,12 @@ public enum ArchiveDocument
     // One day's index of every filing the archive disseminated, which the night's
     // filings refresh reads to find the members that filed.
     DailyIndex,
+
+    // The results announcement before the newest one's index page and its release exhibit, which a research pass reads
+    // what management said in the quarter before against.
+    PreviousFilingIndex,
+
+    PreviousReleaseExhibit,
 }
 
 // One document the archive is asked for.
@@ -224,4 +230,11 @@ public interface IFilingsArchiveFeed
     Task<ArchiveFilings> FilingsAsync(string ticker, string cik, CancellationToken cancellation = default);
 
     int Requests { get; }
+
+    // The release of the results announcement before the newest among those a read of the archive found, which a research
+    // pass reads beside the newest; none where the archive holds no earlier announcement or it carries no release. A feed
+    // that reads no earlier release answers none.
+    // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+    Task<FiledRelease?> PreviousReleaseAsync(string ticker, string cik, IReadOnlyList<IndexedFiling> results, CancellationToken cancellation = default) =>
+        Task.FromResult<FiledRelease?>(null);
 }

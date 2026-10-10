@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-4enull6a24tlh7b28t1x1",
+  "object": "chat.completion",
+  "created": 1791636589,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "On guidance management now expects fourth fiscal quarter 2026 revenue to be in the range of 1930000000 to 1950000000 with a mid-point representing year-over-year growth of approximately 37% [D1], which represents an improvement from the previous release that expected third fiscal quarter 2026 revenue in the range of 1730000000 to 1750000000 with a mid-point representing year-over-year growth of approximately 29% [D2].\n\nWhat is working includes record Q3 results and outlook reflecting the growing relevance of strategy and portfolio enabling customers to solve complex engineering challenges across end markets [D1], strong momentum in commercial communications showing 56 percent growth [D1], solid performance in aerospace defense and government with 14 percent growth [D1], and double-digit growth across all end markets for the electronic industrial solutions group including automotive energy general electronics and semiconductor [D2].\n\nWhat is not working includes no specific negative items named by management in the newest release [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18749,
+    "completion_tokens": 239,
+    "total_tokens": 18988,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

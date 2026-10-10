@@ -436,21 +436,33 @@ public partial class ReadSurface
 
         // Eighteen since the 5.8 correction took the listing history off the page, twenty-one since the 12.2
         // correction drew the nights the live list picked a name before and named the swing readings and the gates,
-        // and nineteen since 18.1 folded why the name is here, its gates, its swing readings and its member readings
+        // nineteen since 18.1 folded why the name is here, its gates, its swing readings and its member readings
         // into how the rules read it, the night's figures into the levels and the nights before into the plan, and
-        // drew the decision card as a region of its own.
-        Assert.True(rows.Count >= 19, $"Section 4 names {rows.Count} region(s), expected at least 19.");
+        // drew the decision card as a region of its own, and twenty-three since 18.2 spread the numbers over the latest
+        // quarter, what management said, the segments, the margins, the analysts, the dividend's safety and the
+        // valuation.
+        Assert.True(rows.Count >= 23, $"Section 4 names {rows.Count} region(s), expected at least 23.");
 
         using var store = await FixtureExpectations.WithListings();
 
         var night = NightIn(store);
+
+        // The quarters fetch over every member as the night makes it after the close, which keeps the quarters, the trend,
+        // the ratings and the dividend part the margins, the analysts, the dividend's safety and the valuation draw.
+        await new EquityBrief.Worker.Quarters.QuarterFetcher(
+            EquityBrief.Core.Providers.RecordedFundamentalsFeed.FromFolder(FixtureFolder()),
+            EquityBrief.Core.Providers.RecordedHistoricalBarFeed.FromFolder(FixtureFolder()),
+            () => 0,
+            EquityBrief.Core.Time.FixedClock.At(FixtureReplay.Night, EquityBrief.Core.Time.SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "replay-quarters");
 
         // The fixture's researched name given every written region a page draws, each dated the night
         // the page draws, and its industry a cycle.
         string[] written =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.AfterTheNumbers,
+            .. SinglePageApp.AfterTheQuarter,
+            .. SinglePageApp.InTheSegments,
             .. SinglePageApp.AfterTheRules.Where(section => section != ClaimRules.CycleSection),
         ];
 
@@ -495,8 +507,22 @@ public partial class ReadSurface
 
         foreach (var ticker in names)
         {
-            var titles = ContentsTitles(await client.GetStringAsync($"/screens/name/{ticker}"));
+            var page = await client.GetStringAsync($"/screens/name/{ticker}");
+            var titles = ContentsTitles(page);
             var at = titles.Select(title => rows.IndexOf(title)).ToArray();
+
+            // The researched name's written regions dated as written: what management said, and the segments, which hold
+            // no filing in this store, by their newest written part, each written part under the day it was written.
+            if (ticker == "KEYS")
+            {
+                Assert.Contains($"<div class=\"lbl\">What management said</div><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{night}</b>", page, StringComparison.Ordinal);
+                Assert.Contains($"<div class=\"lbl\">Segments</div><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{night}</b>", page, StringComparison.Ordinal);
+
+                foreach (var part in SinglePageApp.InTheSegments)
+                {
+                    Assert.Contains($"data-section=\"{part}\"><div class=\"dl\"><span class=\"dl-k\">Written</span><b>{night}</b>", page, StringComparison.Ordinal);
+                }
+            }
 
             Assert.True(
                 at.All(index => index >= 0),

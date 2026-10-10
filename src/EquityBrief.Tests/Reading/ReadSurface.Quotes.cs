@@ -261,9 +261,10 @@ public partial class ReadSurface
             Assert.Contains("<li><a href=\"#chart\">", page, StringComparison.Ordinal);
         }
 
-        // The written section's entry carries the day it was written, which the script reads against the last visit.
+        // The entry of the region holding the written section carries the day it was written, which the script reads
+        // against the last visit.
         Assert.Contains(
-            $"<li data-dated=\"{night}\"><a href=\"#s-what-the-company-sells\">",
+            $"<li data-dated=\"{night}\"><a href=\"#segments\">",
             WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{names[0]}")),
             StringComparison.Ordinal);
 

@@ -42181,3 +42181,78 @@ Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2 and 6.4 corrections
 Carried:    the delay of a quote asked inside a session, read under the operating row on the day's cap over the
             first five sessions after this merges, which reads each quote's delay beside its count; and the plan
             column's trailing exit cut at its edge, a 4.6 correction.
+
+### 18.2 - the latest quarter, what management said, the segments, the margins, the analysts, the dividend's safety and the valuation   2026-10-10
+
+Built:      seven regions of a stock's page between the decision card and the earnings reactions, each worked by one
+            function in the core from stored figures and drawn by nine marks: the latest quarter line by line against
+            the analysts' estimate kept before its report and the same quarter a year earlier, with eight quarters'
+            growth; what management said, a paid section written from the newest and the previous results releases,
+            the previous fetched free from the SEC's archive and handed to it alone, drawn as its guidance above what
+            is working beside what is not; the segments, a table a stated rule makes of the filing's where the
+            segments sum to the company's revenue within rounding, and the filing's table as filed with why where none
+            do; twelve quarters' margins; the analysts' consensus, revisions, trend, ratings by month and mean target,
+            each labelled theirs and dated; a payer's dividend against its earnings, its free cash flow and the
+            Treasury's own 10-year, with its years raised; and the valuation against its own quarters and its
+            industry's S&P 500 members. The quarters fetch keeps each quarter's gross profit and cash flow lines, the
+            estimate trend and the analysts' mean and target; the dividend keeper keeps each dividend the night's bulk
+            answer carries for a member it stores, and a `dividends --history` run asks each member once; the Treasury
+            reader keeps the 10-year a session after the filings refresh, one request a night to the Treasury and none
+            to the provider (migration 86). A quotation in any section is held to the words of a document its sentence
+            cites. Ten decisions written, two superseding one each; sections 4, 7, 12.2, 14, 15.5, 15.9, 16, 17 and 18
+            of the architecture, `SCHEMA.md`, the runbook, the nightly hard rule's list, 18.4's text, six rows of the
+            roster and the guide's report section say so, the prior text in `CHANGELOG.md`.
+Found:      by this checkpoint's own tests before its pull request: the segment rule passed over money rows a table
+            marks with its own currency, so Netflix's table read as stating no segment's revenue where its one country
+            sums to no total; the page called the analysts' mean rating a scale from a strong buy at one, where the
+            captures show five is a strong buy (Apple's 4.0417 is its 48 ratings weighted five down to one); the
+            consensus table read the trend in its key's order, next year before this year; the dividend bars drew a
+            year held level as a cut; the quotation rule read the quotations of a sentence citing nothing, swelling a
+            retry past the local model's context, and a quotation left open past its sentence's end went unread, now
+            refused whole; a percentage crossed into the statistics world before it was scaled, drawing
+            25.280200000000004 on an element; the trend's columns named with digits, which the schema's reader does not
+            read, now named in words; and the runbook's pass cost was stale since the 6.10 correction, $0.0337 and
+            $0.0387 where the pass cost $0.0366 and $0.0405 with what management said.
+Measured:   the segment rule over the captured reports: Apple's five regions sum to 109,417 million exactly, Keysight's
+            two groups to 1,846 million with its "Total segments" groups left out, and Netflix's one country to none.
+            The Treasury's table, 195 sessions of 2026 to 2026-10-09, 172 to the fixture's night with the 10-year 4.80
+            on it. The fixture's pass: what management said refused on the local model's three drafts for stating the
+            release before's guided figures, which the facts file does not hold, so it is asked in words and sits in
+            the paid lane; five sections paid for $0.0366 and every section paid for $0.0405, with no paid call made,
+            the two management answers constructed and saying so. Read back off the replayed fixture's pages: MSFT's
+            quarter, growth, margins, analysts, dividend and valuation against the store, KEYS's segments against the
+            captured report.
+Tests:      2157, twenty-nine more: the latest quarter, the growth and the margins, the multiples, the segment rule
+            over the captures, the analysts, a payer's dividend, the valuation's order and medians, the tiles' growth
+            and yield, the estimate trend, the Treasury's table and its reader, the night's dividends, the history run
+            and its stop, the dividends answer, the release before handed to what management said and the replay's
+            parts; the quotation rule's five; the nine marks in three, what management said in its parts, the regions'
+            tables and the regions read back off the pages; and the actions step keeping the night's dividends.
+Claims:     1199, thirty-two more, each named as added after phase 17's report: the dividend keeper's and the Treasury
+            reader's catalogue and matrix rows, three stores, the Treasury's step, section 17's two rows, section 18's
+            six failures, the name page's seven regions and the nine marks; section 14's dividends step keeps its row
+            under its new words.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the plan's mutation and one on the Treasury's dating. First, the segment
+            table including eliminations: the words marking an elimination and an intersegment amount taken out of
+            the words marking no segment. Predicted red at the segment table's test, where segments summing to the
+            total only with their eliminations stand as a table, and green at its captures, none of which files an
+            elimination. Second, the Treasury read keeping every session it publishes, its cut at the night's session
+            dropped. Predicted red at the Treasury reader's test, at the replay's yields and at the night's order test,
+            each holding no session after the night, and green at the table's own reading. Result: the first red at
+            the segment table's test, at the eliminations standing as a table, its captures and the page's segments
+            green, as predicted; the second red at the reader's test, 195 sessions kept against 172, at the replay's
+            yields and at the night's order test, 23 sessions after the night, the table's reading green, as
+            predicted. Each made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2157 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            18.1's quote captured outside the session merged into it, committed unchanged as 818e5fbd: 1199 claims and
+            1199 PASS, none failing, out of scope or unexamined, and 43 checks run and passed, the second reading the
+            suite result the first wrote over that commit.
+Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2, 6.4, 3.1, 6.10 and 16.3 corrections and 18.0, PRs 419 to
+            423 merged on 2026-10-10; gated, 18.1, its pull request 425 opened on the operator's word of 2026-10-10 with
+            the quote captured outside the session and merging before this one; in progress, this checkpoint, its pull
+            request 424 retargeted to main once 18.1 merges; next, 18.3 to 18.5.
+Carried:    the release before's guided figures in the facts file, owed at 18.4, which names each figure's owning
+            region; the dividends history run by hand over the three indices, one weighted call a member with the
+            provider's count read first and the day's allowance held; and the paid answers for what management said
+            constructed with no call, re-recorded only on the operator's word.

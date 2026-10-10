@@ -98,8 +98,11 @@ public enum Store
     TakenTrade,
     TakenRecord,
     DividendReading,
+    DividendEvent,
     SweepAnswer,
     EstimateReading,
+    EstimateTrend,
+    TreasuryYield,
     ForwardReturn,
     Facts,
     Fundamentals,
@@ -151,6 +154,8 @@ public enum Feed
     IdentifierMapping,
     // The provider's delayed quote of one listing, asked by the quote job alone for a name page open in the session.
     Quote,
+    // The Treasury's daily par yield curve for a year, keyless and free, asked once a night after the close.
+    TreasuryYield,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

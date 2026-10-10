@@ -1,0 +1,32 @@
+{
+  "constructed": "DeepSeek's answer to What management said, its first draft, in this pass, written for a section no capture answers from the two releases the pass hands it, release-KEYS.htm as [D1] and previous-release-KEYS.htm as [D2]: each quotation copied word for word from the first, each figure one of the facts file's guidance figures and marked [N], the release before's figures, which the facts file does not list, said in words, and the usage the prompt's size the local model's runtime counted over the same two releases, 18235 tokens, with the answer's at four characters a token; no paid call was made, by the operator's ruling of 2026-10-09 (R7).",
+  "id": "constructed-what-management-said-deepseek",
+  "object": "chat.completion",
+  "created": 1790764108,
+  "model": "deepseek-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "On guidance, management now expects fourth quarter revenue of $1.93 billion to $1.95 billion and non-GAAP earnings per share of $3.34 to $3.40 [N] [D1]. The release before guided the third quarter alone, so the newest outlook carries the guidance a quarter forward and above where the release before set it [D2].\n\nWhat is working, the release says, is the company's strategy and portfolio, whose \"growing relevance\" it credits for the quarter's record results [D1]. It reports growth in its industrial group \"across the semiconductor, general electronics and automotive and energy markets\" [D1]. Management says it remains \"confident in our ability to sustain our momentum and deliver long-term value creation\" [D1].\n\nWhat is not working, the newest release names nothing going badly in the quarter, and among the risks it lists are \"tariff and trade policy impacts and order cancellations\" [D1].",
+        "reasoning_content": ""
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18235,
+    "completion_tokens": 224,
+    "total_tokens": 18459,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 18235
+  }
+}

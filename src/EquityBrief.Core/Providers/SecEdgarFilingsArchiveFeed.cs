@@ -85,6 +85,19 @@ public sealed class SecEdgarFilingsArchiveFeed(
             .ConfigureAwait(false);
     }
 
+    public async Task<FiledRelease?> PreviousReleaseAsync(
+        string ticker,
+        string cik,
+        IReadOnlyList<IndexedFiling> results,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        return await SecEdgarArchive
+            .PreviousReleaseAsync(FetchAsync, cik, results, cancellation)
+            .ConfigureAwait(false);
+    }
+
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>> RevenueAsync(
         string cik,
         IReadOnlyList<string> concepts,

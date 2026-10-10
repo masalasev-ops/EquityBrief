@@ -25,6 +25,127 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - CLAUDE.md - the nightly hard rule's list names the Treasury's daily par yields, one request a night to the Treasury and not the provider
+Authorised by: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
+Was:
+> ... and the declared ex-dividend dates of the 21 sessions after the night in one request a session from the provider's dividend calendar on the operator's ruling of 2026-10-05 (see: The night asks the dividend calendar for each of the next 21 sessions, one request a session), so a night costs the same whether the universe is fifty names or the fifteen hundred of the S&P 500, 400 and 600.
+Now:
+> ... (see: The night asks the dividend calendar for each of the next 21 sessions, one request a session), and the Treasury's daily par yields of the session's year in one request to the Treasury and not the provider, on the operator's approval of phase 18's plan on 2026-10-09 (see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row), so a night costs the same whether the universe is fifty names or the fifteen hundred of the S&P 500, 400 and 600.
+Why: 18.2 reads the Treasury's 10-year once a night for a payer's dividend, a request of its own that grows with nothing, and the hard rule lists every request the night makes.
+
+### 2026-10-10 - ARCHITECTURE.html - section 4 spreads the numbers over the latest quarter and six regions after it, two components join the catalogue and the matrix, what management said joins 12.2's lanes, section 14 keeps the night's dividends and reads the Treasury, 15.5 holds thirty marks, 15.9 draws the seven regions, and 16, 17 and 18 gain three stores, two limits and six failures
+Authorised by: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+Was:
+> Then the contents, in two columns, numbering from one up to nineteen regions in the order of this table, ...
+
+> Six regions are written by the paid model when a report is asked for. The other thirteen need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and ten of the thirteen change every night.
+
+> <tr><td>The numbers</td><td>Where the night stored readings of the member's reported quarters, what the numbers say first: ... folded beneath, beside everything else this region draws (see: Four readings ...). Then a snapshot of the newest filing, ... and folded beneath, the balance sheet, valuation on each earnings basis, the dividend the provider files, and the segment table, each segment named once over its lines (see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider)</td><td>What the numbers say worked out by the fundamental reader from the quarters the quarter fetcher stored, ...; the rest computed from provider fundamentals and filings, ... (see: Fundamentals are stored with the filing date they came from); ... (see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none); ...</td><td>free after the fetch</td><td>what the numbers say nightly, the rest quarterly and on a regenerate</td></tr>
+
+> <tr><td>What the company sells</td><td>The business explained from the company's own filing</td><td>Model, from the filing</td><td>paid, on demand</td><td>with the research record</td></tr>
+
+> <tr><td>The segment commentary</td><td>Each segment's results in words</td><td>Model, from the filing's segment table</td><td>paid, on demand</td><td>with the research record</td></tr>
+
+> A name whose report has never been asked for therefore still has a complete short report: every region but the six the paid model writes, with the moves table's cause column empty ...
+
+> the quarter fetcher's row: ...</td><td>reported quarters, quarter asks, companies, dividend readings</td><td>asks ... with no request of its own; ...
+
+> the fundamentals fetcher's row: ... (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone) ...
+
+> the research runner's row: ... (see: A theme is the industry the index names for a member, and one theme pass serves every member it names)</td></tr>
+
+> 12.2's lane paragraph: ... and sits in the paid lane on this machine because the comparison measured the local model failing it there. The ...
+
+> <li>Check splits and dividends, and refetch the full year for any name affected.</li>
+
+> the note beneath section 14: ... Step 25 is carved out of the second by name and calls no model: ... The night's own requests, after the refresh, ...
+
+> <p>Twenty-one marks. They are defined once and every screen draws from this list. ...
+
+> 15.9's reads: ... and the newest quote the quote job stored inside the regular session the page is open in, with the reported quarters, the dividend and the year's high and low the tiles read, from 18.1.</p>
+
+> <tr><td>The numbers snapshot</td><td>at the head of the numbers: twelve figures ...; the other filed tables folded under one heading and each under its own, the segments with each group's label once over its lines; ... (see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider)</td></tr>
+
+> <tr><td>What the numbers say</td><td>at the head of the numbers where the page's night stored readings of the member's reported quarters: ...
+
+> 16's reported quarters: one row per member per fetch per quarter, ... and member companies: ... and from 15.2 the analysts' five rating counts the same answer files</td><td>forever, ...
+
+> 16's closing paragraph: ... (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then).</p>
+Now:
+> twenty-three regions; "Five regions are written by the paid model when a report is asked for. The other eighteen need no paid call to be drawn, though three of them carry a part a model writes, what the company sells and the segment commentary in the segments, the causes of the moves and the dated items the research read, and twelve of the eighteen change every night."
+
+> the numbers row replaced by The latest quarter, with what the numbers say and the snapshot drawn inside it and every filed table but the segments folded beneath (see: The numbers open on a snapshot of the newest filing with every other filed figure but the segments folded beneath it, and the report names no provider); What management said, Segments, Margins, Analysts, Dividend safety and Valuation after it; what the company sells and the segment commentary drawn inside Segments
+
+> every region but the five the paid model writes, with the segments' written parts and the moves table's cause column empty
+
+> the quarter fetcher writing estimate trends with each quarter's gross profit and cash flow lines and the analysts' mean and target; the fundamentals fetcher citing the decision drawing the analysts' figures; the research runner fetching the release before the newest for what management said alone; the dividend keeper and the Treasury reader in the catalogue and the matrix
+
+> a lane row for what management said, and in 12.2's paragraph "What management said reads two whole releases together, near twenty thousand tokens, and is held to stating none of the release before's figures, which the fixture's local model stated in each of its three drafts, so it sits in the paid lane from 18.2."
+
+> <li>Check splits and dividends, refetch the full year for any name affected, and keep each dividend the answer carries for a member the night stores (see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read).</li>, and step 26 asking the Treasury for its par yields, with the note saying step 26 calls no model and makes one request a night to the Treasury, and the night's own requests after the Treasury's yields
+
+> <p>Thirty marks. ... with nine marks after the range bar: growth bars, margin lines, share bars, estimate trend, rating bars, dividend bars, yield lines, multiple band and peer dots
+
+> 15.9 reading the quarters' cash flow lines, the estimate trends, every fetch's ratings, mean and target, the dividends kept, the Treasury's 10-year and the industry's members' readings from 18.2; the snapshot and what the numbers say drawn in the latest quarter after its lines; seven rows from The latest quarter to Valuation
+
+> 16's reported quarters and member companies keeping the lines and the mean and target from 18.2, three stores, estimate trends, dividend events and Treasury yields, two matrix rows and a sentence on the bars and fundamentals columns; 17's Report windows and Dividend history run; and 18's six rows, from the Treasury refusing to no results release before the newest
+Why: 18.2 draws the latest quarter line by line, what management said, the segments, the margins, the analysts, the dividend's safety and the valuation as regions of their own, each worked by one core function from stored figures, which section 4 and 15.9 specify region by region.
+
+### 2026-10-10 - SCHEMA.md - the quarters fetch keeps the cash flow lines, the trend and the analysts' mean and target, the dividend keeper and the Treasury reader own a table each, and the fundamentals row's ratings cite the decision drawing the analysts' figures
+Authorised by: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries
+Was:
+> ... and how many rate the name at each of five grades from a strong buy to a strong sell, as the provider files them (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone); ...
+Now:
+> ... as the provider files them (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one); ...; and `reported_quarter` gains `gross_profit`, `capital_spending`, `free_cash_flow`, `dividends_paid` and `lines_read`, `company` gains `rating_mean` and `target_price`, and the ownership table and the tables gain `estimate_trend` written by QuarterFetcher, `dividend_event` written by DividendKeeper and `treasury_yield` written by TreasuryReader
+Why: the decision the citation named is superseded by the one drawing the analysts' figures on the page, and the three stores and the new columns are what 18.2's regions read.
+
+### 2026-10-10 - RUNBOOK.md - the providers name the dividends history and the release before the newest, the US Treasury is a provider of its own, a pass's cost counts what management said, and a section says how the dividends history is run
+Authorised by: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
+Corrects: the pass's cost still counted three sections on the local model and four through the spend cap at $0.0337, and every section paid at $0.0387, which the 6.10 correction's retirement of the key had already moved; found counting the sections what management said joins at 18.2
+Was:
+> | EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news, and from 18.1 a name page's delayed quote in the regular session | ...
+
+> | SEC EDGAR | filings, segment tables, the earnings press release that carries guidance, and a call transcript where a company files one | ...
+
+> **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, three on the local model and four through the spend cap for $0.0337, ...
+
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0387, ...
+Now:
+> | EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news, from 18.1 a name page's delayed quote in the regular session, and from 18.2 each member's dividends history, asked once by hand | ...
+
+> | SEC EDGAR | filings, segment tables, the earnings press release that carries guidance, a call transcript where a company files one, and from 18.2 the results release before the newest, which what management said is read against | ...
+
+> ... two on the local model and five through the spend cap for $0.0366, ...
+
+> ... a pass with every section paid cost $0.0405, ...; and a row for the US Treasury, a sentence on the dividends history's weight, and a section, The report's quarter, analysts, dividends and valuation
+Why: the dividends history and the release before are new provider asks, the Treasury is read every night, and what management said is a paid section a pass now writes.
+
+### 2026-10-10 - BUILD_PLAN.md - 18.4's text adds the release before's guided figures to the facts file, and an obligation row carries them from 18.2
+Authorised by: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+Was:
+> ... Each figure of the facts file is owned by one region, named in each prompt, and the checker refuses a written figure another region owns; the short version and the headline are written in a round after every other section ...
+Now:
+> ... and the checker refuses a written figure another region owns; the facts file carries the release before's guided figures beside the newest's, read off that release's guidance passage by the code that reads the newest's, so what management said states the guidance it moved from (owes: The release before's guidance figures in the facts file); the short version and the headline are written in a round after every other section ...; and the carried obligations gain The release before's guidance figures in the facts file, from 18.2 to 18.4
+Why: the facts file carries the newest release's guided figures alone, so 18.2 asks the section to say in words how the outlook moved, and 18.4, which names each figure's owning region, is where the release before's figures can join it.
+
+### 2026-10-10 - .claude/rules/checks.md - read-surface counts thirty marks and every roster row 18.2's tests extend says what they assert
+Authorised by: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+Was:
+> read-surface: each of the twenty-one marks is asserted over a full input and over the input it degrades on ... and no rule drawing either naming the failure's hue |
+
+> fixture-expectations: ... and an answer that is no object or a price with no time refused |
+
+> claim-admissibility: ... with the retry told what to do about each |
+
+> nightly-run: ... and refuses a checkout off main or ahead of origin/main before any worker exists |
+
+> nightly-cost: ... a refusal leaving the facts as they were and a step past its limit asking the archive for nothing |
+
+> corporate-actions: ... a year reaching it taken on the retry after |
+Now:
+> read-surface: each of the thirty marks, and each of the six rows closing on its 18.2 clause: the regions read back against the store and what management said drawn in its three parts; the report's arithmetic, the segment rule over the captures, the trend, the Treasury, the dividends and the replay; the quotation rule; the Treasury's step; the Treasury's feed among the files that may hold a client; and the night's dividends kept from the actions step
+Why: the nine marks join the vocabulary, and each row says what its 18.2 tests assert.
+
 ### 2026-10-10 - BUILD_PLAN.md - 18.1 reads the early closes into the session's own list, and its palette clause holds every text colour on its ground and the level, rise, fall and caution inks on their own fills
 Authorised by: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
 Was:

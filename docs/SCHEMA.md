@@ -37,6 +37,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `kept_bar` | BarFetcher | none | none |
 | `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `live_quote` | QuoteJob | none | none |
+| `treasury_yield` | TreasuryReader | none | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -107,6 +108,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
+| `dividend_event` | DividendKeeper | none | none |
+| `estimate_trend` | QuarterFetcher | none | none |
 | `sweep_answer` | SweepAnswers | SweepAnswers | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -275,6 +278,19 @@ Grain: one row per name and ask the quote job answered with a price.
 Primary key: `ticker`, `asked_at`.
 
 **The delayed quote a name's page asked for in the regular session, written by the quote job alone** (see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap). The job inserts one row for each ask it answers with a price and never updates or deletes one; an ask outside the session, at the day's cap or answered with no price stores nothing and says why on its run log row. The cap is read as the rows asked inside the session. A name's page draws the newest row stored inside the session it is open in, and the Run page counts a session's rows against the cap; no night, rule or list reads the table.
+
+### treasury_yield
+Grain: one row per session the Treasury published a 10-year par yield for.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the session, as the Treasury's table dates it |
+| `ten_year` | REAL | the 10-year par yield in per cent, a statistic, as the Treasury published it |
+| `run_id` | TEXT | the run of the night that kept it |
+
+Primary key: `session_date`.
+
+**The Treasury's own 10-year par yield, kept a session a row by the Treasury reader alone** (see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row). The night's step asks for the session's calendar year once and inserts each session to the night's that the table does not hold, a session held keeping its first row; nothing updates or deletes a row. A session whose 10-year cell the Treasury left empty is not stored, and an empty answer stores nothing. The name page reads the newest row on or before its night and the year's rows for a payer's dividend; no rule, list or gate reads the table, and it is apart from `market_bar` because the Treasury is not the provider and a yield is no close.
 
 ### calendar
 Grain: one row per ticker, event date and kind.
@@ -1766,6 +1782,25 @@ Primary key: `ticker`, `fetched_at`.
 
 **The quarters fetch keeps the dividend part of the answer it already asks for, at no further request** (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars). No row is deleted or updated.
 
+### dividend_event
+Grain: one row per ticker per ex-dividend date.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | a name the night stores, or a member the history run asked for |
+| `ex_date` | TEXT | the ex-dividend date |
+| `amount` | TEXT | decimal in code, the dividend a share as the provider restated it for splits on the day it was read |
+| `unadjusted` | TEXT | decimal in code, the dividend a share as paid, null where the answer states none |
+| `declared_on`, `record_on`, `paid_on` | TEXT | the declaration, record and payment dates, each null where the answer states none |
+| `period` | TEXT | how often the provider says the company pays, as it states it, null where it states none |
+| `currency` | TEXT | the currency the provider states, null where it states none |
+| `source` | TEXT | `night` where the night's bulk answer carried it and `history` where the history run asked for it |
+| `run_id` | TEXT | the run that kept it |
+
+Primary key: `ticker`, `ex_date`.
+
+**Each dividend a member paid, kept by the dividend keeper alone** (see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read). The night's corporate action step hands it every dividend the bulk answer it already asked for carries for a name the night stores, and the history run on the operator's command asks each member an index holds today for its dividends from a date. A date held keeps its first row, so a dividend the night and the history both name is written once, and nothing updates or deletes a row. A split after a dividend was read leaves its amount on the basis of the day it was read. The name page reads a payer's rows for the years it raised and its trailing yield; no rule, list or gate reads the table.
+
 ### sweep_answer
 Grain: one row per sweep run recorded.
 
@@ -1858,7 +1893,7 @@ Kept forever, never updated. Providers restate, and keeping the filing date is w
 
 **Two providers fill one row and `source` says which filled what, part by part.** The company financials endpoint supplies eleven parts, the analysts' `ratings` and the `dividend` among them, and the filings archive five: `segments`, `revenueTables`, `tableGrowth`, `guidance` and `facts`, which that endpoint files for no name at all. The archive's five sit on the newest filing's row alone for the reason the ratios do and one of its own: a segment table is read from one filing's report page and the guidance from one announcement's exhibit, so writing either onto a historical row would state that an older quarter's segments were this quarter's, and deriving them per filing would cost a request per row for figures nothing reads. A seventeenth part, `periodEnd`, is the quarter's end and comes from either provider on any row: the company financials endpoint labels a quarter with the last day of its month, and the archive's index states the period each 10-Q and 10-K covers, so a row takes the period of the periodic report ending within a week of that label and keeps the label only where the archive was not read or indexes no such report, and `source` names whose date it is (see: A quarter ends on the date the company's own filing states).
 
-`source` distinguishes three reasons a part can be empty and they are not the same morning: the provider files it for nobody, the archive answered and served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch. `segments` holds the report the figures were read from, the scale the table stated, its period columns and its groups in the order the table states them; `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `tableGrowth` holds each of those tables' groups' change on the same months a year before, computed from the columns the table states (see: A group's growth in a filing's own tables is computed from the columns the table states); `guidance` holds management's own passage with the exhibit and the date it was filed on, and never a figure struck from it (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it); `ratings` holds the analysts' mean rating on a scale of one to five, their mean target price and how many rate the name at each of five grades from a strong buy to a strong sell, as the provider files them (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone); `dividend` holds, on the newest filing's row alone for the reason the ratios do, the forward annual rate a share, the forward yield and the payout ratio as the provider states them, and the ex-dividend and pay dates, as the provider files them and a company paying none filing a rate of zero and no dates (see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none); `facts` holds the archive's own filed figures under the concept each was filed against, over the same twelve quarters the filings are stored over, for a named set of concepts rather than every concept the archive holds.
+`source` distinguishes three reasons a part can be empty and they are not the same morning: the provider files it for nobody, the archive answered and served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch. `segments` holds the report the figures were read from, the scale the table stated, its period columns and its groups in the order the table states them; `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `tableGrowth` holds each of those tables' groups' change on the same months a year before, computed from the columns the table states (see: A group's growth in a filing's own tables is computed from the columns the table states); `guidance` holds management's own passage with the exhibit and the date it was filed on, and never a figure struck from it (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it); `ratings` holds the analysts' mean rating on a scale of one to five, their mean target price and how many rate the name at each of five grades from a strong buy to a strong sell, as the provider files them (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one); `dividend` holds, on the newest filing's row alone for the reason the ratios do, the forward annual rate a share, the forward yield and the payout ratio as the provider states them, and the ex-dividend and pay dates, as the provider files them and a company paying none filing a rate of zero and no dates (see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none); `facts` holds the archive's own filed figures under the concept each was filed against, over the same twelve quarters the filings are stored over, for a named set of concepts rather than every concept the archive holds.
 
 ### fundamentals_snapshot
 Grain: one row per ticker per fetch.
@@ -1898,6 +1933,9 @@ Grain: one row per ticker per fetch per quarter.
 | `shares` | TEXT | decimal in code, the shares outstanding the quarter's balance sheet files, on this fetch's split basis, null where it files none and on every row a fetch stored before the column existed |
 | `interest_expense` | TEXT | from 15.2, decimal in code, the quarter's interest expense as the income statement files it, with the sign the provider files it under, null where it files none |
 | `interest_read` | INTEGER | from 15.2, 1 where the fetch that stored the row read the income statement's interest expense, filed or not, and 0 on every row stored before, whose null says nothing about what was filed |
+| `gross_profit` | TEXT | from 18.2, decimal in code, the quarter's gross profit as the income statement files it, null where it files none |
+| `capital_spending`, `free_cash_flow`, `dividends_paid` | TEXT | from 18.2, decimal in code, the quarter's capital spending, free cash flow and dividends paid as the cash flow statement files them, with the sign the provider files each under, null where it files none |
+| `lines_read` | INTEGER | from 18.2, 1 where the fetch that stored the row read the gross profit and the three cash flow lines, filed or not, and 0 on every row stored before, whose nulls say nothing about what was filed |
 
 Primary key: `ticker`, `fetched_at`, `period_end`.
 
@@ -1941,6 +1979,8 @@ Grain: one row per ticker per storing fetch.
 | `industry` | TEXT | the GICS industry, null where none is filed |
 | `sub_industry` | TEXT | the GICS sub-industry, null where none is filed |
 | `strong_buy`, `buy`, `hold`, `sell`, `strong_sell` | INTEGER | from 15.2, the analysts' five rating counts the same answer files, null where it files none and on every row stored before |
+| `rating_mean` | REAL | from 18.2, the analysts' mean rating on the provider's scale from one, a strong sell, to five, a strong buy, a statistic, null where the answer files none and on every row stored before |
+| `target_price` | TEXT | from 18.2, decimal in code, the analysts' mean target price as the answer files it, null where it files none and on every row stored before |
 
 Primary key: `ticker`, `fetched_at`.
 
@@ -2025,6 +2065,26 @@ Grain: one row per ticker per night the night asked for its estimates.
 Primary key: `ticker`, `session_date`.
 
 Kept forever, never updated and never deleted, the only history of the estimates the revisions variant read, since the provider keeps none (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night). The estimates fetcher writes a row for each member it asks the provider for, in the swing filter's step before any verdict is written, and a night run again reads its row back and asks nothing; a member the provider does not serve stores nothing, so a run of the rest of the night asks for it again. The swing filter hands each reading to the verdicts of the rules reading it, which read it as raised where the current estimate stands above the one 30 days before (see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before).
+
+### estimate_trend
+Grain: one row per ticker per quarters fetch per forward period.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `fetched_at` | TEXT | UTC instant of the quarters fetch, the one its `reported_quarter` rows carry |
+| `period` | TEXT | `0q`, `+1q`, `0y` or `+1y`: the current and the next quarter and fiscal year, as the answer names them |
+| `period_end` | TEXT | the end of that period, the newest the answer files under its word |
+| `eps_average`, `eps_low`, `eps_high`, `eps_year_ago` | TEXT | decimal in code, the consensus earnings a share, its range and the year-earlier figure, each null where the answer files none |
+| `eps_analysts` | INTEGER | how many analysts make the earnings estimate, null where none is filed |
+| `revenue_average`, `revenue_low`, `revenue_high`, `revenue_year_ago` | TEXT | decimal in code, the consensus revenue, its range and the year-earlier figure, each null where none is filed |
+| `revenue_analysts` | INTEGER | how many analysts make the revenue estimate, null where none is filed |
+| `eps_now`, `eps_seven_days_ago`, `eps_thirty_days_ago`, `eps_sixty_days_ago`, `eps_ninety_days_ago` | TEXT | decimal in code, the consensus as the answer states it now and 7, 30, 60 and 90 days before, each null where none is filed |
+| `up_last_seven_days`, `up_last_thirty_days`, `down_last_seven_days`, `down_last_thirty_days` | INTEGER | how many analysts raised and cut the estimate over the last 7 and 30 days, each null where none is filed |
+
+Primary key: `ticker`, `fetched_at`, `period`.
+
+**The analysts' earnings trend each quarters fetch carries, kept by the quarter fetcher in the write that stores its quarters** (see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries). A period the answer files no entry for is not stored, and nothing updates or deletes a row. The name page reads the newest fetch on or before its night for the analysts' region and the growth tile, and the newest fetch made before a quarter's report for that quarter's revenue estimate; no rule, list or gate reads the table, and no figure in it reaches a facts file (see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one).
 
 ### news_pulse
 Grain: one row per ticker per date.

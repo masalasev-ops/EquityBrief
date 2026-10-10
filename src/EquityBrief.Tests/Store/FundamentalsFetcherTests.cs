@@ -800,7 +800,7 @@ public class FundamentalsFetcherTests
         // AAPL's, read off the captured payload by hand: a mean rating of 4.0417 on a scale of one
         // to five, a mean target price of 324.4016, and 23, 7, 16, 1 and 1 analysts at each grade
         // from a strong buy to a strong sell.
-        // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+        // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
         using var store = new TemporaryStore().Migrated();
 
         await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");

@@ -77,6 +77,7 @@ public static class RetryBrief
         ClaimRules.TwoCasesWithoutSides => "Write the bull case as a paragraph opening \"" + ClaimRules.CaseFor + "\" and the bear case as a paragraph opening \"" + ClaimRules.CaseAgainst + "\".",
         ClaimRules.FigureNoCitedDocumentHolds => "End the sentence with " + ClaimRules.NightMark + " where the figure is one listed under Facts, cite the listed document that states it, or remove it.",
         ClaimRules.UnusableAnswer => "Answer in plain prose, with no JSON.",
+        ClaimRules.QuotationNoCitedDocumentHolds => "Copy the words exactly as the cited document writes them, or say what it says without quotation marks.",
         RiskFields.NotFields => "Answer with the JSON object the section asks for and nothing else.",
         RiskFields.FactNotListed => "Name a fact exactly as it is listed under Facts, or confirm the risk by an event of one kind.",
         RiskFields.DirectionNotNamed => "Write the direction as \"" + RiskFields.RisesAbove + "\" or \"" + RiskFields.FallsBelow + "\".",

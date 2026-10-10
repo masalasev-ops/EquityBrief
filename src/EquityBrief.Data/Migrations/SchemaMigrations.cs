@@ -706,7 +706,74 @@ public static class SchemaMigrations
         new Migration(83, "add loop_proposal.change, index_family_trade's exit and risk_moves and decision_card.approved, and create loop_reference, loop_decision, loop_applied, provisional_setting and loop_alarm", CreateLoopApprovals),
         new Migration(84, "create chart_average", CreateChartAverages),
         new Migration(85, "create quote_request and live_quote", CreateLiveQuotes),
+        new Migration(86, "add reported_quarter's gross profit and cash flow lines and company's mean rating and target, and create estimate_trend, dividend_event and treasury_yield", CreateReportParts),
     ];
+
+    // What the name page's quarter, analysts and dividend regions read beside the quarters: each quarter's gross profit,
+    // capital spending, free cash flow and dividends paid with a mark saying the fetch read them, the analysts' mean
+    // rating and target on the company row, the earnings trend's four forward periods a fetch, each dividend the night's
+    // bulk answer or the dividends history named for a member, and the Treasury's 10-year par yield a session.
+    // see: The quarters fetch keeps the gross profit and cash flow lines, the estimate trend and the analysts' mean and target its answer carries
+    // see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read
+    // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
+    const string CreateReportParts = @"
+        ALTER TABLE reported_quarter ADD COLUMN gross_profit TEXT;
+        ALTER TABLE reported_quarter ADD COLUMN capital_spending TEXT;
+        ALTER TABLE reported_quarter ADD COLUMN free_cash_flow TEXT;
+        ALTER TABLE reported_quarter ADD COLUMN dividends_paid TEXT;
+        ALTER TABLE reported_quarter ADD COLUMN lines_read INTEGER NOT NULL DEFAULT 0;
+        ALTER TABLE company ADD COLUMN rating_mean REAL;
+        ALTER TABLE company ADD COLUMN target_price TEXT;
+
+        CREATE TABLE estimate_trend (
+            ticker             TEXT NOT NULL,
+            fetched_at         TEXT NOT NULL,
+            period             TEXT NOT NULL CHECK (period IN ('0q', '+1q', '0y', '+1y')),
+            period_end         TEXT NOT NULL,
+            eps_average        TEXT,
+            eps_low            TEXT,
+            eps_high           TEXT,
+            eps_year_ago       TEXT,
+            eps_analysts       INTEGER,
+            revenue_average    TEXT,
+            revenue_low        TEXT,
+            revenue_high       TEXT,
+            revenue_year_ago   TEXT,
+            revenue_analysts   INTEGER,
+            eps_now              TEXT,
+            eps_seven_days_ago   TEXT,
+            eps_thirty_days_ago  TEXT,
+            eps_sixty_days_ago   TEXT,
+            eps_ninety_days_ago  TEXT,
+            up_last_seven_days   INTEGER,
+            up_last_thirty_days  INTEGER,
+            down_last_seven_days INTEGER,
+            down_last_thirty_days INTEGER,
+            PRIMARY KEY (ticker, fetched_at, period)
+        ) STRICT;
+
+        CREATE TABLE dividend_event (
+            ticker       TEXT NOT NULL,
+            ex_date      TEXT NOT NULL,
+            amount       TEXT NOT NULL,
+            unadjusted   TEXT,
+            declared_on  TEXT,
+            record_on    TEXT,
+            paid_on      TEXT,
+            period       TEXT,
+            currency     TEXT,
+            source       TEXT NOT NULL CHECK (source IN ('night', 'history')),
+            run_id       TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+
+        CREATE TABLE treasury_yield (
+            session_date  TEXT NOT NULL,
+            ten_year      REAL NOT NULL,
+            run_id        TEXT NOT NULL,
+            PRIMARY KEY (session_date)
+        ) STRICT;
+    ";
 
     // A name page's ask for the delayed quote in the regular session, a row a press, and the quote the worker's quote job
     // asked for it: the price and its own time, the previous close and the change on it, and each band's distance at the

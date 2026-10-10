@@ -132,7 +132,8 @@ public partial class ReadSurface
         string[] placed =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.AfterTheNumbers,
+            .. SinglePageApp.AfterTheQuarter,
+            .. SinglePageApp.InTheSegments,
             .. SinglePageApp.AfterTheRules,
             SinglePageApp.InTheDates,
             SinglePageApp.InTheMovesTable,
@@ -453,28 +454,30 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
-        // Six accepted over one pass, stated in advance: the segment commentary and the short version
-        // on their retries and the rest at their first draft, while the cause of each large move came
-        // back with no text twice over the recordings and is not written.
-        Assert.Equal(6, Accepted(store, "KEYS").Count);
+        // Seven accepted over one pass, stated in advance: the segment commentary and the short version
+        // on their retries and the rest at their first draft, what management said among them from 18.2,
+        // while the cause of each large move came back with no text twice over the recordings and is not
+        // written.
+        Assert.Equal(7, Accepted(store, "KEYS").Count);
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // All six drawn as sections, and the cause of each move, which the moves table draws where
+        // All seven drawn as sections, and the cause of each move, which the moves table draws where
         // it is written, said to be not written.
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.Contains("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
 
-        // Section 4's order: the numbers, what the company sells and its segments, the chart,
-        // how it got here, the levels and the plan, then what would make it wrong and the two
-        // cases. Read as the order the page draws them in, so a page drawing them otherwise says
-        // which came where.
+        // Section 4's order: the numbers in the latest quarter, what management said, what the company
+        // sells and its segments, the chart, how it got here, the levels and the plan, then what would
+        // make it wrong and the two cases. Read as the order the page draws them in, so a page drawing
+        // them otherwise says which came where.
         (string Part, int At)[] drawn =
         [
             ("the numbers", At("<section class=\"numbers\"")),
+            ("what management said", Section("What management said")),
             ("what it sells", Section("What the company sells")),
             ("the segments", Section("The segment commentary")),
             ("the chart", At("class=\"level-chart\"")),
@@ -695,7 +698,7 @@ public partial class ReadSurface
         Assert.True(state.Success);
         Assert.StartsWith("the research is stale: ", state.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"a filing dated {filed} arrived after it was written", state.Groups[1].Value, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.All(Regex.Matches(page, "<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"[^\"]*\" data-as-of=\"([^\"]*)\"").Select(match => match.Groups[1].Value), date => Assert.Equal("2026-08-01", date));
 
         // The option to have them rewritten, with its cost before it.
@@ -725,7 +728,7 @@ public partial class ReadSurface
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
         Assert.Contains("<p class=\"research-paused\" data-cap=\"day\" data-resumes-at=\"2026-09-16T00:00:00Z\">", page, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
 
         // Stale as well, and still no control, because a press would be refused at the cap.
         Assert.Contains("data-state=\"stale\"", page, StringComparison.Ordinal);
@@ -760,7 +763,7 @@ public partial class ReadSurface
         // page says what the pass came to.
         var page = await ResearchedPage(store, "KEYS", nextDay);
 
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.Matches(
             "<p class=\"research-pass\" data-outcome=\"unavailable\" data-as-of=\"2026-09-09\">the research model did not answer when a pass was asked for on 2026-09-09, so the pass did not start and the stored research is shown as written",
             page);

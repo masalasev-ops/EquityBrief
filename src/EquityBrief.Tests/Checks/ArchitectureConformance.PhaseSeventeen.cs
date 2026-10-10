@@ -61,13 +61,20 @@ public partial class ArchitectureConformance
     internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims, .. PhaseEighteenRows];
 
     // The rows phase 18 lands, by checkpoint: 18.1's quote job, its two stores, the day's cap and its three failures, and
-    // the name page's parts, the range bar, the Run page's quote runs and the interval.
+    // the name page's parts, the range bar, the Run page's quote runs and the interval; and 18.2's dividend keeper and
+    // Treasury reader, their three stores, the Treasury's step, the report's windows and the dividends history run, its six
+    // failures, and the name page's seven regions and nine marks.
     internal static string[] PhaseEighteenRows =>
     [
         .. ComponentAccess.QuoteJobRows,
         .. SchemaColumns.QuoteStoreRows,
         .. FixtureExpectations.QuoteRows,
         .. Reading.ReadSurface.NamePageRows,
+        .. ComponentAccess.ReportComponentRows,
+        .. SchemaColumns.ReportStoreRows,
+        CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.TreasuryStep),
+        .. FixtureExpectations.ReportRows,
+        .. Reading.ReadSurface.ReportPageRows,
     ];
 
     // The rows the document loses after phase 17's report, each counted by the report of the phase that added it: the

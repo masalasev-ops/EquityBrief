@@ -60,18 +60,20 @@ internal static class ComponentVocabulary
     // computed tables column holds every member's readings each night and the
     // market switches the S&P 400's and 600's rules may read. From 18.1 the bars column holds the delayed quotes a name
     // page asked for beside the stored sessions, each a price, and the research requests column the pages' asks for them
-    // beside the asks for a report, each a press's request the worker answers.
+    // beside the asks for a report, each a press's request the worker answers. From 18.2 the bars column holds the
+    // Treasury's 10-year a session, a fetched series of sessions as the market series are, and the fundamentals column the
+    // estimate trend each quarters fetch keeps and each dividend kept, each a provider's answer about a company.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
-        ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote]),
+        ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote, DataStore.TreasuryYield]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
@@ -160,6 +162,7 @@ internal static class ComponentVocabulary
         ["search tool"] = Feed.SearchTool,
         ["identifier mapping feed"] = Feed.IdentifierMapping,
         ["quote feed"] = Feed.Quote,
+        ["Treasury yield feed"] = Feed.TreasuryYield,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.
@@ -267,6 +270,9 @@ internal static class ComponentVocabulary
         ["taken trades"] = DataStore.TakenTrade,
         ["taken records"] = DataStore.TakenRecord,
         ["dividend readings"] = DataStore.DividendReading,
+        ["estimate trends"] = DataStore.EstimateTrend,
+        ["dividend events"] = DataStore.DividendEvent,
+        ["Treasury yields"] = DataStore.TreasuryYield,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

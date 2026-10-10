@@ -55,6 +55,12 @@ public sealed record NightFeeds(
     // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
     public IFilingsRefreshFeed? Filings { get; init; }
 
+    // The twelfth is the Treasury's daily par yield curve for the session's year, one request a night after the close,
+    // free, keyless and the Treasury's rather than the provider's, so it is in neither figure below. A set of feeds
+    // built without it reads no 10-year, and the step's row says so.
+    // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
+    public ITreasuryYieldFeed? Treasury { get; init; }
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
@@ -92,6 +98,7 @@ public sealed record NightFeeds(
             Funds = RecordedFundHoldingsFeed.FromFolder(folder),
             Dividends = RecordedDividendCalendarFeed.FromFolder(folder),
             Filings = RecordedFilingsRefreshFeed.Holds(folder) ? RecordedFilingsRefreshFeed.FromFolder(folder) : null,
+            Treasury = RecordedTreasuryYieldFeed.Holds(folder) ? RecordedTreasuryYieldFeed.FromFolder(folder) : null,
         };
 
     // The live bulk feed, from the two settings, or a refusal naming the one
@@ -124,6 +131,7 @@ public sealed record NightFeeds(
         {
             Funds = BlackRockFundHoldingsFeed.Live(),
             Dividends = EodhdDividendCalendarFeed.Live(address, key),
+            Treasury = TreasuryParYieldFeed.Live(),
         };
     }
 
@@ -205,5 +213,6 @@ public sealed record NightFeeds(
         || Market is not RecordedMarketSeriesFeed
         || Funds is not RecordedFundHoldingsFeed
         || Dividends is not RecordedDividendCalendarFeed
-        || Filings is not (null or RecordedFilingsRefreshFeed);
+        || Filings is not (null or RecordedFilingsRefreshFeed)
+        || Treasury is not (null or RecordedTreasuryYieldFeed);
 }

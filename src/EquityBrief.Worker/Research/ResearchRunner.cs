@@ -403,16 +403,31 @@ public sealed class ResearchRunner(
         string? ownFiling = null;
         (FetchedDocument Document, int Symbols)? filing = null;
 
+        // And the release before it, which what management said is read against and no other section is handed.
+        // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+        string? previousFiling = null;
+        (FetchedDocument Document, int Symbols)? previous = null;
+
         if (await CikAsync(connection, ticker, cancellation) is { } cik)
         {
             try
             {
-                if ((await archive.FilingsAsync(ticker, cik, cancellation)).Release is { } release)
+                var filings = await archive.FilingsAsync(ticker, cik, cancellation);
+
+                if (filings.Release is { } release)
                 {
                     filing = (
                         new FetchedDocument(DocumentChannel.FilingsArchive, release.Url, "Results release, " + release.Document, release.FiledOn, release.Text),
                         Evidence.OwnFiling);
                     ownFiling = SourceDocuments.Id(release.Url);
+
+                    if (await archive.PreviousReleaseAsync(ticker, cik, filings.Results, cancellation) is { } earlierRelease)
+                    {
+                        previous = (
+                            new FetchedDocument(DocumentChannel.FilingsArchive, earlierRelease.Url, "Previous results release, " + earlierRelease.Document, earlierRelease.FiledOn, earlierRelease.Text),
+                            Evidence.OwnFiling);
+                        previousFiling = SourceDocuments.Id(earlierRelease.Url);
+                    }
                 }
             }
             catch (ProviderRefusal refused)
@@ -465,6 +480,11 @@ public sealed class ResearchRunner(
             fetched.Add(own);
         }
 
+        if (previous is { } earlier)
+        {
+            fetched.Add(earlier);
+        }
+
         var intake = SourceDocuments.Of([.. fetched.Select(one => one.Document)], from, asOf, startedAt);
         var evidence = new List<EvidenceDocument>();
 
@@ -489,7 +509,7 @@ public sealed class ResearchRunner(
             await transaction.CommitAsync(cancellation);
         }
 
-        var handed = Evidence.ForSections(facts, evidence, ownFiling);
+        var handed = Evidence.ForSections(facts, evidence, ownFiling, previousFiling);
         var written = new List<WrittenSection>();
         var leftForThePaidPath = new List<string>();
 

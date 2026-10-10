@@ -129,6 +129,30 @@ public sealed class RecordedCorporateActionFeed(
                 $"A {kind} row for {code.GetString()} carries no {field}. A row that says an action " +
                 "happened and does not say what it was is not an action.");
 
-        return new CorporateAction(code.GetString()!, on, kind, value);
+        return new CorporateAction(code.GetString()!, on, kind, value)
+        {
+            Paid = kind == ActionKind.Dividend && Figure(value) is { } amount
+                ? new DividendPaid(
+                    code.GetString()!,
+                    on,
+                    amount,
+                    Figure(Text(entry, "unadjustedValue")),
+                    Day(Text(entry, "declarationDate")),
+                    Day(Text(entry, "recordDate")),
+                    Day(Text(entry, "paymentDate")),
+                    Text(entry, "period"),
+                    Text(entry, "currency"))
+                : null,
+        };
     }
+
+    // A field the answer sends as a string, none where it sends null or nothing.
+    static string? Text(JsonElement entry, string name) =>
+        entry.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String ? value.GetString() : null;
+
+    static decimal? Figure(string? text) =>
+        decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var figure) ? figure : null;
+
+    static DateOnly? Day(string? text) =>
+        DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day) ? day : null;
 }

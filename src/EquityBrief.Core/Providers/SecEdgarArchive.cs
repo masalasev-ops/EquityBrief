@@ -961,6 +961,40 @@ public static class SecEdgarArchive
             new FiledRelease(Address(request), release.FileName, announcement.FilingDate, Plain(exhibit)));
     }
 
+    // The release of the results announcement before the newest: its index page, which types its documents, and the
+    // exhibit that page types as the release, read by the reader the newest release is read by. Two requests where the
+    // archive holds both, none where the announcements found number fewer than two.
+    // see: What management said is written from the newest and the previous results releases, and a quotation in any section appears word for word in a document it cites
+    public static async Task<FiledRelease?> PreviousReleaseAsync(
+        ArchiveFetch fetch,
+        string cik,
+        IReadOnlyList<IndexedFiling> results,
+        CancellationToken cancellation = default)
+    {
+        var announcements = results.Where(Announces).OrderByDescending(filing => filing.FilingDate).ToArray();
+
+        if (announcements.Length < 2)
+        {
+            return null;
+        }
+
+        var padded = Padded(cik);
+        var previous = announcements[1];
+        var page = await fetch(
+            Request(ArchiveDocument.PreviousFilingIndex, padded, previous.Accession, previous.Accession + "-index.htm"),
+            cancellation).ConfigureAwait(false);
+
+        if (page is null || Release(Documents(page)) is not { } release)
+        {
+            return null;
+        }
+
+        var request = Request(ArchiveDocument.PreviousReleaseExhibit, padded, previous.Accession, release.FileName);
+        var exhibit = await fetch(request, cancellation).ConfigureAwait(false);
+
+        return exhibit is null ? null : new FiledRelease(Address(request), release.FileName, previous.FilingDate, Plain(exhibit));
+    }
+
     static async Task<(SegmentBreakdown? Segments, IReadOnlyList<SegmentBreakdown> Revenue, int Read)> SegmentsAsync(
         ArchiveFetch fetch,
         string padded,

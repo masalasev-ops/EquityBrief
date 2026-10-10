@@ -572,7 +572,7 @@ public sealed class FundamentalsFetcher : IComponent
 
     // What the analysts following the company say of it, copied as the provider files it, as of the
     // fetch for the reason the ratios are.
-    // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+    // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     static object? Rated(CompanyFundamentals fetched) =>
         fetched.PartsNotCarried.Contains(RatingsPart, StringComparer.Ordinal) ? null : new
         {

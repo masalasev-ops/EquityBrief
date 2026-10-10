@@ -208,6 +208,11 @@ public class PriceStorageForm
         // value in, its round trip out in multiples of its risk or in per cent of its buy, each through
         // `Statistic.FromRatio`. They are what every after-cost figure the night and the sweep state is read through.
         // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
+        //
+        // `Percents.FromFraction` joined it at 18.2: a fraction worked as a decimal from money, a change, a margin or a
+        // share, out as a percentage, through `Statistic.FromRatio`, which every figure of the name page's quarter, segments,
+        // margins and analysts in per cent is read through.
+        // see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -215,6 +220,7 @@ public class PriceStorageForm
                 "ForwardReturnSeries.cs: ChangeFromEntry",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
+                "Percents.cs: FromFraction",
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",
                 "Statistic.cs: ToPrice",

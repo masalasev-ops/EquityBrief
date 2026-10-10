@@ -31,7 +31,7 @@ public partial class ReadSurface
 
         // The two payers: every value on its element as the store holds it, drawn at the places a
         // reader reads it, and the provider kept on the element and named nowhere in the page's words.
-        // see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider
+        // see: The numbers open on a snapshot of the newest filing with every other filed figure but the segments folded beneath it, and the report names no provider
         foreach (var ticker in new[] { "AAPL", "MSFT" })
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
