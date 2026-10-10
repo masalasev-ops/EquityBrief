@@ -3,6 +3,10 @@ namespace EquityBrief.Api.Passes;
 // What a request came to, and the line the page states beside the control either way.
 public sealed record RequestWritten(bool Written, string Line);
 
+// What a page's ask for a delayed quote came to: whether a row was written, the instant of the ask that stands for the
+// name, and the line the reply carries.
+public sealed record QuoteAsk(bool Written, DateTimeOffset AskedAt, string Line);
+
 // One row of the queue, as a screen reads it.
 public sealed record RequestRow(
     string Ticker,

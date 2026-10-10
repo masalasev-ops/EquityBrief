@@ -10,7 +10,52 @@ namespace EquityBrief.Web.App;
 // What a name's masthead states beside its ticker and last close: the company, its sector
 // and industry as the membership row holds them, and the change on the day, which the
 // projection reads off the two newest stored closes.
-public sealed record NameMast(string? Company, string? Sector, string? Industry, double? DayChangePct);
+public sealed record NameMast(string? Company, string? Sector, string? Industry, double? DayChangePct, string? Index = null);
+
+// One band's distance from a delayed quote's price in typical days' moves, as the quote job stored it: none inside the
+// band.
+public sealed record QuoteDistance(decimal Low, decimal High, string Role, double? Days);
+
+// The delayed quote the quote job stored for a name: the instant it was asked, its own time, the price, the previous close
+// and the change on it, the stored night its bands are from, and each band's distance at the price.
+public sealed record LiveQuoteView(
+    DateTimeOffset AskedAt,
+    DateTimeOffset QuotedAt,
+    decimal Price,
+    decimal? PreviousClose,
+    decimal? Change,
+    double? ChangePercent,
+    DateOnly? Night,
+    IReadOnlyList<QuoteDistance> Distances);
+
+// The session the masthead's quote is asked in: its open and close, and whether the page is drawn inside it.
+public sealed record QuoteSession(DateTimeOffset Open, DateTimeOffset Close, bool IsOpen);
+
+// The one sentence under the masthead, carrying no figure, and whether a model wrote it or code did, which it says.
+public sealed record HeadlineView(string Sentence, bool Written);
+
+// The four tiles under the headline, worked at the price the masthead draws, and whether that price is the quote.
+public sealed record TilesView(
+    EquityBrief.Core.Tiles.EarningsTile? Earnings,
+    EquityBrief.Core.Tiles.GrowthTile? Growth,
+    EquityBrief.Core.Tiles.YieldTile? Yield,
+    EquityBrief.Core.Tiles.HighTile? High,
+    decimal? Price,
+    bool Live);
+
+// The quotes asked in one session and the quote job's runs over it by what each came to, against the day's cap: the
+// Run page's row for the quote runs.
+public sealed record QuoteRunsView(
+    DateTimeOffset From,
+    DateTimeOffset To,
+    IReadOnlyList<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)> Asked,
+    IReadOnlyList<(string Outcome, int Runs)> Outcomes,
+    int Cap)
+{
+    // The word a run that stored a quote writes. The worker's own constant cannot be referenced from here, so it is
+    // stated and `read-surface` asserts the two agree.
+    public const string Quoted = "quoted";
+}
 
 // A current member as the masthead's search offers it: its ticker, its company's name, and the
 // day its newest researched section was written, null where it holds none.
@@ -57,7 +102,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // the route it is on. A page that assembled a mark from values would be the
 // second renderer the marks decision exists to prevent.
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 //
 // At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
 // for the name screen's chart region, which the server composes from the marks
@@ -146,6 +191,40 @@ public sealed class SinglePageApp : IComponent
     // Where a request is taken back out of the queue. A press names the request rather than
     // the name, because a name may have been asked for before and settled since.
     public const string WithdrawRoute = "/passes/withdraw/";
+
+    // Where a name page asks for its delayed quote, carrying the page's own header, and reads back the newest one stored.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    public const string QuoteRoute = "/quotes/";
+
+    // The price the masthead draws: the delayed quote marked as such with its change on the previous close in the session,
+    // and outside it the last stored close with its change on the day.
+    public static string PriceNow(IReadOnlyList<ChartBar> bars, NameMast? mast, LiveQuoteView? quote)
+    {
+        if (quote is { } quoted)
+        {
+            var sign = quoted.Change is { } moved ? Math.Sign(moved) : 0;
+            var hue = sign > 0 ? " up" : sign < 0 ? " down" : string.Empty;
+            var change = quoted.Change is { } amount
+                ? Invariant($"<span class=\"m-chg{hue}\" data-change=\"{amount.ToString(CultureInfo.InvariantCulture)}\">{amount.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}{(quoted.ChangePercent is { } percent ? Invariant($" ({percent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%)") : string.Empty)}</span>")
+                : string.Empty;
+
+            return Invariant($"<span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"{quoted.Price.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(quoted.Price)}</span>{change}");
+        }
+
+        return (bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
+            + (mast?.DayChangePct is { } day
+                ? Invariant($"<span class=\"m-chg\">{day.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
+                : string.Empty);
+    }
+
+    // The line under a quote: its own time in New York, that it is delayed, the previous close, and the session the levels
+    // and the plan are read through.
+    public static string QuoteAsOf(LiveQuoteView quote, DateOnly? levelsThrough) =>
+        Invariant($"Quote of {TimeZoneInfo.ConvertTime(quote.QuotedAt, NewYork).ToString("HH:mm", CultureInfo.InvariantCulture)} ET, delayed about 15 minutes")
+        + (quote.PreviousClose is { } previous ? Invariant($". Previous close <span data-previous-close=\"{previous.ToString(CultureInfo.InvariantCulture)}\">{Figures.Price(previous)}</span>") : string.Empty)
+        + (levelsThrough is { } through ? Invariant($". Levels and the plan come from completed sessions to {through:yyyy-MM-dd}") : string.Empty);
+
+    static readonly TimeZoneInfo NewYork = EquityBrief.Core.Time.SessionZones.ResolveSessionZone(EquityBrief.Core.Time.SessionZones.UnitedStates);
     // The press running the rest of a night left unfinished, from tonight's notice or the Run page.
     // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
     public const string NightResumeRoute = "/night/resume";
@@ -332,8 +411,76 @@ public sealed class SinglePageApp : IComponent
           fresh = false;
           drawing = false;
           paintTheme();
+          quoting();
+          marking();
         }
         addEventListener('hashchange', show);
+        // A name page shown inside the regular session asks for its delayed quote once the interval since the name's
+        // newest ask has passed, and reads the newest stored quote back every fifteen seconds while it is shown, drawing
+        // the masthead's price, its line, the tiles and each band's distance at it. A page about an earlier night, the
+        // exported file and a page outside the session carry no route and ask for nothing.
+        // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+        let quoteTimer = null;
+        function quoting() {
+          if (quoteTimer) { clearInterval(quoteTimer); quoteTimer = null; }
+          const head = screen.querySelector('.screen-mast[data-quote-route]');
+          if (!head) { return; }
+          const route = head.getAttribute('data-quote-route');
+          const open = Date.parse(head.getAttribute('data-session-open'));
+          const close = Date.parse(head.getAttribute('data-session-close'));
+          const every = Number(head.getAttribute('data-interval-minutes')) * 60000;
+          let asked = head.getAttribute('data-asked') ? Date.parse(head.getAttribute('data-asked')) : 0;
+          let drawn = asked;
+          async function tick() {
+            const now = Date.now();
+            if (!document.body.contains(head)) { clearInterval(quoteTimer); quoteTimer = null; return; }
+            if (document.visibilityState !== 'visible' || now < open || now >= close) { return; }
+            if (now - asked >= every) {
+              asked = now;
+              await fetch(route, { method: 'POST', headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' } }).catch(() => { });
+            }
+            const reply = await fetch(route).then((response) => response.ok ? response.json() : null).catch(() => null);
+            if (!reply || !reply.live || Date.parse(reply.askedAt) <= drawn) { return; }
+            drawn = Date.parse(reply.askedAt);
+            asked = Math.max(asked, drawn);
+            for (const place of [identity, head]) {
+              const price = place.querySelector('.m-price');
+              if (price) { price.innerHTML = reply.price; price.setAttribute('data-live', 'yes'); }
+              const when = place.querySelector('.m-when');
+              if (when) { when.innerHTML = reply.asOf; }
+            }
+            const tiles = screen.querySelector('.lead-tiles');
+            if (tiles) { tiles.outerHTML = reply.tiles; }
+            for (const band of reply.distances) {
+              const cell = screen.querySelector('.level-summary tr.band[data-low-edge="' + CSS.escape(band.low) + '"][data-high-edge="' + CSS.escape(band.high) + '"] td.away');
+              if (cell) { cell.textContent = band.away; cell.setAttribute('data-away', band.value); cell.setAttribute('data-at', 'quote'); }
+            }
+          }
+          tick();
+          quoteTimer = setInterval(tick, 15000);
+        }
+        // A written or filed entry of a name page's contents dated after the day this browser last opened the page is
+        // marked new. The day is kept in this browser alone, so the store records no visit, and the first visit and the
+        // exported file mark nothing.
+        // see: A section newer than the reader's last visit is marked new by the browser alone, and the store records no visit
+        function marking() {
+          const nav = screen.querySelector('nav.contents[data-ticker]');
+          if (!nav) { return; }
+          const key = 'eb-visited-' + nav.getAttribute('data-ticker');
+          let last = null;
+          try { last = localStorage.getItem(key); } catch (error) { }
+          if (last) {
+            for (const entry of nav.querySelectorAll('li[data-dated]')) {
+              if (entry.getAttribute('data-dated') > last && !entry.querySelector('.pill.new')) {
+                const pill = document.createElement('span');
+                pill.className = 'pill new';
+                pill.textContent = 'NEW';
+                entry.appendChild(pill);
+              }
+            }
+          }
+          try { localStorage.setItem(key, new Date().toISOString().slice(0, 10)); } catch (error) { }
+        }
         // A name's year in the peers table or the universe table, what a column holds in its heading,
         // what the night measured a reason on tonight's list over, what a member's numbers say
         // beside its state and why a story was labelled as it was, each shown by the stylesheet while its cell is under the pointer or holds
@@ -715,7 +862,7 @@ public sealed class SinglePageApp : IComponent
     // against the chart's own price axis, and a second request would be a second
     // axis. It computes nothing: every value here arrives already stored, and
     // the only arithmetic is the axis the mark renderer itself derives.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: Marks are defined once and every screen draws from that list
     public string NameRegion(
         MarkRenderer marks,
@@ -771,7 +918,14 @@ public sealed class SinglePageApp : IComponent
         string? heavyweight = null,
         MemberReadingsView? member = null,
         DecisionCardView? decision = null,
-        AveragesFrom? averagesFrom = null)
+        AveragesFrom? averagesFrom = null,
+        // The delayed quote of the session the page is drawn in, the session itself, the headline and the four tiles, and
+        // whether the page asks for its quote, which an exported file and an earlier night's page do not.
+        LiveQuoteView? quote = null,
+        QuoteSession? quoteSession = null,
+        HeadlineView? headline = null,
+        TilesView? tiles = null,
+        bool asksForQuotes = false)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -780,15 +934,20 @@ public sealed class SinglePageApp : IComponent
         var company = mast?.Company is { Length: > 0 } named ? named : ticker;
 
         // The cards, held apart from the region so the contents can be written from what was
-        // drawn and still stand above it. A card records itself as it is added, which is what
-        // makes the contents a reading of the page rather than a second list of its sections.
+        // drawn and still stand above it. A card records itself as it is added, at the place
+        // section 4 gives its region, and the page draws them in the order of those places, which
+        // is what makes the contents a reading of the page rather than a second list of its
+        // sections and the page's order the one `RegionOrder` states.
+        // see: The name page answers a buyer's questions in the order a buyer asks them
         var body = new StringBuilder();
         var onThePage = new List<ContentsEntry>();
+        var composed = new List<(int Place, string Id, string Title, string Markup, DateOnly? Dated)>();
 
-        void Card(string id, string title, string markup)
+        void Card(string place, string id, string title, string markup, DateOnly? dated = null)
         {
-            onThePage.Add(new ContentsEntry(onThePage.Count, title, id));
-            body.Append(markup);
+            var at = Array.IndexOf(RegionOrder, place);
+
+            composed.Add((at >= 0 ? at : throw new InvalidOperationException($"No region of section 4 is named '{place}'."), id, title, markup, dated));
         }
 
         // A written section's own id, which its entry in the contents links to. Derived from
@@ -800,7 +959,7 @@ public sealed class SinglePageApp : IComponent
         // The written sections drawn in one place, each where section 4 puts it, in a
         // card whose left column states the day it was written.
         // see: A research record is written and dated per section, not as a whole
-        void Draw(IReadOnlyList<string> placed)
+        void Draw(string place, IReadOnlyList<string> placed, string? role = null)
         {
             foreach (var name in placed)
             {
@@ -810,6 +969,7 @@ public sealed class SinglePageApp : IComponent
                 }
 
                 Card(
+                    place,
                     SectionId(name),
                     name,
                     Cards.Dated(
@@ -818,7 +978,9 @@ public sealed class SinglePageApp : IComponent
                         section.AsOf,
                         marks.WrittenSection(ticker, section, documents),
                         section: name,
-                        id: SectionId(name)));
+                        id: SectionId(name),
+                        role: role),
+                    section.AsOf);
             }
         }
 
@@ -838,42 +1000,68 @@ public sealed class SinglePageApp : IComponent
             ? Invariant($"<p class=\"notice earlier-night\" data-night=\"{evening:yyyy-MM-dd}\" role=\"status\">This is {Escaped(ticker)} as the store held it after the close of {evening:yyyy-MM-dd}. <a href=\"{NameRoute}{Escaped(ticker)}\">Tonight's page</a></p>")
             : string.Empty);
 
-        // The line the masthead carries: the ticker, the company, the last stored close
-        // with its change on the day, and the session it is from. No screen fetches a
-        // price, so the price is the last one the store holds and says so.
-        // see: The masthead carries the last stored close and the session it is from
+        // The line the masthead carries: the ticker, the company, the index that holds it and its sector, and the price
+        // now. In the regular session that is the provider's delayed quote with its own time and its change on the
+        // previous close, which the worker's quote job asked for and the page's script asks for again at most every
+        // five minutes while the page is open; outside it, the last stored close with its change on the day and the
+        // session it is from. Levels and the plan are read from completed sessions whichever is shown, and say so.
+        // see: The masthead carries the index and sector beside the price now, the delayed quote in the session and the last stored close outside it
+        // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
         var identity = new StringBuilder();
+        var live = night is null && quoteSession is { IsOpen: true } && quote is not null ? quote : null;
 
         identity.Append(Invariant($"<span class=\"m-tk\">{Escaped(ticker)}</span>"));
         identity.Append(mast?.Company is { Length: > 0 } name ? Invariant($"<span class=\"m-co\">{Escaped(name)}</span>") : string.Empty);
-        identity.Append(bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty);
-        identity.Append(mast?.DayChangePct is { } change
-            ? Invariant($"<span class=\"m-chg\">{change.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
+        identity.Append(mast?.Index is { Length: > 0 } || mast?.Sector is { Length: > 0 }
+            ? Invariant($"<span class=\"m-ix\">{string.Join(" · ", new[] { mast?.Index, mast?.Sector }.Where(part => part is { Length: > 0 }).Select(part => Escaped(part!)))}</span>")
             : string.Empty);
+        identity.Append(Invariant($"<span class=\"m-price\" data-live=\"{(live is null ? "no" : "yes")}\">{PriceNow(bars, mast, live)}</span>"));
         identity.Append(watched is { } held ? WatchControl(ticker, held) : string.Empty);
 
-        var asOf = session is { } last
-            ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}")
-            : "No session is stored for this name";
+        var asOf = "<span class=\"m-when\">" + (live is { } quoted
+            ? QuoteAsOf(quoted, session)
+            : session is { } last
+                ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}. Levels and the plan come from completed sessions to {last:yyyy-MM-dd}")
+                : "No session is stored for this name") + "</span>";
 
         asOf += mast?.Sector is { Length: > 0 } sector
             ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
             : string.Empty;
 
-        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf));
+        // Where the page asks for its quote: its route, and the session's open and close, so the shell's script asks
+        // only inside it, while the page is shown, and no more often than the interval. A page about an earlier night
+        // and the exported file ask for none.
+        var asks = night is null && quoteSession is { } window && asksForQuotes
+            ? Invariant($" data-quote-route=\"{QuoteRoute}{Escaped(ticker)}\" data-session-open=\"{window.Open.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-session-close=\"{window.Close.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-interval-minutes=\"{EquityBrief.Core.Quotes.QuoteLimits.IntervalMinutes}\" data-asked=\"{(quote is { } stored ? Invariant($"{stored.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}") : string.Empty)}\"")
+            : string.Empty;
 
-        // What the page is for and what it refuses to do, before any figure, and the words it
-        // uses beneath that. First, so a reader meets the refusals before the first number.
-        Card("how-to-read", "How to read this page", Cards.Computed(
+        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf, asks));
+
+        // The headline and the four tiles under the masthead, before the contents: one sentence carrying no figure, and the
+        // quarter's earnings, the year's growth, the yield and the distance from the year's high, each worked from stored
+        // figures at the price the masthead draws.
+        // see: The headline carries no figure, and code writes it until a written one is accepted
+        // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
+        region.Append(marks.Lead(ticker, headline, tiles));
+
+        // What the page is for and what it refuses to do, and the words it uses, first and folded shut under one line, so a
+        // reader meets the refusals where the page opens and the figures stand at its head.
+        Card("how-to-read", "how-to-read", "How to read this page", Cards.Computed(
             "How to read this page",
-            Intro(ticker, company),
+            "<details class=\"read-fold\"><summary>Open what the page is for, what it refuses to do and the words it uses</summary>" + Intro(ticker, company) + "</details>",
             id: "how-to-read",
             region: "how-to-read"));
 
-        // Why it is here, which section 15.9 puts above the chart and which is
-        // present only when the name is on tonight's list or one gate short of it,
-        // beneath the line section 18 draws where the listing was written before the
-        // correction.
+        // How the rules read it: why the name is here, its gates, its swing readings and its member readings, each kept
+        // whole and folded shut in one region after the plan, since a reader asks what the rules made of a name after what
+        // to do about it. Each part keeps its own id, so a link to it still lands on it.
+        var rules = new StringBuilder();
+
+        static string Fold(string id, string title, string markup) =>
+            $"<details class=\"rule-part\" id=\"{id}\" data-card=\"{id}\"><summary>{title}</summary>{markup}</details>";
+
+        // Why it is here, present only when the name is on tonight's list or one gate short of it, beneath the line
+        // section 18 draws where the listing was written before the correction, and otherwise the line saying it is not.
         // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
         var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection)
             + (passed is { } filtered
@@ -882,24 +1070,16 @@ public sealed class SinglePageApp : IComponent
                     ? marks.WhyItIsClose(ticker, oneShort.Evening, oneShort.Gate)
                     : marks.WhyItIsHere(ticker, firedReasons));
 
-        if (passed is not null || missed is not null || firedReasons.Count > 0)
-        {
-            Card("why", "Why it is here", Cards.Computed(
-                "Why it is here",
-                why,
-                title: passed is { } through
+        rules.Append(passed is not null || missed is not null || firedReasons.Count > 0
+            ? Fold(
+                "why",
+                passed is { } through
                     ? Invariant($"On the list on {through.Evening:yyyy-MM-dd} because the swing filter passed it")
                     : missed is { } near
                     ? Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short")
                     : night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
-                stamp: Cards.Night(session),
-                id: "why",
-                region: "why"));
-        }
-        else
-        {
-            body.Append(why);
-        }
+                why)
+            : why);
 
         // The trend state, in a word. Read off the ladder row rather than worked
         // out here, and a name with no row says so rather than showing nothing:
@@ -909,72 +1089,65 @@ public sealed class SinglePageApp : IComponent
             ? "<p class=\"trend-state\" data-trend-state=\"none\">no ladder row for this name yet</p>"
             : Invariant($"<p class=\"trend-state\" data-trend-state=\"{Escaped(trendState)}\" data-as-of=\"{trendAsOf:yyyy-MM-dd}\">trend {Escaped(trendState.Replace('_', ' '))}</p>");
 
-        // The fact strip, which section 15.9 puts above the chart and which states
-        // seven things rather than one. It arrives already written, for the reason
-        // the event book does: two of its seven parts are fundamentals and no mark
-        // renders them.
-        Card("facts", "Tonight's figures", Cards.Computed(
-            "Fact strip",
-            trend + factStrip + Cards.Key(
-                "Two sources.",
-                "The close, the averages, momentum and the typical daily move are computed from the stored daily bars. The market value, the two price multiples and the report date come from the latest filing and the calendar.",
-                "Relative strength and trend momentum are here for context. Nothing on this page is decided by them."),
-            stamp: Cards.Night(session),
-            id: "facts",
-            region: "facts"));
+        // The fact strip, the levels region's technical readings beneath the bands, stating seven things rather than one.
+        // It arrives already written, for the reason the event book does: two of its seven parts are fundamentals and no
+        // mark renders them.
+        var technicals = Invariant($"<div class=\"technicals\" id=\"facts\" data-card=\"facts\"><div class=\"sub\">The technical readings</div>") + trend + factStrip + Cards.Key(
+            "Two sources.",
+            "The close, the averages, momentum and the typical daily move are computed from the stored daily bars. The market value, the two price multiples and the report date come from the latest filing and the calendar.",
+            "Relative strength and trend momentum are here for context. Nothing on this page is decided by them.") + "</div>";
 
         // The swing readings, beneath the night's figures: each return with its place among the
         // members' returns, the recent high and the pullback from it, the volume while it came down
         // and the range's tightness, as the swing reader stored them for the night.
         // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
-        if (swing is not null)
-        {
-            Card("swing", "Its swing readings", Cards.Computed(
-                "Swing readings",
+        var swingPart = swing is null
+            ? string.Empty
+            : Fold(
+                "swing",
+                "Its swing readings: where it stands for a swing trade",
                 marks.SwingTable(ticker, swing) + Cards.Key(
                     "How to read it.",
                     Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
-                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."),
-                title: "Where it stands for a swing trade",
-                stamp: Cards.Night(swing.Session),
-                id: "swing",
-                region: "swing"));
-        }
+                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."));
 
         // The member readings, beneath the swing readings: what a trade in it costs, the quality its quarters give it, its
         // year's high, its volume and its industry, as the member reader stored them for the night under its index.
         // see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it
-        if (member is not null)
-        {
-            Card("member", "Its member readings", Cards.Computed(
-                "Member readings",
+        var memberPart = member is null
+            ? string.Empty
+            : Fold(
+                "member",
+                Invariant($"Its member readings: what a trade in it costs and what its quarters say, as a member of the {Escaped(member.Index)}"),
                 marks.MemberReadingsTable(ticker, member) + Cards.Key(
                     "How to read it.",
                     Invariant($"The dollar volume is the mean of the close times the volume over the last {EquityBrief.Core.Readings.MemberReadings.DollarVolumeSessions} sessions. A round trip is half the published effective spread for the company's value and the price at the buy and half again at the sale, stated at the table's figure and at double. The profit gate sums net income over the {EquityBrief.Core.Readings.MemberReadings.Quarters} newest quarters filed before the night, and the coverage asks their operating income for at least twice their interest expense, a company filing none and a financial company passing. The year's high is the highest high of the {EquityBrief.Core.Readings.MemberReadings.YearSessions} sessions before the night, and the industry's figures are its S&amp;P 500 members', each weighted by its company's value."),
-                    "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."),
-                title: Invariant($"What a trade in it costs and what its quarters say, as a member of the {Escaped(member.Index)}"),
-                stamp: Cards.Night(member.Session),
-                id: "member",
-                region: "member"));
-        }
+                    "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."));
 
         // The swing filter's answer for the name, whatever the name: each gate with whether it passed
         // and why, the setup and the trigger, the trade read both ways and the exclusions.
-        if (gates is not null)
-        {
-            Card("gates", "Its gates", Cards.Computed(
-                "The swing filter's gates",
+        var gatesPart = gates is null
+            ? string.Empty
+            : Fold(
+                "gates",
+                "Its gates: where it stands against the swing filter",
                 marks.GatesTable(ticker, gates) + Cards.Key(
                     "How to read it.",
                     "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read from the ladder's first tranche and from the swing plan that night's live rule used, and the plan marked as read decides the gate. An alternative plan being tested in the background is not drawn: how it would have traded a stock is the evaluation it waits for.",
                     gates.Rule == EquityBrief.Core.Shortlist.ListRules.Filter
                         ? "A failed gate names what it read and why it failed, and a name passing all five that no exclusion removes is on that evening's list."
-                        : "A failed gate names what it read and why it failed. The six reasons drew that evening's list, so these answers decided nothing on it."),
-                title: "Where it stands against the swing filter",
-                stamp: Cards.Night(gates.Session),
-                id: "gates",
-                region: "gates"));
-        }
+                        : "A failed gate names what it read and why it failed. The six reasons drew that evening's list, so these answers decided nothing on it."));
+
+        rules.Append(gatesPart).Append(swingPart).Append(memberPart);
+
+        Card("rules", "rules", "How the rules read it", Cards.Computed(
+            "How the rules read it",
+            rules.ToString(),
+            title: "What the swing filter and the readings made of it",
+            lede: "Each part folds open: why it is here, its gates, its swing readings and its member readings, as the night stored them.",
+            stamp: Cards.Night(gates?.Session ?? session),
+            id: "rules",
+            region: "rules"));
 
         // The short version, the first written region section 4 lists, with its date beside it. Where no
         // accepted one stands, code writes one from computed parts and its heading says why: the checker
@@ -982,7 +1155,7 @@ public sealed class SinglePageApp : IComponent
         // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
         if (sections.Any(section => string.Equals(section.Section, MarkRenderer.TheShortVersion, StringComparison.Ordinal)))
         {
-            Draw(AtTheTop);
+            Draw("short", AtTheTop);
         }
         else
         {
@@ -993,7 +1166,7 @@ public sealed class SinglePageApp : IComponent
             var nothingWritten = !sections.Any(section => !string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
                 && (leftOut ?? []).Count == 0;
 
-            Card(SectionId(MarkRenderer.TheShortVersion), MarkRenderer.TheShortVersion, Cards.Computed(
+            Card("short", SectionId(MarkRenderer.TheShortVersion), MarkRenderer.TheShortVersion, Cards.Computed(
                 MarkRenderer.TheShortVersion,
                 marks.ShortVersionByCode(
                     ticker,
@@ -1014,7 +1187,7 @@ public sealed class SinglePageApp : IComponent
 
         // How it got here, the twelve-month picture above the table of the biggest moves,
         // each move numbered on the picture as it is in the table.
-        Card("how-it-got-here", "How it got here", Cards.Computed(
+        Card("how-it-got-here", "how-it-got-here", "How it got here", Cards.Computed(
             "How it got here",
             marks.MovesTable(ticker, moves, twelveMonths, causes) + Cards.Key(
                 "How to read it.",
@@ -1031,7 +1204,7 @@ public sealed class SinglePageApp : IComponent
         // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
         if (peers is not null)
         {
-            Card("peers", "Its group, by price", Cards.Computed(
+            Card("peers", "peers", "Its group, by price", Cards.Computed(
                 "Its group, by price",
                 marks.PeersTable(ticker, peers) + Cards.Key(
                     "How to read it.",
@@ -1081,10 +1254,16 @@ public sealed class SinglePageApp : IComponent
             "Context, not a signal.",
             "Relative strength compares the size of the stock's recent up days with its recent down days, on a scale of 0 to 100. The momentum line is the gap between a fast and a slow average of the price and its signal line a slower average of that gap, so the bars show whether the gap is widening or narrowing. Read them beside the bands: near a support band, relative strength at or under 30, or bars below zero shrinking toward it, says the fall is losing force, and near a resistance band, 70 or over, or bars above zero shrinking, says the rise is.",
             "Nothing in the plan or the list reads these. When they and the bands disagree, the plan follows the bands."));
-        chart.Append("<div class=\"sub\">Levels</div>");
-        chart.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
+        Card("chart", "chart", "The chart", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its momentum", stamp: Cards.Night(session), id: "chart", region: "chart"));
 
-        Card("chart", "The daily chart and its levels", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its levels", stamp: Cards.Night(session), id: "chart", region: "chart"));
+        // The levels: each band from the highest to the lowest with how far it sits from the price now, which the page's
+        // script restates at a delayed quote in the session, and beneath them the technical readings.
+        var levelled = new StringBuilder();
+
+        levelled.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
+        levelled.Append(technicals);
+
+        Card("levels", "levels", "Levels", Cards.Computed("Levels", levelled.ToString(), title: "The bands above and below the price, and the technical readings", stamp: Cards.Night(session), id: "levels", region: "levels"));
 
         // The plan region: the plan column and the two tables it is read beside, the event
         // setups and the sizing arithmetic.
@@ -1099,14 +1278,29 @@ public sealed class SinglePageApp : IComponent
             "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop.",
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
-        Card("plan", "Entry and exit plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan"));
+        // Every earlier night the live list picked the name, folded beneath the plan: how many times and how each group
+        // ended, then a row per listing, each trade as the Past picks screen draws it and as it stood on the night this
+        // page draws. Absent for a name never picked before.
+        // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+        if (earlier is { Count: > 0 } picked)
+        {
+            planned.Append(Fold(
+                "on-the-list-before",
+                Invariant($"On the list before: the nights the live list picked {Escaped(ticker)} before"),
+                marks.OnTheListBefore(ticker, picked) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: bought at that night's close and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
+        }
+
+        Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
 
         // The earnings reaction record, beside the earnings setups the plan closes on: what each
         // print over the calendar's year behind did on the session it moved.
         // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
         if (reactions is not null)
         {
-            Card("reactions", "Earnings reactions", Cards.Computed(
+            Card("reactions", "reactions", "Earnings reactions", Cards.Computed(
                 "Earnings reactions",
                 marks.ReactionsTable(ticker, reactions) + Cards.Key(
                     "How to read it.",
@@ -1118,31 +1312,13 @@ public sealed class SinglePageApp : IComponent
                 region: "reactions"));
         }
 
-        // Every earlier night the live list picked the name, after the plan and its earnings reactions: how
-        // many times and how each group ended, then a row per listing, each trade as the Past picks screen
-        // draws it and as it stood on the night this page draws. Absent for a name never picked before.
-        // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
-        if (earlier is { Count: > 0 } picked)
-        {
-            Card("on-the-list-before", "On the list before", Cards.Computed(
-                "On the list before",
-                marks.OnTheListBefore(ticker, picked) + Cards.Key(
-                    "How to read it.",
-                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: bought at that night's close and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
-                    "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen."),
-                title: Invariant($"The nights the live list picked {Escaped(ticker)} before"),
-                stamp: Cards.Night(session),
-                id: "on-the-list-before",
-                region: "on-the-list-before"));
-        }
-
         // What was written about the company in the thirty days before the night, each article with the
-        // label the labeller wrote for it, after the nights the list picked the name and before the written
-        // sections; drawn for every member the page is handed stories for.
+        // label the labeller wrote for it, after its group by price; drawn for every member the page is
+        // handed stories for.
         // see: The news labels alone name the model that wrote them
         if (news is { } stories)
         {
-            Card("news", "News", Cards.Computed(
+            Card("news", "news", "News", Cards.Computed(
                 "News",
                 marks.NewsRegion(stories) + Cards.Key(
                     "How to read it.",
@@ -1154,14 +1330,13 @@ public sealed class SinglePageApp : IComponent
                 region: "news"));
         }
 
-        // What the company sells and the segment commentary, after the plan and before the
-        // numbers, where section 4 lists them.
-        Draw(BeforeTheNumbers);
+        // What the company sells and the segment commentary, after the numbers, where section 4 lists them.
+        Draw("segments", AfterTheNumbers);
 
-        // The numbers, which section 4 lists after the segment commentary. It arrives already written, for the
+        // The numbers, which section 4 lists after the card. It arrives already written, for the
         // reason the event book does: what it holds is stored figures and the sentences
         // that state an absence, rather than a mark.
-        Card("numbers", "The numbers", Cards.Dated(
+        Card("numbers", "numbers", "The numbers", Cards.Dated(
             "The numbers",
             "Filed",
             filedOn,
@@ -1171,17 +1346,25 @@ public sealed class SinglePageApp : IComponent
                 "These are the company's reported results. Nothing in the plan is computed from them."),
             filed: true,
             note: "from the filing",
-            id: "numbers"));
+            id: "numbers"),
+            filedOn);
 
-        // The industry cycle and the two cases, after the numbers where section 4 lists them.
-        Draw(AfterTheNumbers);
+        // The risks, the two cases they test and the industry cycle, after how the rules read the name, where section 4
+        // lists them.
+        Draw("risks", [MarkRenderer.TheRisks], Cards.Caution);
+        Draw("two-cases", [MarkRenderer.TheTwoCases]);
+        Draw("cycle", [EquityBrief.Core.Research.ClaimRules.CycleSection]);
 
-        // The risks, after the two cases they test, where section 4 lists them.
-        Draw(AfterThePlan);
+        // The card of the family that listed the name on the night, third, after the short version.
+        // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
+        if (decision is not null)
+        {
+            Card("card", "card", "The decision card", Invariant($"<section class=\"card name-card\" id=\"card\" data-role=\"{Cards.Buy}\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
+        }
 
         // What the research read, the region section 4 lists before the last: the calendar, the dated items a pass
         // read out of the documents, and every document the written sections cite.
-        Card("sources", "What the research read", Cards.Computed(
+        Card("sources", "sources", "What the research read", Cards.Computed(
             "Dates and sources",
             marks.DatesAndSources(
                 ticker,
@@ -1199,11 +1382,20 @@ public sealed class SinglePageApp : IComponent
         var research = marks.LeftOut(ticker, leftOut ?? [], researchState, notWritten, paused, pass, controls, cost);
 
         Card(
+            "research",
             researchState?.State == "missing" ? "unwritten" : "research",
             "Where the research stands",
             researchState?.State == "missing"
                 ? Invariant($"<section class=\"absent\" id=\"unwritten\"><div class=\"lbl\">Research not yet written</div><h2>The researched sections for {Escaped(ticker)} have not been written</h2>{research}</section>")
                 : Cards.Computed("Research", research, title: "Where the research stands", id: "research", region: "research"));
+
+        // The cards in section 4's order, each numbered as the contents numbers it from one, a written or filed one
+        // carrying the day it is as of, which the page's script reads to mark one newer than the reader's last visit.
+        foreach (var card in composed.OrderBy(card => card.Place))
+        {
+            onThePage.Add(new ContentsEntry(onThePage.Count + 1, card.Title, card.Id, card.Dated));
+            body.Append(card.Markup);
+        }
 
         // The contents, written from the cards that were drawn and standing above them, which
         // is why the cards were held apart until now.
@@ -1222,13 +1414,6 @@ public sealed class SinglePageApp : IComponent
         if (heavyweight is not null)
         {
             region.Append(Invariant($"<p class=\"listed-under heavyweight-held\">{Escaped(heavyweight)}</p>"));
-        }
-
-        // The card of the family that listed the name on the night, at the top of the page.
-        // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
-        if (decision is not null)
-        {
-            region.Append(Invariant($"<section class=\"name-card\" data-family=\"{Escaped(decision.Family)}\" data-index=\"{Escaped(decision.Index)}\">{marks.DecisionCard(decision)}</section>"));
         }
 
         region.Append(body);
@@ -1266,16 +1451,26 @@ public sealed class SinglePageApp : IComponent
             ("Break-even", "The share of setups that must reach their target, given how far away their targets and stops sit, for the whole set to neither make nor lose money.")) +
         "</details></section>";
 
+    // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
+    // page, the short version, the card, the numbers, the segments, the earnings reactions, the chart, how it got here,
+    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news,
+    // what the research read, and where the research stands.
+    // see: The name page answers a buyer's questions in the order a buyer asks them
+    public static readonly string[] RegionOrder =
+    [
+        "how-to-read", "short", "card", "numbers", "segments", "reactions", "chart", "how-it-got-here", "levels", "plan",
+        "rules", "risks", "two-cases", "cycle", "peers", "news", "sources", "research",
+    ];
+
     // Where each written section is drawn, which is section 4's order: the short version
-    // at the top, what the company sells after the plan and before the numbers, the cycle
-    // and the two cases after them, the risks after those, and the dated items with the
-    // dates. The cause of each large move is drawn in the moves table, in the row of the
-    // move each sentence names, and `read-surface` asserts every section figure 12.2 names
-    // is placed exactly once across these and that table.
+    // at the top, what the company sells and the segment commentary after the numbers, the
+    // risks, the two cases and the cycle after how the rules read the name, and the dated
+    // items with the dates. The cause of each large move is drawn in the moves table, in the
+    // row of the move each sentence names, and `read-surface` asserts every section figure
+    // 12.2 names is placed exactly once across these and that table.
     public static readonly string[] AtTheTop = ["The short version"];
-    public static readonly string[] BeforeTheNumbers = ["What the company sells", "The segment commentary"];
-    public static readonly string[] AfterTheNumbers = ["The industry cycle", MarkRenderer.TheTwoCases];
-    public static readonly string[] AfterThePlan = [MarkRenderer.TheRisks];
+    public static readonly string[] AfterTheNumbers = ["What the company sells", "The segment commentary"];
+    public static readonly string[] AfterTheRules = [MarkRenderer.TheRisks, MarkRenderer.TheTwoCases, "The industry cycle"];
     public const string InTheDates = "The dated calendar items";
     public const string InTheMovesTable = "The cause of each large move";
 
@@ -1290,7 +1485,7 @@ public sealed class SinglePageApp : IComponent
     // name was last on it, and the listing strip. Each is absent and says so
     // rather than being drawn as a zero, which would read as nothing having
     // fired.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string UniverseRegion(
         MarkRenderer marks,
         IReadOnlyList<UniverseCell> rows,

@@ -25,6 +25,157 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - BUILD_PLAN.md - 18.1 reads the early closes into the session's own list, and its palette clause holds every text colour on its ground and the level, rise, fall and caution inks on their own fills
+Authorised by: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+Was:
+> ... and every distance restated at that price, the early closes read into the closures table, and the delay read off the quote's own time in the session
+
+> the palette check passes, every token's text at 4.5 to 1 or more on every ground and its own fill in both palettes, rise and fall only in the name page's and the file's rules, status hues only in the Run page's, and no failure in a rise or fall rule;
+Now:
+> ... and every distance restated at that price, the early closes read into the session's own list beside the closures table, which every rule's version pins, and the delay read off the quote's own time in the session
+
+> the palette check passes, every text colour at 4.5 to 1 or more on the ground it is drawn on in both palettes and the level, rise, fall and caution inks on their own fills as well, rise and fall only in the name page's and the file's rules, status hues only in the Run page's, and no failure in a rise or fall rule;
+Why: the closures table's file is one every rule's version and the swing filter pin, so an edit there moves every open window; and no text is drawn on a status fill, while the failure's red lightened to read on its own fill in the dark palette sits 13.3 from the fall's plum, under the validator's floor of 15, so the clause holds the fills text is drawn on.
+
+### 2026-10-10 - .claude/rules/checks.md - read-surface counts twenty-one marks and adds what 18.1's tests assert of the masthead, the quote, the headline, the contents, the Run page's quote line, the range bar and the palette, and fixture-expectations adds the session, the tiles, the quote job and the provider's quote
+Authorised by: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+Was:
+> read-surface: each of the twenty marks is asserted over a full input and over the input it degrades on
+
+> read-surface: ... and a proposal an earlier decline holds back leaving the next one put |
+
+> fixture-expectations: ... a family whose passing ones are none put and an index with no run said so, written into the month's folder and written again over it |
+Now:
+> read-surface: each of the twenty-one marks, and the row closing on its 18.1 clause; fixture-expectations closing on its 18.1 clause
+Why: the range bar is a mark of its own, and each row says what its 18.1 tests assert.
+
+### 2026-10-10 - RUNBOOK.md - the provider row names the delayed quote and its cap, the call weights name the quote's, and a section says how the quote is asked
+Authorised by: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+Was:
+> | EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news | the daily allowance is 100,000 weighted calls; a normal night spends a few hundred |
+
+> ... The dividend calendar costs 1 a session, measured at 16.0 the same way: 21 requests, one for each of the 21 sessions after a night, moved the counter from 2,723 to 2,744, so the night's ask for the next 21 sessions costs 21.
+Now:
+> | EODHD | bulk end-of-day bars, index constituents, company fundamentals, the earnings calendar, ticker-tagged news, and from 18.1 a name page's delayed quote in the regular session | the daily allowance is 100,000 weighted calls; a normal night spends a few hundred, and the day's quotes are capped at 500 |
+
+> ... so the night's ask for the next 21 sessions costs 21. A delayed quote costs 1 a listing, by the provider's own page, and the quote job counts each at that weight on its run log row.
+
+> and a section, The delayed quote on a name's page, before Exporting one name's report
+Why: the quote job is a new provider caller with a cap of its own, and the runbook shows every verb the worker dispatches.
+
+### 2026-10-10 - SCHEMA.md - the read surface writes five tables, the quote request among them, the quote job alone writes the live quotes, and the night's own requests follow its close
+Authorised by: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+Corrects: the paragraph said the night inserts its own requests after its overnight queue, which the 6.10 correction retired; found rewriting the paragraph at 18.1
+Was:
+> **`research_request`, `watch_list`, `taken_trade` and `loop_decision` are the four tables the read surface writes, and the split on the first is by operation.** ... and after the night's overnight queue it inserts the night's own requests, ...
+Now:
+> **`research_request`, `watch_list`, `taken_trade`, `loop_decision` and `quote_request` are the five tables the read surface writes, and the split on the first is by operation.** ... and after the night's close it inserts the night's own requests, ... and a closing sentence on the quote request and `live_quote`; and the ownership table and the tables gain `live_quote` and `quote_request`
+Why: the quote's two stores are new, and a paragraph naming a retired step describes a night that no longer runs.
+
+### 2026-10-10 - ARCHITECTURE.html - section 4 in the order a buyer asks, the quote job in the catalogue and the matrix, the read API's quote ask, 15.2's screen rule and reading column, the range bar in 15.5, 15.6's hues and its contrast, 15.9's masthead, quote, headline, tiles, contents, reading column and rules by role, 15.10's quote runs, 15.12's opening, 15.14's two triggers, the card third in 15.18, two stores in 16, the cap and the interval in 17 and three failures in 18
+Authorised by: The name page answers a buyer's questions in the order a buyer asks them
+Was:
+> <p>A name's report is the page drawn for it: up to twenty-two regions, in the order of this table, each a card that the contents at the head of the page names as the first column does and links to. A page draws a region only where it has something to draw: why the name is here only when it is on the night's list, its swing readings, its member readings and its gates where the night stored them, its group where it has one, its earnings reactions where the calendar holds a print, the nights the live list picked it before where there were any, the industry cycle where its industry's theme has been written, and each written region only where that region has been written, save the short version, which code writes where no accepted one stands. This table is the specification and the contract: it says what produces each region, whether it costs money, and how often it changes. Read the last two columns together, because they are the whole cost argument. Six regions are written by the paid model when a report is asked for. The other sixteen need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and thirteen of the sixteen change every night, the numbers in what they say first. No region draws a key under each figure: each figure carries its own "How to read it" and "What to take from it" in code, and the written key is retired (see: The key under each figure is retired with the overnight queue that wrote it, and its stored rows are drawn nowhere). (see: Section 4 of the architecture defines the report region by region, and nothing outside the corpus does)</p>
+
+> <tr><td>How to read this page</td><td>What the page is for, the three things it refuses to do, and the words it uses</td><td>Written once in the page's own code, the same for every name</td><td>free</td><td>only with the code</td></tr>
+
+> <tr><td>Why it is here</td><td>Where the swing filter listed the name, the rule and each gate with why it passed with the reasons as context, and where the reasons listed it, each reason in a sentence with the values that made it true; drawn only when the name is on the night's list</td><td>Computed by the swing filter and the shortlist builder from the night's figures</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>Tonight's figures</td><td>The trend state, the close, market capitalisation, the year's high and low with the sessions they were made on, the next dated event, the multiples, the averages, relative strength, momentum and the typical daily move</td><td>Computed from bars, the provider's fundamentals and the calendar</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>Its swing readings</td><td>Each return over 63 and 126 sessions with its place among the members' returns, the recent high and how far the close sits below it in typical days' moves, the volume while it came down and the tightness of the range; drawn where the night stored the name's readings</td><td>Computed by the swing reader from the stored bars</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>Its member readings</td><td>Under the index that held the name: its close as traded, its dollar volume over 50 sessions and its company's value, a round trip at its close at the published table and at double, the profit gate, the coverage and its quarters' state, the highest high of the 251 sessions before the night with the sessions since it and the close against it, the night's volume against its fifty-day average, and its industry with that industry's S&amp;P 500 members' return over 21 and 63 sessions and their mean surprise over the 20 sessions before the night, each weighted by its company's value; and as context the analysts' five rating counts with their total, as the newest fetch on or before the night filed them and dated by it, or that the fetch was made before the counts were stored and read none; drawn where the night stored the name's readings</td><td>Computed by the member reader from the stored bars, the quarters the quarter fetcher stored and the calendar, and the counts as the quarter fetcher stored them (see: A 400 or 600 trade pays the published effective spread for its size and price, and its pass tests read the edge after it) (see: Analyst coverage is stored from each fetch and waits for dated counts before any rule tests it) (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read)</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>Its gates</td><td>The swing filter's answer for the name: each of the five gates with whether it passed and why, the setup's family and the trigger's event, the trade read each way with the plan the trade gate read marked, and the exclusions; drawn where the filter stored an answer for the name</td><td>Computed by the swing filter from the night's readings</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>The daily chart and its levels</td><td>Candles with level bands and averages, the volume-at-price histogram beside them, the momentum panel, and the level summary table with how far each band is</td><td>Computed: indicator engine, swing finder, volume profile builder, level builder</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>Entry and exit plan</td><td>The plan figure, the entries with each zone, what it is bought on and its stop, the exits with each zone and what is sold there, the earnings setups around the next report, and the sizing arithmetic with the last two prints' moves against the first tranche's stop</td><td>Computed by the ladder builder</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>On the list before</td><td>How many times the live list picked the name before the night drawn and how each group ended, then each of those trades as it stood that night: the night, the buy, the stop, the target, the trade line, the status, the sessions held and the result in multiples of the risk; drawn only where the list picked it before</td><td>Read from the swing filter's rows, the rule that listed each evening and the forward returns (see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for)</td><td>free</td><td>nightly</td></tr>
+
+> <tr><td>The risks, each with what would confirm it</td><td>Each risk beside what would confirm it, a risk to a row</td><td>Model, from the research record and the theme record, answered as fields code composes into the prose</td><td>paid, on demand</td><td>with the research record</td></tr>
+
+> the rows How it got here, Its group, by price, Earnings reactions, News, The numbers and The industry cycle, moved into the new order with their text unchanged
+
+> <tr><td><b>Read API</b></td><td><span class="layer L-serve">serve</span></td><td>on request</td><td>every store but the pulled history and the market series</td><td>run log, research requests, watch list, taken trades, loop decisions</td><td>from 17.9 the Loop page's presses write the operator's approve or decline of a proposal of an index's newest run and approve of a restore the live alarm put, a decline with its reason, each refused where the store does not hold what it names or no apply could apply it (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone); read-only access for the app; performs no fetching, and no computation but a pick's plan in the operator's money and its open trades in its sector, and starts one process, the worker's drain, from a copy of the worker's build, when a press writes a request. A press asking for a report writes a request and a press on the queue screen takes back one nobody has started, a press on the watch list page or beside a name on its own page puts the name on the watch list or takes it off, and a pick's card's presses record a trade taken from it, remove one no night has followed and record its exit; the research the request leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours)</td></tr>
+
+> <p><b>Reads and renders, nothing else.</b> No screen computes a level, calls a model, or makes a network request. Every number on every screen is already in the facts file, the ladder, the listings, the research store or the run log, but for two a pick's card works out where it is drawn, each by one function in the core: its plan in the operator's money, from the account they keep in a file no store row may hold, and its sixth line, from their taken trades. A screen that wants any other number the store does not carry is not a screen change; it is a change to a compute component, and it goes through a checkpoint like anything else.</p>
+
+> <p>The reason is that a rendering layer which computes is a second implementation of the same arithmetic, and two implementations of one rule disagree eventually; the card's two have one implementation each, and an export draws neither. It also means a screen can be rebuilt or restyled at any time without a chance of moving any other number. (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector)</p>
+
+> <p>A screen is read at the width of the screen it is read on. The column every screen is drawn in is that width, up to a ceiling which is the widest picture a screen draws with the card's own padding and the page's gutter around it, so a wide screen is filled by the page rather than by the space beside it and a narrow one is filled rather than shown a page laid out for a wide one. A table cannot be narrowed past its columns, so every table a screen draws is read in a box of its own that scrolls sideways rather than moving the page. A picture is narrowed instead: the chart and the volume profile beside it are drawn at a size of their own, which is what the ceiling holds, and below it the pair is scaled down together so that a price is at one height in both at every width. (see: A screen is read at the width of the screen it is read on)</p>
+
+> <p>Twenty marks. They are defined once and every screen draws from this list. Nothing on any screen is a one-off drawing, for the same reason the palette is one set of variables: parity by construction rather than by remembering. Each mark takes stored values and returns an SVG string, so no script is needed to render any of them and the export carries the same pictures as the app. (see: Marks are defined once and every screen draws from that list)</p>
+
+> <h4>Support and resistance own two hues, and nothing else uses them</h4>
+
+> <p>Green means a level below the price, orange means a level above it, on every screen and in every mark. Nothing else is allowed those two hues, and in particular a day's price change is not: a green day and a support band would then be the same colour meaning two things, and a reader cannot hold that. Direction of the day is carried by the sign on the number and by which side of a zero rule a bar sits on. (see: Support and resistance own two hues and nothing else uses them)</p>
+
+> <p>Every band carries its role in words as well as its colour. Every reason carries its name. A reader who cannot separate the two hues loses nothing, which is a property to hold rather than to test for once: the two hues in the palette measure far enough apart under the commonest form of colour blindness to be told apart, and the words are there whether they do or not.</p>
+
+> <p>Each region is a card on one paper palette. A region computed from the nightly store is ruled in slate and stamped with the night its figures are from, and a section written by research or taken from a filing is ruled in plum-grey with the day it was written or filed in a column at its left. Every picture carries a key that says how to read it and closes on what to take from it. The stylesheet the app and the exported report share opens with the rule each colour token is held to: the two hues for a level below and above the price, the dashed outline's ink for not yet measured and for nothing else, slate for what was computed tonight, plum-grey for what was written or filed, and four steps of one neutral for more or less. (see: Every region is a card that states where its figures came from and how to read them)</p>
+
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, the night's fundamental reading with the reported quarters of the fetch it read, every stored research section with its own date and model, the industry cycle the theme store holds for the industry the membership row names for the name, which is the theme's section rather than one of the name's and is read that way from 6.9, the source documents those sections cite, which the dates-and-sources region draws and this list did not name until 6.0, the calendar that region draws beside them, and the run log, for what research has spent and cost and what the newest pass for the name came to, which the page has read since 6.6 and this list did not name until 6.8, and series state, for whether the name's prices may not reflect a dividend or split, which the page reads from 7.0, and the sector heavyweights' holdings, for whether they hold the name, from 14.3.</p>
+
+> <tr><td>Contents</td><td>at the head of the page: a numbered link to each region the page drew and to no other, in the order the page drew them. A link is followed to its region on the same page below the masthead as every link to a place on the page is, where one read as a screen's address would open tonight's list</td></tr>
+
+> <tr><td>Why it is here</td><td>present only when the name is on the list of the page's evening or close to a buy point on it: where the swing filter listed it, the rule and each gate with why it passed and the reasons that fired on it as context; where the reasons listed it, each reason in a full sentence rather than a label and with the values that made it true; where it is one gate short, the gate it missed with what it had against the bar it needed and how far short of it and the trade its plan states and a line saying it is not a pick</td></tr>
+
+> <tr><td>Fact strip</td><td>close, market capitalisation, the year's high and low with the sessions they were made on, next earnings date, the multiples, the averages, momentum and the typical daily move</td></tr>
+
+> <tr><td>Swing readings</td><td>the return over 63 sessions and over 126 sessions with each one's place among the members' returns, the highest high of the last 20 sessions and how far the close sits below it in typical days' moves, the median volume of the sessions since that high against the fifty-day average, the mean true range of the last ten sessions against the last fifty, and a key saying how to read it</td></tr>
+
+> <tr><td>Member readings</td><td>present for every member of the three indices where the night stored its readings, under the index that held it: the readings section 4 names for the region with each stored figure whole on its element and each the store holds none of saying why, and a key saying how to read it</td></tr>
+
+> <tr><td>Gates</td><td>each of the five gates with whether it passed and why, the setup's family and whether the trigger's event happened, the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under, and the exclusions with a key saying how to read it</td></tr>
+
+> <tr><td>The chart</td><td>the level chart, its averages drawn on the sessions the indicators leave empty from what the night read through the sessions before the store's year with a line beneath naming the pull or why none was read, the volume profile beside it on the same price axis, the momentum panel beneath, and the level summary table with each band's members and dates</td></tr>
+
+> <tr><td>How far each band is</td><td>on every row of the level summary: the gap from tonight's close to the nearer edge of that band, counted in the moves the name usually makes in a session (see: Distances are stated as typical days' moves)</td></tr>
+
+> <tr><td>On the list before</td><td>present only where the live list picked the name on a night before the page's own: a line with how many times it was picked and how each group ended; a row per earlier listing, as the Past picks screen draws it and as it stood on the page's night; and a key saying how to read it (see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for)</td></tr>
+
+> <p>The page opens with the line the masthead carries, being the ticker, the company's name, the last stored close as of the session it closed on with its change on the day, and the sector and industry (see: The masthead carries the last stored close and the session it is from), and with a paragraph saying what the page is for, its three refusals, being that it does not predict where the price will go, that it ranks no company as an investment, and the one rank it draws is a return's place among the members' returns, a fact about the chart, and that it does not say how much to buy (see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters), and the ten words it uses one disclosure down. The sizing arithmetic states the risk a share carries and leaves the budget to the reader, which is what keeps the third refusal true (see: The sizing arithmetic states the risk a share carries and holds no account of the reader's).</p>
+
+> <p>Four parts are display only on this page, ... Each is drawn in a card with a key saying how to read it (see: Every region is a card that states where its figures came from and how to read them). ...</p>
+
+> <li>No screen fetches from a provider or calls a model. The only thing a screen can trigger is a research pass, and that is an explicit action with a visible cost, not a side effect of navigation.</li>
+
+> <li>No screen computes a level, a stop or a rate. Every figure is read, and every part of a page states where it came from and as of when. (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector) (see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it)</li>
+
+> <p>A trade is a fact about one recommendation and is drawn whatever became of it. ... are worked out by the read surface's projection for the screen and by nothing at night (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector).</p>
+
+> <p>Each pick's row on Tonight carries a control that opens its card in place beneath the row, for every family on every index, and each holding of a sector heavyweights' book opens the card of the night it was bought; a stock's page opens with the card of the family that listed it on the page's night. On a screen narrower than 640 pixels each line stacks its mark, its name and its words in one column, and the card keeps to the screen's width when the table it sits in scrolls sideways.</p>
+Now:
+> section 4 opening on the masthead, the headline, the tiles and the contents, and its table naming nineteen regions in the order the page draws them, the decision card third, the chart, the levels with the night's technical readings, the plan with the nights before folded beneath it, and how the rules read it after the plan; the quote job's catalogue and matrix rows and the read API's quote ask; 15.2's figures a screen works out by one function in the core and the name page's reading column; the range bar as the twenty-first mark; 15.6's level hues ruling the parts that buy and sell, a rise and a fall in hues of their own on the name page alone, and every text colour at 4.5 to 1; 15.9's masthead, quote, headline, tiles, contents, how the rules read it, the decision card, reading column and rules by role, its folded parts saying where they sit; the Run page's quote runs; 15.12's masthead and quote first; 15.14's two triggers and the figures worked out in the core; the card third in 15.18; quote requests and live quotes in 16; the live quotes a day and the quote interval in 17; and a quote outside the session, at the cap and with no price in 18
+Why: phase 18 rebuilds the name page in the order a buyer asks, with a delayed quote, a headline, four tiles and a palette of its own, and section 4 and 15.9 are its specification.
+
+### 2026-10-10 - BUILD_PLAN.md - 18.1's visible output and 18.2's text say the growth tile reads the analysts' consensus once 18.2 keeps their trend, and the yield tile the Treasury's 10-year once 18.2 reads it
+Authorised by: Four tiles under the headline are worked by code from stored figures at the price the page draws
+Was:
+> four tiles, the latest quarter's earnings against their estimate, the year's consensus growth, the dividend yield against the 10-year Treasury and the distance from the 52-week high with its range;
+
+> The fetch keeps the trend, the ratings' mean and target and the cash flow lines it receives today and drops. Writes the decision superseding the one keeping every analyst figure off the page,
+Now:
+> four tiles, the latest quarter's earnings against their estimate, the year's growth, the analysts' consensus once 18.2 keeps their trend and the four newest quarters' sales over the four before until then, the dividend yield, read against the 10-year Treasury once 18.2 reads it, and the distance from the 52-week high with its range;
+
+> The fetch keeps the trend, the ratings' mean and target and the cash flow lines it receives today and drops, and the growth tile reads the year's consensus growth from the trend it keeps and the yield tile the Treasury's 10-year beside it. Writes the decision superseding the one keeping every analyst figure off the page,
+Why: the store keeps the analysts' trend for no member before 18.2 and reads no Treasury yield before it, so at 18.1 the growth tile draws the fallback R6 names for every member and the yield tile its yield alone.
+
+### 2026-10-10 - BUILD_PLAN.md - phase 11's and 11.6's citations name the decisions that superseded the region card's and the screen's
+Authorised by: A screen reads and renders, and each figure it works out has one function in the core
+Was:
+> each with its key under it (see: Every region is a card that states where its figures came from and how to read them).
+
+> the page computes nothing (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector);
+Now:
+> each with its key under it (see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them).
+
+> the page computes nothing (see: A screen reads and renders, and each figure it works out has one function in the core);
+Why: a spec cites no superseded decision, and 18.1 superseded both.
+
 ### 2026-10-10 - RUNBOOK.md - the market events table holds 2027's CPI releases and the FOMC decision of 2028-01-26, each row with the day it was read
 Authorised by: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider
 Was:

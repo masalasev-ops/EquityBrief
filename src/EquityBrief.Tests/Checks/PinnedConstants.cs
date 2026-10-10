@@ -268,6 +268,8 @@ public class PinnedConstants
             new("News labelling window", "8,000", Core.News.NewsInstruction.TextCharacters, "NewsInstruction.TextCharacters"),
             new("News labeller time limit", "20", Worker.News.NewsLimits.DefaultTimeLimitMinutes, "NewsLimits.DefaultTimeLimitMinutes"),
             new("News labeller month limit", "5", Worker.News.NewsLimits.DefaultMonthLimit, "NewsLimits.DefaultMonthLimit"),
+            new("Live quotes a day", "500", Core.Quotes.QuoteLimits.DailyCap, "QuoteLimits.DailyCap"),
+            new("Quote interval", "5", Core.Quotes.QuoteLimits.IntervalMinutes, "QuoteLimits.IntervalMinutes"),
             new("Store copies", "3", Core.Configuration.StoreCopies.Kept, "StoreCopies.Kept"),
             new("Store copies", "20", (decimal)Core.Configuration.StoreCopies.WaitsAtMost.TotalHours, "StoreCopies.WaitsAtMost in hours"),
             new("Store copies", "30", (decimal)Worker.Backup.StoreBackup.Between.TotalSeconds, "StoreBackup.Between in seconds"),

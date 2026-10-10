@@ -1294,6 +1294,12 @@
       "query": "https://www.sec.gov/Archives/edgar/data/320193/000114036126035325/0001140361-26-035325-index.htm",
       "fetchedAt": "2026-10-09T03:52:30Z",
       "trimmedTo": "the filing's own header block as sent, from its form name to the end of its Items, of a page of 209 lines: Apple's 8-K/A of 2026-09-01, an amendment whose one item is 5.02 and carries no results. The page's navigation and its tables of documents and data files are cut."
+    },
+    {
+      "file": "quote-CVX.json",
+      "endpoint": "real-time/CVX.US",
+      "query": "real-time/CVX.US?fmt=json",
+      "fetchedAt": "2026-10-10T15:51:54Z"
     }
   ]
 }

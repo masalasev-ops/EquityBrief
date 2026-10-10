@@ -2,6 +2,7 @@ using EquityBrief.Core.News;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Quotes;
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Spending;
@@ -12,6 +13,7 @@ using EquityBrief.Core.Rules;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using Microsoft.Data.Sqlite;
 
@@ -689,7 +691,7 @@ public sealed record ReactionRow(
 // subtraction is not here: this hands back the stored column and the projection
 // that draws the column works out the change, which is the seam
 // `UniverseScreen` already names for the distance.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
 
 // One row of the universe screen, and every field is a stored column.
@@ -743,7 +745,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // place the arithmetic lives, and the day it disagrees with the nightly run
 // nothing says which one is the system.
 // see: Code owns every number
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public sealed partial class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
@@ -823,6 +825,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Fundamentals, Touch.Read),
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.DividendReading, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
@@ -837,6 +840,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.VersionBlock, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.QuoteRequest, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.LiveQuote, Touch.Read),
             new StoreTouch(Store.WatchList, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.TakenTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.TakenRecord, Touch.Read),
@@ -6177,6 +6182,283 @@ public sealed partial class ReadApi : IComponent
 
     // SQLite's extended code for a primary key refusing a row, as against a unique index.
     const int PrimaryKeyRefused = 1555;
+
+    // ---- the quotes ----
+    //
+    // A name page open in the regular session asks for the delayed quote, this surface writes the ask, and the worker's
+    // quote job answers it. An ask inside the interval of the name's newest is not written, so two pages open on one name
+    // ask once between them, and the page draws the newest stored quote of the session it is in.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+
+    const string NewestQuoteAsk = "SELECT MAX(asked_at) FROM quote_request WHERE ticker = $ticker;";
+
+    const string AskQuote = "INSERT INTO quote_request (ticker, asked_at) VALUES ($ticker, $asked_at);";
+
+    const string NewestQuoteOf = @"
+        SELECT asked_at, quoted_at, price, previous_close, change, change_pct, night, distances
+        FROM live_quote
+        WHERE ticker = $ticker AND asked_at >= $from AND asked_at < $to
+        ORDER BY asked_at DESC
+        LIMIT 1;
+    ";
+
+    const string QuotesBetween = @"
+        SELECT ticker, asked_at, answered_at, quoted_at
+        FROM live_quote
+        WHERE asked_at >= $from AND asked_at < $to
+        ORDER BY asked_at;
+    ";
+
+    const string QuoteRunsBetween = @"
+        SELECT outcome, COUNT(*)
+        FROM run_log
+        WHERE stage = $stage AND started_at >= $from AND started_at < $to
+        GROUP BY outcome
+        ORDER BY outcome;
+    ";
+
+    // Writes the ask unless the name's newest ask is inside the interval, and says which.
+    public async Task<QuoteAsk> AskQuoteAsync(string ticker)
+    {
+        var now = clock.UtcNow;
+
+        await using var connection = Open();
+        string? newest;
+
+        await using (var reading = connection.CreateCommand())
+        {
+            reading.CommandText = NewestQuoteAsk;
+            reading.Parameters.AddWithValue("$ticker", ticker);
+            newest = await reading.ExecuteScalarAsync() as string;
+        }
+
+        if (newest is not null
+            && DateTimeOffset.TryParseExact(newest, ResearchRequests.Instant, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var last)
+            && now - last < TimeSpan.FromMinutes(QuoteLimits.IntervalMinutes))
+        {
+            return new QuoteAsk(false, last, $"{ticker}'s quote was asked at {newest}, inside the {QuoteLimits.IntervalMinutes} minutes between two asks, so nothing was asked.");
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AskQuote;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$asked_at", now.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+        try
+        {
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (SqliteException failure) when (failure.SqliteErrorCode == 19)
+        {
+            return new QuoteAsk(false, now, $"{ticker}'s quote was asked in this same second, so nothing was asked.");
+        }
+
+        return new QuoteAsk(true, now, $"{ticker}'s quote is being asked.");
+    }
+
+    // The newest quote the job stored for the name between two instants, the session's open and close; none where it
+    // stored none.
+    public async Task<LiveQuoteView?> NewestQuoteAsync(string ticker, DateTimeOffset from, DateTimeOffset to)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestQuoteOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        using var distances = JsonDocument.Parse(reader.GetString(7));
+
+        return new LiveQuoteView(
+            Instant(reader.GetString(0)),
+            Instant(reader.GetString(1)),
+            Money.FromStorage(reader.GetString(2)),
+            reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3)),
+            reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
+            reader.IsDBNull(5) ? null : reader.GetDouble(5),
+            reader.IsDBNull(6) ? null : DateOnly.ParseExact(reader.GetString(6), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            [.. distances.RootElement.EnumerateArray().Select(band => new QuoteDistance(
+                Money.FromStorage(band.GetProperty("low").GetString()!),
+                Money.FromStorage(band.GetProperty("high").GetString()!),
+                band.GetProperty("role").GetString()!,
+                band.GetProperty("days").ValueKind == JsonValueKind.Number ? band.GetProperty("days").GetDouble() : null))]);
+    }
+
+    // The quotes asked between two instants, each with how long after its own time it was asked, and the quote job's runs
+    // between them by what each came to, which the Run page's row for the quote runs draws against the day's cap.
+    public async Task<QuoteRunsView> QuoteRunsAsync(DateTimeOffset from, DateTimeOffset to)
+    {
+        await using var connection = Open();
+        var asked = new List<(string Ticker, DateTimeOffset AskedAt, double DelayMinutes)>();
+        var outcomes = new List<(string Outcome, int Runs)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuotesBetween;
+            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                asked.Add((reader.GetString(0), Instant(reader.GetString(1)), (Instant(reader.GetString(2)) - Instant(reader.GetString(3))).TotalMinutes));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = QuoteRunsBetween;
+            command.Parameters.AddWithValue("$stage", QuoteStage);
+            command.Parameters.AddWithValue("$from", from.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+            command.Parameters.AddWithValue("$to", to.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                outcomes.Add((reader.GetString(0), reader.GetInt32(1)));
+            }
+        }
+
+        return new QuoteRunsView(from, to, asked, outcomes, QuoteLimits.DailyCap);
+    }
+
+    // The stage the quote job writes its rows under. The worker's own constant cannot be referenced from here, so the
+    // word is stated and `read-surface` asserts the two agree.
+    public const string QuoteStage = "quote";
+
+    // ---- what the masthead's tiles read ----
+    // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
+
+    const string TileQuartersOf = @"
+        SELECT period_end, revenue, eps_actual, eps_estimate
+        FROM reported_quarter
+        WHERE ticker = $ticker
+          AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = $ticker AND session_date <= $on);
+    ";
+
+    const string KeptRateOf = @"
+        SELECT forward_rate FROM dividend_reading
+        WHERE ticker = $ticker AND fetched_at = (SELECT MAX(fetched_at) FROM dividend_reading WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on);
+    ";
+
+    const string FetchedDividendOf = @"
+        SELECT (SELECT payload FROM fundamentals_snapshot WHERE ticker = $ticker AND substr(fetched_at, 1, 10) <= $on ORDER BY fetched_at DESC LIMIT 1),
+               (SELECT payload FROM fundamentals WHERE ticker = $ticker AND filing_date <= $on ORDER BY filing_date DESC LIMIT 1);
+    ";
+
+    const string IndexOf = @"
+        SELECT index_code FROM membership
+        WHERE ticker = $ticker AND (joined IS NULL OR joined <= $session) AND (""left"" IS NULL OR ""left"" > $session)
+        ORDER BY CASE index_code WHEN 'GSPC' THEN 0 WHEN 'MID' THEN 1 ELSE 2 END
+        LIMIT 1;
+    ";
+
+    // The quarters of the newest fetch made on or before the night, as the tiles read them.
+    public async Task<IReadOnlyList<EquityBrief.Core.Tiles.TileQuarter>> TileQuartersAsync(string ticker, DateOnly? on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = TileQuartersOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var quarters = new List<EquityBrief.Core.Tiles.TileQuarter>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            quarters.Add(new EquityBrief.Core.Tiles.TileQuarter(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(1) ? null : Money.FromStorage(reader.GetString(1)),
+                reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
+                reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3))));
+        }
+
+        return quarters;
+    }
+
+    // The forward annual rate a share as the dividend the quarters fetch kept states it, and where none is kept as the
+    // newest fundamentals fetch's dividend states it, the copy's read over the filing's; none where neither states one.
+    public async Task<decimal?> ForwardRateAsync(string ticker, DateOnly? on)
+    {
+        var day = (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        await using var connection = Open();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = KeptRateOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$on", day);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                return reader.IsDBNull(0) ? null : Money.FromStorage(reader.GetString(0));
+            }
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FetchedDividendOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$on", day);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync())
+            {
+                foreach (var column in new[] { 0, 1 })
+                {
+                    if (reader.IsDBNull(column))
+                    {
+                        continue;
+                    }
+
+                    using var payload = JsonDocument.Parse(reader.GetString(column));
+
+                    if (payload.RootElement.TryGetProperty("dividend", out var part) && part.ValueKind == JsonValueKind.Object)
+                    {
+                        return part.TryGetProperty("forwardAnnualRate", out var rate) && rate.ValueKind == JsonValueKind.String
+                            ? Money.FromStorage(rate.GetString()!)
+                            : null;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // The index that held the name on a session, the S&P 500 first where two did.
+    public async Task<string?> IndexOfAsync(string ticker, DateOnly session)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = IndexOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    static DateTimeOffset Instant(string stamp) =>
+        DateTimeOffset.ParseExact(stamp, ResearchRequests.Instant, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
 
     const string OutstandingFor = @"
         SELECT state FROM research_request WHERE ticker = $ticker AND state = $state LIMIT 1;

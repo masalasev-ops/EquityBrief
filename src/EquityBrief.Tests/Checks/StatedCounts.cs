@@ -134,7 +134,10 @@ public class StatedCounts
         ["five"] = 5, ["six"] = 6, ["seven"] = 7, ["eight"] = 8,
         ["nine"] = 9, ["ten"] = 10, ["eleven"] = 11, ["twelve"] = 12,
         ["thirteen"] = 13, ["fourteen"] = 14, ["fifteen"] = 15, ["sixteen"] = 16, ["seventeen"] = 17,
-        ["eighteen"] = 18, ["nineteen"] = 19, ["twenty"] = 20,
+        ["eighteen"] = 18, ["nineteen"] = 19, ["twenty"] = 20, ["twenty-one"] = 21, ["twenty-two"] = 22,
+        ["twenty-three"] = 23, ["twenty-four"] = 24, ["twenty-five"] = 25, ["twenty-six"] = 26, ["twenty-seven"] = 27,
+        ["twenty-eight"] = 28, ["twenty-nine"] = 29, ["thirty"] = 30, ["thirty-one"] = 31, ["thirty-two"] = 32,
+        ["thirty-three"] = 33, ["thirty-four"] = 34, ["thirty-five"] = 35,
     };
 
     internal static (int Stated, int Parts)? ConditionBreakdown(string text)
@@ -211,7 +214,7 @@ public class StatedCounts
         // is that a mark is defined once, and would leave the opening sentence
         // saying seven over a table of ten. Now it fails instead.
         var architecture = File.ReadAllText(Repository.Architecture);
-        var stated = Regex.Match(architecture, @"<p>(\w+) marks\.");
+        var stated = Regex.Match(architecture, @"<p>([\w-]+) marks\.");
 
         Assert.True(stated.Success, "Section 15.5 no longer states how many marks there are.");
         Assert.True(

@@ -12,7 +12,7 @@ namespace EquityBrief.Api.Reading;
 // The projection from the page's stored list to the cards a night the families drew is read as. It
 // evaluates no gate and draws no list: the lister drew it and stored it, and this reads it back, family by
 // family in the page's order, each pick with the trade and the words its own family's stored answer holds.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
 public static partial class TonightScreen
 {

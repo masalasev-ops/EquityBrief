@@ -147,7 +147,7 @@ public sealed partial class MarkRenderer
 
     // The plan in the operator's money where the account is set, the line linking the settings page where it is not,
     // and the rule's management of the trade, each stop a close below it.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     static string PlanInMoney(DecisionCardView card)
     {
         if (card.Money is null && !card.AccountUnset && card.Management is null)

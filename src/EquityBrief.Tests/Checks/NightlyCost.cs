@@ -126,6 +126,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNameNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdQuoteFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdSymbolListFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFundSnapshotFeed.cs",
@@ -303,12 +304,13 @@ public partial class NightlyCost
         // sixteen from 15.1, the S&P 400's and 600's funds' holdings files, one request a fund a night, and eighteen
         // from 15.3, the funds' quarter-end filings at the archive and the provider's symbol lists, which the history
         // pull asks by hand and no night does, nineteen from 16.3, the dividend calendar, one request a session for
-        // the 21 sessions after the night, and twenty from 17.1, OpenFIGI's mapping of a holding's identifier to the
-        // tickers it traded under, which the holdings pull asks by hand and no night does.
+        // the 21 sessions after the night, twenty from 17.1, OpenFIGI's mapping of a holding's identifier to the
+        // tickers it traded under, which the holdings pull asks by hand and no night does, and twenty-one from 18.1, the
+        // delayed quote, one request a listing on a name page's ask in the session, which no night asks.
         Assert.True(
-            MayHoldAClient.Length <= 20,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty feed " +
-            "implementations. A twenty-first is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 21,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-one feed " +
+            "implementations. A twenty-second is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.
@@ -1353,6 +1355,7 @@ public partial class NightlyCost
             [nameof(ProviderWeights.News)] = $"News costs {ProviderWeights.News}",
             [nameof(ProviderWeights.EarningsCalendar)] = $"The earnings calendar costs {ProviderWeights.EarningsCalendar} for a whole window",
             [nameof(ProviderWeights.DividendCalendar)] = $"The dividend calendar costs {ProviderWeights.DividendCalendar} a session",
+            [nameof(ProviderWeights.Quote)] = $"A delayed quote costs {ProviderWeights.Quote} a listing",
         };
 
         // Every figure the class holds, so a weight added to it is one read here.

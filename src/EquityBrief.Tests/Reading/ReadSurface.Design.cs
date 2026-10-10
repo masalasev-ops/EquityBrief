@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Reading;
 // input and over the input it degrades on, asserting what it draws and the words it says in place
 // of what it cannot draw; every screen laid out in cards whose keys close on what to take from a
 // figure; the name page's opening; and the shell's palette and routing.
-// see: Every region is a card that states where its figures came from and how to read them
+// see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
 public partial class ReadSurface
 {
     // A constructed stretch of sessions around 108, each with a two-point range and a volume that
@@ -383,7 +383,7 @@ public partial class ReadSurface
 
         Assert.True(contents.Success, "The name page draws no contents.");
 
-        var entries = Regex.Matches(contents.Value, "<li><a href=\"#([^\"]+)\"><span class=\"c-n\">(\\d+)</span>([^<]*)</a></li>")
+        var entries = Regex.Matches(contents.Value, "<li(?: data-dated=\"\\d{4}-\\d{2}-\\d{2}\")?><a href=\"#([^\"]+)\"><span class=\"c-n\">(\\d+)</span>([^<]*)</a></li>")
             .Select(match => (Id: match.Groups[1].Value, At: int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture), Title: match.Groups[3].Value))
             .ToArray();
 
@@ -392,8 +392,8 @@ public partial class ReadSurface
         Assert.True(entries.Length >= 9, $"The contents names {entries.Length} card(s), expected at least 9.");
         Assert.Contains($"data-entries=\"{entries.Length}\"", contents.Value, StringComparison.Ordinal);
 
-        // Numbered from where a reader starts, contiguously, in the order the page draws.
-        Assert.Equal([.. Enumerable.Range(0, entries.Length)], [.. entries.Select(entry => entry.At)]);
+        // Numbered from one, contiguously, in the order the page draws.
+        Assert.Equal([.. Enumerable.Range(1, entries.Length)], [.. entries.Select(entry => entry.At)]);
         Assert.All(entries, entry => Assert.NotEqual(string.Empty, entry.Title));
 
         // Every card the page drew is named once, and every entry reaches a card. The cards
@@ -434,10 +434,12 @@ public partial class ReadSurface
                 "<tr><td>Tonight&#39;s figures</td><td>x</td></tr><tr><td>How it got here</td><td>y</td></tr></table>" +
                 "<h2>5. After</h2><table><tr><td>Nor this</td></tr></table>")]);
 
-        // Eighteen since the 5.8 correction took the listing history off the page, and twenty-one since the
-        // 12.2 correction drew the nights the live list picked a name before and named the swing readings and
-        // the gates, which the page had drawn since 12.1 and 12.2 and no fixture page reached.
-        Assert.True(rows.Count >= 21, $"Section 4 names {rows.Count} region(s), expected at least 21.");
+        // Eighteen since the 5.8 correction took the listing history off the page, twenty-one since the 12.2
+        // correction drew the nights the live list picked a name before and named the swing readings and the gates,
+        // and nineteen since 18.1 folded why the name is here, its gates, its swing readings and its member readings
+        // into how the rules read it, the night's figures into the levels and the nights before into the plan, and
+        // drew the decision card as a region of its own.
+        Assert.True(rows.Count >= 19, $"Section 4 names {rows.Count} region(s), expected at least 19.");
 
         using var store = await FixtureExpectations.WithListings();
 
@@ -448,9 +450,8 @@ public partial class ReadSurface
         string[] written =
         [
             .. SinglePageApp.AtTheTop,
-            .. SinglePageApp.BeforeTheNumbers,
-            .. SinglePageApp.AfterTheNumbers.Where(section => section != ClaimRules.CycleSection),
-            .. SinglePageApp.AfterThePlan,
+            .. SinglePageApp.AfterTheNumbers,
+            .. SinglePageApp.AfterTheRules.Where(section => section != ClaimRules.CycleSection),
         ];
 
         foreach (var section in written)
@@ -473,6 +474,11 @@ public partial class ReadSurface
             "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, cost, cost_double, profit) " +
             $"VALUES ('GSPC', '{night}', 'KEYS', '333.42', '445000000', 0.125, 0.25, 1);");
         GateRow(store, night, new Member("KEYS", Trigger: false));
+
+        // And a family's card for it on the night, which its page draws third.
+        store.Execute(
+            "INSERT INTO decision_card (index_code, session_date, family, ticker, place, entry, stop, target, rule, settings, lines, record) VALUES " +
+            $"('GSPC', '{night}', 'pullback', 'KEYS', 1, '330', '320', '350', 'the rule', '{{}}', '[]', NULL);");
         store.Execute($"INSERT OR REPLACE INTO list_rule (session_date, rule) VALUES ('{earlier}', 'filter');");
         GateRow(store, earlier, new Member("KEYS", Passed: true, Rank: 1));
 
@@ -557,7 +563,7 @@ public partial class ReadSurface
 
         return
         [
-            .. Regex.Matches(contents.Value, "<li><a href=\"#[^\"]+\"><span class=\"c-n\">\\d+</span>([^<]*)</a></li>")
+            .. Regex.Matches(contents.Value, "<li(?: data-dated=\"\\d{4}-\\d{2}-\\d{2}\")?><a href=\"#[^\"]+\"><span class=\"c-n\">\\d+</span>([^<]*)</a></li>")
                 .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value)),
         ];
     }
@@ -589,7 +595,7 @@ public partial class ReadSurface
             (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
             (universe, new[] { "sectors", "index" }),
             (run, new[] { "operational", "records", "shadow", "stale", "harness" }),
-            (page, new[] { "facts", "how-it-got-here", "chart", "plan", "sources" }),
+            (page, new[] { "how-to-read", "chart", "how-it-got-here", "levels", "plan", "rules", "sources" }),
         };
 
         var keys = 0;

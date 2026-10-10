@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Reading;
 // as the widest picture a screen draws and no wider, and it is the screen's own width below that;
 // anything that cannot be narrowed, which is every table and every picture drawn at a size, is
 // read in a box of its own that scrolls rather than pushing the page sideways.
-// see: A screen is read at the width of the screen it is read on
+// see: A screen is read at the width of the screen it is read on, and a name's page in a reading column
 public partial class ReadSurface
 {
     // One declaration of one rule, read off the stylesheet the app and the file both carry.
@@ -213,9 +213,10 @@ public partial class ReadSurface
         // registering no version to compare or put at a checkpoint, and 71 from the 12.6 correction that adds
         // the checklist's two items for a profile near its retirement date and a report costing more than $2,
         // and 72 from the 9.2 correction of 2026-10-03 that adds its item for a drain that stopped on an error, and 74
-        // from the 13.10 correction of 2026-10-08 that adds the checklist's two items on the store's copies, and 75
-        // from 17.2, the checklist's item on a live rule past its mark.
-        Assert.Equal(75, pictures);
+        // from the 13.10 correction of 2026-10-08 that adds the checklist's two items on the store's copies, 75
+        // from 17.2, the checklist's item on a live rule past its mark, and 77 from 18.1, the year's range bar in
+        // the fourth tile on the name page and in the exported report.
+        Assert.Equal(77, pictures);
 
         var page = screens[3].Item2;
 

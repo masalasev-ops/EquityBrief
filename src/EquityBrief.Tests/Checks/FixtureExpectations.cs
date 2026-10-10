@@ -57,6 +57,9 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 18.1, the quote job: the day's cap and its three failures.
+            .. QuoteRows,
+
             // 12.5's correction, the sweep: section 17's four rows over constructed candidates, maps and clocks and
             // the fixture's two nights, and section 18's row about a chunk that fails twice.
             CheckReach.Key(Scope.LimitsTable, "Sweep grid"),

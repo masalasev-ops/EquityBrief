@@ -9,7 +9,7 @@ namespace EquityBrief.Api.Reading;
 // The projection from the stored articles, their labels and the labeller's own rows to what the pages draw: a
 // name's news region, tonight's counts and the Run page's labeller line and its count toward the nights its
 // limits are settled from. It reads, counts and orders, and computes nothing a label holds.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 // see: The news labels alone name the model that wrote them
 public static class NewsScreen
 {

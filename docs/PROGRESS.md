@@ -42108,3 +42108,76 @@ Queue:      done, phase 17 through 17.10 as PRs 414 and 415 and the 4.6, 6.1 and
             before a weeknight's night, at most one such correction a night; next, 18.1 to 18.5.
 Carried:    the first night after this merges, read the morning after: each card whose company holds no kept
             dividend estimated from its newest fundamentals fetch where its bars show the interval.
+
+### 18.1 - the palette, the masthead with the delayed quote, the headline, the tiles, the contents and every region of a stock's page in the order a buyer asks   2026-10-10
+
+Built:      the quote job, a worker verb the read surface starts as it starts the drain when a name's page for
+            tonight, open in the regular session, asks for its delayed quote at most every 5 minutes: it checks the
+            session, from 09:30 to 16:00 in New York or to 13:00 on the exchange's early closes, and the day's cap of
+            500, asks the provider once and stores the price, its time, the previous close, the change and each band
+            of the name's newest night with its distance at the price, in `live_quote`, the ask in `quote_request`
+            (migration 85). The masthead names the index and sector beside the price, the delayed quote marked live
+            with its own time in the session and the last close outside it; one sentence with no figure beneath it,
+            written by code; four tiles worked at the masthead's price, the quarter's earnings against their estimate,
+            the year's sales growth, the dividend yield and the distance from the year's high with a range bar, the
+            twenty-first mark; a contents in two columns numbered from one, a written or filed entry marked NEW by the
+            page's script where it is newer than this browser's last visit; and every region in section 4's order, the
+            card third, the glossary folded, why the name is here, its gates, swing readings and member readings
+            folded into one region after the plan. The palette gains a rise, a fall and a caution hue in both
+            palettes, held to the name page and its file; each region is ruled down its left by its role; the name
+            page and its file read in a column of 1,000 pixels; and the Run page states each session's quotes against
+            the cap. Eleven decisions written, five of them superseding one each; sections 4, 7, 15.2, 15.5, 15.6, 15.9, 15.10, 15.12,
+            15.14, 15.18, 16, 17 and 18 of the architecture, `SCHEMA.md`, the runbook, two rows of the roster and the
+            guide's report section say so, the prior text in `CHANGELOG.md`.
+Amended:    this checkpoint amends its own done condition and its text in the plan. The early closes are read into
+            the session's own list beside the closures table, whose file every rule's version and the swing filter
+            pin. The palette clause holds every text colour on the ground it is drawn on in both palettes and the
+            level, rise, fall and caution inks on their own fills, where it said every token's text on its own fill:
+            no text is drawn on a status fill, and the failure's red lightened to read on its own in the dark palette
+            sits 13.3 from the fall's plum, under the validator's floor of 15.
+Measured:   the palette check over the stylesheet, 259 selectors stating a text colour, each in both palettes against
+            the ground its rule or the rule holding it sets: under 4.5 to 1 were the report table's retry cells in the
+            second status blue at 1.88 in the light palette, now drawn in the first, and the night picker's days it
+            cannot open, the one exemption; the light rise read 4.41 on its own fill over the page and was darkened a
+            step to read 4.56. The validator's distances: rise against fall 15.7 light and 18.9 dark, against the
+            support green 19.6 and 18.6, fall against the resistance orange 22.0 and 17.4. Read back off the rendered
+            page of CVX over a copy of the store taken read-only and migrated, at 1440 and at 390 framed, in both
+            palettes outside the session: the masthead, the headline, the tiles worked by hand from the store (7.12
+            over 211.98 is 3.36%, 211.98 under 217.78 is 2.7%), the contents numbered 1 to 18 and every region in
+            order. The plan column cuts the trailing exit's words at its edge, which the 4.6 correction wrote. One
+            delayed quote for CVX asked on Saturday 2026-10-10 at 15:51:54Z, the provider's count for the day read
+            first at 5,494 and at 5,495 after, past the operator's 5,000 a day and made on the operator's word: it
+            answered the last price of 2026-10-09, 211.98 against a previous close of 211.55, stamped 20:23:00Z, 23
+            minutes after that session's close and the close the bars store for it, and is kept as a fixture the
+            feed and its parser are read over.
+Tests:      2128, fourteen more: the session and its early closes, the tiles worked by hand, the quote job inside the
+            session, at and under the cap, with no price and unanswered, the provider's answer read as sent and the
+            captured answer read through the feed on the route it came from, the masthead in and out of the session
+            with each band's distance at the quote, the press's refusals and its interval, the read-back, the
+            headline and the contents' dated entries, the Run page's quote line, the range bar, and the palette's two
+            tests with the column and the rules by role read off the stylesheet and a rendered page.
+Claims:     1167, nineteen more, each named as added after phase 17's report: the quote job's catalogue and matrix
+            rows, its two stores, section 17's cap and interval, section 18's three failures, the range bar, the name
+            page's eight parts and the Run page's quote runs.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the brief's two mutations. First, a live price shown after the close:
+            the page's projection draws the stored quote whatever the session, with its check of the session dropped.
+            Predicted red at the masthead's test, where after the close the tiles are drawn live and a band's distance
+            at the quote, and green at its masthead line, which the region's own check of the session still holds.
+            Second, the colour of a fall used for a failure: the rule drawing a fall names the failure's red. Predicted
+            red at the palette's test that no rule drawing a rise or a fall names the failure's hue, and green at the
+            contrast test, the red reading at 4.5 or more on every ground. Result: the first red at the masthead's
+            test, the tiles drawn live after the close, its masthead line green and the five other quote tests green,
+            as predicted; the second red at the palette's test as predicted and red too at the Run page's test that
+            each status hue is drawn by the Run page's rules alone, which the prediction did not name, the contrast
+            test green. Each made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2128 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            committed unchanged as 2ba92220: 1167 claims and 1167 PASS, none failing, out of scope or unexamined, and
+            43 checks run and passed, the second reading the suite result the first wrote over that commit.
+Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2 and 6.4 corrections, 18.0 and the 3.1, 6.10 and 16.3
+            corrections, PRs 419 to 423 merged on 2026-10-10; in progress, this checkpoint, its pull request opened
+            on the operator's word of 2026-10-10 with the quote captured outside the session, and 18.2 after it;
+            next, 18.3 to 18.5.
+Carried:    the delay of a quote asked inside a session, read under the operating row on the day's cap over the
+            first five sessions after this merges, which reads each quote's delay beside its count; and the plan
+            column's trailing exit cut at its edge, a 4.6 correction.

@@ -15,7 +15,7 @@ public sealed record CardContext(EquityBrief.Core.Cards.AccountSettings? Account
 // each line's verdict and words and the rule's record as the night wrote them, words the rule's management from the
 // stored plan, and works out two things alone where the card is drawn, since the store holds neither: the plan in the
 // operator's money from their account, and the sixth line from their open trades.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 // see: A pick's card advises on the trade and removes no pick, and code computes every figure on it
 public static class CardScreen
 {

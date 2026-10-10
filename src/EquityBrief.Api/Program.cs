@@ -4,6 +4,7 @@ using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Quotes;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -256,6 +257,7 @@ app.MapGet(ReportExporter.Route + "{ticker}", async (string ticker, ReadApi read
 // The name screen's region, read here and composed by the app, for the page and for the file.
 static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock, string ticker, string index, bool export, DateOnly? on = null, CardContext? cardContext = null)
 {
+    var session = RegularSession.On(clock.SessionDateAt(clock.UtcNow), clock.SessionZone);
     var bars = await read.BarsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var indicators = await read.IndicatorsAsync(ticker, DateOnly.MinValue, on ?? DateOnly.MaxValue);
     var levels = await read.LevelsAsync(ticker, on);
@@ -421,7 +423,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         decisionCards: night is { } cardsOn ? await read.DecisionCardsOfAsync(ticker, cardsOn) : null,
         // The account and the taken trades on tonight's page alone: an export and an earlier night's page draw neither.
         cardContext: export ? null : cardContext,
-        warmed: await read.ChartAveragesAsync(ticker));
+        warmed: await read.ChartAveragesAsync(ticker),
+        // The regular session of the day the page is opened on and the newest quote stored inside it, which tonight's
+        // page draws in its masthead while the session is open; an earlier night's page and the file draw the close.
+        quote: on is null && session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null,
+        quoteSession: session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null,
+        tileQuarters: await read.TileQuartersAsync(ticker, on),
+        forwardRate: await read.ForwardRateAsync(ticker, on),
+        indexCode: await read.IndexOfAsync(ticker, night ?? clock.SessionDateAt(clock.UtcNow)),
+        asksForQuotes: !export && on is null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -532,6 +542,86 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
         $"<p class=\"pass-started\" data-started=\"{(started.Written ? "true" : "false")}\" data-drain=\"{(drain?.Started == true ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
         "text/html; charset=utf-8",
         statusCode: started.Written ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
+});
+
+// A name page's ask for its delayed quote, which its script makes at most every five minutes while the page is shown in
+// the regular session: refused without the page's own header and outside the session, writing nothing either way. An
+// ask inside the interval of the name's newest writes nothing and starts nothing, and otherwise the request is written and
+// the quote job started as a process of its own, as a report press starts the drain.
+// see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+app.MapPost(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
+{
+    var named = ticker.ToUpperInvariant();
+
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"quote-refused\" data-refused=\"header\">no quote was asked: the request did not come from the name page</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (!RegularSession.IsOpen(clock.UtcNow, clock.SessionZone))
+    {
+        return Results.Content(
+            "<p class=\"quote-refused\" data-refused=\"closed\">no quote was asked: the regular session is closed, so the page draws the last close</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status409Conflict);
+    }
+
+    var asked = await read.AskQuoteAsync(named);
+    var started = asked.Written ? launcher.StartTheQuote(named, asked.AskedAt) : null;
+    var line = started is null ? asked.Line : asked.Line + " " + started.Line;
+
+    return Results.Content(
+        $"<p class=\"quote-asked\" data-asked=\"{(asked.Written ? "true" : "false")}\" data-started=\"{(started?.Started == true ? "true" : "false")}\" data-asked-at=\"{asked.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: asked.Written ? StatusCodes.Status202Accepted : StatusCodes.Status200OK);
+});
+
+// The newest quote stored for the name inside today's session, its price as the masthead draws it, the line beneath it
+// and each band's distance at its price as the levels draw it, which the page's script swaps in. Outside the session, or
+// where none is stored, the reply says there is none and the page keeps the close.
+// see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+app.MapGet(SinglePageApp.QuoteRoute + "{ticker}", async (string ticker, ReadApi read, MarkRenderer marks, IClock clock) =>
+{
+    var now = clock.UtcNow;
+    var named = ticker.ToUpperInvariant();
+
+    if (RegularSession.On(clock.SessionDateAt(now), clock.SessionZone) is not { } session
+        || !RegularSession.IsOpen(now, clock.SessionZone)
+        || await read.NewestQuoteAsync(named, session.Open, session.Close) is not { } quote)
+    {
+        return Results.Json(new { live = false });
+    }
+
+    // The tiles at the quote's price, worked by the functions the page's own tiles are.
+    // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
+    var quarters = await read.TileQuartersAsync(named, null);
+    var year = await read.YearExtremesAsync(named, null);
+    var tiles = new TilesView(
+        EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
+        EquityBrief.Core.Tiles.NameTiles.SalesGrowth(quarters),
+        EquityBrief.Core.Tiles.NameTiles.Yield(await read.ForwardRateAsync(named, null), quote.Price),
+        year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(quote.Price, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
+        quote.Price,
+        Live: true);
+
+    return Results.Json(new
+    {
+        live = true,
+        askedAt = quote.AskedAt.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+        price = SinglePageApp.PriceNow([], null, quote),
+        asOf = SinglePageApp.QuoteAsOf(quote, quote.Night),
+        tiles = marks.LeadTiles(tiles),
+        distances = quote.Distances.Select(band => new
+        {
+            low = band.Low.ToString(CultureInfo.InvariantCulture),
+            high = band.High.ToString(CultureInfo.InvariantCulture),
+            away = band.Days is { } days ? days.ToString("0.0", CultureInfo.InvariantCulture) + " typical days" : "not measured",
+            value = band.Days is { } held ? held.ToString(CultureInfo.InvariantCulture) : "none",
+        }),
+    });
 });
 
 // The press running the rest of a night left unfinished, from tonight's notice or the Run page: refused
@@ -1973,7 +2063,10 @@ app.MapGet("/screens/run/{night?}", async (
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
                 RunScreen.Research(week),
-                NewsScreen.Line(dated, NewsScreen.RunFor(labellerRuns, dated))),
+                NewsScreen.Line(dated, NewsScreen.RunFor(labellerRuns, dated)),
+                // The quotes the name pages asked for in the night's own session, against the day's cap.
+                // owes: The day's live quotes stay under their cap on the first five sessions
+                RegularSession.On(dated, clock.SessionZone) is { } quoted ? await read.QuoteRunsAsync(quoted.Open, quoted.Close) : null),
             worries: RunScreen.Worries(
                 await read.StaleNamesAsync(index, dated),
                 how,

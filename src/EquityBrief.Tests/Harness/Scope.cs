@@ -3531,6 +3531,85 @@ internal static class Scope
             Verdict.Pass,
             "a rise of 0.00020004 read as a step and one of 0.00019004 not, a rise of exactly a fifth no step and one of 0.199 a step, gaps of 77, 105 and 77 days read as four a year and a median of 28 as twelve, worked by hand; the figures read off the document against the constants",
             ByExpectations),
+
+        // 18.1, the quote job, its two stores, the day's cap and the interval, its three failures, and the name page's
+        // parts, the range bar and the Run page's quote runs.
+        [CheckReach.Key(CatalogueTable, "Quote job")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the live quotes it reads and inserts, the levels and indicators it reads, the run log it writes and the quote feed it asks, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Quote job")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Quote requests")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Live quotes")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Live quotes a day")] = new Scoped(
+            Verdict.Pass,
+            "a session holding 499 quotes asks once more and one holding 500 asks nothing and says the cap was reached, over a constructed store; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Quote interval")] = new Scoped(
+            Verdict.Pass,
+            "a press four minutes and fifty-nine seconds after the name's newest ask writes and starts nothing and one five minutes after it writes and starts the job; the figure read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A quote asked outside the regular session")] = new Scoped(
+            Verdict.Pass,
+            "a job started at the session's close asks the provider nothing and stores nothing, its run saying the session was closed, and the session is worked by hand from the closures table with its early closes",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The day's quotes reach their cap")] = new Scoped(
+            Verdict.Pass,
+            "a session at the cap asks the provider nothing and stores nothing, its run saying the cap was reached",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The provider answers a quote with no price, or does not answer")] = new Scoped(
+            Verdict.Pass,
+            "an answer holding no price and a provider that does not answer each store nothing, one request each, the runs saying no price and the request failed with why",
+            ByExpectations),
+        [CheckReach.Key("15.5 The mark vocabulary", "Range bar")] = new Scoped(
+            Verdict.Pass,
+            "over a full input the dot sits at the price's place between the year's low and high worked by hand, past the high it is held at the line's end, and over an input with no year stored the tile draws no bar and says so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Masthead")] = new Scoped(
+            Verdict.Pass,
+            "in the session the delayed quote is drawn marked live with its own time in New York, its signed change in the rise hue and the previous close, and after the close, on a Saturday, on a page for an earlier night and in the exported file the last stored close with its session",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The quote while the page is open")] = new Scoped(
+            Verdict.Pass,
+            "the page carries the route and the session's edges inside the session alone, a press without the header or outside the session is refused with nothing written and nothing started, and the newest quote is read back with the tiles and each band's distance at its price",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Headline")] = new Scoped(
+            Verdict.Pass,
+            "every fixture name's headline is one sentence written by code holding no digit outside the company's name",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Tiles")] = new Scoped(
+            Verdict.Pass,
+            "the four tiles are drawn at the price the masthead draws, marked live at the quote and not at the close, and each tile with nothing stored says so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How the rules read it")] = new Scoped(
+            Verdict.Pass,
+            "why the name is here, its gates, its swing readings and its member readings are each drawn folded inside the region after the plan at their own addresses, read back off every fixture member's page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The decision card")] = new Scoped(
+            Verdict.Pass,
+            "a pick's card is the third region of its page, after the short version, read back off the rendered page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Reading column")] = new Scoped(
+            Verdict.Pass,
+            "the stylesheet holds the name page and its file to a column of 1,000 pixels with the chart and the profile scaled to it, read off the rule itself",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Rules by role")] = new Scoped(
+            Verdict.Pass,
+            "the card and the plan carry the buy role and the risks the caution role with its word, read off the rendered page, and every text colour reads at 4.5 to 1 on its ground with a rise and a fall on the name page's rules alone",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The quote runs")] = new Scoped(
+            Verdict.Pass,
+            "a session's quotes against the cap with the median and longest delay and the runs by what each came to, worked by hand, and a session that asked none saying so",
+            ByReadSurface),
         [CheckReach.Key(FailureTable, "The dividend calendar refuses, or answers in a form that cannot be read")] = new Scoped(
             Verdict.Pass,
             "a refusing calendar stores nothing, removes none of the window's dates and is named on the calendar's row with the earnings stored, and an answer with no rows cannot be read",
@@ -4862,6 +4941,8 @@ internal static class Scope
         ["Loop decisions"] = "17.9",
         ["Loop applications"] = "17.9",
         ["Alarm periods"] = "17.9",
+        // 18.1's request, which the plan names as the request the read surface writes; the live quotes derive from it.
+        ["Quote requests"] = "18.1",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4891,6 +4972,18 @@ internal static class Scope
     // an entry naming a row the document no longer has fails too.
     static readonly Dictionary<string, string> Screens = new(StringComparer.Ordinal)
     {
+        // 18.1's name page: the range bar, its masthead, quote, headline, tiles, the rules folded into one region, the card
+        // third, the reading column and the rules by role, and the Run page's quote runs.
+        [CheckReach.Key("15.5 The mark vocabulary", "Range bar")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Masthead")] = "18.1",
+        [CheckReach.Key("15.9 Name", "The quote while the page is open")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Headline")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Tiles")] = "18.1",
+        [CheckReach.Key("15.9 Name", "How the rules read it")] = "18.1",
+        [CheckReach.Key("15.9 Name", "The decision card")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Reading column")] = "18.1",
+        [CheckReach.Key("15.9 Name", "Rules by role")] = "18.1",
+        [CheckReach.Key("15.10 Run", "The quote runs")] = "18.1",
         // 17.3's Ledger page under Universe, its three regions.
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
@@ -6267,6 +6360,10 @@ internal static class Scope
         ["A market series missing on a session an idea reads"] = "12.5",
         // The pulls' provider stop, 17.1.
         ["A pull whose stated calls pass the provider stop"] = "17.1",
+        // 18.1's three, which the plan names as the session closed and the cap reached.
+        ["A quote asked outside the regular session"] = "18.1",
+        ["The day's quotes reach their cap"] = "18.1",
+        ["The provider answers a quote with no price, or does not answer"] = "18.1",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -6456,6 +6553,9 @@ internal static class Scope
         // The ideas' run, a 12.5 correction built once phase 13 was finished.
         ["Ideas on the base"] = "12.5",
         ["Ideas test"] = "12.5",
+        // 18.1's cap and interval, which the plan names as the day's cap and the five minutes.
+        ["Live quotes a day"] = "18.1",
+        ["Quote interval"] = "18.1",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

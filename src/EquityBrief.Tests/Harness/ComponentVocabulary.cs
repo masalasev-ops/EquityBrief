@@ -58,11 +58,13 @@ internal static class ComponentVocabulary
     // From 15.4 the listings column holds the answer each recorded sweep states,
     // which a family's card reads beside its picks. From 15.2's second half the
     // computed tables column holds every member's readings each night and the
-    // market switches the S&P 400's and 600's rules may read.
+    // market switches the S&P 400's and 600's rules may read. From 18.1 the bars column holds the delayed quotes a name
+    // page asked for beside the stored sessions, each a price, and the research requests column the pages' asks for them
+    // beside the asks for a report, each a press's request the worker answers.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
-        ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar]),
+        ("Bars", [DataStore.Bar, DataStore.MarketBar, DataStore.KeptBar, DataStore.LiveQuote]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
@@ -77,7 +79,7 @@ internal static class ComponentVocabulary
         ("Rule versions", [DataStore.RuleVersion]),
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
         ("Series state", [DataStore.SeriesState]),
-        ("Research requests", [DataStore.ResearchRequest]),
+        ("Research requests", [DataStore.ResearchRequest, DataStore.QuoteRequest]),
         ("Watch list", [DataStore.WatchList, DataStore.TakenTrade, DataStore.TakenRecord, DataStore.LoopDecision]),
         ("Run log", [DataStore.RunLog]),
     ];
@@ -157,6 +159,7 @@ internal static class ComponentVocabulary
         ["local model"] = Feed.LocalModel,
         ["search tool"] = Feed.SearchTool,
         ["identifier mapping feed"] = Feed.IdentifierMapping,
+        ["quote feed"] = Feed.Quote,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.
@@ -181,6 +184,8 @@ internal static class ComponentVocabulary
         ["family trades"] = DataStore.FamilyTrade,
         ["indicators"] = DataStore.Indicator,
         ["chart averages"] = DataStore.ChartAverage,
+        ["live quotes"] = DataStore.LiveQuote,
+        ["quote requests"] = DataStore.QuoteRequest,
         ["swings"] = DataStore.Swing,
         ["volume profile"] = DataStore.VolumeProfile,
         ["levels"] = DataStore.Level,

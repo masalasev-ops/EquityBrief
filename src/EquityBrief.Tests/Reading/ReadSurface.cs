@@ -52,6 +52,10 @@ public partial class ReadSurface
         // The architecture too, whose section 4 pattern table this check holds to the renderer's patterns.
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 18.1, the name page's masthead, quote, headline, tiles and order, its range bar, the Run page's quote runs
+            // and the interval between two asks.
+            .. NamePageRows,
+
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
             // version at a checkpoint, and the night's tries on tonight's notice and the Run page.
@@ -1086,7 +1090,7 @@ public partial class ReadSurface
 
         // Neutral ink. The two hues belong to support and resistance, and a
         // volume band is a magnitude.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         Assert.DoesNotContain("green", profile, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("orange", profile, StringComparison.OrdinalIgnoreCase);
     }
@@ -1166,7 +1170,7 @@ public partial class ReadSurface
     public void SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger()
     {
         // The one place in the system those hues appear.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
 
         var fills = Regex.Matches(svg, "class=\"level-band\" data-role=\"([a-z]+)\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
@@ -1188,7 +1192,7 @@ public partial class ReadSurface
         // drew every support band in the resistance hue and left the suite
         // green. Green is a level below the price and orange is one above it, so
         // the mapping is the claim rather than the palette.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         Assert.All(fills, fill => Assert.Contains(
             "--" + fill.Role,
             fill.Hue,

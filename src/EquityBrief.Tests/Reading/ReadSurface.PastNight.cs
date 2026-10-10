@@ -335,7 +335,7 @@ public partial class ReadSurface
         var own = Regex.Match(page, "<table class=\"level-summary\".*?</table>", RegexOptions.Singleline).Value;
 
         string[] Away(string drawn) =>
-            [.. Regex.Matches(drawn, "<td class=\"away\" data-away=\"[^\"]*\">([^<]*)</td>").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal)];
+            [.. Regex.Matches(drawn, "<td class=\"away num\" data-away=\"[^\"]*\">([^<]*)</td>").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal)];
 
         Assert.Equal(worked.Length, Away(selected).Length);
         Assert.Equal(worked, Away(selected));

@@ -31,7 +31,7 @@ public partial class ReadSurface
         {
             var ticker = row[0];
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
-            var card = Assert.Single(Blocks(page, "<section class=\"card\"[^>]* data-card=\"gates\">.*?</section>"));
+            var card = Assert.Single(Blocks(page, "<details class=\"rule-part\" id=\"gates\" data-card=\"gates\">.*?</details>"));
 
             Assert.Contains($"<div class=\"gates\" data-ticker=\"{ticker}\" data-session=\"{GatesNight}\" data-version=\"{row[13]}\" data-passed=\"{(row[12] == "1" ? "yes" : "no")}\" data-rank=\"none\">", card, StringComparison.Ordinal);
 

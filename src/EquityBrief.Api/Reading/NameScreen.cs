@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
@@ -26,7 +27,7 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // Nothing in it derives a figure. Every value is the stored column, and the one
 // thing that is worked out is which of the four momentum readings exist, which
 // is a lookup in a list the indicator arithmetic already carries.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public static class NameScreen
 {
     // The three averages drawn on a price axis. The momentum readings are not
@@ -187,7 +188,7 @@ public static class NameScreen
     // earnings basis they were struck on, the market value likewise, the close and
     // the year's high and low are bars, and the averages, the momentum readings and
     // the typical daily move are the indicator engine's own rows.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: The fact strip states the year's high and low with the sessions they were made on
     public static string FactStrip(
         string ticker,
@@ -210,7 +211,7 @@ public static class NameScreen
 
         // The strip as a grid a reader scans, each figure to the places it is read at, above the
         // sentence that states every value as the store holds it.
-        // see: Every region is a card that states where its figures came from and how to read them
+        // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
         void Fact(string label, string value, string? note = null) =>
             html.Append(CultureInfo.InvariantCulture, $"<div><dt>{label}</dt><dd>{value}{(note is null ? string.Empty : $" <small>{note}</small>")}</dd></div>");
 
@@ -346,7 +347,7 @@ public static class NameScreen
     // stored value on its cell. Nothing here works a figure out: the margin was
     // computed by the fetcher from the two figures in its own filing, and the
     // valuation was copied from the provider with the earnings basis beside it.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
@@ -467,7 +468,7 @@ public static class NameScreen
     // being the fetcher's, and each row's element carries the stored value whole. The analysts'
     // target price is not among them, for the reason the facts file does not carry it: set
     // beside the company's own figures, an analyst's estimate reads as one of them.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
     static string Snapshot(JsonElement payload, string currency)
@@ -571,7 +572,7 @@ public static class NameScreen
     // column. A screen that guessed would be a screen deciding what an absence
     // meant, and the three reasons a part can be absent are exactly what this
     // column exists to tell apart.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     static IReadOnlyDictionary<string, string> Attribution(string source)
     {
         try
@@ -934,7 +935,7 @@ public static class NameScreen
     // The sizing arithmetic and the earnings rule, as the plan section states
     // them. Every figure is read off the ladder row, which derived them from its
     // own prices, so nothing here computes and nothing can drift.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public static string Arithmetic(LadderRow? ladder)
     {
         if (ladder is null)
@@ -1132,7 +1133,15 @@ public static class NameScreen
         // The account and the taken trades its card draws, none for an export or an earlier night.
         CardContext? cardContext = null,
         // The chart's averages over the sessions the indicator rows leave empty, read through the pulled history.
-        IReadOnlyList<ChartAverageRow>? warmed = null)
+        IReadOnlyList<ChartAverageRow>? warmed = null,
+        // The delayed quote stored for the session the page is drawn in and the session itself, the newest fetch's quarters
+        // and the forward rate the tiles read, the index that holds the name, and whether the page asks for its quote.
+        LiveQuoteView? quote = null,
+        QuoteSession? quoteSession = null,
+        IReadOnlyList<EquityBrief.Core.Tiles.TileQuarter>? tileQuarters = null,
+        decimal? forwardRate = null,
+        string? indexCode = null,
+        bool asksForQuotes = false)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1214,6 +1223,23 @@ public static class NameScreen
                 indicators.Where(row => row.Name == name).Select(row => row.BarCount).DefaultIfEmpty(0).Max()))
             .ToArray();
 
+        // The price the masthead draws, the stored quote where the page is tonight's and drawn inside the session, and the
+        // last close otherwise, which the tiles are worked at.
+        var live = night is null && quoteSession is { IsOpen: true } ? quote : null;
+        var cards = (decisionCards ?? [])
+            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
+            .Select(card => CardScreen.View(card, cardContext))
+            .FirstOrDefault();
+        decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
+        var quarters = tileQuarters ?? [];
+        var tiles = new TilesView(
+            EquityBrief.Core.Tiles.NameTiles.Earnings(quarters),
+            EquityBrief.Core.Tiles.NameTiles.SalesGrowth(quarters),
+            shownPrice is { } yieldAt ? EquityBrief.Core.Tiles.NameTiles.Yield(forwardRate, yieldAt) : null,
+            shownPrice is { } highAt && year is { } extremes ? EquityBrief.Core.Tiles.NameTiles.High(highAt, extremes.High, extremes.HighOn, extremes.Low, extremes.LowOn) : null,
+            shownPrice,
+            live is not null);
+
         return page.NameRegion(
             marks,
             ticker,
@@ -1230,7 +1256,7 @@ public static class NameScreen
                 level.Strength,
                 level.HasNonAverageAnchor,
                 Members(level.Members),
-                AwayFromTheClose(bars, level, typicalMove)))],
+                AwayFromThePrice(bars, level, typicalMove, live)))],
             absent,
             ladder?.TrendState,
             ladder?.AsOf,
@@ -1265,7 +1291,7 @@ public static class NameScreen
             Suspect(suspect),
             listing is null ? [] : TonightScreen.WrittenBeforeTheCorrection([listing]),
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
-            new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
+            new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars), Universes.ByCode(indexCode)?.Name),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             night,
             Peers(ticker, universe, peerReadings, night, peerCloses),
@@ -1281,12 +1307,54 @@ public static class NameScreen
             TonightScreen.ListedUnder(ticker, familyPicks ?? []),
             TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []),
             memberReading is null ? null : Member(memberReading, ratings),
-            (decisionCards ?? [])
-                .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
-                .Select(card => CardScreen.View(card, cardContext))
-                .FirstOrDefault(),
-            warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null);
+            cards,
+            warmed is { Count: > 0 } ? new AveragesFrom(warmed[0].Pull, warmed[0].Reason) : null,
+            quote: live,
+            quoteSession: quoteSession,
+            headline: Headline(member?.Name ?? ticker, cards, Passed(listing, gates), missed, reading?.State, ladder?.TrendState),
+            tiles: tiles,
+            asksForQuotes: asksForQuotes);
     }
+
+    // The sentence under the masthead until a written one is accepted: whether a rule picked the name tonight and which,
+    // or how close it came, its business as its reported quarters read it and its trend, with no figure in it.
+    // see: The headline carries no figure, and code writes it until a written one is accepted
+    public static HeadlineView Headline(string company, DecisionCardView? card, FilterWhy? passed, EquityBrief.Core.Filter.MissedGate? missed, string? state, string? trend)
+    {
+        var business = state switch
+        {
+            EquityBrief.Core.Quarters.FundamentalState.Improving => "an improving business",
+            EquityBrief.Core.Quarters.FundamentalState.Steady => "a steady business",
+            EquityBrief.Core.Quarters.FundamentalState.Deteriorating => "a deteriorating business",
+            _ => "a business its quarters do not yet read",
+        };
+        var chart = trend switch
+        {
+            TrendState.Uptrend => "in an uptrend",
+            TrendState.Downtrend => "in a downtrend",
+            TrendState.Range => "in a range",
+            _ => "in a trend not yet classified",
+        };
+
+        var said = card is { } picked
+            ? $"{company} is a pick of {FamilyPhrase(picked.Family)} on the {Universes.ByCode(picked.Index)?.Name ?? picked.Index} tonight: {business}, {chart}."
+            : passed is not null
+                ? $"{company} passed the swing filter tonight: {business}, {chart}."
+                : missed is not null
+                    ? $"{company} is one gate short of a buy point tonight: {business}, {chart}."
+                    : $"{company} is on no list tonight: {business}, {chart}.";
+
+        return new HeadlineView(said, Written: false);
+    }
+
+    static string FamilyPhrase(string family) => family switch
+    {
+        "pullback" => "the pullback",
+        "breakout" => "the breakout",
+        "drift" => "the earnings drift",
+        "heavyweight" => "the sector heavyweights",
+        _ => "the " + family.Replace('-', ' '),
+    };
 
     // A name's member readings as the page draws them, each as the member reader stored it, its index named as every
     // page names it, with its company's rating counts as the newest fetch filed them.
@@ -1928,6 +1996,14 @@ public static class NameScreen
     // distance to it is the distance to the edge the price would reach first, and a close
     // inside the band is no distance at all rather than the gap to one of its sides.
     // see: Distances are stated as typical days' moves
+    // Each band's distance from the price the masthead draws: where it draws a quote, the distance the quote job stored for
+    // the band at the quote's price, and otherwise the distance from the last close.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    static double? AwayFromThePrice(IReadOnlyList<BarRow> bars, LevelRow level, double? typicalMove, LiveQuoteView? live) =>
+        live?.Distances.FirstOrDefault(band => band.Low == level.LowEdge && band.High == level.HighEdge) is { } quoted
+            ? quoted.Days
+            : AwayFromTheClose(bars, level, typicalMove);
+
     static double? AwayFromTheClose(IReadOnlyList<BarRow> bars, LevelRow level, double? typicalMove)
     {
         if (bars.Count == 0)

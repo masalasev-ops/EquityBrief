@@ -497,8 +497,8 @@ public sealed record FreshNight(DateOnly Session, int Listed, int Repeated)
 public sealed record ResearchNight(DateOnly Session, int PaidPasses);
 
 // Research and spend as the Run page pictures them: the night's spend against the caps and the seven nights
-// up to it.
-public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights, LabellerLine? Labeller = null);
+// up to it, the labeller's line, and the delayed quotes the name pages asked for in the night's session.
+public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights, LabellerLine? Labeller = null, EquityBrief.Web.App.QuoteRunsView? Quotes = null);
 
 // The news labeller's line on the Run page for a night: whether it ran, on which profile and model, what the
 // night's labelling cost and the month's against its limit, the articles labelled, the unreadable answers by
@@ -1174,8 +1174,9 @@ public sealed record ChartMarker(DateOnly Session, string Says, string Href);
 public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
-// card calls itself, and the card's own id, which is what the entry links to.
-public sealed record ContentsEntry(int At, string Title, string Id);
+// card calls itself, the card's own id, which is what the entry links to, and for a written or
+// filed card the day it is as of, which the page's script marks new against the reader's last visit.
+public sealed record ContentsEntry(int At, string Title, string Id, DateOnly? Dated = null);
 
 // The marks, as SVG strings written server side.
 //
@@ -1310,7 +1311,7 @@ public sealed partial class MarkRenderer : IComponent
     // It draws nothing the ladder does not carry. Every row handed in is a
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
     {
         if (rows.Count == 0)
@@ -1695,7 +1696,7 @@ public sealed partial class MarkRenderer : IComponent
     // Support is green and resistance is orange, and this is the one place in
     // the whole system those two hues are used. Every other mark is neutral ink
     // or one hue in steps.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     const string SupportHue = "var(--support, #2f7d4f)";
     const string ResistanceHue = "var(--resistance, #b5651d)";
 
@@ -2034,8 +2035,9 @@ public sealed partial class MarkRenderer : IComponent
                 ? Formatted($"{days:0.0} typical days")
                 : "not measured";
 
-            table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td>");
-            table.Append(Invariant, $"<td class=\"away\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
+            // The band's role as a pill in its own hue, its word written in it, so the hue is never the only channel.
+            table.Append(Invariant, $"<td class=\"num\">{Escaped(edges)}</td><td><span class=\"pill band-pill {(band.Role == LevelSeries.Resistance ? "res" : "sup")}\">{Escaped(role)}</span></td>");
+            table.Append(Invariant, $"<td class=\"away num\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
             // The strength with a bar of a fixed length a point beside it, so two bands
             // compare at a glance and two names' tables compare the same way.
             table.Append(Invariant, $"<td class=\"strength\" data-strength=\"{band.Strength}\"><span class=\"str-bar\" style=\"width:{band.Strength * StrengthBarPerPoint}px\" aria-hidden=\"true\"></span>{band.Strength}</td><td>");
@@ -2369,7 +2371,7 @@ public sealed partial class MarkRenderer : IComponent
         // behind it and is cited by section rather than by name, because the
         // architecture states it once with its reasoning and a decision would be
         // a second place holding one fact.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         for (var line = 0; line < lines.Count; line++)
         {
             var average = lines[line];
@@ -2430,7 +2432,7 @@ public sealed partial class MarkRenderer : IComponent
             // neutral ink. Green and orange belong to support and resistance on
             // every screen and section 15.6 names a candle as the case it
             // forbids them in.
-            // see: Support and resistance own two hues and nothing else uses them
+            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
             var rising = bar.Close > bar.Open;
             var fill = rising ? "none" : "var(--ink, #1c1c1c)";
 
@@ -2787,9 +2789,15 @@ public sealed partial class MarkRenderer : IComponent
 
         nav.Append(Invariant, $"<nav class=\"contents\" aria-label=\"What is on this page\" data-ticker=\"{Escaped(ticker)}\" data-entries=\"{entries.Count}\"><ol>");
 
+        // A written or filed entry carries the day it is as of, which the page's script reads against the day this
+        // browser last opened the page to mark the entry new; the store records no visit, so a first visit and an
+        // exported file mark nothing.
+        // see: A section newer than the reader's last visit is marked new by the browser alone, and the store records no visit
         foreach (var entry in entries)
         {
-            nav.Append(Invariant, $"<li><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
+            var dated = entry.Dated is { } day ? " data-dated=\"" + DayOf(day) + "\"" : string.Empty;
+
+            nav.Append(Invariant, $"<li{dated}><a href=\"#{Escaped(entry.Id)}\"><span class=\"c-n\">{entry.At}</span>{Escaped(entry.Title)}</a></li>");
         }
 
         nav.Append("</ol></nav>");
@@ -3165,7 +3173,7 @@ public sealed partial class MarkRenderer : IComponent
             // two hues are support's and resistance's and a day is not allowed
             // either of them, so the direction is the sign on the number and
             // nothing else carries it.
-            // see: Support and resistance own two hues and nothing else uses them
+            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
             list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct, row.Close)}</td>");
 
             // The trend state in a word, read off the ladder row rather than
@@ -3369,7 +3377,7 @@ public sealed partial class MarkRenderer : IComponent
     // Hue is not a channel here at all. The three states are one ink at two
     // steps plus an outline, and each row carries its counts in words on its own
     // title, so a reader who cannot separate two greys loses nothing.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     public string ReasonTrack(IReadOnlyList<ReasonTrackRow> rows)
     {
         const int Row = 18;
@@ -5216,7 +5224,7 @@ public sealed partial class MarkRenderer : IComponent
     // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
     // The median is the annotator's and is drawn as stored; nothing here works it out.
     // see: A large move is shown beside its group's median move over the same sessions
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     static string GroupCell(MoveGroup? group)
     {
         if (group is null)
@@ -5262,7 +5270,7 @@ public sealed partial class MarkRenderer : IComponent
     // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
     // sorts, filters or works a figure out.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
@@ -5443,7 +5451,7 @@ public sealed partial class MarkRenderer : IComponent
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
         var table = new StringBuilder();
@@ -5501,7 +5509,7 @@ public sealed partial class MarkRenderer : IComponent
     //
     // The two hues are the ones support and resistance own everywhere else, and
     // nothing else on this mark uses them
-    // (see: Support and resistance own two hues and nothing else uses them).
+    // (see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else).
     //
     // A name with neither edge draws a rule and says so. An absence drawn as a
     // shape at one end is a shape a reader will read.
@@ -6374,7 +6382,7 @@ public sealed partial class MarkRenderer : IComponent
     // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
     // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
     // and no dot, each saying why.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     // see: Marks are defined once and every screen draws from that list
     public string TradeLine(PickCell pick)
     {
@@ -7337,9 +7345,40 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"paid reports\"><b>{picture.Nights.Sum(night => night.PaidPasses)}</b><span>reports written by the paid model</span></div>");
         region.Append("</div>");
         region.Append(LabellerParagraph(picture.Labeller));
+        region.Append(QuotesParagraph(picture.Quotes));
         region.Append("</div>");
 
         return region.ToString();
+    }
+
+    // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
+    // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
+    // whose session held none says so, and a night on no session draws nothing.
+    // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
+    // owes: The day's live quotes stay under their cap on the first five sessions
+    static string QuotesParagraph(EquityBrief.Web.App.QuoteRunsView? quotes)
+    {
+        if (quotes is null)
+        {
+            return string.Empty;
+        }
+
+        var day = DayOf(DateOnly.FromDateTime(quotes.From.UtcDateTime));
+
+        if (quotes.Asked.Count == 0 && quotes.Outcomes.Count == 0)
+        {
+            return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"0\" data-cap=\"{quotes.Cap}\">No delayed quote was asked in the session of {day}, against a cap of {quotes.Cap}.</p>");
+        }
+
+        var delays = quotes.Asked.Select(asked => asked.DelayMinutes).Order().ToArray();
+        double? median = delays.Length == 0 ? null : delays.Length % 2 == 1 ? delays[delays.Length / 2] : (delays[(delays.Length / 2) - 1] + delays[delays.Length / 2]) / 2;
+        var refused = quotes.Outcomes.Where(outcome => outcome.Outcome != EquityBrief.Web.App.QuoteRunsView.Quoted).ToArray();
+
+        return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
+            + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
+            + (median is { } typical ? Formatted($", each asked a median {typical:0} minutes after its own time and at most {delays[^1]:0}") : string.Empty)
+            + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
+            + "</p>";
     }
 
     // The news labeller's line for the night: what it cost and the month against its limit, the articles

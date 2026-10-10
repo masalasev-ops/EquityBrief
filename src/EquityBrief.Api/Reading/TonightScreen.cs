@@ -18,7 +18,7 @@ namespace EquityBrief.Api.Reading;
 // here decides whether a reason fired: the builder decided that and wrote it,
 // and this reads it back. What it does is order, count and cut, which is what
 // section 15.7 states the page does.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 // see: The page shows twenty and states the true count
 public static partial class TonightScreen
 {
