@@ -27,7 +27,7 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // Nothing in it derives a figure. Every value is the stored column, and the one
 // thing that is worked out is which of the four momentum readings exist, which
 // is a lookup in a list the indicator arithmetic already carries.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public static class NameScreen
 {
     // The three averages drawn on a price axis. The momentum readings are not
@@ -188,7 +188,7 @@ public static class NameScreen
     // earnings basis they were struck on, the market value likewise, the close and
     // the year's high and low are bars, and the averages, the momentum readings and
     // the typical daily move are the indicator engine's own rows.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: The fact strip states the year's high and low with the sessions they were made on
     public static string FactStrip(
         string ticker,
@@ -211,7 +211,7 @@ public static class NameScreen
 
         // The strip as a grid a reader scans, each figure to the places it is read at, above the
         // sentence that states every value as the store holds it.
-        // see: Every region is a card that states where its figures came from and how to read them
+        // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
         void Fact(string label, string value, string? note = null) =>
             html.Append(CultureInfo.InvariantCulture, $"<div><dt>{label}</dt><dd>{value}{(note is null ? string.Empty : $" <small>{note}</small>")}</dd></div>");
 
@@ -347,7 +347,7 @@ public static class NameScreen
     // stored value on its cell. Nothing here works a figure out: the margin was
     // computed by the fetcher from the two figures in its own filing, and the
     // valuation was copied from the provider with the earnings basis beside it.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
@@ -468,7 +468,7 @@ public static class NameScreen
     // being the fetcher's, and each row's element carries the stored value whole. The analysts'
     // target price is not among them, for the reason the facts file does not carry it: set
     // beside the company's own figures, an analyst's estimate reads as one of them.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
     static string Snapshot(JsonElement payload, string currency)
@@ -572,7 +572,7 @@ public static class NameScreen
     // column. A screen that guessed would be a screen deciding what an absence
     // meant, and the three reasons a part can be absent are exactly what this
     // column exists to tell apart.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     static IReadOnlyDictionary<string, string> Attribution(string source)
     {
         try
@@ -935,7 +935,7 @@ public static class NameScreen
     // The sizing arithmetic and the earnings rule, as the plan section states
     // them. Every figure is read off the ladder row, which derived them from its
     // own prices, so nothing here computes and nothing can drift.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public static string Arithmetic(LadderRow? ladder)
     {
         if (ladder is null)

@@ -25,6 +25,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - BUILD_PLAN.md - 18.1's visible output and 18.2's text say the growth tile reads the analysts' consensus once 18.2 keeps their trend, and the yield tile the Treasury's 10-year once 18.2 reads it
+Authorised by: Four tiles under the headline are worked by code from stored figures at the price the page draws
+Was:
+> four tiles, the latest quarter's earnings against their estimate, the year's consensus growth, the dividend yield against the 10-year Treasury and the distance from the 52-week high with its range;
+
+> The fetch keeps the trend, the ratings' mean and target and the cash flow lines it receives today and drops. Writes the decision superseding the one keeping every analyst figure off the page,
+Now:
+> four tiles, the latest quarter's earnings against their estimate, the year's growth, the analysts' consensus once 18.2 keeps their trend and the four newest quarters' sales over the four before until then, the dividend yield, read against the 10-year Treasury once 18.2 reads it, and the distance from the 52-week high with its range;
+
+> The fetch keeps the trend, the ratings' mean and target and the cash flow lines it receives today and drops, and the growth tile reads the year's consensus growth from the trend it keeps and the yield tile the Treasury's 10-year beside it. Writes the decision superseding the one keeping every analyst figure off the page,
+Why: the store keeps the analysts' trend for no member before 18.2 and reads no Treasury yield before it, so at 18.1 the growth tile draws the fallback R6 names for every member and the yield tile its yield alone.
+
+### 2026-10-10 - BUILD_PLAN.md - phase 11's and 11.6's citations name the decisions that superseded the region card's and the screen's
+Authorised by: A screen reads and renders, and each figure it works out has one function in the core
+Was:
+> each with its key under it (see: Every region is a card that states where its figures came from and how to read them).
+
+> the page computes nothing (see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector);
+Now:
+> each with its key under it (see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them).
+
+> the page computes nothing (see: A screen reads and renders, and each figure it works out has one function in the core);
+Why: a spec cites no superseded decision, and 18.1 superseded both.
+
 ### 2026-10-10 - RUNBOOK.md - the market events table holds 2027's CPI releases and the FOMC decision of 2028-01-26, each row with the day it was read
 Authorised by: Market events inside a hold are read from a committed table of the Fed's and the BLS's own dates, and asked of no provider
 Was:

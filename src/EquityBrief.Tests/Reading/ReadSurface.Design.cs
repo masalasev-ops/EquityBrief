@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Reading;
 // input and over the input it degrades on, asserting what it draws and the words it says in place
 // of what it cannot draw; every screen laid out in cards whose keys close on what to take from a
 // figure; the name page's opening; and the shell's palette and routing.
-// see: Every region is a card that states where its figures came from and how to read them
+// see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
 public partial class ReadSurface
 {
     // A constructed stretch of sessions around 108, each with a two-point range and a volume that

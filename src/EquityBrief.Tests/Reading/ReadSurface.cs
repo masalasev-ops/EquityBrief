@@ -1086,7 +1086,7 @@ public partial class ReadSurface
 
         // Neutral ink. The two hues belong to support and resistance, and a
         // volume band is a magnitude.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         Assert.DoesNotContain("green", profile, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("orange", profile, StringComparison.OrdinalIgnoreCase);
     }
@@ -1166,7 +1166,7 @@ public partial class ReadSurface
     public void SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger()
     {
         // The one place in the system those hues appear.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
 
         var fills = Regex.Matches(svg, "class=\"level-band\" data-role=\"([a-z]+)\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
@@ -1188,7 +1188,7 @@ public partial class ReadSurface
         // drew every support band in the resistance hue and left the suite
         // green. Green is a level below the price and orange is one above it, so
         // the mapping is the claim rather than the palette.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         Assert.All(fills, fill => Assert.Contains(
             "--" + fill.Role,
             fill.Hue,

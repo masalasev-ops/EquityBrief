@@ -20,7 +20,7 @@ namespace EquityBrief.Api.Reading;
 // it does is count and pair: the reason records are counts over the listings and
 // the forward returns, and the base rate is read from the column the filler
 // already wrote beside every return.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public static class RunScreen
 {
     // The swing filter's funnel for a night, counted off the flags each member's row stores: each gate
@@ -206,7 +206,7 @@ public static class RunScreen
 
                 // Withheld here rather than at the page, so no surface can draw a share, a bar or a
                 // verdict for a reason below either floor by forgetting to ask.
-                // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+                // see: A screen reads and renders, and each figure it works out has one function in the core
                 // see: The record column stays empty until it has earned a number
                 // see: A rule's record is drawn under the rule's own heading, beside its reason or on a pick's card and never as the stock's own
                 return record.HasEarnedAVerdict

@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Reading;
 // as the widest picture a screen draws and no wider, and it is the screen's own width below that;
 // anything that cannot be narrowed, which is every table and every picture drawn at a size, is
 // read in a box of its own that scrolls rather than pushing the page sideways.
-// see: A screen is read at the width of the screen it is read on
+// see: A screen is read at the width of the screen it is read on, and a name's page in a reading column
 public partial class ReadSurface
 {
     // One declaration of one rule, read off the stylesheet the app and the file both carry.

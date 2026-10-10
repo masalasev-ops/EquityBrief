@@ -76,7 +76,7 @@ public static class AccountFile
 public sealed record PositionPlan(long Shares, decimal AtRisk, decimal Value, decimal ShareOfAccount, decimal? RoundTrip, bool Capped, bool WholeAtRisk);
 
 // The one function a screen calls to size a pick, worked where the card is drawn since the account is in no store.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public static class PositionSize
 {
     // A pick with a stop: the shares the risk a trade buys over the stop's distance, rounded down, and no more than the

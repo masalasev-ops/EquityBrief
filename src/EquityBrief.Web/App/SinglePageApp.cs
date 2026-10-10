@@ -102,7 +102,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // the route it is on. A page that assembled a mark from values would be the
 // second renderer the marks decision exists to prevent.
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 //
 // At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
 // for the name screen's chart region, which the server composes from the marks
@@ -862,7 +862,7 @@ public sealed class SinglePageApp : IComponent
     // against the chart's own price axis, and a second request would be a second
     // axis. It computes nothing: every value here arrives already stored, and
     // the only arithmetic is the axis the mark renderer itself derives.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     // see: Marks are defined once and every screen draws from that list
     public string NameRegion(
         MarkRenderer marks,
@@ -1485,7 +1485,7 @@ public sealed class SinglePageApp : IComponent
     // name was last on it, and the listing strip. Each is absent and says so
     // rather than being drawn as a zero, which would read as nothing having
     // fired.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string UniverseRegion(
         MarkRenderer marks,
         IReadOnlyList<UniverseCell> rows,

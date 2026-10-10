@@ -70,7 +70,7 @@ public sealed record Measured(
 // rule. Nothing here decides whether a record is shown. That is the floor's job,
 // and the floor is eight non-empty blocks.
 // see: A candidate is judged by a sign-flip test over blocks of 63 sessions, with at least eight blocks
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public static class CandidateRecord
 {
     // The words a record carries in place of a verdict, and the words of one.

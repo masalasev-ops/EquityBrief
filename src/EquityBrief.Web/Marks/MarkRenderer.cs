@@ -1311,7 +1311,7 @@ public sealed partial class MarkRenderer : IComponent
     // It draws nothing the ladder does not carry. Every row handed in is a
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
     {
         if (rows.Count == 0)
@@ -1696,7 +1696,7 @@ public sealed partial class MarkRenderer : IComponent
     // Support is green and resistance is orange, and this is the one place in
     // the whole system those two hues are used. Every other mark is neutral ink
     // or one hue in steps.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     const string SupportHue = "var(--support, #2f7d4f)";
     const string ResistanceHue = "var(--resistance, #b5651d)";
 
@@ -2371,7 +2371,7 @@ public sealed partial class MarkRenderer : IComponent
         // behind it and is cited by section rather than by name, because the
         // architecture states it once with its reasoning and a decision would be
         // a second place holding one fact.
-        // see: Support and resistance own two hues and nothing else uses them
+        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
         for (var line = 0; line < lines.Count; line++)
         {
             var average = lines[line];
@@ -2432,7 +2432,7 @@ public sealed partial class MarkRenderer : IComponent
             // neutral ink. Green and orange belong to support and resistance on
             // every screen and section 15.6 names a candle as the case it
             // forbids them in.
-            // see: Support and resistance own two hues and nothing else uses them
+            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
             var rising = bar.Close > bar.Open;
             var fill = rising ? "none" : "var(--ink, #1c1c1c)";
 
@@ -3173,7 +3173,7 @@ public sealed partial class MarkRenderer : IComponent
             // two hues are support's and resistance's and a day is not allowed
             // either of them, so the direction is the sign on the number and
             // nothing else carries it.
-            // see: Support and resistance own two hues and nothing else uses them
+            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
             list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct, row.Close)}</td>");
 
             // The trend state in a word, read off the ladder row rather than
@@ -3377,7 +3377,7 @@ public sealed partial class MarkRenderer : IComponent
     // Hue is not a channel here at all. The three states are one ink at two
     // steps plus an outline, and each row carries its counts in words on its own
     // title, so a reader who cannot separate two greys loses nothing.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     public string ReasonTrack(IReadOnlyList<ReasonTrackRow> rows)
     {
         const int Row = 18;
@@ -5224,7 +5224,7 @@ public sealed partial class MarkRenderer : IComponent
     // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
     // The median is the annotator's and is drawn as stored; nothing here works it out.
     // see: A large move is shown beside its group's median move over the same sessions
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     static string GroupCell(MoveGroup? group)
     {
         if (group is null)
@@ -5270,7 +5270,7 @@ public sealed partial class MarkRenderer : IComponent
     // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
     // sorts, filters or works a figure out.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
@@ -5451,7 +5451,7 @@ public sealed partial class MarkRenderer : IComponent
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
-    // see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+    // see: A screen reads and renders, and each figure it works out has one function in the core
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
         var table = new StringBuilder();
@@ -5509,7 +5509,7 @@ public sealed partial class MarkRenderer : IComponent
     //
     // The two hues are the ones support and resistance own everywhere else, and
     // nothing else on this mark uses them
-    // (see: Support and resistance own two hues and nothing else uses them).
+    // (see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else).
     //
     // A name with neither edge draws a rule and says so. An absence drawn as a
     // shape at one end is a shape a reader will read.
@@ -6382,7 +6382,7 @@ public sealed partial class MarkRenderer : IComponent
     // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
     // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
     // and no dot, each saying why.
-    // see: Support and resistance own two hues and nothing else uses them
+    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
     // see: Marks are defined once and every screen draws from that list
     public string TradeLine(PickCell pick)
     {

@@ -12,7 +12,7 @@ namespace EquityBrief.Api.Reading;
 // list: the index families read the night by the sweep's own code and stored each member's answer and the index's list,
 // and this reads them back, family by family in the page's order, each card's rule written from the settings the night
 // stored.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 // see: Every page reads one index at a time chosen under Universe, and every figure names its index
 // see: The 400's and 600's provisional picks are computed on the night by the sweep's own code into tables of their own
 public static partial class TonightScreen

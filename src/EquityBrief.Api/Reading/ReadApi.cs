@@ -691,7 +691,7 @@ public sealed record ReactionRow(
 // subtraction is not here: this hands back the stored column and the projection
 // that draws the column works out the change, which is the seam
 // `UniverseScreen` already names for the distance.
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
 
 // One row of the universe screen, and every field is a stored column.
@@ -745,7 +745,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // place the arithmetic lives, and the day it disagrees with the nightly run
 // nothing says which one is the system.
 // see: Code owns every number
-// see: A screen reads and renders, and computes only the plan in the operator's money and a pick's open trades in its sector
+// see: A screen reads and renders, and each figure it works out has one function in the core
 public sealed partial class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
