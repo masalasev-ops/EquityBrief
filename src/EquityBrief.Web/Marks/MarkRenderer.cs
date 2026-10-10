@@ -7351,10 +7351,6 @@ public sealed partial class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // The news labeller's line for the night: what it cost and the month against its limit, the articles
-    // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
-    // and the stop; the line it was refused with; or that no run is recorded for the night.
-    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
     // The quote runs of the night's session: how many quotes the name pages asked for against the day's cap, how long
     // after its own time each was asked, by the median and the longest, and the runs refused or failed by why. A night
     // whose session held none says so, and a night on no session draws nothing.
@@ -7385,6 +7381,10 @@ public sealed partial class MarkRenderer : IComponent
             + "</p>";
     }
 
+    // The news labeller's line for the night: what it cost and the month against its limit, the articles
+    // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
+    // and the stop; the line it was refused with; or that no run is recorded for the night.
+    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
     static string LabellerParagraph(LabellerLine? line)
     {
         if (line is null)

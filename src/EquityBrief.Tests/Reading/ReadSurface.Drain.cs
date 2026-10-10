@@ -41,6 +41,16 @@ public partial class ReadSurface
 
             return new DrainStart(true, Line);
         }
+
+        // Each quote job asked for, with the name and the instant its page asked.
+        public List<(string Ticker, DateTimeOffset AskedAt)> Quotes { get; } = [];
+
+        public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt)
+        {
+            Quotes.Add((ticker, askedAt));
+
+            return new DrainStart(true, Line);
+        }
     }
 
     // A clock the drain's own wait moves on, so the instant a pass starts at is the one the
