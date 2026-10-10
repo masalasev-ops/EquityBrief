@@ -707,7 +707,38 @@ public static class SchemaMigrations
         new Migration(84, "create chart_average", CreateChartAverages),
         new Migration(85, "create quote_request and live_quote", CreateLiveQuotes),
         new Migration(86, "add reported_quarter's gross profit and cash flow lines and company's mean rating and target, and create estimate_trend, dividend_event and treasury_yield", CreateReportParts),
+        new Migration(87, "create earnings_move and long_view", CreatePageHistory),
     ];
+
+    // What the name page reads of the years before the store's own, from the chart averages step: each name's typical
+    // earnings move over every print the store holds, with how many it read and left out and the pull it read, and its
+    // month-end closes over the pulled history and the stored year at the bar store's scale, with the pull and the ratio
+    // that brought them to it, or why none was read.
+    // see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year
+    // see: The long view draws the month-end closes over the pulled history at the bar store's scale with the plan's levels on the same prices
+    const string CreatePageHistory = @"
+        CREATE TABLE earnings_move (
+            ticker       TEXT NOT NULL,
+            night        TEXT NOT NULL,
+            prints       INTEGER NOT NULL,
+            unread       INTEGER NOT NULL,
+            first_print  TEXT,
+            median_move  REAL,
+            pull         TEXT,
+            reason       TEXT,
+            PRIMARY KEY (ticker)
+        ) STRICT;
+
+        CREATE TABLE long_view (
+            ticker  TEXT NOT NULL,
+            night   TEXT NOT NULL,
+            closes  TEXT NOT NULL,
+            pull    TEXT,
+            ratio   TEXT,
+            reason  TEXT,
+            PRIMARY KEY (ticker)
+        ) STRICT;
+    ";
 
     // What the name page's quarter, analysts and dividend regions read beside the quarters: each quarter's gross profit,
     // capital spending, free cash flow and dividends paid with a mark saying the fetch read them, the analysts' mean
@@ -804,7 +835,7 @@ public static class SchemaMigrations
     // The chart's averages over the sessions the indicator rows leave empty, read through the sessions before the store's
     // year from the pulled history: a row an average a name, its sessions and values as a list, the pull they came from,
     // or why none was read.
-    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
     const string CreateChartAverages = @"
         CREATE TABLE chart_average (
             ticker    TEXT NOT NULL,
@@ -2189,7 +2220,7 @@ public static class SchemaMigrations
     // The history pulled on the operator's command for the sessions before the store's rolling year,
     // held apart from the bar and calendar tables every night reads. Every row carries the run id of
     // the pull that wrote it, which is what removes a pull whole.
-    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
+    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
     const string CreatePulledHistory = @"
         CREATE TABLE pulled_bar (
             ticker       TEXT    NOT NULL,

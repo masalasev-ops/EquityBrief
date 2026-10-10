@@ -345,11 +345,14 @@ public partial class ArchitectureConformance
         // row, section 18's row and part, and the run page's region, 1148 from the 16.3 correction, section 17's
         // row on the dividend's steps, 1167 from 18.1, the quote job's catalogue and matrix rows, its two stores,
         // section 17's two rows, section 18's three, the range bar, the name page's eight parts and the run page's
-        // quote runs, and 1199 from 18.2, the dividend keeper's and the Treasury reader's catalogue and matrix rows,
+        // quote runs, 1199 from 18.2, the dividend keeper's and the Treasury reader's catalogue and matrix rows,
         // three stores, the Treasury's step, section 17's two rows, section 18's six, the name page's seven regions and
-        // the nine marks.
+        // the nine marks, and 1235 from 18.3, the page history reader's catalogue and matrix rows, its two stores,
+        // section 17's row, section 18's seven and the gap row's part, the name page's two regions, the four marks and
+        // the parts the level chart, the chart, the plan, the reactions and the moves gain, less the twelve-month
+        // picture and the reactions' old place.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1199),
+            (789, 853, 6, 4, 855, 876, 1235),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

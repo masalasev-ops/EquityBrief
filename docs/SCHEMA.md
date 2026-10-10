@@ -53,6 +53,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_holding` | HistoryPull | HistoryPull | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `chart_average` | ChartAverager | none | ChartAverager |
+| `earnings_move` | PageHistoryReader | none | PageHistoryReader |
+| `long_view` | PageHistoryReader | none | PageHistoryReader |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
 | `level` | LevelBuilder | LevelBuilder | LevelBuilder |
@@ -221,7 +223,7 @@ Primary key: `ticker`, `session_date`.
 
 **The four prices are one set and it is the adjusted one** (see: The stored series is adjusted). The provider adjusts the close alone, so the other three are scaled by the same factor before they are stored. A bar holding three raw prices beside one adjusted price is a bar that could not have traded, and 1.2 stored 96 of 756 fixture bars whose close fell outside their own low and high.
 
-**`raw_close` is the input to that factor, which is why it is kept.** The factor is the adjusted close over the raw one, and a store holding only the adjusted set cannot recompute or audit it after a later restatement moves it. The corporate action checker's refetch is what moves it, so the component that rewrites a year needs the input to the arithmetic and not only its output. It is written by whichever component writes the bar. The arithmetic that draws or computes reads the adjusted set, and two readers read this column: the forward return filler, for the listing session's factor a stored plan is scaled by, because a plan keeps the scale the series had on its night and a later restatement moves the series and not the plan (see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor); and the decision cards, for the steps the factor takes on each ex-dividend date, from which a card reads how many dividends a year a company pays where the quarters fetch has kept none of its dividend (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars).
+**`raw_close` is the input to that factor, which is why it is kept.** The factor is the adjusted close over the raw one, and a store holding only the adjusted set cannot recompute or audit it after a later restatement moves it. The corporate action checker's refetch is what moves it, so the component that rewrites a year needs the input to the arithmetic and not only its output. It is written by whichever component writes the bar. The arithmetic that draws or computes reads the adjusted set, and among the readers of this column are the forward return filler, for the listing session's factor a stored plan is scaled by, because a plan keeps the scale the series had on its night and a later restatement moves the series and not the plan (see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor); and the decision cards, for the steps the factor takes on each ex-dividend date, from which a card reads how many dividends a year a company pays where the quarters fetch has kept none of its dividend (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars); and from 18.3 the read surface, for the same steps, which the name page's chart marks as ex-dividend dates before the first dividend the keeper kept (see: The chart marks each report and each ex-dividend date over its sessions, the ex-dates a kept dividend's and before the first kept one the steps the dividends leave in the bars).
 
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
@@ -332,9 +334,9 @@ Grain: one row per ticker per session a pull reached.
 
 Primary key: `ticker`, `session_date`.
 
-**This is not the bar table, and no night reads it but the chart averages step** (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
+**This is not the bar table, and no night reads it but the chart averages step**, for the chart's averages, each stock's typical earnings move and its long view (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
 
-**`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no night, listing, score or page ever read one. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
+**`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no listing, score, rule or gate ever reads one, and what a night reads of them for the name page is read again from the newest pull still holding them. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
 
 **A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the days at least half the pulled names whose series span each day hold, and the reader of the series decides what a hole stops, because nothing is computed from this table on its own. A day fewer than half of them hold is named apart on the same row and is no name's hole: the exchange's closure table covers the store's own years alone, so what places an older session is the names that traded it, and a bar the provider sent for one name on a day the exchange was closed is stored as sent.
 
@@ -350,7 +352,7 @@ Grain: one row per ticker per earnings report date a pull reached.
 
 Primary key: `ticker`, `event_date`.
 
-The earnings prints of the names a pull asked for, over the same span, from the earnings calendar asked once a calendar month and read for the index's own listing as `calendar` is. Kept apart from `calendar` for the reason `pulled_bar` is kept apart from `bar`, and removed with it by the same pull.
+The earnings prints of the names a pull asked for, over the same span, from the earnings calendar asked once a calendar month and read for the index's own listing as `calendar` is. Kept apart from `calendar` for the reason `pulled_bar` is kept apart from `bar`, and removed with it by the same pull. No night reads it but the chart averages step, whose page history reader reads each name's prints beside the calendar's for its typical earnings move (see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year).
 
 ### pulled_surprise
 Grain: one row per ticker per earnings report date a surprise pull reached.
@@ -552,7 +554,41 @@ Grain: one row per ticker and average the chart draws.
 
 Primary key: `ticker`, `name`.
 
-The chart's averages over the sessions the `indicator` rows leave empty, computed by the chart averages step over each name's sessions before its first stored bar from `pulled_bar`, at the bar store's scale, and the stored year (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads). Each night replaces a name's rows whole, and a name the bar store no longer holds keeps none. The values sit in one list a row because the chart is their one reader and draws them a name at a time; no rule, level, listing, gate or card reads this table.
+The chart's averages over the sessions the `indicator` rows leave empty, computed by the chart averages step over each name's sessions before its first stored bar from `pulled_bar`, at the bar store's scale, and the stored year (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws). Each night replaces a name's rows whole, and a name the bar store no longer holds keeps none. The values sit in one list a row because the chart is their one reader and draws them a name at a time; no rule, level, listing, gate or card reads this table.
+
+### earnings_move
+Grain: one row per ticker.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `night` | TEXT | the newest session the name's stored year holds, which the row was read through and the name's plan is dated by |
+| `prints` | INTEGER | the prints the move was read over |
+| `unread` | INTEGER | the prints left out: a session the prices did not reach, or one the pull read across a hole or a stray |
+| `first_print` | TEXT | the oldest print read, null where none was |
+| `median_move` | REAL | a statistic and never a price: the median size of the reactions in per cent, null where no print was read |
+| `pull` | TEXT | the pull the older prints were read off, null where none was |
+| `reason` | TEXT | why no pull was read, null where one was |
+
+Primary key: `ticker`.
+
+Each name's typical earnings move, read by the chart averages step's page history reader after the chart's averages over every print the calendar and `pulled_earnings` file, each read off `bar` where the stored year reaches it and off `pulled_bar` otherwise, from the newest pull holding the name's first stored session (see: A stock's typical earnings move is the median size of its reaction over every print the store holds, read through the history pulled before its year). It is stated on the page over four prints or more, and the row is written whatever the count, so a name holding fewer says how many. Each night replaces every name's row in one write after every name is read, so a reader that cannot finish leaves the rows an earlier night wrote; a name whose stored year holds a gap and a name the bar store no longer holds keep none. The name page reads it on its newest night alone; no rule, level, listing, gate or card reads this table.
+
+### long_view
+Grain: one row per ticker.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `night` | TEXT | the newest session the name's stored year holds, which the row was read through and the name's plan is dated by |
+| `closes` | TEXT | a JSON list of pairs, each a calendar month's last session held and its close at the bar store's scale, a price written as text, oldest first |
+| `pull` | TEXT | the pull the months before the stored year were read from, null where none was |
+| `ratio` | TEXT | decimal in code: the stored close over the pulled close on the name's first stored session, which brought the pulled months to the bar store's scale; null where no pull was read |
+| `reason` | TEXT | why no pull was read, null where one was |
+
+Primary key: `ticker`.
+
+Each name's month-end closes over the history pulled before the store's year and the stored year, read by the page history reader beside the typical earnings move from the same pull, the pulled months multiplied by `ratio` and given the shape every price this system writes has (see: The long view draws the month-end closes over the pulled history at the bar store's scale with the plan's levels on the same prices). It is written and kept as `earnings_move` is, a name's row replaced in the same write, and read by the name page on its newest night alone, where the plan's levels are drawn across it only when the plan's night is the row's; no rule, level, listing, gate or card reads this table.
 
 ### swing
 Grain: one row per ticker, session and direction.
@@ -640,7 +676,7 @@ Primary key: `ticker`, `session_date`.
 
 **`sessions` is what makes the catalogue row true, and it was added at 5.0.** The annotator selects the largest single-day and multi-day moves of the stored year, and a table keyed on one session with no span could carry only the first of those. `session_date` is the session the move ended on, so a five-day run and a one-day gap on the same date are one row and the longer span wins, which is the reading that keeps the primary key.
 
-The cause of each move is not stored here. It is a researched claim and lives in `research_section` with its source.
+The cause of each move is not stored here. Research's is a researched claim and lives in `research_section` with its source; where none is written, the name page takes it from the labelled stories in `news_label`, the reactions in `earnings_reaction` and the filings in `filed_fact` inside the move, by one function in the core (see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it).
 
 ### peer_reading
 Grain: one row per ticker, the newest night's.
@@ -1675,7 +1711,7 @@ Grain: one row per filer, concept and period, as first filed.
 
 Primary key: `cik`, `concept`, `period_start`, `period_end`.
 
-**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
+**The SEC's facts as first filed, written by the filings refresh and read by the night's ledger** (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session). From 17.8 the index families read them as well, through the ledger's catalogue, for the fundamentals-first family on every index (see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point). From 18.3 the name page reads each filing of the company's filer once, its form, its day and its accession, for the filings inside a move (see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored, so a later filing stating it again changes nothing, and nothing updates or deletes a row.
 
 ### filed_fact_pull
 Grain: one row per filer each time the refresh asked for its facts.
@@ -1799,7 +1835,7 @@ Grain: one row per ticker per ex-dividend date.
 
 Primary key: `ticker`, `ex_date`.
 
-**Each dividend a member paid, kept by the dividend keeper alone** (see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read). The night's corporate action step hands it every dividend the bulk answer it already asked for carries for a name the night stores, and the history run on the operator's command asks each member an index holds today for its dividends from a date. A date held keeps its first row, so a dividend the night and the history both name is written once, and nothing updates or deletes a row. A split after a dividend was read leaves its amount on the basis of the day it was read. The name page reads a payer's rows for the years it raised and its trailing yield; no rule, list or gate reads the table.
+**Each dividend a member paid, kept by the dividend keeper alone** (see: Each dividend a member paid is kept from the night's bulk answer and from one history run, and read as the provider restated it on the day it was read). The night's corporate action step hands it every dividend the bulk answer it already asked for carries for a name the night stores, and the history run on the operator's command asks each member an index holds today for its dividends from a date. A date held keeps its first row, so a dividend the night and the history both name is written once, and nothing updates or deletes a row. A split after a dividend was read leaves its amount on the basis of the day it was read. The name page reads a payer's rows for the years it raised and its trailing yield, and from 18.3 for the ex-dividend dates its chart marks (see: The chart marks each report and each ex-dividend date over its sessions, the ex-dates a kept dividend's and before the first kept one the steps the dividends leave in the bars); no rule, list or gate reads the table.
 
 ### sweep_answer
 Grain: one row per sweep run recorded.

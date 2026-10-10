@@ -120,8 +120,7 @@ public partial class ReadSurface
 
     // Every chart the name page and the exported report draw at a size of their own sits in the box
     // the stylesheet scales pictures to the column in, so a window narrower than a chart shows all
-    // of it scaled rather than cutting off its newest sessions. The twelve-month picture is one of
-    // them and was drawn outside it.
+    // of it scaled rather than cutting off its newest sessions.
     [Fact]
     public async Task EveryChartTheNamePageDrawsSitsInTheBoxThatScalesItToItsColumn()
     {
@@ -147,8 +146,8 @@ public partial class ReadSurface
                 .Where(tag => Regex.IsMatch(tag.Value, "class=\"(?:level-chart|momentum-panel|volume-profile)\"") && Regex.IsMatch(tag.Value, "\\swidth=\"\\d"))
                 .ToArray();
 
-            // The year's picture, the chart, the profile beside it and the momentum panel.
-            Assert.True(charts.Length >= 4, $"{surface} draws {charts.Length} chart(s), expected at least 4.");
+            // The chart, the profile beside it and the momentum panel.
+            Assert.True(charts.Length >= 3, $"{surface} draws {charts.Length} chart(s), expected at least 3.");
 
             var loose = charts
                 .Where(chart => !InsideAFig(markup, chart.Index))
@@ -214,9 +213,11 @@ public partial class ReadSurface
         // the checklist's two items for a profile near its retirement date and a report costing more than $2,
         // and 72 from the 9.2 correction of 2026-10-03 that adds its item for a drain that stopped on an error, and 74
         // from the 13.10 correction of 2026-10-08 that adds the checklist's two items on the store's copies, 75
-        // from 17.2, the checklist's item on a live rule past its mark, and 77 from 18.1, the year's range bar in
-        // the fourth tile on the name page and in the exported report.
-        Assert.Equal(77, pictures);
+        // from 17.2, the checklist's item on a live rule past its mark, 77 from 18.1, the year's range bar in
+        // the fourth tile on the name page and in the exported report, and 81 from 18.3, the reaction range, the long
+        // view and the ladder figure on both where the twelve-month picture is drawn no more, the fixture's name
+        // trading no exit a tranche's risk is read to, so its reward to risk bars say so in words.
+        Assert.Equal(81, pictures);
 
         var page = screens[3].Item2;
 
@@ -298,8 +299,9 @@ public partial class ReadSurface
         // 12.3's Calibration region, which draws two where that region drew one, and 31 from the 5.8
         // correction that took the listing history's evenings off the name page and the exported
         // report, and 32 from the 12.3 correction that draws the Run page's versions running in the
-        // background. The fixture's name holds no research, so the risks' table is not among them.
-        Assert.Equal(32, tables);
+        // background. The fixture's name holds no research, so the risks' table is not among them. 34 from 18.3's
+        // table of the plan's shares on the name page and in the exported report.
+        Assert.Equal(34, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

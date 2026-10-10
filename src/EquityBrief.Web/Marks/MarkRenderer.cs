@@ -704,8 +704,12 @@ public sealed record WorryItem(string Item, string State, string? Why)
 
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
-// it does: a researched claim, which arrives with the pass that writes it.
-public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank, string? Cause = null, MoveGroup? Group = null);
+// it does: a researched claim, which arrives with the pass that writes it. `Taken`
+// is the cause the core took for the move in its stated order, research's, the
+// labelled stories inside it, or the prints and filings dated inside it, and none
+// where the page was handed no stories, prints or filings to read.
+// see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
+public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank, string? Cause = null, MoveGroup? Group = null, EquityBrief.Core.Moves.MoveCause? Taken = null);
 
 // The group a move is read against: its industry or its sector, named, how many other members
 // it holds and how many of them held both closes, and their median move over the same
@@ -1171,7 +1175,7 @@ public sealed record PriceAxis(double Low, double High)
 // to go looking for the meaning of, so it carries both.
 public sealed record ChartMarker(DateOnly Session, string Says, string Href);
 
-public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null);
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null, IReadOnlyList<ChartEvent>? Events = null);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
 // card calls itself, the card's own id, which is what the entry links to, and for a written or
@@ -1311,7 +1315,7 @@ public sealed partial class MarkRenderer : IComponent
     // It draws nothing the ladder does not carry. Every row handed in is a
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
     {
         if (rows.Count == 0)
@@ -2486,6 +2490,33 @@ public sealed partial class MarkRenderer : IComponent
                 svg.Append(Invariant, $"<circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
                 svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g></a>");
             }
+        }
+
+        // Each report's session and each ex-dividend date as a lettered tag along the foot of the price pane, R for a
+        // report and D for a dividend, saying what it marks beneath the pointer; a date the bars do not hold is not drawn.
+        // see: The chart marks each report and each ex-dividend date over its sessions, the ex-dates a kept dividend's and before the first kept one the steps the dividends leave in the bars
+        if (frame?.Events is { Count: > 0 } events)
+        {
+            var index = new Dictionary<DateOnly, int>();
+
+            for (var at = 0; at < bars.Count; at++)
+            {
+                index[bars[at].SessionDate] = at;
+            }
+
+            svg.Append(Invariant, $"<g class=\"chart-events\" data-events=\"{events.Count(item => index.ContainsKey(item.Session))}\">");
+
+            foreach (var item in events.Where(item => index.ContainsKey(item.Session)).OrderBy(item => item.Session))
+            {
+                var x = Centre(index[item.Session]);
+                var report = item.Kind == ChartEvent.Report;
+
+                svg.Append(Invariant, $"<g class=\"ev-mark {(report ? "ev-report" : "ev-dividend")}\" data-kind=\"{Escaped(item.Kind)}\" data-session=\"{item.Session:yyyy-MM-dd}\"><title>{Escaped(item.Says)}</title>");
+                svg.Append(Invariant, $"<rect class=\"ev-tag\" x=\"{Number(x - 6)}\" y=\"{PriceHeight - 15}\" width=\"12\" height=\"12\" rx=\"2\"/>");
+                svg.Append(Invariant, $"<text class=\"ev-tag-t\" x=\"{Number(x)}\" y=\"{PriceHeight - 5.5}\" text-anchor=\"middle\">{(report ? "R" : "D")}</text></g>");
+            }
+
+            svg.Append("</g>");
         }
 
         // The last close as a rule across the pane and a tag in the column, since it is
@@ -5159,40 +5190,28 @@ public sealed partial class MarkRenderer : IComponent
     // says so: the section rests only on documents published inside a move, so a
     // move no document fell inside is one nothing was written about.
     // see: A cause of a move rests only on a document published inside that move
-    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, IReadOnlyList<ChartBar> year, CauseSource? cause = null)
+    //
+    // Where the core took a cause for the moves, each move's cause is the one it took in its stated order, and the cell
+    // names where it came from beside it: research's sentences, the labelled stories published inside the move, the prints
+    // reported and the filings filed inside it, or that neither the stored news nor the filings hold one, with a line
+    // beneath the table naming the days the news labels cover.
+    // see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
+    public string MovesTable(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause = null, (DateTimeOffset First, DateTimeOffset Last)? labelsCover = null)
     {
         var table = new StringBuilder();
 
-        table.Append(Invariant, $"<section class=\"how-it-got-here\" data-ticker=\"{Escaped(ticker)}\" data-moves=\"{moves.Count}\" ");
-        table.Append(Invariant, $"data-picture-sessions=\"{year.Count}\">");
-
-        // The twelve-month picture, which section 15.9 puts in this region above
-        // the table of the biggest moves. It is the level chart mark given the
-        // year and no bands and no averages, rather than a drawing of its own:
-        // nothing on any screen is a one-off drawing, and what this region asks
-        // is what the year did, not where the levels are. The chart region below
-        // is the one about levels, and it draws the same mark with them.
-        // see: Marks are defined once and every screen draws from that list
-        //
-        // It degrades the way every mark does, by saying what it has: a name
-        // with fewer sessions than a chart needs gets the sentence stating the
-        // count rather than a picture drawn through nothing.
-        //
-        // It sits in the box the stylesheet scales every chart to its column in, so a window
-        // narrower than the picture shows the whole year scaled rather than cutting off its newest
-        // months, where most of the numbered moves are.
-        table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
-        table.Append("<div class=\"fig\">");
-        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => new ChartMarker(move.SessionDate, Says(move), "#" + RowId(ticker, move)))])));
-        table.Append("</div>");
-        table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
-        table.Append("</figure>");
+        table.Append(Invariant, $"<section class=\"how-it-got-here\" data-ticker=\"{Escaped(ticker)}\" data-moves=\"{moves.Count}\">");
 
         if (moves.Count == 0)
         {
             table.Append("<p class=\"degraded\" data-moves=\"none\">no moves are stored for this name yet</p></section>");
 
             return table.ToString();
+        }
+
+        if (moves.Any(move => move.Taken is not null))
+        {
+            return table.Append(TakenCauses(ticker, moves, cause, labelsCover)).Append("</section>").ToString();
         }
 
         table.Append("<div class=\"tbl-wrap\">");
@@ -5250,6 +5269,84 @@ public sealed partial class MarkRenderer : IComponent
     static string RowId(string ticker, MoveCell move) =>
         Formatted($"move-{Escaped(ticker)}-{move.Rank}");
 
+    // The moves as the chart numbers them, each on its last session linking to its own row, largest first as the table
+    // lists them.
+    public static IReadOnlyList<ChartMarker> MovesOnTheChart(string ticker, IReadOnlyList<MoveCell> moves) =>
+        [.. moves.Select(move => new ChartMarker(move.SessionDate, Says(move), "#" + RowId(ticker, move)))];
+
+    // The table of moves with each one's cause as the core took it and where it came from, and the line naming the days
+    // the news labels cover.
+    string TakenCauses(string ticker, IReadOnlyList<MoveCell> moves, CauseSource? cause, (DateTimeOffset First, DateTimeOffset Last)? labelsCover)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"taken\">");
+        table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th><th>Cause</th><th>Where it came from</th></tr>");
+
+        foreach (var move in moves)
+        {
+            var taken = move.Taken ?? new EquityBrief.Core.Moves.MoveCause(EquityBrief.Core.Moves.MoveCauses.Neither, null, [], [], []);
+
+            table.Append(Invariant, $"<tr id=\"{RowId(ticker, move)}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
+            table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\" data-cause=\"{Escaped(taken.Kind)}\">");
+            table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
+            table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
+            table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+            table.Append(GroupCell(move.Group));
+            table.Append("<td class=\"cause\">").Append(CauseWords(taken)).Append("</td>");
+            table.Append("<td class=\"cause-source\">").Append(Escaped(CauseSourceWords(taken, cause))).Append("</td></tr>");
+        }
+
+        table.Append("</table></div>");
+
+        table.Append(labelsCover is { } cover
+            ? FormattableString.Invariant($"<p class=\"labels-cover\" data-first=\"{cover.First.UtcDateTime:yyyy-MM-dd}\" data-last=\"{cover.Last.UtcDateTime:yyyy-MM-dd}\">The news labeller labels the stories of the names on a night's list over the thirty days before it, and {Escaped(ticker)}'s first labelled story was published on {cover.First.UtcDateTime:yyyy-MM-dd} and its newest on {cover.Last.UtcDateTime:yyyy-MM-dd}: a move outside those days takes its cause from research, its results or its filings alone, and one inside them may hold a story the labeller did not read.</p>")
+            : Formatted($"<p class=\"labels-cover\" data-first=\"\" data-last=\"\">The news labeller labels the stories of the names on a night's list over the thirty days before it, and none of {Escaped(ticker)}'s stories is labelled, so each move takes its cause from research, its results or its filings alone.</p>"));
+
+        return table.ToString();
+    }
+
+    // What a move's cause says, by where it was taken from: research's sentences, the labelled stories with the results
+    // and filings inside the move beneath them, those results and filings alone, or that none was found.
+    static string CauseWords(EquityBrief.Core.Moves.MoveCause taken) => taken.Kind switch
+    {
+        EquityBrief.Core.Moves.MoveCauses.Research => Escaped(taken.Written ?? string.Empty),
+        EquityBrief.Core.Moves.MoveCauses.News => string.Join(
+            "; ",
+            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Escaped(story.Link)}\" rel=\"noopener\">{Escaped(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
+            + (taken.Stories.Count > 3 ? Formatted($"; and {taken.Stories.Count - 3} more") : string.Empty)
+            + (taken.Prints.Count + taken.Filings.Count > 0 ? "; inside the move as well, " + Dated(taken) : string.Empty),
+        EquityBrief.Core.Moves.MoveCauses.Filed => Dated(taken),
+        _ => "no cause found in the stored news or filings",
+    };
+
+    // The results reported and the filings filed inside a move, in words.
+    static string Dated(EquityBrief.Core.Moves.MoveCause taken) => string.Join(
+        "; ",
+        [
+            .. taken.Prints.Select(print => FormattableString.Invariant($"the results reported {print.ReportDate:yyyy-MM-dd}, {TimingWords(print.Timing)}, moving the session of {print.Session:yyyy-MM-dd}")),
+            .. taken.Filings.Select(filing => FormattableString.Invariant($"<a href=\"{Escaped(filing.Link)}\" rel=\"noopener\">the {Escaped(filing.Form)} filed {filing.Filed:yyyy-MM-dd}</a>")),
+        ]);
+
+    // Where a move's cause came from, in words.
+    static string CauseSourceWords(EquityBrief.Core.Moves.MoveCause taken, CauseSource? cause) => taken.Kind switch
+    {
+        EquityBrief.Core.Moves.MoveCauses.Research => cause is { } written ? FormattableString.Invariant($"research written {written.AsOf:yyyy-MM-dd} by {written.Model}") : "research",
+        EquityBrief.Core.Moves.MoveCauses.News => "the news labeller's labels",
+        EquityBrief.Core.Moves.MoveCauses.Filed => taken.Prints.Count > 0 && taken.Filings.Count > 0
+            ? "the earnings calendar and the SEC's archive"
+            : taken.Prints.Count > 0 ? "the earnings calendar" : "the SEC's archive",
+        _ => "neither the stored news nor the filings",
+    };
+
+    // When in the session a print was reported, as the reactions table words it.
+    static string TimingWords(string timing) => timing switch
+    {
+        "before" => "before the open",
+        "after" => "after the close",
+        _ => "its timing not filed",
+    };
+
     // What a move's circle says when a reader asks it, in the words its own row uses.
     static string Says(MoveCell move) =>
         Formatted($"{move.Rank}: {(move.ChangePct < 0 ? "down" : "up")} {Number(Math.Abs(move.ChangePct))}% over ") +
@@ -5261,7 +5358,7 @@ public sealed partial class MarkRenderer : IComponent
     // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
     // The median is the annotator's and is drawn as stored; nothing here works it out.
     // see: A large move is shown beside its group's median move over the same sessions
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     static string GroupCell(MoveGroup? group)
     {
         if (group is null)
@@ -5307,7 +5404,7 @@ public sealed partial class MarkRenderer : IComponent
     // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
     // sorts, filters or works a figure out.
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
@@ -5488,7 +5585,7 @@ public sealed partial class MarkRenderer : IComponent
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
         var table = new StringBuilder();

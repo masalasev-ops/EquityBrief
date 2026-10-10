@@ -1,0 +1,77 @@
+{
+ "stage": "page-history",
+ "derivation": "derived",
+ "derivedFrom": "the reactions expectation's prints, the captured bars and the trading calendar, not a run. The fixture holds no pulled history, so each name's typical earnings move is read over the calendar's year alone and its long view over the stored year alone, each naming why no pull was read. The move is the median of the sizes of the name's four reactions as the reactions expectation states them, worked outside this repository: NFLX's 2.1774, 7.2629, 9.7226 and 10.0681 give 8.49275; MSFT's 2.9157, 3.9297, 9.9932 and 15.5067 give 6.96145; AAPL's 0.3795, 0.4646, 3.2394 and 7.3539 give 1.852; KEYS's 0.5899, 6.3196, 10.0129 and 23.0531 give 8.16625. The reactions expectation states each move to four places, so the stored median is held to these within a ten-thousandth. The long view's points are the last session of each calendar month a name's stored year holds, each at the stored close of that session: for KEYS, MSFT and NFLX the year from 2025-09-08 to the night's 2026-09-08 less the exchange's closures, thirteen months; for AAPL the year the action check refetched as of 2026-08-10, its capture's sessions to that day, twelve months ending on 2026-08-10.",
+ "tables": [
+  "earnings_move",
+  "long_view"
+ ],
+ "reason": "no pulled history before its first stored session",
+ "earningsMoves": {
+  "AAPL": { "prints": 4, "unread": 0, "firstPrint": "2025-10-30", "medianMove": 1.852 },
+  "KEYS": { "prints": 4, "unread": 0, "firstPrint": "2025-11-24", "medianMove": 8.16625 },
+  "MSFT": { "prints": 4, "unread": 0, "firstPrint": "2025-10-29", "medianMove": 6.96145 },
+  "NFLX": { "prints": 4, "unread": 0, "firstPrint": "2025-10-21", "medianMove": 8.49275 }
+ },
+ "monthEnds": {
+  "AAPL": [
+   "2025-09-30",
+   "2025-10-31",
+   "2025-11-28",
+   "2025-12-31",
+   "2026-01-30",
+   "2026-02-27",
+   "2026-03-31",
+   "2026-04-30",
+   "2026-05-29",
+   "2026-06-30",
+   "2026-07-31",
+   "2026-08-10"
+  ],
+  "KEYS": [
+   "2025-09-30",
+   "2025-10-31",
+   "2025-11-28",
+   "2025-12-31",
+   "2026-01-30",
+   "2026-02-27",
+   "2026-03-31",
+   "2026-04-30",
+   "2026-05-29",
+   "2026-06-30",
+   "2026-07-31",
+   "2026-08-31",
+   "2026-09-08"
+  ],
+  "MSFT": [
+   "2025-09-30",
+   "2025-10-31",
+   "2025-11-28",
+   "2025-12-31",
+   "2026-01-30",
+   "2026-02-27",
+   "2026-03-31",
+   "2026-04-30",
+   "2026-05-29",
+   "2026-06-30",
+   "2026-07-31",
+   "2026-08-31",
+   "2026-09-08"
+  ],
+  "NFLX": [
+   "2025-09-30",
+   "2025-10-31",
+   "2025-11-28",
+   "2025-12-31",
+   "2026-01-30",
+   "2026-02-27",
+   "2026-03-31",
+   "2026-04-30",
+   "2026-05-29",
+   "2026-06-30",
+   "2026-07-31",
+   "2026-08-31",
+   "2026-09-08"
+  ]
+ }
+}

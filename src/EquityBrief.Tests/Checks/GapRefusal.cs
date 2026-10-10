@@ -42,6 +42,7 @@ public class GapRefusal
         ["fixtures/membership-2026-09-05"],
         [CheckReach.Key(Scope.FailureTable, "A gap in one name's series, chart"),
             CheckReach.Key(Scope.FailureTable, "A gap in one name's series, level and plan sections"),
+            CheckReach.Key(Scope.FailureTable, "A gap in one name's series, typical earnings move and long view"),
             CheckReach.Key(Scope.FixtureTable, "gap stop")]);
 
     const string Fixture = "membership-2026-09-05";
@@ -541,6 +542,25 @@ public class GapRefusal
         Assert.Equal(0, GapCount(store, "SELECT COUNT(*) FROM chart_average WHERE ticker = 'AAPL';"));
         Assert.Equal(ChartAverager.Averages.Count, GapCount(store, "SELECT COUNT(*) FROM chart_average WHERE ticker = 'MSFT';"));
         Assert.Contains($"stopped at a gap (AAPL {cut})", GapDetail(store, ChartAverager.Stage));
+    }
+
+    [Fact]
+    public async Task ThePageHistoryReaderWritesNoRowForAGappedNameRemovesWhatItKeptAndNamesTheGap()
+    {
+        using var store = await WithAHoleAsync();
+        var cut = CutSession(store);
+
+        // Rows an earlier night wrote for the name before its year held the hole.
+        store.Execute("INSERT INTO earnings_move (ticker, night, prints, unread, first_print, median_move, pull, reason) VALUES ('AAPL', '2026-09-04', 4, 0, '2025-10-30', 1.852, NULL, 'no pulled history before its first stored session');");
+        store.Execute("INSERT INTO long_view (ticker, night, closes, pull, ratio, reason) VALUES ('AAPL', '2026-09-04', '[]', NULL, NULL, 'no pulled history before its first stored session');");
+
+        await new EquityBrief.Worker.Moves.PageHistoryReader(GapClock(), store.DatabaseFile).RunAsync("gap-page-history");
+
+        Assert.Equal(0, GapCount(store, "SELECT COUNT(*) FROM earnings_move WHERE ticker = 'AAPL';"));
+        Assert.Equal(0, GapCount(store, "SELECT COUNT(*) FROM long_view WHERE ticker = 'AAPL';"));
+        Assert.Equal(1, GapCount(store, "SELECT COUNT(*) FROM earnings_move WHERE ticker = 'MSFT';"));
+        Assert.Equal(1, GapCount(store, "SELECT COUNT(*) FROM long_view WHERE ticker = 'MSFT';"));
+        Assert.Contains($"stopped at a gap (AAPL {cut})", GapDetail(store, EquityBrief.Worker.Moves.PageHistoryReader.Stage));
     }
 
     [Fact]

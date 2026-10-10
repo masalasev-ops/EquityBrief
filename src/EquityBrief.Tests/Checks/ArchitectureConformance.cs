@@ -1415,7 +1415,9 @@ public partial class ArchitectureConformance
         // the reading column and the rules by role, and the run page's quote runs.
         // 173 at 18.2: the nine marks and the name page's latest quarter, what management said, segments, margins,
         // analysts, dividend safety and valuation.
-        Assert.Equal(173, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 179 at 18.3: the reaction range, the long view, the ladder figure and the reward to risk bars, and the name page's
+        // long view and ladder figure.
+        Assert.Equal(179, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1539,7 +1541,9 @@ public partial class ArchitectureConformance
         // the reading column and the rules by role, and the run page's quote runs.
         // 532 at 18.2: the nine marks and the name page's latest quarter, what management said, segments, margins,
         // analysts, dividend safety and valuation.
-        Assert.Equal(532, inDocument.Length);
+        // 555 at 18.3: the four marks and the name page's long view and ladder figure, the level chart's two parts, the
+        // chart's two, the plan's five, the reactions' three and how it got here's six for the twelve-month picture.
+        Assert.Equal(555, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1641,7 +1645,10 @@ public partial class ArchitectureConformance
         // 462 at 17.2: the fourteen parts a card's rule row states and the checklist's part on a live rule past its mark.
         // 463 at the 3.1 correction of 2026-10-10: the chart's part on the averages it draws through the pulled sessions.
         // 462 at the 6.10 correction of 2026-10-10: the local model row's part on what the overnight queue recorded.
-        Assert.Equal(462, checkedElements);
+        // 480 at 18.3: the level chart's two parts, the chart's two, the plan's five, the reactions' three beside the place
+        // it states anew, how it got here's six for the twelve-month picture's one, and the gap row's part on the
+        // typical earnings move and the long view.
+        Assert.Equal(480, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

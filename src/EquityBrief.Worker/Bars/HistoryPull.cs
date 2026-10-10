@@ -19,9 +19,10 @@ namespace EquityBrief.Worker.Bars;
 // its oldest session every night, and a pull that stopped at the store's first session would leave a
 // hole between the two within a week.
 //
-// Each row carries the run id of the pull that wrote it. No night reads either table, so removing a
-// pull whole moves nothing any night, listing, score or page read, which is what lets these rows be
-// removed where a stored bar may not be.
+// Each row carries the run id of the pull that wrote it. No night reads either table but the chart averages
+// step, for figures the name page alone draws, so removing a pull whole moves nothing any listing, score or
+// rule read, and the next night reads those figures again from the newest pull still holding them, which is
+// what lets these rows be removed where a stored bar may not be.
 //
 // Asked for the market series, it pulls the index's and the VIX's daily series instead, one request a
 // series, into a table of their own marked and removed the same way, and asked for the sector funds, the
@@ -36,7 +37,7 @@ namespace EquityBrief.Worker.Bars;
 // Asked for a wider index's members, the S&P 400's or the S&P 600's, it stores the members its answer lists today,
 // one request an index, marked and removed the same way; every other pull asked for that index reads its names from
 // them, survivors alone, since the answer carries no span of membership.
-// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night by the chart averages step alone and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
 // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
 public sealed class HistoryPull(
     IHistoricalBarFeed bars,
@@ -2601,21 +2602,14 @@ public sealed class HistoryPull(
             }
         }
 
-        var sessions = new List<DateOnly>();
+        // The sessions by the one rule the page's history reads its prints by as well.
+        var calendar = new PulledCalendar(holders.ToDictionary(day => day.Key, day => day.Value.Count), spans);
+        var sessions = calendar.Sessions;
         var strays = new List<Stray>();
 
-        foreach (var (day, on) in holders)
+        foreach (var (day, on) in holders.Where(day => !calendar.IsSession(day.Key)))
         {
-            var spanning = spans.Count(span => span.First <= day && day <= span.Last);
-
-            if (on.Count * 2 >= spanning)
-            {
-                sessions.Add(day);
-            }
-            else
-            {
-                strays.Add(new Stray(day, [.. on.Order(StringComparer.Ordinal)], spanning));
-            }
+            strays.Add(new Stray(day, [.. on.Order(StringComparer.Ordinal)], calendar.Spanning(day)));
         }
 
         IReadOnlyList<Gap> holes =

@@ -691,7 +691,7 @@ public sealed record ReactionRow(
 // subtraction is not here: this hands back the stored column and the projection
 // that draws the column works out the change, which is the seam
 // `UniverseScreen` already names for the distance.
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close);
 
 // One row of the universe screen, and every field is a stored column.
@@ -745,7 +745,7 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // place the arithmetic lives, and the day it disagrees with the nightly run
 // nothing says which one is the system.
 // see: Code owns every number
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 public sealed partial class ReadApi : IComponent
 {
     // Reads every store but the pulled history and appends to the run log, which
@@ -771,6 +771,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.ChartAverage, Touch.Read),
+            new StoreTouch(Store.EarningsMove, Touch.Read),
+            new StoreTouch(Store.LongView, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.VolumeProfile, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
@@ -806,6 +808,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.RulePick, Touch.Read),
             new StoreTouch(Store.FormingRow, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
+            new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.LedgerSummary, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
@@ -1927,7 +1930,7 @@ public sealed partial class ReadApi : IComponent
 
     // A name's chart averages over the sessions its indicator rows leave empty, each with the pull the sessions before
     // its year were read from, or why none was.
-    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
     const string ChartAveragesOf = "SELECT name, night, sessions, pull, reason FROM chart_average WHERE ticker = $ticker ORDER BY name;";
 
     public async Task<IReadOnlyList<ChartAverageRow>> ChartAveragesAsync(string ticker)

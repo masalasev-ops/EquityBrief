@@ -102,7 +102,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // the route it is on. A page that assembled a mark from values would be the
 // second renderer the marks decision exists to prevent.
 // see: Marks are defined once and every screen draws from that list
-// see: A screen reads and renders, and each figure it works out has one function in the core
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
 //
 // At 1.3 it answered one route drawing a name's candles. At 4.1 that route asks
 // for the name screen's chart region, which the server composes from the marks
@@ -454,6 +454,14 @@ public sealed class SinglePageApp : IComponent
             for (const band of reply.distances) {
               const cell = screen.querySelector('.level-summary tr.band[data-low-edge="' + CSS.escape(band.low) + '"][data-high-edge="' + CSS.escape(band.high) + '"] td.away');
               if (cell) { cell.textContent = band.away; cell.setAttribute('data-away', band.value); cell.setAttribute('data-at', 'quote'); }
+              const rung = screen.querySelector('.ladder-figure g.lf-band[data-low-edge="' + CSS.escape(band.low) + '"][data-high-edge="' + CSS.escape(band.high) + '"] text.lf-away');
+              if (rung) { rung.textContent = band.ladder; rung.setAttribute('data-away', band.value); rung.setAttribute('data-at', 'quote'); }
+            }
+            const ladder = screen.querySelector('.ladder-figure');
+            if (ladder) {
+              ladder.setAttribute('data-at', 'quote');
+              const tag = ladder.querySelector('text.lf-price');
+              if (tag) { tag.textContent = 'price now ' + reply.priceText; }
             }
           }
           tick();
@@ -862,7 +870,7 @@ public sealed class SinglePageApp : IComponent
     // against the chart's own price axis, and a second request would be a second
     // axis. It computes nothing: every value here arrives already stored, and
     // the only arithmetic is the axis the mark renderer itself derives.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     // see: Marks are defined once and every screen draws from that list
     public string NameRegion(
         MarkRenderer marks,
@@ -883,7 +891,6 @@ public sealed class SinglePageApp : IComponent
         string arithmetic,
         string numbers,
         IReadOnlyList<MoveCell> moves,
-        IReadOnlyList<ChartBar> twelveMonths,
         IReadOnlyList<FiredReason> firedReasons,
         string? previousOnTheList,
         string? nextOnTheList,
@@ -929,7 +936,10 @@ public sealed class SinglePageApp : IComponent
         // The latest quarter line by line, the margins, the segment table, the analysts' figures, the dividend's safety
         // and the valuation, each worked by the core from stored figures, and the filing's segment table as filed.
         ReportView? report = null,
-        string? rawSegments = null)
+        string? rawSegments = null,
+        // The typical earnings move, the long view, the chart's report and ex-dividend marks, the ladder figure, the
+        // plan's shares and the days the news labels cover, each worked by the core from stored figures.
+        HistoryView? history = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1189,15 +1199,16 @@ public sealed class SinglePageApp : IComponent
                 region: "code-summary"));
         }
 
-        // How it got here, the twelve-month picture above the table of the biggest moves,
-        // each move numbered on the picture as it is in the table.
+        // How it got here: the table of the year's biggest moves, numbered as the chart numbers them, each with its cause
+        // as the core took it and where that came from, and the days the news labels cover.
+        // see: A move's cause is research's where written, then the labelled news inside it and then the filings dated inside it
         Card("how-it-got-here", "how-it-got-here", "How it got here", Cards.Computed(
             "How it got here",
-            marks.MovesTable(ticker, moves, twelveMonths, causes) + Cards.Key(
+            marks.MovesTable(ticker, moves, causes, history?.LabelsCover) + Cards.Key(
                 "How to read it.",
-                "A year of daily candles. The numbered circles mark the year's biggest moves, numbered as the table beneath lists them, largest first, and each row says what drove the move where research has been written. Beside each move is its group's median move over the same sessions: the name's industry where at least five other members share it, and its sector otherwise, with how many members the median was taken over, so a move the whole group made reads apart from one the name made alone.",
-                "This is the path that produced tonight's bands."),
-            title: "The last twelve months",
+                "The year's biggest moves, largest first and numbered as the chart above numbers them on their last sessions. Each one's cause is taken in a set order: research's sentences where research has been written; otherwise the stories the news labeller labelled that were published after the close the move is measured from and by the close of its last session, an opinion piece aside, with the results reported and the filings filed inside the move beneath them; otherwise those results and filings alone; otherwise the row says none was found. The column beside it says where the cause came from. Beside each move is its group's median move over the same sessions: the name's industry where at least five other members share it, and its sector otherwise, with how many members the median was taken over, so a move the whole group made reads apart from one the name made alone.",
+                "A result or a filing inside a move says what fell on those sessions, not that it moved the price. This is the path that produced tonight's bands."),
+            title: "The year's biggest moves and what was behind them",
             stamp: Cards.Night(session),
             id: "how-it-got-here",
             region: "how-it-got-here"));
@@ -1230,7 +1241,7 @@ public sealed class SinglePageApp : IComponent
         var chart = new StringBuilder();
 
         chart.Append("<div class=\"fig row-fig\">");
-        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale)));
+        chart.Append(marks.LevelChart(ticker, bars, averages, bands, new ChartFrame(Scale: Scale, Markers: MarkRenderer.MovesOnTheChart(ticker, moves), Events: history?.Events)));
 
         if (bars.Count > 0 && profile.Count > 0)
         {
@@ -1240,7 +1251,7 @@ public sealed class SinglePageApp : IComponent
         chart.Append("</div>");
 
         // Where the averages over the chart's first sessions came from, or why they start partway across it.
-        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
         if (averagesFrom is { } from)
         {
             chart.Append(from.Pull is { } pull
@@ -1250,7 +1261,7 @@ public sealed class SinglePageApp : IComponent
 
         chart.Append(Cards.Key(
             "How to read it.",
-            "A hollow candle closed above where it opened and a filled one closed below. Shaded bands are prices the stock has repeatedly turned at: green below the price is support, orange above it is resistance, and the column on the right names the last close and each band's edges, drawing the edges of the nearest band on either side in that band's own colour. The row above the chart names the averages and those two colours. Beside the chart, on the same prices, is how many shares traded at each price, with a rule where a bar would reach if every price had traded the same and another at twice that.",
+            "A hollow candle closed above where it opened and a filled one closed below. Shaded bands are prices the stock has repeatedly turned at: green below the price is support, orange above it is resistance, and the column on the right names the last close and each band's edges, drawing the edges of the nearest band on either side in that band's own colour. The row above the chart names the averages and those two colours. A numbered circle marks one of the year's biggest moves on its last session, numbered as the table of moves lists them, and a lettered tag along the foot of the prices marks a report, R, on the session its reaction is read on, and an ex-dividend date, D. Beside the chart, on the same prices, is how many shares traded at each price, with a rule where a bar would reach if every price had traded the same and another at twice that.",
             "The plan buys at the bands below the price and sells at the ones above. Where many shares changed hands, many holders paid about that price, which is why the price tends to stall there."));
         chart.Append("<div class=\"sub\">Momentum</div>");
         chart.Append("<div class=\"fig\">").Append(marks.MomentumPanel(ticker, readings)).Append("</div>");
@@ -1260,9 +1271,63 @@ public sealed class SinglePageApp : IComponent
             "Nothing in the plan or the list reads these. When they and the bands disagree, the plan follows the bands."));
         Card("chart", "chart", "The chart", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its momentum", stamp: Cards.Night(session), id: "chart", region: "chart"));
 
-        // The levels: each band from the highest to the lowest with how far it sits from the price now, which the page's
-        // script restates at a delayed quote in the session, and beneath them the technical readings.
+        // The long view: the month-end closes over the history pulled before the store's year and the year itself, at
+        // the stored prices, with the plan's levels and the year's high and low on the same axis, and a line naming the
+        // pull and the ratio that brought it to the stored prices, or why none was read.
+        // see: The long view draws the month-end closes over the pulled history at the bar store's scale with the plan's levels on the same prices
+        if (history is { } read)
+        {
+            var viewed = new StringBuilder();
+
+            if (!read.Newest)
+            {
+                viewed.Append("<p class=\"degraded\" data-long-view=\"newest-night-alone\">The long view is stored for the newest night alone, at that night's prices, so a page for an earlier night draws none; the newest night's page draws it.</p>");
+            }
+            else if (read.LongView.Count == 0)
+            {
+                viewed.Append($"<p class=\"degraded\" data-long-view=\"none\">No long view is stored for {Escaped(ticker)} tonight; the chart averages step writes one each night for every name whose stored year holds no hole.</p>");
+            }
+            else
+            {
+                viewed.Append("<div class=\"fig\">").Append(marks.LongView(ticker, read.LongView, read.Levels)).Append("</div>");
+                viewed.Append(read.LongViewPull is { } longPull
+                    ? read.LongViewRatio == 1m
+                        ? $"<p class=\"long-view-basis\" data-pull=\"{Escaped(longPull)}\" data-ratio=\"1\">The months before the stored year are read from the history pulled before it, from the pull {Escaped(longPull)}, which stands at the stored prices: its close on the first session both hold is the stored one.</p>"
+                        : Invariant($"<p class=\"long-view-basis\" data-pull=\"{Escaped(longPull)}\" data-ratio=\"{read.LongViewRatio}\">The months before the stored year are read from the history pulled before it, from the pull {Escaped(longPull)}, and brought to the stored prices by {read.LongViewRatio:0.######}, the stored close over the pulled close on the first session both hold.</p>")
+                    : $"<p class=\"long-view-basis\" data-reason=\"{Escaped(read.LongViewReason ?? string.Empty)}\">The line starts with the stored year: {Escaped(read.LongViewReason ?? "no history before it was read")}.</p>");
+
+                if (read.PlanLevelsAbsent is { } apart)
+                {
+                    viewed.Append($"<p class=\"long-view-levels\" data-plan-levels=\"absent\">The plan's levels are not drawn across it: {Escaped(apart)}.</p>");
+                }
+            }
+
+            viewed.Append(Cards.Key(
+                "How to read it.",
+                "Each point is the last close a calendar month holds, the newest month's being the night's close, every one at the prices the stored year is adjusted to so a level the plan uses sits where the price stood. The green bands are where the plan buys, the orange where it sells or the trail begins, and the rules are the invalidation and the year's high and low.",
+                "The years before the stored one show which of tonight's levels the price has met before. Nothing on the page is decided by them."));
+            Card("long-view", "long-view", "The long view", Cards.Computed(
+                "The long view",
+                viewed.ToString(),
+                title: read.LongView.Count > 0 && read.Newest ? Invariant($"Month-end closes since {read.LongView[0].Session:yyyy-MM}") : "Month-end closes",
+                stamp: Cards.Night(session),
+                id: "long-view",
+                region: "long-view"));
+        }
+
+        // The levels: the ladder figure of the bands above and below the price the masthead draws, then each band from the
+        // highest to the lowest with how far it sits from that price, which the page's script restates at a delayed quote
+        // in the session, and beneath them the technical readings.
         var levelled = new StringBuilder();
+
+        if (history is { } ladder)
+        {
+            levelled.Append("<div class=\"fig\">").Append(marks.LadderFigure(ticker, ladder.Ladder, ladder.LadderPrice, ladder.LadderLive)).Append("</div>");
+            levelled.Append(Cards.Key(
+                "How to read it.",
+                "Each band is a row, those above the price drawn under Sell into these with the furthest first and those below it under Buy into these with the nearest first, a band the price is inside beside the price on the side of its role, spaced evenly rather than on a scale of prices. Each row gives the band's role, its prices, how far it sits from the price drawn in this stock's typical daily moves, what the plan does there where it buys or sells at it, and beneath them how many times the price reached it and turned away and the last session it did.",
+                "A band near the price that has turned it often is where the next stall is most likely. The distance is restated at each newer delayed quote while the market is open."));
+        }
 
         levelled.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
         levelled.Append(technicals);
@@ -1275,11 +1340,31 @@ public sealed class SinglePageApp : IComponent
 
         planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
         planned.Append(marks.PlanTables(ticker, plan)).Append("</div></div>");
+
+        // Each tranche as an equal share of a full position, its risk to the stop that sells it and its reward to risk to
+        // each traded exit, a bar each, and the trail in the words of its rule.
+        // see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit
+        if (history is { } shared)
+        {
+            planned.Append("<div class=\"sub\">Each tranche's share, risk and reward to risk</div>");
+            planned.Append(marks.SharesTable(ticker, shared.Shares, shared.NoPlan));
+
+            if (shared.Shares.Count > 0)
+            {
+                planned.Append("<div class=\"fig\">").Append(marks.RewardToRiskBars(ticker, shared.Shares)).Append("</div>");
+            }
+
+            if (shared.Trail is { } trail)
+            {
+                planned.Append("<p class=\"plan-trail\">").Append(Escaped(trail)).Append("</p>");
+            }
+        }
+
         planned.Append("<div class=\"sub\">Around the next report</div>").Append(eventBook);
         planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
         planned.Append(Cards.Key(
             "How to read the plan.",
-            "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop.",
+            "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
         // Every earlier night the live list picked the name, folded beneath the plan: how many times and how each group
@@ -1299,17 +1384,19 @@ public sealed class SinglePageApp : IComponent
 
         Card("plan", "plan", "The plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan", role: Cards.Buy));
 
-        // The earnings reaction record, beside the earnings setups the plan closes on: what each
-        // print over the calendar's year behind did on the session it moved.
+        // The earnings reaction record: the stock's typical earnings move over every print the store holds, and what
+        // each print over the calendar's year behind did on the session it moved, drawn against it.
         // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
         if (reactions is not null)
         {
             Card("reactions", "reactions", "Earnings reactions", Cards.Computed(
                 "Earnings reactions",
-                marks.ReactionsTable(ticker, reactions) + Cards.Key(
+                marks.TypicalMoveLine(ticker, history?.Typical, history?.TypicalPull, history?.TypicalReason, history?.Newest ?? true)
+                    + "<div class=\"fig\">" + marks.ReactionRange(ticker, reactions, history?.Typical) + "</div>"
+                    + marks.ReactionsTable(ticker, reactions) + Cards.Key(
                     "How to read it.",
-                    "One row for every print over the last year, from the provider's earnings calendar: the day it was reported and whether before the open or after the close, the session the report moved, the earnings per share the provider says was expected and what was reported, the provider's surprise, and how far the stock closed that session from the close before it. A print reported after the close moves the next session, and one whose timing was not filed is read on its own day, as the earnings setups read it. A print with no filed estimate says so and has no surprise.",
-                    "A record of what past reports did, not a forecast of the next: nothing on the page, no reason, plan or setup, reads it."),
+                    Invariant($"The stock's typical earnings move is the median size of the session's move over every report the store holds, the years pulled before the stored one among them, a fall and a rise of one size alike, and it is stated over {EquityBrief.Core.Moves.EarningsMoves.FewestPrints} reports or more. The bars are each report of the last year, drawn against that move either way. One row for every print over the last year, from the provider's earnings calendar: the day it was reported and whether before the open or after the close, the session the report moved, the earnings per share the provider says was expected and what was reported, the provider's surprise, and how far the stock closed that session from the close before it. A print reported after the close moves the next session, and one whose timing was not filed is read on its own day, as the earnings setups read it. A print with no filed estimate says so and has no surprise."),
+                    "A record of what past reports did, not a forecast of the next: nothing on the page, no reason, plan or setup, reads it. A bar past the band moved further than this stock usually moves on a report."),
                 title: "What each report did to the price",
                 stamp: Cards.Night(session),
                 id: "reactions",
@@ -1618,15 +1705,15 @@ public sealed class SinglePageApp : IComponent
 
     // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
     // page, the short version, the card, the latest quarter, what management said, the segments, the margins, the
-    // analysts, the dividend's safety, the valuation, the earnings reactions, the chart, how it got here, the levels, the
-    // plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, what the research
-    // read, and where the research stands.
+    // analysts, the dividend's safety, the valuation, the earnings reactions, the chart, the long view, how it got here,
+    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, what
+    // the research read, and where the research stands.
     // see: The name page answers a buyer's questions in the order a buyer asks them
     public static readonly string[] RegionOrder =
     [
         "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "dividend", "valuation",
-        "reactions", "chart", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases", "cycle", "peers", "news",
-        "sources", "research",
+        "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases", "cycle", "peers",
+        "news", "sources", "research",
     ];
 
     // Where each written section is drawn, which is section 4's order: the short version
@@ -1653,7 +1740,7 @@ public sealed class SinglePageApp : IComponent
     // name was last on it, and the listing strip. Each is absent and says so
     // rather than being drawn as a zero, which would read as nothing having
     // fired.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public string UniverseRegion(
         MarkRenderer marks,
         IReadOnlyList<UniverseCell> rows,

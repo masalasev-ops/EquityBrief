@@ -279,6 +279,7 @@ public class PinnedConstants
             new("Report windows", "7", Core.Report.AnalystView.TrendDays[3], "AnalystView.TrendDays, the fourth"),
             new("Report windows", "365", Core.Report.DividendSafety.TrailingDays, "DividendSafety.TrailingDays"),
             new("Dividend history run", "1", Core.Providers.ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
+            new("Typical earnings move", "4", Core.Moves.EarningsMoves.FewestPrints, "EarningsMoves.FewestPrints"),
             new("Store copies", "3", Core.Configuration.StoreCopies.Kept, "StoreCopies.Kept"),
             new("Store copies", "20", (decimal)Core.Configuration.StoreCopies.WaitsAtMost.TotalHours, "StoreCopies.WaitsAtMost in hours"),
             new("Store copies", "30", (decimal)Worker.Backup.StoreBackup.Between.TotalSeconds, "StoreBackup.Between in seconds"),

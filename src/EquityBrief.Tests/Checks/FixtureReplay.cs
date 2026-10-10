@@ -98,6 +98,10 @@ public class FixtureReplay
             store.DatabaseFile).RunAsync(Index, new DateOnly(2026, 9, 8), "replay-calendar");
 
         await new IndicatorEngine(night, store.DatabaseFile).RunAsync("replay-indicators");
+
+        // The chart averages step's page history reader, from 18.3: the fixture holds no pulled history, so each name's
+        // typical earnings move is read over the calendar's year and its long view over the stored year.
+        await new EquityBrief.Worker.Moves.PageHistoryReader(night, store.DatabaseFile).RunAsync("replay-page-history");
         await new SwingFinder(night, store.DatabaseFile).RunAsync("replay-swings");
         await new VolumeProfileBuilder(night, store.DatabaseFile).RunAsync("replay-profile");
         await new LevelBuilder(night, store.DatabaseFile).RunAsync("replay-levels");

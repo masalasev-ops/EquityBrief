@@ -38,6 +38,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Treasury reader"),
     ];
 
+    // 18.3's one: the page history reader.
+    internal static string[] PageHistoryRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Page history reader"),
+        CheckReach.Key(Scope.MatrixTable, "Page history reader"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -47,6 +54,9 @@ public partial class ComponentAccess
 
             // 18.2, the dividend keeper and the Treasury reader.
             .. ReportComponentRows,
+
+            // 18.3, the page history reader.
+            .. PageHistoryRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

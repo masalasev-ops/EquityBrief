@@ -35,7 +35,7 @@ public partial class ReadSurface
             new(on.AddDays(4), 1, 1, 5),
         ];
 
-        var table = WebUtility.HtmlDecode(new MarkRenderer().MovesTable("ZZZA", moves, []));
+        var table = WebUtility.HtmlDecode(new MarkRenderer().MovesTable("ZZZA", moves));
 
         Assert.Contains("<th>Its group</th>", table, StringComparison.Ordinal);
         Assert.EndsWith(">1.25%, the median of 2 of the 3 other members of the Technology sector, 1 holding no close on one of the two sessions</td>", GroupCellOf(table, "2026-09-01"), StringComparison.Ordinal);

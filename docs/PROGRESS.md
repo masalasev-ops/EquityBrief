@@ -42296,3 +42296,72 @@ Mutated:    the rule, stated before the run: the date set back to 2026-10-11, th
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: the figures
             18.3's entry below records, the three entries verified by one run.
 
+### 18.3 - each report's reaction against the stock's typical earnings move, the chart's marks, the long view, each move's cause with its source, the ladder figure and the plan's shares   2026-10-10
+
+Built:      the chart averages step reads two more figures for the name page after the chart's averages, by a component
+            of its own: each name's typical earnings move, the median size of its reaction over every print the calendar
+            and the pull file, off the stored bars where they reach a print and off the newest pull holding the name's
+            first stored session otherwise, a print read across a session that pull misses left out and counted, and
+            its long view of month-end closes at the store's scale, both written in one write after every name is read,
+            a reader that cannot finish named on its own row as not read while the night goes on (migration 87). The
+            page draws the reactions against the move either way, the chart's report and ex-dividend tags and the
+            year's biggest moves numbered on it where a picture of their own drew them, the long view with the plan's
+            levels on its prices where both were read on one night, each move's cause taken in its stated order with
+            its source and when the labels ran, the ladder figure of the bands above and below the price drawn with
+            each distance at the quote's price in the session and what the plan does at each, and each tranche as an
+            equal share of a full position with its risk and reward to risk, a tranche with no stop stating none and
+            the top exit named where the trail begins. Nine decisions written, four of them superseding one each, the
+            screen decision's among them, which named none of the arithmetic 18.2's regions and this checkpoint's draw;
+            CLAUDE.md's bars rule, sections 4, 6.2, 7, 14, 15.2, 15.5, 15.9, 15.14, 16, 17 and 18 of the architecture,
+            `SCHEMA.md`, the runbook, two of 3.1's operating rows, four rows of the roster and the guide's report
+            section say so, the prior text in `CHANGELOG.md`.
+Found:      by this checkpoint's review of its own design before its pull request: a tranche with no stop read to the
+            invalidation, its own low edge, gave CVX's third tranche a reward to risk of 44.43; the ladder figure placed
+            a band by its role on the night and not by the price drawn, and the page's script never reached its
+            distances; a member that left the index lost its year's prints; a print not yet reacted counted as left out;
+            an earlier night's page would draw the newest night's long view against its own plan; the long view rounded
+            its prices by a rule of its own; and opinion pieces counted as causes. Read back off the rendered page at
+            1440: the long view's key ran past its figure and its labels were cut and overlapped where levels sat close;
+            the moves table broke its sessions over two lines; a pull at the stored scale was said to be brought to it;
+            and the shares table's attribute matched the account plan's leak check. Each is fixed. Six statements of the
+            corpus were already false and are corrected with it: the reactions' place, which 18.1 moved after the
+            valuation; the display-only parts' places; the matrix key's word that no component touched the pulled
+            history; SCHEMA's two readers of the raw close and the pulled bars read by no night; and the filed facts'
+            readers. One is found and not fixed: the plan column's words for its top exit are cut at the column's edge on
+            a wide plan, the 4.6 correction's words.
+Measured:   by the step's own code over the copy of the store made that morning for the screenshots, migrated to 87:
+            1,510 names, 1,505 read from a pull; 50,231 prints read and 396 left out in 133 names; 1,500 moves stated
+            over four prints or more, their median 3.81 per cent, from WEC's 0.61 to SEZL's 26.95; CVX's 35 prints from
+            2018-02-02 at 2.70 per cent; the median long view 106 months; 93 of 1,505 pulls apart from the store's scale,
+            PMT's by 5.06 per cent. The reader took 6.26 s and then 4.15 s on the copy, which a solid-state disk holds;
+            a cold pass over the pulled bars on the operator's store's disk took 9.3 s, read-only. CVX's page: one cause
+            research wrote, one result and six moves finding none; its plan's reward to risk 1.4271 and 1.6668 and its
+            third tranche none.
+Tests:      2180, twenty-two more and the 6.4 correction's one: the pulled sessions' calendar, the typical move's median
+            and floor and the prints that stand, the long view's month-ends, CVX's shares, a move's cause in its order
+            and a band's turns, each worked by hand; the reader over constructed stores and over the fixture against a
+            derived expectation; the night's order and a reader that cannot finish; the gap; the hostile pull; and the
+            page's four marks, its line, its long view, ladder, shares and causes read back.
+Claims:     1235, thirty-six more net, each named as added after phase 17's report: the page history reader's catalogue
+            and matrix rows, two stores, section 17's row, section 18's seven failures and the gap row's part, the name
+            page's long view and ladder figure, the four marks and twenty-one parts the level chart, the chart, the plan,
+            the reactions and the moves gain, less the twelve-month picture and the reactions' old place.
+Pins:       none moved; no source a rule's version, the swing filter or a candidate evaluator pins is edited.
+Mutated:    the rule, stated before the run: the plan's mutation and one on the shares. First, the ladder figure's
+            distance taken from the close while a quote is drawn: the quote handed to the distance as none. Predicted
+            red at the route test reading the figure at the quote, 7.7 typical days, and green at the figure's mark test,
+            which is handed its distances. Second, a tranche with no stop read to its own low edge, the draft's reading.
+            Predicted red at CVX's shares worked by hand and at the page's shares table, and green at the ladder and the
+            causes. Result: the first red at the route test, 6.1 typical days above where the quote gives 7.7, and the
+            mark test green, as predicted; the second red at CVX's shares, the third tranche's risk 0.7378 where none is
+            stated, and at the page's shares table, the ladder's and the causes' tests green, as predicted. Each made on
+            this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2180 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
+            figures to be filled from the run.
+Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0, 18.1 and 18.2, PRs 419 to 425 merged on
+            2026-10-10; in progress, this checkpoint, the 6.4 correction and the 18.5 ruling, one pull request; next,
+            18.4, then the regeneration once a night is built with it, then 18.5.
+Carried:    the night of 2026-10-12 is the first to run 3.1's, 6.10's, 16.3's, 18.2's and this checkpoint's steps, read
+            the morning after; the step's time read on 3.1's row with the reader's beside it; a quote crossing a band
+            after the page is drawn rewords that band's distance on the figure without moving its row; and the plan
+            column's top exit words cut at its edge, owed as a 4.6 correction before 18.5's screenshots.

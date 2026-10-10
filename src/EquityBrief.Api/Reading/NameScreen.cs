@@ -27,8 +27,8 @@ public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likene
 // Nothing in it derives a figure. Every value is the stored column, and the one
 // thing that is worked out is which of the four momentum readings exist, which
 // is a lookup in a list the indicator arithmetic already carries.
-// see: A screen reads and renders, and each figure it works out has one function in the core
-public static class NameScreen
+// see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
+public static partial class NameScreen
 {
     // The three averages drawn on a price axis. The momentum readings are not
     // among them for the reason the level builder gives: an RSI is not a price.
@@ -188,7 +188,7 @@ public static class NameScreen
     // earnings basis they were struck on, the market value likewise, the close and
     // the year's high and low are bars, and the averages, the momentum readings and
     // the typical daily move are the indicator engine's own rows.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     // see: The fact strip states the year's high and low with the sessions they were made on
     public static string FactStrip(
         string ticker,
@@ -347,7 +347,7 @@ public static class NameScreen
     // stored value on its cell. Nothing here works a figure out: the margin was
     // computed by the fetcher from the two figures in its own filing, and the
     // valuation was copied from the provider with the earnings basis beside it.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     //
     // Each figure carries the filing date it came from, which is what the whole
@@ -478,7 +478,7 @@ public static class NameScreen
     // what the read API handed: the latest quarter, the growth and the margins of the newest fetch's quarters, the segment
     // table the stated rule makes of the newest filing's, the analysts' figures, the dividend's safety at the price drawn,
     // and the valuation from the night's reading of the quarters and of the stock's industry's members.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public static ReportView Report(
         string ticker,
         ReportInputs inputs,
@@ -550,7 +550,7 @@ public static class NameScreen
     // being the fetcher's, and each row's element carries the stored value whole. The analysts'
     // target price is not among them, for the reason the facts file does not carry it: set
     // beside the company's own figures, an analyst's estimate reads as one of them.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
     // see: The name page draws the analysts' figures each labelled as theirs and dated by its fetch, and no written sentence states one
     static string Snapshot(JsonElement payload, string currency)
@@ -654,7 +654,7 @@ public static class NameScreen
     // column. A screen that guessed would be a screen deciding what an absence
     // meant, and the three reasons a part can be absent are exactly what this
     // column exists to tell apart.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     static IReadOnlyDictionary<string, string> Attribution(string source)
     {
         try
@@ -1017,7 +1017,7 @@ public static class NameScreen
     // The sizing arithmetic and the earnings rule, as the plan section states
     // them. Every figure is read off the ladder row, which derived them from its
     // own prices, so nothing here computes and nothing can drift.
-    // see: A screen reads and renders, and each figure it works out has one function in the core
+    // see: A screen reads and renders, and each figure it works out from stored figures or at a price the store does not hold has one function in the core
     public static string Arithmetic(LadderRow? ladder)
     {
         if (ladder is null)
@@ -1225,7 +1225,10 @@ public static class NameScreen
         string? indexCode = null,
         bool asksForQuotes = false,
         // What the latest quarter, the margins, the analysts, the dividend and the valuation read, as the read API handed it.
-        ReportInputs? reportInputs = null)
+        ReportInputs? reportInputs = null,
+        // What the typical earnings move, the long view, the chart's marks and the moves' causes read, as the read API
+        // handed it.
+        HistoryInputs? historyInputs = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1243,6 +1246,12 @@ public static class NameScreen
         if (notAMemberOn is { } readOn)
         {
             cells = [.. cells.Select(cell => cell.Group is { } group ? cell with { Group = group with { NotAMemberOn = readOn } } : cell)];
+        }
+
+        // Each move's cause as the core takes it, where the page was handed what a cause is read from.
+        if (historyInputs is { } causeInputs)
+        {
+            cells = TakenCauses(cells, bars, reactions ?? [], causeInputs);
         }
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
@@ -1265,7 +1274,7 @@ public static class NameScreen
 
         // A session the indicator rows leave empty draws the value the night read through the sessions before the
         // store's year, where it read one; the rows themselves, and what the bands read, are left as stored.
-        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step only the chart reads
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
         var before = (warmed ?? []).ToDictionary(
             average => average.Name,
             average => average.Values.ToDictionary(value => value.Session, value => value.Value),
@@ -1358,7 +1367,6 @@ public static class NameScreen
             Arithmetic(ladder),
             says is null ? Numbers(filings) : marks.NumbersSay(says, Numbers(filings)),
             cells,
-            TwelveMonths(bars),
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
             nextOnTheList,
@@ -1402,7 +1410,10 @@ public static class NameScreen
             report: reportInputs is { } inputs
                 ? Report(ticker, inputs, filings, reading, shownPrice, forwardRate, bars, night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue))
                 : null,
-            rawSegments: RawSegments(filings));
+            rawSegments: RawSegments(filings),
+            history: historyInputs is { } inputsOfHistory
+                ? History(inputsOfHistory, bars, levels, typicalMove, ladder, reactions ?? [], reportInputs?.Dividends ?? [], year, live)
+                : null);
     }
 
     // The sentence under the masthead until a written one is accepted: whether a rule picked the name tonight and which,
@@ -2186,32 +2197,6 @@ public static class NameScreen
                 [],
                 closeStored ? close : null)
             + "</div></div></section>";
-    }
-
-    // The sessions of the last twelve months, which is what section 15.9's
-    // how-it-got-here region draws its picture over.
-    //
-    // Measured back from the newest stored session rather than from the clock,
-    // so a page opened on a Sunday draws the year to Friday and not a year to
-    // today with two blank days at the end of it. The bar history kept is a year
-    // (section 17), so on an ordinary name this is every stored bar; it is a
-    // filter rather than a pass-through because that is a limit the store is
-    // trusted to hold rather than one this region may assume.
-    public static IReadOnlyList<ChartBar> TwelveMonths(IReadOnlyList<BarRow> bars)
-    {
-        if (bars.Count == 0)
-        {
-            return [];
-        }
-
-        var from = bars[^1].SessionDate.AddYears(-1);
-
-        return
-        [
-            .. bars
-                .Where(bar => bar.SessionDate > from)
-                .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)),
-        ];
     }
 
     // The reasons that fired for this name tonight, read back from the stored

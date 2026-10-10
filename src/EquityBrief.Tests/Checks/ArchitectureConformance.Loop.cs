@@ -1785,12 +1785,13 @@ public partial class ArchitectureConformance
 
         Assert.All([.. fixtureRows, .. addendum.Except(PhaseTwelveRemoved)], key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        // A row's parts are counted as they stood at phase 11: those it states now that phase 12 did not add,
-        // and those phase 12 took out of it.
+        // A row's parts are counted as they stood at phase 11: those it states now that phase 12 and phase 18 did not add,
+        // and those phase 12 and the rows after phase 17's report took out of it.
         var expected = Predicted
             + readAsParts.Sum(key =>
-                Scope.ElementsOf(key).Count(element => !PhaseTwelveRows.Contains(key + ", " + element))
+                Scope.ElementsOf(key).Count(element => !PhaseTwelveRows.Contains(key + ", " + element) && !PhaseEighteenRows.Contains(key + ", " + element))
                 + TakenOutAfterPhaseTwelve.Count(taken => taken.StartsWith(key + ", ", StringComparison.Ordinal))
+                + TakenOutAfterPhaseSeventeen.Count(taken => taken.StartsWith(key + ", ", StringComparison.Ordinal))
                 - 1)
             + fixtureRows.Length
             + addendum.Length;
@@ -1833,8 +1834,8 @@ public partial class ArchitectureConformance
             - TakenOutAfterPhaseTwelve.Length
             - TakenOutAfterPhaseSeventeen.Length;
 
-        Assert.All(AddedAfterThePrediction.Except([.. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve]), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
-        Assert.All([.. RemovedAfterThePrediction, .. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(AddedAfterThePrediction.Except([.. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve, .. TakenOutAfterPhaseSeventeen]), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All([.. RemovedAfterThePrediction, .. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve, .. TakenOutAfterPhaseSeventeen], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
         // placed at checkpoints the record does not carry, so each reads as out of scope

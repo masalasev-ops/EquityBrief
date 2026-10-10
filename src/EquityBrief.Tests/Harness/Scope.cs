@@ -394,9 +394,21 @@ internal static class Scope
             Verdict.Pass,
             "the card closes on a key saying how to read the table and what to take from it",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Earnings reactions, after the valuation and before the chart")] = new Scoped(
             Verdict.Pass,
-            "the reactions card is drawn on the name's page immediately after the plan's card, which closes on the earnings setups, read off the page's own markup",
+            "the reactions card is drawn on each fixture name's page immediately after the valuation's card and before the chart's, read off the page's own markup",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the stock's typical earnings move with the prints it was read over and the oldest of them and how many were left out or that fewer than four were read")] = new Scoped(
+            Verdict.Pass,
+            "the line states the move, its prints, the oldest and those left out, and fewer than four, none stored and a pull not read each say so, worked over constructed rows and read back off each fixture name's page against the row the replay stored",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, each print of the year as a bar against that move either way")] = new Scoped(
+            Verdict.Pass,
+            "each print a bar of its move in the rise or the fall hue with a title inside the band of the typical move either way, a bar past it ringed, and no print saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, on a page for an earlier night a line saying the typical move is the newest night's alone")] = new Scoped(
+            Verdict.Pass,
+            "a fixture name's page for an earlier night draws the line in the move's place and no band",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind")] = new Scoped(
             Verdict.Pass,
@@ -1052,10 +1064,6 @@ internal static class Scope
             Verdict.Pass,
             "the four momentum readings and the typical daily move, on the same terms as the averages",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = new Scoped(
-            Verdict.Pass,
-            "the level chart mark over the year to the newest stored session, drawn above the table of moves and with no bands",
-            ByReadSurface),
         [CheckReach.Key("15.9 Name", "The chart, the level chart")] = new Scoped(
             Verdict.Pass,
             "the region draws the level chart with its bands",
@@ -1076,6 +1084,14 @@ internal static class Scope
             Verdict.Pass,
             "the summary table carries each band's members and their dates",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, a lettered tag beneath each report's session and each ex-dividend date saying what it marks beneath the pointer")] = new Scoped(
+            Verdict.Pass,
+            "each stored reaction's session carries an R tag and each kept ex-dividend date and each step the bars show before the first kept one a D tag, each with its title, read off each fixture name's served page against the store and over constructed closes",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The chart, the year's biggest moves numbered on their last sessions as the table of moves numbers them")] = new Scoped(
+            Verdict.Pass,
+            "the chart carries a numbered circle on each stored move's last session by its rank, linking to its row, read off each fixture name's served page against the store",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "The plan, the plan column mark")] = new Scoped(
             Verdict.Pass,
             "the region draws the plan column",
@@ -1095,6 +1111,26 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The plan, the sizing arithmetic")] = new Scoped(
             Verdict.Pass,
             "the worked sizing example is drawn from the risk budget the reader chooses",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, each tranche as an equal share of a full position with the price it is carried at and its stop")] = new Scoped(
+            Verdict.Pass,
+            "CVX's plan of 2026-10-09 draws three tranches of 1/3 each at the midpoint of its zone with its stop, the line beneath saying the three make the whole position, read back off the table against figures worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, its risk and its reward to risk to each traded exit with the top one named where the trail begins")] = new Scoped(
+            Verdict.Pass,
+            "the risks 9.0391 and 12.56855 and the reward to risk 1.4271 and 1.6668 to 217.78, the column naming it where the trail begins, read back off the table against figures worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, a tranche with no band beneath it stating no risk")] = new Scoped(
+            Verdict.Pass,
+            "CVX's third tranche, which no band sits beneath, states no stop, no risk and no reward to risk, and draws no bar",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, a bar of each reward to risk")] = new Scoped(
+            Verdict.Pass,
+            "each tranche stating a risk draws a bar to each traded exit of its reward to risk on one axis from nought with a rule at one, the top exit marked where the trail begins, and a plan with none saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The plan, the trail in the words of its rule")] = new Scoped(
+            Verdict.Pass,
+            "the plan draws the trail in its rule's words with the share the top exit holds on it, and a plan placing no tranche draws none",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = new Scoped(
             Verdict.Pass,
@@ -3741,6 +3777,89 @@ internal static class Scope
             Verdict.Pass,
             "each member's multiple a dot with a title, the stock's own larger and named, the median a rule, and a single member holding a multiple saying the dots need two",
             ByReadSurface),
+
+        // 18.3, the page history reader, its two stores, the typical earnings move's floor and seven failures, and the name
+        // page's long view and ladder figure, the four marks and the parts the chart and the level chart gain.
+        [CheckReach.Key(CatalogueTable, "Page history reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bar store, the calendar, the pulled bars and the pulled earnings it reads, the earnings moves and long views it inserts and deletes and the run log it writes, and no feed, and the declaration matches this row, its matrix row and SCHEMA's ownership",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Page history reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Earnings moves")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Long views")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Typical earnings move")] = new Scoped(
+            Verdict.Pass,
+            "a move read over four prints is stated and one over three is not, each median worked by hand over constructed prints, the row written whatever the count; the figure read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "No pull holds a name's first stored session")] = new Scoped(
+            Verdict.Pass,
+            "the reader over a constructed store reads a name the pulls never held over its stored year alone, naming why on both rows, and each fixture name's rows read no pull, read off the replay against the derived expectation",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pulled print whose session or the session before it the pull misses")] = new Scoped(
+            Verdict.Pass,
+            "a print whose session the pull misses, one whose session before it the pull misses and one read across a stray are each left out and counted, worked by hand over constructed sessions",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "Fewer than four prints read")] = new Scoped(
+            Verdict.Pass,
+            "three prints state no move while the row keeps the count, and the reactions' line says how many were read against four",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A move with no written cause, no labelled story and no filing inside it")] = new Scoped(
+            Verdict.Pass,
+            "a move with no written cause, no story inside its window, no result and no filing on its sessions takes no cause, worked over constructed instants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The page history reader cannot finish")] = new Scoped(
+            Verdict.Pass,
+            "a night whose reader fails writes no row of either table, keeps the rows an earlier night wrote, writes its own row as not read with why and runs the swings and every step after them",
+            ByNight),
+        [CheckReach.Key(FailureTable, "A name holding no plan, an S&P 400 or 600 member among them")] = new Scoped(
+            Verdict.Pass,
+            "a page given no plan draws no share and no plan level on the long view and says why, the year's high and low still drawn",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "The plan and the long view read on different nights")] = new Scoped(
+            Verdict.Pass,
+            "a long view read on another night than the plan draws no plan level and names both nights, and one read on the plan's night draws them",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The long view")] = new Scoped(
+            Verdict.Pass,
+            "the month-end closes the replay stored read back off each fixture name's page with the line naming why no pull was read, a level drawn at the height of a close at its price, the plan's levels on one night and none on another, and an earlier night's page saying the long view is the newest night's alone",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The ladder figure")] = new Scoped(
+            Verdict.Pass,
+            "each band placed above or below the price the figure draws, a quote's in the session and the close outside it, with its distance at that price, what the plan does there and its turns, and the shell's script reaching each row by the figure's own edges, which are the level summary's",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reaction range")] = new Scoped(
+            Verdict.Pass,
+            "each print a bar in the rise or the fall hue with its move whole and a title inside the band of the typical move either way, a bar past it ringed, the band left out where no move is stated, and no print saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Long view")] = new Scoped(
+            Verdict.Pass,
+            "each month-end close a point whole with a title on one line, each level a band in its role's hue named at the right at the height a close at its price stands, and a single month saying the line needs two",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Ladder figure")] = new Scoped(
+            Verdict.Pass,
+            "the bands above the price under its sell heading furthest first and those below under its buy heading nearest first, each row's pill, edges, distance, use and turns whole, the price row naming the price now or the last close, and a name with no band saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Reward to risk bars")] = new Scoped(
+            Verdict.Pass,
+            "each tranche stating a risk a bar to each traded exit with its reward to risk whole and a title, a rule at one, the top exit marked where the trail begins, a bar past the axis held at its end and saying so, and a plan with none saying so",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a lettered tag beneath each report's session and each ex-dividend date")] = new Scoped(
+            Verdict.Pass,
+            "a report's tag R and an ex-dividend date's tag D each beneath its session with a title, read off the chart over constructed events",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the year's biggest moves numbered on their last sessions")] = new Scoped(
+            Verdict.Pass,
+            "each move a numbered circle on its last session linking to its row, read off the chart over constructed moves",
+            ByReadSurface),
         [CheckReach.Key(FailureTable, "The dividend calendar refuses, or answers in a form that cannot be read")] = new Scoped(
             Verdict.Pass,
             "a refusing calendar stores nothing, removes none of the window's dates and is named on the calendar's row with the earnings stored, and an answer with no rows cannot be read",
@@ -4286,7 +4405,31 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = new Scoped(
             Verdict.Pass,
-            "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names and states no cause in every other row, with the date and model read back off the markup against the store, and a name with none draws the column as absent",
+            "a name whose cause section the shipped checker accepted over the recorded model draws that section's sentence in the row of the one move it names, with the date and model read back off the markup against the store, and from 18.3 the served page draws it as research's cause with its source named, every other row taking its cause in the stated order",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, each move numbered as the chart numbers it")] = new Scoped(
+            Verdict.Pass,
+            "each stored move is numbered on the chart on its last session by its rank, its circle linking to its own row, read off each fixture name's served page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, otherwise each move's cause taken from the labelled stories published inside it with the results and filings inside it beneath them")] = new Scoped(
+            Verdict.Pass,
+            "a move holding a labelled story published after its base close and by its last close takes the stories, newest first, an opinion piece and a story on either side of the window left out, with the results and filings inside it beneath them, worked over constructed instants and read off a served page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, or from those results and filings alone")] = new Scoped(
+            Verdict.Pass,
+            "a move holding no labelled story takes the results whose reaction falls on its sessions and the filings filed on them, read off a served page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, or said to be found in neither")] = new Scoped(
+            Verdict.Pass,
+            "a move holding none of the four says no cause was found in the stored news or filings, read off a served page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, the source of each cause named beside it")] = new Scoped(
+            Verdict.Pass,
+            "each row's source cell names research with its day and model, the news labeller's labels, the earnings calendar, the SEC's archive or neither, by the cause each row took, read off a served page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "How it got here, a line stating when the first and the newest labelled story were published")] = new Scoped(
+            Verdict.Pass,
+            "the line names the first and the newest labelled story's days, and a name with no labelled story says so, read off a served page over a constructed store",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The case for and the case against")] = new Scoped(
             Verdict.Pass,
@@ -4294,7 +4437,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "How far each band is")] = new Scoped(
             Verdict.Pass,
-            "each band's row states the gap from the stored close to that band's nearer edge over the name's own newest typical move, read back off the markup against a computation of the test's own from queries of its own, with a close inside a band stating no distance rather than the gap to one of its sides",
+            "each band's row states the gap from the stored close to that band's nearer edge over the name's own newest typical move, read back off the markup against a computation of the test's own from queries of its own, with a close inside a band stating no distance rather than the gap to one of its sides; and from 18.3 each row of the ladder figure states the same gap, at the quote's price in the session",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Level evidence")] = new Scoped(
             Verdict.Pass,
@@ -4487,6 +4630,10 @@ internal static class Scope
                 [CheckReach.Key(FailureTable, "A gap in one name's series, level and plan sections")] = new Scoped(
             Verdict.Pass,
             "a name whose series was refused holds no bars, so it has no bands and no plan, and both sections state the absence rather than drawing nothing, with a name whose series was not refused carrying both over the same run",
+            ByGap),
+        [CheckReach.Key(FailureTable, "A gap in one name's series, typical earnings move and long view")] = new Scoped(
+            Verdict.Pass,
+            "the page history reader over a store whose one name's year holds a hole writes neither row for it and names the gap on its run log row while the other name carries both, and rows that name kept from an earlier night are removed; its page's two lines say none is stored for a name whose year holds a hole",
             ByGap),
                 [CheckReach.Key(LimitsTable, "Earnings horizon")] = new Scoped(
             Verdict.Pass,
@@ -4980,6 +5127,8 @@ internal static class Scope
         // 18.2's two, which the plan describes by the dividends the night keeps and the yield it reads.
         ["Dividend keeper"] = "18.2",
         ["Treasury reader"] = "18.2",
+        // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
+        ["Page history reader"] = "18.3",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -5081,6 +5230,9 @@ internal static class Scope
         ["Estimate trends"] = "18.2",
         ["Dividend events"] = "18.2",
         ["Treasury yields"] = "18.2",
+        // 18.3's two, which the plan names as the typical move over every stored print and the month-end closes.
+        ["Earnings moves"] = "18.3",
+        ["Long views"] = "18.3",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5139,6 +5291,33 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Yield lines")] = "18.2",
         [CheckReach.Key("15.5 The mark vocabulary", "Multiple band")] = "18.2",
         [CheckReach.Key("15.5 The mark vocabulary", "Peer dots")] = "18.2",
+        // 18.3's name page: the long view and the ladder figure, the four marks they and the reactions and the plan draw,
+        // and the parts the level chart, the chart, the plan, the reactions and the moves table gain.
+        [CheckReach.Key("15.9 Name", "The long view")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The ladder figure")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reaction range")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Long view")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Ladder figure")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Reward to risk bars")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, a lettered tag beneath each report's session and each ex-dividend date")] = "18.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the year's biggest moves numbered on their last sessions")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The chart, a lettered tag beneath each report's session and each ex-dividend date saying what it marks beneath the pointer")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The chart, the year's biggest moves numbered on their last sessions as the table of moves numbers them")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The plan, each tranche as an equal share of a full position with the price it is carried at and its stop")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The plan, its risk and its reward to risk to each traded exit with the top one named where the trail begins")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The plan, a tranche with no band beneath it stating no risk")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The plan, a bar of each reward to risk")] = "18.3",
+        [CheckReach.Key("15.9 Name", "The plan, the trail in the words of its rule")] = "18.3",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, after the valuation and before the chart")] = "18.3",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the stock's typical earnings move with the prints it was read over and the oldest of them and how many were left out or that fewer than four were read")] = "18.3",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, each print of the year as a bar against that move either way")] = "18.3",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, on a page for an earlier night a line saying the typical move is the newest night's alone")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, each move numbered as the chart numbers it")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, otherwise each move's cause taken from the labelled stories published inside it with the results and filings inside it beneath them")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, or from those results and filings alone")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, or said to be found in neither")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, the source of each cause named beside it")] = "18.3",
+        [CheckReach.Key("15.9 Name", "How it got here, a line stating when the first and the newest labelled story were published")] = "18.3",
         // 17.3's Ledger page under Universe, its three regions.
         [CheckReach.Key(LedgerPage, LedgerFamilyYears)] = "17.3",
         [CheckReach.Key(LedgerPage, LedgerSettled)] = "17.3",
@@ -5251,7 +5430,6 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The plan, the sizing arithmetic")] = "4.6",
         [CheckReach.Key("15.9 Name", "How it got here, the table of the biggest moves")] = "5.2",
         [CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written")] = "6.6",
-        [CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture")] = "5.8",
         // 8.5, the reason verdicts. Section 15.10's two figures, and section
         // 15.11's four rows with the four parts the second of them enumerates.
         [CheckReach.Key("15.10 Run", "Reason records, the share that reached target before stop")] = "8.5",
@@ -5665,8 +5843,8 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Peers, its trend state")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, the distance row mark")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, a key saying how to read it")] = "11.6",
-        // 11.7 read the Earnings reactions row as its parts, each owed where the record is drawn.
-        [CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups")] = "11.7",
+        // 11.7 read the Earnings reactions row as its parts, each owed where the record is drawn; its place is 18.3's,
+        // which states where 18.1 moved it.
         [CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind")] = "11.7",
         [CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date")] = "11.7",
         [CheckReach.Key("15.9 Name", "Earnings reactions, its timing")] = "11.7",
@@ -5975,10 +6153,12 @@ internal static class Scope
             ["one line saying its prices may not reflect a recent dividend or split", "when the refetch was last tried and why it failed", "above everything the page draws from those prices"],
         [CheckReach.Key("15.9 Name", "Fact strip")] =
             ["close", "market capitalisation", "the year's high and low with the sessions they were made on", "next earnings date", "the multiples", "the averages", "momentum and the typical daily move"],
+        // 18.3 adds the chart's report and ex-dividend tags and its numbered moves, and the plan's shares, their risk and
+        // reward to risk, their bars and the trail in words.
         [CheckReach.Key("15.9 Name", "The chart")] =
-            ["the level chart", "its averages drawn on the sessions the indicators leave empty from what the night read through the sessions before the store's year with a line beneath naming the pull or why none was read", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
+            ["the level chart", "its averages drawn on the sessions the indicators leave empty from what the night read through the sessions before the store's year with a line beneath naming the pull or why none was read", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates", "a lettered tag beneath each report's session and each ex-dividend date saying what it marks beneath the pointer", "the year's biggest moves numbered on their last sessions as the table of moves numbers them"],
         [CheckReach.Key("15.9 Name", "The plan")] =
-            ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic"],
+            ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic", "each tranche as an equal share of a full position with the price it is carried at and its stop", "its risk and its reward to risk to each traded exit with the top one named where the trail begins", "a tranche with no band beneath it stating no risk", "a bar of each reward to risk", "the trail in the words of its rule"],
         // 11.6. The row names the table's place, its population, its order, its seven columns and
         // the link each ticker carries, and a verdict over it whole would pass with one column undrawn.
         [CheckReach.Key("15.9 Name", "Peers")] =
@@ -5989,10 +6169,14 @@ internal static class Scope
         // the line a company paying none is drawn as.
         [CheckReach.Key("15.9 Name", "Dividend")] =
             ["in the numbers section", "from the newest filing alone", "the forward annual rate", "the forward yield as the provider states it", "the payout ratio", "the ex-dividend date and the pay date", "nothing where the provider files none"],
+        // 18.3 places the record after the valuation, where 18.1 moved it, and adds the typical earnings move, the bars
+        // against it and the line an earlier night's page draws in its place.
         [CheckReach.Key("15.9 Name", "Earnings reactions")] =
-            ["beside the earnings setups", "one row per print over the calendar's year behind", "each row carrying its report date", "its timing", "the session it moved on", "the estimate", "the actual", "the provider's surprise", "that session's move", "a print with no filed estimate saying none was filed", "a key saying how to read it"],
+            ["after the valuation and before the chart", "the stock's typical earnings move with the prints it was read over and the oldest of them and how many were left out or that fewer than four were read", "each print of the year as a bar against that move either way", "on a page for an earlier night a line saying the typical move is the newest night's alone", "one row per print over the calendar's year behind", "each row carrying its report date", "its timing", "the session it moved on", "the estimate", "the actual", "the provider's surprise", "that session's move", "a print with no filed estimate saying none was filed", "a key saying how to read it"],
+        // 18.3 retires the twelve-month picture for the moves numbered on the chart and takes each move's cause in its
+        // stated order, naming its source and when the labels ran.
         [CheckReach.Key("15.9 Name", "How it got here")] =
-            ["the table of the biggest moves", "the cause of each where research has been written", "the twelve-month picture"],
+            ["the table of the biggest moves", "the cause of each where research has been written", "each move numbered as the chart numbers it", "otherwise each move's cause taken from the labelled stories published inside it with the results and filings inside it beneath them", "or from those results and filings alone", "or said to be found in neither", "the source of each cause named beside it", "a line stating when the first and the newest labelled story were published"],
         [CheckReach.Key("15.10 Run", "Operational header")] =
             ["what ran", "the instant each stage started and how long it took", "model calls", "network requests", "spend", "what each stage said about itself"],
         [CheckReach.Key("15.10 Run", "Reason records")] =
@@ -6109,8 +6293,9 @@ internal static class Scope
             "the count of distinct trials and the level each starts at beside it",
             "one line saying each candidate's record is withheld until it is promoted",
         ],
+        // 18.3 adds the report and ex-dividend tags and the numbered moves.
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
-            ["candles", "the level bands", "the moving averages", "a volume pane"],
+            ["candles", "the level bands", "the moving averages", "a volume pane", "a lettered tag beneath each report's session and each ex-dividend date", "the year's biggest moves numbered on their last sessions"],
 
         // The universe screen, per region, and the reason is the one that
         // resolved contradiction F. 15.8 reads the listings, and 5.1 builds
@@ -6208,7 +6393,7 @@ internal static class Scope
         // does, and re-dating it would have been the habit rather than the
         // rule.
         [CheckReach.Key(FailureTable, "A gap in one name's series")] =
-            ["chart", "level and plan sections"],
+            ["chart", "level and plan sections", "typical earnings move and long view"],
 
         // The second row to be read per surface, and for the same reason. Its
         // behaviour half is what the night does with the store and the run log,
@@ -6378,6 +6563,8 @@ internal static class Scope
         // element is owed. The level sections arrive at 3.5 and the plan
         // section's tables at 4.4, which is the last surface the cell names.
         ["A gap in one name's series, level and plan sections"] = "4.6",
+        // 18.3's typical earnings move and long view, which a gapped name keeps none of.
+        ["A gap in one name's series, typical earnings move and long view"] = "18.3",
         ["A split or dividend not caught"] = "1.6",
         ["A name whose trend state cannot be classified"] = "4.1",
         ["No band is eligible to carry a tranche"] = "4.4",
@@ -6526,6 +6713,15 @@ internal static class Scope
         ["A month of the analysts' ratings no fetch fell in"] = "18.2",
         ["The dividends history run past the stop"] = "18.2",
         ["No results release before the newest"] = "18.2",
+        // 18.3's seven, which the plan names by the typical move over every stored print, the long view, each cause's source
+        // and the plan's shares.
+        ["No pull holds a name's first stored session"] = "18.3",
+        ["A pulled print whose session or the session before it the pull misses"] = "18.3",
+        ["Fewer than four prints read"] = "18.3",
+        ["A move with no written cause, no labelled story and no filing inside it"] = "18.3",
+        ["The page history reader cannot finish"] = "18.3",
+        ["A name holding no plan, an S&P 400 or 600 member among them"] = "18.3",
+        ["The plan and the long view read on different nights"] = "18.3",
     };
 
     // The two rows of the read and write matrix whose component already exists.

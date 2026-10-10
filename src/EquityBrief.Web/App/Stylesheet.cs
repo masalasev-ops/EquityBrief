@@ -481,9 +481,8 @@ ul.guidance-passage>li.beneath{margin-left:18px;list-style-type:circle}
 .tranche-table td.num,.exit-table td.num{white-space:nowrap}
 .break-even,.sizing{margin:12px 0 0;max-width:70ch}
 .proposal-note{font-size:13px;color:var(--soft);margin:0 0 8px}
-.how-it-got-here figure{margin:0}
-.how-it-got-here figcaption{font-size:12px;color:var(--soft);margin-top:4px}
 .moves-table td[data-cause='none'],td.cause[data-cause='none']{color:var(--soft);font-style:italic}
+.moves-table td:nth-child(-n+3){white-space:nowrap}
 /* the contents, at the head of a name's page: two columns of links, one on a narrow screen */
 nav.contents{margin:0 0 24px;padding:16px 20px;border:1px solid var(--hair);border-radius:8px;background:var(--surface)}
 nav.contents ol{list-style:none;margin:0;padding:0;columns:2;column-gap:28px;font-size:14px}
@@ -575,6 +574,20 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .yl-yield{stroke:var(--ink)} .yl-ten{stroke:var(--s3)} .yl-yield-dot,.lg-swatch.yl-yield{fill:var(--ink);stroke:none} .yl-ten-dot,.lg-swatch.yl-ten{fill:var(--s3);stroke:none}
 .mb-band,.lg-swatch.mb-band{fill:var(--s1)} .mb-line{stroke:var(--ink-2);stroke-width:1.6} .mb-dot,.lg-swatch.mb-line{fill:var(--ink-2);stroke:none} .mb-night,.lg-swatch.mb-night{fill:var(--ink)}
 .pd-dot{fill:var(--s3)} .pd-own{fill:var(--ink);stroke:var(--surface);stroke-width:2} .pd-median{stroke:var(--soft);stroke-width:1.5}
+/* the reactions against the typical earnings move, the long view, the ladder figure, the tranches' reward to risk and the
+   chart's report and ex-dividend tags: a move by its sign in the rise or the fall hue, the plan's buys and sells in the
+   level hues, and every other series a step of one neutral */
+.name .rr-up{fill:var(--up)} .name .rr-down{fill:var(--down)} .rr-move.lg-swatch{fill:var(--ink-2)}
+.rr-range,.lg-swatch.rr-range{fill:var(--s1)} .rr-past{stroke:var(--ink);stroke-width:1.2}
+.lv-close{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round} .lg-swatch.lv-close,.lv-dot{fill:var(--ink);stroke:none}
+.lv-sup{fill:var(--sup-fill);stroke:var(--sup);stroke-width:1} .lv-res{fill:var(--res-fill);stroke:var(--res);stroke-width:1} .lv-rule{fill:var(--ink-2)}
+.lf-head{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase} .lf-sell{fill:var(--res-ink)} .lf-buy{fill:var(--sup-ink)}
+.lf-pill.lf-sup{fill:var(--sup-fill);stroke:var(--sup)} .lf-pill.lf-res{fill:var(--res-fill);stroke:var(--res)}
+.lf-pill-t{font-size:11px;font-weight:600} .lf-sup .lf-pill-t{fill:var(--sup-ink)} .lf-res .lf-pill-t{fill:var(--res-ink)} .lf-use{font-weight:600}
+.rk-bar{fill:var(--s3)} .rk-bar.rk-under{fill:var(--s2)} .rk-one{stroke:var(--soft);stroke-width:1.2;stroke-dasharray:4 3}
+.ev-tag{fill:var(--surface);stroke:var(--ink-2);stroke-width:1} .ev-tag-t{font-size:9px;font-weight:700;fill:var(--ink)}
+.typical-move,.long-view-basis,.long-view-levels,.plan-trail,.labels-cover,.shares-sum{font-size:13.5px;color:var(--ink-2);margin:8px 0}
+.moves-table td.cause-source{font-size:12.5px;color:var(--ink-2)}
 @media (max-width:700px){ .lead-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .two-col{grid-template-columns:1fr} .lead-line{font-size:20px} }
 table.risks-table td{vertical-align:top;padding-top:10px;padding-bottom:10px}
 .written-section table.risks-table .prose{margin:0;max-width:none;font-size:14.5px}
