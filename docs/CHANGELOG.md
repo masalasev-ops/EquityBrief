@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-10 - BUILD_PLAN.md - 18.1 reads the early closes into the session's own list, and its palette clause holds every text colour on its ground and the level, rise, fall and caution inks on their own fills
+Authorised by: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+Was:
+> ... and every distance restated at that price, the early closes read into the closures table, and the delay read off the quote's own time in the session
+
+> the palette check passes, every token's text at 4.5 to 1 or more on every ground and its own fill in both palettes, rise and fall only in the name page's and the file's rules, status hues only in the Run page's, and no failure in a rise or fall rule;
+Now:
+> ... and every distance restated at that price, the early closes read into the session's own list beside the closures table, which every rule's version pins, and the delay read off the quote's own time in the session
+
+> the palette check passes, every text colour at 4.5 to 1 or more on the ground it is drawn on in both palettes and the level, rise, fall and caution inks on their own fills as well, rise and fall only in the name page's and the file's rules, status hues only in the Run page's, and no failure in a rise or fall rule;
+Why: the closures table's file is one every rule's version and the swing filter pin, so an edit there moves every open window; and no text is drawn on a status fill, while the failure's red lightened to read on its own fill in the dark palette sits 13.3 from the fall's plum, under the validator's floor of 15, so the clause holds the fills text is drawn on.
+
 ### 2026-10-10 - .claude/rules/checks.md - read-surface counts twenty-one marks and adds what 18.1's tests assert of the masthead, the quote, the headline, the contents, the Run page's quote line, the range bar and the palette, and fixture-expectations adds the session, the tiles, the quote job and the provider's quote
 Authorised by: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
 Was:
