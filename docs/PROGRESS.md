@@ -42469,8 +42469,13 @@ Mutated:    the rule, stated before the run: the plan's mutation and one on the 
             at the retry's line and at the research record, whose short version asked for a retry no recording answers,
             the other 65 green, as predicted. Each made on this branch and reverted before anything was committed. The
             export's opening light, its toggle and its drawing with scripts off are properties added and not mutated.
-Verified:   `tools/ci.ps1` green, 2194 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
-            figures to be filled from the run.
+Verified:   `tools/ci.ps1` green, 2194 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            9826e71a, the entry's commit, the second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2194 of 2194 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2194 of 2194 tests ran.
 Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.3, PRs 419 to 426 merged on 2026-10-10;
             in progress, this checkpoint and the 6.4 correction, one pull request; next, the written reports regenerated
             once a night is built from a main holding this checkpoint, then 18.5.
