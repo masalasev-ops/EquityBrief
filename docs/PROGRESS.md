@@ -42239,8 +42239,9 @@ Mutated:    the rule, stated before the run: the plan's mutation and one on the 
             green, as predicted; the second red at the reader's test, 195 sessions kept against 172, at the replay's
             yields and at the night's order test, 23 sessions after the night, the table's reading green, as
             predicted. Each made on this branch and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to
-            be filled from the run.
+Verified:   `tools/ci.ps1` green, 2156 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            committed unchanged as 96a896eb: 1199 claims and 1199 PASS, none failing, out of scope or unexamined, and
+            43 checks run and passed, the second running the suite again over the tree before its commit.
 Queue:      done, phase 17 through 17.10, the 4.6, 6.1, 15.2, 6.4, 3.1, 6.10 and 16.3 corrections and 18.0, PRs 419 to
             423 merged on 2026-10-10; gated, 18.1, its pull request opened once the delayed quote is read in the
             session of 2026-10-12; in progress, this checkpoint, its pull request stacked on 18.1's; next, 18.3 to 18.5.
