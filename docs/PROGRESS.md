@@ -43196,3 +43196,30 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 17.3 correction below.
 Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together.
 Carried:    nothing new.
+
+### 17.3 - correction: every table the Ledger page draws is read for the box that scrolls it, and the Ledger and Universe pages are read back at 390 px and 1440 px, where no test read the Ledger page's tables   2026-10-11
+
+Corrects:   17.3's Ledger page, whose tables no test read for the box that scrolls them: the table test reads the five
+            surfaces the 5.8 correction named, and the Ledger page is not one of them. Item 6 of the queue asked for the
+            Ledger and Universe pages at a true 390 px with nothing cut off, wide tables scrolling inside their own frame,
+            read back at 390 and 1440.
+Found:      the read-back the item asked for.
+Built:      a test reading every table the Ledger page draws for its box, five stated in advance, the two families'
+            years and deciles and the pullback's settled setups; the roster's read-surface row names it, the prior text
+            in `CHANGELOG.md`. No page changed. Read back in a browser laid out at each width over the operator's store,
+            the Ledger and Universe pages of each of the three indices are as wide as the screen and no wider, 390 at 390
+            px and 1440 at 1440 px, and every element past the screen's right edge at 390 px sits in a box that scrolls
+            whose own edge is inside the screen, so nothing is cut. The Universe page's tables were already read for
+            their box among the five surfaces.
+Tests:      one more, the Ledger page's tables.
+Claims:     none more.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the property that every table the Ledger page draws is read in a box of its
+            own. M12 the years table drawn without its box: predicted red at the new test, naming the years table.
+            Results: M12 red at the new test, naming both families' years tables, one of eight failed in the run
+            filtered to the ledger's tests and the five surfaces' tables. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
+            the run.
+Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together, and item 7, October's monthly run by hand, is
+            next.
+Carried:    nothing new.

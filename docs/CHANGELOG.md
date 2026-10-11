@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states the Ledger page's tables
+Corrects: no test read the tables of 17.3's Ledger page for the box that scrolls them, found reading the page back at a phone's width for item 6 of the queue of 2026-10-11.
+Was:
+> read-surface: ... read off the rendered page, and a night run after them moving it |
+Now:
+> read-surface: ... read off the rendered page, and a night run after them moving it; and from the 17.3 correction of 2026-10-11 every table the Ledger page draws read in a box of its own, how many stated in advance |
+Why: each roster row says what its check asserts, and the Ledger page was not among the five surfaces whose tables were read for their box.
+
 ### 2026-10-11 - docs/ARCHITECTURE.html - the Run page opens on the newest night by the night's own run id
 Decision: The Run page opens on the newest night by the night's own run id, and no run beside the nights moves it
 Was:
