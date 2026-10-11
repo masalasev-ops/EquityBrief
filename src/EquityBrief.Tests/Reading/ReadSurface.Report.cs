@@ -213,18 +213,18 @@ public partial class ReadSurface
         Assert.Contains("data-mark=\"dividend-bars\" data-years=\"5\"", bars, StringComparison.Ordinal);
         Assert.Equal(
             [
-                "db-level 2022 4.00 4 not compared 2022: 4.00 a share over 4 payment(s)",
-                "db-level 2023 4.00 4 no 2023: 4.00 a share over 4 payment(s)",
-                "db-cut 2024 3.80 4 no 2024: 3.80 a share over 4 payment(s)",
-                "db-raised 2025 4.00 4 yes 2025: 4.00 a share over 4 payment(s)",
-                "db-level db-partial 2026 3.00 3 not compared 2026: 3.00 a share over 3 payment(s), so far this year",
+                "db-level 2022 4.00 4 not compared 2022: 4.00 a share over 4 payments",
+                "db-level 2023 4.00 4 no 2023: 4.00 a share over 4 payments",
+                "db-cut 2024 3.80 4 no 2024: 3.80 a share over 4 payments",
+                "db-raised 2025 4.00 4 yes 2025: 4.00 a share over 4 payments",
+                "db-level db-partial 2026 3.00 3 not compared 2026: 3.00 a share over 3 payments, so far this year",
             ],
             Regex.Matches(bars, "<rect class=\"(db-[a-z]+(?: db-partial)?)\"[^>]*data-year=\"(\\d+)\" data-total=\"([^\"]+)\" data-payments=\"(\\d+)\" data-raised=\"([^\"]+)\"><title>([^<]+)</title></rect>")
                 .Select(match => string.Join(' ', match.Groups.Values.Skip(1).Select(group => group.Value))));
         Assert.Contains(">2026*</text>", bars, StringComparison.Ordinal);
 
         Assert.Equal(
-            "<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"1\">The store keeps the dividends of 1 year(s), and the bars need two.</p>",
+            "<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"1\">The store keeps one year's dividends, and the bars need two.</p>",
             marks.DividendBars(DividendSafety.Of(4.00m, 100m, 8.00m, [], [.. kept.Where(paid => paid.ExDate.Year == 2026)], [], [], ReportNight)!));
 
         // Yield lines: the trailing yield, 4.00 over 100 on each session, and the 10-year, each a line over the two

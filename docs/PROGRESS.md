@@ -42692,3 +42692,293 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 18.4 correction above.
 Queue:      as the 18.4 correction above.
 Carried:    nothing new.
+
+### 6.4 - correction: a growth written as a number of times the earlier figure is refused, where CVX's segment commentary wrote a rise of about 149 per cent as 1.50 times   2026-10-11
+
+Corrects:   the number rule 6.4 built, which matches a figure on its value alone. The facts file holds a growth on a year
+            earlier as the rise over the earlier figure as a fraction of it, and CVX's segment commentary of 2026-10-11
+            read 1.492958 as a ratio: U.S. upstream earnings "rose to $3.54 billion from $1.42 billion, 1.50 times the
+            year-earlier figure", where the later figure is 2.49 times the earlier, with three more sentences like it, all
+            four carried into its short version.
+Found:      reading CVX's rewritten page at 390 pixels in the bug hunt the operator asked for on 2026-10-11, before the
+            reports are written again: "Figure out all the bugs in one shot".
+Built:      a figure written as "1.49 times" or "1.49x" that the facts file holds only under a name holding growth is
+            refused, its retry told to write the rise in per cent; one the file also holds as anything else passes. The
+            prompt is unchanged, and the fixture's 718 replay and research tests pass with no recording moved.
+Tests:      two more: both ways of writing times refused, the rise in per cent passing, a multiple held as a multiple
+            passing and a figure also held as a ratio passing, worked by hand; and the retry's words.
+Claims:     none more; a decision, section 12's text and the roster's claim-admissibility row say so.
+Pins:       none moved; the checker is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: the property that the figure is held only as a growth. H1 the rule reading a
+            figure any growth among its facts holds: predicted red at the new test's ratio case. Result: red, the ratio
+            refused; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2215 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry and
+            the corrections after it, e44c67ed, the entries' last commit, the second reading the suite result the first
+            wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2215 of 2215 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2215 of 2215 tests ran.
+Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 432 merged; in progress,
+            this correction and the others the bug hunt found, in one pull request; next, the 32 written reports
+            regenerated once from main, the screenshots read back against the store and the phase 18 report.
+Carried:    nothing new.
+
+### 6.11 - correction: a pass reads each month of a name's news on its own, where one month the provider did not answer in time lost its whole window and CVX's report had no news since its filing   2026-10-11
+
+Corrects:   the 6.11 correction of 2026-10-02, which had the feed ask a window a month at a time inside one call, so a
+            month timing out on every try threw away the months already read: CVX's pass of 2026-10-11 named
+            "the provider did not answer for 2026-07-31 to 2026-10-11 in time on any try" and wrote every section with
+            no news since its filing.
+Found:      reading CVX's pass in the bug hunt of 2026-10-11, its run log row against its page.
+Built:      the pass cuts each window into its months and asks each on its own through one function in the core, a
+            month the provider refuses or does not answer in time named unread with its dates and the window's other
+            months read. The feed still cuts what it is asked into months, so a month asked is one request as before.
+            A decision supersedes the one that read the window as the unit.
+Tests:      one more: a window of three months worked by hand, the middle one timing out and then refused, the other two
+            read; the fixture's asks counted a month of each window, and the feed's months read off the moved function.
+Claims:     none more; the decision and the roster's fixture-expectations row say so.
+Pins:       none moved; the pass and the feed are no source a rule's version, the swing filter or a candidate evaluator
+            pins.
+Mutated:    the rule, stated before the run: the property that a month costs only itself. H2 the window asked whole
+            again: predicted red at the new test. Result: red, one window asked where three months are; reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 18.5 ruling - the reports written again once after the bug hunt's corrections merge, the two cases held to six sentences a side, a name with no plan saying why, and the 440 members fetched before 18.2 asked again   2026-10-11
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-11, stopping the rewrite of the 32 reports after four: "please do not exhaust my
+            deepseek subscription by continously calling it with every fix. Figure out all the bugs in one shot". The
+            hunt read CVX, PEP and GTES at 1440 and 390 pixels in both palettes, the exported file, and the markup of
+            every member's page, and put fourteen findings and one of data to the operator, who chose, of the options put:
+            "Yes, start now (Recommended)", the fourteen corrected in one pull request and the reports written again
+            once after it merges; "At most six points a side" for the two cases, stated in the prompt and held by the
+            checker, the closing sentence among the six; "Page says why and what would bring a plan (Recommended)" for
+            a name with no plan, the plan's own rule unchanged; and "Tue and Wed, 220 a day (Recommended)" for the 440
+            S&P 500 members whose newest quarters fetch, made at 01:00Z on 2026-10-10, came before 18.2 kept the
+            estimate trend, the gross profit and the cash flow lines: about 2,420 weighted calls a day, beside A7's
+            runs and the night under the day's 5,000.
+Changes:    the 18.5 ruling of 2026-10-10 stands, its one regeneration being this one, now of every stock holding a
+            written report on the corrected main, CVX, PEP, AAPL and GTES written again with the rest. A pass runs from the
+            newest night's build or by hand from main's, the corrections' prompts holding either way.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 6.4 correction above.
+
+### 12.6 - correction: a risk's fact is composed by the words a reader reads it by and an event after its kind, where the risks printed a fact's listing and raw level and joined a clause after "confirmed by"   2026-10-11
+
+Corrects:   the composition 12.6 built when the risks became fields. A fact was printed by its listing and its level as
+            copied: 86 of the 146 confirmations the store held read like "That risk would be confirmed by segment
+            Operating Segments | Integrated Memory Total segment operating income growth on a year earlier 2026-05-29
+            falls below 399.22%" or "by sales growth on a year earlier falls below 0.057553". An event was joined after
+            "confirmed by" whatever its form, so PEP's six read "confirmed by rivals outspend PepsiCo", and the seventh
+            kind read "an other event" on 13 pages.
+Found:      in the bug hunt of 2026-10-11, reading PEP's page and a scan of every stored risk's fields.
+Built:      the writer gives each fact words saying it plainly with no figure, beside the listing it copies exactly, and a
+            fraction's level as its per cent; a fact given no words is refused, its retry told to give them. Code composes
+            a fact as "That risk would be confirmed if" its words, direction and level, and an event as "That risk would
+            be confirmed by" its kind, the seventh plainly "an event", then a colon and the event with its article
+            lowered. Sharing stays an exact match on the listing, and the page still parts a risk from its confirmation.
+            The risks' prompt changes, so the fixture's risks requests, and the short version's and the headline's,
+            whose claims carry the composed risks, are made again in the 18.5 commit that follows, with no paid call.
+Tests:      one more: a fact given no words refused with the retry's words, a growth crossed at its per cent passing and
+            composed, a clause of the seventh kind and of another composed, and words carrying a figure refused; the
+            composition test reads the new sentence.
+Claims:     none more; a decision, the lane table's risks row, SCHEMA's parts and the roster's claim-admissibility row
+            say so.
+Pins:       none moved; the composer and the checker are no source a rule's version, the swing filter or a candidate
+            evaluator pins.
+Mutated:    the rule, stated before the run: the property that a fact is composed by its words. H3 the listing written in
+            the words' place: predicted red at the new test. Result: red, at the new test and at the composition test;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 4.6 - correction: a name with no plan says why and what would bring one, where its page drew one fixed sentence, two empty tables and "Buy into these" over nothing   2026-10-11
+
+Corrects:   the plan region 4.6 built. A name whose ladder placed no tranche drew "has no plan to draw, which is what a
+            name with no eligible band gets" whatever the ladder's reason, the entries' and the exits' tables as
+            headings alone, the setups' line and its prints' moves against a stop that does not exist. On the night of
+            2026-10-09, 131 of the S&P 500's 503 ladders placed none: 112 for a trend reading down, 13 for no support
+            band beneath the price, 2 for support anchored on an average alone, 3 for too few sessions for an average
+            and 1 for a missing bar.
+Found:      by the operator on 2026-10-11 reading PEP's page: "The diagram says buy into these but there nothing really
+            written where to buy into", and "There's no entry or exit plan at all that could be figured out ? What would
+            it need further to fix that ?"; of the options put the operator chose "Page says why and what would bring a
+            plan (Recommended)", the plan's own rule unchanged.
+Built:      the region draws one line in the plan's place: that the name has no plan to draw, the reason its ladder
+            stored, and what would bring a plan, read off that reason and the bands about the price by one function the
+            read surface calls, with the close above the nearest band above that would put it beneath the price where
+            the reason is the trend or the missing support. A plan's own table that would hold no row draws a line
+            saying so. A decision names it (see: A name with no plan is drawn with the reason its ladder stored and what
+            would bring a plan, and no empty table); section 4's and section 15.9's plan rows say so, the prior text in
+            `CHANGELOG.md`.
+Tests:      one more: each reason a ladder or the night's builder stores worked by hand over PEP's bands of the night of
+            2026-10-09 and its close of 125.97, a band of one price named at its price, a price above every band naming
+            no close and a reason no rule writes giving none, the line read off the plan column, and a plan placing no
+            exit drawing a line where the exits' table would stand empty.
+Claims:     none more; the decision, the two rows and the roster's read-surface row say so.
+Pins:       none moved; the read surface and the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that the line names the reason its ladder stored. H4 the plan
+            column drawing its fixed sentence again whatever the reason: predicted red at the new test. Result: red, the
+            line differing at the reason; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 18.3 - correction: the ladder figure says where no band stands on a side of the price, the reward to risk figure stands as tall as its bars, and the technicals name the provider's multiples as its own, where PEP's ladder drew "Buy into these" over nothing   2026-10-11
+
+Corrects:   18.3's ladder figure, which drew "Buy into these" over nothing for PEP, under every band it holds at 125.97;
+            its reward to risk figure, which kept a row's height for a tranche stating no risk and stood a blank row
+            beneath the bars; and the technicals it placed in the levels region, which drew the provider's trailing
+            multiple of 20.4 for CVX beside the valuation's 19.6, the night's close over the newest four quarters'
+            earnings, with nothing naming either's basis.
+Found:      in the bug hunt of 2026-10-11, reading PEP's and CVX's pages at 1440 and 390 pixels.
+Built:      beneath a heading with no band on its side of the price the figure draws a line saying none stands there and
+            what the plan cannot do; the reward to risk figure's height counts the bars it draws and a foot for its
+            axis's words; and the grid and the sentence beneath it name the provider's multiples as the provider's.
+            Section 4's levels row says so, the prior text in `CHANGELOG.md`.
+Tests:      one more: PEP's bands at 125.97 saying nothing stands below and nothing of above, a name above its one band
+            saying nothing stands above, two tranches stating a risk and a third stating none drawn 84 high, worked by
+            hand, and the provider's multiples named as its own in the grid and the sentence.
+Claims:     none more; the row and the roster's read-surface row say so.
+Pins:       none moved; the read surface and the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that an empty side says so. H5 the line beneath an empty side
+            not drawn: predicted red at the new test. Result: red, PEP's figure saying nothing beneath "Buy into these";
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 15.1 - correction: an S&P 400 or 600 member's page names its company and reads its group from its own index's members, where it read the S&P 500's and GTES's page named no company and said it was no member of the index   2026-10-11
+
+Corrects:   the name route 15.1 left reading the index the page was opened under for the company, the sector and the
+            group, the S&P 500 where a link names none: GTES's page of 2026-10-11, opened from its report's link, drew
+            no company in its masthead and said in its group's cell that it was not a member of the index on the night.
+Found:      in the bug hunt of 2026-10-11, reading GTES's page.
+Built:      the route reads the index holding the name on the night and that index's members for the masthead and the
+            groups, and an S&P 500 member's page reads as before.
+Tests:      one more: over a constructed store of the three indices, an S&P 400 member's page names its company and its
+            index and nothing of not being a member, and an S&P 500 member's page names its own.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: the property that a page reads its own index. H6 the route reading the
+            index it was opened under again: predicted red at the new test. Result: red, the S&P 400 member's page naming
+            no company; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 6.8 - correction: a document's title and link and an article's link sent with characters written as entities are drawn as those characters, where BDX's sources drew "&amp;" and 626 links carried "&amp;amp;utm_medium"   2026-10-11
+
+Corrects:   the links 6.8 drew beneath each written section and the ones later regions draw the same way, which escaped
+            a title and an address the provider sent with entities a second time: BDX's sources drew "Becton Dickinson
+            &amp; Co's Dividend Analysis", and 626 links across the stored pages carried "&amp;amp;utm_medium", an address
+            the provider never wrote. The 12.6 correction of 2026-10-11 drew an article's title as its characters and
+            left its link and a document's title and link as they were.
+Found:      in the bug hunt of 2026-10-11, scanning every member's page for an entity escaped twice.
+Built:      one function reads a title or an address as the provider meant it, its entities read once, and escapes it
+            for the page, used by every document's link, the refused documents, each move's cause, the News region and
+            the calendar's items.
+Tests:      one more: BDX's title and a link carrying "&amp;" drawn escaped once in the sources, and an article's link
+            in the News region; the research pass's sources test reads the link and the title as the provider meant
+            them.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that an entity is read once. H7 the function escaping what it
+            is sent without reading its entities: predicted red at the new test. Result: red, the link drawn with
+            "&amp;amp;"; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 18.1 - correction: the name page's counts, signs, columns and dates read as a reader reads them, where it drew "turned the price 2 time(s)", "-0.0%", figures under the next column's heading and a phone's chart labels four pixels high   2026-10-11
+
+Corrects:   the look 18.1 set for the name page and its export, which left the words and figures of the regions it moved
+            as they were: 27 counts written with "(s)", among them "turned the price 2 time(s)" and "for 4 quarter(s) in
+            a row"; a figure rounding to nothing drawn "-0.0%" or "-0"; the moves', the reactions', the arithmetic's and
+            the earnings rule's figures right-aligned under headings on the left, a move's change and a reaction's
+            unsigned and in ink; dates broken at their hyphens in narrow cells; on a phone the charts scaled to the
+            screen with their labels four pixels high; and the exported file's title off the report's column.
+Found:      in the bug hunt of 2026-10-11, at 1440 and 390 pixels in both palettes and in a scan of every member's page.
+Built:      each count takes its noun's singular or plural, once and twice in words; a figure rounding to nothing is
+            drawn with no sign; each number column is headed on the right over its figures, a move's change, its group's
+            median and a reaction's surprise and move signed in their hue to two places; a date alone in a cell is not
+            broken; on a phone a figure keeps a width its words are read at and scrolls in its box, the plan column
+            apart; and the exported file's title and stamp stand in the report's column. The numbers' two margin
+            patterns name their quarters with the noun, and section 4's pattern table with them, the prior text in
+            `CHANGELOG.md`. The other screens' counts are outside this correction.
+Tests:      one more: a band's turns once, twice and six times, three equal shares, a move's change, its group's median
+            and the change's heading, a margin a hair under nothing, the phone's rule and the export's column, worked by
+            hand; and the tests reading the old words read the new.
+Claims:     none more; the pattern rows keep their verdicts and the roster's read-surface row says so.
+Pins:       none moved; the read surface, the marks and the numbers' patterns are in no pin list.
+Mutated:    the rule, stated before the run: the property that a count reads with its noun. H8 a band's turns written
+            as "time(s)" again: predicted red at the new test and at the ladder figure's test. Result: red at both;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 18.2 - correction: the margins' lines name their newest margins inside the figure and only the lines they draw, where CVX's cut "Operating 32.4%" at the figure's edge and named a gross margin line it did not draw   2026-10-11
+
+Corrects:   18.2's margins figure, which kept sixty units at its right for the newest margins' names, so CVX's
+            "Operating 32.4%" ran past the figure's edge and was cut, and whose legend named all three lines whatever it
+            drew, a gross margin no quarter holds among them.
+Found:      in the bug hunt of 2026-10-11, reading CVX's page at 1440 pixels.
+Built:      the figure keeps 120 units for the names, pushes two names apart where their ends sit closer than a line,
+            names in its legend only the lines it draws, and says beneath it which margin no quarter files.
+Tests:      one more: four quarters with operating and net margins and no gross, the legend naming the two drawn and the
+            line beneath naming the gross, and each end named whole 8 to the right of the newest quarter, worked by hand.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that the names stand inside the figure. H9 sixty units kept
+            for the names again: predicted red at the new test. Result: red, the names drawn 60 units further right;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
+### 18.2 - correction: the quarters verb asks again by hand each member whose newest fetch read none of the gross profit and the cash flow lines, under a cap and stating its asks before its first request, where 440 S&P 500 members' newest fetches came before 18.2 kept them   2026-10-11
+
+Corrects:   the fetch 18.2 widened to keep each quarter's gross profit and cash flow lines and the analysts' estimate
+            trend, which merged at 16:39Z on 2026-10-10 after the S&P 500's first refetch had run at 01:00Z: 440 members
+            held a newest fetch reading none of them, and their analysts, their gross profit and their payout on free
+            cash flow drew nothing until each reports again, CVX's among them.
+Found:      in the bug hunt of 2026-10-11, reading CVX's page against its fetch; put to the operator, who chose "Tue and
+            Wed, 220 a day (Recommended)".
+Built:      `quarters --refetch-lines` asks each member of the index whose newest fetch read none of the lines, once a
+            session and in ticker order, as `--refetch-unread` asks, prints its asks and the weighted calls they may
+            spend, eleven an ask, before its first request, and `--most` caps them; a run naming two of the three runs
+            by hand is refused. A decision names it (see: A fetch made before the gross profit and the cash flow lines
+            were kept is asked again by hand under a stated cap); the quarter fetcher's catalogue row says so, the prior
+            text in `CHANGELOG.md`, and the runbook gives the line and its cap.
+Tests:      one more: over a constructed store, the refetch capped at one ask asks the first of the two members whose
+            newest fetch read none of the lines, at eleven weighted calls, after printing what it will ask; a member
+            whose newest fetch read them though an older one did not and one that read them are not asked; the next run
+            asks the second and one after that nothing, each run's asks read off the store; and two runs named together
+            are refused with nothing asked.
+Claims:     none more; the decision, the row and the roster's nightly-cost row say so.
+Pins:       none moved; the quarter fetcher is in no pin list.
+Mutated:    the rule, stated before the run: the property that the refetch asks only a member whose newest fetch read
+            none of the lines. H10 the selection reading the members whose newest fetch read them: predicted red at the
+            new test. Result: green. The selection then held KA and KB, two members as LA and LB are, and the test
+            counted the asks and the requests without naming who was asked: a missing property. The test now reads each
+            run's asks off the store, LA alone and then LB beside it, and H10 made again was red, KA asked in LA's place;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new; the two runs the decision names, on Tuesday 2026-10-13 and Wednesday 2026-10-14, are run by hand
+            after this merges and are no done condition of it.

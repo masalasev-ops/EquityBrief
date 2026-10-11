@@ -27,8 +27,8 @@ public static partial class NumbersSay
         ("pace faster", "The newer quarter's growth was faster than the {percent} the same quarter showed a year before."),
         ("pace slower", "The newer quarter's growth was slower than the {percent} the same quarter showed a year before."),
         ("pace same", "The newer quarter's growth matched the {percent} the same quarter showed a year before."),
-        ("margin wider", "The operating margin was {percent} against {percent} a year earlier, wider for {count} quarter(s) in a row."),
-        ("margin narrower", "The operating margin was {percent} against {percent} a year earlier, narrower for {count} quarter(s) in a row."),
+        ("margin wider", "The operating margin was {percent} against {percent} a year earlier, wider for {quarters} in a row."),
+        ("margin narrower", "The operating margin was {percent} against {percent} a year earlier, narrower for {quarters} in a row."),
         ("margin unchanged", "The operating margin was {percent}, where it stood a year earlier."),
         ("trajectory too few", "Sales and the operating margin cannot be read against a year earlier over the two newest quarters."),
         ("record", "Against the analysts' estimates over its last {count} quarters it beat {count}, met {count} and missed {count}, met meaning within a cent or 1% of the estimate."),
@@ -100,7 +100,7 @@ public static partial class NumbersSay
                 newer.Margin > newer.MarginYearEarlier ? "margin wider" : "margin narrower",
                 Percent(newer.Margin),
                 Percent(newer.MarginYearEarlier),
-                Count(trajectory.MarginRun)));
+                Count(trajectory.MarginRun) + (trajectory.MarginRun == 1 ? " quarter" : " quarters")));
 
         return said;
     }

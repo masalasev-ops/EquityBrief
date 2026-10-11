@@ -171,6 +171,8 @@ public static class ClaimRules
     public const string ShortVersionTooManyParagraphs = "a short version of more than three paragraphs";
     public const string ShortVersionLongParagraph = "a paragraph of the short version holding more than five sentences";
     public const string NoClaims = "no claims stored beside it to hold it to";
+    public const string GrowthAsAMultiple = "a growth on a year earlier written as a number of times the earlier figure";
+    public const string TwoCasesLongSide = "a case of more than six sentences";
 
     // The short version is the page's summary: three paragraphs of a few sentences, each choosing the claims that matter
     // most, since the regions beneath draw every claim in full. A draft restating every claim reads as the page again, and
@@ -204,6 +206,11 @@ public static class ClaimRules
     public const string TwoCasesSection = "The two cases";
     public const string CaseFor = "The bull case";
     public const string CaseAgainst = "The bear case";
+
+    // Each case is the points that matter most and what it needs at the next report, a sentence each, read beside the
+    // short version that sums the page up: a case restating every accepted claim reads as the page again.
+    // see: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
+    public const int TwoCasesSideSentences = 6;
 
     // A section's claims in the order they were written: each sentence as the checker reads it, each
     // paragraph read on its own so a paragraph's end is always a claim's end.
@@ -349,9 +356,19 @@ public static class ClaimRules
 
         // The two cases are refused where the case for and the case against cannot be told apart, since
         // the page draws them as two halves and a rule reading one side against the other has none to read.
-        if (string.Equals(section, TwoCasesSection, StringComparison.Ordinal) && Rows(prose) is var rows && SidesMissing(rows) is { } missing)
+        if (string.Equals(section, TwoCasesSection, StringComparison.Ordinal) && Rows(prose) is var rows)
         {
-            findings.Add(new ClaimFinding(rows[0], missing, TwoCasesWithoutSides));
+            if (SidesMissing(rows) is { } missing)
+            {
+                findings.Add(new ClaimFinding(rows[0], missing, TwoCasesWithoutSides));
+            }
+            else if (CaseSides(rows) is { } sides)
+            {
+                foreach (var side in new[] { sides.For, sides.Against }.Where(side => side.Count > TwoCasesSideSentences))
+                {
+                    findings.Add(new ClaimFinding(string.Empty, Excerpt(side[TwoCasesSideSentences]), TwoCasesLongSide));
+                }
+            }
         }
 
         // The risks' fields, and the fact names and levels in their prose read past by the number rule, since
@@ -439,6 +456,7 @@ public static class ClaimRules
                 var reason = figure.Kind switch
                 {
                     FigureKind.Figure when !Matches(figure, facts) => UnmatchedFigure,
+                    FigureKind.Figure when GrowthWrittenAsAMultiple(figure, sentence.Text, facts) => GrowthAsAMultiple,
                     FigureKind.Figure when owned is not null && !Matches(figure, owned) => FigureAnotherRegionOwns,
                     FigureKind.Figure when NamedForAnotherPeriod(figure, facts, named) => FigureNamedForAnotherPeriod,
                     FigureKind.Figure when heldToDocuments && !StatedByACitedDocument(figure, sentence, sources, stated) => FigureNoCitedDocumentHolds,
@@ -461,6 +479,17 @@ public static class ClaimRules
 
         return new ClaimVerdict(findings, NoAdmissibleSource: false);
     }
+
+    // A figure written as a number of times an earlier one, "1.50 times the year-earlier figure", that the facts file holds
+    // only as a growth. A growth is the rise as a fraction of the earlier figure, so 1.50 is a rise of 150 per cent and the
+    // later figure is two and a half times the earlier one: matched on its value alone the sentence passes and says the
+    // wrong thing.
+    // see: A growth is written as a rise in per cent and never as a number of times the earlier figure
+    static bool GrowthWrittenAsAMultiple(ProseFigure figure, string sentence, IReadOnlyList<Fact> facts) =>
+        !figure.Percent
+        && (figure.Text.EndsWith('x') || Regex.IsMatch(sentence, @"(?<![\d.,])" + Regex.Escape(figure.Text) + @"\s+times\b"))
+        && facts.Where(fact => Matches(figure, [fact])).ToArray() is { Length: > 0 } held
+        && held.All(fact => fact.Name.Contains("growth", StringComparison.Ordinal));
 
     // The region drawing a figure a section may not write: the first fact it rounds to, in the facts file's order.
     static string RegionDrawing(ProseFigure figure, IReadOnlyList<Fact> facts) =>

@@ -84,7 +84,7 @@ public sealed partial class MarkRenderer
             table.Append(Amount(line.YearEarlier, "year-earlier"));
             table.Append(line.OnTheYear is { } year ? "<td class=\"num\">" + Signed(year, "on-the-year") + "</td>" : "<td class=\"num degraded\" data-on-the-year=\"absent\">none</td>");
             table.Append(line.Margin is { } margin
-                ? Formatted($"<td class=\"num\" data-margin=\"{margin.ToString(Invariant)}\">{margin.ToString("0.0", Invariant)}%{(line.MarginYearEarlier is { } then ? Formatted($", <span data-margin-year-earlier=\"{then.ToString(Invariant)}\">{then.ToString("0.0", Invariant)}%</span>") : string.Empty)}</td>")
+                ? Formatted($"<td class=\"num\" data-margin=\"{margin.ToString(Invariant)}\">{Tenth(margin)}%{(line.MarginYearEarlier is { } then ? Formatted($", <span data-margin-year-earlier=\"{then.ToString(Invariant)}\">{Tenth(then)}%</span>") : string.Empty)}</td>")
                 : "<td class=\"num\"></td>");
             table.Append("</tr>");
         }
@@ -167,38 +167,53 @@ public sealed partial class MarkRenderer
         var values = read.SelectMany(quarter => new[] { quarter.Gross, quarter.Operating, quarter.Net }).OfType<double>().Append(0).ToArray();
         var (low, high) = Bounds(values.Min(), values.Max());
         double Y(double value) => ChartTop + ((high - value) / (high - low) * (ChartHigh - ChartTop - ChartBottom));
-        double X(int at) => ChartLeft + ((ChartWide - ChartLeft - ChartRight - 60) * at / Math.Max(read.Length - 1, 1));
 
+        // The room at the right holds each line's name and its newest margin, "Operating 32.4%" the widest.
+        const double Names = 120;
+        double X(int at) => ChartLeft + ((ChartWide - ChartLeft - ChartRight - Names) * at / Math.Max(read.Length - 1, 1));
+
+        (string Kind, string Said, string Named, Func<QuarterMargins, double?> Read)[] series =
+        [
+            ("ml-gross", "gross", "Gross margin", quarter => quarter.Gross),
+            ("ml-operating", "operating", "Operating margin", quarter => quarter.Operating),
+            ("ml-net", "net", "Net margin", quarter => quarter.Net),
+        ];
+
+        // A line no quarter holds a margin for is named in no legend, and a line beneath says so.
+        var drawn = series.Where(line => read.Any(quarter => line.Read(quarter) is not null)).ToArray();
         var svg = new StringBuilder();
 
         svg.Append(Formatted($"<svg class=\"margin-lines\" viewBox=\"0 0 {Number(ChartWide)} {Number(ChartHigh)}\" role=\"img\" data-mark=\"margin-lines\" data-quarters=\"{read.Length}\" aria-label=\"Gross, operating and net margins over {read.Length} quarters\">"));
-        svg.Append(Legend(("ml-gross", "Gross margin"), ("ml-operating", "Operating margin"), ("ml-net", "Net margin")));
+        svg.Append(Legend([.. drawn.Select(line => (line.Kind, line.Named))]));
         svg.Append(Ticks(low, high, Y, "%"));
 
-        foreach (var (kind, said, read1) in new (string, string, Func<QuarterMargins, double?>)[]
-                 {
-                     ("ml-gross", "gross", quarter => quarter.Gross),
-                     ("ml-operating", "operating", quarter => quarter.Operating),
-                     ("ml-net", "net", quarter => quarter.Net),
-                 })
+        // Each line's newest margin is named at its end, the names pushed apart where two ends sit closer than a line.
+        var ends = new List<(double Y, string Words)>();
+
+        foreach (var (kind, said, _, read1) in drawn)
         {
             var points = read.Select((quarter, at) => (quarter, at, value: read1(quarter))).Where(point => point.value is not null).ToArray();
-
-            if (points.Length == 0)
-            {
-                continue;
-            }
 
             svg.Append(Formatted($"<polyline class=\"{kind}\" fill=\"none\" points=\"{string.Join(' ', points.Select(point => Number(X(point.at)) + "," + Number(Y(point.value!.Value))))}\"/>"));
 
             foreach (var point in points)
             {
-                svg.Append(Formatted($"<circle class=\"{kind}-dot\" cx=\"{Number(X(point.at))}\" cy=\"{Number(Y(point.value!.Value))}\" r=\"3\" data-quarter=\"{DayOf(point.quarter.Quarter)}\" data-{said}=\"{point.value!.Value.ToString(Invariant)}\"><title>Quarter to {DayOf(point.quarter.Quarter)}: {said} margin {point.value!.Value.ToString("0.0", Invariant)}%</title></circle>"));
+                svg.Append(Formatted($"<circle class=\"{kind}-dot\" cx=\"{Number(X(point.at))}\" cy=\"{Number(Y(point.value!.Value))}\" r=\"3\" data-quarter=\"{DayOf(point.quarter.Quarter)}\" data-{said}=\"{point.value!.Value.ToString(Invariant)}\"><title>Quarter to {DayOf(point.quarter.Quarter)}: {said} margin {Tenth(point.value!.Value)}%</title></circle>"));
             }
 
             var last = points[^1];
 
-            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(last.at) + 8)}\" y=\"{Number(Y(last.value!.Value) + 4)}\">{Capital(said)} {last.value!.Value.ToString("0.0", Invariant)}%</text>"));
+            ends.Add((Y(last.value!.Value) + 4, Formatted($"{Capital(said)} {Tenth(last.value!.Value)}%")));
+        }
+
+        var floor = double.MinValue;
+
+        foreach (var (y, words) in ends.OrderBy(end => end.Y))
+        {
+            var at = Math.Max(y, floor + 13);
+
+            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(read.Length - 1) + 8)}\" y=\"{Number(at)}\">{words}</text>"));
+            floor = at;
         }
 
         foreach (var (quarter, at) in read.Select((quarter, at) => (quarter, at)).Where(pair => pair.at % 2 == (read.Length - 1) % 2))
@@ -206,7 +221,14 @@ public sealed partial class MarkRenderer
             svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(X(at))}\" y=\"{Number(ChartHigh - 10)}\" text-anchor=\"middle\">{quarter.Quarter.ToString("MMM yy", Invariant)}</text>"));
         }
 
-        return svg.Append("</svg>").ToString();
+        svg.Append("</svg>");
+
+        foreach (var (_, said, _, _) in series.Except(drawn))
+        {
+            svg.Append(Formatted($"<p class=\"mark-note\" data-margin-absent=\"{said}\">No quarter of these files a {said} margin, so no {said} line is drawn.</p>"));
+        }
+
+        return svg.ToString();
     }
 
     // The margins as a table beneath the lines, a quarter a row.
@@ -218,7 +240,7 @@ public sealed partial class MarkRenderer
         {
             string Cell(double? value, string name) =>
                 value is { } held
-                    ? Formatted($"<td class=\"num\" data-{name}=\"{held.ToString(Invariant)}\">{held.ToString("0.0", Invariant)}%</td>")
+                    ? Formatted($"<td class=\"num\" data-{name}=\"{held.ToString(Invariant)}\">{Tenth(held)}%</td>")
                     : Formatted($"<td class=\"num degraded\" data-{name}=\"absent\">none</td>");
 
             table.Append(Formatted($"<tr data-quarter=\"{DayOf(quarter.Quarter)}\"><td>{DayOf(quarter.Quarter)}</td>"))
@@ -523,7 +545,7 @@ public sealed partial class MarkRenderer
 
         if (years.Length < 2)
         {
-            return Formatted($"<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"{years.Length}\">The store keeps the dividends of {years.Length} year(s), and the bars need two.</p>");
+            return Formatted($"<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"{years.Length}\">{(years.Length == 0 ? "The store keeps no year's dividends" : "The store keeps one year's dividends")}, and the bars need two.</p>");
         }
 
         var most = years.Max(year => EquityBrief.Core.Prices.Statistic.FromPrice(year.Total));
@@ -552,7 +574,7 @@ public sealed partial class MarkRenderer
                 _ => "db-level",
             };
 
-            svg.Append(Formatted($"<rect class=\"{kind}{(year.Whole ? string.Empty : " db-partial")}\" x=\"{Number(x)}\" y=\"{Number(ChartHigh - ChartBottom - tall)}\" width=\"{Number(bar)}\" height=\"{Number(tall)}\" rx=\"2\" data-year=\"{year.Year}\" data-total=\"{year.Total.ToString(Invariant)}\" data-payments=\"{year.Payments}\" data-raised=\"{(year.Raised is { } raised ? (raised ? "yes" : "no") : "not compared")}\"><title>{year.Year}: {Figures.PerShare(year.Total)} a share over {year.Payments} payment(s){(year.Whole ? string.Empty : ", so far this year")}</title></rect>"));
+            svg.Append(Formatted($"<rect class=\"{kind}{(year.Whole ? string.Empty : " db-partial")}\" x=\"{Number(x)}\" y=\"{Number(ChartHigh - ChartBottom - tall)}\" width=\"{Number(bar)}\" height=\"{Number(tall)}\" rx=\"2\" data-year=\"{year.Year}\" data-total=\"{year.Total.ToString(Invariant)}\" data-payments=\"{year.Payments}\" data-raised=\"{(year.Raised is { } raised ? (raised ? "yes" : "no") : "not compared")}\"><title>{year.Year}: {Figures.PerShare(year.Total)} a share over {Counted(year.Payments, "payment", "payments")}{(year.Whole ? string.Empty : ", so far this year")}</title></rect>"));
             svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(x + (bar / 2))}\" y=\"{Number(ChartHigh - 10)}\" text-anchor=\"middle\">{year.Year}{(year.Whole ? string.Empty : "*")}</text>"));
         }
 
@@ -747,9 +769,10 @@ public sealed partial class MarkRenderer
         for (var step = 0; step <= 3; step++)
         {
             var value = low + ((high - low) * step / 3);
+            var fine = Math.Abs(high - low) < 3;
 
             ticks.Append(Formatted($"<line class=\"m-gridline\" x1=\"{Number(ChartLeft)}\" x2=\"{Number(ChartWide - ChartRight)}\" y1=\"{Number(y(value))}\" y2=\"{Number(y(value))}\"/>"));
-            ticks.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(y(value) + 4)}\" text-anchor=\"end\">{value.ToString(Math.Abs(high - low) < 3 ? "0.00" : "0.#", Invariant)}{unit}</text>"));
+            ticks.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(ChartLeft - 6)}\" y=\"{Number(y(value) + 4)}\" text-anchor=\"end\">{Unsigned(value, fine ? 2 : 1).ToString(fine ? "0.00" : "0.#", Invariant)}{unit}</text>"));
         }
 
         return ticks.ToString();

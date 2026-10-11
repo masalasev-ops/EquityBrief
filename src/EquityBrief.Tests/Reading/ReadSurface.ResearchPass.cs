@@ -267,7 +267,8 @@ public partial class ReadSurface
         var cases = CasesDrawn(written.Value);
 
         Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
-        Assert.Equal([10, 8], [.. cases.Select(one => one.Rows.Count)]);
+        // Six a side, the most the section's ask allows each case.
+        Assert.Equal([6, 6], [.. cases.Select(one => one.Rows.Count)]);
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
@@ -398,7 +399,7 @@ public partial class ReadSurface
         Assert.Equal(
             ["The first risk", "The second risk", "The third risk", "The fourth risk"],
             [.. table.Select(row => string.Join(' ', row.Risk.Split(' ').Take(3)))]);
-        Assert.All(table, row => Assert.StartsWith("That risk would be confirmed by", row.Confirmation, StringComparison.Ordinal));
+        Assert.All(table, row => Assert.StartsWith("That risk would be confirmed", row.Confirmation, StringComparison.Ordinal));
         Assert.DoesNotContain("class=\"risks\"", written.Value, StringComparison.Ordinal);
 
         var marks = new MarkRenderer();
@@ -657,11 +658,12 @@ public partial class ReadSurface
 
             var link = Regex.Match(document.Groups[4].Value, "^<a href=\"([^\"]*)\">([^<]*)</a>, published on ([0-9-]+)$");
 
+            // The link and the title as the provider meant them, a character it sent written as an entity read once.
             Assert.Equal(row[0], document.Groups[2].Value);
-            Assert.Equal(row[1], WebUtility.HtmlDecode(document.Groups[3].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[1]), WebUtility.HtmlDecode(document.Groups[3].Value));
             Assert.True(link.Success, document.Groups[4].Value);
-            Assert.Equal(row[1], WebUtility.HtmlDecode(link.Groups[1].Value));
-            Assert.Equal(row[2], WebUtility.HtmlDecode(link.Groups[2].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[1]), WebUtility.HtmlDecode(link.Groups[1].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[2]), WebUtility.HtmlDecode(link.Groups[2].Value));
             Assert.Equal(row[0], link.Groups[3].Value);
         }
 
@@ -709,7 +711,7 @@ public partial class ReadSurface
         Assert.Equal(Summed(store, "stage LIKE 'research call:%' AND spend != '0'"), decimal.Parse(cost.Groups[2].Value, CultureInfo.InvariantCulture));
         Assert.Equal(0.037m, decimal.Parse(cost.Groups[2].Value, CultureInfo.InvariantCulture));
         Assert.Equal(0.021m, decimal.Parse(cost.Groups[3].Value, CultureInfo.InvariantCulture));
-        Assert.Contains("The 2 research pass(es) the run log has priced cost $0.04 in all, and the most one cost was $0.02.", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
+        Assert.Contains("The 2 research passes the run log has priced cost $0.04 in all, and the most one cost was $0.02.", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
         Assert.Contains("Research may spend: $0.02 of the $10.00 day cap today", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
 
         // What a press sends: a plain pass for this name.

@@ -510,6 +510,7 @@ table.risks-table th:first-child{width:50%}
    word written, and everything else in slate, a written region in plum-grey. A figure that rose or fell is drawn in
    its own hue here and nowhere else, its sign always beside it. */
 main .name,.exported .name{max-width:1000px;margin-inline:auto}
+.exported>h1,.exported>p.exported{max-width:1000px;margin-inline:auto}
 .m-ix{font:500 13px var(--sans);color:var(--ink-2)}
 .m-price{display:inline-flex;align-items:baseline;gap:8px}
 .pill.live{border-color:var(--ink);color:var(--ink);font-weight:700;letter-spacing:.06em}
@@ -855,6 +856,10 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .m-search input{width:100%}
  .card-line,.card-figures{grid-template-columns:1fr}
  .card-mark{justify-self:start}
+ /* a figure keeps a width its words can be read at and scrolls sideways in its box, where shrunk to the screen its
+    labels stood four pixels high; the chart and its profile are sized together by their own rule and the plan column
+    is drawn narrower than this already */
+ .fig>svg:not(.plan-column){min-width:560px}
 }
 @media print{ .mast,.export,form[method='post']{display:none} .card{box-shadow:none;break-inside:avoid} }
 """;

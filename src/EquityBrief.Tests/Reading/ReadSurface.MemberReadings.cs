@@ -94,7 +94,7 @@ public partial class ReadSurface
         Reads(bb, "profit", "1", "above nothing: the profit gate passes");
         Reads(bb, "coverage", "1", "at or above it: the coverage passes");
         Reads(bb, "state", "improving", "improving");
-        Reads(bb, "year-high", "47.25", "47.25, made 12 session(s) before the night");
+        Reads(bb, "year-high", "47.25", "47.25, made 12 sessions before the night");
         Reads(bb, "nearness", "0.8994708994708995", "89.9% of it");
         Reads(bb, "volume-ratio", "1.37", "1.37");
         Reads(bb, "industry", "Regional Banks", "Regional Banks");

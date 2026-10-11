@@ -1243,7 +1243,34 @@ public sealed partial class MarkRenderer : IComponent
     // rule in CLAUDE.md asks of anything that crosses it.
     static double PlotValue(decimal price) => (double)price;
 
-    static string Number(double value) => value.ToString("0.##", Invariant);
+    // A value that rounds to nothing is drawn as nothing and never as minus nothing, which the format keeps from a value
+    // a hair under it.
+    static string Number(double value) => Unsigned(value, 2).ToString("0.##", Invariant);
+
+    static double Unsigned(double value, int decimals) => Math.Round(value, decimals) == 0 ? 0d : value;
+
+    // A figure to a tenth, as the tables and the chart's labels draw percentages.
+    static string Tenth(double value) => Unsigned(value, 1).ToString("0.0", Invariant);
+
+    // The hue a change is drawn in: the rise's above nought, the fall's below it, and ink at it.
+    static string Hue(double change) => Unsigned(change, 2) > 0 ? "up" : Unsigned(change, 2) < 0 ? "down" : "flat";
+
+    // A count with its noun, the noun's singular for one: "1 report", "2 reports".
+    static string Counted(long count, string one, string many) => count.ToString(Invariant) + " " + (count == 1 ? one : many);
+
+    // How many times, as a reader says it: once, twice, then the count.
+    static string Times(long count) => count switch
+    {
+        1 => "once",
+        2 => "twice",
+        _ => count.ToString(Invariant) + " times",
+    };
+
+    // A change in per cent to two places with its sign always written, as the tables draw a move.
+    static string Change2(double change) => Unsigned(change, 2).ToString("+0.00;-0.00;0.00", Invariant) + "%";
+
+    // A table's cell for a move: right-aligned in the hue of its sign.
+    static string ChangeCell(double change) => Formatted($"<td class=\"num {Hue(change)}\">{Change2(change)}</td>");
 
     // A price as a picture prints it, to two places with a thousands separator. The stored value
     // stays whole on the mark's own data attributes, which is where anything reading the mark
@@ -1319,13 +1346,15 @@ public sealed partial class MarkRenderer : IComponent
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
+    // A name with no plan says why, in the reason its ladder stored, and what would bring a plan, in place of the figure.
+    // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null)
     {
         if (rows.Count == 0)
         {
-            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\">" +
-                $"{Escaped(ticker)} has no plan to draw, which is what a name with no eligible " +
-                $"band gets.</p>";
+            return $"<p class=\"degraded no-plan\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\" data-reason=\"{Escaped(reason ?? string.Empty)}\">" +
+                (reason is null ? $"{Escaped(ticker)} has no plan to draw." : $"{Escaped(ticker)} has no plan to draw: {Escaped(reason)}.") +
+                (forms is null ? string.Empty : " " + Escaped(forms)) + "</p>";
         }
 
         // The price now sits in the middle of the column and the scale reaches the row
@@ -1455,7 +1484,7 @@ public sealed partial class MarkRenderer : IComponent
             svg.Append(Invariant, $"<g class=\"no-purchase\"><rect class=\"m-absent\" x=\"{PlanAxis + 10}\" y=\"{Number(y0)}\" width=\"{PlanWidth - PlanAxis - 12}\" height=\"{Number(PlanHeight - PlanEdge - y0)}\"/>");
             svg.Append(Invariant, $"<text class=\"m-absent-t\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 24)}\">No support band below the price.</text>");
             svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 42)}\">No purchase and no invalidation are drawn.</text>");
-            svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 57)}\">{exits} exit zone(s), all above the price.</text></g>");
+            svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{PlanAxis + 22}\" y=\"{Number(y0 + 57)}\">{(exits == 1 ? "1 exit zone, above the price." : Formatted($"{exits} exit zones, all above the price."))}</text></g>");
         }
 
         // The price marker last, so it is drawn over the zones rather than under
@@ -1569,41 +1598,60 @@ public sealed partial class MarkRenderer : IComponent
 
         var html = new StringBuilder();
 
-        html.Append("<div class=\"sub plan-sub\">Entries</div><div class=\"tbl-wrap\">");
-        html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
-        html.Append("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>");
+        // A table with no row is no table: a plan placing no tranche, or no exit, says so in a line where its table stands.
+        html.Append("<div class=\"sub plan-sub\">Entries</div>");
 
-        foreach (var row in tranches)
+        if (tranches.Length == 0)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
+            html.Append("<p class=\"degraded\" data-entries=\"none\">The plan places no tranche.</p>");
+        }
+        else
+        {
+            html.Append("<div class=\"tbl-wrap\">");
+            html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
+            html.Append("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>");
 
-            if (row.BuyOn is { } buyOn)
+            foreach (var row in tranches)
             {
-                var stop = row.Stop is { } at
-                    ? Formatted($"a daily close below {Price(at)}") + (at == invalidation ? ", where the whole position is wrong" : string.Empty)
-                    : "no stop beneath";
+                html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
 
-                html.Append(Invariant, $"<td>{Escaped(buyOn)}</td><td>{Escaped(stop)}</td></tr>");
+                if (row.BuyOn is { } buyOn)
+                {
+                    var stop = row.Stop is { } at
+                        ? Formatted($"a daily close below {Price(at)}") + (at == invalidation ? ", where the whole position is wrong" : string.Empty)
+                        : "no stop beneath";
+
+                    html.Append(Invariant, $"<td>{Escaped(buyOn)}</td><td>{Escaped(stop)}</td></tr>");
+                }
+                else
+                {
+                    html.Append(Invariant, $"<td colspan=\"2\">{Escaped(row.Detail)}</td></tr>");
+                }
             }
-            else
-            {
-                html.Append(Invariant, $"<td colspan=\"2\">{Escaped(row.Detail)}</td></tr>");
-            }
+
+            html.Append("</table></div>");
         }
 
-        html.Append("</table></div>");
+        html.Append("<div class=\"sub plan-sub\">Exits</div>");
 
-        html.Append("<div class=\"sub plan-sub\">Exits</div><div class=\"tbl-wrap\">");
-        html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
-        html.Append("<tr><th>Zone</th><th>Action</th></tr>");
-
-        foreach (var row in exits)
+        if (exits.Length == 0)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
-            html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
+            html.Append("<p class=\"degraded\" data-exits=\"none\">The plan places no exit.</p>");
         }
+        else
+        {
+            html.Append("<div class=\"tbl-wrap\">");
+            html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
+            html.Append("<tr><th>Zone</th><th>Action</th></tr>");
 
-        html.Append("</table></div>");
+            foreach (var row in exits)
+            {
+                html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
+                html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
+            }
+
+            html.Append("</table></div>");
+        }
 
         return html.ToString();
     }
@@ -1776,7 +1824,7 @@ public sealed partial class MarkRenderer : IComponent
         // larger than it was made.
         svg.Append(Invariant, $"width=\"{Width}\" height=\"{height}\" role=\"img\" class=\"momentum-panel\" data-ticker=\"{Escaped(ticker)}\" ");
         svg.Append(Invariant, $"data-readings=\"{readings.Count}\" data-panes=\"{panes.Length}\">");
-        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {readings.Count} momentum reading(s) on {panes.Length} axis(es)</title>");
+        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {Counted(readings.Count, "momentum reading", "momentum readings")} on {Counted(panes.Length, "axis", "axes")}</title>");
         svg.Append("<desc>Relative strength on its own axis, and the convergence line with its signal line and the gap between them on a second, each with its rules drawn and named.</desc>");
 
         var top = 0;
@@ -2283,11 +2331,11 @@ public sealed partial class MarkRenderer : IComponent
         // Stated for a reader who cannot see the picture, and it says which
         // elements are here rather than describing the finished mark.
         var drawn = lines.Count > 0
-            ? $"with {lines.Count} moving average(s) "
+            ? $"with {Counted(lines.Count, "moving average", "moving averages")} "
             : "with no moving average given ";
 
         var shaded = shading.Count > 0
-            ? $"{shading.Count} level band(s) shaded behind them, "
+            ? $"{Counted(shading.Count, "level band", "level bands")} shaded behind them, "
             : "no level bands given, ";
 
         svg.Append(Invariant, $"<desc>Daily candles {drawn}over a volume pane on a shared time axis, with {shaded}support below the price and resistance above it.</desc>");
@@ -2682,7 +2730,7 @@ public sealed partial class MarkRenderer : IComponent
         var line = new StringBuilder();
 
         line.Append(Invariant, $"<p class=\"no-year\" data-ticker=\"{Escaped(ticker)}\" data-nights=\"{noYear.Nights}\">");
-        line.Append(Invariant, $"No year of prices came back for {Escaped(ticker)}: the provider was asked for one on {noYear.Nights} night(s)");
+        line.Append(Invariant, $"No year of prices came back for {Escaped(ticker)}: the provider was asked for one on {Counted(noYear.Nights, "night", "nights")}");
 
         if (noYear.Last is { } last)
         {
@@ -2939,7 +2987,7 @@ public sealed partial class MarkRenderer : IComponent
             }
         }
 
-        strip.Append(Invariant, $"<title>{Escaped(ticker)}: on the list on {evenings.Count(listed => listed)} of {evenings.Count} evening(s)</title>");
+        strip.Append(Invariant, $"<title>{Escaped(ticker)}: on the list on {evenings.Count(listed => listed)} of {Counted(evenings.Count, "evening", "evenings")}</title>");
         strip.Append("</svg>");
 
         return strip.ToString();
@@ -3869,7 +3917,7 @@ public sealed partial class MarkRenderer : IComponent
     // has landed, which is what section 15.12's last step asks for.
     // see: A pass the page starts is watched until it ends and the page redraws as each section lands
     public string PassProgressLine(string ticker, PassProgress progress) =>
-        Formatted($"<p class=\"pass-progress\" role=\"status\" data-ticker=\"{Escaped(ticker)}\" data-state=\"{Escaped(progress.State)}\" data-sections=\"{progress.Sections}\">{Escaped(progress.Step)}, and the name holds {progress.Sections} written section(s)</p>");
+        Formatted($"<p class=\"pass-progress\" role=\"status\" data-ticker=\"{Escaped(ticker)}\" data-state=\"{Escaped(progress.State)}\" data-sections=\"{progress.Sections}\">{Escaped(progress.Step)}, and the name holds {Counted(progress.Sections, "written section", "written sections")}</p>");
 
     public string LeftOut(
         string ticker,
@@ -3963,7 +4011,7 @@ public sealed partial class MarkRenderer : IComponent
     public static string CostLine(ResearchCost cost) =>
         cost.Passes == 0
             ? "A pass writes the local lane's sections for nothing and asks the paid model for the rest through the spend cap, which refuses a call that could take spend past a cap. No research pass has a recorded cost yet. " + Capitalised(cost.Verdict) + "."
-            : Formatted($"A pass writes the local lane's sections for nothing and asks the paid model for the rest through the spend cap, which refuses a call that could take spend past a cap. The {cost.Passes} research pass(es) the run log has priced cost {SpendVerdict.Money(cost.Total)} in all, and the most one cost was {SpendVerdict.Money(cost.Most)}. ") + Capitalised(cost.Verdict) + ".";
+            : Formatted($"A pass writes the local lane's sections for nothing and asks the paid model for the rest through the spend cap, which refuses a call that could take spend past a cap. {(cost.Passes == 1 ? "The 1 research pass the run log has priced cost" : Formatted($"The {cost.Passes} research passes the run log has priced cost"))} {SpendVerdict.Money(cost.Total)} in all, and the most one cost was {SpendVerdict.Money(cost.Most)}. ") + Capitalised(cost.Verdict) + ".";
 
     static string Flag(bool value) => value ? "true" : "false";
 
@@ -4162,7 +4210,7 @@ public sealed partial class MarkRenderer : IComponent
             : missed is { } near
                 ? FormattableString.Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short, the {near.Gate.Gate} gate, {near.Gate.Words}. It is not a pick.")
                 : fired.Count > 0
-                    ? FormattableString.Invariant($"On {list} for {fired.Count} reason(s): {string.Join(", ", fired.Select(one => one.Name))}.")
+                    ? FormattableString.Invariant($"On {list} for {Counted(fired.Count, "reason", "reasons")}: {string.Join(", ", fired.Select(one => one.Name))}.")
                     : FormattableString.Invariant($"Not on {list}.");
 
         var business = says is null
@@ -4448,7 +4496,7 @@ public sealed partial class MarkRenderer : IComponent
     // no date is on file, which admissibility refuses a document for, so a cited one
     // carries a date unless its row is older than the rule.
     static string Link(SourceCell document) =>
-        "<a href=\"" + Escaped(document.Url) + "\">" + Escaped(document.Title) + "</a>"
+        "<a href=\"" + Sent(document.Url) + "\">" + Sent(document.Title) + "</a>"
         + (document.PublishedOn is not null ? ", published on " + Published(document) : ", with no publish date on file");
 
     static string Published(SourceCell document) =>
@@ -4486,7 +4534,7 @@ public sealed partial class MarkRenderer : IComponent
             .Select(group => (Category: group.Key, Documents: group.Count()))
             .ToArray();
 
-        region.Append(Formatted($"<p data-categories=\"{byCategory.Length}\">{refused.Count} document(s) refused: "));
+        region.Append(Formatted($"<p data-categories=\"{byCategory.Length}\">{Counted(refused.Count, "document", "documents")} refused: "));
         region.Append(Escaped(string.Join(", ", byCategory.Select(group =>
             group.Category + " " + group.Documents.ToString(CultureInfo.InvariantCulture)))));
         region.Append("</p>");
@@ -4494,8 +4542,8 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var document in refused)
         {
             region.Append(Invariant, $"<p class=\"refused\" data-category=\"{Escaped(document.Category)}\" ");
-            region.Append(Invariant, $"data-url=\"{Escaped(document.Url)}\">");
-            region.Append(Invariant, $"{Escaped(document.Category)}: {Escaped(document.Title)}, {Escaped(document.Url)}</p>");
+            region.Append(Invariant, $"data-url=\"{Sent(document.Url)}\">");
+            region.Append(Invariant, $"{Escaped(document.Category)}: {Sent(document.Title)}, {Sent(document.Url)}</p>");
         }
 
         region.Append("</section>");
@@ -5286,22 +5334,22 @@ public sealed partial class MarkRenderer : IComponent
         if (cause is null)
         {
             table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
-            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th></tr>");
+            table.Append("<tr><th>Session</th><th>Over</th><th class=\"num\">Change</th><th>Its group</th></tr>");
         }
         else
         {
             table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"written\" ");
             table.Append(Invariant, $"data-cause-as-of=\"{cause.AsOf:yyyy-MM-dd}\" data-cause-model=\"{Escaped(cause.Model)}\">");
-            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th><th>Cause</th></tr>");
+            table.Append("<tr><th>Session</th><th>Over</th><th class=\"num\">Change</th><th>Its group</th><th>Cause</th></tr>");
         }
 
         foreach (var move in moves)
         {
             table.Append(Invariant, $"<tr id=\"{RowId(ticker, move)}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
             table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\">");
-            table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
+            table.Append(Invariant, $"<td class=\"nw\">{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
-            table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+            table.Append(ChangeCell(move.ChangePct));
             table.Append(GroupCell(move.Group));
 
             if (cause is not null)
@@ -5349,7 +5397,7 @@ public sealed partial class MarkRenderer : IComponent
         var table = new StringBuilder();
 
         table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"taken\">");
-        table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th><th>Cause</th><th>Where it came from</th></tr>");
+        table.Append("<tr><th>Session</th><th>Over</th><th class=\"num\">Change</th><th>Its group</th><th>Cause</th><th>Where it came from</th></tr>");
 
         foreach (var move in moves)
         {
@@ -5357,9 +5405,9 @@ public sealed partial class MarkRenderer : IComponent
 
             table.Append(Invariant, $"<tr id=\"{RowId(ticker, move)}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
             table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\" data-cause=\"{Escaped(taken.Kind)}\">");
-            table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
+            table.Append(Invariant, $"<td class=\"nw\">{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
-            table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+            table.Append(ChangeCell(move.ChangePct));
             table.Append(GroupCell(move.Group));
             table.Append("<td class=\"cause\">").Append(CauseWords(taken)).Append("</td>");
             table.Append("<td class=\"cause-source\">").Append(Escaped(CauseSourceWords(taken, cause))).Append("</td></tr>");
@@ -5381,7 +5429,7 @@ public sealed partial class MarkRenderer : IComponent
         EquityBrief.Core.Moves.MoveCauses.Research => Escaped(taken.Written ?? string.Empty),
         EquityBrief.Core.Moves.MoveCauses.News => string.Join(
             "; ",
-            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Escaped(story.Link)}\" rel=\"noopener\">{ArticleTitle(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
+            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Sent(story.Link)}\" rel=\"noopener\">{Sent(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
             + (taken.Stories.Count > 3 ? Formatted($"; and {taken.Stories.Count - 3} more") : string.Empty)
             + (taken.Prints.Count + taken.Filings.Count > 0 ? "; inside the move as well, " + Dated(taken) : string.Empty),
         EquityBrief.Core.Moves.MoveCauses.Filed => Dated(taken),
@@ -5458,7 +5506,7 @@ public sealed partial class MarkRenderer : IComponent
 
         var missing = group.Members - group.Counted;
 
-        return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"{Number(median)}\">{Number(median)}%, the median of {group.Counted} of the {group.Members} other members of {named}")
+        return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"{Number(median)}\"><span class=\"{Hue(median)}\">{Change2(median)}</span>, the median of {group.Counted} of the {group.Members} other members of {named}")
             + (missing > 0 ? Formatted($", {missing} holding no close on one of the two sessions") : string.Empty)
             + "</td>";
     }
@@ -5586,7 +5634,7 @@ public sealed partial class MarkRenderer : IComponent
     {
         if (year is null || year.Closes.Count < FewestBars)
         {
-            return Formatted($"<span class=\"degraded year-line-none\" data-ticker=\"{Escaped(ticker)}\" data-closes=\"{year?.Closes.Count ?? 0}\">{Escaped(ticker)} holds {year?.Closes.Count ?? 0} stored close(s), too few to draw its year.</span>");
+            return Formatted($"<span class=\"degraded year-line-none\" data-ticker=\"{Escaped(ticker)}\" data-closes=\"{year?.Closes.Count ?? 0}\">{Escaped(ticker)} holds {Counted(year?.Closes.Count ?? 0, "stored close", "stored closes")}, too few to draw its year.</span>");
         }
 
         var prices = year.Closes.Select(PlotValue).ToList();
@@ -5668,7 +5716,7 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"reactions-table\" data-rows=\"{prints.Count}\">");
-        table.Append("<tr><th>Reported</th><th>When</th><th>Moved on</th><th>Estimate</th><th>Actual</th><th>Surprise</th><th>That session</th></tr>");
+        table.Append("<tr><th>Reported</th><th>When</th><th>Moved on</th><th class=\"num\">Estimate</th><th class=\"num\">Actual</th><th class=\"num\">Surprise</th><th class=\"num\">That session</th></tr>");
 
         foreach (var print in prints)
         {
@@ -5680,7 +5728,7 @@ public sealed partial class MarkRenderer : IComponent
             };
 
             table.Append(Invariant, $"<tr data-report-date=\"{print.ReportDate:yyyy-MM-dd}\" data-timing=\"{Escaped(print.Timing)}\" data-session=\"{print.Session:yyyy-MM-dd}\">");
-            table.Append(Invariant, $"<td>{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td>{print.Session:yyyy-MM-dd}</td>");
+            table.Append(Invariant, $"<td class=\"nw\">{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td class=\"nw\">{print.Session:yyyy-MM-dd}</td>");
             table.Append(print.Estimate is { } estimate
                 ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(Figures.Read(estimate))}</td>")
                 : "<td class=\"estimate\" data-estimate=\"\"><span class=\"degraded\">none was filed</span></td>");
@@ -5690,9 +5738,9 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(print.Estimate is null
                 ? "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">none, with no estimate to measure against</span></td>"
                 : print.SurprisePct is { } surprise
-                    ? Formatted($"<td class=\"surprise\" data-surprise=\"{Number(surprise)}\">{surprise.ToString("+0.##;-0.##;0", Invariant)}%</td>")
+                    ? Formatted($"<td class=\"num surprise {Hue(surprise)}\" data-surprise=\"{Number(surprise)}\">{Unsigned(surprise, 2).ToString("+0.00;-0.00;0.00", Invariant)}%</td>")
                     : "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">not filed</span></td>");
-            table.Append(Formatted($"<td class=\"reaction-move\" data-move=\"{Number(print.MovePct)}\">{print.MovePct.ToString("+0.##;-0.##;0", Invariant)}%</td>"));
+            table.Append(Formatted($"<td class=\"num reaction-move {Hue(print.MovePct)}\" data-move=\"{Number(print.MovePct)}\">{Unsigned(print.MovePct, 2).ToString("+0.00;-0.00;0.00", Invariant)}%</td>"));
             table.Append("</tr>");
         }
 
@@ -6304,7 +6352,7 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<td data-value=\"{(view.RecentHigh is { } high ? high.ToString(Invariant) : "none")}\" data-session=\"{(view.HighSession is { } made ? made.ToString("yyyy-MM-dd", Invariant) : "none")}\" data-since=\"{(view.PullbackSessions is { } since ? since.ToString(Invariant) : "none")}\">");
         if (view.RecentHigh is { } top && view.HighSession is { } on && view.PullbackSessions is { } after)
         {
-            region.Append(Invariant, $"{Price(top)} on {on:yyyy-MM-dd}, {after} session(s) ago");
+            region.Append(Invariant, $"{Price(top)} on {on:yyyy-MM-dd}, {Counted(after, "session", "sessions")} ago");
         }
         else
         {
@@ -6402,7 +6450,7 @@ public sealed partial class MarkRenderer : IComponent
             "year-high",
             Formatted($"Highest high of the {MemberReadings.YearSessions} sessions before the night"),
             Stored(view.YearHigh),
-            view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {since} session(s) before the night")
+            view.YearHigh is { } high && view.SinceHigh is { } since ? Formatted($"{Price(high)}, made {Counted(since, "session", "sessions")} before the night")
                 : barred ? Short("not available: no session before the night held") : noBar);
         Row(
             "nearness",
@@ -6900,13 +6948,6 @@ public sealed partial class MarkRenderer : IComponent
     // how each group ended, then a row per earlier listing. A name never picked draws none of it.
     public string OnTheListBefore(string ticker, IReadOnlyList<PickCell> earlier)
     {
-        static string Times(int count) => count switch
-        {
-            1 => "once",
-            2 => "twice",
-            _ => count.ToString(Invariant) + " times",
-        };
-
         // A listing that repeated a trade still open is drawn with its mark and counted in no group.
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         var counted = earlier.Where(pick => pick.RepeatOf is null).ToArray();
@@ -6980,7 +7021,7 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var row in view.Rows)
         {
             region.Append(Invariant, $"<li class=\"news-row\" data-article=\"{Escaped(row.ArticleId)}\" data-state=\"{Escaped(row.State)}\" data-tabs=\"{Escaped(row.Tabs)}\" data-kind=\"{Escaped(row.Kind ?? "none")}\" data-direction=\"{Escaped(row.Direction ?? "none")}\">");
-            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Escaped(row.Link)}\" rel=\"noopener\" target=\"_blank\">{ArticleTitle(row.Title)}</a>");
+            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Sent(row.Link)}\" rel=\"noopener\" target=\"_blank\">{Sent(row.Title)}</a>");
             region.Append(row.State switch
             {
                 NewsRow.Labelled => Formatted($"<span class=\"tag kind\">{Escaped(row.Kind ?? string.Empty)}</span><span class=\"tag dir\">{Escaped(row.Direction ?? string.Empty)}</span>"),
@@ -8024,7 +8065,8 @@ public sealed partial class MarkRenderer : IComponent
     static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 
-    // An article's title as the provider sends it carries its characters already written as entities, an ampersand as
-    // &amp;, so it is read back before it is escaped for the page, which would otherwise draw the entity's own letters.
-    static string ArticleTitle(string title) => Escaped(System.Net.WebUtility.HtmlDecode(title));
+    // A title or a link as a provider or a page sends it carries some characters already written as entities, an ampersand
+    // as &amp;, so it is read back before it is escaped once for the page, which would otherwise draw the entity's own
+    // letters and send a reader following a link to an address the provider never wrote.
+    static string Sent(string text) => Escaped(System.Net.WebUtility.HtmlDecode(text));
 }

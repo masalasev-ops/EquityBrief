@@ -117,7 +117,7 @@ public partial class ReadSurface
                 $"data-value=\"{decimal.Parse(row[6], CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture)}\" data-session=\"{row[7]}\" data-since=\"{row[8]}\"",
                 Cell("recent-high"),
                 StringComparison.Ordinal);
-            Assert.Contains($"{Figures.Price(decimal.Parse(row[6], CultureInfo.InvariantCulture))} on {row[7]}, {row[8]} session(s) ago", Cell("recent-high"), StringComparison.Ordinal);
+            Assert.Contains($"{Figures.Price(decimal.Parse(row[6], CultureInfo.InvariantCulture))} on {row[7]}, {row[8]} {(row[8] == "1" ? "session" : "sessions")} ago", Cell("recent-high"), StringComparison.Ordinal);
 
             // The pullback, the volume while it came down and the tightness, each whole and at two places.
             foreach (var (reading, column) in new[] { ("depth", 9), ("dry-up", 10), ("tightness", 11) })
@@ -265,7 +265,7 @@ public partial class ReadSurface
         Assert.Contains("data-bars=\"40\"", table, StringComparison.Ordinal);
         Assert.Equal(3, Regex.Matches(table, "not available, 40 bars").Count);
         Assert.Contains("the high was made on the night, so no session has come down from it", table, StringComparison.Ordinal);
-        Assert.Contains("0 session(s) ago", table, StringComparison.Ordinal);
+        Assert.Contains("0 sessions ago", table, StringComparison.Ordinal);
 
         // A lone member's return has no other to be placed among and says so rather than drawing a place.
         var alone = WebUtility.HtmlDecode(new MarkRenderer().SwingTable(

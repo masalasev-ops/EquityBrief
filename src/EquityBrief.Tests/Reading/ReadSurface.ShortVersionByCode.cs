@@ -95,7 +95,7 @@ public partial class ReadSurface
         }
         else
         {
-            Assert.Equal(fired.Length > 0 ? $"On tonight's list for {fired.Length} reason(s): {string.Join(", ", fired)}." : "Not on tonight's list.", why);
+            Assert.Equal(fired.Length > 0 ? $"On tonight's list for {fired.Length} {(fired.Length == 1 ? "reason" : "reasons")}: {string.Join(", ", fired)}." : "Not on tonight's list.", why);
         }
 
         // The business state and the heading its numbers open on, against the night's reading.

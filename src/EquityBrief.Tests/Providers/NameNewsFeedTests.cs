@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
 
@@ -86,7 +87,7 @@ public class NameNewsFeedTests
     }
 
     // A window asked a month at a time, since the provider's time to answer grows with the articles a window holds.
-    // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
+    // see: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
     [Fact]
     public async Task AWindowIsAskedAMonthAtATimeEachPieceFromItsFirstDayToTheDayBeforeTheSameDateAMonthOn()
     {
@@ -94,11 +95,11 @@ public class NameNewsFeedTests
         // the last day of a long month ends the day before the same date a month on in a short one; and a week is one.
         Assert.Equal(
             [(new DateOnly(2026, 7, 29), new DateOnly(2026, 8, 28)), (new DateOnly(2026, 8, 29), new DateOnly(2026, 9, 28)), (new DateOnly(2026, 9, 29), new DateOnly(2026, 10, 2))],
-            EodhdNameNewsFeed.Months(new DateOnly(2026, 7, 29), new DateOnly(2026, 10, 2)));
+            NewsWindows.Months(new DateOnly(2026, 7, 29), new DateOnly(2026, 10, 2)));
         Assert.Equal(
             [(new DateOnly(2026, 1, 31), new DateOnly(2026, 2, 27)), (new DateOnly(2026, 2, 28), new DateOnly(2026, 3, 1))],
-            EodhdNameNewsFeed.Months(new DateOnly(2026, 1, 31), new DateOnly(2026, 3, 1)));
-        Assert.Equal([(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2))], EodhdNameNewsFeed.Months(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2)));
+            NewsWindows.Months(new DateOnly(2026, 1, 31), new DateOnly(2026, 3, 1)));
+        Assert.Equal([(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2))], NewsWindows.Months(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2)));
 
         // The feed asks for each piece in turn, its dates in the query, and keeps each piece's articles inside it: the
         // three dated 2026-09-01 the provider answers every piece with are kept by the second piece alone.

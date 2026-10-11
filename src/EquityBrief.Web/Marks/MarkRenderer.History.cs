@@ -51,7 +51,9 @@ public sealed record HistoryView(
     string? NoPlan,
     string? Trail,
     (DateTimeOffset First, DateTimeOffset Last)? LabelsCover,
-    RiskLines? Risk = null);
+    RiskLines? Risk = null,
+    string? PlanReason = null,
+    string? PlanForms = null);
 
 // The four marks the reactions, the long view, the levels and the plan draw: each print's reaction against the
 // stock's typical earnings move, the month-end closes over the pulled history with the plan's levels on the same prices,
@@ -131,11 +133,11 @@ public sealed partial class MarkRenderer
         var read = pull is { } from
             ? Formatted($", read through the history pulled before the stored year from the pull {Escaped(from)}")
             : Formatted($", read over the stored year alone: {Escaped(reason ?? "no history before it was read")}");
-        var left = typical.Unread == 0 ? string.Empty : Formatted($", {typical.Unread} report(s) left out where the prices did not reach them or a session around them was missing");
+        var left = typical.Unread == 0 ? string.Empty : Formatted($", {Counted(typical.Unread, "report", "reports")} left out where the prices did not reach them or a session around them was missing");
 
         return typical is { Stated: true, MedianPct: { } median, FirstPrint: { } since }
             ? Formatted($"<p class=\"typical-move\" data-typical=\"{median.ToString(Invariant)}\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">The typical earnings move: {median.ToString("0.0", Invariant)}% either way, the median size of {typical.Prints} reports' moves since {DayOf(since)}{read}{left}.</p>")
-            : Formatted($"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">No typical earnings move is stated: {typical.Prints} report(s) were read, under the {EarningsMoves.FewestPrints} it is stated over{read}{left}.</p>");
+            : Formatted($"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">No typical earnings move is stated: {Counted(typical.Prints, "report was", "reports were")} read, under the {EarningsMoves.FewestPrints} it is stated over{read}{left}.</p>");
     }
 
     // ---- the long view ----
@@ -147,7 +149,7 @@ public sealed partial class MarkRenderer
     {
         if (closes.Count < 2)
         {
-            return Formatted($"<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"{closes.Count}\">{closes.Count} month-end close(s) are stored for {Escaped(ticker)}, and the line needs two.</p>");
+            return Formatted($"<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"{closes.Count}\">{(closes.Count == 0 ? "No month-end close is" : "1 month-end close is")} stored for {Escaped(ticker)}, and the line needs two.</p>");
         }
 
         const double High = 260;
@@ -238,7 +240,8 @@ public sealed partial class MarkRenderer
         LadderBand[] below = [.. bands.Where(band => !Above(band)).OrderByDescending(band => band.HighEdge)];
         const double Row = 42;
         const double Head = 24;
-        var high = (Row * (above.Length + below.Length)) + 30 + (Head * 2) + 12;
+        const double None = 26;
+        var high = (Row * (above.Length + below.Length)) + 30 + (Head * 2) + 12 + (above.Length == 0 ? None : 0) + (below.Length == 0 ? None : 0);
         var svg = new StringBuilder();
         var y = 6.0;
 
@@ -257,7 +260,7 @@ public sealed partial class MarkRenderer
             var away = Away(band.Away, over);
             var turns = band.Touches == 0
                 ? "never turned the price"
-                : Formatted($"turned the price {band.Touches} time(s), last {DayOf(band.LastTouch!.Value)}");
+                : Formatted($"turned the price {Times(band.Touches)}, last {DayOf(band.LastTouch!.Value)}");
             var use = band.Use is { } said ? Formatted($"; {said}") : string.Empty;
 
             svg.Append(Formatted($"<g class=\"lf-band lf-{hue}\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" data-side=\"{(over ? "above" : "below")}\" data-touches=\"{band.Touches}\" data-last-touch=\"{(band.LastTouch is { } last ? DayOf(last) : string.Empty)}\" data-use=\"{Escaped(band.Use ?? string.Empty)}\"><title>{Escaped(band.Role)} {Escaped(edges)}: {Escaped(away)}; {Escaped(turns)}{Escaped(use)}</title>"));
@@ -274,7 +277,19 @@ public sealed partial class MarkRenderer
             y += Row;
         }
 
+        // A side holding no band says so under its heading, where a heading over nothing reads as a list that failed to draw.
+        void Nothing(string words, string side)
+        {
+            svg.Append(Formatted($"<text class=\"m-rownote lf-none\" x=\"8\" y=\"{Number(y + 16)}\" data-side=\"{side}\">{words}</text>"));
+            y += None;
+        }
+
         Heading("Sell into these", "lf-sell");
+
+        if (above.Length == 0)
+        {
+            Nothing("No band stands above the price, so the plan has nothing above it to sell into.", "above");
+        }
 
         foreach (var band in above)
         {
@@ -285,6 +300,11 @@ public sealed partial class MarkRenderer
         y += 30;
 
         Heading("Buy into these", "lf-buy");
+
+        if (below.Length == 0)
+        {
+            Nothing("No band stands below the price, so the plan has nowhere beneath it to buy.", "below");
+        }
 
         foreach (var band in below)
         {
@@ -352,7 +372,7 @@ public sealed partial class MarkRenderer
         var (held, whole) = PlanSizes.Sum(tranches);
 
         table.Append("</table></div>");
-        table.Append(Formatted($"<p class=\"shares-sum\" data-held=\"{held}\" data-whole=\"{whole}\">{(held == whole ? Formatted($"{held} equal share(s) of 1/{whole} make the whole position.") : Formatted($"{held} of {whole} shares are placed."))}</p>"));
+        table.Append(Formatted($"<p class=\"shares-sum\" data-held=\"{held}\" data-whole=\"{whole}\">{(held == whole ? (whole == 1 ? "One share makes the whole position." : Formatted($"{held} equal shares of 1/{whole} make the whole position.")) : Formatted($"{held} of {whole} shares are placed."))}</p>"));
 
         return table.ToString();
     }
@@ -376,14 +396,18 @@ public sealed partial class MarkRenderer
         const double Gap = 6;
         const double Most = 6;
         const double Label = 200;
+        const double Foot = 10;
         var axis = Math.Min(Math.Max(3, bars.Max(item => Statistic.FromRatio(item.Target.RewardToRisk!.Value))), Most);
-        var high = ChartTop + (bars.Length * (Bar + Gap)) + (tranches.Count * 8) + ChartBottom;
+
+        // As tall as the bars it draws, a gap between one tranche's bars and the next's: a tranche stating no risk draws no
+        // bar and takes no room, and nothing is drawn beneath the last bar but the foot of the rule at one.
+        var high = ChartTop + (bars.Length * (Bar + Gap)) + ((bars.Select(item => item.At).Distinct().Count() - 1) * 8) + Foot;
         double X(double ratio) => Label + ((ChartWide - Label - ChartRight - 60) * Math.Min(ratio, axis) / axis);
 
         var svg = new StringBuilder();
 
         svg.Append(Formatted($"<svg class=\"reward-to-risk\" viewBox=\"0 0 {Number(ChartWide)} {Number(high)}\" role=\"img\" data-mark=\"reward-to-risk\" data-bars=\"{bars.Length}\" data-axis=\"{axis.ToString(Invariant)}\" aria-label=\"Each tranche's reward to risk to each traded exit\">"));
-        svg.Append(Formatted($"<line class=\"rk-one\" x1=\"{Number(X(1))}\" x2=\"{Number(X(1))}\" y1=\"{Number(ChartTop - 6)}\" y2=\"{Number(high - ChartBottom + 4)}\"/><text class=\"m-tick\" x=\"{Number(X(1))}\" y=\"{Number(ChartTop - 10)}\" text-anchor=\"middle\">reward equals risk</text>"));
+        svg.Append(Formatted($"<line class=\"rk-one\" x1=\"{Number(X(1))}\" x2=\"{Number(X(1))}\" y1=\"{Number(ChartTop - 6)}\" y2=\"{Number(high - Foot + 4)}\"/><text class=\"m-tick\" x=\"{Number(X(1))}\" y=\"{Number(ChartTop - 10)}\" text-anchor=\"middle\">reward equals risk</text>"));
 
         var y = ChartTop;
         var last = -1;

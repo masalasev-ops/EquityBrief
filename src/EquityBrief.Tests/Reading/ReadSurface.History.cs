@@ -118,10 +118,10 @@ public partial class ReadSurface
         var marks = new MarkRenderer();
 
         Assert.Equal(
-            "<p class=\"typical-move\" data-typical=\"2.7\" data-prints=\"35\" data-unread=\"2\">The typical earnings move: 2.7% either way, the median size of 35 reports' moves since 2018-02-02, read through the history pulled before the stored year from the pull history-pull-a, 2 report(s) left out where the prices did not reach them or a session around them was missing.</p>",
+            "<p class=\"typical-move\" data-typical=\"2.7\" data-prints=\"35\" data-unread=\"2\">The typical earnings move: 2.7% either way, the median size of 35 reports' moves since 2018-02-02, read through the history pulled before the stored year from the pull history-pull-a, 2 reports left out where the prices did not reach them or a session around them was missing.</p>",
             marks.TypicalMoveLine("CVX", new EarningsMove(35, 2, On("2018-02-02"), 2.7), "history-pull-a", null));
         Assert.Equal(
-            $"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"3\" data-unread=\"0\">No typical earnings move is stated: 3 report(s) were read, under the 4 it is stated over, read over the stored year alone: {ChartAverager.NoPull}.</p>",
+            $"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"3\" data-unread=\"0\">No typical earnings move is stated: 3 reports were read, under the 4 it is stated over, read over the stored year alone: {ChartAverager.NoPull}.</p>",
             marks.TypicalMoveLine("VSNT", new EarningsMove(3, 0, On("2025-10-31"), 2.0), null, ChartAverager.NoPull));
         Assert.Equal(
             "<p class=\"typical-move\" data-typical=\"none\">No typical earnings move is stored for SW tonight; the chart averages step writes one each night for every name whose stored year holds no hole.</p>",
@@ -169,7 +169,7 @@ public partial class ReadSurface
         Assert.Contains(">Year's low</text>", drawn, StringComparison.Ordinal);
 
         Assert.Equal(
-            "<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"1\">1 month-end close(s) are stored for VYLR, and the line needs two.</p>",
+            "<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"1\">1 month-end close is stored for VYLR, and the line needs two.</p>",
             marks.LongView("VYLR", [closes[^1]], []));
     }
 
@@ -201,7 +201,7 @@ public partial class ReadSurface
         Assert.Contains(">1.2 typical days below</text>", drawn, StringComparison.Ordinal);
         Assert.Contains("<text class=\"m-row lf-use\" x=\"420\" y=\"", drawn, StringComparison.Ordinal);
         Assert.Contains(">tranche 1 buys here</text>", drawn, StringComparison.Ordinal);
-        Assert.Contains(">turned the price 5 time(s), last 2026-08-20</text>", drawn, StringComparison.Ordinal);
+        Assert.Contains(">turned the price 5 times, last 2026-08-20</text>", drawn, StringComparison.Ordinal);
         Assert.Contains(">never turned the price</text>", drawn, StringComparison.Ordinal);
 
         // Each row's role a pill in its own hue, beside its edges, a band of one price named at its price.
@@ -252,7 +252,7 @@ public partial class ReadSurface
         Assert.Contains("<tr data-tranche=\"2\" data-share=\"1/3\" data-buy=\"196.83045\" data-stop=\"184.2619\" data-risk=\"12.56855\">", table, StringComparison.Ordinal);
         Assert.Contains("<tr data-tranche=\"3\" data-share=\"1/3\" data-buy=\"184.9997\" data-stop=\"\" data-risk=\"\">", table, StringComparison.Ordinal);
         Assert.Contains("<td class=\"num\">none: no band beneath it</td><td class=\"num\">none stated</td>", table, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"shares-sum\" data-held=\"3\" data-whole=\"3\">3 equal share(s) of 1/3 make the whole position.</p>", table, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"shares-sum\" data-held=\"3\" data-whole=\"3\">3 equal shares of 1/3 make the whole position.</p>", table, StringComparison.Ordinal);
 
         // The reward to risk to 217.78, the trail's start: 12.90 over 9.0391 and 20.94955 over 12.56855, 1.4271 and
         // 1.6668 to four places, the third none.

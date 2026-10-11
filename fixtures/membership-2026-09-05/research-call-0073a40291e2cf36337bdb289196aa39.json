@@ -1,5 +1,5 @@
 {
- "constructed": "DeepSeek's answer to The headline, its first draft, in this pass as 18.4 asks it from the accepted claims, written by hand for a request no capture answers: one sentence carrying no figure, citing the two claims it rests on; its shell and usage those of research-call-33f53997013c13ea8e794e0fb4cdd672.json, the short version's first draft as the pass asked it before; no paid call was made, by the operator's ruling of 2026-10-09 (R7).",
+ "constructed": "deepseek-flash's answer to The headline, its first draft, in this pass as the bug hunt's corrections ask it from the accepted claims, written by hand for a request no capture answers: one sentence carrying no figure, citing the claims it rests on; its shell and usage those of research-call-33f53997013c13ea8e794e0fb4cdd672.json; no paid call was made, by the operator's ruling of 2026-10-09 (R7) and the bug hunt's of 2026-10-11.",
  "id": "ac0d030b-26fc-4a88-a393-b20279e47762",
  "object": "chat.completion",
  "created": 1790764209,
@@ -9,7 +9,7 @@
    "index": 0,
    "message": {
     "role": "assistant",
-    "content": "Demand is running well ahead of supply, so whether the guided step-up converts into shipments on time is what the stock turns on [C31] [C35]."
+    "content": "Demand is running well ahead of supply, so whether the guided step-up converts into shipments on time is what the stock turns on [C36] [C34]."
    },
    "logprobs": null,
    "finish_reason": "stop"

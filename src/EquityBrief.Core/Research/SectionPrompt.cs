@@ -185,9 +185,10 @@ public static class SectionPrompt
         // and a fact on one side only. No change figure is listed, so a size is given by the two listed figures
         // or in words against the base, since a difference the writer works out is a figure no fact holds.
         // see: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+        // see: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
         ["The two cases"] =
-            "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
-            + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
+            "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\", each of at most six sentences. "
+            + "Give each point its own sentence, choosing the points that matter most, and end each case with a sentence saying what it needs to see at the next report. "
             + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
             + "Make each point a reason, not a figure restated. Describe a change with its size in words against its base, so a small change reads as small, since its figures are drawn in their own regions, "
             + "and never a difference you work out yourself. Let each fact argue one side only: a fact used in the bull case does not appear in the bear case, closing sentences included. "
@@ -197,16 +198,20 @@ public static class SectionPrompt
         // confirmation is what would be seen if the risk came true, and three risks confirmed by one miss of
         // guidance are one risk.
         // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+        // A fact is given words a reader reads it by beside the listing it copies, since a listing reads as the facts file's
+        // name for it, and a fraction's level as its per cent.
+        // see: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
         // The risks close on two columns, what would turn the stock up and what would make it worse, each a line of words
         // and the document it rests on; the page opens each column on a line the plan computes.
         // see: The risks close on what would turn the stock up and what would make it worse, each column opening on a line the plan computes
         ["The risks, each with what would confirm it"] =
             "Name each risk to the company that the documents support, and answer with one JSON object and nothing else, shaped as "
-            + "{\"risks\":[{\"risk\":\"...\",\"riskDocument\":1,\"confirm\":{\"fact\":\"...\"},\"direction\":\"rises above\",\"level\":\"...\",\"why\":\"...\",\"whyDocument\":1}],"
+            + "{\"risks\":[{\"risk\":\"...\",\"riskDocument\":1,\"confirm\":{\"fact\":\"...\",\"words\":\"...\"},\"direction\":\"rises above\",\"level\":\"...\",\"why\":\"...\",\"whyDocument\":1}],"
             + "\"turnsUp\":[{\"what\":\"...\",\"document\":1}],\"makesWorse\":[{\"what\":\"...\",\"document\":1}]}. "
             + "Write risk as words completing \"The first risk is\", such as \"that supply stays short of demand\", and riskDocument as the number of the listed document that states it. "
-            + "Let confirm name what would be seen if the risk came true: a listed fact wherever one could show it, its name copied exactly as it is listed, "
-            + "with direction \"rises above\" or \"falls below\" and level that fact's figure or another figure listed, copied or rounded. "
+            + "Let confirm name what would be seen if the risk came true: a listed fact wherever one could show it, its name copied exactly as it is listed and words saying it plainly for a reader, "
+            + "such as \"the operating margin\" or \"the segment's operating income growth on a year earlier\", with no figure, "
+            + "with direction \"rises above\" or \"falls below\" and level that fact's figure or another figure listed, copied or rounded, a fraction of one written as the per cent it is, such as 0.0576 as 5.8%. "
             + "Only where no listed fact could show it, such as a lawsuit, a regulator's decision or a competitor's launch, write confirm as {\"event\":\"...\",\"kind\":\"...\"} "
             + "with the event in words and kind one of legal, regulatory, competitive, acquisition, management, supply or other, and give it no direction and no level. "
             + "A valuation risk is confirmed by the multiple falling, not by it staying high, and three risks confirmed by the same miss of guidance cannot be told apart, "

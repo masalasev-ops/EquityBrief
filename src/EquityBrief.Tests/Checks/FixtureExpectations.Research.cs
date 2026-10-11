@@ -242,11 +242,11 @@ public partial class FixtureExpectations
 
         Assert.Equal(ResearchRunner.Written, paidForLocal.Outcome);
 
-        // One request a window: with no release, the moves' spans and the quarter back from the
-        // night, overlapping spans once.
+        // One request a month of each window: with no release, the moves' spans and the quarter back
+        // from the night, overlapping spans once.
         var facts = FactsFile.Read(Query(store, "SELECT payload FROM facts WHERE ticker = 'KEYS' AND session_date = '2026-09-08';").Single());
 
-        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 8)).Count, asked.Requests);
+        Assert.Equal(MonthsOf(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 8))).Count, asked.Requests);
         Assert.Empty(paidForLocal.Written);
 
         // And a day later a plain open starts one, since the day's pass is what closed it.
@@ -255,8 +255,12 @@ public partial class FixtureExpectations
             .RunAsync("KEYS", "research-nothing-next-day");
 
         Assert.NotEqual(ResearchRunner.RanToday, tomorrow.Reason);
-        Assert.Equal(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 9)).Count, nextDay.Requests);
+        Assert.Equal(MonthsOf(NewsWindows.For(MoveWindows.In(facts), null, new DateOnly(2026, 9, 9))).Count, nextDay.Requests);
     }
+
+    // The months a pass asks for, each window cut into its months in turn.
+    static IReadOnlyList<(DateOnly From, DateOnly To)> MonthsOf(IReadOnlyList<(DateOnly From, DateOnly To)> windows) =>
+        [.. windows.SelectMany(window => NewsWindows.Months(window.From, window.To))];
 
     [Fact]
     public async Task APassIsWarrantedForTheSectionsItsNewestVersionsLeaveUnwrittenOrStaleAndForNoOther()
@@ -612,7 +616,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(new DateOnly(2026, 8, 18), filed);
 
-        var expected = NewsWindows.For(moves, filed, new DateOnly(2026, 9, 8));
+        var expected = MonthsOf(NewsWindows.For(moves, filed, new DateOnly(2026, 9, 8)));
 
         Assert.Equal(expected, news.Asked);
         Assert.True(news.Asked.Count < moves.Count + 1, $"The pass asked for {news.Asked.Count} windows over {moves.Count} moves and the filing, so no overlap was read once.");
@@ -651,7 +655,7 @@ public partial class FixtureExpectations
     // The window since the filing timing out on every try, as QCOM's did on 2026-10-03 and ended its pass on an error
     // nothing caught. The pass does not stop on it: the window is named unread on its row, with its dates, and the
     // sections resting on the moves are written.
-    // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
+    // see: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
     [Fact]
     public async Task AWindowTheProviderDoesNotAnswerInTimeIsNamedUnreadAndThePassWritesFromTheRest()
     {
@@ -668,6 +672,49 @@ public partial class FixtureExpectations
 
         Assert.Contains($"news: the provider did not answer for {Iso(timedOut.From)} to 2026-09-08 in time on any try", outcome.Reason, StringComparison.Ordinal);
         Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-timed-out' AND stage = 'research';"));
+    }
+
+    // A window is read a month at a time and a month the provider does not answer in time, or refuses, costs that month
+    // alone: CVX's pass of 2026-10-11 lost every article since its filing of 2026-07-31, the window being read whole and
+    // one of its months timing out. Worked by hand over a window of three months, each answered with one article dated
+    // inside it, the middle one timing out and then refused.
+    // see: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
+    [Fact]
+    public async Task AMonthTheProviderDoesNotAnswerInTimeCostsThatMonthAloneAndTheWindowsOtherMonthsAreRead()
+    {
+        (DateOnly From, DateOnly To)[] months =
+        [
+            (new DateOnly(2026, 7, 31), new DateOnly(2026, 8, 30)),
+            (new DateOnly(2026, 8, 31), new DateOnly(2026, 9, 29)),
+            (new DateOnly(2026, 9, 30), new DateOnly(2026, 10, 11)),
+        ];
+
+        var timesOut = new WindowedNews(new OneAMonth(), timesOut: window => window.From == new DateOnly(2026, 8, 31));
+        var (articles, unread) = await NewsWindows.ReadAsync(timesOut, "CVX", [(new DateOnly(2026, 7, 31), new DateOnly(2026, 10, 11))]);
+
+        Assert.Equal(months, timesOut.Asked);
+        Assert.Equal(["2026-07-31", "2026-09-30"], articles.Select(article => Iso(DateOnly.FromDateTime(article.Published.UtcDateTime))));
+        Assert.Equal(["news: the provider did not answer for 2026-08-31 to 2026-09-29 in time on any try"], unread);
+
+        var refuses = new WindowedNews(new OneAMonth(), refuses: window => window.From == new DateOnly(2026, 8, 31));
+        var (kept, refused) = await NewsWindows.ReadAsync(refuses, "CVX", [(new DateOnly(2026, 7, 31), new DateOnly(2026, 10, 11))]);
+
+        Assert.Equal(2, kept.Count);
+        Assert.Equal(["news: The news query for CVX over 2026-08-31 to 2026-09-29 reached 20 pages of 1000 and the provider still had more."], refused);
+    }
+
+    // One article on the first day of whatever is asked for.
+    sealed class OneAMonth : INameNewsFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult<IReadOnlyList<NewsArticle>>(
+                [new NewsArticle(new DateTimeOffset(from.ToDateTime(new TimeOnly(14, 0)), TimeSpan.Zero), "Story of " + Iso(from), "https://example.test/" + Iso(from), "example.test", [ticker], "Text.")]);
+        }
     }
 
     // A research model whose first answers come back empty, billed as the provider bills them, and

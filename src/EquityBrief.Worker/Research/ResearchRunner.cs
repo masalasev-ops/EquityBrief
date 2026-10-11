@@ -446,33 +446,23 @@ public sealed class ResearchRunner(
         }
 
         // The news inside each stored move and since the filing, overlapping spans once, and
-        // never the stored year: a window the provider has more of than a query reads, or does
-        // not answer in time on any try, is named as unread and the others are still read.
+        // never the stored year, asked a month at a time: a month the provider has more of than a
+        // query reads, or does not answer in time on any try, is named as unread and the others,
+        // the same window's among them, are still read.
         // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
-        // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
+        // see: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var (articles, newsUnread) = await NewsWindows.ReadAsync(news, ticker, NewsWindows.For(MoveWindows.In(facts), filing?.Document.PublishedOn, asOf), cancellation);
 
-        foreach (var (windowFrom, windowTo) in NewsWindows.For(MoveWindows.In(facts), filing?.Document.PublishedOn, asOf))
+        unread.AddRange(newsUnread);
+
+        foreach (var article in articles)
         {
-            try
+            if (seen.Add(article.Url))
             {
-                foreach (var article in await news.ArticlesAsync(ticker, windowFrom, windowTo, cancellation))
-                {
-                    if (seen.Add(article.Url))
-                    {
-                        fetched.Add((
-                            new FetchedDocument(DocumentChannel.NewsFeed, article.Url, article.Title, DateOnly.FromDateTime(article.Published.UtcDateTime), article.Text),
-                            Math.Max(1, article.Symbols.Count)));
-                    }
-                }
-            }
-            catch (ProviderRefusal refused)
-            {
-                unread.Add("news: " + refused.Message);
-            }
-            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
-            {
-                unread.Add(FormattableString.Invariant($"news: the provider did not answer for {windowFrom:yyyy-MM-dd} to {windowTo:yyyy-MM-dd} in time on any try"));
+                fetched.Add((
+                    new FetchedDocument(DocumentChannel.NewsFeed, article.Url, article.Title, DateOnly.FromDateTime(article.Published.UtcDateTime), article.Text),
+                    Math.Max(1, article.Symbols.Count)));
             }
         }
 

@@ -25,6 +25,158 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - nightly-cost states what the 18.2 correction of the day asserts of the lines refetch
+Decision: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
+Was:
+> nightly-cost: ... and from 18.2 the Treasury's par yield table, one free request a night to the Treasury and none to the provider, is among the shipped files that may hold a client |
+Now:
+> nightly-cost: ... is among the shipped files that may hold a client; and from the 18.2 correction of 2026-10-11 the `quarters` verb's lines refetch asks, once a session and in ticker order under its cap, only the members whose newest fetch read none of the gross profit and the cash flow lines, states its asks and their weighted calls before its first request, and is refused beside another run by hand with nothing asked, over a constructed store |
+Why: each roster row says what its check asserts, and the correction's test extends nightly-cost's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the quarter fetcher's catalogue row names the lines refetch
+Decision: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
+Was:
+> ... (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read). It records every ask with why, ...
+Now:
+> ... (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read), and <code>quarters --refetch-lines</code> every member whose newest fetch read none of the gross profit and the cash flow lines in the same way (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap). It records every ask with why, ...
+Why: the catalogue names every run of the component, and the operator ruled this one on 2026-10-11.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.2 correction of the day asserts of the margins' lines
+Corrects: CVX's margins figure cut "Operating 32.4%" at its edge and named a gross margin line it did not draw, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 18.1 correction of 2026-10-11 on the page's words ... the exported file's title stands in the report's column, worked by hand |
+Now:
+> read-surface: ... worked by hand; and from the 18.2 correction of 2026-10-11 the margins' lines name their newest margins whole inside the figure and only the lines they draw, a margin no quarter holds named beneath it, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of the page's words
+Corrects: the name page's counts read "2 time(s)", figures rounding to nothing read "-0.0%", number columns stood under headings on the left, a phone drew the charts' labels four pixels high and the exported file's title stood off the report's column, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 4.6 correction of 2026-10-11 ...; and from the 6.8 correction of 2026-10-11 ... in the sources and in the News region |
+Now:
+> read-surface: ... in the sources and in the News region; and from the 18.1 correction of 2026-10-11 on the page's words a count takes its noun's singular or plural and never "(s)", a figure rounding to nothing is drawn with no sign, a move's change and its group's median are signed in their hue to two places under a heading on the right, a date alone in a cell is not broken, a phone keeps a figure at a width its words read at, and the exported file's title stands in the report's column, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the numbers' two margin patterns name their quarters with the noun's singular or plural
+Corrects: the patterns wrote "for {count} quarter(s) in a row", drawn on every page as "for 4 quarter(s) in a row", found in the bug hunt of 2026-10-11.
+Was:
+> margin wider: The operating margin was {percent} against {percent} a year earlier, wider for {count} quarter(s) in a row.
+> margin narrower: The operating margin was {percent} against {percent} a year earlier, narrower for {count} quarter(s) in a row.
+Now:
+> margin wider: The operating margin was {percent} against {percent} a year earlier, wider for {quarters} in a row.
+> margin narrower: The operating margin was {percent} against {percent} a year earlier, narrower for {quarters} in a row.
+Why: the table and the renderer's patterns are held to each other word for word, and a count reads with its noun.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 6.8 correction of the day asserts of titles and links sent with entities
+Corrects: BDX's sources drew "Becton Dickinson &amp; Co's Dividend Analysis" and 626 links carried "&amp;amp;utm_medium", found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 15.1 correction of 2026-10-11 an S&P 400 member's page names its company from its own index's members and reads its group within that index, over a constructed store of the three indices |
+Now:
+> read-surface: ... over a constructed store of the three indices; and from the 6.8 correction of 2026-10-11 a document's title and link and an article's link sent with characters written as entities are drawn as those characters escaped once, in the sources and in the News region |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 15.1 correction of the day asserts of an S&P 400 member's page
+Corrects: an S&P 400 or 600 member's page read the S&P 500's members for its company and its group, so GTES's page named no company and said it was not a member of the index, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 18.3 correction of 2026-10-11 ... the technicals name the provider's multiples as the provider's, worked by hand |
+Now:
+> read-surface: ... worked by hand; and from the 15.1 correction of 2026-10-11 an S&P 400 member's page names its company from its own index's members and reads its group within that index, over a constructed store of the three indices |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.3 correction of the day asserts of the ladder's sides, the reward bars and the provider's multiples
+Corrects: PEP's ladder drew "Buy into these" over nothing, the reward to risk figure left a blank row beneath a tranche stating no risk, and CVX's technicals drew the provider's 20.4 beside the valuation's 19.6 with nothing naming either's basis, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 4.6 correction of 2026-10-11 ... a plan's table that would hold no row draws a line saying so |
+Now:
+> read-surface: ... draws a line saying so; and from the 18.3 correction of 2026-10-11 the ladder figure says beneath its heading that no band stands on a side of the price where none does, the reward to risk figure stands as tall as the bars it draws, and the technicals name the provider's multiples as the provider's, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's levels row says where no band stands on a side and names the provider's multiples as its own
+Corrects: the ladder figure drew a heading over nothing, and the technicals drew the provider's multiple beside the valuation's with nothing naming its basis, found in the bug hunt of 2026-10-11.
+Was:
+> ... what the plan does there, how many times the price turned at it and the last session it did. Then each band ... the next dated event, the multiples, the averages, ...
+Now:
+> ... what the plan does there, how many times the price turned at it and the last session it did, and beneath a heading with no band on its side of the price a line saying so. Then each band ... the next dated event, the provider's multiples named as the provider's, the averages, ...
+Why: the row states what the region draws.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 4.6 correction of the day asserts of a name with no plan
+Decision: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+Was:
+> read-surface: ... and from the 18.1 correction of 2026-10-11 a phone's masthead is one column no wider than the screen, its row of links wrapping |
+Now:
+> read-surface: ... its row of links wrapping; and from the 4.6 correction of 2026-10-11 a name whose ladder placed no tranche draws one line in the plan's place, the reason its ladder stored and what would bring a plan for each reason a ladder or the night's builder stores, with the close above the nearest band above that would put it beneath the price, worked by hand over PEP's bands, and a plan's table that would hold no row draws a line saying so |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's and section 15.9's plan rows draw one line for a name with no plan
+Decision: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+Was:
+> section 4, The plan: ... (see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit); and folded beneath it, ...
+> section 15.9, The plan: ... the last two prints' moves against the first tranche's stop stand under a heading of their own
+Now:
+> section 4, The plan: ... (see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit); for a name the ladder placed no tranche for, one line in their place, the reason its ladder stored and what would bring a plan (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table); and folded beneath it, ...
+> section 15.9, The plan: ... the last two prints' moves against the first tranche's stop stand under a heading of their own; a name the ladder placed no tranche for draws in their place one line that states the reason its ladder stored and what would bring a plan, and leaves no figure or table standing empty (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table)
+Why: PEP's page drew a fixed sentence, two empty tables and "Buy into these" over nothing.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility and fixture-expectations state what 18.5's bound on the two cases asserts
+Decision: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
+Was:
+> claim-admissibility: ... and words carrying a figure refused as the risks write none, worked by hand |
+> fixture-expectations: ... and the fixture's pass asks the months of its windows |
+Now:
+> claim-admissibility: ... and words carrying a figure refused as the risks write none, worked by hand; and from 18.5 each of the two cases holds at most six sentences, its closing one among them, a case of a seventh refused by that sentence's opening with each side named once, a draft whose sides cannot be told apart refused for that alone, and the retry told the bound, worked by hand |
+> fixture-expectations: ... and the fixture's pass asks the months of its windows; and from 18.5 each answer constructed with no paid call for a request the bound on the two cases or the 12.6 correction of 2026-10-11 moved is the answer it names, every case of more than six sentences cut to its first five and its closing one, every fact given words carrying no digit with a fraction's level as its per cent, or written by hand from the claims alone in a capture's shell as three paragraphs of at most five sentences or one sentence carrying no digit, each stated in advance |
+Why: each roster row says what its check asserts, and 18.5's tests extend both.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's and the lane table's two cases rows hold each case to six sentences
+Decision: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
+Was:
+> section 4, The two cases: The case for and the case against, a point to a row, each ending in what it needs to see at the next print and owning no figure of its own (see: ...) (see: Each figure of the facts file is owned by one region of the page, ...)
+> lane table, The two cases: ... the bear case as a second opening on "The bear case", a point to a sentence, each point specific to the company ...; ... a draft not opening on the bull case, or holding no sentence opening on the bear case, is refused
+Now:
+> section 4, The two cases: The case for and the case against, a point to a row, at most six rows each, each ending in what it needs to see at the next print and owning no figure of its own (see: ...) (see: Each of the two cases holds at most six sentences, the last saying what it needs at the next report) (see: Each figure of the facts file is owned by one region of the page, ...)
+> lane table, The two cases: ... the bear case as a second opening on "The bear case", each of at most six sentences, a point to a sentence, the points that matter most chosen, each point specific to the company ...; ... a draft not opening on the bull case, or holding no sentence opening on the bear case, is refused, and so is a case of a seventh sentence, the retry told the bound
+Why: CVX's two cases of 2026-10-11 ran fourteen sentences for and fifteen against, and the operator ruled six a side.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the risks' lane row asks a fact's words and composes a fact by them and an event after its kind
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> ... being a listed fact's name with the direction it moves and the level it crosses wherever a fact could show it and an event with one kind of seven where none could, and why with the document saying so, which code composes into a paragraph a risk opening on its ordinal and a sentence opening "That risk would be confirmed by"; ... (see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either); ... an answer not returned as its fields, a fact the file does not list, a kind outside the seven, and two risks confirmed by one fact or two by events of one kind, are refused
+Now:
+> ... being a listed fact's name with the words a reader reads it by, the direction it moves and the level it crosses, a fraction written as its per cent, wherever a fact could show it and an event with one kind of seven where none could, and why with the document saying so, which code composes into a paragraph a risk opening on its ordinal and a sentence opening "That risk would be confirmed", a fact by its words and an event after its kind; ... (see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either) (see: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind); ... an answer not returned as its fields, a fact the file does not list, a fact given no words, a kind outside the seven, and two risks confirmed by one fact or two by events of one kind, are refused
+Why: the confirming sentence printed a fact's listing and raw level, and joined a clause after "confirmed by".
+
+### 2026-10-11 - docs/SCHEMA.md - research_section's parts name a fact's words
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> `risks`, each with `risk`, `riskDocument`, `confirm` holding a listed `fact` or an `event` with its `kind`, ...
+Now:
+> `risks`, each with `risk`, `riskDocument`, `confirm` holding a listed `fact`, from the 12.6 correction of 2026-10-11 with the `words` a reader reads it by, or an `event` with its `kind`, ...
+Why: the fields stored beside the prose carry what the prose was composed from.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 12.6 correction of the day asserts of a risk's words and its kind
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> claim-admissibility: ... a figure the file also holds as a ratio passes, the retry told to write a rise in per cent |
+Now:
+> claim-admissibility: ... the retry told to write a rise in per cent; and from the 12.6 correction of 2026-10-11 a risk confirmed by a fact given no words is refused naming its listing, the retry told to give them, a fact composed by its words crossing its level as written, a fraction's as its per cent, an event after its kind with the seventh plainly an event and a clause opening on an article read as one, and words carrying a figure refused as the risks write none, worked by hand |
+Why: each roster row says what its check asserts, and the correction's tests extend claim-admissibility's.
+
+### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states what the 6.11 correction of the day asserts of a name's news read a month at a time
+Decision: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
+Was:
+> fixture-expectations: ... and the fixture's pass writes the short version and the headline in a round after every other section's last retry from the accepted claims, the short version refused for a figure the tiles show and accepted at its retry |
+Now:
+> fixture-expectations: ... the short version refused for a figure the tiles show and accepted at its retry; and from the 6.11 correction of 2026-10-11 a pass asks each window of a name's news a month at a time, a month the provider does not answer in time or refuses named unread with its dates and the window's other months read, worked by hand over a window of three months, and the fixture's pass asks the months of its windows |
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of a growth written as a multiple
+Decision: A growth is written as a rise in per cent and never as a number of times the earlier figure
+Was:
+> claim-admissibility: ... and from the 6.4 correction of 2026-10-11 a section is drawn as written before the citation check where it is dated before 2026-10-10, the first day a pass wrote with the check, and a section of that day or after is not |
+Now:
+> claim-admissibility: ... and a section of that day or after is not; and from the 6.4 correction of 2026-10-11 a figure written as a number of times something that the facts file holds only as a growth is refused, written as "1.49 times" and as "1.49x", while the same growth written as a rise in per cent passes, a multiple the file holds as a multiple passes and a figure the file also holds as a ratio passes, the retry told to write a rise in per cent |
+Why: each roster row says what its check asserts, and the correction's tests extend claim-admissibility's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of a phone's masthead
 Corrects: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity line and its as-of line cut; found reading CVX's page through a 390-pixel frame for 18.5
 Was:

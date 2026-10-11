@@ -93,7 +93,7 @@ public partial class ReadSurface
     [
         "Sales rose 10.0% on a year earlier in the quarter to 2026-06-30, and rose 10.0% in the quarter to 2026-03-31.",
         "The newer quarter's growth was faster than the +5.0% the same quarter showed a year before.",
-        "The operating margin was 30.0% against 28.0% a year earlier, wider for 4 quarter(s) in a row.",
+        "The operating margin was 30.0% against 28.0% a year earlier, wider for 4 quarters in a row.",
         "Against the analysts' estimates over its last 4 quarters it beat 0, met 4 and missed 0, met meaning within a cent or 1% of the estimate.",
         "Operating cash flow over the last four quarters was 1.10 times net income: in line.",
         "4 of the 8 quarters a range needs carry a multiple, so the valuation position is not read.",
