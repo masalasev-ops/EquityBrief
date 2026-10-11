@@ -42629,3 +42629,24 @@ Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first ha
             this correction and the 6.4, 12.6 and 18.1 corrections beside it; next, the 32 written reports regenerated
             from main, the screenshots read back against the store and the phase 18 report.
 Carried:    nothing new.
+
+### 6.4 - correction: the citation check is dated from 2026-10-10, the first day a pass wrote with it, where it was dated from the night of 2026-10-12 and drew the weekend's reports as written before it   2026-10-11
+
+Corrects:   the 6.4 correction of 2026-10-10, which dated the check from the first night built after it merged, since a
+            press runs the newest night's build. The 18.5 regeneration, on the operator's word of 2026-10-11, wrote the
+            reports from main's build by hand on the weekend with the check holding, and every section it wrote was drawn
+            "Written before the citation check, which holds from the night of 2026-10-12".
+Found:      reading CVX's rewritten page for 18.5 on 2026-10-11.
+Built:      the date read off the passes the store holds and not off a merge: none dated 2026-10-10 or after ran without the
+            check, and those dated 2026-10-09 ran the Friday night's build, which did not hold it. The line reads "which
+            holds for sections written from 2026-10-10", since that day was no night.
+Tests:      none more; the date's test now draws a section of 2026-10-09 as written before the check and the weekend's as
+            not, and the line's test reads its words.
+Claims:     none more; the roster's claim-admissibility row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the date restored. K4 the check dated 2026-10-12: predicted red at the date's
+            test. Result: red, the date 2026-10-12 where 2026-10-10 is read; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.

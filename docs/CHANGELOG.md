@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of the citation check's date
+Corrects: every section the 18.5 regeneration wrote from main's build on the weekend was drawn as written before the citation check that held over it, the check dated from the night of 2026-10-12; found reading CVX's rewritten page for 18.5
+Was:
+> claim-admissibility: ... and from the 18.4 correction of 2026-10-11 the short version is three paragraphs of at most five sentences each, a fourth paragraph and a paragraph of a sixth sentence refused by their openings and the retry told the bound, a sentence's abbreviation counting no sentence of its own |
+Now:
+> claim-admissibility: ... and from the 18.4 correction of 2026-10-11 the short version is three paragraphs of at most five sentences each, a fourth paragraph and a paragraph of a sixth sentence refused by their openings and the retry told the bound, a sentence's abbreviation counting no sentence of its own; and from the 6.4 correction of 2026-10-11 a section is drawn as written before the citation check where it is dated before 2026-10-10, the first day a pass wrote with the check, and a section of that day or after is not |
+Why: each roster row says what its check asserts, and the correction's test extends claim-admissibility's.
+
 ### 2026-10-11 - ARCHITECTURE.html - section 4 and section 12 hold the short version to three paragraphs of at most five sentences each
 Corrects: CVX's short version written last on 2026-10-10 restated about fifty of its accepted claims, every risk and both cases among them, in paragraphs the checker held to their citations and to nothing about their length; found reading the rewritten page window by window for 18.5
 Was:
