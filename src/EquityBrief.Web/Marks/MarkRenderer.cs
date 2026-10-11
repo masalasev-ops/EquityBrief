@@ -522,7 +522,7 @@ public sealed record LabellerLine(
 
 // One article on a name's page: its headline, source, published day and link, the state the labeller left it
 // in, its label where it has one, and the tabs it sits under, "all" with its direction for a labelled story,
-// "opinion" alone for an opinion piece, "all" alone for a row holding no label.
+// "opinion" alone for an opinion piece, "all" with "unlabelled" for a row holding no label.
 public sealed record NewsRow(
     string ArticleId,
     string Title,
@@ -555,6 +555,7 @@ public sealed record NewsView(
     int Negative,
     int Neutral,
     int Opinion,
+    int Unlabelled,
     string? Model,
     string? Profile,
     string? Why,
@@ -6922,10 +6923,10 @@ public sealed partial class MarkRenderer : IComponent
 
     // A name's page, after the nights the list picked it: what was written about the company in the thirty
     // days before the night, each article with the newest label the labeller wrote for it, the bar of positive
-    // against negative stories above tabs for all, positive, negative, neutral and opinion, an opinion piece in
-    // the opinion tab alone and in no count, the model that wrote the labels named once, and where the name
-    // holds no label for the night one line saying why. The tabs are radio inputs the stylesheet reads, so the
-    // region carries no script of its own.
+    // against negative stories above tabs for all, positive, negative, neutral, opinion and unlabelled, an opinion
+    // piece in the opinion tab alone and in no count, an article holding no label in the unlabelled tab beside
+    // all, the model that wrote the labels named once, and where the name holds no label for the night one line
+    // saying why. The tabs are radio inputs the stylesheet reads, so the region carries no script of its own.
     // see: The news labels alone name the model that wrote them
     // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
     public string NewsRegion(NewsView view)
@@ -6934,7 +6935,7 @@ public sealed partial class MarkRenderer : IComponent
 
         var region = new StringBuilder();
 
-        region.Append(Invariant, $"<div class=\"news-region\" data-ticker=\"{Escaped(view.Ticker)}\" data-articles=\"{view.Rows.Count}\" data-all=\"{view.All}\" data-positive=\"{view.Positive}\" data-negative=\"{view.Negative}\" data-neutral=\"{view.Neutral}\" data-opinion=\"{view.Opinion}\">");
+        region.Append(Invariant, $"<div class=\"news-region\" data-ticker=\"{Escaped(view.Ticker)}\" data-articles=\"{view.Rows.Count}\" data-all=\"{view.All}\" data-positive=\"{view.Positive}\" data-negative=\"{view.Negative}\" data-neutral=\"{view.Neutral}\" data-opinion=\"{view.Opinion}\" data-unlabelled=\"{view.Unlabelled}\">");
 
         if (view.Rows.Count == 0)
         {
@@ -6958,8 +6959,9 @@ public sealed partial class MarkRenderer : IComponent
             region.Append(Invariant, $"<p class=\"news-unlabelled\" data-why=\"{Escaped(view.WhyCode ?? "unknown")}\">{Escaped(why)}</p>");
         }
 
-        // The tabs: five radio inputs the stylesheet shows one list under, their labels drawn as chips.
-        var tabs = new[] { ("all", view.All, "All"), ("positive", view.Positive, "Positive"), ("negative", view.Negative, "Negative"), ("neutral", view.Neutral, "Neutral"), ("opinion", view.Opinion, "Opinion") };
+        // The tabs: six radio inputs the stylesheet shows one list under, their labels drawn as chips, the articles
+        // holding no label last.
+        var tabs = new[] { ("all", view.All, "All"), ("positive", view.Positive, "Positive"), ("negative", view.Negative, "Negative"), ("neutral", view.Neutral, "Neutral"), ("opinion", view.Opinion, "Opinion"), ("unlabelled", view.Unlabelled, "Unlabelled") };
 
         foreach (var (tab, _, _) in tabs)
         {

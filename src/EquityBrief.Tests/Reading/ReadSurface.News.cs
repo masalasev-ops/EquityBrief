@@ -8,7 +8,8 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, 12.6: the news region on a name's page, tonight's counts beside each row, and the Run page's
 // labeller line with its count toward the nights its limits settle from, each read off the rendered page over
-// a constructed store whose counts are worked by hand.
+// a constructed store whose counts are worked by hand; and from the 18.4 correction of 2026-10-11 the articles
+// holding no label under a tab of their own after opinion.
 // see: The news labels alone name the model that wrote them
 // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
 public partial class ReadSurface
@@ -105,13 +106,14 @@ public partial class ReadSurface
         // Worked by hand over the store: seven of AG's eight articles fall in the thirty days before the night,
         // six of them under the all tab since the opinion piece sits in its own; one positive, the article labelled
         // twice reading its newer label, one negative and one neutral, with one answered unreadably, one refused
-        // by admissibility and one holding no label.
+        // by admissibility and one holding no label, the three holding no label under the unlabelled tab as well,
+        // so the three directions and the unlabelled tab make up all.
         Assert.Equal(
-            " data-ticker=\"AG\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\"",
+            " data-ticker=\"AG\" data-articles=\"7\" data-all=\"6\" data-positive=\"1\" data-negative=\"1\" data-neutral=\"1\" data-opinion=\"1\" data-unlabelled=\"3\"",
             Regex.Match(card, "<div class=\"news-region\"([^>]*)>").Groups[1].Value);
         Assert.Contains("aria-label=\"1 positive against 1 negative over the thirty days before\"", card, StringComparison.Ordinal);
         Assert.Equal(
-            ["all|6", "positive|1", "negative|1", "neutral|1", "opinion|1"],
+            ["all|6", "positive|1", "negative|1", "neutral|1", "opinion|1", "unlabelled|3"],
             Regex.Matches(card, "<label class=\"chip\" for=\"news-tab-([a-z]+)\" data-tab=\"[a-z]+\" data-count=\"(\\d+)\">").Select(chip => chip.Groups[1].Value + "|" + chip.Groups[2].Value));
 
         var matches = Regex.Matches(card, "<li class=\"news-row\" data-article=\"([^\"]+)\" data-state=\"([^\"]+)\" data-tabs=\"([^\"]+)\"[^>]*>(.*?)</li>", RegexOptions.Singleline);
@@ -128,11 +130,11 @@ public partial class ReadSurface
         Assert.Equal(("labelled", "all negative"), (rows["a2"].State, rows["a2"].Tabs));
         Assert.Equal(("labelled", "all neutral"), (rows["a3"].State, rows["a3"].Tabs));
         Assert.Equal(("labelled", "opinion"), (rows["a4"].State, rows["a4"].Tabs));
-        Assert.Equal(("unreadable", "all"), (rows["a5"].State, rows["a5"].Tabs));
+        Assert.Equal(("unreadable", "all unlabelled"), (rows["a5"].State, rows["a5"].Tabs));
         Assert.Contains("<span class=\"tag state\">unreadable: a digit in the reason</span>", rows["a5"].Markup, StringComparison.Ordinal);
-        Assert.Equal(("refused", "all"), (rows["a6"].State, rows["a6"].Tabs));
+        Assert.Equal(("refused", "all unlabelled"), (rows["a6"].State, rows["a6"].Tabs));
         Assert.Contains("<span class=\"tag state\">refused: algorithmic price forecast</span>", rows["a6"].Markup, StringComparison.Ordinal);
-        Assert.Equal(("unlabelled", "all"), (rows["a0"].State, rows["a0"].Tabs));
+        Assert.Equal(("unlabelled", "all unlabelled"), (rows["a0"].State, rows["a0"].Tabs));
 
         // The model that wrote the newest label, named once and in small type, and the older label's not at all.
         Assert.Single(Regex.Matches(card, "deepseek-flash"));
@@ -140,9 +142,16 @@ public partial class ReadSurface
         Assert.DoesNotContain("claude-haiku", card, StringComparison.Ordinal);
         Assert.DoesNotContain("news-unlabelled", card, StringComparison.Ordinal);
 
-        // The tabs are inputs the stylesheet reads, and the region carries no script.
-        Assert.Equal(5, Regex.Matches(card, "<input type=\"radio\" class=\"news-tab\" name=\"news-tab\"").Count);
+        // The tabs are inputs the stylesheet reads, and the region carries no script: the unlabelled tab, chosen,
+        // is marked as chosen and shows the rows it holds and no other, as each of the five before it does.
+        Assert.Equal(6, Regex.Matches(card, "<input type=\"radio\" class=\"news-tab\" name=\"news-tab\"").Count);
         Assert.DoesNotContain("<script", card, StringComparison.Ordinal);
+
+        foreach (var tab in new[] { "all", "positive", "negative", "neutral", "opinion", "unlabelled" })
+        {
+            Assert.Contains($".news-tab[value=\"{tab}\"]:checked~.news-tabs .chip[for=\"news-tab-{tab}\"]", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
+            Assert.Contains($".news-tab[value=\"{tab}\"]:checked~.news-rows .news-row:not([data-tabs~=\"{tab}\"])", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
