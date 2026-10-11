@@ -42650,3 +42650,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 18.4 correction above.
 Queue:      as the 18.4 correction above.
 Carried:    nothing new.
+
+### 12.6 - correction: an article's title is drawn as its characters, where a character the provider wrote as an entity was drawn as the entity's letters   2026-10-11
+
+Corrects:   the news rows 12.6 drew on a name's page and the causes taken from the labelled stories, which escaped a title
+            as the provider sent it, its characters already written as entities, so CVX's page read "ASML &amp; Chevron".
+Found:      reading CVX's page for 18.5 on 2026-10-11.
+Built:      a title read back from its entities before it is escaped once for the page, in the News region and in How it
+            got here alike; the stored title stays as the provider sent it.
+Tests:      one more: a title sent with an entity and one with a bare ampersand, each drawn as its characters escaped once.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the title escaped as sent. K5: predicted red at the new test. Result: red, the
+            entity's letters drawn; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.

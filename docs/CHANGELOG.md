@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 12.6 correction of the day asserts of an article's title
+Corrects: CVX's page drew "ASML &amp; Chevron" for a title the provider sent with its ampersand written as an entity; found reading the page for 18.5
+Was:
+> read-surface: ... and from the 18.4 correction of 2026-10-11 the calendar timeline's last day's words end at their rule inside the figure, the others centred on theirs |
+Now:
+> read-surface: ... and from the 18.4 correction of 2026-10-11 the calendar timeline's last day's words end at their rule inside the figure, the others centred on theirs; and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of the citation check's date
 Corrects: every section the 18.5 regeneration wrote from main's build on the weekend was drawn as written before the citation check that held over it, the check dated from the night of 2026-10-12; found reading CVX's rewritten page for 18.5
 Was:
