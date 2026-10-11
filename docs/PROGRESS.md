@@ -43155,8 +43155,10 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             than waited on; M8 red at the tolerance test, the family eleven short written; M9 red at the tolerance worked
             by hand, nothing allowed against a count of nothing; M10 red at the checklist test. Each reverted before
             anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 17.2
+            correction's above, d1aa2f98: all six steps, 0 warnings, 0 errors, 2220 of 2220 tests ran with none failed in
+            17 minutes 47 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.10 ruling above; items 3 and 4 of it ship together, the history's guard being the monthly run's
             history step, which needed the lock left to it.
 Carried:    October's monthly run by hand, item 7 of the queue, once items 5 and 6 have merged.
