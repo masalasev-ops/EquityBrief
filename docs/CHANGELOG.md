@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of the written sections' type
+Corrects: the short version's prose stood at 19 pixels in the serif beside every other written section's 15 in the sans, found by the operator on CVX's page
+Was:
+> read-surface: ... the risks' computed lines name a band of one price at its price and a wider one by its edges, worked by hand over constructed bands |
+Now:
+> read-surface: ... the risks' computed lines name a band of one price at its price and a wider one by its edges, worked by hand over constructed bands; and from the 18.1 correction of 2026-10-11 every written section's prose is set in the page's own type, no rule picking a section out by its name to give it a face or a size of its own |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-10 - .claude/rules/checks.md - read-surface states what the 4.6 and 18.4 corrections of the day assert of the plan column's words and the risks' computed lines
 Corrects: the plan column cut its top exit's words at its edge, found reading the rendered page at 18.3, and the risks' computed lines named a band of one price as running from that price to itself, found reading CVX's page after 18.4 merged
 Was:
