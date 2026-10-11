@@ -43067,8 +43067,10 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             that session; M2 red at the new test, AAA's setup left without a benchmark, and at both worked cases; M3 red
             at both worked cases, the new test green as predicted; M4 red at the new test, EEE's setup left without one.
             Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the report's
+            amendment below, 50917a37: all six steps, 0 warnings, 0 errors, 2216 of 2216 tests ran with none failed in 17
+            minutes 37 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1266 claims, 1266 passing and none unexamined, 43 checks on the roster run and passed.
 Remedy:     after the merge, from main, `tools/ledger-build.ps1 --again` on each index over 2019-01-02 to 2026-10-05, and
             the coverage shown beside the copy's by family, index and half-year.
 Queue:      as the 17.10 ruling above.
