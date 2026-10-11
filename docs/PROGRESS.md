@@ -43249,7 +43249,9 @@ Mutated:    the rule, stated before the run: the property that a run started aga
             variable no line read, which the build refuses. Results: M13 red at the new test, the facts and the three
             checks passed over where the facts alone are; one of five failed in the run filtered to the monthly run's
             tests. Reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, a315b2ab: all six
+            steps, 0 warnings, 0 errors, 2223 of 2223 tests ran with none failed in 15 minutes 2 seconds, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`; the phase report 1267 claims,
+            1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.10 ruling above; item 7, October's monthly run by hand, runs on the tree carrying this correction.
 Carried:    nothing new.
