@@ -25,6 +25,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - docs/ARCHITECTURE.html - a monthly run started again runs every step from the first no try held
+Decision: A monthly run started again runs every step from the first one no try of the month held
+Was:
+> started again for the month, the run goes on from the first step no try held and runs no step that held a second time (see: ...) (see: ...) | ... | a tester reading a ledger that read past a session would judge proposals on figures no one could have known, and a step run twice would write a second run of the month for nothing
+Now:
+> started again for the month, the run goes on from the first step no try held, runs no step before it a second time and runs every step from it, a check an earlier try held before the history was written again among them (see: ...) (see: ...) (see: A monthly run started again runs every step from the first one no try of the month held) | ... | a tester reading a ledger that read past a session would judge proposals on figures no one could have known, a step before the first no try held run twice would write a second run of the month for nothing, and a check passed over after the history it read was written again would hand the tester a history no check had read
+Why: October's second try held the three point-in-time checks in the order before the history's step was added, and a run started again that passed over every held step would have run the testers on a history no check had read since it was written.
+
+### 2026-10-11 - docs/RUNBOOK.md - a monthly run started again runs every step from the first no try held
+Decision: A monthly run started again runs every step from the first one no try of the month held
+Was:
+> Running it again for the month goes on from the first step no try held;
+Now:
+> Running it again for the month goes on from the first step no try held and runs every step from it, so a check an earlier try held runs again on a history written after it (see: A monthly run started again runs every step from the first one no try of the month held);
+Why: the same.
+
+### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states a monthly run started again
+Decision: A monthly run started again runs every step from the first one no try of the month held
+Was:
+> fixture-expectations: ... a run started again for the month going on from the first step no try held and running none twice and another month running every step, its waits ...
+Now:
+> fixture-expectations: ... a run started again for the month going on from the first step no try held and running none before it twice and another month running every step, and from the 17.10 correction of 2026-10-11 of the checks held before the history every step from the first no try held run, three checks an earlier try held before the history among them, its waits ...
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states the Ledger page's tables
 Corrects: no test read the tables of 17.3's Ledger page for the box that scrolls them, found reading the page back at a phone's width for item 6 of the queue of 2026-10-11.
 Was:
