@@ -42692,3 +42692,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 18.4 correction above.
 Queue:      as the 18.4 correction above.
 Carried:    nothing new.
+
+### 6.4 - correction: a growth written as a number of times the earlier figure is refused, where CVX's segment commentary wrote a rise of about 149 per cent as 1.50 times   2026-10-11
+
+Corrects:   the number rule 6.4 built, which matches a figure on its value alone. The facts file holds a growth on a year
+            earlier as the rise over the earlier figure as a fraction of it, and CVX's segment commentary of 2026-10-11
+            read 1.492958 as a ratio: U.S. upstream earnings "rose to $3.54 billion from $1.42 billion, 1.50 times the
+            year-earlier figure", where the later figure is 2.49 times the earlier, with three more sentences like it, all
+            four carried into its short version.
+Found:      reading CVX's rewritten page at 390 pixels in the bug hunt the operator asked for on 2026-10-11, before the
+            reports are written again: "Figure out all the bugs in one shot".
+Built:      a figure written as "1.49 times" or "1.49x" that the facts file holds only under a name holding growth is
+            refused, its retry told to write the rise in per cent; one the file also holds as anything else passes. The
+            prompt is unchanged, and the fixture's 718 replay and research tests pass with no recording moved.
+Tests:      two more: both ways of writing times refused, the rise in per cent passing, a multiple held as a multiple
+            passing and a figure also held as a ratio passing, worked by hand; and the retry's words.
+Claims:     none more; a decision, section 12's text and the roster's claim-admissibility row say so.
+Pins:       none moved; the checker is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: the property that the figure is held only as a growth. H1 the rule reading a
+            figure any growth among its facts holds: predicted red at the new test's ratio case. Result: red, the ratio
+            refused; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the corrections
+            after it, the figures to be filled from the run.
+Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 432 merged; in progress,
+            this correction and the others the bug hunt found, in one pull request; next, the 32 written reports
+            regenerated once from main, the screenshots read back against the store and the phase 18 report.
+Carried:    nothing new.

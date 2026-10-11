@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of a growth written as a multiple
+Decision: A growth is written as a rise in per cent and never as a number of times the earlier figure
+Was:
+> claim-admissibility: ... and from the 6.4 correction of 2026-10-11 a section is drawn as written before the citation check where it is dated before 2026-10-10, the first day a pass wrote with the check, and a section of that day or after is not |
+Now:
+> claim-admissibility: ... and a section of that day or after is not; and from the 6.4 correction of 2026-10-11 a figure written as a number of times something that the facts file holds only as a growth is refused, written as "1.49 times" and as "1.49x", while the same growth written as a rise in per cent passes, a multiple the file holds as a multiple passes and a figure the file also holds as a ratio passes, the retry told to write a rise in per cent |
+Why: each roster row says what its check asserts, and the correction's tests extend claim-admissibility's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of a phone's masthead
 Corrects: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity line and its as-of line cut; found reading CVX's page through a 390-pixel frame for 18.5
 Was:
