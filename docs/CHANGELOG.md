@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.3 correction of the day asserts of the ladder's sides, the reward bars and the provider's multiples
+Corrects: PEP's ladder drew "Buy into these" over nothing, the reward to risk figure left a blank row beneath a tranche stating no risk, and CVX's technicals drew the provider's 20.4 beside the valuation's 19.6 with nothing naming either's basis, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 4.6 correction of 2026-10-11 ... a plan's table that would hold no row draws a line saying so |
+Now:
+> read-surface: ... draws a line saying so; and from the 18.3 correction of 2026-10-11 the ladder figure says beneath its heading that no band stands on a side of the price where none does, the reward to risk figure stands as tall as the bars it draws, and the technicals name the provider's multiples as the provider's, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's levels row says where no band stands on a side and names the provider's multiples as its own
+Corrects: the ladder figure drew a heading over nothing, and the technicals drew the provider's multiple beside the valuation's with nothing naming its basis, found in the bug hunt of 2026-10-11.
+Was:
+> ... what the plan does there, how many times the price turned at it and the last session it did. Then each band ... the next dated event, the multiples, the averages, ...
+Now:
+> ... what the plan does there, how many times the price turned at it and the last session it did, and beneath a heading with no band on its side of the price a line saying so. Then each band ... the next dated event, the provider's multiples named as the provider's, the averages, ...
+Why: the row states what the region draws.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 4.6 correction of the day asserts of a name with no plan
 Decision: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
 Was:

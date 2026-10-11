@@ -42826,3 +42826,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 18.3 - correction: the ladder figure says where no band stands on a side of the price, the reward to risk figure stands as tall as its bars, and the technicals name the provider's multiples as its own, where PEP's ladder drew "Buy into these" over nothing   2026-10-11
+
+Corrects:   18.3's ladder figure, which drew "Buy into these" over nothing for PEP, under every band it holds at 125.97;
+            its reward to risk figure, which kept a row's height for a tranche stating no risk and stood a blank row
+            beneath the bars; and the technicals it placed in the levels region, which drew the provider's trailing
+            multiple of 20.4 for CVX beside the valuation's 19.6, the night's close over the newest four quarters'
+            earnings, with nothing naming either's basis.
+Found:      in the bug hunt of 2026-10-11, reading PEP's and CVX's pages at 1440 and 390 pixels.
+Built:      beneath a heading with no band on its side of the price the figure draws a line saying none stands there and
+            what the plan cannot do; the reward to risk figure's height counts the bars it draws and a foot for its
+            axis's words; and the grid and the sentence beneath it name the provider's multiples as the provider's.
+            Section 4's levels row says so, the prior text in `CHANGELOG.md`.
+Tests:      one more: PEP's bands at 125.97 saying nothing stands below and nothing of above, a name above its one band
+            saying nothing stands above, two tranches stating a risk and a third stating none drawn 84 high, worked by
+            hand, and the provider's multiples named as its own in the grid and the sentence.
+Claims:     none more; the row and the roster's read-surface row say so.
+Pins:       none moved; the read surface and the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that an empty side says so. H5 the line beneath an empty side
+            not drawn: predicted red at the new test. Result: red, PEP's figure saying nothing beneath "Buy into these";
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
