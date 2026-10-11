@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states what the 6.11 correction of the day asserts of a name's news read a month at a time
+Decision: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
+Was:
+> fixture-expectations: ... and the fixture's pass writes the short version and the headline in a round after every other section's last retry from the accepted claims, the short version refused for a figure the tiles show and accepted at its retry |
+Now:
+> fixture-expectations: ... the short version refused for a figure the tiles show and accepted at its retry; and from the 6.11 correction of 2026-10-11 a pass asks each window of a name's news a month at a time, a month the provider does not answer in time or refuses named unread with its dates and the window's other months read, worked by hand over a window of three months, and the fixture's pass asks the months of its windows |
+Why: each roster row says what its check asserts, and the correction's test extends fixture-expectations'.
+
 ### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of a growth written as a multiple
 Decision: A growth is written as a rise in per cent and never as a number of times the earlier figure
 Was:

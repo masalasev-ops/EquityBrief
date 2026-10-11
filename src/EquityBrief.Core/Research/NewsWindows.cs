@@ -1,4 +1,5 @@
 using EquityBrief.Core.Facts;
+using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Core.Research;
 
@@ -52,5 +53,56 @@ public static class NewsWindows
         }
 
         return windows;
+    }
+
+    // A window cut into pieces of at most a month, each from its first day to the day before the same date a month on:
+    // the provider's time to answer grows with the articles a window holds, and a month of a heavily covered name's news
+    // answers well inside a request's limit where its quarter did not.
+    // see: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
+    public static IReadOnlyList<(DateOnly From, DateOnly To)> Months(DateOnly from, DateOnly to)
+    {
+        var pieces = new List<(DateOnly From, DateOnly To)>();
+
+        for (var start = from; start <= to; start = start.AddMonths(1))
+        {
+            var end = start.AddMonths(1).AddDays(-1);
+
+            pieces.Add((start, end < to ? end : to));
+        }
+
+        return pieces;
+    }
+
+    // The articles of the windows, asked a month at a time, each month the provider refuses or does not answer in time
+    // named as unread and the months it answered kept, so one slow month costs that month and not the window around it.
+    public static async Task<(IReadOnlyList<NewsArticle> Articles, IReadOnlyList<string> Unread)> ReadAsync(
+        INameNewsFeed news,
+        string ticker,
+        IReadOnlyList<(DateOnly From, DateOnly To)> windows,
+        CancellationToken cancellation = default)
+    {
+        var articles = new List<NewsArticle>();
+        var unread = new List<string>();
+
+        foreach (var (windowFrom, windowTo) in windows)
+        {
+            foreach (var (from, to) in Months(windowFrom, windowTo))
+            {
+                try
+                {
+                    articles.AddRange(await news.ArticlesAsync(ticker, from, to, cancellation).ConfigureAwait(false));
+                }
+                catch (ProviderRefusal refused)
+                {
+                    unread.Add("news: " + refused.Message);
+                }
+                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+                {
+                    unread.Add(FormattableString.Invariant($"news: the provider did not answer for {from:yyyy-MM-dd} to {to:yyyy-MM-dd} in time on any try"));
+                }
+            }
+        }
+
+        return (articles, unread);
     }
 }

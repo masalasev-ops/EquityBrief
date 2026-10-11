@@ -42718,3 +42718,27 @@ Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first ha
             this correction and the others the bug hunt found, in one pull request; next, the 32 written reports
             regenerated once from main, the screenshots read back against the store and the phase 18 report.
 Carried:    nothing new.
+
+### 6.11 - correction: a pass reads each month of a name's news on its own, where one month the provider did not answer in time lost its whole window and CVX's report had no news since its filing   2026-10-11
+
+Corrects:   the 6.11 correction of 2026-10-02, which had the feed ask a window a month at a time inside one call, so a
+            month timing out on every try threw away the months already read: CVX's pass of 2026-10-11 named
+            "the provider did not answer for 2026-07-31 to 2026-10-11 in time on any try" and wrote every section with
+            no news since its filing.
+Found:      reading CVX's pass in the bug hunt of 2026-10-11, its run log row against its page.
+Built:      the pass cuts each window into its months and asks each on its own through one function in the core, a
+            month the provider refuses or does not answer in time named unread with its dates and the window's other
+            months read. The feed still cuts what it is asked into months, so a month asked is one request as before.
+            A decision supersedes the one that read the window as the unit.
+Tests:      one more: a window of three months worked by hand, the middle one timing out and then refused, the other two
+            read; the fixture's asks counted a month of each window, and the feed's months read off the moved function.
+Claims:     none more; the decision and the roster's fixture-expectations row say so.
+Pins:       none moved; the pass and the feed are no source a rule's version, the swing filter or a candidate evaluator
+            pins.
+Mutated:    the rule, stated before the run: the property that a month costs only itself. H2 the window asked whole
+            again: predicted red at the new test. Result: red, one window asked where three months are; reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
