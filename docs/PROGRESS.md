@@ -42598,3 +42598,34 @@ Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0 to 18.4 and
             419 to 429 merged; in progress, this correction; next, the written reports regenerated once a night is built
             from a main holding 18.4, then 18.5.
 Carried:    nothing new.
+
+### 18.4 - correction: the short version is held to three paragraphs of at most five sentences each and the calendar timeline's last words end inside it, where the short version restated every claim and the words ran past the figure   2026-10-11
+
+Corrects:   two parts 18.4 built. The checker held the short version written last to its citations and to nothing about
+            its length, so CVX's, written on 2026-10-10, restated about fifty of its accepted claims, every risk and both
+            cases among them, its second paragraph about forty sentences. And the calendar timeline centred its last
+            day's words on the plot's right edge, so they ran past the figure and were cut at "+90 day".
+Found:      reading CVX's rewritten page window by window at 1440 pixels for 18.5 on 2026-10-11. The operator chose to fix
+            the short version before the 32 reports are written again.
+Built:      a fourth paragraph, and a paragraph of more than five sentences, refused by the checker and named by their
+            openings, the retry told the bound and to choose the claims that matter most. The prompt is unchanged, so no
+            recording moves: every answer the fixture holds keeps within the bound, its longest paragraph five sentences,
+            the local model's retry in the lane comparison. The last day's words end at their rule.
+Tests:      one more: three paragraphs of five sentences pass, an abbreviation counting no sentence; a sixth sentence and a
+            fourth paragraph are each refused by their openings; the headline is held to its one sentence alone; and each
+            retry's words. The timeline's test reads each tick's anchor, the last ending at its rule.
+Claims:     none more; section 4's and section 12's rows for the short version, the roster's claim-admissibility and
+            read-surface rows and the guide say so.
+Pins:       none moved; the checker and the marks are no source a rule's version, the swing filter or a candidate
+            evaluator pins.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone. K1 the sentence bound read
+            as six: predicted red at the new test. K2 the paragraph bound unenforced: predicted red at the new test. K3 the
+            last day's words centred again: predicted red at the timeline's test. Results: K1 red, a sixth sentence
+            passing; K2 red, a fourth paragraph passing; K3 red, the four anchors all the middle. Each made on this branch
+            and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2202 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
+            figures to be filled from the run.
+Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 431 merged; in progress,
+            this correction and the 6.4, 12.6 and 18.1 corrections beside it; next, the 32 written reports regenerated
+            from main, the screenshots read back against the store and the phase 18 report.
+Carried:    nothing new.

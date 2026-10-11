@@ -168,7 +168,16 @@ public static class ClaimRules
     public const string DateNoCitedClaimCarries = "a date neither the facts file nor a claim the sentence cites carries";
     public const string HeadlineFigure = "a figure in the headline";
     public const string HeadlineSentences = "a headline of more than one sentence";
+    public const string ShortVersionTooManyParagraphs = "a short version of more than three paragraphs";
+    public const string ShortVersionLongParagraph = "a paragraph of the short version holding more than five sentences";
     public const string NoClaims = "no claims stored beside it to hold it to";
+
+    // The short version is the page's summary: three paragraphs of a few sentences, each choosing the claims that matter
+    // most, since the regions beneath draw every claim in full. A draft restating every claim reads as the page again, and
+    // its retry is told the bound it passed.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    public const int ShortVersionParagraphs = 3;
+    public const int ShortVersionParagraphSentences = 5;
 
     // The one section read from the newest and the previous results releases, in the release's own words: what management
     // said of its guidance against the release before, what is working and what is not. The words its three parts open on.
@@ -493,6 +502,21 @@ public static class ClaimRules
         if (headline && sentences.Count > 1)
         {
             findings.Add(new ClaimFinding(prose.Trim(), prose.Trim(), HeadlineSentences));
+        }
+
+        if (!headline)
+        {
+            string[] paragraphs = prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (paragraphs.Length > ShortVersionParagraphs)
+            {
+                findings.Add(new ClaimFinding(string.Empty, Excerpt(paragraphs[ShortVersionParagraphs]), ShortVersionTooManyParagraphs));
+            }
+
+            foreach (var paragraph in paragraphs.Where(paragraph => Sentences(paragraph).Count > ShortVersionParagraphSentences))
+            {
+                findings.Add(new ClaimFinding(string.Empty, Excerpt(paragraph), ShortVersionLongParagraph));
+            }
         }
 
         var read = new Dictionary<int, DocumentFigures>();

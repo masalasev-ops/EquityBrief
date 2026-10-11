@@ -56,8 +56,11 @@ public sealed partial class MarkRenderer
         {
             var x = X(view.Night.AddDays(days));
 
+            // The last day's words end at its rule, since words centred on the plot's right edge run past the figure.
+            var anchor = days == PageCalendar.Days ? "end" : "middle";
+
             svg.Append(Formatted($"<line class=\"m-axisline\" x1=\"{Number(x)}\" x2=\"{Number(x)}\" y1=\"{Number(ChartTop)}\" y2=\"{Number(high - ChartBottom)}\"/>"));
-            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(x)}\" y=\"{Number(high - 10)}\" text-anchor=\"middle\">{(days == 0 ? "the night" : "+" + days.ToString(Invariant) + " days")}</text>"));
+            svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(x)}\" y=\"{Number(high - 10)}\" text-anchor=\"{anchor}\">{(days == 0 ? "the night" : "+" + days.ToString(Invariant) + " days")}</text>"));
         }
 
         foreach (var item in view.Items)

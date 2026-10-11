@@ -172,6 +172,41 @@ public partial class ClaimAdmissibility
             Last(ClaimRules.HeadlineSection, "Demand runs ahead of supply [C1]. The plan buys in stages [C3]."));
     }
 
+    // The correction of 2026-10-11: CVX's short version written last restated about fifty of its claims, every risk and
+    // both cases among them, in a paragraph the checker held to its citations and to nothing about its length.
+    [Fact]
+    public void TheShortVersionIsThreeParagraphsOfAtMostFiveSentencesEach()
+    {
+        const string Five = "Demand is strong [C1]. Supply is short [C2]. Guidance rose [C1]. The quarter was a record [C2]. Margins widened [C1].";
+        const string Plan = "The plan buys in three tranches at the support bands beneath the price [C3].";
+
+        // Three paragraphs of five sentences pass, a sentence's abbreviation counting no sentence of its own.
+        Assert.Empty(Last(ClaimRules.ShortVersionSection, Five + "\n\n" + Five + "\n\n" + Plan));
+        Assert.Empty(Last(ClaimRules.ShortVersionSection, "Demand in the U.S. is strong [C1]. Supply is short [C2]. Guidance rose [C1]. The quarter was a record [C2]. Margins widened [C1]."));
+
+        // A sixth sentence refuses the paragraph it sits in, named by its opening, and that paragraph alone.
+        Assert.Equal(
+            [(Five[..80] + "...", ClaimRules.ShortVersionLongParagraph)],
+            Last(ClaimRules.ShortVersionSection, Five + "\n\n" + Five + " Demand is strong [C1].\n\n" + Plan));
+
+        // A fourth paragraph is refused by its opening, however short each is.
+        Assert.Equal(
+            [("Demand is strong [C1].", ClaimRules.ShortVersionTooManyParagraphs)],
+            Last(ClaimRules.ShortVersionSection, "Supply is short [C2].\n\nGuidance rose [C1].\n\n" + Plan + "\n\nDemand is strong [C1]."));
+
+        // The headline is held to its one sentence and to no paragraph.
+        Assert.Empty(Last(ClaimRules.HeadlineSection, "Demand runs ahead of what supply lets the company ship [C1] [C3]."));
+
+        // The bound is the one the retry is told, and the retry says what to do about each refusal.
+        Assert.Equal((3, 5), (ClaimRules.ShortVersionParagraphs, ClaimRules.ShortVersionParagraphSentences));
+        Assert.Equal(
+            "Write three paragraphs and no more: what happened, what matters and what the plan does.",
+            RetryBrief.Do(ClaimRules.ShortVersionTooManyParagraphs));
+        Assert.Equal(
+            "Keep each paragraph to five sentences, choosing the claims that matter most, since the sections beneath draw every claim.",
+            RetryBrief.Do(ClaimRules.ShortVersionLongParagraph));
+    }
+
     [Fact]
     public void ARetryIsToldWhatToDoAboutEachRefusalOfTheTwoWrittenLast()
     {
