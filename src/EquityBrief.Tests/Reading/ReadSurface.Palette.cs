@@ -228,6 +228,22 @@ public partial class ReadSurface
         Assert.All(marked, rule => Assert.DoesNotMatch(@"var\(--fail(?:-fill)?\)", rule.Body));
     }
 
+    // The 18.1 correction of 2026-10-11: every written section's prose is set in the page's own type. The short version's
+    // stood at 19 pixels in the serif beside every other section's 15 in the sans.
+    [Fact]
+    public void EveryWrittenSectionsProseIsSetInThePagesOwnType()
+    {
+        const string SetsType = @"(?:^|;)\s*font(?:-size|-family)?\s*:";
+        var rules = StyleRules();
+
+        // No rule picks a written section out by its name to give it a face or a size of its own.
+        Assert.Empty(rules.Where(rule => rule.Selectors.Contains("[data-section=", StringComparison.Ordinal) && Regex.IsMatch(rule.Body, SetsType)).Select(rule => rule.Selectors));
+
+        // And the rule for every section's prose sets none, so it reads at the body's 15 pixels in the sans.
+        Assert.DoesNotMatch(SetsType, rules.Single(rule => rule.Selectors == ".written-section .prose").Body);
+        Assert.Contains("font:15px/1.6 var(--sans)", rules.Single(rule => rule.Selectors == "body").Body, StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TheNamePageIsReadInAColumnAndEachRegionIsRuledDownItsLeftByItsRole()
     {

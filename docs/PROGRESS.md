@@ -42537,3 +42537,25 @@ Queue:      done, phase 17 through 17.10, Part A's corrections and 18.0 to 18.4,
 Carried:    the regeneration once the night of 2026-10-12 is built from a main holding 18.4; the short version's refusals
             after it is written from accepted claims, read on the Run page's rate at ten reports; and the finding on the
             claims harness's part reader, owed a reading at 18.5's phase report.
+
+### 18.1 - correction: every written section's prose is set in the page's own type, where the short version's stood at 19 pixels in the serif beside every other section's 15 in the sans   2026-10-11
+
+Corrects:   the name page's look, which 18.1 set and which left the short version's prose in the type the 5.8 correction
+            of 2026-09-19 gave it, 19 pixels in the serif, beside every other written section's 15 pixels in the sans, so
+            it read larger than every region around it.
+Found:      by the operator on CVX's page on 2026-10-11: "The font size is way bigger in this section than other
+            sections".
+Built:      the rule naming the short version taken out, so its prose reads in the type every written section's does.
+Tests:      one more: no rule picks a written section out by its name to set its face or its size, and the rule for every
+            section's prose sets neither.
+Claims:     none more; the roster's row for the page says what the test asserts.
+Pins:       none moved; the stylesheet is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: the short version's rule restored. Predicted red at the new test and green
+            at the palette's and the reading column's tests. Result: red at the new test, naming that rule, and the other
+            three green, as predicted; made on this branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2197 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
+            figures to be filled from the run.
+Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0 to 18.4 and the 4.6 and 18.4 corrections, PRs 419 to
+            428 merged on 2026-10-10; in progress, this correction; next, the written reports regenerated once a night is
+            built from a main holding 18.4, then 18.5.
+Carried:    nothing new.
