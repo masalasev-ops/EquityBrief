@@ -42944,3 +42944,35 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 18.2 - correction: the quarters verb asks again by hand each member whose newest fetch read none of the gross profit and the cash flow lines, under a cap and stating its asks before its first request, where 440 S&P 500 members' newest fetches came before 18.2 kept them   2026-10-11
+
+Corrects:   the fetch 18.2 widened to keep each quarter's gross profit and cash flow lines and the analysts' estimate
+            trend, which merged at 16:39Z on 2026-10-10 after the S&P 500's first refetch had run at 01:00Z: 440 members
+            held a newest fetch reading none of them, and their analysts, their gross profit and their payout on free
+            cash flow drew nothing until each reports again, CVX's among them.
+Found:      in the bug hunt of 2026-10-11, reading CVX's page against its fetch; put to the operator, who chose "Tue and
+            Wed, 220 a day (Recommended)".
+Built:      `quarters --refetch-lines` asks each member of the index whose newest fetch read none of the lines, once a
+            session and in ticker order, as `--refetch-unread` asks, prints its asks and the weighted calls they may
+            spend, eleven an ask, before its first request, and `--most` caps them; a run naming two of the three runs
+            by hand is refused. A decision names it (see: A fetch made before the gross profit and the cash flow lines
+            were kept is asked again by hand under a stated cap); the quarter fetcher's catalogue row says so, the prior
+            text in `CHANGELOG.md`, and the runbook gives the line and its cap.
+Tests:      one more: over a constructed store, the refetch capped at one ask asks the first of the two members whose
+            newest fetch read none of the lines, at eleven weighted calls, after printing what it will ask; a member
+            whose newest fetch read them though an older one did not and one that read them are not asked; the next run
+            asks the second and one after that nothing, each run's asks read off the store; and two runs named together
+            are refused with nothing asked.
+Claims:     none more; the decision, the row and the roster's nightly-cost row say so.
+Pins:       none moved; the quarter fetcher is in no pin list.
+Mutated:    the rule, stated before the run: the property that the refetch asks only a member whose newest fetch read
+            none of the lines. H10 the selection reading the members whose newest fetch read them: predicted red at the
+            new test. Result: green. The selection then held KA and KB, two members as LA and LB are, and the test
+            counted the asks and the requests without naming who was asked: a missing property. The test now reads each
+            run's asks off the store, LA alone and then LB beside it, and H10 made again was red, KA asked in LA's place;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new; the two runs the decision names, on Tuesday 2026-10-13 and Wednesday 2026-10-14, are run by hand
+            after this merges and are no done condition of it.

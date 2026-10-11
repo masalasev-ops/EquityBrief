@@ -489,6 +489,103 @@ public partial class NightlyCost
         Assert.Contains("dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unread --most 454 --live", Corpus.Read("docs/RUNBOOK.md"), StringComparison.Ordinal);
     }
 
+    // A fetch's quarter as the store holds it, read for the gross profit and the cash flow lines or not.
+    static void FetchedLines(TemporaryStore store, string ticker, string fetchedAt, int linesRead) =>
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, net_income, operating_income, interest_expense, interest_read, lines_read) VALUES " +
+            $"('{ticker}', '{fetchedAt}', '{fetchedAt[..10]}', '2026-06-30', '2026-07-30', '100', '150', '10', 1, {linesRead});");
+
+    // The 18.2 correction of 2026-10-11: the S&P 500's first refetch ran before 18.2 kept the lines, so a member whose
+    // newest fetch read none of them is asked again by hand, as the refetch of the interest expense asks.
+    // see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
+    [Fact]
+    public async Task TheLinesRefetchAsksEachMemberWhoseNewestFetchReadNoneOfTheLinesStatingItsAsksBeforeTheFirstRequest()
+    {
+        // LA and LB fetched before the lines were kept; KA's newest fetch read them though an older one did not; KB read them.
+        using var store = QuarterMembers("KA", "KB", "LA", "LB");
+
+        FetchedLines(store, "LA", "2026-10-10T01:23:00Z", 0);
+        FetchedLines(store, "LB", "2026-10-10T01:24:00Z", 0);
+        FetchedLines(store, "KA", "2026-10-10T01:25:00Z", 0);
+        FetchedLines(store, "KA", "2026-10-11T01:27:00Z", 1);
+        FetchedLines(store, "KB", "2026-10-11T01:28:00Z", 1);
+
+        var posted = new PostedFundamentals();
+        var closes = new OneClose();
+
+        foreach (var ticker in new[] { "KA", "KB", "LA", "LB" })
+        {
+            posted.Post(ticker, new DateOnly(2026, 6, 30));
+        }
+
+        var output = new StringWriter();
+        var fundamentals = new FirstRequestNoted(posted, output.ToString);
+        var feeds = EquityBrief.Worker.NightFeeds.FromFixture(FixtureFolder()) with { Fundamentals = fundamentals, Historical = closes };
+
+        async Task<int> ByHand(int minute, params string[] args)
+        {
+            var error = new StringWriter();
+
+            return await QuarterFetcher.RunAsync(
+                ["quarters", .. args],
+                () => feeds,
+                FixedClock.At(new DateTimeOffset(2026, 10, 13, 14, minute, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+                store.DatabaseFile,
+                output,
+                error) is var code && code == 0 ? 0 : throw new InvalidOperationException(error.ToString());
+        }
+
+        // Who was asked on the session the runs fall on, read off the store's asks.
+        IReadOnlyList<string> Asked()
+        {
+            using var connection = store.Open();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = "SELECT ticker || '|' || reason || '|' || outcome || '|' || weighted FROM quarter_ask WHERE session_date = '2026-10-13' ORDER BY ticker;";
+
+            var rows = new List<string>();
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                rows.Add(reader.GetString(0));
+            }
+
+            return rows;
+        }
+
+        var stored = $"{QuarterFetcher.Fill}|{QuarterFetcher.Stored}|{QuarterFetcher.WeightOfAnAsk}";
+
+        // Capped at one ask, the run asks LA alone, the first of the two by ticker, after saying so.
+        await ByHand(0, "--refetch-lines", "--most", "1", "--live");
+
+        Assert.Equal(
+            $"quarters: 1 ask(s) of the 2 member(s) whose newest fetch read none of the gross profit and the cash flow lines, at most {QuarterFetcher.WeightOfAnAsk} weighted call(s)",
+            fundamentals.AtTheFirst?.Trim());
+        Assert.Equal([$"LA|{stored}"], Asked());
+        Assert.Equal((1, 1), (posted.Requests, closes.Requests));
+
+        // The next run asks LB alone, the refetch having stored LA's quarters read for the lines, and one after it nothing:
+        // KA and KB, whose newest fetches read them, are never asked.
+        await ByHand(10, "--refetch-lines", "--live");
+
+        Assert.Equal([$"LA|{stored}", $"LB|{stored}"], Asked());
+
+        await ByHand(20, "--refetch-lines", "--live");
+
+        Assert.Equal([$"LA|{stored}", $"LB|{stored}"], Asked());
+        Assert.Equal((2, 2), (posted.Requests, closes.Requests));
+
+        // Two runs asked together are refused with nothing asked.
+        foreach (var refused in new[] { new[] { "--refetch-lines", "--refetch-unread" }, ["--refetch-lines", "--companies"] })
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => ByHand(30, refused));
+        }
+
+        Assert.Equal((2, 2), (posted.Requests, closes.Requests));
+        Assert.Contains("dotnet run --project src/EquityBrief.Worker -- quarters --refetch-lines --most 220 --live", Corpus.Read("docs/RUNBOOK.md"), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task AMemberTheProviderReturnsNoQuarterForIsMarkedAbsentAndAskedOnTheSameSchedule()
     {

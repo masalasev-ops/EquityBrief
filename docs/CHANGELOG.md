@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - nightly-cost states what the 18.2 correction of the day asserts of the lines refetch
+Decision: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
+Was:
+> nightly-cost: ... and from 18.2 the Treasury's par yield table, one free request a night to the Treasury and none to the provider, is among the shipped files that may hold a client |
+Now:
+> nightly-cost: ... is among the shipped files that may hold a client; and from the 18.2 correction of 2026-10-11 the `quarters` verb's lines refetch asks, once a session and in ticker order under its cap, only the members whose newest fetch read none of the gross profit and the cash flow lines, states its asks and their weighted calls before its first request, and is refused beside another run by hand with nothing asked, over a constructed store |
+Why: each roster row says what its check asserts, and the correction's test extends nightly-cost's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the quarter fetcher's catalogue row names the lines refetch
+Decision: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
+Was:
+> ... (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read). It records every ask with why, ...
+Now:
+> ... (see: A fetch made before the interest expense and the rating counts were stored is asked again by hand under a stated cap and its counts read as not read), and <code>quarters --refetch-lines</code> every member whose newest fetch read none of the gross profit and the cash flow lines in the same way (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap). It records every ask with why, ...
+Why: the catalogue names every run of the component, and the operator ruled this one on 2026-10-11.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.2 correction of the day asserts of the margins' lines
 Corrects: CVX's margins figure cut "Operating 32.4%" at its edge and named a gross margin line it did not draw, found in the bug hunt of 2026-10-11.
 Was:
