@@ -658,11 +658,12 @@ public partial class ReadSurface
 
             var link = Regex.Match(document.Groups[4].Value, "^<a href=\"([^\"]*)\">([^<]*)</a>, published on ([0-9-]+)$");
 
+            // The link and the title as the provider meant them, a character it sent written as an entity read once.
             Assert.Equal(row[0], document.Groups[2].Value);
-            Assert.Equal(row[1], WebUtility.HtmlDecode(document.Groups[3].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[1]), WebUtility.HtmlDecode(document.Groups[3].Value));
             Assert.True(link.Success, document.Groups[4].Value);
-            Assert.Equal(row[1], WebUtility.HtmlDecode(link.Groups[1].Value));
-            Assert.Equal(row[2], WebUtility.HtmlDecode(link.Groups[2].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[1]), WebUtility.HtmlDecode(link.Groups[1].Value));
+            Assert.Equal(WebUtility.HtmlDecode(row[2]), WebUtility.HtmlDecode(link.Groups[2].Value));
             Assert.Equal(row[0], link.Groups[3].Value);
         }
 

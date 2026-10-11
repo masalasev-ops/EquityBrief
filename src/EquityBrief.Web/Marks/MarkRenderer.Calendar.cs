@@ -136,7 +136,7 @@ public sealed partial class MarkRenderer
 
             foreach (var document in documents)
             {
-                region.Append(Formatted($"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Escaped(document.Url)}\">"));
+                region.Append(Formatted($"<li data-document=\"{Escaped(document.Id)}\" data-published-on=\"{Published(document)}\" data-url=\"{Sent(document.Url)}\">"));
                 region.Append(Link(document)).Append("</li>");
             }
 

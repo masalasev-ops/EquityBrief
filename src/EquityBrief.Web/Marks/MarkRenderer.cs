@@ -4469,7 +4469,7 @@ public sealed partial class MarkRenderer : IComponent
     // no date is on file, which admissibility refuses a document for, so a cited one
     // carries a date unless its row is older than the rule.
     static string Link(SourceCell document) =>
-        "<a href=\"" + Escaped(document.Url) + "\">" + Escaped(document.Title) + "</a>"
+        "<a href=\"" + Sent(document.Url) + "\">" + Sent(document.Title) + "</a>"
         + (document.PublishedOn is not null ? ", published on " + Published(document) : ", with no publish date on file");
 
     static string Published(SourceCell document) =>
@@ -4515,8 +4515,8 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var document in refused)
         {
             region.Append(Invariant, $"<p class=\"refused\" data-category=\"{Escaped(document.Category)}\" ");
-            region.Append(Invariant, $"data-url=\"{Escaped(document.Url)}\">");
-            region.Append(Invariant, $"{Escaped(document.Category)}: {Escaped(document.Title)}, {Escaped(document.Url)}</p>");
+            region.Append(Invariant, $"data-url=\"{Sent(document.Url)}\">");
+            region.Append(Invariant, $"{Escaped(document.Category)}: {Sent(document.Title)}, {Sent(document.Url)}</p>");
         }
 
         region.Append("</section>");
@@ -5402,7 +5402,7 @@ public sealed partial class MarkRenderer : IComponent
         EquityBrief.Core.Moves.MoveCauses.Research => Escaped(taken.Written ?? string.Empty),
         EquityBrief.Core.Moves.MoveCauses.News => string.Join(
             "; ",
-            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Escaped(story.Link)}\" rel=\"noopener\">{ArticleTitle(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
+            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Sent(story.Link)}\" rel=\"noopener\">{Sent(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
             + (taken.Stories.Count > 3 ? Formatted($"; and {taken.Stories.Count - 3} more") : string.Empty)
             + (taken.Prints.Count + taken.Filings.Count > 0 ? "; inside the move as well, " + Dated(taken) : string.Empty),
         EquityBrief.Core.Moves.MoveCauses.Filed => Dated(taken),
@@ -7001,7 +7001,7 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var row in view.Rows)
         {
             region.Append(Invariant, $"<li class=\"news-row\" data-article=\"{Escaped(row.ArticleId)}\" data-state=\"{Escaped(row.State)}\" data-tabs=\"{Escaped(row.Tabs)}\" data-kind=\"{Escaped(row.Kind ?? "none")}\" data-direction=\"{Escaped(row.Direction ?? "none")}\">");
-            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Escaped(row.Link)}\" rel=\"noopener\" target=\"_blank\">{ArticleTitle(row.Title)}</a>");
+            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Sent(row.Link)}\" rel=\"noopener\" target=\"_blank\">{Sent(row.Title)}</a>");
             region.Append(row.State switch
             {
                 NewsRow.Labelled => Formatted($"<span class=\"tag kind\">{Escaped(row.Kind ?? string.Empty)}</span><span class=\"tag dir\">{Escaped(row.Direction ?? string.Empty)}</span>"),
@@ -8045,7 +8045,8 @@ public sealed partial class MarkRenderer : IComponent
     static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 
-    // An article's title as the provider sends it carries its characters already written as entities, an ampersand as
-    // &amp;, so it is read back before it is escaped for the page, which would otherwise draw the entity's own letters.
-    static string ArticleTitle(string title) => Escaped(System.Net.WebUtility.HtmlDecode(title));
+    // A title or a link as a provider or a page sends it carries some characters already written as entities, an ampersand
+    // as &amp;, so it is read back before it is escaped once for the page, which would otherwise draw the entity's own
+    // letters and send a reader following a link to an address the provider never wrote.
+    static string Sent(string text) => Escaped(System.Net.WebUtility.HtmlDecode(text));
 }

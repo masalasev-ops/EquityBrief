@@ -42871,3 +42871,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 6.8 - correction: a document's title and link and an article's link sent with characters written as entities are drawn as those characters, where BDX's sources drew "&amp;" and 626 links carried "&amp;amp;utm_medium"   2026-10-11
+
+Corrects:   the links 6.8 drew beneath each written section and the ones later regions draw the same way, which escaped
+            a title and an address the provider sent with entities a second time: BDX's sources drew "Becton Dickinson
+            &amp; Co's Dividend Analysis", and 626 links across the stored pages carried "&amp;amp;utm_medium", an address
+            the provider never wrote. The 12.6 correction of 2026-10-11 drew an article's title as its characters and
+            left its link and a document's title and link as they were.
+Found:      in the bug hunt of 2026-10-11, scanning every member's page for an entity escaped twice.
+Built:      one function reads a title or an address as the provider meant it, its entities read once, and escapes it
+            for the page, used by every document's link, the refused documents, each move's cause, the News region and
+            the calendar's items.
+Tests:      one more: BDX's title and a link carrying "&amp;" drawn escaped once in the sources, and an article's link
+            in the News region; the research pass's sources test reads the link and the title as the provider meant
+            them.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that an entity is read once. H7 the function escaping what it
+            is sent without reading its entities: predicted red at the new test. Result: red, the link drawn with
+            "&amp;amp;"; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
