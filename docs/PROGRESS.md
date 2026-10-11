@@ -42742,3 +42742,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 6.4 correction above.
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
+
+### 18.5 ruling - the reports written again once after the bug hunt's corrections merge, the two cases held to six sentences a side, a name with no plan saying why, and the 440 members fetched before 18.2 asked again   2026-10-11
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-11, stopping the rewrite of the 32 reports after four: "please do not exhaust my
+            deepseek subscription by continously calling it with every fix. Figure out all the bugs in one shot". The
+            hunt read CVX, PEP and GTES at 1440 and 390 pixels in both palettes, the exported file, and the markup of
+            every member's page, and put fourteen findings and one of data to the operator, who chose, of the options put:
+            "Yes, start now (Recommended)", the fourteen corrected in one pull request and the reports written again
+            once after it merges; "At most six points a side" for the two cases, stated in the prompt and held by the
+            checker, the closing sentence among the six; "Page says why and what would bring a plan (Recommended)" for
+            a name with no plan, the plan's own rule unchanged; and "Tue and Wed, 220 a day (Recommended)" for the 440
+            S&P 500 members whose newest quarters fetch, made at 01:00Z on 2026-10-10, came before 18.2 kept the
+            estimate trend, the gross profit and the cash flow lines: about 2,420 weighted calls a day, beside A7's
+            runs and the night under the day's 5,000.
+Changes:    the 18.5 ruling of 2026-10-10 stands, its one regeneration being this one, now of every stock holding a
+            written report on the corrected main, CVX, PEP, AAPL and GTES written again with the rest. A pass runs from the
+            newest night's build or by hand from main's, the corrections' prompts holding either way.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 6.4 correction above.
