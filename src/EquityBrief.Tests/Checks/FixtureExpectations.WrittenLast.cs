@@ -78,7 +78,7 @@ public partial class FixtureExpectations
         IReadOnlyList<(string, string)> accepted =
         [
             (ClaimRules.TwoCasesSection, "The bull case rests on demand [D1]. The bear case rests on supply [D2]."),
-            (RiskFields.Section, "The first risk is that supply stays short [D2]. That risk would be confirmed by a supplier's warning, a supply event, because supply governs revenue [D2]."),
+            (RiskFields.Section, "The first risk is that supply stays short [D2]. That risk would be confirmed by a supply event: a supplier's warning, because supply governs revenue [D2]."),
             ("What the company sells", "It sells test equipment [D1]."),
             (ClaimRules.ManagementSection, "On guidance, management now expects revenue of $1.93 billion [N] [D1]."),
         ];
@@ -93,7 +93,7 @@ public partial class FixtureExpectations
                 $"{AcceptedClaims.Segments}|It sells test equipment.",
                 $"{AcceptedClaims.Plan}|No plan is stored for the night, the plan being read for the S&P 500's members alone.",
                 $"{AcceptedClaims.Risks}|The first risk is that supply stays short.",
-                $"{AcceptedClaims.Risks}|That risk would be confirmed by a supplier's warning, a supply event, because supply governs revenue.",
+                $"{AcceptedClaims.Risks}|That risk would be confirmed by a supply event: a supplier's warning, because supply governs revenue.",
                 $"{AcceptedClaims.TwoCases}|The bull case rests on demand.",
                 $"{AcceptedClaims.TwoCases}|The bear case rests on supply.",
             ],

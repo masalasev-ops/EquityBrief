@@ -398,7 +398,7 @@ public partial class ReadSurface
         Assert.Equal(
             ["The first risk", "The second risk", "The third risk", "The fourth risk"],
             [.. table.Select(row => string.Join(' ', row.Risk.Split(' ').Take(3)))]);
-        Assert.All(table, row => Assert.StartsWith("That risk would be confirmed by", row.Confirmation, StringComparison.Ordinal));
+        Assert.All(table, row => Assert.StartsWith("That risk would be confirmed", row.Confirmation, StringComparison.Ordinal));
         Assert.DoesNotContain("class=\"risks\"", written.Value, StringComparison.Ordinal);
 
         var marks = new MarkRenderer();

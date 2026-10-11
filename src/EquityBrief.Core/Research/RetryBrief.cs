@@ -101,6 +101,7 @@ public static class RetryBrief
         RiskFields.EventWithLevel => "Give an event no direction and no level.",
         RiskFields.SharedFact => "Confirm each risk by a fact no other risk names, or join the risks that share it.",
         RiskFields.SharedKind => "Give each event risk a kind no other event risk has, or join the risks that share it.",
+        RiskFields.FactWithoutWords => "Give each fact words saying it plainly for a reader, such as \"the operating margin\", beside its name as listed.",
         _ => "Write it so that it is not.",
     };
 }

@@ -25,6 +25,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - docs/ARCHITECTURE.html - the risks' lane row asks a fact's words and composes a fact by them and an event after its kind
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> ... being a listed fact's name with the direction it moves and the level it crosses wherever a fact could show it and an event with one kind of seven where none could, and why with the document saying so, which code composes into a paragraph a risk opening on its ordinal and a sentence opening "That risk would be confirmed by"; ... (see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either); ... an answer not returned as its fields, a fact the file does not list, a kind outside the seven, and two risks confirmed by one fact or two by events of one kind, are refused
+Now:
+> ... being a listed fact's name with the words a reader reads it by, the direction it moves and the level it crosses, a fraction written as its per cent, wherever a fact could show it and an event with one kind of seven where none could, and why with the document saying so, which code composes into a paragraph a risk opening on its ordinal and a sentence opening "That risk would be confirmed", a fact by its words and an event after its kind; ... (see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either) (see: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind); ... an answer not returned as its fields, a fact the file does not list, a fact given no words, a kind outside the seven, and two risks confirmed by one fact or two by events of one kind, are refused
+Why: the confirming sentence printed a fact's listing and raw level, and joined a clause after "confirmed by".
+
+### 2026-10-11 - docs/SCHEMA.md - research_section's parts name a fact's words
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> `risks`, each with `risk`, `riskDocument`, `confirm` holding a listed `fact` or an `event` with its `kind`, ...
+Now:
+> `risks`, each with `risk`, `riskDocument`, `confirm` holding a listed `fact`, from the 12.6 correction of 2026-10-11 with the `words` a reader reads it by, or an `event` with its `kind`, ...
+Why: the fields stored beside the prose carry what the prose was composed from.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 12.6 correction of the day asserts of a risk's words and its kind
+Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
+Was:
+> claim-admissibility: ... a figure the file also holds as a ratio passes, the retry told to write a rise in per cent |
+Now:
+> claim-admissibility: ... the retry told to write a rise in per cent; and from the 12.6 correction of 2026-10-11 a risk confirmed by a fact given no words is refused naming its listing, the retry told to give them, a fact composed by its words crossing its level as written, a fraction's as its per cent, an event after its kind with the seventh plainly an event and a clause opening on an article read as one, and words carrying a figure refused as the risks write none, worked by hand |
+Why: each roster row says what its check asserts, and the correction's tests extend claim-admissibility's.
+
 ### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states what the 6.11 correction of the day asserts of a name's news read a month at a time
 Decision: A name's news is asked of the provider a month at a time, and a month it does not answer in time is read as unread
 Was:

@@ -9,8 +9,8 @@ namespace EquityBrief.Core.Research;
 
 // One risk as the risks section returns it: the risk and the listed document it rests on, what would be seen
 // if it came true, and why that means it is coming true with the document that says so. What confirms it is
-// a listed fact's name with the way it moves and the level it crosses, or, where no listed fact could show
-// it, an event in words with one kind of the seven.
+// a listed fact's name with the words a reader reads it by, the way it moves and the level it crosses, or,
+// where no listed fact could show it, an event in words with one kind of the seven.
 public sealed record RiskField(
     string Risk,
     int RiskDocument,
@@ -20,7 +20,8 @@ public sealed record RiskField(
     string? Event,
     string? Kind,
     string Why,
-    int WhyDocument)
+    int WhyDocument,
+    string? Words = null)
 {
     public bool IsEvent => Fact is null;
 }
@@ -56,6 +57,7 @@ public static class RiskFields
     public const string EventWithLevel = "an event risk carrying a direction or a level";
     public const string SharedFact = "two risks confirmed by the same fact";
     public const string SharedKind = "two risks confirmed by events of one kind";
+    public const string FactWithoutWords = "a risk confirmed by a fact given no words a reader reads it by";
 
     // The two columns the risks close on, each sentence opening on its column's words, which is how the page tells them
     // from the risks above them.
@@ -132,7 +134,8 @@ public static class RiskFields
                 happening,
                 Words(confirm["kind"])?.ToLowerInvariant(),
                 why.StartsWith(Because, StringComparison.OrdinalIgnoreCase) ? why[Because.Length..] : why,
-                whyIn));
+                whyIn,
+                fact is null ? null : Words(confirm["words"])));
         }
 
         return risks;
@@ -189,9 +192,10 @@ public static class RiskFields
         return lines;
     }
 
-    // A column's words as they complete its opening, a writer's leading capital taken down unless it opens a name.
+    // Words as they complete an opening, a writer's leading capital taken down where it opens an article or a pronoun and
+    // kept where it opens a name.
     static string Lowered(string what) =>
-        what.Length > 1 && char.IsUpper(what[0]) && char.IsLower(what[1]) && what.Split(' ')[0] is "The" or "A" or "An" or "Its" or "Their"
+        what.Split(' ')[0] is "The" or "A" or "An" or "Its" or "Their"
             ? char.ToLowerInvariant(what[0]) + what[1..]
             : what;
 
@@ -210,12 +214,18 @@ public static class RiskFields
             ? [string.Join(" ", lines.Select(line => opening + " " + line.What + Cite(line.Document) + "."))]
             : [];
 
-    // What would confirm a risk, as its second sentence opens.
+    // What would confirm a risk, as its second sentence opens: a fact in the words the writer gave a reader, crossing its
+    // level as the writer wrote it, and an event after its kind, which reads whether the writer gave the event as a thing
+    // that happens or as a clause. A fact given no words is named by its listing.
+    // see: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
     public static string ConfirmedBy(RiskField risk) =>
-        "That risk would be confirmed by "
-        + (risk.IsEvent
-            ? risk.Event + ", " + Article(risk.Kind ?? "other") + " " + (risk.Kind ?? "other") + " event"
-            : risk.Fact + " " + risk.Direction + " " + risk.Level);
+        risk.IsEvent
+            ? "That risk would be confirmed by " + KindOf(risk.Kind) + ": " + Lowered(risk.Event!)
+            : "That risk would be confirmed if " + (risk.Words is { } words ? Lowered(words) : "the " + risk.Fact) + " " + risk.Direction + " " + risk.Level;
+
+    // An event's kind as the confirmation names it, the seventh kind being no kind a reader learns anything from.
+    static string KindOf(string? kind) =>
+        kind is null or "other" ? "an event" : Article(kind) + " " + kind + " event";
 
     // The fields as the row stores them, in the order written, the two columns beside the risks where it holds any.
     public static string Stored(IReadOnlyList<RiskField> risks, IReadOnlyList<RiskColumnLine>? up = null, IReadOnlyList<RiskColumnLine>? worse = null)
@@ -295,6 +305,13 @@ public static class RiskFields
                 findings.Add(new ClaimFinding(sentence, fact, SharedFact));
             }
 
+            // A fact's listing is the facts file's name for it, which for a segment reads as the filing's table and line
+            // and not as words, so a fact is given the words a reader reads it by.
+            if (risk.Words is null)
+            {
+                findings.Add(new ClaimFinding(sentence, fact, FactWithoutWords));
+            }
+
             if (risk.Direction is null || risk.Level is null)
             {
                 findings.Add(new ClaimFinding(sentence, fact, FactWithoutLevel));
@@ -332,6 +349,11 @@ public static class RiskFields
         var confirm = risk.IsEvent
             ? new JsonObject { ["event"] = risk.Event, ["kind"] = risk.Kind }
             : new JsonObject { ["fact"] = risk.Fact };
+
+        if (risk.Words is not null)
+        {
+            confirm["words"] = risk.Words;
+        }
 
         var node = new JsonObject
         {

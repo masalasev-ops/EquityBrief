@@ -42761,3 +42761,34 @@ Changes:    the 18.5 ruling of 2026-10-10 stands, its one regeneration being thi
             written report on the corrected main, CVX, PEP, AAPL and GTES written again with the rest. A pass runs from the
             newest night's build or by hand from main's, the corrections' prompts holding either way.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 6.4 correction above.
+
+### 12.6 - correction: a risk's fact is composed by the words a reader reads it by and an event after its kind, where the risks printed a fact's listing and raw level and joined a clause after "confirmed by"   2026-10-11
+
+Corrects:   the composition 12.6 built when the risks became fields. A fact was printed by its listing and its level as
+            copied: 86 of the 146 confirmations the store held read like "That risk would be confirmed by segment
+            Operating Segments | Integrated Memory Total segment operating income growth on a year earlier 2026-05-29
+            falls below 399.22%" or "by sales growth on a year earlier falls below 0.057553". An event was joined after
+            "confirmed by" whatever its form, so PEP's six read "confirmed by rivals outspend PepsiCo", and the seventh
+            kind read "an other event" on 13 pages.
+Found:      in the bug hunt of 2026-10-11, reading PEP's page and a scan of every stored risk's fields.
+Built:      the writer gives each fact words saying it plainly with no figure, beside the listing it copies exactly, and a
+            fraction's level as its per cent; a fact given no words is refused, its retry told to give them. Code composes
+            a fact as "That risk would be confirmed if" its words, direction and level, and an event as "That risk would
+            be confirmed by" its kind, the seventh plainly "an event", then a colon and the event with its article
+            lowered. Sharing stays an exact match on the listing, and the page still parts a risk from its confirmation.
+            The risks' prompt changes, so the fixture's risks requests, and the short version's and the headline's,
+            whose claims carry the composed risks, are made again in the 18.5 commit that follows, with no paid call.
+Tests:      one more: a fact given no words refused with the retry's words, a growth crossed at its per cent passing and
+            composed, a clause of the seventh kind and of another composed, and words carrying a figure refused; the
+            composition test reads the new sentence.
+Claims:     none more; a decision, the lane table's risks row, SCHEMA's parts and the roster's claim-admissibility row
+            say so.
+Pins:       none moved; the composer and the checker are no source a rule's version, the swing filter or a candidate
+            evaluator pins.
+Mutated:    the rule, stated before the run: the property that a fact is composed by its words. H3 the listing written in
+            the words' place: predicted red at the new test. Result: red, at the new test and at the composition test;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
