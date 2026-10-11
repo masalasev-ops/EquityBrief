@@ -26,13 +26,13 @@ public sealed record MonthlyOutcome(string RunId, IReadOnlyList<(string Step, st
 // family on any index loses its benchmarks beyond the tolerance, the standing history kept and the run stopped with
 // the counts otherwise; each index's point-in-time check; each index's tester run with its engines inside it; and the
 // month's report, which names for each family on each index the one proposal the run puts to the operator, the
-// strongest that passed, or that none passed. Each step
-// writes one row on the run log under a stage of its own; a step that does not hold stops the run with why, and a run
-// started again for the month goes on from the first step no try of the month held. Before each step it waits while
-// the night holds its lock or the night's window is open, and it holds the drain's lock, which the store's copy holds
-// while it copies, for as long as the step runs, but for a step whose work takes that lock itself as it writes, since
-// a run holding the lock while its step waits for it would wait for ever. It makes no request and calls no model of
-// its own; the facts step asks the SEC's archive, free, as the whole refresh does.
+// strongest that passed, or that none passed. Each step writes one row on the run log under a stage of its own; a step
+// that does not hold stops the run with why, and a run started again for the month goes on from the first step no try
+// of the month held and runs every step from it. Before each step it waits while the night holds its lock or the
+// night's window is open, and it holds the drain's lock, which the store's copy holds while it copies, for as long as
+// the step runs, but for a step whose work takes that lock itself as it writes, since a run holding the lock while its
+// step waits for it would wait for ever. It makes no request and calls no model of its own; the facts step asks the
+// SEC's archive, free, as the whole refresh does.
 // see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 // see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
 public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoot, TextWriter output, IReadOnlyList<MonthlyStep> steps, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
@@ -113,15 +113,23 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
         output.WriteLine($"{Verb}: the run for {month}, {runId}");
 
+        // A step an earlier try held is passed over only before the first step no try held. From that one every step
+        // runs, since a step that held before that one ran read what it has since written again: a check held before
+        // the history was written again is a check of a history that no longer stands.
+        // see: A monthly run started again runs every step from the first one no try of the month held
+        var goingOn = false;
+
         foreach (var step in steps)
         {
-            if (held.Contains(StagePrefix + step.Name))
+            if (!goingOn && held.Contains(StagePrefix + step.Name))
             {
                 skipped.Add(step.Name);
                 output.WriteLine($"{Verb}: {step.Name} held on an earlier try of the month, so it is not run again");
 
                 continue;
             }
+
+            goingOn = true;
 
             await WaitForTheNightAsync(pause, cancellation);
 

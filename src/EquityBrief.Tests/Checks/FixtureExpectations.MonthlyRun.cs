@@ -90,6 +90,39 @@ public partial class FixtureExpectations
         Assert.Equal(MonthlyRun.StepNames, ran);
     }
 
+    // October's second try ran in the order before the history's step was added: it held the three checks and the facts
+    // and stopped before its testers. Started again in the order that writes the history before its checks, the run passes
+    // over the facts alone and runs the history and every step after it, the checks the earlier try held among them, so
+    // the testers read a history its checks read after it was written.
+    // see: A monthly run started again runs every step from the first one no try of the month held
+    [Fact]
+    public async Task ARunStartedAgainRunsEveryStepFromTheFirstNoTryHeldAndAChecksEarlierHoldBeforeTheHistoryAmongThem()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var output = new StringWriter();
+        var clock = new CallClock(new DateTimeOffset(2026, 10, 11, 21, 0, 0, TimeSpan.Zero));
+        var ran = new List<string>();
+
+        foreach (var (stage, started) in new[]
+        {
+            ("check-GSPC", "2026-10-10T02:49:59Z"),
+            ("check-MID", "2026-10-10T03:03:26Z"),
+            ("check-SML", "2026-10-10T03:16:01Z"),
+            ("facts", "2026-10-10T03:44:01Z"),
+        })
+        {
+            store.Execute(
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+                $"VALUES ('loop-month-2026-10-20261010T024955Z', 'loop-month-{stage}', '{started}', '{started}', 'ok', 0, 0, 0, '0', 'held');");
+        }
+
+        var again = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, MonthlySteps(ran, _ => true)).RunAsync("2026-10");
+
+        Assert.Equal(["facts"], again.Skipped);
+        Assert.Equal(["history", "check-GSPC", "check-MID", "check-SML", "test-GSPC", "test-MID", "test-SML", "report"], ran);
+        Assert.Null(again.Stopped);
+    }
+
     [Fact]
     public async Task TheMonthlyRunWaitsForTheNightsLockAndWindowByAClockItsOwnWaitMovesAndHoldsTheDrainsLockWhileAStepRuns()
     {

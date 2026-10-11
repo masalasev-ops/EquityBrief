@@ -43225,3 +43225,33 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together, and item 7, October's monthly run by hand, is
             next.
 Carried:    nothing new.
+
+### 17.10 - correction: a monthly run started again runs every step from the first one no try of the month held, where October's would have passed over the three point-in-time checks its second try held before the history was written again   2026-10-11
+
+Corrects:   17.10's monthly run as its correction of the same day left it. A run started again for the month passed over
+            every step any try had held, wherever it stood in the order. October's two tries ran in the order before the
+            history's step was added, and the second, loop-month-2026-10-20261010T024955Z, held the three checks and the
+            SEC's facts and stopped before its testers; run again in the new order, it would have written the history and
+            passed over the checks as held, so the testers would have read a history no check had read since it was
+            written.
+Found:      reading October's tries on the run log before running it by hand, item 7 of the queue.
+Built:      the run passes over the steps an earlier try held only before the first one no try held, and runs every step
+            from it. One decision narrowing the monthly run's; section 18's row on a monthly run that fails, the runbook
+            and the roster's fixture-expectations row, the prior text in `CHANGELOG.md`.
+Tests:      one more: over a store holding October's second try's rows, the three checks and the facts held and nothing
+            after them, the run started again passes over the facts alone and runs the history, the three checks, the
+            three testers and the report in order. The order test's runs started again read as before.
+Claims:     none more; the failure row stands as one claim.
+Pins:       none moved; the monthly run is in no pin list.
+Mutated:    the rule, stated before the run: the property that a run started again runs every step from the first one no
+            try held. M13 every step any try held passed over, wherever it stands: predicted red at the new test, the
+            checks not run. Made as the flag that marks the run going on never set, since taking its test out left a
+            variable no line read, which the build refuses. Results: M13 red at the new test, the facts and the three
+            checks passed over where the facts alone are; one of five failed in the run filtered to the monthly run's
+            tests. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, a315b2ab: all six
+            steps, 0 warnings, 0 errors, 2223 of 2223 tests ran with none failed in 15 minutes 2 seconds, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`; the phase report 1267 claims,
+            1267 passing and none unexamined, 43 checks on the roster run and passed.
+Queue:      as the 17.10 ruling above; item 7, October's monthly run by hand, runs on the tree carrying this correction.
+Carried:    nothing new.
