@@ -43090,3 +43090,32 @@ Opened:     seven operating rows stand for phase 17, the six the report names an
             end at the bar store's scale before it is run again.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
             verifies the 17.3 correction above.
+
+### 17.2 - correction: an index rule's funnel names each part it counts and not the reason a member fails it, and a funnel stored under the reasons is read as the parts, where the S&P 400's and 600's cards read "the market check closed: 601"   2026-10-11
+
+Corrects:   17.2's funnel on an index rule's card. The rule cards' step counted the members passing each part and every
+            part before from the first reason each failed, and named each count by that reason's words, so the S&P
+            400's, the S&P 600's and the fundamentals-first family's cards read "the market check closed: 601", a count of
+            the members passing the market check named as the check closing on them.
+Found:      reading the cards after the night of 2026-10-09, and put to the operator with the queue of 2026-10-11 as item
+            4 of it.
+Built:      the core names each part an index rule counts, the market, the setup, the floors, the profit, the interest
+            cover and the fundamentals-first family's readings, revenue, margin, cash and trend, with each stored reason
+            read as its part; the step counts in the reasons' order and names each count by its part; and a funnel the
+            night stored under the reasons is read as the parts, so the rows written before draw as they should.
+Tests:      one more: each reason read as its part; over 596 members with no setup, four failing the profit check and one
+            passing, the fundamentals-first family's funnel reading the market 601, the setup, the floors and the readings
+            5, and the profit, revenue, margin, cash and trend 1; a funnel stored under the reasons read as the parts and
+            a gate no rule names read as stored. The night's stored funnel and the rendered card read the parts.
+Claims:     none more; the card's funnel part stands as written, naming the rule's parts.
+Pins:       none moved; the rule cards' step and the core's rows are in no pin list.
+Mutated:    the rule, stated before the run: the property that a funnel names the part it counts. M5 the step naming each
+            count by its reason: predicted red at the new test and at the night's stored funnel. M6 a stored reason read
+            as itself and not its part: predicted red at the new test and at the rendered card. Results: M5 red at the
+            new test, at the night's stored funnel and at the funnel's own count; M6 red at the new test, at the rendered
+            S&P 400 card, at the night's stored funnel and at the funnel's count. Each reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.10 correction below.
+Queue:      as the 17.10 ruling above.
+Carried:    nothing new.
