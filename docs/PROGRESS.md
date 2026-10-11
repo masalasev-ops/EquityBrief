@@ -43218,8 +43218,10 @@ Mutated:    the rule, stated before the run: the property that every table the L
             own. M12 the years table drawn without its box: predicted red at the new test, naming the years table.
             Results: M12 red at the new test, naming both families' years tables, one of eight failed in the run
             filtered to the ledger's tests and the five surfaces' tables. Reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 8.6
+            correction's above, 819b2f90: all six steps, 0 warnings, 0 errors, 2222 of 2222 tests ran with none failed in
+            15 minutes 25 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together, and item 7, October's monthly run by hand, is
             next.
 Carried:    nothing new.
