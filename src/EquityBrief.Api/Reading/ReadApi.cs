@@ -1314,12 +1314,12 @@ public sealed partial class ReadApi : IComponent
     // open on a night whose list the store does not hold. The write order is the
     // rowid, which is the one thing here that cannot be stamped.
     //
-    // A command a person runs by hand is not a night, so its run ids are left out, one
-    // clause per prefix the run screen reads as by hand. GLOB, because it is case sensitive.
-    static string NewestRun =>
-        "SELECT started_at FROM run_log WHERE stage != $read_api AND outcome != $no_session"
-        + string.Concat(RunScreen.RunsByHand.Select((_, at) => FormattableString.Invariant($" AND run_id NOT GLOB $by_hand_{at}")))
-        + " ORDER BY rowid DESC LIMIT 1;";
+    // A night is read by its own run id, the one the scheduler or a person starting a night gives it, so no pass, verb
+    // or job run beside the nights moves the page, whatever it is named and however late it is added. GLOB, because it
+    // is case sensitive.
+    // see: The Run page opens on the newest night by the night's own run id, and no run beside the nights moves it
+    const string NewestRun =
+        "SELECT started_at FROM run_log WHERE run_id GLOB $night AND stage != $read_api AND outcome != $no_session ORDER BY rowid DESC LIMIT 1;";
 
     // Whether a listing's name was on its night's list, by the rule that drew that night's list: listed
     // by a family where the families drew it, passed by the swing filter on a night it listed before
@@ -2341,13 +2341,9 @@ public sealed partial class ReadApi : IComponent
         await using var command = connection.CreateCommand();
 
         command.CommandText = NewestRun;
+        command.Parameters.AddWithValue("$night", RunScreen.NightPrefix + "*");
         command.Parameters.AddWithValue("$read_api", Stage);
         command.Parameters.AddWithValue("$no_session", RunScreen.NoSession);
-
-        for (var at = 0; at < RunScreen.RunsByHand.Count; at++)
-        {
-            command.Parameters.AddWithValue(FormattableString.Invariant($"$by_hand_{at}"), RunScreen.RunsByHand[at] + "*");
-        }
 
         return await command.ExecuteScalarAsync() is string started
             ? clock.SessionDateAt(DateTimeOffset.Parse(started, CultureInfo.InvariantCulture))

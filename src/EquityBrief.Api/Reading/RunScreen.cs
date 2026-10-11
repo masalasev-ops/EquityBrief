@@ -1096,7 +1096,7 @@ public static class RunScreen
 
     // The run id every night the scheduler or a person starts carries, and the part a queue's pass adds to
     // it, whose rows are that pass's and not the night's.
-    const string NightPrefix = "night-";
+    public const string NightPrefix = "night-";
     const string QueuePass = "-queue-";
 
     // The part a night's try again adds to the id of the night's first try, before its number, the stage
