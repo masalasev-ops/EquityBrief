@@ -42712,8 +42712,14 @@ Pins:       none moved; the checker is no source a rule's version, the swing fil
 Mutated:    the rule, stated before the run: the property that the figure is held only as a growth. H1 the rule reading a
             figure any growth among its facts holds: predicted red at the new test's ratio case. Result: red, the ratio
             refused; reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the corrections
-            after it, the figures to be filled from the run.
+Verified:   `tools/ci.ps1` green, 2215 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry and
+            the corrections after it, e44c67ed, the entries' last commit, the second reading the suite result the first
+            wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2215 of 2215 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2215 of 2215 tests ran.
 Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 432 merged; in progress,
             this correction and the others the bug hunt found, in one pull request; next, the 32 written reports
             regenerated once from main, the screenshots read back against the store and the phase 18 report.
