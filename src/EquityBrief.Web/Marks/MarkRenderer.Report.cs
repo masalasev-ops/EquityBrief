@@ -167,38 +167,53 @@ public sealed partial class MarkRenderer
         var values = read.SelectMany(quarter => new[] { quarter.Gross, quarter.Operating, quarter.Net }).OfType<double>().Append(0).ToArray();
         var (low, high) = Bounds(values.Min(), values.Max());
         double Y(double value) => ChartTop + ((high - value) / (high - low) * (ChartHigh - ChartTop - ChartBottom));
-        double X(int at) => ChartLeft + ((ChartWide - ChartLeft - ChartRight - 60) * at / Math.Max(read.Length - 1, 1));
 
+        // The room at the right holds each line's name and its newest margin, "Operating 32.4%" the widest.
+        const double Names = 120;
+        double X(int at) => ChartLeft + ((ChartWide - ChartLeft - ChartRight - Names) * at / Math.Max(read.Length - 1, 1));
+
+        (string Kind, string Said, string Named, Func<QuarterMargins, double?> Read)[] series =
+        [
+            ("ml-gross", "gross", "Gross margin", quarter => quarter.Gross),
+            ("ml-operating", "operating", "Operating margin", quarter => quarter.Operating),
+            ("ml-net", "net", "Net margin", quarter => quarter.Net),
+        ];
+
+        // A line no quarter holds a margin for is named in no legend, and a line beneath says so.
+        var drawn = series.Where(line => read.Any(quarter => line.Read(quarter) is not null)).ToArray();
         var svg = new StringBuilder();
 
         svg.Append(Formatted($"<svg class=\"margin-lines\" viewBox=\"0 0 {Number(ChartWide)} {Number(ChartHigh)}\" role=\"img\" data-mark=\"margin-lines\" data-quarters=\"{read.Length}\" aria-label=\"Gross, operating and net margins over {read.Length} quarters\">"));
-        svg.Append(Legend(("ml-gross", "Gross margin"), ("ml-operating", "Operating margin"), ("ml-net", "Net margin")));
+        svg.Append(Legend([.. drawn.Select(line => (line.Kind, line.Named))]));
         svg.Append(Ticks(low, high, Y, "%"));
 
-        foreach (var (kind, said, read1) in new (string, string, Func<QuarterMargins, double?>)[]
-                 {
-                     ("ml-gross", "gross", quarter => quarter.Gross),
-                     ("ml-operating", "operating", quarter => quarter.Operating),
-                     ("ml-net", "net", quarter => quarter.Net),
-                 })
+        // Each line's newest margin is named at its end, the names pushed apart where two ends sit closer than a line.
+        var ends = new List<(double Y, string Words)>();
+
+        foreach (var (kind, said, _, read1) in drawn)
         {
             var points = read.Select((quarter, at) => (quarter, at, value: read1(quarter))).Where(point => point.value is not null).ToArray();
-
-            if (points.Length == 0)
-            {
-                continue;
-            }
 
             svg.Append(Formatted($"<polyline class=\"{kind}\" fill=\"none\" points=\"{string.Join(' ', points.Select(point => Number(X(point.at)) + "," + Number(Y(point.value!.Value))))}\"/>"));
 
             foreach (var point in points)
             {
-                svg.Append(Formatted($"<circle class=\"{kind}-dot\" cx=\"{Number(X(point.at))}\" cy=\"{Number(Y(point.value!.Value))}\" r=\"3\" data-quarter=\"{DayOf(point.quarter.Quarter)}\" data-{said}=\"{point.value!.Value.ToString(Invariant)}\"><title>Quarter to {DayOf(point.quarter.Quarter)}: {said} margin {point.value!.Value.ToString("0.0", Invariant)}%</title></circle>"));
+                svg.Append(Formatted($"<circle class=\"{kind}-dot\" cx=\"{Number(X(point.at))}\" cy=\"{Number(Y(point.value!.Value))}\" r=\"3\" data-quarter=\"{DayOf(point.quarter.Quarter)}\" data-{said}=\"{point.value!.Value.ToString(Invariant)}\"><title>Quarter to {DayOf(point.quarter.Quarter)}: {said} margin {Tenth(point.value!.Value)}%</title></circle>"));
             }
 
             var last = points[^1];
 
-            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(last.at) + 8)}\" y=\"{Number(Y(last.value!.Value) + 4)}\">{Capital(said)} {last.value!.Value.ToString("0.0", Invariant)}%</text>"));
+            ends.Add((Y(last.value!.Value) + 4, Formatted($"{Capital(said)} {Tenth(last.value!.Value)}%")));
+        }
+
+        var floor = double.MinValue;
+
+        foreach (var (y, words) in ends.OrderBy(end => end.Y))
+        {
+            var at = Math.Max(y, floor + 13);
+
+            svg.Append(Formatted($"<text class=\"m-rownote\" x=\"{Number(X(read.Length - 1) + 8)}\" y=\"{Number(at)}\">{words}</text>"));
+            floor = at;
         }
 
         foreach (var (quarter, at) in read.Select((quarter, at) => (quarter, at)).Where(pair => pair.at % 2 == (read.Length - 1) % 2))
@@ -206,7 +221,14 @@ public sealed partial class MarkRenderer
             svg.Append(Formatted($"<text class=\"m-tick\" x=\"{Number(X(at))}\" y=\"{Number(ChartHigh - 10)}\" text-anchor=\"middle\">{quarter.Quarter.ToString("MMM yy", Invariant)}</text>"));
         }
 
-        return svg.Append("</svg>").ToString();
+        svg.Append("</svg>");
+
+        foreach (var (_, said, _, _) in series.Except(drawn))
+        {
+            svg.Append(Formatted($"<p class=\"mark-note\" data-margin-absent=\"{said}\">No quarter of these files a {said} margin, so no {said} line is drawn.</p>"));
+        }
+
+        return svg.ToString();
     }
 
     // The margins as a table beneath the lines, a quarter a row.

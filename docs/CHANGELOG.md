@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.2 correction of the day asserts of the margins' lines
+Corrects: CVX's margins figure cut "Operating 32.4%" at its edge and named a gross margin line it did not draw, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 18.1 correction of 2026-10-11 on the page's words ... the exported file's title stands in the report's column, worked by hand |
+Now:
+> read-surface: ... worked by hand; and from the 18.2 correction of 2026-10-11 the margins' lines name their newest margins whole inside the figure and only the lines they draw, a margin no quarter holds named beneath it, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of the page's words
 Corrects: the name page's counts read "2 time(s)", figures rounding to nothing read "-0.0%", number columns stood under headings on the left, a phone drew the charts' labels four pixels high and the exported file's title stood off the report's column, found in the bug hunt of 2026-10-11.
 Was:

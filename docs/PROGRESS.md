@@ -42924,3 +42924,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 18.2 - correction: the margins' lines name their newest margins inside the figure and only the lines they draw, where CVX's cut "Operating 32.4%" at the figure's edge and named a gross margin line it did not draw   2026-10-11
+
+Corrects:   18.2's margins figure, which kept sixty units at its right for the newest margins' names, so CVX's
+            "Operating 32.4%" ran past the figure's edge and was cut, and whose legend named all three lines whatever it
+            drew, a gross margin no quarter holds among them.
+Found:      in the bug hunt of 2026-10-11, reading CVX's page at 1440 pixels.
+Built:      the figure keeps 120 units for the names, pushes two names apart where their ends sit closer than a line,
+            names in its legend only the lines it draws, and says beneath it which margin no quarter files.
+Tests:      one more: four quarters with operating and net margins and no gross, the legend naming the two drawn and the
+            line beneath naming the gross, and each end named whole 8 to the right of the newest quarter, worked by hand.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that the names stand inside the figure. H9 sixty units kept
+            for the names again: predicted red at the new test. Result: red, the names drawn 60 units further right;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
