@@ -13,22 +13,28 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Loop;
 
-// One step of the monthly run: its name and its work, which is handed the run's id and says whether it held and why.
-public sealed record MonthlyStep(string Name, Func<string, CancellationToken, Task<(bool Held, string Words)>> Work);
+// One step of the monthly run: its name and its work, which is handed the run's id and says whether it held and why,
+// and whether its work takes the drain's lock itself as it writes, which the run then leaves it to take.
+public sealed record MonthlyStep(string Name, Func<string, CancellationToken, Task<(bool Held, string Words)>> Work, bool TakesTheLock = false);
 
 // What a monthly run did: the steps it ran and their words, the steps an earlier try of the month had already held,
 // and the step it stopped on, none where every step held.
 public sealed record MonthlyOutcome(string RunId, IReadOnlyList<(string Step, string Words)> Ran, IReadOnlyList<string> Skipped, string? Stopped);
 
 // The monthly run. On the first Saturday of a month, from a clean copy of main's commit, it runs its steps in order:
-// each index's point-in-time check, the SEC's facts asked whole, each index's tester run with its engines inside it,
-// and the month's report, which names for each family on each index the one proposal the run puts to the operator,
-// the strongest that passed, or that none passed. Each step writes one row on the run log under a stage of its own;
-// a step that does not hold stops the run with why, and a run started again for the month goes on from the first step
-// no try of the month held. Before each step it waits while the night holds its lock or the night's window is open,
-// and it holds the drain's lock, which the store's copy holds while it copies, for as long as the step runs. It makes
-// no request and calls no model of its own; the facts step asks the SEC's archive, free, as the whole refresh does.
-// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+// the SEC's facts asked whole; every index's history computed again beside the standing one and written only where no
+// family on any index loses its benchmarks beyond the tolerance, the standing history kept and the run stopped with
+// the counts otherwise; each index's point-in-time check; each index's tester run with its engines inside it; and the
+// month's report, which names for each family on each index the one proposal the run puts to the operator, the
+// strongest that passed, or that none passed. Each step
+// writes one row on the run log under a stage of its own; a step that does not hold stops the run with why, and a run
+// started again for the month goes on from the first step no try of the month held. Before each step it waits while
+// the night holds its lock or the night's window is open, and it holds the drain's lock, which the store's copy holds
+// while it copies, for as long as the step runs, but for a step whose work takes that lock itself as it writes, since
+// a run holding the lock while its step waits for it would wait for ever. It makes no request and calls no model of
+// its own; the facts step asks the SEC's archive, free, as the whole refresh does.
+// see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+// see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
 public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoot, TextWriter output, IReadOnlyList<MonthlyStep> steps, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
 {
     public static ComponentAccess Access => new(
@@ -58,11 +64,13 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
 
     public static IReadOnlyList<string> Indices { get; } = [IndexFamilies.LargeIndex, "MID", "SML"];
 
-    // The steps' names in the order they run: each index's check, the facts, each index's tester run, and the report.
+    // The steps' names in the order they run: the facts, the indices' history written again together, each index's
+    // check, each index's tester run, and the report.
     public static IReadOnlyList<string> StepNames { get; } =
     [
-        .. Indices.Select(index => "check-" + index),
         "facts",
+        "history",
+        .. Indices.Select(index => "check-" + index),
         .. Indices.Select(index => "test-" + index),
         "report",
     ];
@@ -121,7 +129,7 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
             bool stood;
             string words;
 
-            using (await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation))
+            using (step.TakesTheLock ? null : await DrainLock.AcquireAsync(dataRoot, () => pause(Poll, cancellation), cancellation))
             {
                 try
                 {

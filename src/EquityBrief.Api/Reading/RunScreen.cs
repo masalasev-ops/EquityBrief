@@ -1980,7 +1980,8 @@ public static class RunScreen
         IReadOnlyList<RunStageRow> log,
         IReadOnlyList<ModelProfile>? profiles = null,
         StoreCopyRead? storeCopy = null,
-        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null)
+        IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null,
+        IReadOnlyList<RunStageRow>? month = null)
     {
         var quarters = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && row.Stage == "quarters")
@@ -2051,7 +2052,30 @@ public static class RunScreen
                 string.Join("; ", stops.Select(stop => FormattableString.Invariant($"the drain that started at {stop.StartedAt.UtcDateTime:HH:mm} UTC stopped on an error: {stop.Detail}")))),
             .. storeCopy is null ? [] : CopyItems(night, storeCopy),
             .. pastTheirMark is null ? Array.Empty<WorryItem>() : [StretchItem(pastTheirMark)],
+            .. month is null ? Array.Empty<WorryItem>() : [MonthItem(month)],
         ];
+    }
+
+    // The steps' rows of a monthly run carry this before each step's name, as the monthly run writes them.
+    public const string MonthlyPrefix = "loop-month-";
+
+    public const string MonthWorry = "The newest monthly run held every step it ran";
+
+    // The newest try of a monthly run, read off its steps' rows: held where every step it ran held, failed with its month,
+    // the step it stopped on and why, a history kept with the counts that kept it, and not read where none has started.
+    // see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+    public static WorryItem MonthItem(IReadOnlyList<RunStageRow> steps)
+    {
+        if (steps.Count == 0)
+        {
+            return new WorryItem(MonthWorry, WorryItem.NotRead, "no monthly run has started");
+        }
+
+        var month = steps[0].RunId.Length >= MonthlyPrefix.Length + 7 ? steps[0].RunId.Substring(MonthlyPrefix.Length, 7) : steps[0].RunId;
+
+        return steps.LastOrDefault(step => step.Outcome != Ok) is { } stopped
+            ? new WorryItem(MonthWorry, WorryItem.Failed, $"the run for {month} stopped at its {stopped.Stage[MonthlyPrefix.Length..]} step: {stopped.Detail}")
+            : new WorryItem(MonthWorry, WorryItem.Held, null);
     }
 
     // The live rules whose empty stretch is past the mark their own past empty nights set, each named with its stretch

@@ -25,6 +25,94 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states the Run page's checklist item on the newest monthly run
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> read-surface: ... a margin no quarter holds named beneath it, worked by hand |
+Now:
+> read-surface: ... a margin no quarter holds named beneath it, worked by hand; and from the 17.10 correction of 2026-10-11 the Run page's checklist item on the newest monthly run held, failed with its month, the step and why, and not read, each worked over constructed steps, and a newest try that kept its history read back off the rendered page with its counts |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - nightly-run states the monthly rebuild's tolerance
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> nightly-run: ... and the build's run log row counting the names it replayed past the span's end |
+Now:
+> nightly-run: ... and the build's run log row counting the names it replayed past the span's end; and from the 17.10 correction of 2026-10-11 the monthly rebuild's tolerance worked by hand at both ends, the larger of half a per cent rounded up and ten, the same history computed again held and written, a family eleven short where ten are allowed writing nothing and naming the family with both counts, and one ten short written |
+Why: the same, for the guard's test.
+
+### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states the monthly run's new order and the lock a step takes itself
+Decision: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+Was:
+> fixture-expectations: ... the drain's lock held while each step runs and given up between, and its report over a constructed store ...
+Now:
+> fixture-expectations: ... the drain's lock held while each step runs and given up between, and from the 17.10 correction of 2026-10-11 left to a step that takes it itself, which takes it free with no look at a held lock, its steps the facts, the history, the checks, the testers and the report, and its report over a constructed store ...
+Why: the same, for the monthly run's tests.
+
+### 2026-10-11 - docs/RUNBOOK.md - the monthly run's order, its history step and what stops it
+Decision: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+Was:
+> From 17.10 the loop runs once a month: each index's point-in-time check, the SEC's facts asked whole, each index's tester run and the month's report, a step at a time (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month). ... `check-GSPC`, `check-MID` and `check-SML`, `facts`, `test-GSPC`, `test-MID` and `test-SML`, and `report`. A step that does not hold stops the run and says why on its row and on the run's output: a point-in-time check naming a difference, the archive refusing the facts or a tester run that does not finish. Running it again for the month goes on from the first step no try held. It waits while a night holds its lock or a step would run into the night's window, and holds the drain's lock while a step runs, so a press on a page waits for the step to end. ... A whole run takes the three checks, about an hour together, the facts, about 25 minutes, and the three tester runs, about 20 minutes together. ... **Scheduling it.** The first Saturday of every month at 12:00 UTC, after Friday's night, its queue, its labeller and its copy have finished.
+Now:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again beside the standing one, each index's point-in-time check, each index's tester run and the month's report, a step at a time (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). ... `facts`, `history`, `check-GSPC`, `check-MID` and `check-SML`, `test-GSPC`, `test-MID` and `test-SML`, and `report`. The history step computes every index's history again over the span the standing build wrote before writing any of it, and writes it only where no family on any index holds fewer setups with a benchmark than the standing build less the larger of 0.5 per cent of them and 10 (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups); otherwise it writes nothing, keeps the standing history and names each family short with both counts. A step that does not hold stops the run and says why on its row, on the run's output and on the Run page's checklist: ... Running it again for the month goes on from the first step no try held; after a kept history, find what moved before running it again, and write the history by hand with `--again` only once the cause is known. ... the history's and the testers' steps take that lock themselves for each chunk they write. ... A whole run takes the facts, about 25 minutes, the history, about 50 minutes for the three indices, the three checks, about an hour together, and the three tester runs, about 20 minutes together. ... **Scheduling it.** The first Saturday of every month at 12:00 UTC, after Friday's night, its labeller and its copy have finished.
+Why: the operator ruled on 2026-10-10 that the facts come first and the history is written again before its check, and on 2026-10-11 that it is written only where it holds; the overnight queue the schedule named was retired by the 6.10 correction.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the Run page's checklist names where the newest monthly run stopped
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> ... and where one has its family named with its stretch against its mark; the four harness counts beneath; ...
+Now:
+> ... and where one has its family named with its stretch against its mark; the newest monthly run having held every step it ran, and where it stopped its month and step named with why (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups); the four harness counts beneath; ...
+Why: the operator asked that the Run page say why when the monthly run keeps the standing history.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 18's monthly run that fails names a kept history and the Run page
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> <td>a step that does not hold, a point-in-time check naming a difference, the archive refusing the facts or a tester run that does not finish among them, writes its row with why and stops the run before the next step; ... (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month)</td><td>The step's row on the run log, and the run's own output naming the step it stopped on</td>
+Now:
+> <td>a step that does not hold, a point-in-time check naming a difference, the archive refusing the facts, a history written again that would leave a family short of its benchmarks beyond the tolerance and is kept unwritten, or a tester run that does not finish among them, writes its row with why and stops the run before the next step; ... (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator) (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups)</td><td>The step's row on the run log, the Run page's checklist naming the month, the step and why, and the run's own output naming the step it stopped on</td>
+Why: the same.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 17's monthly run states the new order and the history's tolerance
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> <td>the first Saturday of each month, started by the scheduler at noon UTC; its steps in order, each index's point-in-time check, the SEC's facts asked whole, each index's tester run and the month's report; each step waiting ... and holding the drain's lock while it runs; at most one proposal ... (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month)</td><td>a month's proposals are read together and judged once, after Friday's night and its work have finished and outside the night's window. <b>Judgement:</b> the first Saturday, noon and the thirty minutes</td><td>fixture-expectations, the steps in order with a stop and a resume, the waits by a clock its own wait moves, the drain's lock held while a step runs, and the report putting one proposal a family</td>
+Now:
+> <td>the first Saturday of each month, started by the scheduler at noon UTC; its steps in order, the SEC's facts asked whole, the history written again, each index's point-in-time check, each index's tester run and the month's report; each step waiting ... and holding the drain's lock while it runs but for the history's and the testers', which take it themselves; the history written only where no family on any index holds fewer setups with a benchmark than the standing build less the larger of 0.5 per cent of them, rounded up, and 10 (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups); at most one proposal ... (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator)</td><td>... outside the night's window; two builds of one span move by a few setups as a revision shifts a reading across a loose gate, four of 171,950 between the builds of 2026-10-09 and 2026-10-10, and a build reading a month more of the bar store's closes gives more setups a benchmark and not fewer. <b>Judgement:</b> the first Saturday, noon, the thirty minutes, the 0.5 per cent and the 10</td><td>fixture-expectations, ... the drain's lock held while a step runs and left to a step that takes it itself, and the report putting one proposal a family; nightly-run, the tolerance worked by hand at both ends and a rebuild past it writing nothing</td>
+Why: the operator's rulings of 2026-10-10 and 2026-10-11.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the loop's monthly paragraph states the new order, the history's guard and the lock a step takes itself
+Decision: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+Was:
+> <p>The loop runs once a month, on the first Saturday after Friday's night, its queue, its labeller and its copy have finished, from a clean copy of main's own commit as a night is built, and is refused off main (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month). Its steps run in order: each index's point-in-time check, which stops the run before the tester reads a ledger that read past a session; the SEC's facts asked whole; each index's tester run, ... Each step writes a row of its own on the run log, so a run stopped part way is started again for the month and goes on from the first step no try held. It waits while the night holds its lock or a step would run into the night's window, and holds the drain's lock while a step runs, as the store's copy does, so no night, drain or copy writes beside it.</p>
+Now:
+> <p>The loop runs once a month, on the first Saturday after Friday's night, its labeller and its copy have finished, ... (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). Its steps run in order: the SEC's facts asked whole; every index's history computed again over the span the standing build wrote, beside it, and written only where no family on any index gives fewer setups a benchmark than the standing build less the larger of half a per cent of them and ten setups, the standing history kept and the run stopped with each family short named otherwise (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups); each index's point-in-time check on the history just written, ...; each index's tester run, ... Each step writes a row of its own on the run log, so a run stopped part way is started again for the month and goes on from the first step no try held, and the Run page's checklist names the step the newest run stopped on and why. It waits ... so no night, drain or copy writes beside it; the history's and the testers' steps take that lock themselves as they write, and the run leaves it to them.</p>
+Why: the same.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the Loop page's approvals cite the monthly run's new decision
+Decision: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+Was:
+> ... a decline with its reason (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month).
+Now:
+> ... a decline with its reason (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator).
+Why: a citation moves with the decision that supersedes the one it named.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the setup ledger's catalogue row names the monthly rebuild
+Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+Was:
+> ... the history's setups settled by the build alone (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span), from a clean copy of main's commit, ...
+Now:
+> ... the history's setups settled by the build alone (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span), and for the monthly run computes every index's history again beside the standing one before writing any of it, writing it only where no family on any index loses its setups with a benchmark beyond the tolerance (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups), from a clean copy of main's commit, ...
+Why: the catalogue names every run of the component.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the monthly run's catalogue row states the new order, the guard and the lock a step takes itself
+Decision: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
+Was:
+> <td>runs the month's steps in order, each index's point-in-time check by the setup ledger, the SEC's facts asked whole by the filings refresher and each index's tester run by the walk-forward tester with its engines inside it, ...; waits while the night holds its lock or a step would run into the night's window, and holds the drain's lock while a step runs; makes no request and calls no model of its own (see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month)</td>
+Now:
+> <td>runs the month's steps in order, the SEC's facts asked whole by the filings refresher, every index's history written again by the setup ledger beside the standing one and only where no family on any index loses its setups with a benchmark beyond the tolerance (see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups), each index's point-in-time check by the setup ledger and each index's tester run by the walk-forward tester with its engines inside it, ...; waits while the night holds its lock or a step would run into the night's window, and holds the drain's lock while a step runs but for the history's and the testers', which take it themselves as they write; makes no request and calls no model of its own (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator)</td>
+Why: the operator's rulings of 2026-10-10 and 2026-10-11, and the run waiting for nine hours on its own lock on 2026-10-10.
+
 ### 2026-10-11 - .claude/rules/checks.md - nightly-run states what the 17.3 correction of the day asserts of the history built twice around a night
 Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
 Was:

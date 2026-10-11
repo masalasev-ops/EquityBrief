@@ -91,6 +91,9 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups the night stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, the history's setups left to the build that wrote them, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span)."),
             CheckReach.Key(Scope.FailureTable, "An index's setups the ledger could not compute"),
 
+            // 17.10's monthly run, whose history's tolerance this check holds over a constructed history.
+            CheckReach.Key(Scope.LimitsTable, "The monthly run"),
+
             // 17.3, the filings refresh after the quarters fetch.
             CheckReach.Key(NightlyRunSteps.Heading, NightlyCost.FilingsStep),
 
@@ -159,11 +162,13 @@ public partial class NightlyRun
         ])
     {
         // Section 18's two rows on an empty list, whose verdicts are read-surface's: the night asking for
-        // no report on such a night and saying why is held here.
+        // no report on such a night and saying why is held here. And section 17's monthly run, whose verdict is
+        // fixture-expectations': the rebuild's tolerance worked at both ends over a constructed history is held here.
         Held = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             [CheckReach.Key(Scope.FailureTable, "The market gate closed on a night")] = nameof(OnANightTheMarketGateClosedTheNightAsksForNoReportAndSaysWhy),
             [CheckReach.Key(Scope.FailureTable, "No name passed the swing filter on a night")] = nameof(AfterTheQueueTheNightAsksForNoReportOnANightNoNamePassedAndItsRowSaysWhy),
+            [CheckReach.Key(Scope.LimitsTable, "The monthly run")] = nameof(TheMonthlyRebuildIsWrittenOnlyWhereNoFamilyLosesItsBenchmarksBeyondTheTolerance),
         },
     };
 

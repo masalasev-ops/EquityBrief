@@ -2088,6 +2088,43 @@ public sealed partial class ReadApi : IComponent
         return rows;
     }
 
+    // The newest monthly run's steps, the rows its steps wrote in the order they were written; none where no monthly run
+    // has started.
+    const string NewestMonthlyRun = @"
+        SELECT run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail FROM run_log
+        WHERE stage GLOB $steps AND run_id = (SELECT run_id FROM run_log WHERE stage GLOB $steps ORDER BY rowid DESC LIMIT 1)
+        ORDER BY rowid;";
+
+    public async Task<IReadOnlyList<RunStageRow>> NewestMonthlyRunAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestMonthlyRun;
+        command.Parameters.AddWithValue("$steps", RunScreen.MonthlyPrefix + "*");
+
+        var rows = new List<RunStageRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RunStageRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateTimeOffset.Parse(reader.GetString(2), CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
+                reader.GetString(4),
+                reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
+                reader.IsDBNull(8) ? "0" : reader.GetString(8),
+                reader.IsDBNull(9) ? string.Empty : reader.GetString(9)));
+        }
+
+        return rows;
+    }
+
     // The documents one night's passes refused, newest first.
     //
     // A pass is on demand rather than nightly, so what this bounds is the day the

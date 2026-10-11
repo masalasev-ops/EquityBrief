@@ -116,6 +116,9 @@ public partial class ReadSurface
             // 17.2, the cards' rule: the card's row as its parts and the checklist's item on a live rule past its mark.
             .. RuleCardsPageClaims,
 
+            // 17.10, the checklist's item on the newest monthly run.
+            .. MonthlyWorryRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
