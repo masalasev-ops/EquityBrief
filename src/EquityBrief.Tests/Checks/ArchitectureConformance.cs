@@ -1670,9 +1670,12 @@ public partial class ArchitectureConformance
     //
     // An enumeration is a run of three or more comma-separated items, which is
     // how these rows list what a region holds. A two-item list joined by "and"
-    // is outside what this reader reaches and is stated as its scope: the rows
-    // that carry one are decomposed by hand, and `EveryDecomposedElementIsNamedByTheRowItDecomposes`
-    // holds those parts to the row's own words in the other direction.
+    // is outside what this reader reaches and is stated as its scope, and so is
+    // a list whose items a semicolon separates, since a semicolon ends a run as
+    // a full stop does and each item between two is read for a run of its own
+    // and no further: the rows that carry either are decomposed by hand, and
+    // `EveryDecomposedElementIsNamedByTheRowItDecomposes` holds those parts to
+    // the row's own words in the other direction.
     internal static IReadOnlyList<string> EnumeratedParts(string description) =>
         [.. ItemsIn(description).Where(item => !RationaleParts.Contains(item))];
 
@@ -2043,6 +2046,15 @@ public partial class ArchitectureConformance
             ["the single page is here", "routing", "filters"],
             EnumeratedParts("the single page is here, with routing, filters"));
         Assert.Empty(EnumeratedParts("the plan column and the level summary for whichever row is selected"));
+
+        // A semicolon ends a run as a full stop does, so a list whose items a
+        // semicolon separates is outside the reader too, each item read for a
+        // run of its own and no further: the reader's stated scope, and the rows
+        // that list their parts that way are decomposed by hand instead.
+        Assert.Empty(EnumeratedParts("the sources; the figures two sources state differently; the line naming what is computed"));
+        Assert.Equal(
+            ["the next report", "the ex-dividend date", "the FOMC"],
+            EnumeratedParts("the ninety days as a table; the next report, the ex-dividend date, the FOMC; the dated items"));
 
         // A stated rationale item is not a part. Remove it from the set and this
         // sentence yields four parts rather than three.

@@ -25,6 +25,23 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - ARCHITECTURE.html - section 15.9 gains the page's layout as Figure 15.1, and the card's figure in section 15.18 is numbered 15.2
+Authorised by: The name page answers a buyer's questions in the order a buyer asks them
+Was:
+> <figcaption>Figure 15.1. A pick's card and its seven parts, every figure drawn as n.n or nn% rather than any night's.</figcaption>
+Now:
+> <figcaption>Figure 15.2. A pick's card and its seven parts, every figure drawn as n.n or nn% rather than any night's.</figcaption>
+And section 15.9 closes on a new Figure 15.1, a stock's page with its 28 parts numbered in the order it draws them, every figure drawn as n.n or nn%, with a key naming each part.
+Why: 18.5 owes a figure of the page's layout with a plain key in section 15.9, and a section's figures are numbered in the order the document draws them, so the card's, drawn later in 15.18, takes the next number.
+
+### 2026-10-11 - .claude/rules/checks.md - architecture-conformance states phase 18's pair and the page's layout figure
+Authorised by: The name page answers a buyer's questions in the order a buyer asks them
+Was:
+> architecture-conformance: ... and the guide's three worked examples of the loop hold placeholders and no figure but an index's name |
+Now:
+> architecture-conformance: ... and the guide's three worked examples of the loop hold placeholders and no figure but an index's name; and from 18.5 phase 18's pair is read off the plan and checked the same way, each row the phase added reached once and passing, its actual one above the range the plan stated and past the pair by the net of what each part landed fewer or more than its count, each named with what it landed, and the page's layout figure's key names every part the figure draws, in the architecture and in the guide, the parts after the first three the regions section 4 names in its order and the guide's picture naming each as the architecture's does, neither figure's text holding any night's figure |
+Why: each roster row says what its check asserts, and 18.5's two tests extend architecture-conformance's.
+
 ### 2026-10-11 - ARCHITECTURE.html - section 4 and 15.9 draw the articles holding no label under a tab of their own after opinion
 Corrects: a name's News region drew its unlabelled articles in the all tab alone beneath counts that read only the labelled ones, so a page could open on a run of unlabelled rows under a bar of positive and negative stories; found by the operator on CVX's page, who ruled on 2026-10-11 that a group called Unlabelled stand at the end after opinion and hold them, the one the labeller could not read among them
 Was:

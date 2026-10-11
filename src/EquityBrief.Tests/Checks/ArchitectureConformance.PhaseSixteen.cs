@@ -94,11 +94,11 @@ public partial class ArchitectureConformance
     [Fact]
     public void TheCardsFigureKeyNamesEveryPartTheFigureDraws()
     {
-        // The architecture's figure 15.1 and the key beneath it, and the guide's same picture and the list beneath it.
+        // The architecture's figure 15.2 and the key beneath it, and the guide's same picture and the list beneath it.
         var architecture = Corpus.Read("docs/ARCHITECTURE.html");
         var guide = Corpus.Read("docs/HOW_IT_WORKS.html");
 
-        var (drawn, keyed) = Parts(architecture, "Figure 15.1.", "<div class=\"key\">", "</div>");
+        var (drawn, keyed) = Parts(architecture, "Figure 15.2.", "<div class=\"key\">", "</div>");
 
         Assert.Equal(Enumerable.Range(1, drawn.Count).Select(part => part.ToString(CultureInfo.InvariantCulture)), drawn.Keys);
         Assert.Equal(drawn.Keys, keyed.Keys);
@@ -111,7 +111,7 @@ public partial class ArchitectureConformance
 
         // Every figure on the card drawn as a placeholder and never a night's: no digit in the figure's text but the
         // part's own number, the tick, the floor of 2, the 11 sectors, the twenty and the index's name.
-        foreach (var figure in new[] { Figure(architecture, "Figure 15.1."), Figure(guide, "A pick's card, its figures blanked out") })
+        foreach (var figure in new[] { Figure(architecture, "Figure 15.2."), Figure(guide, "A pick's card, its figures blanked out") })
         {
             var words = Regex.Matches(figure, "<text[^>]*>([^<]*)</text>").Select(text => text.Groups[1].Value)
                 .Where(text => !Regex.IsMatch(text, @"^\d$"))
