@@ -711,7 +711,7 @@ public partial class ReadSurface
         Assert.Equal(Summed(store, "stage LIKE 'research call:%' AND spend != '0'"), decimal.Parse(cost.Groups[2].Value, CultureInfo.InvariantCulture));
         Assert.Equal(0.037m, decimal.Parse(cost.Groups[2].Value, CultureInfo.InvariantCulture));
         Assert.Equal(0.021m, decimal.Parse(cost.Groups[3].Value, CultureInfo.InvariantCulture));
-        Assert.Contains("The 2 research pass(es) the run log has priced cost $0.04 in all, and the most one cost was $0.02.", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
+        Assert.Contains("The 2 research passes the run log has priced cost $0.04 in all, and the most one cost was $0.02.", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
         Assert.Contains("Research may spend: $0.02 of the $10.00 day cap today", WebUtility.HtmlDecode(cost.Groups[4].Value), StringComparison.Ordinal);
 
         // What a press sends: a plain pass for this name.

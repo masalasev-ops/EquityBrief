@@ -1160,7 +1160,7 @@ public partial class ReadSurface
         // stated in the description a reader who cannot see the picture gets.
         Assert.Contains("data-role=\"support\"", svg, StringComparison.Ordinal);
         Assert.Contains("data-role=\"resistance\"", svg, StringComparison.Ordinal);
-        Assert.Contains("3 level band(s) shaded behind them", svg, StringComparison.Ordinal);
+        Assert.Contains("3 level bands shaded behind them", svg, StringComparison.Ordinal);
         Assert.Contains("data-strength=\"9\"", svg, StringComparison.Ordinal);
 
         // A band of one price is a real band and becomes a rule rather than a
@@ -4147,7 +4147,7 @@ public partial class ReadSurface
         // The count per category above the list, so four of one kind reads as a
         // search returning marketing rather than as four unrelated refusals.
         Assert.Contains($"{Admissibility.MarketingPage} 2", region, StringComparison.Ordinal);
-        Assert.Contains("7 document(s) refused", region, StringComparison.Ordinal);
+        Assert.Contains("7 documents refused", region, StringComparison.Ordinal);
 
         // And no body reaches the page, because the store holds none for a
         // refusal. The admitted documents' bodies are in the same table, so this
@@ -5409,7 +5409,7 @@ public partial class ReadSurface
             region,
             StringComparison.Ordinal);
 
-        Assert.Contains("line(s).", region, StringComparison.Ordinal);
+        Assert.Matches(@"\d+ lines?\.", region);
     }
 
     [Fact]

@@ -219,7 +219,7 @@ public partial class ReadSurface
         Assert.Contains("<g class=\"no-purchase\"><rect class=\"m-absent\"", sellsOnly, StringComparison.Ordinal);
         Assert.Contains(">No support band below the price.</text>", sellsOnly, StringComparison.Ordinal);
         Assert.Contains(">No purchase and no invalidation are drawn.</text>", sellsOnly, StringComparison.Ordinal);
-        Assert.Contains(">1 exit zone(s), all above the price.</text>", sellsOnly, StringComparison.Ordinal);
+        Assert.Contains(">1 exit zone, above the price.</text>", sellsOnly, StringComparison.Ordinal);
         Assert.DoesNotContain("no-purchase", svg, StringComparison.Ordinal);
 
         // And a name with no plan says so and draws no picture.

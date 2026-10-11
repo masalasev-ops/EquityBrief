@@ -72,7 +72,7 @@ public partial class ReadSurface
         // and the name's own row links nowhere.
         Assert.Contains("<a class=\"peer-link\" href=\"#/name/ZZAA\">ZZAA</a> <span class=\"co\">Zed Ay</span>", drawn[1].Markup, StringComparison.Ordinal);
         Assert.Matches("<span class=\"peer-pop\" role=\"tooltip\"><svg[^>]*class=\"year-line\" data-ticker=\"ZZAA\" data-closes=\"4\">", drawn[1].Markup);
-        Assert.Contains("ZZCC holds 0 stored close(s), too few to draw its year.", drawn[2].Markup, StringComparison.Ordinal);
+        Assert.Contains("ZZCC holds 0 stored closes, too few to draw its year.", drawn[2].Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("peer-link", drawn[0].Markup, StringComparison.Ordinal);
         Assert.Contains("<span class=\"co\">Zed Bee</span>", drawn[0].Markup, StringComparison.Ordinal);
 
@@ -190,8 +190,8 @@ public partial class ReadSurface
         var one = marks.YearLine("ZZAA", year with { Closes = [100m] }, 96m, 114m);
 
         Assert.DoesNotContain("<svg", one, StringComparison.Ordinal);
-        Assert.Contains("ZZAA holds 1 stored close(s), too few to draw its year.", one, StringComparison.Ordinal);
-        Assert.Contains("ZZAA holds 0 stored close(s), too few to draw its year.", marks.YearLine("ZZAA", null, null, null), StringComparison.Ordinal);
+        Assert.Contains("ZZAA holds 1 stored close, too few to draw its year.", one, StringComparison.Ordinal);
+        Assert.Contains("ZZAA holds 0 stored closes, too few to draw its year.", marks.YearLine("ZZAA", null, null, null), StringComparison.Ordinal);
     }
 
     [Fact]

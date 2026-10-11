@@ -38,11 +38,11 @@ public partial class ReadSurface
         var rows = ReactionRowsOf(table);
 
         Assert.Equal(4, rows.Count);
-        Assert.Contains("<td>before the open</td><td>2026-03-03</td>", rows[0].Markup, StringComparison.Ordinal);
-        Assert.Contains("<td>after the close</td><td>2026-03-04</td>", rows[1].Markup, StringComparison.Ordinal);
-        Assert.Contains("<td>timing not filed</td><td>2026-03-06</td>", rows[2].Markup, StringComparison.Ordinal);
-        Assert.Contains("data-surprise=\"10\">+10%</td>", rows[0].Markup, StringComparison.Ordinal);
-        Assert.Contains("data-move=\"-10\">-10%</td>", rows[1].Markup, StringComparison.Ordinal);
+        Assert.Contains("<td>before the open</td><td class=\"nw\">2026-03-03</td>", rows[0].Markup, StringComparison.Ordinal);
+        Assert.Contains("<td>after the close</td><td class=\"nw\">2026-03-04</td>", rows[1].Markup, StringComparison.Ordinal);
+        Assert.Contains("<td>timing not filed</td><td class=\"nw\">2026-03-06</td>", rows[2].Markup, StringComparison.Ordinal);
+        Assert.Contains("data-surprise=\"10\">+10.00%</td>", rows[0].Markup, StringComparison.Ordinal);
+        Assert.Contains("data-move=\"-10\">-10.00%</td>", rows[1].Markup, StringComparison.Ordinal);
 
         // An estimate filed with no surprise beside it says the provider filed none.
         Assert.Contains("data-surprise=\"\"><span class=\"degraded\">not filed</span>", rows[2].Markup, StringComparison.Ordinal);

@@ -42895,3 +42895,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 18.1 - correction: the name page's counts, signs, columns and dates read as a reader reads them, where it drew "turned the price 2 time(s)", "-0.0%", figures under the next column's heading and a phone's chart labels four pixels high   2026-10-11
+
+Corrects:   the look 18.1 set for the name page and its export, which left the words and figures of the regions it moved
+            as they were: 27 counts written with "(s)", among them "turned the price 2 time(s)" and "for 4 quarter(s) in
+            a row"; a figure rounding to nothing drawn "-0.0%" or "-0"; the moves', the reactions', the arithmetic's and
+            the earnings rule's figures right-aligned under headings on the left, a move's change and a reaction's
+            unsigned and in ink; dates broken at their hyphens in narrow cells; on a phone the charts scaled to the
+            screen with their labels four pixels high; and the exported file's title off the report's column.
+Found:      in the bug hunt of 2026-10-11, at 1440 and 390 pixels in both palettes and in a scan of every member's page.
+Built:      each count takes its noun's singular or plural, once and twice in words; a figure rounding to nothing is
+            drawn with no sign; each number column is headed on the right over its figures, a move's change, its group's
+            median and a reaction's surprise and move signed in their hue to two places; a date alone in a cell is not
+            broken; on a phone a figure keeps a width its words are read at and scrolls in its box, the plan column
+            apart; and the exported file's title and stamp stand in the report's column. The numbers' two margin
+            patterns name their quarters with the noun, and section 4's pattern table with them, the prior text in
+            `CHANGELOG.md`. The other screens' counts are outside this correction.
+Tests:      one more: a band's turns once, twice and six times, three equal shares, a move's change, its group's median
+            and the change's heading, a margin a hair under nothing, the phone's rule and the export's column, worked by
+            hand; and the tests reading the old words read the new.
+Claims:     none more; the pattern rows keep their verdicts and the roster's read-surface row says so.
+Pins:       none moved; the read surface, the marks and the numbers' patterns are in no pin list.
+Mutated:    the rule, stated before the run: the property that a count reads with its noun. H8 a band's turns written
+            as "time(s)" again: predicted red at the new test and at the ladder figure's test. Result: red at both;
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+

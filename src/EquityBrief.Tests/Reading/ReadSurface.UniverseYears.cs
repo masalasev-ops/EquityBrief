@@ -39,7 +39,7 @@ public partial class ReadSurface
         Assert.Contains("<circle class=\"m-last\" data-close=\"110\"", cells[0], StringComparison.Ordinal);
 
         // A name no closes were read for draws no picture and says how many it holds.
-        Assert.Contains("<span class=\"peer-pop\" role=\"tooltip\"><span class=\"degraded year-line-none\" data-ticker=\"ZZBB\" data-closes=\"0\">ZZBB holds 0 stored close(s), too few to draw its year.</span></span>", cells[1], StringComparison.Ordinal);
+        Assert.Contains("<span class=\"peer-pop\" role=\"tooltip\"><span class=\"degraded year-line-none\" data-ticker=\"ZZBB\" data-closes=\"0\">ZZBB holds 0 stored closes, too few to draw its year.</span></span>", cells[1], StringComparison.Ordinal);
         Assert.DoesNotContain("<svg", cells[1], StringComparison.Ordinal);
 
         // Shown while the pointer is over the name's cell or it has focus, and placed beside it by the shell.

@@ -133,11 +133,11 @@ public sealed partial class MarkRenderer
         var read = pull is { } from
             ? Formatted($", read through the history pulled before the stored year from the pull {Escaped(from)}")
             : Formatted($", read over the stored year alone: {Escaped(reason ?? "no history before it was read")}");
-        var left = typical.Unread == 0 ? string.Empty : Formatted($", {typical.Unread} report(s) left out where the prices did not reach them or a session around them was missing");
+        var left = typical.Unread == 0 ? string.Empty : Formatted($", {Counted(typical.Unread, "report", "reports")} left out where the prices did not reach them or a session around them was missing");
 
         return typical is { Stated: true, MedianPct: { } median, FirstPrint: { } since }
             ? Formatted($"<p class=\"typical-move\" data-typical=\"{median.ToString(Invariant)}\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">The typical earnings move: {median.ToString("0.0", Invariant)}% either way, the median size of {typical.Prints} reports' moves since {DayOf(since)}{read}{left}.</p>")
-            : Formatted($"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">No typical earnings move is stated: {typical.Prints} report(s) were read, under the {EarningsMoves.FewestPrints} it is stated over{read}{left}.</p>");
+            : Formatted($"<p class=\"typical-move\" data-typical=\"too-few\" data-prints=\"{typical.Prints}\" data-unread=\"{typical.Unread}\">No typical earnings move is stated: {Counted(typical.Prints, "report was", "reports were")} read, under the {EarningsMoves.FewestPrints} it is stated over{read}{left}.</p>");
     }
 
     // ---- the long view ----
@@ -149,7 +149,7 @@ public sealed partial class MarkRenderer
     {
         if (closes.Count < 2)
         {
-            return Formatted($"<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"{closes.Count}\">{closes.Count} month-end close(s) are stored for {Escaped(ticker)}, and the line needs two.</p>");
+            return Formatted($"<p class=\"mark-short\" data-mark=\"long-view\" data-months=\"{closes.Count}\">{(closes.Count == 0 ? "No month-end close is" : "1 month-end close is")} stored for {Escaped(ticker)}, and the line needs two.</p>");
         }
 
         const double High = 260;
@@ -260,7 +260,7 @@ public sealed partial class MarkRenderer
             var away = Away(band.Away, over);
             var turns = band.Touches == 0
                 ? "never turned the price"
-                : Formatted($"turned the price {band.Touches} time(s), last {DayOf(band.LastTouch!.Value)}");
+                : Formatted($"turned the price {Times(band.Touches)}, last {DayOf(band.LastTouch!.Value)}");
             var use = band.Use is { } said ? Formatted($"; {said}") : string.Empty;
 
             svg.Append(Formatted($"<g class=\"lf-band lf-{hue}\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" data-side=\"{(over ? "above" : "below")}\" data-touches=\"{band.Touches}\" data-last-touch=\"{(band.LastTouch is { } last ? DayOf(last) : string.Empty)}\" data-use=\"{Escaped(band.Use ?? string.Empty)}\"><title>{Escaped(band.Role)} {Escaped(edges)}: {Escaped(away)}; {Escaped(turns)}{Escaped(use)}</title>"));
@@ -372,7 +372,7 @@ public sealed partial class MarkRenderer
         var (held, whole) = PlanSizes.Sum(tranches);
 
         table.Append("</table></div>");
-        table.Append(Formatted($"<p class=\"shares-sum\" data-held=\"{held}\" data-whole=\"{whole}\">{(held == whole ? Formatted($"{held} equal share(s) of 1/{whole} make the whole position.") : Formatted($"{held} of {whole} shares are placed."))}</p>"));
+        table.Append(Formatted($"<p class=\"shares-sum\" data-held=\"{held}\" data-whole=\"{whole}\">{(held == whole ? (whole == 1 ? "One share makes the whole position." : Formatted($"{held} equal shares of 1/{whole} make the whole position.")) : Formatted($"{held} of {whole} shares are placed."))}</p>"));
 
         return table.ToString();
     }

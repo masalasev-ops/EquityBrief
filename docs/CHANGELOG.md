@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of the page's words
+Corrects: the name page's counts read "2 time(s)", figures rounding to nothing read "-0.0%", number columns stood under headings on the left, a phone drew the charts' labels four pixels high and the exported file's title stood off the report's column, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 4.6 correction of 2026-10-11 ...; and from the 6.8 correction of 2026-10-11 ... in the sources and in the News region |
+Now:
+> read-surface: ... in the sources and in the News region; and from the 18.1 correction of 2026-10-11 on the page's words a count takes its noun's singular or plural and never "(s)", a figure rounding to nothing is drawn with no sign, a move's change and its group's median are signed in their hue to two places under a heading on the right, a date alone in a cell is not broken, a phone keeps a figure at a width its words read at, and the exported file's title stands in the report's column, worked by hand |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the numbers' two margin patterns name their quarters with the noun's singular or plural
+Corrects: the patterns wrote "for {count} quarter(s) in a row", drawn on every page as "for 4 quarter(s) in a row", found in the bug hunt of 2026-10-11.
+Was:
+> margin wider: The operating margin was {percent} against {percent} a year earlier, wider for {count} quarter(s) in a row.
+> margin narrower: The operating margin was {percent} against {percent} a year earlier, narrower for {count} quarter(s) in a row.
+Now:
+> margin wider: The operating margin was {percent} against {percent} a year earlier, wider for {quarters} in a row.
+> margin narrower: The operating margin was {percent} against {percent} a year earlier, narrower for {quarters} in a row.
+Why: the table and the renderer's patterns are held to each other word for word, and a count reads with its noun.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 6.8 correction of the day asserts of titles and links sent with entities
 Corrects: BDX's sources drew "Becton Dickinson &amp; Co's Dividend Analysis" and 626 links carried "&amp;amp;utm_medium", found in the bug hunt of 2026-10-11.
 Was:

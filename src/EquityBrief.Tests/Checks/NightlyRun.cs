@@ -2147,7 +2147,7 @@ public partial class NightlyRun
         using var client = host.CreateClient();
 
         Assert.Contains(
-            "No year of prices came back for ZZZZ: the provider was asked for one on 7 night(s), the last for the session of " +
+            "No year of prices came back for ZZZZ: the provider was asked for one on 7 nights, the last for the session of " +
             "2026-09-20, and it is asked again on the first night on or after 2026-09-27.",
             await client.GetStringAsync("/screens/name/ZZZZ"),
             StringComparison.Ordinal);

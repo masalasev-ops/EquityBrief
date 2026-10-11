@@ -290,7 +290,7 @@ public static partial class NameScreen
         // the values above.
         html.Append(CultureInfo.InvariantCulture, $"close {(close is { } closed ? Read(closed) : NotOnFile)}, market capitalisation {Scaled(capitalisation)}, ");
         html.Append(year is { } drawn
-            ? FormattableString.Invariant($"the year's high {Read(drawn.High)} on {Day(drawn.HighOn)} and low {Read(drawn.Low)} on {Day(drawn.LowOn)} over {drawn.Sessions} session(s), ")
+            ? FormattableString.Invariant($"the year's high {Read(drawn.High)} on {Day(drawn.HighOn)} and low {Read(drawn.Low)} on {Day(drawn.LowOn)} over {drawn.Sessions} {(drawn.Sessions == 1 ? "session" : "sessions")}, ")
             : "the year's high and low not on file, ");
         html.Append(CultureInfo.InvariantCulture, $"next dated event: {(nextEvent is { } on ? Day(on) : "not on file")}, ");
         html.Append(CultureInfo.InvariantCulture, $"the provider's trailing multiple {Tenths(Text(valuation, "trailingPe"))}, ");
@@ -397,7 +397,7 @@ public static partial class NameScreen
         {
             html.Append(CultureInfo.InvariantCulture,
                 $"<p class=\"degraded\" data-short-window=\"{filings.Count}\">This name holds " +
-                $"{filings.Count} filing(s), fewer than the {QuartersShown} quarters this section states.</p>");
+                $"{filings.Count} {(filings.Count == 1 ? "filing" : "filings")}, fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
         html.Append(Snapshot(newest.RootElement, currency));
@@ -886,7 +886,7 @@ public static partial class NameScreen
         html.Append("</table></div>");
         html.Append("<p class=\"segments-source\">")
             .Append(FormattableString.Invariant(
-                $"The {shortest} month(s) to {ended}, from {report} of that filing, {rows} line(s)."))
+                $"The {shortest} {(shortest == 1 ? "month" : "months")} to {ended}, from {report} of that filing, {rows} {(rows == 1 ? "line" : "lines")}."))
             .Append("</p>");
 
         return html.ToString();
@@ -1043,7 +1043,7 @@ public static partial class NameScreen
         {
             html.Append("<div class=\"tbl-wrap\">");
             html.Append("<table class=\"arithmetic-table\">");
-            html.Append("<tr><th>From</th><th>Entry</th><th>Risk</th><th>Reward</th><th>Reward to risk</th></tr>");
+            html.Append("<tr><th>From</th><th class=\"num\">Entry</th><th class=\"num\">Risk</th><th class=\"num\">Reward</th><th class=\"num\">Reward to risk</th></tr>");
 
             html.Append(CultureInfo.InvariantCulture,
                 $"<tr data-from=\"first\"><td>the first tranche</td>{Figure(figures, "firstEntry", Figures.Price)}" +
@@ -1083,7 +1083,7 @@ public static partial class NameScreen
         if (prints.Length > 0)
         {
             html.Append("<div class=\"sub\">Earnings moves against the first tranche's stop</div><div class=\"tbl-wrap\">");
-            html.Append("<table class=\"earnings-rule\"><tr><th>Print</th><th>Session</th><th>One-day move</th><th>Against the stop</th></tr>");
+            html.Append("<table class=\"earnings-rule\"><tr><th>Print</th><th>Session</th><th class=\"num\">One-day move, in price</th><th class=\"num\">Against the stop</th></tr>");
 
             foreach (var print in prints)
             {
@@ -1091,8 +1091,8 @@ public static partial class NameScreen
 
                 html.Append(CultureInfo.InvariantCulture,
                     $"<tr data-print=\"{print.GetProperty("eventDate").GetString()}\">" +
-                    $"<td>{print.GetProperty("eventDate").GetString()}</td>" +
-                    $"<td>{print.GetProperty("session").GetString()}</td>" +
+                    $"<td class=\"nw\">{print.GetProperty("eventDate").GetString()}</td>" +
+                    $"<td class=\"nw\">{print.GetProperty("session").GetString()}</td>" +
                     $"{Figure(print, "move", Figures.Price)}");
                 html.Append(share is null
                     ? "<td>no stop to measure against</td></tr>"
