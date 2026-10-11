@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 15.1 correction of the day asserts of an S&P 400 member's page
+Corrects: an S&P 400 or 600 member's page read the S&P 500's members for its company and its group, so GTES's page named no company and said it was not a member of the index, found in the bug hunt of 2026-10-11.
+Was:
+> read-surface: ... and from the 18.3 correction of 2026-10-11 ... the technicals name the provider's multiples as the provider's, worked by hand |
+Now:
+> read-surface: ... worked by hand; and from the 15.1 correction of 2026-10-11 an S&P 400 member's page names its company from its own index's members and reads its group within that index, over a constructed store of the three indices |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.3 correction of the day asserts of the ladder's sides, the reward bars and the provider's multiples
 Corrects: PEP's ladder drew "Buy into these" over nothing, the reward to risk figure left a blank row beneath a tranche stating no risk, and CVX's technicals drew the provider's 20.4 beside the valuation's 19.6 with nothing naming either's basis, found in the bug hunt of 2026-10-11.
 Was:

@@ -274,10 +274,15 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // night's members rather than today's.
     var universe = await read.UniverseAsync(index, night);
 
+    // The name's own index, whose members its masthead names it from and its group is read within: an S&P 400 or 600
+    // member is no member of the index the page's list is drawn from, and its group was read within its own.
+    var own = await read.IndexOfAsync(ticker, night ?? clock.SessionDateAt(clock.UtcNow)) ?? index;
+    var members = own == index ? universe : await read.UniverseAsync(own, night);
+
     // The newest night, which every move's group was read on whatever night the page is for, and
     // the index on it, which says whether the name was a member when its groups were read.
     var groupsReadOn = on is null ? night : await read.NewestNightAsync();
-    var membersThen = groupsReadOn == night ? universe : await read.UniverseAsync(index, groupsReadOn);
+    var membersThen = groupsReadOn == night ? members : await read.UniverseAsync(own, groupsReadOn);
 
     // The neighbours on the list, in the order the list itself is drawn in. The
     // walk is about position, so it takes the same ordering with the same inputs
@@ -398,10 +403,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         (await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         // Where the name holds no bar, whether the backfill asked for its year and none came back.
         bars.Count == 0 ? await read.NoYearAsync(ticker) : null,
-        // The membership row the masthead names the company, its sector and industry from.
-        universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
+        // The membership row the masthead names the company, its sector and industry from, in the name's own index.
+        members.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         on,
-        universe,
+        members,
         peerReadings,
         // The name's earnings reaction record as of the page's night.
         await read.ReactionsAsync(ticker, on),

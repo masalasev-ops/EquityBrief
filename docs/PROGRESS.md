@@ -42851,3 +42851,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
 
+### 15.1 - correction: an S&P 400 or 600 member's page names its company and reads its group from its own index's members, where it read the S&P 500's and GTES's page named no company and said it was no member of the index   2026-10-11
+
+Corrects:   the name route 15.1 left reading the index the page was opened under for the company, the sector and the
+            group, the S&P 500 where a link names none: GTES's page of 2026-10-11, opened from its report's link, drew
+            no company in its masthead and said in its group's cell that it was not a member of the index on the night.
+Found:      in the bug hunt of 2026-10-11, reading GTES's page.
+Built:      the route reads the index holding the name on the night and that index's members for the masthead and the
+            groups, and an S&P 500 member's page reads as before.
+Tests:      one more: over a constructed store of the three indices, an S&P 400 member's page names its company and its
+            index and nothing of not being a member, and an S&P 500 member's page names its own.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: the property that a page reads its own index. H6 the route reading the
+            index it was opened under again: predicted red at the new test. Result: red, the S&P 400 member's page naming
+            no company; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+
