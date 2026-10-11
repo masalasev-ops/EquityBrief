@@ -33,7 +33,7 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.StoresTable, "Setup nights"),
         .. LedgerClaims,
         CheckReach.Key(Scope.FailureTable, "An index's setups the ledger could not compute"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Append tonight's setups to the ledger on every index the night read: every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's pick beside it, its plan as prices, its readings as they stood and its path still open, and one row a family an index with the members the gates were read over; and close the windows of the setups the night stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, the history's setups left to the build that wrote them, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span)."),
     ];
 
     static readonly DateOnly LedgerDay = new(2026, 10, 8);
@@ -129,7 +129,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void ASetupsEdgeIsWorkedByHandAgainstTheSamePlanOnEveryMemberAndTheBenchmarkSettlesOnlyOnceEveryPathHasEnded()
+    public void ASetupsEdgeIsWorkedByHandAgainstTheSamePlanOnEveryMemberAndTheBenchmarkSettlesOnceEveryPathHasEndedOrItsPricesStopped()
     {
         // A plan two moves under the buy with a target two risks above, capped at five sessions. Three members with a
         // typical move of 1 each, bought at their closes on the first session: the first falls through its stop of 98
@@ -140,9 +140,9 @@ public partial class FixtureExpectations
         var second = new double[] { 50, 51, 54, 60, 60, 60, 60 };
         var third = new double[] { 10, 10.2, 10.4, 10.5, 10.6, 10.5, 20 };
 
-        var benchmark = SetupBenchmark.Of([(first, 0, 1.0), (second, 0, 1.0), (third, 0, 1.0)], LedgerDay, plan);
+        var benchmark = SetupBenchmark.Of([(first, 0, 1.0, false), (second, 0, 1.0, false), (third, 0, 1.0, false)], LedgerDay, plan);
 
-        Assert.Equal((3, 3, true), (benchmark.Ended, benchmark.Entered, benchmark.Settled));
+        Assert.Equal((3, 3, 0, true), (benchmark.Ended, benchmark.Entered, benchmark.Stopped, benchmark.Settled));
         Assert.Equal(0.25, benchmark.Mean!.Value, 12);
 
         // The first member's own setup under the same plan: its result -1.5, so its edge against the benchmark is -1.75.
@@ -154,13 +154,28 @@ public partial class FixtureExpectations
 
         // The series cut after three closes: two members have ended and the third is still open, so the mean is over
         // two and the benchmark is not settled.
-        var cut = SetupBenchmark.Of([(first[..3], 0, 1.0), (second[..3], 0, 1.0), (third[..3], 0, 1.0)], LedgerDay, plan);
+        var cut = SetupBenchmark.Of([(first[..3], 0, 1.0, false), (second[..3], 0, 1.0, false), (third[..3], 0, 1.0, false)], LedgerDay, plan);
 
         Assert.Equal((0.25, 2, 3, false), (cut.Mean!.Value, cut.Ended, cut.Entered, cut.Settled));
 
+        // The third's prices stopped there with its path still open: it is left out, and the benchmark is settled at the
+        // other two's mean. A member whose prices stopped after its path ended counts as ended.
+        // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+        var taken = SetupBenchmark.Of([(first[..3], 0, 1.0, false), (second[..3], 0, 1.0, false), (third[..3], 0, 1.0, true)], LedgerDay, plan);
+        var allStopped = SetupBenchmark.Of([(first[..3], 0, 1.0, true), (second[..3], 0, 1.0, true), (third[..3], 0, 1.0, true)], LedgerDay, plan);
+
+        Assert.Equal((0.25, 2, 3, 1, true), (taken.Mean!.Value, taken.Ended, taken.Entered, taken.Stopped, taken.Settled));
+        Assert.Equal((0.25, 2, 3, 1, true), (allStopped.Mean!.Value, allStopped.Ended, allStopped.Entered, allStopped.Stopped, allStopped.Settled));
+
         // A member with no move, one whose bar the session misses, and one whose stop would sit at or under nothing
-        // is not entered; a trailing plan places its trail in the member's own move.
-        Assert.Equal(new BenchmarkReading(null, 0, 0), SetupBenchmark.Of([(first, 0, 0.0), (second, -1, 1.0), (third, 0, 6.0)], LedgerDay, plan));
+        // is not entered, and a session with no member entered, or none ended, has no benchmark; a trailing plan places
+        // its trail in the member's own move.
+        var none = SetupBenchmark.Of([(first, 0, 0.0, false), (second, -1, 1.0, false), (third, 0, 6.0, false)], LedgerDay, plan);
+        var noneEnded = SetupBenchmark.Of([(third[..3], 0, 1.0, true)], LedgerDay, plan);
+
+        Assert.Equal(new BenchmarkReading(null, 0, 0), none);
+        Assert.False(none.Settled);
+        Assert.Equal(((double?)null, 0, 1, 1, false), (noneEnded.Mean, noneEnded.Ended, noneEnded.Entered, noneEnded.Stopped, noneEnded.Settled));
         Assert.Equal(new SetupAnchor(LedgerDay, 100, 97, null, 4.5, 63, 3), new SetupPlan(3, null, 4.5, 63).On(LedgerDay, 100, 1.0));
     }
 

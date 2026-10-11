@@ -505,10 +505,12 @@ public class ObligationReconciles
         // One, opened by the 16.0 planning pass: the card and the follower read within their time on the first five
         // nights.
         ["16"] = 1,
-        // Six, all opened by the 17.0 planning pass: the night's added time and the ledger's growth over the five nights
+        // Seven: six opened by the 17.0 planning pass, the night's added time and the ledger's growth over the five nights
         // after 17.3, the night's growth after the store's growth change, the first scheduled monthly run, the alarm's
-        // first two months and a replaced rule's 63 sessions as a variant.
-        ["17"] = 6,
+        // first two months and a replaced rule's 63 sessions as a variant; and one by the 17.3 correction of the
+        // history's benchmarks, a history build replaying no path past its span's end once the bar store no longer
+        // holds it, which the report's amendment names.
+        ["17"] = 7,
     };
 
     // The first phase whose report is read for the operating rows it opened.

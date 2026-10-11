@@ -42982,3 +42982,111 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new; the two runs the decision names, on Tuesday 2026-10-13 and Wednesday 2026-10-14, are run by hand
             after this merges and are no done condition of it.
+
+### 17.10 ruling - the queue after phase 18 merged: the history's benchmarks first, the monthly rebuild kept only where it holds them, 17.2's and 17.10's corrections, the Run page opening on a night, two pages at a phone's width, October's monthly run, then the five owed decisions as ruled   2026-10-11
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-11, after a read of main at c9d2046d with PRs 419 to 433 merged: "Go ahead with
+            your item 5 first, then the rest in this order, each merged outside the night and reported after it merges,
+            under the 15.4 ruling." Asked the one question the first item put, how a member whose prices stop before its
+            trade ends is counted in a setup's benchmark, they chose "Left out, as sweeps do (Recommended)". The words
+            are kept in `prompts/`.
+Queue:      1, read-only, what the setups the rebuild of 2026-10-10 showed without a benchmark share, the store's copy
+            holding the first build confirmed before anything is built again; 2, the correction the cause calls for,
+            with the history built twice over a constructed store around a night that changes it as the night of
+            2026-10-09 did, then the history built again and its coverage by family, index and half-year shown beside
+            the copy's; 3, the monthly run's rebuild written beside the standing history and taken only where no family
+            on any index holds fewer setups with a benchmark than the standing build beyond a stated tolerance, the run
+            otherwise stopping with the counts and the Run page saying why; 4, 17.2's funnel correction and 17.10's
+            correction finished and merged; 5, the Run page opening on the newest scheduled night because it is a night,
+            tested with a Sunday holding only runs by hand; 6, the Ledger and Universe pages at 390 pixels with nothing
+            cut off and wide tables scrolling in their own frame, read back at 390 and 1440; 7, October's monthly run by
+            hand once 1 to 4 hold, then the schedule registered from the runbook and its first Saturday read; 8, the five
+            decisions below, built after 7. Each is merged outside the night with no go asked and reported after it
+            merges; the sign-offs of phases 15 to 18 wait for fresh sessions the operator starts one at a time after it.
+Rulings:    a, the store's growth: 17.2a is not built now; five three-index nights are measured after the news window
+            fills on 2026-11-01, and a proposal comes only where growth is well above 30 megabytes a night; per-member
+            rows are not rolled up. b, the S&P 500's approvals: option (1), its families reading their settings from the
+            stored setting table as the S&P 400's and 600's do, the rules that move registered again with the replay
+            stating for each whether its record carried on or restarted, the old loop's decisions for the S&P 500 moved
+            to Previously decided with their reasoning, and a replaced registered rule kept running as a variant for 63
+            sessions. c, the FastTree challenger built in the same change as b, so the rules are registered again once,
+            and adopted only where it beats the ridge score on the same folds. d, the valuation reading over 12 quarters,
+            the prices before the store's year read from the pulled history at the store's scale as the chart averages
+            step reads them, earnings and value from the SEC's facts as first filed, held as it stood on each session by
+            the point-in-time check, and no provider call. e, the S&P 600's heavyweights: no freeze; the tester's result
+            of 2026-10-09 for the six-setting search stated with each fold's pick, its adjusted p and the folds'
+            stability; the starting setting kept live and both passing settings run as books of their own from the next
+            night, and where a provisional rule cannot carry books of its own, what it takes said before building.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 17.3 correction below.
+Carried:    the queue above.
+
+### 17.3 - correction: a setup's benchmark leaves out a member whose prices stopped before its path ended, and the build alone settles the history's setups over the bar store's closes after its span, where the night of 2026-10-09 marked 12,690 of them settled by its own members, 10,857 with no benchmark   2026-10-11
+
+Corrects:   17.3's benchmark and who settles it. A benchmark was settled only once every member's path had ended, so a
+            member whose prices stopped first, a takeover held at its price until it delisted, kept every setup of its
+            session without one for good: such a member stood within the 63 sessions after 85, 71 and 88 per cent of
+            the S&P 500's, 400's and 600's sessions, and of the swing families' history setups whose own path had ended
+            67, 71 and 31 per cent had a benchmark, the S&P 600's 2021 at 13 per cent. And the night's step read every
+            setup not yet settled, the history's among them, by the members on the night and the bar store's year: on
+            the night of 2026-10-09 it marked 12,690 history setups settled, 10,857 with no benchmark, each it settled on
+            the S&P 400 and 600, whose membership rows begin with the members pull of 2026-10-02 so no member stood on
+            an older session and nothing entered counted as settled, and 1,833 of the S&P 500's measured against the
+            survivors. The rebuild of 2026-10-10 wrote them back without, which read as comparisons lost.
+Found:      read-only on 2026-10-11, the store's copy of 00:48Z on 2026-10-10, taken after that night and before the
+            rebuild, read beside the live store setup by setup: 12,690 settled in the copy and not in the store and none
+            the other way, each a member of its index on that night on a session of the bar store's year, the members of
+            every session counted the same in both; and in the live store every setup whose own path ended on a session
+            of any index and year with no member whose prices stop in the 63 sessions after it had its benchmark. The
+            copy is kept in the backups' folder until the night of 2026-10-14 writes its own.
+Built:      the core's benchmark leaves out a member whose prices stopped with its path open, counts one whose path
+            ended first, and is settled once every other member entered has ended and at least one has, a session with
+            none entered or none ended holding none; the heavyweights' size cut the same. The night's step reads its own
+            setups alone. The history build names a member's prices stopped where the store holds no close for it after
+            its last one before its newest session, replays each setup and its benchmark over the history and then the
+            bar store's own closes after the span's end where a name's history ends in the store's bars, dates each
+            row's end by those sessions, and counts on its output and run log row the names it replayed past the span's
+            end. Two decisions; section 13.10, section 14's step and the catalogue row, SCHEMA, the runbook and the
+            roster's two rows, the prior text in `CHANGELOG.md`; an operating row for the build once the bar store no
+            longer holds the span's end.
+Tests:      one more: the history built twice over a constructed S&P 600 with a night between that fetches a member's
+            year again after a split, adds a member and drops the oldest session; each setup the first build compared
+            holds the same result and benchmark after the second, the night leaves every history row as the build wrote
+            it, a member taken over with its path open is left out, each benchmark is worked by hand as the setup's own
+            result over the four members that ended, a path the span ends inside is settled over the bar store's closes,
+            and one running past the newest close is settled by the second build alone. The benchmark's and the size
+            cut's worked cases gain a member whose prices stopped, one whose path ended first, and none entered or ended.
+Claims:     none more; section 14's step's key moves with its words in the three places that hold it.
+Pins:       none moved; the readings' pin hashes the catalogue and the setups' file, neither changed, and no rule's
+            version or candidate evaluator pins the benchmark, the size cut or the ledger.
+Mutated:    the rule, stated before the run: each property the correction adds, one mutation each. M1 the night's step
+            reading the history's setups again: predicted red at the new test. M2 a member whose prices stopped held as
+            open: predicted red at the new test and the worked cases. M3 a session with none ended settled: predicted red
+            at the worked cases. M4 no close read past the span's end: predicted red at the new test. Results: M1 red at
+            the new test, the night settling GGG's history setup against the two members its membership rows held on
+            that session; M2 red at the new test, AAA's setup left without a benchmark, and at both worked cases; M3 red
+            at both worked cases, the new test green as predicted; M4 red at the new test, EEE's setup left without one.
+            Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the report's
+            amendment below, 50917a37: all six steps, 0 warnings, 0 errors, 2216 of 2216 tests ran with none failed in 17
+            minutes 37 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1266 claims, 1266 passing and none unexamined, 43 checks on the roster run and passed.
+Remedy:     after the merge, from main, `tools/ledger-build.ps1 --again` on each index over 2019-01-02 to 2026-10-05, and
+            the coverage shown beside the copy's by family, index and half-year.
+Queue:      as the 17.10 ruling above.
+Carried:    the operating row the decision names, the build once the bar store no longer holds the span's end.
+
+### 17.10 - the phase 17 report, amended: the operating row the 17.3 correction of the history's benchmarks opened after the report, handed over here with its trigger   2026-10-11
+
+Amends:     the phase 17 report (17891088), which named the six operating rows the 17.0 planning pass opened. The 17.3
+            correction above opened one more after it, and a phase's report is where what the phase leaves running is
+            handed over.
+Opened:     seven operating rows stand for phase 17, the six the report names and this one.
+            **A history build replays no path past its span's end once the bar store no longer holds it**, opened by
+            the 17.3 correction of 2026-10-11 that replays each history setup and its benchmark over the bar store's
+            own closes after the span's end. Its trigger is 1 history build run after the bar store's stored year
+            starts after the span's end, about a year after the pull of 2026-10-05, read on the build's run log row,
+            which counts the names it replayed past the span's end; at it the build reads the kept bars past the span's
+            end at the bar store's scale before it is run again.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.3 correction above.

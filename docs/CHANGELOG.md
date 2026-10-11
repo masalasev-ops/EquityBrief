@@ -25,6 +25,78 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - nightly-run states what the 17.3 correction of the day asserts of the history built twice around a night
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> nightly-run: ... keeps the rows an earlier night wrote, names why on its own row as not read, and the night goes on to the swings |
+Now:
+> nightly-run: ... and the night goes on to the swings; and from the 17.3 correction of 2026-10-11 the history built twice over a constructed S&P 600, with a night between that fetches a member's year again after a split, adds a member and drops the oldest session, gives every setup the first build compared the same result and benchmark, the night leaving every history row as the build wrote it, a member taken over with its path open left out of the benchmark, a path the span ends inside replayed over the bar store's own closes after it, and the build's run log row counting the names it replayed past the span's end |
+Why: each roster row says what its check asserts, and the correction's test extends nightly-run's.
+
+### 2026-10-11 - .claude/rules/checks.md - fixture-expectations states the benchmark that leaves out a member whose prices stopped
+Decision: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+Was:
+> fixture-expectations: ... a setup's edge against the same plan on every member with the benchmark settled only once every path has ended, the readings of a session ...
+Now:
+> fixture-expectations: ... a setup's edge against the same plan on every member with the benchmark settled only once every path has ended, and from the 17.3 correction of 2026-10-11 a member whose prices stopped with its path open left out, one whose path ended before its prices stopped counted, and a session with no member entered or none ended holding no benchmark, in the heavyweights' size cut as well, the readings of a session ...
+Why: each roster row says what its check asserts, and the correction's worked cases extend fixture-expectations'.
+
+### 2026-10-11 - docs/RUNBOOK.md - the ledger build replays each path over the bar store's closes after the span
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> It writes the ledger's two tables alone and records one run log row under `ledger-build` with the setups and the sessions written.
+Now:
+> It writes the ledger's two tables alone and records one run log row under `ledger-build` with the setups and the sessions written and the names whose paths it replayed past the span's end. Each setup and its benchmark are replayed over the history and then over the bar store's own closes after the span's end, so a build run again later gives the span's last sessions their benchmarks; a member whose prices stopped before its path ended is left out of the benchmark, and the night settles none of the history's rows.
+Why: the operator runs the build again each month, and the runbook says what a build run again settles and what the night no longer does.
+
+### 2026-10-11 - docs/SCHEMA.md - the setup ledger's writer statement leaves the history's rows to the build
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> **The setup ledger writes it in the night after the families, and by hand over the history, and is its own updater and deleter: a night run again replaces its own rows, the build replaces the span's, and the step closes a window by updating its row once its path ended or its benchmark settled** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood).
+Now:
+> **The setup ledger writes it in the night after the families, and by hand over the history, and is its own updater and deleter: a night run again replaces its own rows, the build replaces the span's, and the step closes a window of a row the night wrote by updating it once its path ended or its benchmark settled, a history row settled by the build alone** (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span) (see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do).
+Why: the night settled the history's rows by its own members, 10,857 of them with no benchmark on the night of 2026-10-09.
+
+### 2026-10-11 - docs/SCHEMA.md - the setup's benchmark leaves out a member whose prices stopped
+Decision: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+Was:
+> | `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended; a heavyweights' setup's, ...
+Now:
+> | `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended, a member whose prices stopped before its path ended left out and a session with none ended holding none; a heavyweights' setup's, ...
+Why: the operator ruled on 2026-10-11 that such a member is left out, as the sweeps leave it out.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the setup ledger's catalogue row states who settles the history's rows and how
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> ... closes the windows of the setups stored before whose paths ended on the night's close or whose benchmark, the same plan on every member of their session, has every member's path ended; and builds the history by hand, one index over a span of sessions on the pulled bars merged with the store's, each setup replayed to its end, from a clean copy of main's commit, ...
+Now:
+> ... closes the windows of the setups the night stored before whose paths ended on the night's close or whose benchmark, the same plan on every member of their session, has every member's path ended; and builds the history by hand, one index over a span of sessions on the pulled bars merged with the store's, each setup and its benchmark replayed to their end over the bar store's own closes after the span too, a member whose prices stopped before its path ended left out (see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do), the history's setups settled by the build alone (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span), from a clean copy of main's commit, ...
+Why: the catalogue names what each run of the component does, and the correction moves the history's settling to the build alone.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the ledger's night step closes the windows of the setups the night stored
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> ... and close the windows of the setups stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood).
+Now:
+> ... and close the windows of the setups the night stored before whose paths ended on tonight's close or whose benchmark, the same plan on every member of their session, has every member's path ended, the history's setups left to the build that wrote them, a failure in an index's part named on the step's row while the step goes on (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span).
+Why: the step read the history's rows by the members on the night and settled 12,690 of them on the night of 2026-10-09, 10,857 with no benchmark.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - 13.10 says the build alone settles the history's setups
+Decision: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+Was:
+> The night's step appends tonight's setups after the families have drawn every index's list and closes the windows of the setups stored before as their paths end; the build by hand writes the history ...
+Now:
+> The night's step appends tonight's setups after the families have drawn every index's list and closes the windows of the setups it stored before as their paths end; the history's setups are settled by the build that wrote them alone, which replays each one and its benchmark over the bar store's own closes after the span's end where a name's history ends in the store's bars, so a build run again later gives the span's last sessions their benchmarks by the members as they stood (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span). The build by hand writes the history ...
+Why: the same, in the section that describes the ledger.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - 13.10's benchmark leaves out a member whose prices stopped
+Decision: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+Was:
+> ... the benchmark is settled only once every member's path has ended, so an edge is never read against a mean of the members that happened to end first.
+Now:
+> ... the benchmark is settled once every member's path has ended, so an edge is never read against a mean of the members that happened to end first. A member whose prices stop before its path ends, a takeover's, a delisting's or one no index the night reads holds any longer, never ends it, and is left out as the sweeps leave out a series that runs out before its cap; a session with no member entered, or none ended, has no benchmark, and a setup is never settled without one (see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do).
+Why: one such member held every setup of its session without a benchmark for good, on 85, 71 and 88 per cent of the S&P 500's, 400's and 600's sessions, and the operator ruled on 2026-10-11 that it is left out.
+
 ### 2026-10-11 - .claude/rules/checks.md - nightly-cost states what the 18.2 correction of the day asserts of the lines refetch
 Decision: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap
 Was:
