@@ -130,33 +130,32 @@ public partial class ClaimAdmissibility
         const string Before = "<p class=\"written-before\"";
 
         Assert.Contains(
-            FormattableString.Invariant($"{Before} data-check=\"{check:yyyy-MM-dd}\">Written before the citation check, which holds from the night of {check:yyyy-MM-dd}"),
+            FormattableString.Invariant($"{Before} data-check=\"{check:yyyy-MM-dd}\">Written before the citation check, which holds for sections written from {check:yyyy-MM-dd}"),
             marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check.AddDays(-1), "a writer", ["r"]), [document]),
             StringComparison.Ordinal);
         Assert.DoesNotContain(Before, marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", check, "a writer", ["r"]), [document]), StringComparison.Ordinal);
     }
 
-    // The check holds from the first night built after it merged, since a pass runs from the newest night's build and no
-    // night runs on a day the exchange is closed: a merge on a Saturday leaves that day's passes and the Sunday's on the
-    // build of the Friday before, and the first night built with the check is the next session's, read off the closure table.
+    // The correction of 2026-10-11: the check was dated from the first night built after it merged, since a press runs the
+    // newest night's build, and the 18.5 regeneration wrote the weekend's reports from main's build by hand with the check
+    // holding, so every one of them was drawn as written before it. The date is the first day a pass wrote with the check:
+    // the store holds no section of 2026-10-10 or after written without it, and the passes of 2026-10-09 ran the Friday
+    // night's build, which did not hold it.
     [Fact]
-    public void TheCitationCheckHoldsFromTheFirstNightBuiltAfterItMergedAndAWeekendsPassesAreDrawnAsWrittenBeforeIt()
+    public void TheCitationCheckHoldsFromTheFirstDayAPassWroteWithItAndTheWeekendsReportsAreNotDrawnAsWrittenBeforeIt()
     {
-        var merged = new DateOnly(2026, 10, 10);
-        var firstNight = Enumerable.Range(0, 7).Select(merged.AddDays).First(EquityBrief.Core.Bars.ExchangeClosures.IsSession);
-
-        Assert.Equal(new DateOnly(2026, 10, 12), firstNight);
-        Assert.Equal(firstNight, ClaimRules.CitationCheckFrom);
+        Assert.Equal(new DateOnly(2026, 10, 10), ClaimRules.CitationCheckFrom);
 
         var marks = new EquityBrief.Web.Marks.MarkRenderer();
         var document = new EquityBrief.Web.Marks.SourceCell("r", "Results release", "https://www.sec.gov/Archives/edgar/data/93410/release.htm", new DateOnly(2026, 7, 31));
 
-        foreach (var weekend in new[] { merged, merged.AddDays(1) })
+        string Drawn(DateOnly written) => marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", written, "a writer", ["r"]), [document]);
+
+        Assert.Contains("Written before the citation check, which holds for sections written from 2026-10-10", Drawn(new DateOnly(2026, 10, 9)), StringComparison.Ordinal);
+
+        foreach (var weekend in new[] { new DateOnly(2026, 10, 10), new DateOnly(2026, 10, 11) })
         {
-            Assert.Contains(
-                "Written before the citation check, which holds from the night of 2026-10-12",
-                marks.WrittenSection("CVX", new("The two cases", "It sells fuel [D1].", weekend, "a writer", ["r"]), [document]),
-                StringComparison.Ordinal);
+            Assert.DoesNotContain("Written before the citation check", Drawn(weekend), StringComparison.Ordinal);
         }
     }
 

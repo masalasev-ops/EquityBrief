@@ -42598,3 +42598,97 @@ Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0 to 18.4 and
             419 to 429 merged; in progress, this correction; next, the written reports regenerated once a night is built
             from a main holding 18.4, then 18.5.
 Carried:    nothing new.
+
+### 18.4 - correction: the short version is held to three paragraphs of at most five sentences each and the calendar timeline's last words end inside it, where the short version restated every claim and the words ran past the figure   2026-10-11
+
+Corrects:   two parts 18.4 built. The checker held the short version written last to its citations and to nothing about
+            its length, so CVX's, written on 2026-10-10, restated about fifty of its accepted claims, every risk and both
+            cases among them, its second paragraph about forty sentences. And the calendar timeline centred its last
+            day's words on the plot's right edge, so they ran past the figure and were cut at "+90 day".
+Found:      reading CVX's rewritten page window by window at 1440 pixels for 18.5 on 2026-10-11. The operator chose to fix
+            the short version before the 32 reports are written again.
+Built:      a fourth paragraph, and a paragraph of more than five sentences, refused by the checker and named by their
+            openings, the retry told the bound and to choose the claims that matter most. The prompt is unchanged, so no
+            recording moves: every answer the fixture holds keeps within the bound, its longest paragraph five sentences,
+            the local model's retry in the lane comparison. The last day's words end at their rule.
+Tests:      one more: three paragraphs of five sentences pass, an abbreviation counting no sentence; a sixth sentence and a
+            fourth paragraph are each refused by their openings; the headline is held to its one sentence alone; and each
+            retry's words. The timeline's test reads each tick's anchor, the last ending at its rule.
+Claims:     none more; section 4's and section 12's rows for the short version, the roster's claim-admissibility and
+            read-surface rows and the guide say so.
+Pins:       none moved; the checker and the marks are no source a rule's version, the swing filter or a candidate
+            evaluator pins.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone. K1 the sentence bound read
+            as six: predicted red at the new test. K2 the paragraph bound unenforced: predicted red at the new test. K3 the
+            last day's words centred again: predicted red at the timeline's test. Results: K1 red, a sixth sentence
+            passing; K2 red, a fourth paragraph passing; K3 red, the four anchors all the middle. Each made on this branch
+            and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2202 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry and the
+            three corrections after it, 08fd8a03, the four entries' last commit, the second reading the suite result the
+            first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2202 of 2202 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2202 of 2202 tests ran.
+Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 431 merged; in progress,
+            this correction and the 6.4, 12.6 and 18.1 corrections beside it; next, the 32 written reports regenerated
+            from main, the screenshots read back against the store and the phase 18 report.
+Carried:    nothing new.
+
+### 6.4 - correction: the citation check is dated from 2026-10-10, the first day a pass wrote with it, where it was dated from the night of 2026-10-12 and drew the weekend's reports as written before it   2026-10-11
+
+Corrects:   the 6.4 correction of 2026-10-10, which dated the check from the first night built after it merged, since a
+            press runs the newest night's build. The 18.5 regeneration, on the operator's word of 2026-10-11, wrote the
+            reports from main's build by hand on the weekend with the check holding, and every section it wrote was drawn
+            "Written before the citation check, which holds from the night of 2026-10-12".
+Found:      reading CVX's rewritten page for 18.5 on 2026-10-11.
+Built:      the date read off the passes the store holds and not off a merge: none dated 2026-10-10 or after ran without the
+            check, and those dated 2026-10-09 ran the Friday night's build, which did not hold it. The line reads "which
+            holds for sections written from 2026-10-10", since that day was no night.
+Tests:      none more; the date's test now draws a section of 2026-10-09 as written before the check and the weekend's as
+            not, and the line's test reads its words.
+Claims:     none more; the roster's claim-admissibility row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the date restored. K4 the check dated 2026-10-12: predicted red at the date's
+            test. Result: red, the date 2026-10-12 where 2026-10-10 is read; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.
+
+### 12.6 - correction: an article's title is drawn as its characters, where a character the provider wrote as an entity was drawn as the entity's letters   2026-10-11
+
+Corrects:   the news rows 12.6 drew on a name's page and the causes taken from the labelled stories, which escaped a title
+            as the provider sent it, its characters already written as entities, so CVX's page read "ASML &amp; Chevron".
+Found:      reading CVX's page for 18.5 on 2026-10-11.
+Built:      a title read back from its entities before it is escaped once for the page, in the News region and in How it
+            got here alike; the stored title stays as the provider sent it.
+Tests:      one more: a title sent with an entity and one with a bare ampersand, each drawn as its characters escaped once.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the title escaped as sent. K5: predicted red at the new test. Result: red, the
+            entity's letters drawn; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.
+
+### 18.1 - correction: a phone's masthead is one column no wider than the screen, its row of links wrapping, where it ran past the screen's right edge   2026-10-11
+
+Corrects:   the narrow layout 18.1 set, whose one column could not be narrower than its widest item, the row of links,
+            which did not wrap, so at 390 pixels the masthead's identity line and its as-of line ran past the screen's
+            right edge and were cut.
+Found:      reading CVX's page through a 390-pixel frame for 18.5 on 2026-10-11.
+Built:      the narrow column shrinks to the screen and the links wrap onto as many lines as they need; the wide layout is
+            unchanged.
+Tests:      one more: the phone's layout states both rules, no rule sets the old column, and the wide layout keeps its
+            links on one line.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the old column restored. K6: predicted red at the new test. Result: red, the
+            narrow layout naming no shrinking column; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.

@@ -4081,7 +4081,7 @@ public sealed partial class MarkRenderer : IComponent
         // A section written before the checker held a figure to the documents its sentence cites says so.
         if (section.AsOf < Core.Research.ClaimRules.CitationCheckFrom)
         {
-            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check, which holds from the night of {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
+            drawn.Append(Invariant, $"<p class=\"written-before\" data-check=\"{Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}\">Written before the citation check, which holds for sections written from {Core.Research.ClaimRules.CitationCheckFrom:yyyy-MM-dd}: a figure in it was held to the night's figures and not to the text of the document it cites.</p>");
         }
 
         // A sentence resting on the night's own figures cites them as [N], which is listed beside the documents and
@@ -5381,7 +5381,7 @@ public sealed partial class MarkRenderer : IComponent
         EquityBrief.Core.Moves.MoveCauses.Research => Escaped(taken.Written ?? string.Empty),
         EquityBrief.Core.Moves.MoveCauses.News => string.Join(
             "; ",
-            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Escaped(story.Link)}\" rel=\"noopener\">{Escaped(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
+            taken.Stories.Take(3).Select(story => FormattableString.Invariant($"<a href=\"{Escaped(story.Link)}\" rel=\"noopener\">{ArticleTitle(story.Title)}</a> ({Escaped(story.Source)}, {story.Published.UtcDateTime:yyyy-MM-dd}, {Escaped(story.Direction)})")))
             + (taken.Stories.Count > 3 ? Formatted($"; and {taken.Stories.Count - 3} more") : string.Empty)
             + (taken.Prints.Count + taken.Filings.Count > 0 ? "; inside the move as well, " + Dated(taken) : string.Empty),
         EquityBrief.Core.Moves.MoveCauses.Filed => Dated(taken),
@@ -6980,7 +6980,7 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var row in view.Rows)
         {
             region.Append(Invariant, $"<li class=\"news-row\" data-article=\"{Escaped(row.ArticleId)}\" data-state=\"{Escaped(row.State)}\" data-tabs=\"{Escaped(row.Tabs)}\" data-kind=\"{Escaped(row.Kind ?? "none")}\" data-direction=\"{Escaped(row.Direction ?? "none")}\">");
-            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Escaped(row.Link)}\" rel=\"noopener\" target=\"_blank\">{Escaped(row.Title)}</a>");
+            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Escaped(row.Link)}\" rel=\"noopener\" target=\"_blank\">{ArticleTitle(row.Title)}</a>");
             region.Append(row.State switch
             {
                 NewsRow.Labelled => Formatted($"<span class=\"tag kind\">{Escaped(row.Kind ?? string.Empty)}</span><span class=\"tag dir\">{Escaped(row.Direction ?? string.Empty)}</span>"),
@@ -8023,4 +8023,8 @@ public sealed partial class MarkRenderer : IComponent
 
     static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+
+    // An article's title as the provider sends it carries its characters already written as entities, an ampersand as
+    // &amp;, so it is read back before it is escaped for the page, which would otherwise draw the entity's own letters.
+    static string ArticleTitle(string title) => Escaped(System.Net.WebUtility.HtmlDecode(title));
 }

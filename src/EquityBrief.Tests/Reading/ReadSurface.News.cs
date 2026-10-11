@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.News;
 using EquityBrief.Core.Research;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -152,6 +153,28 @@ public partial class ReadSurface
             Assert.Contains($".news-tab[value=\"{tab}\"]:checked~.news-tabs .chip[for=\"news-tab-{tab}\"]", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
             Assert.Contains($".news-tab[value=\"{tab}\"]:checked~.news-rows .news-row:not([data-tabs~=\"{tab}\"])", EquityBrief.Web.App.Stylesheet.Css, StringComparison.Ordinal);
         }
+    }
+
+    // The correction of 2026-10-11: CVX's page drew "ASML &amp; Chevron" for a title the provider sent with its ampersand
+    // written as an entity, the page escaping the entity's own letters again.
+    [Fact]
+    public void AnArticlesTitleSentWithItsCharactersAsEntitiesIsDrawnAsTheCharactersOnce()
+    {
+        NewsRow Row(string id, string title) =>
+            new(id, title, "wire.example", "2026-10-09", "https://example.invalid/" + id, NewsRow.Unlabelled, null, null, null, null, null, "all unlabelled");
+
+        var region = new MarkRenderer().NewsRegion(new NewsView(
+            "CVX",
+            new DateOnly(2026, 10, 9),
+            [Row("a1", "Top Research Reports for JPMorgan, ASML &amp; Chevron"), Row("a2", "Q3 &lt;preview&gt; & what to watch")],
+            2, 0, 0, 0, 0, 2, null, null, null, null));
+
+        // Each title drawn as its characters, escaped once for the page: an entity the provider wrote is read back and an
+        // ampersand it wrote bare is escaped as one.
+        Assert.Contains(">Top Research Reports for JPMorgan, ASML &amp; Chevron</a>", region, StringComparison.Ordinal);
+        Assert.Contains(">Q3 &lt;preview&gt; &amp; what to watch</a>", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("&amp;amp;", region, StringComparison.Ordinal);
+        Assert.DoesNotContain("&amp;lt;", region, StringComparison.Ordinal);
     }
 
     [Fact]

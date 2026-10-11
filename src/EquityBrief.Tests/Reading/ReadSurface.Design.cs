@@ -566,6 +566,23 @@ public partial class ReadSurface
         return document[start..(end < 0 ? document.Length : end)];
     }
 
+    // The correction of 2026-10-11: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity
+    // line and its as-of line cut, since the narrow layout's one column was as wide as its widest item, the row of links,
+    // which did not wrap. The column shrinks to the screen and the links wrap onto as many lines as they need.
+    [Fact]
+    public void ThePhonesMastheadIsOneColumnNoWiderThanTheScreenAndItsLinksWrap()
+    {
+        var narrow = Regex.Match(Stylesheet.Css, @"@media \(max-width:640px\)\{\n :root\{--gutter:14px\}(.*?)\n\}", RegexOptions.Singleline);
+
+        Assert.True(narrow.Success, "The stylesheet states no narrow layout for a phone.");
+        Assert.Contains(".mast .wrap{grid-template-columns:minmax(0,1fr)}", narrow.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains(".m-nav{flex-wrap:wrap;", narrow.Groups[1].Value, StringComparison.Ordinal);
+        Assert.DoesNotContain(".mast .wrap{grid-template-columns:1fr}", Stylesheet.Css, StringComparison.Ordinal);
+
+        // The wide layout keeps its links on one line beside the identity.
+        Assert.Contains(".m-nav{display:flex;gap:14px;font-size:13.5px}", Stylesheet.Css, StringComparison.Ordinal);
+    }
+
     // The first cell of each row of section 4's table, as a reader reads it.
     internal static List<string> ReportRegions(string document)
     {

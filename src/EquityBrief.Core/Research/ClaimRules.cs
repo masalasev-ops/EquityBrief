@@ -168,7 +168,16 @@ public static class ClaimRules
     public const string DateNoCitedClaimCarries = "a date neither the facts file nor a claim the sentence cites carries";
     public const string HeadlineFigure = "a figure in the headline";
     public const string HeadlineSentences = "a headline of more than one sentence";
+    public const string ShortVersionTooManyParagraphs = "a short version of more than three paragraphs";
+    public const string ShortVersionLongParagraph = "a paragraph of the short version holding more than five sentences";
     public const string NoClaims = "no claims stored beside it to hold it to";
+
+    // The short version is the page's summary: three paragraphs of a few sentences, each choosing the claims that matter
+    // most, since the regions beneath draw every claim in full. A draft restating every claim reads as the page again, and
+    // its retry is told the bound it passed.
+    // see: The short version and the headline are written last from the accepted claims alone, and code writes each where none is accepted
+    public const int ShortVersionParagraphs = 3;
+    public const int ShortVersionParagraphSentences = 5;
 
     // The one section read from the newest and the previous results releases, in the release's own words: what management
     // said of its guidance against the release before, what is working and what is not. The words its three parts open on.
@@ -184,11 +193,10 @@ public static class ClaimRules
     // see: A sentence names the night's stored figures by [N] and a document by its marker, and a figure in a sentence citing documents alone is one they state
     public const string NightMark = "[N]";
 
-    // The first session whose sections the checker held a figure to the documents its sentence cites. A pass runs from the
-    // newest night's build, so the check holds from the first night built after it merged, and a researched section dated
-    // before that night is drawn saying so. A pass a press started on that session before its night's build ran the build
-    // before, which a section's date cannot tell apart.
-    public static readonly DateOnly CitationCheckFrom = new(2026, 10, 12);
+    // The first day a pass wrote sections the checker held a figure to the documents its sentence cites, and a researched
+    // section dated before it is drawn saying so. A press runs the newest night's build, so the date is the day the store
+    // holds no section written without the check after, read off the passes the store holds and not off a merge.
+    public static readonly DateOnly CitationCheckFrom = new(2026, 10, 10);
 
     // ---- the two cases ----
 
@@ -493,6 +501,21 @@ public static class ClaimRules
         if (headline && sentences.Count > 1)
         {
             findings.Add(new ClaimFinding(prose.Trim(), prose.Trim(), HeadlineSentences));
+        }
+
+        if (!headline)
+        {
+            string[] paragraphs = prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (paragraphs.Length > ShortVersionParagraphs)
+            {
+                findings.Add(new ClaimFinding(string.Empty, Excerpt(paragraphs[ShortVersionParagraphs]), ShortVersionTooManyParagraphs));
+            }
+
+            foreach (var paragraph in paragraphs.Where(paragraph => Sentences(paragraph).Count > ShortVersionParagraphSentences))
+            {
+                findings.Add(new ClaimFinding(string.Empty, Excerpt(paragraph), ShortVersionLongParagraph));
+            }
         }
 
         var read = new Dictionary<int, DocumentFigures>();

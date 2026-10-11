@@ -78,14 +78,21 @@ public partial class ReadSurface
         var lanes = Regex.Matches(drawn, "<text class=\"m-cap\" x=\"([^\"]+)\" y=\"([^\"]+)\" text-anchor=\"end\">([^<]+)</text>")
             .Select(lane => (X: lane.Groups[1].Value, Y: double.Parse(lane.Groups[2].Value, CultureInfo.InvariantCulture), Name: lane.Groups[3].Value))
             .ToArray();
-        var ticks = Regex.Matches(drawn, "<text class=\"m-tick\" x=\"([^\"]+)\" y=\"[^\"]+\" text-anchor=\"middle\">([^<]+)</text>")
-            .Select(tick => (X: tick.Groups[1].Value, Words: tick.Groups[2].Value))
+        var ticks = Regex.Matches(drawn, "<text class=\"m-tick\" x=\"([^\"]+)\" y=\"[^\"]+\" text-anchor=\"([a-z]+)\">([^<]+)</text>")
+            .Select(tick => (X: tick.Groups[1].Value, Anchor: tick.Groups[2].Value, Words: tick.Groups[3].Value))
             .ToArray();
 
         Assert.Equal(["Results", "Ex-dividend", "FOMC", "CPI"], lanes.Select(lane => lane.Name));
         Assert.Single(lanes.Select(lane => lane.X).Distinct());
         Assert.True(lanes.Zip(lanes.Skip(1)).All(pair => pair.First.Y < pair.Second.Y), "the lanes are not drawn top to bottom");
         Assert.Equal(["the night", "+30 days", "+60 days", "+90 days"], ticks.Select(tick => tick.Words));
+
+        // The correction of 2026-10-11: the last day's words were centred on the plot's right edge and ran past the figure,
+        // cut at "+90 day" on CVX's page. They end at their rule inside the figure, and the others are centred on theirs.
+        var wide = double.Parse(Regex.Match(drawn, "viewBox=\"0 0 ([^ ]+) ").Groups[1].Value, CultureInfo.InvariantCulture);
+
+        Assert.Equal(["middle", "middle", "middle", "end"], ticks.Select(tick => tick.Anchor));
+        Assert.True(double.Parse(ticks[^1].X, CultureInfo.InvariantCulture) < wide, "the last day's rule stands past the figure's width");
 
         // Each event a dot on its day on its own kind's lane: the CPI release sixty days after the night stands on the
         // axis's sixtieth day, the dots run in the order of their days, and each sits on the line its lane's name is set

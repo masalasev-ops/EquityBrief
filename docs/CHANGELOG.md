@@ -25,6 +25,56 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of a phone's masthead
+Corrects: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity line and its as-of line cut; found reading CVX's page through a 390-pixel frame for 18.5
+Was:
+> read-surface: ... and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike |
+Now:
+> read-surface: ... and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike; and from the 18.1 correction of 2026-10-11 a phone's masthead is one column no wider than the screen, its row of links wrapping |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 12.6 correction of the day asserts of an article's title
+Corrects: CVX's page drew "ASML &amp; Chevron" for a title the provider sent with its ampersand written as an entity; found reading the page for 18.5
+Was:
+> read-surface: ... and from the 18.4 correction of 2026-10-11 the calendar timeline's last day's words end at their rule inside the figure, the others centred on theirs |
+Now:
+> read-surface: ... and from the 18.4 correction of 2026-10-11 the calendar timeline's last day's words end at their rule inside the figure, the others centred on theirs; and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 6.4 correction of the day asserts of the citation check's date
+Corrects: every section the 18.5 regeneration wrote from main's build on the weekend was drawn as written before the citation check that held over it, the check dated from the night of 2026-10-12; found reading CVX's rewritten page for 18.5
+Was:
+> claim-admissibility: ... and from the 18.4 correction of 2026-10-11 the short version is three paragraphs of at most five sentences each, a fourth paragraph and a paragraph of a sixth sentence refused by their openings and the retry told the bound, a sentence's abbreviation counting no sentence of its own |
+Now:
+> claim-admissibility: ... and from the 18.4 correction of 2026-10-11 the short version is three paragraphs of at most five sentences each, a fourth paragraph and a paragraph of a sixth sentence refused by their openings and the retry told the bound, a sentence's abbreviation counting no sentence of its own; and from the 6.4 correction of 2026-10-11 a section is drawn as written before the citation check where it is dated before 2026-10-10, the first day a pass wrote with the check, and a section of that day or after is not |
+Why: each roster row says what its check asserts, and the correction's test extends claim-admissibility's.
+
+### 2026-10-11 - ARCHITECTURE.html - section 4 and section 12 hold the short version to three paragraphs of at most five sentences each
+Corrects: CVX's short version written last on 2026-10-10 restated about fifty of its accepted claims, every risk and both cases among them, in paragraphs the checker held to their citations and to nothing about their length; found reading the rewritten page window by window for 18.5
+Was:
+> section 4, The short version: Three paragraphs written last from the claims the other written regions were accepted with: what happened, what matters and what the plan does, ...
+> section 12, The short version: ... three paragraphs: what happened, what matters and what the plan does, the last as the plan's claims say it, ... | every sentence cites a claim and nothing else; every figure is a rounding of one in the facts file and is stated by a claim the sentence cites, and none is a figure the tiles show; a quotation is a cited claim's words
+Now:
+> section 4, The short version: Three paragraphs of at most five sentences each, written last from the claims the other written regions were accepted with: what happened, what matters and what the plan does, ...
+> section 12, The short version: ... three paragraphs of at most five sentences each: what happened, what matters and what the plan does, the last as the plan's claims say it, ... | every sentence cites a claim and nothing else; every figure is a rounding of one in the facts file and is stated by a claim the sentence cites, and none is a figure the tiles show; a quotation is a cited claim's words; a fourth paragraph, and a paragraph of more than five sentences, are refused, the retry told the bound
+Why: the short version is the page's summary, and the regions beneath it draw every claim in full.
+
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility states what the 18.4 correction of the day asserts of the short version's length
+Corrects: the short version ran to about fifty sentences with nothing refusing it; found reading CVX's rewritten page for 18.5
+Was:
+> claim-admissibility: ... the headline one sentence carrying no figure but a digit of the company's own name, the retry told what to do about each |
+Now:
+> claim-admissibility: ... the headline one sentence carrying no figure but a digit of the company's own name, the retry told what to do about each; and from the 18.4 correction of 2026-10-11 the short version is three paragraphs of at most five sentences each, a fourth paragraph and a paragraph of a sixth sentence refused by their openings and the retry told the bound, a sentence's abbreviation counting no sentence of its own |
+Why: each roster row says what its check asserts, and the correction's test extends claim-admissibility's.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.4 correction of the day asserts of the calendar timeline
+Corrects: the calendar timeline's last words were cut at "+90 day" on CVX's page; found reading the rewritten page for 18.5
+Was:
+> read-surface: ... and a bar past the axis's end held there and saying so |
+Now:
+> read-surface: ... and a bar past the axis's end held there and saying so; and from the 18.4 correction of 2026-10-11 the calendar timeline's last day's words end at their rule inside the figure, the others centred on theirs |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - ARCHITECTURE.html - section 4's three rows citing no decision cite the decisions they rest on
 Corrects: 18.5 owes section 4 complete, each part with what produces it and why, and three of its 25 rows named what produces them and cited no decision for why; found reading the table row by row at 18.5
 Was:

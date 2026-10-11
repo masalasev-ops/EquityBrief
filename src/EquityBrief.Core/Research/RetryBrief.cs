@@ -88,6 +88,8 @@ public static class RetryBrief
         ClaimRules.QuotationNoCitedClaimHolds => "Copy the words exactly as the cited claim writes them, or say it without quotation marks.",
         ClaimRules.HeadlineFigure => "Write the headline with no figure and no digit.",
         ClaimRules.HeadlineSentences => "Write the headline as one sentence.",
+        ClaimRules.ShortVersionTooManyParagraphs => "Write three paragraphs and no more: what happened, what matters and what the plan does.",
+        ClaimRules.ShortVersionLongParagraph => "Keep each paragraph to five sentences, choosing the claims that matter most, since the sections beneath draw every claim.",
         ClaimRules.NoClaims => "Write it from the claims listed.",
         RiskFields.NotFields => "Answer with the JSON object the section asks for and nothing else.",
         RiskFields.FactNotListed => "Name a fact exactly as it is listed, or confirm the risk by an event of one kind.",
