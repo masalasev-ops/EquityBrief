@@ -6,7 +6,7 @@ namespace EquityBrief.Tests.Checks;
 // night is built, into the same folder of nights, reusing a copy a night built, and refuses a checkout off main or
 // holding a commit origin/main lacks before any worker exists; read in its check mode over temporary repositories as
 // the night's script and the ledger's build are.
-// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+// see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
 public partial class NightlyRun
 {

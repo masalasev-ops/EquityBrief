@@ -19,7 +19,7 @@ public partial class ArchitectureConformance
     // picture of claims placed elsewhere.
     static (string Checkpoint, string[] Added, string[] Taken)[] PhaseEighteenLanded =>
     [
-        ("corrections", [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims], [.. TakenOutAfterPhaseSeventeen.Take(7)]),
+        ("corrections", [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims, .. Reading.ReadSurface.MonthlyWorryRows], [.. TakenOutAfterPhaseSeventeen.Take(7)]),
         ("18.0", [], []),
         ("18.1", [.. ComponentAccess.QuoteJobRows, .. SchemaColumns.QuoteStoreRows, .. FixtureExpectations.QuoteRows, .. Reading.ReadSurface.NamePageRows], []),
         ("18.2", [.. ComponentAccess.ReportComponentRows, .. SchemaColumns.ReportStoreRows, CheckReach.Key(NightlyRunSteps.Heading, NightlyRun.TreasuryStep), .. FixtureExpectations.ReportRows, .. Reading.ReadSurface.ReportPageRows], []),
@@ -39,9 +39,10 @@ public partial class ArchitectureConformance
 
     // How many more rows each part of phase 18 landed than its count in the plan, a negative figure where it landed fewer,
     // and what it landed. The corrections, counted one, landed the chart averages' step, catalogue and matrix rows, store
-    // and the chart's part and the dividend steps' row less the queue's catalogue and matrix rows, step, section 17's row,
-    // section 18's two and the run page's region, two fewer: the queue retired four rows more than counted, the averages
-    // landed three more and the market events' 2027 rows landed as words in a row that stood. 18.0, none as counted. 18.1,
+    // and the chart's part, the dividend steps' row and the 17.10 correction's checklist item on the newest monthly run,
+    // less the queue's catalogue and matrix rows, step, section 17's row, section 18's two and the run page's region, one
+    // fewer: the queue retired four rows more than counted, the averages landed three more, the monthly item one more, and
+    // the market events' 2027 rows landed as words in a row that stood. 18.0, none as counted. 18.1,
     // twenty: the quote job's catalogue and matrix rows, two stores, section 17's row and section 18's three, the name
     // page's parts with the headline as the two of its parts that stand from 18.1, the range bar, the run page's quote runs
     // and the interval, two more, the palette's kinds, accents and tables landing as words in section 15.6 and the job's
@@ -56,7 +57,7 @@ public partial class ArchitectureConformance
     // claims placed elsewhere, two fewer.
     static readonly (string Checkpoint, int More)[] PhaseEighteenMore =
     [
-        ("corrections", -2),
+        ("corrections", -1),
         ("18.0", 0),
         ("18.1", 2),
         ("18.2", 8),
@@ -97,10 +98,10 @@ public partial class ArchitectureConformance
         var rows = landed.SelectMany(part => part.Added).ToArray();
         var actual = before + rows.Length - landed.Sum(part => part.Taken.Length);
 
-        // The actual stands one above the range the plan stated, past the pair by the rows each part landed beyond its
-        // count, named above.
+        // The actual stands two above the range the plan stated, past the pair by the rows each part landed beyond its
+        // count, named above, the 17.10 correction's checklist item among them.
         Assert.Equal(predicted + PhaseEighteenMore.Sum(part => part.More), actual);
-        Assert.Equal(high + 1, actual);
+        Assert.Equal(high + 2, actual);
 
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood before
         // it, none out of scope and none unexamined.
@@ -113,7 +114,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((1149, 1222, 1185, 1265, 1266), (before, predicted, low, high, actual));
+        Assert.Equal((1149, 1222, 1185, 1265, 1267), (before, predicted, low, high, actual));
     }
 
     // see: The name page answers a buyer's questions in the order a buyer asks them

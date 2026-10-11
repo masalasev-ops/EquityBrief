@@ -43119,3 +43119,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 17.10 correction below.
 Queue:      as the 17.10 ruling above.
 Carried:    nothing new.
+
+### 17.10 - correction: the monthly run asks the SEC's facts first, writes the history again beside the standing one and only where it holds, checks it after, and leaves the drain's lock to a step that takes it itself, where its first try stopped at a check on data moved since the build and its second waited nine hours for its own lock   2026-10-11
+
+Corrects:   17.10's monthly run. Its steps ran each index's point-in-time check first, so on 2026-10-10 the S&P 500's check
+            named 37 readings that differed from a history written the day before, the store's data having moved since,
+            and the run stopped there; the operator ruled the facts asked first and the history written again before its
+            check. And the run held the drain's lock across every step while the tester's step takes that lock itself as
+            it writes, so the second try waited for its own lock from about 04:05Z until it was stopped at 13:18Z.
+Found:      the first try by hand on 2026-10-10; the second by its silence, which the operator named.
+Built:      the steps run as the facts, the history, each index's check, each index's tester and the report. The history
+            step computes every index's history again over the span the standing build wrote, beside it and before any
+            of it is written, counts each family's setups with a benchmark against the standing build's, and writes every
+            index's only where no family on any index falls short by more than the larger of 0.5 per cent of its count,
+            rounded up, and 10; otherwise it writes nothing, keeps the standing history and stops the run naming each
+            family short with both counts. A step whose work takes the drain's lock itself, the history's and the
+            testers', is left to take it. The build by hand computes and writes as it did, through the same code. The Run
+            page's checklist names the newest monthly run's month, the step it stopped on and why. Two decisions, one
+            superseding the monthly run's of 17.10 with the old moved to Previously decided; the monthly run's and the
+            setup ledger's catalogue rows, the loop's paragraph, section 17's and section 18's rows and the Run page's
+            checklist, the runbook and the roster's three rows, the prior text in `CHANGELOG.md`.
+Tests:      three more: a step that takes the drain's lock itself taking it free with no look at a held lock; the
+            tolerance worked by hand at both ends, the same history computed again held and written, a family eleven
+            short where ten are allowed writing nothing and naming the family with both counts, and one ten short
+            written; and the checklist's item held, failed with its month, step and why, and not read, read back off the
+            rendered page for a newest try that kept its history. The steps' order test reads the new order.
+Claims:     one more, the checklist's item on the newest monthly run, named beside phase 17's pair and in phase 18's
+            corrections; the monthly run's limits row gains the tolerance's two figures, pinned.
+Pins:       none moved; the monthly run, the ledger's build and the read surface are in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, one mutation each. M7 the run holding the
+            drain's lock across a step that takes it itself: predicted red at the new lock test. M8 the history written
+            whatever the counts: predicted red at the tolerance test. M9 the tolerance with no floor of ten: predicted red
+            at the tolerance worked by hand. M10 the checklist item held whatever the newest run's steps: predicted red at
+            the checklist test. Results: M7 red at the new lock test, the step's own look at the held lock refused rather
+            than waited on; M8 red at the tolerance test, the family eleven short written; M9 red at the tolerance worked
+            by hand, nothing allowed against a count of nothing; M10 red at the checklist test. Each reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
+            the run.
+Queue:      as the 17.10 ruling above; items 3 and 4 of it ship together, the history's guard being the monthly run's
+            history step, which needed the lock left to it.
+Carried:    October's monthly run by hand, item 7 of the queue, once items 5 and 6 have merged.

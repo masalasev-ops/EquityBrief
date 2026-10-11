@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Checks;
 // architecture and in the guide, a box read off the figure's own drawing by its title and found in the key's words;
 // the reader is shown to find a key missing a box. And the guide's worked examples of the loop hold placeholders and no
 // figure, a digit standing in none of them but in an index's name.
-// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+// see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 public partial class ArchitectureConformance
 {
     // The architecture's figures by caption: the nightly half, the test years, the monthly half and one month across the

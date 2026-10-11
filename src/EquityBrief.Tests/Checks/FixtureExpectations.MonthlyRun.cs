@@ -10,10 +10,11 @@ namespace EquityBrief.Tests.Checks;
 // each writing one row under a stage of its own; a step that does not hold stops the run with why, and a run started again
 // for the month goes on from the first step no try of the month held, while another month runs every step. Before each
 // step it waits, by a clock its own wait moves, while the night holds its lock and while a step would run into the
-// night's window, and it holds the drain's lock while a step runs. Its report names for each family on each index the
-// one proposal the month's newest run puts to the operator, the strongest that passed by its adjusted p-value, or that
-// none passed, and an index with no run for the month, written into the month's folder and written again over it.
-// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+// night's window, and it holds the drain's lock while a step runs, but for a step that takes the lock itself, which takes
+// it free. Its report names for each family on each index the one proposal the month's newest run puts to the operator,
+// the strongest that passed by its adjusted p-value, or that none passed, and an index with no run for the month,
+// written into the month's folder and written again over it.
+// see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 public partial class FixtureExpectations
 {
     // The rows 17.10 adds that this check reaches: section 17's monthly run and section 18's run that fails.
@@ -47,33 +48,33 @@ public partial class FixtureExpectations
         using var output = new StringWriter();
         var clock = new CallClock(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero));
         var ran = new List<string>();
-        var failing = "facts";
+        var failing = "history";
         var steps = MonthlySteps(ran, name => name != failing);
 
-        Assert.Equal(["check-GSPC", "check-MID", "check-SML", "facts", "test-GSPC", "test-MID", "test-SML", "report"], MonthlyRun.StepNames);
+        Assert.Equal(["facts", "history", "check-GSPC", "check-MID", "check-SML", "test-GSPC", "test-MID", "test-SML", "report"], MonthlyRun.StepNames);
 
-        // The first Saturday of October: the three checks hold and the facts do not, so the run stops there.
+        // The first Saturday of October: the facts hold and the history does not, so the run stops there.
         var first = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps).RunAsync("2026-10");
 
-        Assert.Equal(["check-GSPC", "check-MID", "check-SML", "facts"], ran);
-        Assert.Equal("facts", first.Stopped);
+        Assert.Equal(["facts", "history"], ran);
+        Assert.Equal("history", first.Stopped);
         Assert.Equal("loop-month-2026-10-20261003T120000Z", first.RunId);
 
         // A run of the month is a run by hand to the Run page, which opens on no Saturday for it.
         Assert.Contains(MonthlyRun.Verb + "-", EquityBrief.Api.Reading.RunScreen.RunsByHand);
         Assert.Equal(
-            ["loop-month-check-GSPC|ok", "loop-month-check-MID|ok", "loop-month-check-SML|ok", "loop-month-facts|failed|facts did not hold"],
+            ["loop-month-facts|ok", "loop-month-history|failed|history did not hold"],
             Query(store, $"SELECT stage || '|' || outcome || CASE outcome WHEN 'ok' THEN '' ELSE '|' || detail END FROM run_log WHERE run_id = '{first.RunId}' ORDER BY rowid;"));
 
-        // Started again an hour later with the facts holding: the checks are not run again and the rest run in order.
+        // Started again an hour later with the history holding: the facts are not asked again and the rest run in order.
         ran.Clear();
         failing = "none";
         clock.Advance(TimeSpan.FromHours(1));
 
         var second = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps).RunAsync("2026-10");
 
-        Assert.Equal(["facts", "test-GSPC", "test-MID", "test-SML", "report"], ran);
-        Assert.Equal(["check-GSPC", "check-MID", "check-SML"], second.Skipped);
+        Assert.Equal(["history", "check-GSPC", "check-MID", "check-SML", "test-GSPC", "test-MID", "test-SML", "report"], ran);
+        Assert.Equal(["facts"], second.Skipped);
         Assert.Null(second.Stopped);
 
         // Started a third time for the month, every step held already and none runs; November's run runs every step.
@@ -135,7 +136,7 @@ public partial class FixtureExpectations
 
         await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, Steps(), Waited).RunAsync("2026-10");
 
-        Assert.Equal("check-GSPC at Sat 00:00, drain lock held", events[0]);
+        Assert.Equal("facts at Sat 00:00, drain lock held", events[0]);
         Assert.All(events, line => Assert.EndsWith("drain lock held", line, StringComparison.Ordinal));
         Assert.Contains("loop-month: pausing for the night's window", output.ToString(), StringComparison.Ordinal);
 
@@ -161,10 +162,49 @@ public partial class FixtureExpectations
 
         await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, Steps(), WaitedForTheNight).RunAsync("2026-11");
 
-        Assert.Equal("check-GSPC at Sat 12:03, drain lock held", events[0]);
+        Assert.Equal("facts at Sat 12:03, drain lock held", events[0]);
         Assert.Contains("loop-month: waiting while night-20261002T233000Z holds the night's lock", output.ToString(), StringComparison.Ordinal);
 
         // Between steps the drain's lock is given up, so a drain started then takes it.
+        Assert.False(File.Exists(drainLock) && IsHeld(drainLock));
+    }
+
+    [Fact]
+    public async Task AStepThatTakesTheDrainsLockItselfRunsWithTheLockFreeAndTakesIt()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var output = new StringWriter();
+        var clock = new CallClock(new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero));
+        var drainLock = Path.Combine(store.Root, WorkerDrainLauncher.CopiesFolder, DrainLock.FileName);
+        var looks = 0;
+        var took = false;
+
+        // The step takes the drain's lock as the history build does for each chunk it writes; each look at a held lock is
+        // counted and the third refused, so a run holding the lock across the step fails it rather than waiting for ever.
+        Task Look() => ++looks >= 3 ? throw new InvalidOperationException("the drain's lock stayed held") : Task.CompletedTask;
+
+        MonthlyStep[] steps =
+        [
+            new("facts", (_, _) => Task.FromResult((true, "facts held"))),
+            new(
+                "history",
+                async (_, cancellation) =>
+                {
+                    using (await DrainLock.AcquireAsync(store.Root, Look, cancellation))
+                    {
+                        took = true;
+                    }
+
+                    return (true, "history held");
+                },
+                TakesTheLock: true),
+        ];
+
+        var outcome = await new MonthlyRun(clock, store.DatabaseFile, store.Root, output, steps).RunAsync("2026-10");
+
+        Assert.Null(outcome.Stopped);
+        Assert.True(took);
+        Assert.Equal(0, looks);
         Assert.False(File.Exists(drainLock) && IsHeld(drainLock));
     }
 

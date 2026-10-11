@@ -161,7 +161,8 @@ static int NoVerb()
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
         "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
         "stands at from the next night and every other refused with why, " +
-        "'loop-month' runs the month's steps in order, each index's point-in-time check, the SEC's facts asked whole, " +
+        "'loop-month' runs the month's steps in order, the SEC's facts asked whole, the history written again beside the " +
+        "standing one and kept where a family would lose its benchmarks, each index's point-in-time check, " +
         "each index's tester run and the month's report naming the one proposal a family an index puts to you, with " +
         "'--month <yyyy-MM>' naming the month, and run again goes on from the first step no try of the month held, as " +
         "tools/monthly runs it from a clean copy of main's commit, " +
@@ -668,10 +669,11 @@ static async Task<int> LoopApplyRun()
     return 0;
 }
 
-// The monthly run, by hand or from tools/monthly on the first Saturday of the month: each index's point-in-time check,
-// the SEC's facts asked whole, each index's tester run and the month's report, a step at a time, going on from the
-// first step no try of the month held.
-// see: The monthly run puts at most one proposal a family an index to the operator, from a clean copy of main's commit on the first Saturday of the month
+// The monthly run, by hand or from tools/monthly on the first Saturday of the month: the SEC's facts asked whole, the
+// indices' history written again beside the standing one, each index's point-in-time check, each index's tester run
+// and the month's report, a step at a time, going on from the first step no try of the month held. The history's and
+// the testers' steps take the drain's lock themselves as they write.
+// see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 static async Task<int> LoopMonthRun(string[] args)
 {
     var configuration = Configuration();
@@ -681,14 +683,6 @@ static async Task<int> LoopMonthRun(string[] args)
     var contact = configuration[ArchiveAgent.ContactName];
     EquityBrief.Worker.Loop.MonthlyRun? run = null;
     var steps = new List<EquityBrief.Worker.Loop.MonthlyStep>();
-
-    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
-    {
-        steps.Add(new("check-" + index, async (_, cancellation) =>
-            await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).CheckAsync(index, Console.Out, cancellation: cancellation) == 0
-                ? (true, "the point-in-time check named no difference")
-                : (false, "the point-in-time check named a difference, so the tester does not read the ledger this month")));
-    }
 
     steps.Add(new("facts", async (runId, cancellation) =>
     {
@@ -705,12 +699,28 @@ static async Task<int> LoopMonthRun(string[] args)
             : (false, "the archive refused: " + whole.Refusal);
     }));
 
+    steps.Add(new(
+        "history",
+        (_, cancellation) => new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).RebuildAsync(store.DataRoot, EquityBrief.Worker.Loop.MonthlyRun.Indices, Console.Out, cancellation: cancellation),
+        TakesTheLock: true));
+
     foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
     {
-        steps.Add(new("test-" + index, async (_, cancellation) =>
-            await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index, month, cancellation) == 0
-                ? (true, $"the tester ran for {month}")
-                : (false, "the tester did not finish its run")));
+        steps.Add(new("check-" + index, async (_, cancellation) =>
+            await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).CheckAsync(index, Console.Out, cancellation: cancellation) == 0
+                ? (true, "the point-in-time check named no difference")
+                : (false, "the point-in-time check named a difference, so the tester does not read the ledger this month")));
+    }
+
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new(
+            "test-" + index,
+            async (_, cancellation) =>
+                await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index, month, cancellation) == 0
+                    ? (true, $"the tester ran for {month}")
+                    : (false, "the tester did not finish its run"),
+            TakesTheLock: true));
     }
 
     steps.Add(new("report", (_, cancellation) => run!.ReportAsync(month, cancellation)));

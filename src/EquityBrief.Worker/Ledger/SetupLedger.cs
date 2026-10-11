@@ -722,11 +722,144 @@ public sealed class SetupLedger : IComponent
     public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
-        var runId = FormattableString.Invariant($"{BuildStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
-        var history = new SweepHistory(databaseFile);
         var pause = wait ?? Task.Delay;
 
         await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var prepared = await PrepareAsync(connection, index, through, output, cancellation);
+        var first = Array.FindIndex(prepared.Calendar, session => session >= from);
+        var last = Array.FindLastIndex(prepared.Calendar, session => session <= through);
+
+        if (first < 0 || last < first)
+        {
+            output.WriteLine("ledger-build: the history holds no session in the span");
+
+            return 1;
+        }
+
+        var stored = await StoredHistorySessionsAsync(connection, index, cancellation);
+        var sessionsToWrite = SessionsToWrite(prepared.Calendar, first, last, stored, again);
+
+        if (sessionsToWrite.Count == 0)
+        {
+            output.WriteLine(FormattableString.Invariant($"ledger-build: every session of {Stamp(prepared.Calendar[first])} to {Stamp(prepared.Calendar[last])} is written already; --again writes the span again"));
+
+            return 0;
+        }
+
+        output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
+
+        await WriteAsync(dataRoot, connection, prepared, first, last, sessionsToWrite, prepared.Compute, startedAt, output, pause, cancellation);
+
+        return 0;
+    }
+
+    // The tolerance the monthly rebuild holds each family on each index to: the setups the standing build gives a
+    // benchmark, less the larger of half a per cent of them and ten setups.
+    // see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+    public const double RebuildShortfallShare = 0.005;
+
+    public const int RebuildShortfallFloor = 10;
+
+    public static int RebuildAllowed(int standing) => Math.Max(RebuildShortfallFloor, (int)Math.Ceiling(standing * RebuildShortfallShare));
+
+    public static bool RebuildHolds(int standing, int rebuilt) => standing - rebuilt <= RebuildAllowed(standing);
+
+    const string StandingBenchmarks = @"
+        SELECT family, SUM(CASE WHEN settled = 1 AND benchmark IS NOT NULL THEN 1 ELSE 0 END)
+        FROM setup WHERE index_code = $index AND source = $source GROUP BY family;";
+
+    // The monthly rebuild: each index's history computed again over the span the standing build wrote, beside it and
+    // before any of it is written, and written for every index only where no family on any index gives fewer setups a
+    // benchmark than the standing build beyond the tolerance. Otherwise nothing is written, the standing history stands,
+    // and the words name each family short with both counts.
+    // see: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
+    public async Task<(bool Held, string Words)> RebuildAsync(string dataRoot, IReadOnlyList<string> indices, TextWriter output, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
+    {
+        var pause = wait ?? Task.Delay;
+        var rebuilt = new List<(PreparedHistory Prepared, int First, int Last, IReadOnlyList<int> Sessions, IReadOnlyDictionary<int, BuiltSession> Built, DateTimeOffset StartedAt)>();
+        var shortOf = new List<string>();
+        var counted = new List<string>();
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        foreach (var index in indices)
+        {
+            if (await HistorySpanAsync(index, cancellation) is not { } span)
+            {
+                return (false, $"the {DecisionCards.NameOf(index)} holds no history to write again; build it by hand first");
+            }
+
+            await WaitForTheNightAsync(dataRoot, output, pause, cancellation);
+
+            var startedAt = clock.UtcNow;
+            var prepared = await PrepareAsync(connection, index, span.Through, output, cancellation);
+            var first = Array.FindIndex(prepared.Calendar, session => session >= span.From);
+            var last = Array.FindLastIndex(prepared.Calendar, session => session <= span.Through);
+
+            if (first < 0 || last < first)
+            {
+                return (false, $"the {DecisionCards.NameOf(index)}'s history holds no session of its span");
+            }
+
+            var sessions = SessionsToWrite(prepared.Calendar, first, last, new HashSet<DateOnly>(), again: true);
+            var built = sessions.ToDictionary(at => at, prepared.Compute);
+            var benchmarks = built.Values
+                .SelectMany(session => session.Families)
+                .GroupBy(family => family.Family.Family, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Sum(family => family.Reads.Count(read => read.Outcome.Result is not null && read.Benchmark.Settled)), StringComparer.Ordinal);
+            var standing = new Dictionary<string, int>(StringComparer.Ordinal);
+
+            await using (var command = Command(connection, null, StandingBenchmarks, [("$index", index), ("$source", HistorySource)]))
+            await using (var reader = await command.ExecuteReaderAsync(cancellation))
+            {
+                while (await reader.ReadAsync(cancellation))
+                {
+                    standing[reader.GetString(0)] = reader.GetInt32(1);
+                }
+            }
+
+            foreach (var family in standing.Keys.Union(benchmarks.Keys).Order(StringComparer.Ordinal))
+            {
+                var was = standing.GetValueOrDefault(family);
+                var now = benchmarks.GetValueOrDefault(family);
+
+                if (!RebuildHolds(was, now))
+                {
+                    shortOf.Add(FormattableString.Invariant($"the {DecisionCards.NameOf(index)}'s {family} {now} against the standing {was}, {was - now} fewer where {RebuildAllowed(was)} are allowed"));
+                }
+            }
+
+            counted.Add(FormattableString.Invariant($"the {DecisionCards.NameOf(index)} {benchmarks.Values.Sum()} with a benchmark against the standing {standing.Values.Sum()}"));
+            output.WriteLine($"ledger-build: the {DecisionCards.NameOf(index)}'s history computed again beside the standing one, {counted[^1]}");
+            rebuilt.Add((prepared, first, last, sessions, built, startedAt));
+        }
+
+        if (shortOf.Count > 0)
+        {
+            return (false, "the standing history is kept and nothing is written, since " + string.Join("; ", shortOf));
+        }
+
+        foreach (var (prepared, first, last, sessions, built, startedAt) in rebuilt)
+        {
+            await WriteAsync(dataRoot, connection, prepared, first, last, sessions, at => built[at], startedAt, output, pause, cancellation);
+        }
+
+        return (true, "every index's history written again: " + string.Join("; ", counted));
+    }
+
+    // An index's history read for the build through the span's end: the calendar, the members' series as they stood,
+    // the closes each path replays over with the bar store's after the span's end, the members whose prices stopped,
+    // the sessions each row's end is dated by, the market's, the context's and the heavyweights' inputs, and what the
+    // build reads past the span's end. Once the bar store no longer holds the span's end, no path is replayed past it,
+    // and the words say so.
+    async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation)
+    {
+        var history = new SweepHistory(databaseFile);
 
         output.WriteLine($"ledger-build: reading the {DecisionCards.NameOf(index)}'s history through {Stamp(through)}");
 
@@ -741,14 +874,7 @@ public sealed class SetupLedger : IComponent
         var sessions = SweepColumns.Sessions(series, calendar);
         var members = SweepBenchmark.On(series, calendar.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
-
-        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
-        await connection.OpenAsync(cancellation);
-
-        // The sessions a path is replayed over, the history's and then the bar store's after it, by which each row's end
-        // is dated. Once the bar store no longer holds the span's end, no path is replayed past it, and the count says so.
         var (closes, stopped, after, extended) = await ClosesAsync(connection, series, through, cancellation);
-        DateOnly[] replayed = [.. calendar, .. after];
         var past = after.Length == 0
             ? $"the bar store holding no close after {Stamp(through)}"
             : FormattableString.Invariant($"{extended} name(s) replayed past {Stamp(through)} over the bar store's closes through {Stamp(after[^1])}");
@@ -758,39 +884,98 @@ public sealed class SetupLedger : IComponent
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
-        var context = new LedgerContext(income, sectors, highs, lows, facts);
         var heavyweights = index == IndexFamilies.LargeIndex
             ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
-        var nameOf = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        for (var name = 0; name < series.Length; name++)
+        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts), heavyweights);
+    }
+
+    // One session the history build computed: each family's setups with each one's path and benchmark beside it.
+    sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<(SetupOutcome Outcome, BenchmarkReading Benchmark)> Reads)> Families);
+
+    sealed class PreparedHistory(
+        string index,
+        DateOnly[] calendar,
+        SweepSeries[] series,
+        SweepColumns.Session[] sessions,
+        SweepBenchmark.Members members,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
+        double[][] closes,
+        bool[] stopped,
+        DateOnly[] replayed,
+        string past,
+        LedgerMarket market,
+        LedgerContext context,
+        IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> heavyweights)
+    {
+        readonly Dictionary<string, int> nameOf = series
+            .Select((one, name) => (one.Name.Ticker, name))
+            .DistinctBy(pair => pair.Ticker, StringComparer.Ordinal)
+            .ToDictionary(pair => pair.Ticker, pair => pair.name, StringComparer.Ordinal);
+
+        public string Index => index;
+
+        public DateOnly[] Calendar => calendar;
+
+        public DateOnly[] Replayed => replayed;
+
+        public string Past => past;
+
+        // One session's setups on every family, each replayed to its end with its benchmark; on a rebalance of the S&P
+        // 500's heavyweights, each member of each sector's size cut held as the rule holds a buy, to the first later
+        // rebalance whose buys leave it out or its cap, against its size cut.
+        public BuiltSession Compute(int at)
         {
-            nameOf.TryAdd(series[name].Name.Ticker, name);
+            var families = new List<(FamilySetups, IReadOnlyList<(SetupOutcome, BenchmarkReading)>)>();
+            var inputsOnTheNight = new IndexNightInputs(index, calendar[at], calendar, at, series, sessions, members, members.Names[at], income);
+
+            foreach (var family in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
+            {
+                families.Add((family, [.. family.Rows.Select(row =>
+                {
+                    var name = NameOf(series, row.Ticker);
+
+                    return Outcome(closes, inputsOnTheNight, name, IndexNightRead.BarOf(series[name], at), row.Anchor, row.Plan, stopped);
+                })]));
+            }
+
+            if (heavyweights.TryGetValue(at, out var cuts))
+            {
+                var family = LedgerSetups.Heavyweights(index, series, closes, sessions, members, calendar, at, market, context, cuts);
+
+                families.Add((family, [.. family.Rows.Select(row =>
+                {
+                    var name = nameOf[row.Ticker];
+                    var bar = IndexNightRead.BarOf(series[name], at);
+                    var notBought = heavyweights
+                        .Where(pair => pair.Key > at && !pair.Value.Any(cut => cut.Leaders.Contains(row.Ticker)))
+                        .Select(pair => IndexNightRead.BarOf(series[name], pair.Key))
+                        .Where(held => held >= 0)
+                        .ToArray();
+                    var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
+                    var cut = cuts
+                        .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
+                        .Where(nameOf.ContainsKey)
+                        .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at), stopped[nameOf[ticker]]))
+                        .ToArray();
+
+                    return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
+                })]));
+            }
+
+            return new BuiltSession(families);
         }
+    }
 
-        var first = Array.FindIndex(calendar, session => session >= from);
-        var last = Array.FindLastIndex(calendar, session => session <= through);
-
-        if (first < 0 || last < first)
-        {
-            output.WriteLine("ledger-build: the history holds no session in the span");
-
-            return 1;
-        }
-
-        var stored = await StoredHistorySessionsAsync(connection, index, cancellation);
-        var sessionsToWrite = SessionsToWrite(calendar, first, last, stored, again);
-
-        if (sessionsToWrite.Count == 0)
-        {
-            output.WriteLine(FormattableString.Invariant($"ledger-build: every session of {Stamp(calendar[first])} to {Stamp(calendar[last])} is written already; --again writes the span again"));
-
-            return 0;
-        }
-
-        output.WriteLine(FormattableString.Invariant($"ledger-build: {sessionsToWrite.Count} session(s) to write of the {last - first + 1} in the span, {last - first + 1 - sessionsToWrite.Count} written already"));
-
+    // An index's history written over the sessions given, a chunk of sessions at a time, each chunk waiting for the
+    // night and holding the drain's lock while it replaces those sessions' history rows, then the index's summary and
+    // the build's row on the run log.
+    async Task WriteAsync(string dataRoot, SqliteConnection connection, PreparedHistory prepared, int first, int last, IReadOnlyList<int> sessionsToWrite, Func<int, BuiltSession> session, DateTimeOffset startedAt, TextWriter output, Func<TimeSpan, CancellationToken, Task> pause, CancellationToken cancellation)
+    {
+        var index = prepared.Index;
+        var calendar = prepared.Calendar;
+        var runId = FormattableString.Invariant($"{BuildStage}-{index}-{startedAt:yyyyMMddTHHmmssZ}");
         var written = 0;
         var passes = 0;
 
@@ -818,59 +1003,16 @@ public sealed class SetupLedger : IComponent
 
             foreach (var at in chunkSessions)
             {
-                var night = calendar[at];
-                var inputsOnTheNight = new IndexNightInputs(index, night, calendar, at, series, sessions, members, members.Names[at], income);
-
-                foreach (var family in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
+                foreach (var (family, reads) in session(at).Families)
                 {
-                    foreach (var row in family.Rows)
+                    for (var place = 0; place < family.Rows.Count; place++)
                     {
-                        var name = NameOf(series, row.Ticker);
-                        var bar = IndexNightRead.BarOf(series[name], at);
-                        var outcome = Outcome(closes, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
-
-                        await InsertAsync(connection, transaction, row, null, null, outcome, replayed, at, HistorySource, cancellation);
+                        await InsertAsync(connection, transaction, family.Rows[place], null, null, reads[place], prepared.Replayed, at, HistorySource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
                     [
-                        ("$index", index), ("$family", family.Family), ("$session", Stamp(night)), ("$members", family.Members),
-                        ("$setups", family.Rows.Count), ("$live_passes", family.LivePasses), ("$source", HistorySource),
-                    ], cancellation);
-
-                    chunk += family.Rows.Count;
-                    passes += family.LivePasses;
-                }
-
-                // A rebalance of the S&P 500's heavyweights: each member of each sector's size cut held as the rule
-                // holds a buy, to the first later rebalance whose buys leave it out or its cap, against its size cut.
-                if (heavyweights.TryGetValue(at, out var cuts))
-                {
-                    var family = LedgerSetups.Heavyweights(index, series, closes, sessions, members, calendar, at, market, context, cuts);
-
-                    foreach (var row in family.Rows)
-                    {
-                        var name = nameOf[row.Ticker];
-                        var bar = IndexNightRead.BarOf(series[name], at);
-                        var notBought = heavyweights
-                            .Where(pair => pair.Key > at && !pair.Value.Any(cut => cut.Leaders.Contains(row.Ticker)))
-                            .Select(pair => IndexNightRead.BarOf(series[name], pair.Key))
-                            .Where(held => held >= 0)
-                            .ToArray();
-                        var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
-                        var cut = cuts
-                            .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
-                            .Where(nameOf.ContainsKey)
-                            .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at), stopped[nameOf[ticker]]))
-                            .ToArray();
-                        var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions);
-
-                        await InsertAsync(connection, transaction, row, null, null, (outcome, benchmark), replayed, at, HistorySource, cancellation);
-                    }
-
-                    await ExecuteAsync(connection, transaction, InsertNight,
-                    [
-                        ("$index", index), ("$family", family.Family), ("$session", Stamp(night)), ("$members", family.Members),
+                        ("$index", index), ("$family", family.Family), ("$session", Stamp(calendar[at])), ("$members", family.Members),
                         ("$setups", family.Rows.Count), ("$live_passes", family.LivePasses), ("$source", HistorySource),
                     ], cancellation);
 
@@ -891,11 +1033,9 @@ public sealed class SetupLedger : IComponent
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,
-            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span, {past}"), cancellation);
+            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span, {prepared.Past}"), cancellation);
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)} over {sessionsToWrite.Count} session(s), {passes} passing the live rule"));
-
-        return 0;
     }
 
     public const string CheckStage = "ledger-check";

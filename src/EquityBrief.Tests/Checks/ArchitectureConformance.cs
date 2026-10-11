@@ -1547,7 +1547,8 @@ public partial class ArchitectureConformance
         // chart's two, the plan's five, the reactions' three and how it got here's six for the twelve-month picture.
         // 581 at 18.4: the calendar timeline as its eight parts, the headline as its four where it was one, the risks' two
         // columns as their four, the calendar as its eight and the sources as their four, where the dates and sources leave.
-        Assert.Equal(581, inDocument.Length);
+        // 582 at the 17.10 correction: the checklist's part on the newest monthly run.
+        Assert.Equal(582, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1654,7 +1655,8 @@ public partial class ArchitectureConformance
         // typical earnings move and the long view.
         // 508 at 18.4: the headline's four parts, the risks' two columns' four, the calendar's eight, the sources' four and
         // the calendar timeline's eight.
-        Assert.Equal(508, checkedElements);
+        // 509 at the 17.10 correction: the checklist's part on the newest monthly run.
+        Assert.Equal(509, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
