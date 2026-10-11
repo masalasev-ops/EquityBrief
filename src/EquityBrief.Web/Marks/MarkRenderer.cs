@@ -1319,13 +1319,15 @@ public sealed partial class MarkRenderer : IComponent
     // stored value, and the only arithmetic here is the axis, which is where a
     // price sits on a scale rather than what the price is.
     // see: A screen reads and renders, and each figure it works out at a price or from stored figures has one function in the core
-    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows)
+    // A name with no plan says why, in the reason its ladder stored, and what would bring a plan, in place of the figure.
+    // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+    public string PlanColumn(string ticker, decimal close, IReadOnlyList<PlanRow> rows, string? reason = null, string? forms = null)
     {
         if (rows.Count == 0)
         {
-            return $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\">" +
-                $"{Escaped(ticker)} has no plan to draw, which is what a name with no eligible " +
-                $"band gets.</p>";
+            return $"<p class=\"degraded no-plan\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"0\" data-reason=\"{Escaped(reason ?? string.Empty)}\">" +
+                (reason is null ? $"{Escaped(ticker)} has no plan to draw." : $"{Escaped(ticker)} has no plan to draw: {Escaped(reason)}.") +
+                (forms is null ? string.Empty : " " + Escaped(forms)) + "</p>";
         }
 
         // The price now sits in the middle of the column and the scale reaches the row
@@ -1569,41 +1571,60 @@ public sealed partial class MarkRenderer : IComponent
 
         var html = new StringBuilder();
 
-        html.Append("<div class=\"sub plan-sub\">Entries</div><div class=\"tbl-wrap\">");
-        html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
-        html.Append("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>");
+        // A table with no row is no table: a plan placing no tranche, or no exit, says so in a line where its table stands.
+        html.Append("<div class=\"sub plan-sub\">Entries</div>");
 
-        foreach (var row in tranches)
+        if (tranches.Length == 0)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
+            html.Append("<p class=\"degraded\" data-entries=\"none\">The plan places no tranche.</p>");
+        }
+        else
+        {
+            html.Append("<div class=\"tbl-wrap\">");
+            html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
+            html.Append("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>");
 
-            if (row.BuyOn is { } buyOn)
+            foreach (var row in tranches)
             {
-                var stop = row.Stop is { } at
-                    ? Formatted($"a daily close below {Price(at)}") + (at == invalidation ? ", where the whole position is wrong" : string.Empty)
-                    : "no stop beneath";
+                html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
 
-                html.Append(Invariant, $"<td>{Escaped(buyOn)}</td><td>{Escaped(stop)}</td></tr>");
+                if (row.BuyOn is { } buyOn)
+                {
+                    var stop = row.Stop is { } at
+                        ? Formatted($"a daily close below {Price(at)}") + (at == invalidation ? ", where the whole position is wrong" : string.Empty)
+                        : "no stop beneath";
+
+                    html.Append(Invariant, $"<td>{Escaped(buyOn)}</td><td>{Escaped(stop)}</td></tr>");
+                }
+                else
+                {
+                    html.Append(Invariant, $"<td colspan=\"2\">{Escaped(row.Detail)}</td></tr>");
+                }
             }
-            else
-            {
-                html.Append(Invariant, $"<td colspan=\"2\">{Escaped(row.Detail)}</td></tr>");
-            }
+
+            html.Append("</table></div>");
         }
 
-        html.Append("</table></div>");
+        html.Append("<div class=\"sub plan-sub\">Exits</div>");
 
-        html.Append("<div class=\"sub plan-sub\">Exits</div><div class=\"tbl-wrap\">");
-        html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
-        html.Append("<tr><th>Zone</th><th>Action</th></tr>");
-
-        foreach (var row in exits)
+        if (exits.Length == 0)
         {
-            html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
-            html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
+            html.Append("<p class=\"degraded\" data-exits=\"none\">The plan places no exit.</p>");
         }
+        else
+        {
+            html.Append("<div class=\"tbl-wrap\">");
+            html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
+            html.Append("<tr><th>Zone</th><th>Action</th></tr>");
 
-        html.Append("</table></div>");
+            foreach (var row in exits)
+            {
+                html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\" data-traded=\"{(row.Traded ? "true" : "false")}\">");
+                html.Append(Invariant, $"<td class=\"num\">{Zone(row)}</td><td>{Escaped(row.Detail)}</td></tr>");
+            }
+
+            html.Append("</table></div>");
+        }
 
         return html.ToString();
     }

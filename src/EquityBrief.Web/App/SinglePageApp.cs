@@ -1339,37 +1339,46 @@ public sealed class SinglePageApp : IComponent
         Card("levels", "levels", "Levels", Cards.Computed("Levels", levelled.ToString(), title: "The bands above and below the price, and the technical readings", stamp: Cards.Night(session), id: "levels", region: "levels"));
 
         // The plan region: the plan column and the two tables it is read beside, the event
-        // setups and the sizing arithmetic.
+        // setups and the sizing arithmetic. A name with no plan says why, in the reason its ladder stored, and what would
+        // bring one, and draws no figure, table or setup that would stand empty.
+        // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
         var planned = new StringBuilder();
 
-        planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
-        planned.Append(marks.PlanTables(ticker, plan)).Append("</div></div>");
-
-        // Each tranche as an equal share of a full position, its risk to the stop that sells it and its reward to risk to
-        // each traded exit, a bar each, and the trail in the words of its rule.
-        // see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit
-        if (history is { } shared)
+        if (plan.Count == 0)
         {
-            planned.Append("<div class=\"sub\">Each tranche's share, risk and reward to risk</div>");
-            planned.Append(marks.SharesTable(ticker, shared.Shares, shared.NoPlan));
-
-            if (shared.Shares.Count > 0)
-            {
-                planned.Append("<div class=\"fig\">").Append(marks.RewardToRiskBars(ticker, shared.Shares)).Append("</div>");
-            }
-
-            if (shared.Trail is { } trail)
-            {
-                planned.Append("<p class=\"plan-trail\">").Append(Escaped(trail)).Append("</p>");
-            }
+            planned.Append(marks.PlanColumn(ticker, close, plan, history?.NoPlan ?? history?.PlanReason, history?.PlanForms));
         }
+        else
+        {
+            planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
+            planned.Append(marks.PlanTables(ticker, plan)).Append("</div></div>");
 
-        planned.Append("<div class=\"sub\">Around the next report</div>").Append(eventBook);
-        planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
-        planned.Append(Cards.Key(
-            "How to read the plan.",
-            "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
-            "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
+            // Each tranche as an equal share of a full position, its risk to the stop that sells it and its reward to risk to
+            // each traded exit, a bar each, and the trail in the words of its rule.
+            // see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit
+            if (history is { } shared)
+            {
+                planned.Append("<div class=\"sub\">Each tranche's share, risk and reward to risk</div>");
+                planned.Append(marks.SharesTable(ticker, shared.Shares, shared.NoPlan));
+
+                if (shared.Shares.Count > 0)
+                {
+                    planned.Append("<div class=\"fig\">").Append(marks.RewardToRiskBars(ticker, shared.Shares)).Append("</div>");
+                }
+
+                if (shared.Trail is { } trail)
+                {
+                    planned.Append("<p class=\"plan-trail\">").Append(Escaped(trail)).Append("</p>");
+                }
+            }
+
+            planned.Append("<div class=\"sub\">Around the next report</div>").Append(eventBook);
+            planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
+            planned.Append(Cards.Key(
+                "How to read the plan.",
+                "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop. Each tranche buys an equal share of a full position, carried at the middle of its zone: its risk is that price less the stop that sells it, and its reward to risk to an exit is the exit's low edge less that price, over the risk. A tranche with no band beneath it has no stop of its own, so it states no risk and no reward to risk. The top traded exit is where the trail begins: what is left is held on a stop raised under the price rather than sold there, so a reward to it measures the move to where the trail begins and not a price the plan sells at.",
+                "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
+        }
 
         // Every earlier night the live list picked the name, folded beneath the plan: how many times and how each group
         // ended, then a row per listing, each trade as the Past picks screen draws it and as it stood on the night this

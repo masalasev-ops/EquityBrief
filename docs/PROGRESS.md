@@ -42792,3 +42792,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 6.4 correction above.
 Queue:      as the 6.4 correction above.
 Carried:    nothing new.
+
+### 4.6 - correction: a name with no plan says why and what would bring one, where its page drew one fixed sentence, two empty tables and "Buy into these" over nothing   2026-10-11
+
+Corrects:   the plan region 4.6 built. A name whose ladder placed no tranche drew "has no plan to draw, which is what a
+            name with no eligible band gets" whatever the ladder's reason, the entries' and the exits' tables as
+            headings alone, the setups' line and its prints' moves against a stop that does not exist. On the night of
+            2026-10-09, 131 of the S&P 500's 503 ladders placed none: 112 for a trend reading down, 13 for no support
+            band beneath the price, 2 for support anchored on an average alone, 3 for too few sessions for an average
+            and 1 for a missing bar.
+Found:      by the operator on 2026-10-11 reading PEP's page: "The diagram says buy into these but there nothing really
+            written where to buy into", and "There's no entry or exit plan at all that could be figured out ? What would
+            it need further to fix that ?"; of the options put the operator chose "Page says why and what would bring a
+            plan (Recommended)", the plan's own rule unchanged.
+Built:      the region draws one line in the plan's place: that the name has no plan to draw, the reason its ladder
+            stored, and what would bring a plan, read off that reason and the bands about the price by one function the
+            read surface calls, with the close above the nearest band above that would put it beneath the price where
+            the reason is the trend or the missing support. A plan's own table that would hold no row draws a line
+            saying so. A decision names it (see: A name with no plan is drawn with the reason its ladder stored and what
+            would bring a plan, and no empty table); section 4's and section 15.9's plan rows say so, the prior text in
+            `CHANGELOG.md`.
+Tests:      one more: each reason a ladder or the night's builder stores worked by hand over PEP's bands of the night of
+            2026-10-09 and its close of 125.97, a band of one price named at its price, a price above every band naming
+            no close and a reason no rule writes giving none, the line read off the plan column, and a plan placing no
+            exit drawing a line where the exits' table would stand empty.
+Claims:     none more; the decision, the two rows and the roster's read-surface row say so.
+Pins:       none moved; the read surface and the marks are in no pin list.
+Mutated:    the rule, stated before the run: the property that the line names the reason its ladder stored. H4 the plan
+            column drawing its fixed sentence again whatever the reason: predicted red at the new test. Result: red, the
+            line differing at the reason; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 6.4 correction above.
+Queue:      as the 6.4 correction above.
+Carried:    nothing new.
+

@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 4.6 correction of the day asserts of a name with no plan
+Decision: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+Was:
+> read-surface: ... and from the 18.1 correction of 2026-10-11 a phone's masthead is one column no wider than the screen, its row of links wrapping |
+Now:
+> read-surface: ... its row of links wrapping; and from the 4.6 correction of 2026-10-11 a name whose ladder placed no tranche draws one line in the plan's place, the reason its ladder stored and what would bring a plan for each reason a ladder or the night's builder stores, with the close above the nearest band above that would put it beneath the price, worked by hand over PEP's bands, and a plan's table that would hold no row draws a line saying so |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's and section 15.9's plan rows draw one line for a name with no plan
+Decision: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+Was:
+> section 4, The plan: ... (see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit); and folded beneath it, ...
+> section 15.9, The plan: ... the last two prints' moves against the first tranche's stop stand under a heading of their own
+Now:
+> section 4, The plan: ... (see: Each tranche buys an equal share of a full position as the exits divide it, and its reward to risk is read to every traded exit); for a name the ladder placed no tranche for, one line in their place, the reason its ladder stored and what would bring a plan (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table); and folded beneath it, ...
+> section 15.9, The plan: ... the last two prints' moves against the first tranche's stop stand under a heading of their own; a name the ladder placed no tranche for draws in their place one line that states the reason its ladder stored and what would bring a plan, and leaves no figure or table standing empty (see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table)
+Why: PEP's page drew a fixed sentence, two empty tables and "Buy into these" over nothing.
+
 ### 2026-10-11 - .claude/rules/checks.md - claim-admissibility and fixture-expectations state what 18.5's bound on the two cases asserts
 Decision: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
 Was:

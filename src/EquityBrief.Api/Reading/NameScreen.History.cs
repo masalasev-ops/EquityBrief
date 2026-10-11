@@ -64,6 +64,7 @@ public static partial class NameScreen
             }),
         ];
         var price = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
+        var unplanned = PlanReason(ladder, tranches.Count);
 
         return new HistoryView(
             inputs.Newest,
@@ -84,7 +85,54 @@ public static partial class NameScreen
             ladder is null ? "no plan is stored for the night, the plan being read for the S&P 500's members alone" : null,
             tranches.Count == 0 ? null : Trail(exits),
             MoveCauses.LabelsCover(Stories(inputs.Stories)),
-            RiskLinesAt(bands, price, invalidation));
+            RiskLinesAt(bands, price, invalidation),
+            unplanned,
+            unplanned is { } why ? PlanForms(why, bands, price) : null);
+    }
+
+    // The reason a stored ladder gives for placing no tranche, as the ladder's rule wrote it, or none where it placed one.
+    static string? PlanReason(LadderRow? ladder, int tranches)
+    {
+        if (ladder is null || tranches > 0)
+        {
+            return null;
+        }
+
+        using var plan = JsonDocument.Parse(ladder.Plan);
+
+        return plan.RootElement.TryGetProperty("reason", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString() : null;
+    }
+
+    // What would bring a plan to a name whose ladder placed none, read off the reason the ladder stored, in the words the
+    // ladder's rule and the night's builder write it, and the bands about the price: the trend no longer reading down and a
+    // support band beneath the price, which a close above the nearest band above would give, a band beneath it anchored on
+    // more than an average, the sessions or swings the trend is read from, or the night's bars. A reason none of these
+    // opens gives none.
+    // see: A name with no plan is drawn with the reason its ladder stored and what would bring a plan, and no empty table
+    public static string? PlanForms(string reason, IReadOnlyList<LadderBand> bands, decimal? price)
+    {
+        var above = price is { } now ? bands.Where(band => band.LowEdge > now).OrderBy(band => band.LowEdge).FirstOrDefault() : null;
+        var reclaim = above is { } nearest
+            ? FormattableString.Invariant($" A close above {Figures.Price(nearest.HighEdge)} would put the nearest band above{Named(nearest)}, beneath the price.")
+            : string.Empty;
+
+        bool Opens(string words) => reason.StartsWith(words, StringComparison.Ordinal);
+
+        return Opens("the trend is down")
+            ? "A plan forms on a night the trend no longer reads down and a support band sits beneath the price." + reclaim
+            : Opens("no support band sits below the price")
+                ? "A plan forms on a night a support band sits beneath the price." + reclaim
+                : Opens("no support band below the price has an anchor other than a moving average")
+                    ? "A plan forms on a night a band beneath the price holds a swing, a touch, a retracement or a volume shelf and not an average alone."
+                    : Opens("no 50-day average") || Opens("no 200-day average") || Opens("no stored bars")
+                        ? "A plan forms once the name holds the sessions its averages need."
+                        : Opens("fewer than")
+                            ? "A plan forms once the name's chart holds the swings its trend is read from."
+                            : Opens("the trend state could not be classified")
+                                ? "A plan forms once its trend can be read."
+                                : Opens("no bar for this session")
+                                    ? "A plan forms on the next night its bars arrive."
+                                    : null;
     }
 
     // The lines the risks' two columns open on, read off the bands about the price the masthead draws and the plan's
