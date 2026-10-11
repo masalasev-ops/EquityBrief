@@ -98,6 +98,13 @@ public partial class ReadSurface
         Assert.Contains("class=\"rr-move rr-down\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-move=\"-1\" data-past=\"no\"><title>Reported 2026-05-01: the session of 2026-05-01 moved -1.0%, inside the typical move</title>", drawn, StringComparison.Ordinal);
 
+        // Each bar stands on the zero rule drawn across the plot at nought, the fall's bar hanging from it.
+        var zero = Regex.Match(drawn, "<line class=\"m-axisline\" x1=\"[^\"]+\" x2=\"[^\"]+\" y1=\"([^\"]+)\" y2=\"([^\"]+)\"/>");
+
+        Assert.True(zero.Success, "The reactions draw no zero rule.");
+        Assert.Equal(zero.Groups[1].Value, zero.Groups[2].Value);
+        Assert.Equal(zero.Groups[1].Value, Regex.Match(drawn, "<rect class=\"rr-move rr-down\" x=\"[^\"]+\" y=\"([^\"]+)\"").Groups[1].Value);
+
         // A move stated over too few prints draws no band and the bars alone, and no print says so.
         Assert.DoesNotContain("rr-range\" x=", marks.ReactionRange("CVX", prints, new EarningsMove(3, 0, On("2025-10-31"), 2.0)), StringComparison.Ordinal);
         Assert.Equal(
@@ -146,6 +153,12 @@ public partial class ReadSurface
         Assert.NotEqual(string.Empty, close);
         Assert.Equal(close, rule);
 
+        // The closes as one line through every month, at the heights their own points stand at.
+        var line = Regex.Match(drawn, "<polyline class=\"lv-close\" fill=\"none\" points=\"([^\"]+)\"/>").Groups[1].Value.Split(' ');
+
+        Assert.Equal(3, line.Length);
+        Assert.Equal(close, line[1].Split(',')[1]);
+
         // Each level in its role's hue with its words beneath the pointer and its short name at the right, and each close
         // whole with a title.
         Assert.Contains("<rect class=\"lv-sup\"", drawn, StringComparison.Ordinal);
@@ -190,6 +203,23 @@ public partial class ReadSurface
         Assert.Contains(">tranche 1 buys here</text>", drawn, StringComparison.Ordinal);
         Assert.Contains(">turned the price 5 time(s), last 2026-08-20</text>", drawn, StringComparison.Ordinal);
         Assert.Contains(">never turned the price</text>", drawn, StringComparison.Ordinal);
+
+        // Each row's role a pill in its own hue, beside its edges, a band of one price named at its price.
+        Assert.Equal(
+            ["lf-res", "lf-res", "lf-sup", "lf-sup"],
+            Regex.Matches(drawn, "<rect class=\"lf-pill (lf-[a-z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains(">resistance</text>", drawn, StringComparison.Ordinal);
+        Assert.Contains(">support</text>", drawn, StringComparison.Ordinal);
+        Assert.Contains(">225.00 to 226.00</text>", drawn, StringComparison.Ordinal);
+        Assert.Contains(">217.78</text>", drawn, StringComparison.Ordinal);
+
+        // The rows spaced evenly in price order and not on a price scale: the two above sit 7.22 apart in price and the
+        // two below 4.02 apart by their high edges, and each pair stands one row apart.
+        var rows = Regex.Matches(drawn, "<rect class=\"lf-pill lf-[a-z]+\" x=\"8\" y=\"([^\"]+)\"")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(rows[1] - rows[0], rows[3] - rows[2], 6);
 
         // Outside the session the price row names the last close.
         Assert.Contains("data-at=\"close\"", marks.LadderFigure("CVX", bands, 211.55m, live: false), StringComparison.Ordinal);
@@ -244,7 +274,27 @@ public partial class ReadSurface
         Assert.Equal(2, Regex.Matches(bars, "data-trail=\"yes\"").Count);
         Assert.Contains(">Tranche 1 to 217.78 (trail)</text>", bars, StringComparison.Ordinal);
         Assert.Contains(">1.67</text>", bars, StringComparison.Ordinal);
+
+        // Each bar from nought on one axis, with the rule at one standing where a reward equal to its risk would end:
+        // the 1.6668 bar's length over 1.6668 from the bars' start, within the half pixel the figure is drawn to.
+        var drawnBars = Regex.Matches(bars, "<rect class=\"rk-bar[^\"]*\" x=\"([^\"]+)\" y=\"[^\"]+\" width=\"([^\"]+)\"")
+            .Select(match => (From: double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), Long: double.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture)))
+            .ToArray();
+        var one = double.Parse(Regex.Match(bars, "<line class=\"rk-one\" x1=\"([^\"]+)\"").Groups[1].Value, CultureInfo.InvariantCulture);
+
+        Assert.Single(drawnBars.Select(bar => bar.From).Distinct());
+        Assert.InRange(one - drawnBars[1].From, (drawnBars[1].Long / 1.6668) - 0.5, (drawnBars[1].Long / 1.6668) + 0.5);
+        Assert.Contains(">reward equals risk</text>", bars, StringComparison.Ordinal);
+
+        // A bar past the axis's end, a reward eight times its risk where the axis ends at six, held at the end and saying
+        // so, where a bar inside it says nothing of the end.
+        var past = marks.RewardToRiskBars("XYZ", [new TrancheShare(10m, 11m, 10.5m, 1, 9.5m, 1m, [new TargetReward(18.5m, 8m, 8m, false)])]);
+
+        Assert.Contains("data-mark=\"reward-to-risk\" data-bars=\"1\" data-axis=\"6\"", past, StringComparison.Ordinal);
+        Assert.Contains(">8.00, past the axis's end</text>", past, StringComparison.Ordinal);
+        Assert.DoesNotContain("past the axis's end", bars, StringComparison.Ordinal);
         Assert.Equal(
+
             "<p class=\"mark-short\" data-mark=\"reward-to-risk\" data-tranches=\"1\">CVX's plan holds no tranche stating a risk with a traded exit to read a reward to risk against.</p>",
             marks.RewardToRiskBars("CVX", [view.Shares[2]]));
 
@@ -279,6 +329,9 @@ public partial class ReadSurface
         Assert.Equal(
             ["Tranche 1, 200.78 to 208.98", "Tranche 2, 195.84 to 197.82", "Tranche 3, 184.26 to 185.74", "Trail begins, 217.78 to 217.78", "The invalidation, 184.26", "The year's high, 217.78 on 2026-09-15", "The year's low, 146.01 on 2026-01-05"],
             same.Levels.Select(level => level.Says));
+        Assert.Equal(
+            ["support", "support", "support", "resistance", "rule", "rule", "rule"],
+            same.Levels.Select(level => level.Role));
 
         // On another night, the year's high and low alone and the two nights named.
         var apart = Drawn(CvxPlan(On("2026-10-08")), On("2026-10-09"));

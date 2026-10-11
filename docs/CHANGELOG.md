@@ -25,6 +25,43 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - ARCHITECTURE.html - section 4's three rows citing no decision cite the decisions they rest on
+Corrects: 18.5 owes section 4 complete, each part with what produces it and why, and three of its 25 rows named what produces them and cited no decision for why; found reading the table row by row at 18.5
+Was:
+> How to read this page | What the page is for, the three things it refuses to do, and the words it uses, folded shut under one line | ...
+> The two cases | The case for and the case against, a point to a row, each ending in what it needs to see at the next print | ...
+> Where the research stands | ... and the control that asks for a report, or once the day a report was written has passed the control that regenerates it, its cost stated before it is pressed | ...
+Now:
+> How to read this page | What the page is for, the three things it refuses to do, and the words it uses, folded shut under one line (see: Every figure carries a plain-language key) | ...
+> The two cases | The case for and the case against, a point to a row, each ending in what it needs to see at the next print and owning no figure of its own (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws) (see: Each figure of the facts file is owned by one region of the page, and a written section writes only the figures its own region owns) | ...
+> Where the research stands | ... its cost stated before it is pressed (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day) (see: The spend cap is a stop, not an allowance) | ...
+Why: every other row of the table cites the decision it rests on, and the two cases' owning no figure is what 18.4's ownership decision states of them.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states that each part 18.3's four marks list between semicolons is held by an assertion of its own
+Corrects: the reader of a row's parts reads a run of three or more items a comma separates, so the reaction range, the long view, the ladder figure and the reward to risk bars, which list their parts between semicolons, each passed on one verdict, and the reading 18.5 owed found nine of their parts held by no assertion
+Was:
+> read-surface: ... no rule picking a section out by its name to give it a face or a size of its own |
+Now:
+> read-surface: ... no rule picking a section out by its name to give it a face or a size of its own; and from 18.5 each part the four marks of 18.3 list between semicolons is held by an assertion of its own: the reactions standing on a zero rule, the long view's closes as one line through every month with the invalidation and the year's high and low handed to it as rules, the ladder's roles as pills in their own hues beside their edges with its rows spaced evenly in price order, and the reward to risk bars starting at nought with the rule at one where a reward equals its risk and a bar past the axis's end held there and saying so |
+Why: each roster row says what its check asserts, and the reading's assertions extend read-surface's.
+
+### 2026-10-11 - ARCHITECTURE.html - section 15.9 gains the page's layout as Figure 15.1, and the card's figure in section 15.18 is numbered 15.2
+Authorised by: The name page answers a buyer's questions in the order a buyer asks them
+Was:
+> <figcaption>Figure 15.1. A pick's card and its seven parts, every figure drawn as n.n or nn% rather than any night's.</figcaption>
+Now:
+> <figcaption>Figure 15.2. A pick's card and its seven parts, every figure drawn as n.n or nn% rather than any night's.</figcaption>
+And section 15.9 closes on a new Figure 15.1, a stock's page with its 28 parts numbered in the order it draws them, every figure drawn as n.n or nn%, with a key naming each part.
+Why: 18.5 owes a figure of the page's layout with a plain key in section 15.9, and a section's figures are numbered in the order the document draws them, so the card's, drawn later in 15.18, takes the next number.
+
+### 2026-10-11 - .claude/rules/checks.md - architecture-conformance states phase 18's pair and the page's layout figure
+Authorised by: The name page answers a buyer's questions in the order a buyer asks them
+Was:
+> architecture-conformance: ... and the guide's three worked examples of the loop hold placeholders and no figure but an index's name |
+Now:
+> architecture-conformance: ... and the guide's three worked examples of the loop hold placeholders and no figure but an index's name; and from 18.5 phase 18's pair is read off the plan and checked the same way, each row the phase added reached once and passing, its actual one above the range the plan stated and past the pair by the net of what each part landed fewer or more than its count, each named with what it landed, and the page's layout figure's key names every part the figure draws, in the architecture and in the guide, the parts after the first three the regions section 4 names in its order and the guide's picture naming each as the architecture's does, neither figure's text holding any night's figure |
+Why: each roster row says what its check asserts, and 18.5's two tests extend architecture-conformance's.
+
 ### 2026-10-11 - ARCHITECTURE.html - section 4 and 15.9 draw the articles holding no label under a tab of their own after opinion
 Corrects: a name's News region drew its unlabelled articles in the all tab alone beneath counts that read only the labelled ones, so a page could open on a run of unlabelled rows under a bar of positive and negative stories; found by the operator on CVX's page, who ruled on 2026-10-11 that a group called Unlabelled stand at the end after opinion and hold them, the one the labeller could not read among them
 Was:

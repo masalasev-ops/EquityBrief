@@ -278,9 +278,13 @@ internal static class PhaseReport
             "one finished trade's path drawn as the autopsy reads it and under an exit of the menu, illustrative, whose figures section 13.13 states and whose menu section 17's row claims; a picture of claims placed elsewhere and none of its own"),
         ["Figure 13.7"] = new Placement(
             "one month across the three indices, each proposed for, tested and decided apart and a change applied on its own index alone, whose rule section 13.16 states, whose setting and alarm section 17's rows claim and whose presses the Loop page's regions carry; a picture of claims placed elsewhere and none of its own"),
+        // 18.5's: a stock's page drawn with its parts numbered in the order it draws them, its figures placeholders, and a key
+        // the conformance check holds to name every part the figure draws and the regions section 4 names in its order.
+        ["Figure 15.1"] = new Placement(
+            "a stock's page drawn with its parts numbered in the order it draws them and every figure a placeholder, whose regions section 4's table and section 15.9's rows state; a picture of claims placed elsewhere and none of its own"),
         // 16.4's: the card drawn with its parts numbered, its figures placeholders, and a key the conformance check
         // holds to name every part the figure draws.
-        ["Figure 15.1"] = new Placement(
+        ["Figure 15.2"] = new Placement(
             "a pick's card drawn with its parts numbered and every figure a placeholder, whose parts section 15.18's paragraphs state and whose values section 17's card rows claim; a picture of claims placed elsewhere and none of its own"),
     };
 

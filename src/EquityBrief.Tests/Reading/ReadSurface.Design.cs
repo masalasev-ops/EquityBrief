@@ -567,7 +567,7 @@ public partial class ReadSurface
     }
 
     // The first cell of each row of section 4's table, as a reader reads it.
-    static List<string> ReportRegions(string document)
+    internal static List<string> ReportRegions(string document)
     {
         var table = Regex.Match(ReportText(document), "<table>.*?</table>", RegexOptions.Singleline);
 

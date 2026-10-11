@@ -577,44 +577,292 @@
 <!-- 8 -->
 <h2 id="report">8. What a report contains</h2>
 <p class="asks">When I open a stock, what do I get, and where does each part come from?</p>
-<p>A stock's page answers a buyer's questions in the order a buyer asks them: what the price is now and what happened, the company's latest results, its business, how its reports moved the price, its chart and its long view and how the price got here, the levels and the plan, the risks with what would turn the stock up or make it worse, the next ninety days' dates, and the sources behind it all. It opens with a masthead naming the stock, its index and its sector beside its price. While the market is open the price is the data provider's quote, which runs about fifteen minutes behind the market, so the page says so beside the time of the quote; the page asks for a newer one at most every five minutes while you have it open, and outside market hours it shows the last closing price. Beneath it is one sentence saying what matters most about the stock now, with no figures in it, written last from the parts of the report the check accepted, or, where no written one stands, by the code saying where the stock stands, and four tiles: the latest quarter's earnings against what analysts expected, how fast sales are growing, the dividend yield, and how far the price sits below its high of the past year. Then a contents of every section, numbered, which marks a section NEW when it was written or filed since you last opened the page in this browser. Figures that rose are drawn in blue and figures that fell in purple, always with a plus or minus sign beside them, and green and orange still mean a price level below or above, and the part of the page that buys or sells at one.</p>
+<p>A stock's page is a report on one company, laid out in the order someone deciding whether to buy would ask their questions: what the price is now and what has happened, how the business is doing, what the price has done, where buyers or sellers have stepped in before and what the plan does there, what could go wrong, and what is coming up. Nothing on it is a forecast or a recommendation. Code works out every number from figures it has stored. A language model writes a few sections in plain words, and every figure it writes is checked against the stored figures and the documents it cites; a section that fails the check is left out and the page says so. Each part shows the day its figures are from.</p>
 <figure>
-  <svg viewBox="0 0 1000 300" role="img" aria-labelledby="f7">
-    <title id="f7">Report parts computed nightly beside parts written by research</title>
-    <rect class="zone-n" x="6" y="30" width="480" height="262" rx="8"/>
-    <rect class="zone-r" x="514" y="30" width="480" height="262" rx="8"/>
-    <text class="tl" x="20" y="20">Worked out every night, free</text>
-    <text class="tl" x="528" y="20">Written by research, kept until out of date</text>
-
-    <rect class="bx-n" x="22" y="48" width="220" height="50" rx="6"/><text class="t" x="132" y="79" text-anchor="middle">Why it is on the list</text>
-    <rect class="bx-n" x="252" y="48" width="220" height="50" rx="6"/><text class="t" x="362" y="79" text-anchor="middle">Key facts at a glance</text>
-    <rect class="bx-n" x="22" y="108" width="220" height="50" rx="6"/><text class="t" x="132" y="139" text-anchor="middle">Chart, bands, long view</text>
-    <rect class="bx-n" x="252" y="108" width="220" height="50" rx="6"/><text class="t" x="362" y="139" text-anchor="middle">The plan</text>
-    <rect class="bx-n" x="22" y="168" width="220" height="50" rx="6"/><text class="t" x="132" y="199" text-anchor="middle">The biggest moves</text>
-    <rect class="bx-n" x="252" y="168" width="220" height="50" rx="6"/><text class="t" x="362" y="199" text-anchor="middle">What the numbers say</text>
-    <rect class="bx-n" x="22" y="228" width="220" height="50" rx="6"/><text class="t" x="132" y="259" text-anchor="middle">Dates coming up</text>
-    <rect class="bx-n" x="252" y="228" width="220" height="50" rx="6"/><text class="t" x="362" y="259" text-anchor="middle">Past earnings reactions</text>
-
-    <rect class="bx-r" x="530" y="48" width="220" height="50" rx="6"/><text class="t" x="640" y="79" text-anchor="middle">The short version</text>
-    <rect class="bx-r" x="760" y="48" width="220" height="50" rx="6"/><text class="t" x="870" y="79" text-anchor="middle">What the company sells</text>
-    <rect class="bx-r" x="530" y="108" width="220" height="50" rx="6"/><text class="t" x="640" y="139" text-anchor="middle">The industry cycle</text>
-    <rect class="bx-r" x="760" y="108" width="220" height="50" rx="6"/><text class="t" x="870" y="139" text-anchor="middle">The bull and bear cases</text>
-    <rect class="bx-r" x="530" y="168" width="220" height="50" rx="6"/><text class="t" x="640" y="199" text-anchor="middle">The risks</text>
-    <rect class="bx-r" x="760" y="168" width="220" height="50" rx="6"/><text class="t" x="870" y="199" text-anchor="middle">Causes of big moves</text>
-    <text class="ts" x="754" y="252" text-anchor="middle">Every part shows the date</text>
-    <text class="ts" x="754" y="272" text-anchor="middle">it was written.</text>
-  </svg>
+<svg viewBox="0 0 700 1180" role="img" aria-labelledby="f-page">
+<title id="f-page">A stock's page, its parts numbered in the order it draws them</title>
+<rect x="40" y="8" width="652" height="1164" rx="6" fill="var(--panel)" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="1">
+<circle cx="20" cy="36" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="40.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">1</text>
+<text x="56" y="34" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">XYZ, the company, the S&amp;P 500 and its sector</text>
+<text x="676" y="34" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">LIVE nnn.nn +n.nn (+n.n%)</text>
+<text x="56" y="52" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">hh:mm in New York, delayed about fifteen minutes; the levels and the plan from completed sessions to yyyy-mm-dd</text>
+</g>
+<line x1="56" y1="64" x2="676" y2="64" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="2">
+<circle cx="20" cy="84" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="88.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">2</text>
+<text x="56" y="88" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">One sentence on where the stock stands, carrying no figure</text>
+<rect x="56" y="100" width="146" height="56" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<text x="64" y="120" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Quarter's earnings</text>
+<text x="64" y="142" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n.nn against n.nn</text>
+<rect x="212" y="100" width="146" height="56" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<text x="220" y="120" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">The year's growth</text>
+<text x="220" y="142" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">+nn.n%</text>
+<rect x="368" y="100" width="146" height="56" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<text x="376" y="120" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Dividend yield</text>
+<text x="376" y="142" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n.nn%, bond n.nn%</text>
+<rect x="524" y="100" width="146" height="56" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<text x="532" y="120" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">From the year's high</text>
+<text x="532" y="142" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">-nn.n%</text>
+</g>
+<line x1="56" y1="170" x2="676" y2="170" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="3">
+<circle cx="20" cy="190" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="194.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">3</text>
+<text x="56" y="194" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Contents, numbered in two columns, NEW beside what changed since the last visit</text>
+<rect x="56" y="206" width="200" height="6" rx="3" fill="var(--rule)"/>
+<rect x="56" y="220" width="170" height="6" rx="3" fill="var(--rule)"/>
+<rect x="56" y="234" width="185" height="6" rx="3" fill="var(--rule)"/>
+<rect x="366" y="206" width="180" height="6" rx="3" fill="var(--rule)"/>
+<rect x="366" y="220" width="200" height="6" rx="3" fill="var(--rule)"/>
+<rect x="366" y="234" width="160" height="6" rx="3" fill="var(--rule)"/>
+</g>
+<line x1="56" y1="252" x2="676" y2="252" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="4">
+<circle cx="20" cy="277" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="281.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">4</text>
+<rect x="56" y="262" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="262" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="281" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">How to read this page</text>
+<text x="668" y="281" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">the same for every stock, folded shut</text>
+</g>
+<g data-part="5">
+<circle cx="20" cy="313" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="317.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">5</text>
+<rect x="56" y="298" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="298" width="5" height="30" fill="var(--research)"/>
+<text x="72" y="317" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The short version</text>
+<text x="668" y="317" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">written last from the accepted claims</text>
+</g>
+<g data-part="6">
+<circle cx="20" cy="349" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="353.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">6</text>
+<rect x="56" y="334" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="334" width="5" height="30" fill="var(--sup)"/>
+<text x="72" y="353" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The decision card</text>
+<text x="668" y="353" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">a pick only, a part that buys</text>
+</g>
+<g data-part="7">
+<circle cx="20" cy="385" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="389.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">7</text>
+<rect x="56" y="370" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="370" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="389" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The latest quarter</text>
+<text x="668" y="389" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">from the filing and the provider's fetch</text>
+</g>
+<g data-part="8">
+<circle cx="20" cy="421" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="425.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">8</text>
+<rect x="56" y="406" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="406" width="5" height="30" fill="var(--research)"/>
+<text x="72" y="425" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">What management said</text>
+<text x="668" y="425" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">written from the results releases</text>
+</g>
+<g data-part="9">
+<circle cx="20" cy="457" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="461.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">9</text>
+<rect x="56" y="442" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="442" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="461" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Segments</text>
+<text x="668" y="461" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">from the filing, its commentary written</text>
+</g>
+<g data-part="10">
+<circle cx="20" cy="493" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="497.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">10</text>
+<rect x="56" y="478" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="478" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="497" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Margins</text>
+<text x="668" y="497" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="11">
+<circle cx="20" cy="529" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="533.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">11</text>
+<rect x="56" y="514" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="514" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="533" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Analysts</text>
+<text x="668" y="533" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">the analysts' figures, each dated</text>
+</g>
+<g data-part="12">
+<circle cx="20" cy="565" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="569.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">12</text>
+<rect x="56" y="550" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="550" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="569" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Dividend safety</text>
+<text x="668" y="569" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">a payer only</text>
+</g>
+<g data-part="13">
+<circle cx="20" cy="601" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="605.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">13</text>
+<rect x="56" y="586" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="586" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="605" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Valuation</text>
+<text x="668" y="605" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="14">
+<circle cx="20" cy="637" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="641.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">14</text>
+<rect x="56" y="622" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="622" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="641" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Earnings reactions</text>
+<text x="668" y="641" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="15">
+<circle cx="20" cy="673" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="677.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">15</text>
+<rect x="56" y="658" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="658" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="677" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The chart</text>
+<text x="668" y="677" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="16">
+<circle cx="20" cy="709" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="713.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">16</text>
+<rect x="56" y="694" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="694" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="713" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The long view</text>
+<text x="668" y="713" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="17">
+<circle cx="20" cy="745" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="749.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">17</text>
+<rect x="56" y="730" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="730" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="749" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">How it got here</text>
+<text x="668" y="749" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">each move's cause with its source</text>
+</g>
+<g data-part="18">
+<circle cx="20" cy="781" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="785.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">18</text>
+<rect x="56" y="766" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="766" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="785" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Levels</text>
+<text x="668" y="785" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">the bands above and below the price</text>
+</g>
+<g data-part="19">
+<circle cx="20" cy="817" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="821.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">19</text>
+<rect x="56" y="802" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="802" width="5" height="30" fill="var(--sup)"/>
+<text x="72" y="821" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The plan</text>
+<text x="668" y="821" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">a part that buys, its exits ruled as sales</text>
+</g>
+<g data-part="20">
+<circle cx="20" cy="853" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="857.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">20</text>
+<rect x="56" y="838" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="838" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="857" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">How the rules read it</text>
+<text x="668" y="857" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">folded shut</text>
+</g>
+<g data-part="21">
+<circle cx="20" cy="889" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="893.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">21</text>
+<rect x="56" y="874" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<line x1="58.5" y1="874" x2="58.5" y2="904" stroke="var(--res)" stroke-width="5" stroke-dasharray="4 3"/>
+<text x="72" y="893" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The risks, each with what would confirm it</text>
+<text x="668" y="893" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">caution, written</text>
+</g>
+<g data-part="22">
+<circle cx="20" cy="925" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="929.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">22</text>
+<rect x="56" y="910" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="910" width="5" height="30" fill="var(--research)"/>
+<text x="72" y="929" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The two cases</text>
+<text x="668" y="929" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">written</text>
+</g>
+<g data-part="23">
+<circle cx="20" cy="961" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="965.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">23</text>
+<rect x="56" y="946" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="946" width="5" height="30" fill="var(--research)"/>
+<text x="72" y="965" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">The industry cycle</text>
+<text x="668" y="965" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">written for the industry</text>
+</g>
+<g data-part="24">
+<circle cx="20" cy="997" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="1001.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">24</text>
+<rect x="56" y="982" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="982" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="1001" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Its group, by price</text>
+<text x="668" y="1001" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">worked by code</text>
+</g>
+<g data-part="25">
+<circle cx="20" cy="1033" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="1037.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">25</text>
+<rect x="56" y="1018" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="1018" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="1037" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">News</text>
+<text x="668" y="1037" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">each article labelled by a model</text>
+</g>
+<g data-part="26">
+<circle cx="20" cy="1069" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="1073.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">26</text>
+<rect x="56" y="1054" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="1054" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="1073" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Calendar</text>
+<text x="668" y="1073" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">the next ninety days</text>
+</g>
+<g data-part="27">
+<circle cx="20" cy="1105" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="1109.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">27</text>
+<rect x="56" y="1090" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="1090" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="1109" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Sources</text>
+<text x="668" y="1109" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">documents and the figures checked</text>
+</g>
+<g data-part="28">
+<circle cx="20" cy="1141" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="1145.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">28</text>
+<rect x="56" y="1126" width="620" height="30" rx="4" fill="var(--boxbg)" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="1126" width="5" height="30" fill="var(--muted)"/>
+<text x="72" y="1145" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Where the research stands</text>
+<text x="668" y="1145" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">the control that asks for a report</text>
+</g>
+</svg>
+<figcaption>A stock's page, its figures blanked out, each part numbered as the list below explains it.</figcaption>
 </figure>
-<div class="key">
-  <p><b>How to read it.</b> The left half is ready the moment you open a stock. The right half exists only once research has been written for it.</p>
-  <p><b>What to take from it.</b> A report is never blank. Without research you still see the chart, the plan and the numbers, and the page says the written parts are not there yet.</p>
+<ol class="parts">
+  <li data-part="1"><b>The top bar.</b> The stock's ticker symbol and the company's name, the index it belongs to and its sector, the broad part of the economy it is in, and its price. While the market is open the price is the data provider's, about fifteen minutes behind the market, marked LIVE with its time; outside market hours it is the last closing price.</li>
+  <li data-part="2"><b>One sentence and four boxes.</b> A sentence on what matters most about the stock now, with no figures in it, then four boxes: the company's latest profit for each share against what analysts expected, how fast analysts expect that profit to grow this year, or where no forecast is kept how much its sales over the last four quarters grew on the four before, its yearly dividend as a share of the price beside the government's ten-year bond, and how far the price is below its high of the past year.</li>
+  <li data-part="3"><b>The contents.</b> Every section below, numbered, in two columns. A section is marked NEW when it was written or filed since you last opened the page in this browser.</li>
+  <li data-part="4"><b>How to read the page.</b> What the page is for, the three things it will not do, which are predict the price, rank a company as an investment or say how much to buy, and what its words mean, folded shut until you open it.</li>
+  <li data-part="5"><b>The short version.</b> Three short paragraphs: what happened, what matters and what the plan does. A language model writes them last, from the sentences of the other written sections that passed the check, and may use no figure the four boxes already show.</li>
+  <li data-part="6"><b>The decision card.</b> Shown only when one of the system's rules picked the stock that night: six quick checks on the trade, how that rule has done on every stock it bought before, the trade in your money and what could jolt the price before the trade ends.</li>
+  <li data-part="7"><b>The latest quarter.</b> The company's last three months line by line: its sales, its profit at each stage, its profit for each share and the cash the business brought in, each against what analysts expected before the report and against the same three months a year before, with bars showing how sales and profit for each share grew over the last eight quarters.</li>
+  <li data-part="8"><b>What management said.</b> What the company's managers expect now against what they expected last time, and what they say is going well and badly, in their own words and checked word for word against their announcement.</li>
+  <li data-part="9"><b>Segments.</b> Where the sales come from: each of the company's business lines with its share of the whole and how it changed, set out this way only when the company's own figures for them add up to its total sales, and otherwise shown as its filing states them.</li>
+  <li data-part="10"><b>Margins.</b> How much of each sale the company keeps as profit at three stages, drawn as three lines over the last three years.</li>
+  <li data-part="11"><b>Analysts.</b> What the professional analysts who follow the company expect, how their forecasts have moved and how many rate it each way, every figure labelled as theirs and dated.</li>
+  <li data-part="12"><b>Dividend safety.</b> Only for a company that pays a dividend: whether its profit and its cash cover the payment, how many years in a row it has raised it, and how its yield compares with the government bond's.</li>
+  <li data-part="13"><b>Valuation.</b> What buyers pay for each unit of the company's profit, against its own past and against the S&amp;P 500 companies in its industry.</li>
+  <li data-part="14"><b>Earnings reactions.</b> How far the price moved on each day the company reported its results, against how far it usually moves on such a day.</li>
+  <li data-part="15"><b>The chart.</b> The past year's prices with the price zones the system found shaded behind them, results days and dividend dates marked beneath, and the year's biggest moves numbered.</li>
+  <li data-part="16"><b>The long view.</b> The price at the end of every month over all the years the system holds, with the year's high and low and the plan's buying and selling zones drawn across it, so you can see whether the price has met those levels before.</li>
+  <li data-part="17"><b>How it got here.</b> The year's biggest price moves, each with what was behind it and where that explanation came from.</li>
+  <li data-part="18"><b>Levels.</b> The price zones above and below today's price where buyers or sellers have stepped in before, how far away each is in the stock's usual day's movement, and what the plan does at each.</li>
+  <li data-part="19"><b>The plan.</b> Where the plan buys, in equal parts, and where it sells, with what each part risks and what it could make for each unit it risks; at the top it stops naming a price and follows the price up with a rising stop, and a part with nothing beneath it to stop at states no risk.</li>
+  <li data-part="20"><b>How the rules read it.</b> How each of the system's rules read the stock that night, folded shut.</li>
+  <li data-part="21"><b>The risks.</b> What could go wrong, each with what would show it happening, then two lists, what would turn the stock up and what would make it worse, each opening on a line worked out from the plan at the price shown: a close above the nearest zone of sellers, or a close below the price at which the plan sells everything.</li>
+  <li data-part="22"><b>The two cases.</b> The case for buying and the case against, written by the language model, with no figures of their own.</li>
+  <li data-part="23"><b>The industry cycle.</b> Where prices in the company's industry sit in their usual rise and fall, and what is pushing them.</li>
+  <li data-part="24"><b>Its group, by price.</b> The other companies whose prices move most like this one's.</li>
+  <li data-part="25"><b>News.</b> What was written about the company over the past thirty days, each article sorted by kind and by whether it is good or bad news for the company, the articles not yet read in a group of their own.</li>
+  <li data-part="26"><b>Calendar.</b> The next ninety days as a timeline and a table: the company's results, its next dividend, declared or estimated from how often it pays and drawn hollow when estimated, the Federal Reserve's rate decisions and the inflation reports, beside the dates the research found in the documents.</li>
+  <li data-part="27"><b>Sources.</b> Every document the written sections rely on, any figure two sources state differently, and what the code worked out itself rather than read from a document.</li>
+  <li data-part="28"><b>Where the research stands.</b> Whether the written sections are current, what writing them has cost, and the button that asks for a new report.</li>
+</ol>
+<p><b>The colours.</b> Down the left edge of each section from How to read the page on runs a coloured rule saying what kind of section it is: green for the decision card and the plan, the parts about buying; amber, with the word Caution above it, for the risks, drawn dashed in the picture above; a muted plum for a part a language model wrote; and grey for the rest. A written part and a part taken from a company's filing each carry a column at the left saying the day it was written or filed, since either may be weeks old. Inside the plan the rows where it buys are marked green and the rows where it sells orange. In the tables a figure that rose is written in indigo and one that fell in plum, each with its plus or minus sign, so the sign says it to a reader who cannot tell the two colours apart.</p>
+<p><b>Where the figures come from.</b> The price, the zones and the plan come from the stock's daily prices, which the tool stores every night. The company's results come from what it filed with the SEC and from the data provider's copy of the same quarters; where the two state a line of the latest quarter differently by more than rounding, the sources list both, the filing's first, and the page draws the provider's, since every quarter it reads comes from that one source. The analysts' figures are the data provider's, labelled as theirs and dated by when they were fetched, and the government's ten-year bond yield is read each night from the Treasury.</p>
+<p><b>What the numbers say.</b> Under the latest quarter, a plain sentence for each of four readings of the company's reported quarters, written by code from a fixed pattern, says whether sales and the operating margin are growing on a year before, how the company has done against analysts' estimates, whether its profits are backed by cash and where its price sits in its own range of earnings multiples. The heading gives the company's state, improving, steady or deteriorating, and says it is read from sales and operating margin alone, so a business can read improving beside profits that ran ahead of its cash.</p>
+<p><b>Looking back.</b> A stock's usual move on a results day is the middle of its moves over every report since 2018, a fall and a rise of the same size counted alike, and the long view's monthly prices reach back to 2018 too, adjusted the way the chart's prices are. How it got here takes each move's cause from the written research where there is some, otherwise from the stories published during the move as the news labeller read them, otherwise from the results and filings that fell inside it, and says so where it found none. The news is labelled by a paid model you choose, and the page names which one wrote the labels.</p>
+<p><b>Which setup listed it.</b> A stock one of the rules picked says, beneath the contents, which setup listed it, its place on that setup's card and any other setup it qualified under, and a stock a setup passed but held back for a trade still open says so.</p>
+<p><b>Saving a report.</b> A report can be saved as one file to hand to someone. It opens in the light palette with a button for the dark one, draws every figure without running anything, and shows the price the page showed when it was saved, marked as such.</p>
+<div class="why">
+  <p><b>Why this order.</b> The page follows the questions a person deciding whether to buy tends to ask, in the order they ask them: what the price is and what has happened, how the business is doing, what the price has done, where the plan would buy and sell, and then what could go wrong and what is coming up. The business comes before the chart because a price means little without what the company earns beside it, and the plan comes before the risks so each risk is read against a plan already on the page.</p>
+  <p><b>Why so little is written by a model.</b> A figure worked out by code can be checked against the stored data it came from, and the page draws it exactly. Written words cannot be checked that way, so a model writes only what figures cannot say, such as what management said in its own words, the case for and against and the risks, and last the short version and the headline from the sentences that passed. The next section says how each is checked.</p>
 </div>
-<p>A listed stock's page says which setup listed it, with its place on that setup's card and any other setup it qualified under, and a stock a setup passed but held back for a trade still open says so.</p>
-<p>A listed stock's news is sorted by what kind of story each article is and which way it cuts for the company, by a paid model you choose, and the page names which model wrote the labels.</p>
-<p>The numbers open with what they say: the business's state, then one plain sentence for each of four readings of its reported quarters, whether sales and the operating margin are growing on a year earlier, how it has done against analysts' estimates, whether its profits are backed by cash, and where its price sits in its own range of earnings multiples. The code writes each sentence from a fixed pattern with the stored figures filled in, so no model writes any of it, and the full table of quarters sits folded beneath. The heading says the state is read from sales and operating margin alone, so a business can read improving beside earnings that ran ahead of cash.</p>
-<p>After a pick's card come the company's results, each worked out by code from what the company filed and what the data provider sends beside it. The latest quarter is set out line by line: sales, gross profit, operating profit, net profit, earnings a share, and the cash the business brought in, each beside what analysts expected before the report where that was kept and beside the same quarter a year earlier, with bars showing how sales and earnings grew over the last eight quarters. What management said is the one written part among them: what the company now expects for the coming quarter against what it expected a quarter before, and what it says is going well and badly in its own words inside quotation marks, which are checked word for word against its release. The segments show where the sales come from, but only when the company's own segments add up to its total sales; otherwise the filing's table is shown as filed, with what its rows came to. Then the margins over twelve quarters; what analysts expect, every figure labelled as theirs and dated by when it was fetched, with how many rate the stock at each grade in each month; for a company that pays a dividend, whether its earnings and its cash cover the payout, how many years in a row it raised it, and how its yield compares with the government's own 10-year bond yield, read each night from the Treasury; and what the market pays for the company's earnings against its own past quarters and against the other S&amp;P 500 companies in its industry.</p>
-<p>Then what each of the year's reports did to the price, drawn against the stock's typical earnings move: the middle size of the day's move over every report since 2018, a fall and a rise of the same size counted alike, so a report that moved the price further than usual stands out. The chart marks each report and each ex-dividend date beneath its day and numbers the year's biggest moves on it. Beneath it the long view draws the last close of every month since 2018, adjusted the way the chart's prices are, with the plan's buying and selling zones and the year's high and low across it, so you can see whether the price has met those levels before. How it got here lists the year's biggest moves with what was behind each one: research's own account where research has been written, otherwise the stories published during the move as the news labeller read them, otherwise the results and filings that fell inside it, and otherwise it says nothing was found, naming where each came from. The levels open with a ladder of the price bands above and below the price now, each with how far away it is in the stock's usual day's moves and what the plan does there. The plan shows each buying zone as an equal share of a full position, with how much a share risks to its stop and how much it would make to each selling zone for each unit it risks; the highest selling zone is where the plan stops naming a price and follows the price up with a rising stop instead, and a zone with nothing beneath it to stop at states no risk.</p>
-<p>The risks close on two columns, what would turn the stock up and what would make it worse. Each opens on a line worked out from the plan at the price shown, a close above the nearest band of sellers on one side and a close below the price at which the plan sells everything on the other, followed by the few things the documents say could do either. The calendar draws the next ninety days as a timeline and a table: the company's next results, its next dividend date, declared or estimated from how often it pays and drawn hollow when estimated, and the Federal Reserve's rate decisions and the inflation releases, beside the dates the research found in the documents. The sources list every document the written parts cite. Where the company's own filing and the data provider state a line of the latest quarter differently by more than rounding, both are listed, the filing's first, and the page draws the provider's, since every quarter the page reads comes from that one source; one line names what is worked out by code rather than read from any document. A report can be saved as one file to hand to someone: it opens in the light palette with a button for the dark one, draws every figure without running anything, and shows the price the page showed when it was saved, marked as such.</p>
 
 <!-- 9 -->
 <h2 id="research">9. Research, written once and kept</h2>
