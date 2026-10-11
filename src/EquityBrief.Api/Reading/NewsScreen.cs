@@ -109,7 +109,7 @@ public static class NewsScreen
             };
             var labelled = state == NewsRow.Labelled;
             var opinion = labelled && string.Equals(article.Kind, NewsInstruction.Opinion, StringComparison.Ordinal);
-            var tabs = opinion ? "opinion" : labelled ? "all " + article.Direction : "all";
+            var tabs = opinion ? "opinion" : labelled ? "all " + article.Direction : "all " + NewsRow.Unlabelled;
 
             rows.Add(new NewsRow(
                 article.ArticleId,
@@ -143,6 +143,7 @@ public static class NewsScreen
             counted.Count(row => row.Direction == "negative"),
             counted.Count(row => row.Direction == "neutral"),
             rows.Count(row => row.Tabs == "opinion"),
+            rows.Count(row => row.Tabs.Split(' ').Contains(NewsRow.Unlabelled, StringComparer.Ordinal)),
             newest?.Model,
             newest?.Profile,
             why,

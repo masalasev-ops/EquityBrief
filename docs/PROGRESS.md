@@ -42564,3 +42564,37 @@ Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0 to 18.4 and
             428 merged on 2026-10-10; in progress, this correction; next, the written reports regenerated once a night is
             built from a main holding 18.4, then 18.5.
 Carried:    nothing new.
+
+### 18.4 - correction: a name's News region draws the articles holding no label under a tab of their own after opinion, where they sat in the all tab alone beneath counts that read only the labelled ones   2026-10-11
+
+Corrects:   the News region 18.4 kept, which drew an article holding no label in the all tab alone, beneath a bar and
+            counts read over the labelled articles only, so CVX's page opened on a run of rows marked unlabelled under 13
+            positive and 2 negative stories: the labeller reads the names on the night's list, CVX was last on it for
+            the night of 2026-10-07, and its 47 articles published since or past the twenty a run were never reached.
+Found:      by the operator on CVX's page on 2026-10-11: "why a re all these saying unlabelled but at teh top it says
+            postive , negative articles". Ruled the same day: "At the end after the opinion, have a group called
+            Unlabelled and these articles should show under those", the article the labeller could not read under it as
+            well.
+Built:      a sixth tab, Unlabelled, after opinion, with its count: an article holding no label, never reached, answered
+            unreadably or refused by admissibility, sits in the all tab and the unlabelled tab alike, so the three
+            directions and the unlabelled tab make up all and opinion stands apart as before. CVX's page reads 48
+            unlabelled of 73.
+Tests:      none more; the news region's test reads the sixth tab's count, the three rows holding no label under both
+            tabs, and each tab's chip marked and its rows alone shown while it is chosen.
+Claims:     none more; section 4's and 15.9's News rows and the roster's row for the page say so.
+Pins:       none moved; the read surface is no source a rule's version, the swing filter or a candidate evaluator pins.
+Mutated:    the rule, stated before the run: a row holding no label back in the all tab alone. Predicted red at the news
+            region's test and green at tonight's counts and at the one line saying why. Result: red at the news
+            region's test, the unlabelled count 0 where 3 was worked, and the other two green, as predicted; made on this
+            branch and reverted before anything was committed.
+Verified:   `tools/ci.ps1` green, 2197 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry,
+            80be52a7, the entry's commit, the second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2197 of 2197 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 53 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2197 of 2197 tests ran.
+Queue:      done, phase 17 through 17.10, Part A's corrections, 18.0 to 18.4 and the 4.6, 18.4 and 18.1 corrections, PRs
+            419 to 429 merged; in progress, this correction; next, the written reports regenerated once a night is built
+            from a main holding 18.4, then 18.5.
+Carried:    nothing new.

@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - ARCHITECTURE.html - section 4 and 15.9 draw the articles holding no label under a tab of their own after opinion
+Corrects: a name's News region drew its unlabelled articles in the all tab alone beneath counts that read only the labelled ones, so a page could open on a run of unlabelled rows under a bar of positive and negative stories; found by the operator on CVX's page, who ruled on 2026-10-11 that a group called Unlabelled stand at the end after opinion and hold them, the one the labeller could not read among them
+Was:
+> section 4, News: ... a bar of positive against negative and tabs by direction, the model that wrote the labels named once; ...
+> 15.9, News: ... tabs for all and for each of the three directions and for opinion, an opinion piece in the opinion tab alone; a row refused by admissibility or answered unreadably saying so; ...
+Now:
+> section 4, News: ... a bar of positive against negative and tabs by direction and for the articles holding no label, the model that wrote the labels named once; ...
+> 15.9, News: ... tabs for all and for each of the three directions and for opinion and last for the articles holding no label, an opinion piece in the opinion tab alone; an article holding no label in the all tab and the unlabelled tab alike, whether the labeller never reached it or could not read it or admissibility refused it; a row refused by admissibility or answered unreadably saying so; ...
+Why: the operator's ruling of 2026-10-11 gives the articles the labeller never reached a group of their own, so the counts above them and the rows beneath them read as one picture.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states the six news tabs, an article holding no label under the unlabelled one
+Corrects: the roster's row for the page named five news tabs where the page now draws six, the articles holding no label under the sixth, on the operator's ruling of 2026-10-11 the entry above records
+Was:
+> read-surface: ... with opinion pieces in neither, the five tabs with their counts, an opinion piece in the opinion tab alone, each row's kind ...
+Now:
+> read-surface: ... with opinion pieces in neither, the six tabs with their counts, an opinion piece in the opinion tab alone and from the 18.4 correction of 2026-10-11 an article holding no label in the all and the unlabelled tabs whether never reached, unreadable or refused, each tab's chip marked and its rows alone shown while it is chosen, each row's kind ...
+Why: each roster row says what its check asserts.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of the written sections' type
 Corrects: the short version's prose stood at 19 pixels in the serif beside every other written section's 15 in the sans, found by the operator on CVX's page
 Was:
