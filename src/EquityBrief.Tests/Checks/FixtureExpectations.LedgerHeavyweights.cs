@@ -36,12 +36,21 @@ public partial class FixtureExpectations
 
         // The size cut over two sessions: 120 over 100 and 40 over 50, a mean of nothing; a member with no close at the
         // buy not entered; and one whose closes stop short entered and not ended, which leaves the benchmark unsettled.
-        var cut = HeavyweightPaths.Cut([([100, 110, 120], 0), ([50, 50, 40], 0), ([0, 1, 2], 0)], 2);
+        var cut = HeavyweightPaths.Cut([([100, 110, 120], 0, false), ([50, 50, 40], 0, false), ([0, 1, 2], 0, false)], 2);
 
         Assert.Equal((0.0, 2, 2, true), (Math.Round(cut.Mean!.Value, 9), cut.Ended, cut.Entered, cut.Settled));
 
-        var short_ = HeavyweightPaths.Cut([([100, 110, 120], 0), ([50, 50], 0)], 2);
+        var short_ = HeavyweightPaths.Cut([([100, 110, 120], 0, false), ([50, 50], 0, false)], 2);
 
         Assert.Equal((2, 1, false), (short_.Entered, short_.Ended, short_.Settled));
+
+        // The same member with its prices stopped short is left out, and the cut is settled at the other's 0.2; a cut
+        // with no member ended has no benchmark.
+        // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+        var taken = HeavyweightPaths.Cut([([100, 110, 120], 0, false), ([50, 50], 0, true)], 2);
+        var none = HeavyweightPaths.Cut([([50, 50], 0, true)], 2);
+
+        Assert.Equal((0.2, 1, 2, 1, true), (Math.Round(taken.Mean!.Value, 9), taken.Ended, taken.Entered, taken.Stopped, taken.Settled));
+        Assert.Equal(((double?)null, 0, 1, 1, false), (none.Mean, none.Ended, none.Entered, none.Stopped, none.Settled));
     }
 }

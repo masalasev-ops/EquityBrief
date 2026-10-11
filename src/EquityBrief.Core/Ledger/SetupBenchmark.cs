@@ -30,25 +30,29 @@ public sealed record SetupPlan(double StopMoves, double? RewardToRisk, double? T
 }
 
 // What the same plan came to on every member of the index that session: the mean of the results the closes reach the
-// end of, how many that is, and how many members the plan was entered on. The benchmark is settled once every member's
-// path has ended or reached the cap, and a setup's edge is read against it only then; before that the mean is over the
-// members ended so far and is not the benchmark.
-public sealed record BenchmarkReading(double? Mean, int Ended, int Entered)
+// end of, how many that is, how many members the plan was entered on, and how many of those were left out because
+// their prices stopped before their path ended. The benchmark is settled once every member entered has ended its path
+// or been left out and at least one has ended, and a setup's edge is read against it only then; before that the mean
+// is over the members ended so far and is not the benchmark, and a session no member was entered on has none.
+// see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+public sealed record BenchmarkReading(double? Mean, int Ended, int Entered, int Stopped = 0)
 {
-    public bool Settled => Ended == Entered;
+    public bool Settled => Ended > 0 && Ended + Stopped == Entered;
 }
 
 public static class SetupBenchmark
 {
-    // Each member's closes with the place of the session's bar in them and its typical move on that bar; a member with
-    // no bar on the session or no move is not entered.
-    public static BenchmarkReading Of(IReadOnlyList<(double[] Closes, int Bar, double Move)> members, DateOnly session, SetupPlan plan)
+    // Each member's closes with the place of the session's bar in them, its typical move on that bar, and whether its
+    // prices stopped before the newest session the read holds, as a takeover's or a delisting's do; a member with no bar
+    // on the session or no move is not entered, and one whose prices stopped with its path still open is left out.
+    public static BenchmarkReading Of(IReadOnlyList<(double[] Closes, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan)
     {
         var sum = 0.0;
         var ended = 0;
         var entered = 0;
+        var stopped = 0;
 
-        foreach (var (closes, bar, move) in members)
+        foreach (var (closes, bar, move, pricesStopped) in members)
         {
             if (bar < 0 || bar >= closes.Length || plan.On(session, closes[bar], move) is not { } anchor)
             {
@@ -64,8 +68,12 @@ public static class SetupBenchmark
                 sum += result;
                 ended++;
             }
+            else if (pricesStopped)
+            {
+                stopped++;
+            }
         }
 
-        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered);
+        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped);
     }
 }

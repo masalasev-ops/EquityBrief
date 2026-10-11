@@ -43020,3 +43020,56 @@ Rulings:    a, the store's growth: 17.2a is not built now; five three-index nigh
             night, and where a provisional rule cannot carry books of its own, what it takes said before building.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 17.3 correction below.
 Carried:    the queue above.
+
+### 17.3 - correction: a setup's benchmark leaves out a member whose prices stopped before its path ended, and the build alone settles the history's setups over the bar store's closes after its span, where the night of 2026-10-09 marked 12,690 of them settled by its own members, 10,857 with no benchmark   2026-10-11
+
+Corrects:   17.3's benchmark and who settles it. A benchmark was settled only once every member's path had ended, so a
+            member whose prices stopped first, a takeover held at its price until it delisted, kept every setup of its
+            session without one for good: such a member stood within the 63 sessions after 85, 71 and 88 per cent of
+            the S&P 500's, 400's and 600's sessions, and of the swing families' history setups whose own path had ended
+            67, 71 and 31 per cent had a benchmark, the S&P 600's 2021 at 13 per cent. And the night's step read every
+            setup not yet settled, the history's among them, by the members on the night and the bar store's year: on
+            the night of 2026-10-09 it marked 12,690 history setups settled, 10,857 with no benchmark, each it settled on
+            the S&P 400 and 600, whose membership rows begin with the members pull of 2026-10-02 so no member stood on
+            an older session and nothing entered counted as settled, and 1,833 of the S&P 500's measured against the
+            survivors. The rebuild of 2026-10-10 wrote them back without, which read as comparisons lost.
+Found:      read-only on 2026-10-11, the store's copy of 00:48Z on 2026-10-10, taken after that night and before the
+            rebuild, read beside the live store setup by setup: 12,690 settled in the copy and not in the store and none
+            the other way, each a member of its index on that night on a session of the bar store's year, the members of
+            every session counted the same in both; and in the live store every setup whose own path ended on a session
+            of any index and year with no member whose prices stop in the 63 sessions after it had its benchmark. The
+            copy is kept in the backups' folder until the night of 2026-10-14 writes its own.
+Built:      the core's benchmark leaves out a member whose prices stopped with its path open, counts one whose path
+            ended first, and is settled once every other member entered has ended and at least one has, a session with
+            none entered or none ended holding none; the heavyweights' size cut the same. The night's step reads its own
+            setups alone. The history build names a member's prices stopped where the store holds no close for it after
+            its last one before its newest session, replays each setup and its benchmark over the history and then the
+            bar store's own closes after the span's end where a name's history ends in the store's bars, dates each
+            row's end by those sessions, and counts on its output and run log row the names it replayed past the span's
+            end. Two decisions; section 13.10, section 14's step and the catalogue row, SCHEMA, the runbook and the
+            roster's two rows, the prior text in `CHANGELOG.md`; an operating row for the build once the bar store no
+            longer holds the span's end.
+Tests:      one more: the history built twice over a constructed S&P 600 with a night between that fetches a member's
+            year again after a split, adds a member and drops the oldest session; each setup the first build compared
+            holds the same result and benchmark after the second, the night leaves every history row as the build wrote
+            it, a member taken over with its path open is left out, each benchmark is worked by hand as the setup's own
+            result over the four members that ended, a path the span ends inside is settled over the bar store's closes,
+            and one running past the newest close is settled by the second build alone. The benchmark's and the size
+            cut's worked cases gain a member whose prices stopped, one whose path ended first, and none entered or ended.
+Claims:     none more; section 14's step's key moves with its words in the three places that hold it.
+Pins:       none moved; the readings' pin hashes the catalogue and the setups' file, neither changed, and no rule's
+            version or candidate evaluator pins the benchmark, the size cut or the ledger.
+Mutated:    the rule, stated before the run: each property the correction adds, one mutation each. M1 the night's step
+            reading the history's setups again: predicted red at the new test. M2 a member whose prices stopped held as
+            open: predicted red at the new test and the worked cases. M3 a session with none ended settled: predicted red
+            at the worked cases. M4 no close read past the span's end: predicted red at the new test. Results: M1 red at
+            the new test, the night settling GGG's history setup against the two members its membership rows held on
+            that session; M2 red at the new test, AAA's setup left without a benchmark, and at both worked cases; M3 red
+            at both worked cases, the new test green as predicted; M4 red at the new test, EEE's setup left without one.
+            Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
+            the run.
+Remedy:     after the merge, from main, `tools/ledger-build.ps1 --again` on each index over 2019-01-02 to 2026-10-05, and
+            the coverage shown beside the copy's by family, index and half-year.
+Queue:      as the 17.10 ruling above.
+Carried:    the operating row the decision names, the build once the bar store no longer holds the span's end.

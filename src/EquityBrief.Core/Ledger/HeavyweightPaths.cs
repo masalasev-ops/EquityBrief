@@ -32,16 +32,19 @@ public static class HeavyweightPaths
         return new SetupOutcome((closes[end] / closes[from]) - 1, end - from, end == sold ? SetupEnds.Rebalance : SetupEnds.Cap);
     }
 
-    // The size cut's return over a path's sessions: each member's closes with the place of the buy's session in them, a
-    // member with no close there not entered, and the benchmark settled once every member entered holds a close the
-    // path's sessions on.
-    public static BenchmarkReading Cut(IReadOnlyList<(double[] Closes, int From)> members, int sessions)
+    // The size cut's return over a path's sessions: each member's closes with the place of the buy's session in them and
+    // whether its prices stopped before the newest session the read holds, a member with no close there not entered, one
+    // whose prices stopped short of the path's end left out, and the benchmark settled once every other member entered
+    // holds a close the path's sessions on.
+    // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+    public static BenchmarkReading Cut(IReadOnlyList<(double[] Closes, int From, bool Stopped)> members, int sessions)
     {
         var sum = 0.0;
         var ended = 0;
         var entered = 0;
+        var left = 0;
 
-        foreach (var (closes, from) in members)
+        foreach (var (closes, from, stopped) in members)
         {
             if (from < 0 || from >= closes.Length || !(closes[from] > 0))
             {
@@ -55,8 +58,12 @@ public static class HeavyweightPaths
                 sum += (closes[from + sessions] / closes[from]) - 1;
                 ended++;
             }
+            else if (stopped)
+            {
+                left++;
+            }
         }
 
-        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered);
+        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, left);
     }
 }

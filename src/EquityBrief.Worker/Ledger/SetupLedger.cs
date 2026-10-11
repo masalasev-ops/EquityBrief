@@ -31,14 +31,16 @@ public sealed record LedgerOutcome(DateOnly? Session, IReadOnlyList<LedgerIndex>
 
 // The setup ledger. After the families have drawn each index's list, the night appends every member-session a family's
 // loose gates pass on each index, with the live rule's own pass beside it, its plan as prices, its readings as they
-// stood and its path still open, and closes the windows of the setups stored before whose paths ended on the night's
-// close or whose benchmark, the same plan on every member of that session, has every member's path ended; the same
-// component builds the history by hand, session by session over the pulled bars merged with the store's, each row
-// replayed to its end where the history reaches it. A reading the inputs do not reach is stored as none. A failure in
-// one index's part leaves that index's rows of the night unwritten and named on the stage's row, and the step goes on;
-// the stage makes no request and calls no model. A night run again replaces its own rows.
+// stood and its path still open, and closes the windows of the setups the night stored before whose paths ended on the
+// night's close or whose benchmark, the same plan on every member of that session the night reads, has every member's
+// path ended; the same component builds the history by hand, session by session over the pulled bars merged with the store's,
+// each row and its benchmark replayed to their end where the history and the store's own closes after it reach, and the
+// history's rows are settled by that build alone. A reading the inputs do not reach is stored as none. A failure in one
+// index's part leaves that index's rows of the night unwritten and named on the stage's row, and the step goes on; the
+// stage makes no request and calls no model. A night run again replaces its own rows.
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 // see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
+// see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
 // see: The nightly run is arithmetic only
 public sealed class SetupLedger : IComponent
 {
@@ -127,9 +129,12 @@ public sealed class SetupLedger : IComponent
 
     const string StoredHistory = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
 
+    // The night's own setups alone: a history setup is settled by the build that wrote it, which reads its members as
+    // they stood, where the night reads the members on the night and the bar store's year.
+    // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
     const string OpenSetups = @"
         SELECT family, ticker, session_date, entry, stop, target, trail, cap, risk_moves, cost, end
-        FROM setup WHERE index_code = $index AND settled = 0 AND session_date < $night ORDER BY session_date, family, ticker;";
+        FROM setup WHERE index_code = $index AND source = $source AND settled = 0 AND session_date < $night ORDER BY session_date, family, ticker;";
 
     const string Settle = @"
         UPDATE setup SET result = $result, benchmark = $benchmark, edge = $edge, edge_after_cost = $edge_after_cost, sessions = $sessions,
@@ -396,26 +401,29 @@ public sealed class SetupLedger : IComponent
     }
 
     // A setup's path from its anchor over the closes the series holds, and the same plan on every member of its
-    // session: the benchmark settled only once every member's path has ended.
-    static (SetupOutcome Outcome, BenchmarkReading Benchmark) Outcome(double[][] closes, IndexNightInputs inputs, int name, int bar, SetupAnchor anchor, SetupPlan plan)
+    // session: the benchmark settled once every member's path has ended, a member whose prices stopped before its path
+    // ended left out. The build names the members whose prices stopped; the night names none, since every member it reads
+    // is a member on the night and one the index let go before it is not read at all.
+    // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+    static (SetupOutcome Outcome, BenchmarkReading Benchmark) Outcome(double[][] closes, IndexNightInputs inputs, int name, int bar, SetupAnchor anchor, SetupPlan plan, bool[]? stopped = null)
     {
         var outcome = SetupReplay.Replay(closes[name], bar, anchor);
         var at = inputs.Series[name].SessionAt[bar];
-        var members = new List<(double[] Closes, int Bar, double Move)>();
+        var members = new List<(double[] Closes, int Bar, double Move, bool Stopped)>();
 
         for (var place = 0; place < inputs.Members.Names[at].Length; place++)
         {
             var member = inputs.Members.Names[at][place];
             var memberBar = inputs.Members.Bars[at][place];
 
-            members.Add((closes[member], memberBar, inputs.Series[member].Atr[memberBar]));
+            members.Add((closes[member], memberBar, inputs.Series[member].Atr[memberBar], stopped is not null && stopped[member]));
         }
 
         return (outcome, SetupBenchmark.Of(members, anchor.Session, plan));
     }
 
-    // The stored setups of the index not yet settled, each replayed again over the closes to the night and its benchmark
-    // read again, and written where its path ended or its benchmark settled.
+    // The night's stored setups not yet settled, each replayed again over the closes to the night and its benchmark read
+    // again, and written where its path ended or its benchmark settled.
     async Task<int> SettleAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
@@ -507,7 +515,7 @@ public sealed class SetupLedger : IComponent
         var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
         var cut = sector.Largest
             .Where(names.ContainsKey)
-            .Select(ticker => (closes[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at)))
+            .Select(ticker => (closes[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at), false))
             .ToArray();
 
         return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
@@ -706,10 +714,11 @@ public sealed class SetupLedger : IComponent
 
     // The history, built by hand from a clean copy of main's commit: every session of the span on one index the
     // store does not hold a history row for, over the pulled bars merged with the store's on membership as it stood,
-    // each setup replayed to its end where the history reaches it, written a chunk of sessions at a time under a run
-    // of its own. The build waits for the night and holds the drain's lock, which the store's copy holds while it
-    // copies, for each chunk it writes and for no longer. Asked to write the span again, it replaces what an earlier
-    // build wrote for it.
+    // each setup and its benchmark replayed to their end where the history and the bar store's closes after it reach,
+    // written a chunk of sessions at a time under a run of its own. The build waits for the night and holds the drain's
+    // lock, which the store's copy holds while it copies, for each chunk it writes and for no longer. Asked to write the
+    // span again, it replaces what an earlier build wrote for it.
+    // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
     public async Task<int> BuildAsync(string dataRoot, string index, DateOnly from, DateOnly through, TextWriter output, bool again = false, Func<TimeSpan, CancellationToken, Task>? wait = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
@@ -732,10 +741,19 @@ public sealed class SetupLedger : IComponent
         var sessions = SweepColumns.Sessions(series, calendar);
         var members = SweepBenchmark.On(series, calendar.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
-        var closes = series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
 
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
+
+        // The sessions a path is replayed over, the history's and then the bar store's after it, by which each row's end
+        // is dated. Once the bar store no longer holds the span's end, no path is replayed past it, and the count says so.
+        var (closes, stopped, after, extended) = await ClosesAsync(connection, series, through, cancellation);
+        DateOnly[] replayed = [.. calendar, .. after];
+        var past = after.Length == 0
+            ? $"the bar store holding no close after {Stamp(through)}"
+            : FormattableString.Invariant($"{extended} name(s) replayed past {Stamp(through)} over the bar store's closes through {Stamp(after[^1])}");
+
+        output.WriteLine($"ledger-build: {past}");
 
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
@@ -809,9 +827,9 @@ public sealed class SetupLedger : IComponent
                     {
                         var name = NameOf(series, row.Ticker);
                         var bar = IndexNightRead.BarOf(series[name], at);
-                        var outcome = Outcome(closes, inputsOnTheNight, name, bar, row.Anchor, row.Plan);
+                        var outcome = Outcome(closes, inputsOnTheNight, name, bar, row.Anchor, row.Plan, stopped);
 
-                        await InsertAsync(connection, transaction, row, null, null, outcome, calendar, at, HistorySource, cancellation);
+                        await InsertAsync(connection, transaction, row, null, null, outcome, replayed, at, HistorySource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
@@ -843,11 +861,11 @@ public sealed class SetupLedger : IComponent
                         var cut = cuts
                             .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
                             .Where(nameOf.ContainsKey)
-                            .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at)))
+                            .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at), stopped[nameOf[ticker]]))
                             .ToArray();
                         var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions);
 
-                        await InsertAsync(connection, transaction, row, null, null, (outcome, benchmark), calendar, at, HistorySource, cancellation);
+                        await InsertAsync(connection, transaction, row, null, null, (outcome, benchmark), replayed, at, HistorySource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
@@ -873,7 +891,7 @@ public sealed class SetupLedger : IComponent
         }
 
         await AppendAsync(connection, runId, BuildStage, startedAt, written, Ok,
-            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span"), cancellation);
+            FormattableString.Invariant($"{written} setup(s) on the {DecisionCards.NameOf(index)} over {Stamp(calendar[first])} to {Stamp(calendar[last])}, {passes} passing the live rule, {sessionsToWrite.Count} session(s) written of the {last - first + 1} in the span, {past}"), cancellation);
 
         output.WriteLine(FormattableString.Invariant($"ledger-build: {written} setup(s) written for the {DecisionCards.NameOf(index)} over {sessionsToWrite.Count} session(s), {passes} passing the live rule"));
 
@@ -1034,6 +1052,72 @@ public sealed class SetupLedger : IComponent
         return stored;
     }
 
+    const string StoredSpans = "SELECT ticker, MIN(session_date), MAX(session_date) FROM bar GROUP BY ticker;";
+
+    const string StoredAfter = "SELECT ticker, session_date, close FROM bar WHERE session_date > $through ORDER BY ticker, session_date;";
+
+    // Each name's closes over the history, then the bar store's own after the span's end through its newest session,
+    // where the history's closes end in the store's own bars and so on its scale, with the sessions those closes stand
+    // on; and the names whose prices stopped before that newest session, a takeover's, a delisting's or a member no index
+    // the night reads holds any longer, whose path still open the benchmark leaves out. A name the store holds a later
+    // close for has not stopped, whatever the history reads of it.
+    // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
+    // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
+    static async Task<(double[][] Closes, bool[] Stopped, DateOnly[] After, int Extended)> ClosesAsync(SqliteConnection connection, IReadOnlyList<SweepSeries> series, DateOnly through, CancellationToken cancellation)
+    {
+        var spans = new Dictionary<string, (DateOnly First, DateOnly Last)>(StringComparer.Ordinal);
+        var after = new Dictionary<string, List<double>>(StringComparer.Ordinal);
+        var sessions = new SortedSet<DateOnly>();
+
+        await using (var command = Command(connection, null, StoredSpans, []))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                spans[reader.GetString(0)] = (Date(reader.GetString(1)), Date(reader.GetString(2)));
+            }
+        }
+
+        await using (var command = Command(connection, null, StoredAfter, [("$through", Stamp(through))]))
+        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        {
+            while (await reader.ReadAsync(cancellation))
+            {
+                var ticker = reader.GetString(0);
+
+                if (!after.TryGetValue(ticker, out var held))
+                {
+                    after[ticker] = held = [];
+                }
+
+                sessions.Add(Date(reader.GetString(1)));
+                held.Add(Statistic.FromPrice(Money.FromStorage(reader.GetString(2))));
+            }
+        }
+
+        var newest = spans.Values.Select(span => span.Last).Append(through).Max();
+        var closes = new double[series.Count][];
+        var stopped = new bool[series.Count];
+        var extended = 0;
+
+        for (var name = 0; name < series.Count; name++)
+        {
+            var ticker = series[name].Name.Ticker;
+            var history = series[name].Bars.Select(bar => Statistic.FromPrice(bar.Close));
+            var stored = spans.TryGetValue(ticker, out var span) ? span : ((DateOnly First, DateOnly Last)?)null;
+            var extends = stored is { } held && held.First <= through && after.ContainsKey(ticker);
+
+            closes[name] = extends ? [.. history, .. after[ticker]] : [.. history];
+            extended += extends ? 1 : 0;
+
+            var last = series[name].Bars.Length > 0 ? series[name].Bars[^1].Session : DateOnly.MinValue;
+
+            stopped[name] = (stored is { } kept && kept.Last > last ? kept.Last : last) < newest;
+        }
+
+        return (closes, stopped, [.. sessions], extended);
+    }
+
     static int NameOf(IReadOnlyList<SweepSeries> series, string ticker)
     {
         for (var name = 0; name < series.Count; name++)
@@ -1141,7 +1225,7 @@ public sealed class SetupLedger : IComponent
     {
         var open = new List<OpenSetup>();
 
-        await using var command = Command(connection, null, OpenSetups, [("$index", index), ("$night", Stamp(night))]);
+        await using var command = Command(connection, null, OpenSetups, [("$index", index), ("$source", NightSource), ("$night", Stamp(night))]);
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
