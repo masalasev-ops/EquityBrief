@@ -42623,8 +42623,14 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             last day's words centred again: predicted red at the timeline's test. Results: K1 red, a sixth sentence
             passing; K2 red, a fourth paragraph passing; K3 red, the four anchors all the middle. Each made on this branch
             and reverted before anything was committed.
-Verified:   `tools/ci.ps1` green, 2202 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry, the
-            figures to be filled from the run.
+Verified:   `tools/ci.ps1` green, 2202 tests, and `tools/verify-phase.ps1` green over the tree carrying this entry and the
+            three corrections after it, 08fd8a03, the four entries' last commit, the second reading the suite result the
+            first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2202 of 2202 tests ran with none failed, migrations 0 to
+            87 with none pending, schema version 87, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1266 claims, 1266 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1277
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2202 of 2202 tests ran.
 Queue:      done, phase 18 through 18.4 with its corrections and 18.5's first half, PRs 419 to 431 merged; in progress,
             this correction and the 6.4, 12.6 and 18.1 corrections beside it; next, the 32 written reports regenerated
             from main, the screenshots read back against the store and the phase 18 report.
