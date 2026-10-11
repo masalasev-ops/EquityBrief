@@ -43073,3 +43073,18 @@ Remedy:     after the merge, from main, `tools/ledger-build.ps1 --again` on each
             the coverage shown beside the copy's by family, index and half-year.
 Queue:      as the 17.10 ruling above.
 Carried:    the operating row the decision names, the build once the bar store no longer holds the span's end.
+
+### 17.10 - the phase 17 report, amended: the operating row the 17.3 correction of the history's benchmarks opened after the report, handed over here with its trigger   2026-10-11
+
+Amends:     the phase 17 report (17891088), which named the six operating rows the 17.0 planning pass opened. The 17.3
+            correction above opened one more after it, and a phase's report is where what the phase leaves running is
+            handed over.
+Opened:     seven operating rows stand for phase 17, the six the report names and this one.
+            **A history build replays no path past its span's end once the bar store no longer holds it**, opened by
+            the 17.3 correction of 2026-10-11 that replays each history setup and its benchmark over the bar store's
+            own closes after the span's end. Its trigger is 1 history build run after the bar store's stored year
+            starts after the span's end, about a year after the pull of 2026-10-05, read on the build's run log row,
+            which counts the names it replayed past the span's end; at it the build reads the kept bars past the span's
+            end at the bar store's scale before it is run again.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.3 correction above.
