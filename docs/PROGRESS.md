@@ -42982,3 +42982,41 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 6.4 correction above.
 Carried:    nothing new; the two runs the decision names, on Tuesday 2026-10-13 and Wednesday 2026-10-14, are run by hand
             after this merges and are no done condition of it.
+
+### 17.10 ruling - the queue after phase 18 merged: the history's benchmarks first, the monthly rebuild kept only where it holds them, 17.2's and 17.10's corrections, the Run page opening on a night, two pages at a phone's width, October's monthly run, then the five owed decisions as ruled   2026-10-11
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-11, after a read of main at c9d2046d with PRs 419 to 433 merged: "Go ahead with
+            your item 5 first, then the rest in this order, each merged outside the night and reported after it merges,
+            under the 15.4 ruling." Asked the one question the first item put, how a member whose prices stop before its
+            trade ends is counted in a setup's benchmark, they chose "Left out, as sweeps do (Recommended)". The words
+            are kept in `prompts/`.
+Queue:      1, read-only, what the setups the rebuild of 2026-10-10 showed without a benchmark share, the store's copy
+            holding the first build confirmed before anything is built again; 2, the correction the cause calls for,
+            with the history built twice over a constructed store around a night that changes it as the night of
+            2026-10-09 did, then the history built again and its coverage by family, index and half-year shown beside
+            the copy's; 3, the monthly run's rebuild written beside the standing history and taken only where no family
+            on any index holds fewer setups with a benchmark than the standing build beyond a stated tolerance, the run
+            otherwise stopping with the counts and the Run page saying why; 4, 17.2's funnel correction and 17.10's
+            correction finished and merged; 5, the Run page opening on the newest scheduled night because it is a night,
+            tested with a Sunday holding only runs by hand; 6, the Ledger and Universe pages at 390 pixels with nothing
+            cut off and wide tables scrolling in their own frame, read back at 390 and 1440; 7, October's monthly run by
+            hand once 1 to 4 hold, then the schedule registered from the runbook and its first Saturday read; 8, the five
+            decisions below, built after 7. Each is merged outside the night with no go asked and reported after it
+            merges; the sign-offs of phases 15 to 18 wait for fresh sessions the operator starts one at a time after it.
+Rulings:    a, the store's growth: 17.2a is not built now; five three-index nights are measured after the news window
+            fills on 2026-11-01, and a proposal comes only where growth is well above 30 megabytes a night; per-member
+            rows are not rolled up. b, the S&P 500's approvals: option (1), its families reading their settings from the
+            stored setting table as the S&P 400's and 600's do, the rules that move registered again with the replay
+            stating for each whether its record carried on or restarted, the old loop's decisions for the S&P 500 moved
+            to Previously decided with their reasoning, and a replaced registered rule kept running as a variant for 63
+            sessions. c, the FastTree challenger built in the same change as b, so the rules are registered again once,
+            and adopted only where it beats the ridge score on the same folds. d, the valuation reading over 12 quarters,
+            the prices before the store's year read from the pulled history at the store's scale as the chart averages
+            step reads them, earnings and value from the SEC's facts as first filed, held as it stood on each session by
+            the point-in-time check, and no provider call. e, the S&P 600's heavyweights: no freeze; the tester's result
+            of 2026-10-09 for the six-setting search stated with each fold's pick, its adjusted p and the folds'
+            stability; the starting setting kept live and both passing settings run as books of their own from the next
+            night, and where a provisional rule cannot carry books of its own, what it takes said before building.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies the 17.3 correction below.
+Carried:    the queue above.
