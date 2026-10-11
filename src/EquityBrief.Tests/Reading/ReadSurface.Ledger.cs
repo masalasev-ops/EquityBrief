@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Tests.Harness;
 
@@ -135,5 +136,32 @@ public partial class ReadSurface
 
         Assert.Equal("-1.5,0,0.123457", stored);
         Assert.Equal([-1.5, 0, 0.123457], LedgerSummaries.Read(stored));
+    }
+
+    [Fact]
+    public async Task EveryTableTheLedgerPageDrawsIsReadInABoxOfItsOwn()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        LedgerYearRow(store, "pullback", 2026, 40, 10, 8, 4, 30, "0.4", "0.1", "-1,-0.5,0,0.25,0.5,1,1.5,2,3");
+        LedgerYearRow(store, "heavyweight", 2026, 30, 6, 30, 6, 12, "0.12", "0.03", "-0.1,-0.05,0,0.02,0.04,0.06,0.1,0.2,0.3");
+        LedgerSettledRow(store, "AAA", "2026-03-09", "target", "2026-03-16", 2.0, 1.5, "night");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = await client.GetStringAsync("/screens/ledger?family=pullback");
+
+        // Each table opened by the box that scrolls it, so a wide one scrolls in its own frame at a phone's width and
+        // pushes nothing off the page. Stated in advance: the two families' years and deciles and the pullback's
+        // settled setups, five.
+        var bare = Regex
+            .Matches(page, "(.{0,24})<table(?: class=\"([a-z-]+)\")?[ >]")
+            .Where(table => !table.Groups[1].Value.EndsWith("<div class=\"tbl-wrap\">", StringComparison.Ordinal))
+            .Select(table => table.Groups[2].Value)
+            .ToArray();
+
+        Assert.Equal(5, Regex.Matches(page, "<table[ >]").Count);
+        Assert.True(bare.Length == 0, $"On the Ledger page, {string.Join(", ", bare)} is drawn outside a box of its own.");
     }
 }

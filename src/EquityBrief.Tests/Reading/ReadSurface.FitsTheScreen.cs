@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 
@@ -263,11 +264,15 @@ public partial class ReadSurface
 
         var name = FiredNamesOn(store, NightIn(store))[0];
 
+        // The run page of the evening the replay's own log rows fall on, the one evening whose page draws the night's
+        // stages, since the page opens by default on the night a night's own run id names and the replay writes none.
+        var replayed = Stamp(((IClock)FixedClock.At(Instant, SessionZones.UnitedStates)).SessionDateAt(Instant));
+
         var screens = new[]
         {
             ("tonight", await client.GetStringAsync("/screens/tonight")),
             ("universe", await client.GetStringAsync("/screens/universe")),
-            ("run", await client.GetStringAsync("/screens/run")),
+            ("run", await client.GetStringAsync($"/screens/run/{replayed}")),
             ("name", await client.GetStringAsync($"/screens/name/{name}")),
             ("the exported report", await client.GetStringAsync(EquityBrief.Web.App.ReportExporter.Route + name)),
         };

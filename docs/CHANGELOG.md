@@ -25,6 +25,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states the Ledger page's tables
+Corrects: no test read the tables of 17.3's Ledger page for the box that scrolls them, found reading the page back at a phone's width for item 6 of the queue of 2026-10-11.
+Was:
+> read-surface: ... read off the rendered page, and a night run after them moving it |
+Now:
+> read-surface: ... read off the rendered page, and a night run after them moving it; and from the 17.3 correction of 2026-10-11 every table the Ledger page draws read in a box of its own, how many stated in advance |
+Why: each roster row says what its check asserts, and the Ledger page was not among the five surfaces whose tables were read for their box.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - the Run page opens on the newest night by the night's own run id
+Decision: The Run page opens on the newest night by the night's own run id, and no run beside the nights moves it
+Was:
+> With no date it opens on the newest night the run log carries a stage for, whether or not that night wrote a list, so a night that stopped before its list is the one a person sees first. A night on a day with no session is not one it opens on, and neither is a day whose only rows are the <code>version</code> or <code>register</code> verb run by hand, whose rows the operational header draws marked as run by hand, apart from the night's own stage time and never among the stages that failed.
+Now:
+> With no date it opens on the newest night by the night's own run id, the one the scheduler or a person starting a night gives it and its tries carry, whether or not that night wrote a list, so a night that stopped before its list is the one a person sees first, and on the newest night the listings hold where the log holds no night. A night on a day with no session is not one it opens on, and no run beside the nights moves it however it is named, a pass and its drain, the history's build and its check, the tester, the SEC's facts asked whole and the monthly run among them (see: The Run page opens on the newest night by the night's own run id, and no run beside the nights moves it). The operational header draws the rows of the <code>version</code> or <code>register</code> verb run by hand marked as run by hand, apart from the night's own stage time and never among the stages that failed.
+Why: the operator ruled on 2026-10-11 that the page opens on the newest night because it is a night and not because it is missing from a list of runs by hand, after a Sunday of runs the list did not name hid Friday's night.
+
+### 2026-10-11 - .claude/rules/checks.md - read-surface states the Run page's night
+Decision: The Run page opens on the newest night by the night's own run id, and no run beside the nights moves it
+Was:
+> read-surface: ... and a newest try that kept its history read back off the rendered page with its counts |
+Now:
+> read-surface: ... and a newest try that kept its history read back off the rendered page with its counts; and from the 8.6 correction of 2026-10-11 the Run page opens on the newest night by the night's own run id, a Sunday holding only runs beside the nights, a pass and its drain, the history's build and its check, the tester, the SEC's facts asked whole and a run under a name no list holds among them, leaving it on Friday's night, read off the rendered page, and a night run after them moving it |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states the Run page's checklist item on the newest monthly run
 Decision: The monthly run writes the history again only where no family on any index loses more than half a per cent of its benchmarks or ten setups
 Was:

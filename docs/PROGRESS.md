@@ -43162,3 +43162,66 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 17.10 ruling above; items 3 and 4 of it ship together, the history's guard being the monthly run's
             history step, which needed the lock left to it.
 Carried:    October's monthly run by hand, item 7 of the queue, once items 5 and 6 have merged.
+
+### 8.6 - correction: the Run page opens on the newest night by the night's own run id, where it opened on the newest row of any run that a list of runs by hand did not name, and the history's build, its check, the tester and the SEC's facts asked whole were not on it   2026-10-11
+
+Corrects:   8.6's correction of the Run page's night. With no date the page opened on the session of the newest run log
+            row less the read surface's own, a night with no session and the prefixes a list of runs by hand names, so
+            every pass, verb or job added beside the nights had to join the list or move the page. The history's build,
+            its check, the tester and the SEC's facts asked whole never joined it, and a Sunday of them hid Friday's night.
+Found:      reading the Run page over the weekend of 2026-10-10, and put to the operator as item 5 of the queue of
+            2026-10-11.
+Built:      the page's night is read by the night's own run id, the one the scheduler or a person starting a night gives
+            it, which its tries and a run of the rest of it carry; the read surface's own row and a night with no session
+            are still not read, and a log holding no night opens on the newest night the listings hold, as before. The
+            list of runs by hand is read now only to mark the operational header's rows. One decision; section 15.10's
+            route paragraph and the roster's read-surface row, the prior text in `CHANGELOG.md`.
+Tests:      one more: over the fixture's store, whose log holds only the replay's rows written the day after its
+            listings' night, the page opens on the listings' night; with Friday's night written and a Sunday of a
+            research pass and its drain, the history's build, its check, the tester, the SEC's facts asked whole and a
+            run under a name no list holds, the read API and the rendered route both open on Friday's night; and a night
+            written after them moves it to Monday. The table test over the five surfaces reads the Run page on the
+            evening the replay's log rows fall on, the default page now opening on the listings' night, whose log holds
+            no stage, so the stage table stays among its 34.
+Claims:     none more; the route paragraph is no claim the harness counts.
+Pins:       none moved; the read surface is in no pin list.
+Mutated:    the rule, stated before the run: the property that the page's night is chosen by the night's own run id. M11
+            every run's row read as a night's, the run id matched against anything: predicted red at the new test, on the
+            fixture's replay rows and on the Sunday, and at the test of a command run by hand. Results: M11 red at the
+            new test on the fixture's replay rows, 2026-09-05 read where the listings' 2026-09-04 is, the Sunday's
+            assertion after it not reached; and red at the test of a command run by hand, 2026-09-11 read where
+            2026-09-10 is. Two of 102 failed in the run filtered to the Run page's and the night's tests. Reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.3 correction below.
+Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together.
+Carried:    nothing new.
+
+### 17.3 - correction: every table the Ledger page draws is read for the box that scrolls it, and the Ledger and Universe pages are read back at 390 px and 1440 px, where no test read the Ledger page's tables   2026-10-11
+
+Corrects:   17.3's Ledger page, whose tables no test read for the box that scrolls them: the table test reads the five
+            surfaces the 5.8 correction named, and the Ledger page is not one of them. Item 6 of the queue asked for the
+            Ledger and Universe pages at a true 390 px with nothing cut off, wide tables scrolling inside their own frame,
+            read back at 390 and 1440.
+Found:      the read-back the item asked for.
+Built:      a test reading every table the Ledger page draws for its box, five stated in advance, the two families'
+            years and deciles and the pullback's settled setups; the roster's read-surface row names it, the prior text
+            in `CHANGELOG.md`. No page changed. Read back in a browser laid out at each width over the operator's store,
+            the Ledger and Universe pages of each of the three indices are as wide as the screen and no wider, 390 at 390
+            px and 1440 at 1440 px, and every element past the screen's right edge at 390 px sits in a box that scrolls
+            whose own edge is inside the screen, so nothing is cut. The Universe page's tables were already read for
+            their box among the five surfaces.
+Tests:      one more, the Ledger page's tables.
+Claims:     none more.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the property that every table the Ledger page draws is read in a box of its
+            own. M12 the years table drawn without its box: predicted red at the new test, naming the years table.
+            Results: M12 red at the new test, naming both families' years tables, one of eight failed in the run
+            filtered to the ledger's tests and the five surfaces' tables. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 8.6
+            correction's above, 819b2f90: all six steps, 0 warnings, 0 errors, 2222 of 2222 tests ran with none failed in
+            15 minutes 25 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
+Queue:      as the 17.10 ruling above; items 5 and 6 of it ship together, and item 7, October's monthly run by hand, is
+            next.
+Carried:    nothing new.
