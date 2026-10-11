@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states that each part 18.3's four marks list between semicolons is held by an assertion of its own
+Corrects: the reader of a row's parts reads a run of three or more items a comma separates, so the reaction range, the long view, the ladder figure and the reward to risk bars, which list their parts between semicolons, each passed on one verdict, and the reading 18.5 owed found nine of their parts held by no assertion
+Was:
+> read-surface: ... no rule picking a section out by its name to give it a face or a size of its own |
+Now:
+> read-surface: ... no rule picking a section out by its name to give it a face or a size of its own; and from 18.5 each part the four marks of 18.3 list between semicolons is held by an assertion of its own: the reactions standing on a zero rule, the long view's closes as one line through every month with the invalidation and the year's high and low handed to it as rules, the ladder's roles as pills in their own hues beside their edges with its rows spaced evenly in price order, and the reward to risk bars starting at nought with the rule at one where a reward equals its risk and a bar past the axis's end held there and saying so |
+Why: each roster row says what its check asserts, and the reading's assertions extend read-surface's.
+
 ### 2026-10-11 - ARCHITECTURE.html - section 15.9 gains the page's layout as Figure 15.1, and the card's figure in section 15.18 is numbered 15.2
 Authorised by: The name page answers a buyer's questions in the order a buyer asks them
 Was:
