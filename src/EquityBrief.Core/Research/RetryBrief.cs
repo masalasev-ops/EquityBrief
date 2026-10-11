@@ -91,6 +91,7 @@ public static class RetryBrief
         ClaimRules.ShortVersionTooManyParagraphs => "Write three paragraphs and no more: what happened, what matters and what the plan does.",
         ClaimRules.ShortVersionLongParagraph => "Keep each paragraph to five sentences, choosing the claims that matter most, since the sections beneath draw every claim.",
         ClaimRules.NoClaims => "Write it from the claims listed.",
+        ClaimRules.TwoCasesLongSide => "Keep each case to six sentences, the last saying what it needs to see at the next report, choosing the points that matter most.",
         ClaimRules.GrowthAsAMultiple => "Write a growth listed under Facts as a rise in per cent, such as up 150%, and never as a number of times the earlier figure.",
         RiskFields.NotFields => "Answer with the JSON object the section asks for and nothing else.",
         RiskFields.FactNotListed => "Name a fact exactly as it is listed, or confirm the risk by an event of one kind.",

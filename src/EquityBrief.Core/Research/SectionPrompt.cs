@@ -185,9 +185,10 @@ public static class SectionPrompt
         // and a fact on one side only. No change figure is listed, so a size is given by the two listed figures
         // or in words against the base, since a difference the writer works out is a figure no fact holds.
         // see: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+        // see: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
         ["The two cases"] =
-            "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
-            + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
+            "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\", each of at most six sentences. "
+            + "Give each point its own sentence, choosing the points that matter most, and end each case with a sentence saying what it needs to see at the next report. "
             + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
             + "Make each point a reason, not a figure restated. Describe a change with its size in words against its base, so a small change reads as small, since its figures are drawn in their own regions, "
             + "and never a difference you work out yourself. Let each fact argue one side only: a fact used in the bull case does not appear in the bear case, closing sentences included. "

@@ -267,7 +267,8 @@ public partial class ReadSurface
         var cases = CasesDrawn(written.Value);
 
         Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
-        Assert.Equal([10, 8], [.. cases.Select(one => one.Rows.Count)]);
+        // Six a side, the most the section's ask allows each case.
+        Assert.Equal([6, 6], [.. cases.Select(one => one.Rows.Count)]);
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);

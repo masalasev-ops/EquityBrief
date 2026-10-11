@@ -1,5 +1,5 @@
 {
- "constructed": "Claude's answer to The short version, its first draft, in this pass as 18.4 asks it from the accepted claims, written by hand for a request no capture answers: three paragraphs of plain prose, as a request listing no document is answered, each sentence citing the claims it rests on and writing no figure the tiles show; its shell and usage those of research-call-fb65e403485478c57c0d3e080bc137da.json, the short version's first draft as the pass asked it before; no paid call was made, by the operator's ruling of 2026-10-09 (R7).",
+ "constructed": "claude-sonnet-5-5's answer to The headline, its first draft, in this pass as the bug hunt's corrections ask it from the accepted claims, written by hand for a request no capture answers: one sentence of plain prose carrying no figure, citing the claims it rests on; its shell and usage those of research-call-fb65e403485478c57c0d3e080bc137da.json; no paid call was made, by the operator's ruling of 2026-10-09 (R7) and the bug hunt's of 2026-10-11.",
  "date": "Wed, 30 Sep 2026 10:37:33 GMT",
  "response": {
   "model": "claude-sonnet-5-5",
@@ -14,7 +14,7 @@
    },
    {
     "type": "text",
-    "text": "The quarter was led by AI infrastructure, with wireline revenue passing wireless for the first time [C25]. That demand reached profit, as Communications Solutions Group operating income nearly doubled from a year earlier [C26]. Management raised its outlook and now expects fourth quarter revenue of $1.93 billion to $1.95 billion and non-GAAP earnings per share of $3.34 to $3.40 [C1] [C27].\n\nSupply is the constraint, since management said the supply chain will remain the governor of near-term revenue [C31]. The one-time tariff help that lifted this year's profitability will not repeat [C32]. Management's base case is orders only slightly up from the third quarter, and analysts pressed on whether demand is sustainable [C33] [C36]. The guidance sits well above analyst consensus, which raises the bar the next report has to clear [C28] [C17].\n\nThe plan buys in three tranches at the support bands beneath the price, each an equal share of a full position [C10]. It sells an equal share at each traded resistance band above but the top one, and holds the last share on a stop trailed under the price from there [C11]. In an uptrend each tranche's stop is raised to the higher of the band beneath it and the last swing low beneath it [C12]."
+    "text": "Demand for the company's test equipment is running ahead of what supply lets it ship, so the raised outlook rests on supply loosening [C31] [C27]."
    }
   ],
   "container": null,

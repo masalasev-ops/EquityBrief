@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-5fslxooy6ht6uflhdm16v5",
+  "object": "chat.completion",
+  "created": 1791718817,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The bull case rests on record revenue growth driven by AI infrastructure demand where wireline revenue exceeded wireless for the first time [D3]. Orders surged significantly year over year to exceed market expectations while commercial communications grew substantially within the Communications Solutions Group [D2]. Management raised its full-year outlook and fourth quarter guidance above analyst consensus indicating sustained momentum in aerospace, defense, and industrial markets [D1]. Operating margins expanded considerably compared to the prior year reflecting disciplined cost management and strong operating leverage [D3]. The company generated robust free cash flow providing financial flexibility for share repurchases while maintaining a healthy balance sheet with substantial cash on hand [D2]. Investors need to see that supply constraints do not materially limit revenue conversion in the next report.\n\nThe bear case rests on management's warning that the supply environment is less flexible than a year ago acting as a governor on near-term revenue conversion [D3]. One-time tariff impacts from the current fiscal year will not repeat creating a high comparison bar for future profitability [D4]. Analysts are probing whether demand durability can be sustained given the company's admission that it is currently far exceeding its ability to supply [D3]. The stock price has already rallied significantly following the earnings beat leaving little room for error if growth slows or guidance misses [D5]. Investors need to see evidence that supply chain deconstraining allows the company to convert its growing pipeline into revenue in the next report.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19522,
+    "completion_tokens": 287,
+    "total_tokens": 19809,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

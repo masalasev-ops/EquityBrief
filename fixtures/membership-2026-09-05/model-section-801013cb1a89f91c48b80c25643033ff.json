@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-mu2wcd9sudt0xwb4qbed4sc",
+  "object": "chat.completion",
+  "created": 1791718788,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The bull case rests on record third-quarter revenue and earnings that exceeded analyst expectations, driven by a substantial surge in orders linked to artificial intelligence infrastructure demand [D1][D2]. The Communications Solutions Group delivered its first billion-dollar quarter with wireline revenue surpassing wireless for the first time, highlighting a major shift toward AI data center investment [D3]. Management raised its fourth-quarter and full-year outlook significantly above consensus forecasts, citing broad-based growth across aerospace, defense, and industrial markets [D1][D3]. Operating margins expanded sharply compared to the prior year as disciplined cost management translated strong demand into improved financial performance [D2]. The company generated robust free cash flow while continuing its share repurchase program, providing financial flexibility to navigate near-term constraints [D2]. It needs to see that supply chain conditions improve enough to allow the conversion of its growing backlog into revenue in the next report.\n\nThe bear case rests on management's explicit warning that the supply environment is less flexible than a year ago and acts as a governor on near-term revenue conversion [D3]. One-time tariff impacts from the current fiscal year will not repeat, creating a high comparison bar for future profitability that could dampen earnings growth [D4]. The company faces potential nonlinear revenue recognition in the coming quarters as it manages external component supply dependencies despite strong ecosystem-wide demand [D4]. Analysts have raised concerns about the sustainability of $2 billion quarterly order levels given these tightening supply constraints [D3]. It needs to see that supply chain deconstraining accelerates faster than anticipated to sustain its elevated guidance in the next report.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19381,
+    "completion_tokens": 324,
+    "total_tokens": 19705,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

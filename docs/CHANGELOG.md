@@ -25,6 +25,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - claim-admissibility and fixture-expectations state what 18.5's bound on the two cases asserts
+Decision: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
+Was:
+> claim-admissibility: ... and words carrying a figure refused as the risks write none, worked by hand |
+> fixture-expectations: ... and the fixture's pass asks the months of its windows |
+Now:
+> claim-admissibility: ... and words carrying a figure refused as the risks write none, worked by hand; and from 18.5 each of the two cases holds at most six sentences, its closing one among them, a case of a seventh refused by that sentence's opening with each side named once, a draft whose sides cannot be told apart refused for that alone, and the retry told the bound, worked by hand |
+> fixture-expectations: ... and the fixture's pass asks the months of its windows; and from 18.5 each answer constructed with no paid call for a request the bound on the two cases or the 12.6 correction of 2026-10-11 moved is the answer it names, every case of more than six sentences cut to its first five and its closing one, every fact given words carrying no digit with a fraction's level as its per cent, or written by hand from the claims alone in a capture's shell as three paragraphs of at most five sentences or one sentence carrying no digit, each stated in advance |
+Why: each roster row says what its check asserts, and 18.5's tests extend both.
+
+### 2026-10-11 - docs/ARCHITECTURE.html - section 4's and the lane table's two cases rows hold each case to six sentences
+Decision: Each of the two cases holds at most six sentences, the last saying what it needs at the next report
+Was:
+> section 4, The two cases: The case for and the case against, a point to a row, each ending in what it needs to see at the next print and owning no figure of its own (see: ...) (see: Each figure of the facts file is owned by one region of the page, ...)
+> lane table, The two cases: ... the bear case as a second opening on "The bear case", a point to a sentence, each point specific to the company ...; ... a draft not opening on the bull case, or holding no sentence opening on the bear case, is refused
+Now:
+> section 4, The two cases: The case for and the case against, a point to a row, at most six rows each, each ending in what it needs to see at the next print and owning no figure of its own (see: ...) (see: Each of the two cases holds at most six sentences, the last saying what it needs at the next report) (see: Each figure of the facts file is owned by one region of the page, ...)
+> lane table, The two cases: ... the bear case as a second opening on "The bear case", each of at most six sentences, a point to a sentence, the points that matter most chosen, each point specific to the company ...; ... a draft not opening on the bull case, or holding no sentence opening on the bear case, is refused, and so is a case of a seventh sentence, the retry told the bound
+Why: CVX's two cases of 2026-10-11 ran fourteen sentences for and fifteen against, and the operator ruled six a side.
+
 ### 2026-10-11 - docs/ARCHITECTURE.html - the risks' lane row asks a fact's words and composes a fact by them and an event after its kind
 Decision: A risk's fact is given in the words a reader reads it by beside its listing, and an event is named after its kind
 Was:
