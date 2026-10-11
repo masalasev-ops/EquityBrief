@@ -848,8 +848,9 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .headline .big{font-size:56px}
- .mast .wrap{grid-template-columns:1fr}
+ .mast .wrap{grid-template-columns:minmax(0,1fr)}
  .m-right{flex-wrap:wrap;gap:4px 14px}
+ .m-nav{flex-wrap:wrap;gap:0 14px}
  .m-search{flex-basis:100%}
  .m-search input{width:100%}
  .card-line,.card-figures{grid-template-columns:1fr}

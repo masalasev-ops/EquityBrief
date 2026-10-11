@@ -42667,3 +42667,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verifies the 18.4 correction above.
 Queue:      as the 18.4 correction above.
 Carried:    nothing new.
+
+### 18.1 - correction: a phone's masthead is one column no wider than the screen, its row of links wrapping, where it ran past the screen's right edge   2026-10-11
+
+Corrects:   the narrow layout 18.1 set, whose one column could not be narrower than its widest item, the row of links,
+            which did not wrap, so at 390 pixels the masthead's identity line and its as-of line ran past the screen's
+            right edge and were cut.
+Found:      reading CVX's page through a 390-pixel frame for 18.5 on 2026-10-11.
+Built:      the narrow column shrinks to the screen and the links wrap onto as many lines as they need; the wide layout is
+            unchanged.
+Tests:      one more: the phone's layout states both rules, no rule sets the old column, and the wide layout keeps its
+            links on one line.
+Claims:     none more; the roster's read-surface row says so.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the old column restored. K6: predicted red at the new test. Result: red, the
+            narrow layout naming no shrinking column; reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 18.4 correction above.
+Queue:      as the 18.4 correction above.
+Carried:    nothing new.

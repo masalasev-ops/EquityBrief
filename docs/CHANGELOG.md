@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 18.1 correction of the day asserts of a phone's masthead
+Corrects: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity line and its as-of line cut; found reading CVX's page through a 390-pixel frame for 18.5
+Was:
+> read-surface: ... and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike |
+Now:
+> read-surface: ... and from the 12.6 correction of 2026-10-11 an article's title sent with its characters written as entities is drawn as those characters escaped once, in the News region and in a move's cause alike; and from the 18.1 correction of 2026-10-11 a phone's masthead is one column no wider than the screen, its row of links wrapping |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - .claude/rules/checks.md - read-surface states what the 12.6 correction of the day asserts of an article's title
 Corrects: CVX's page drew "ASML &amp; Chevron" for a title the provider sent with its ampersand written as an entity; found reading the page for 18.5
 Was:
