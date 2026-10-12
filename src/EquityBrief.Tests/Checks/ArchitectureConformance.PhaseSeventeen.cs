@@ -57,8 +57,9 @@ public partial class ArchitectureConformance
 
     // The rows the document gains after phase 17's report, named beside the pair and never counted in it: the 3.1
     // correction's chart averages, the 16.3 correction's dividend step, phase 18's rows as each of its checkpoints lands
-    // them, which its own report counts, and the 17.10 correction's checklist item on the newest monthly run.
-    internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims, .. PhaseEighteenRows, .. Reading.ReadSurface.MonthlyWorryRows];
+    // them, which its own report counts, the 17.10 correction's checklist item on the newest monthly run, and the rows
+    // after phase 18's report.
+    internal static string[] AfterPhaseSeventeen => [.. NightlyRun.ChartAverageRows, .. FixtureExpectations.DividendStepClaims, .. PhaseEighteenRows, .. Reading.ReadSurface.MonthlyWorryRows, .. AfterPhaseEighteen];
 
     // The rows phase 18 lands, by checkpoint: 18.1's quote job, its two stores, the day's cap and its three failures, and
     // the name page's parts, the range bar, the Run page's quote runs and the interval; 18.2's dividend keeper and

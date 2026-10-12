@@ -16,7 +16,8 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     // The levels every swing family's rule on an index states beside its family's own dials, each nought where the
     // level is off: the dollar volume floor's multiple, the lowest close, the quality, the sessions held where the
     // family's own cap is not, the window the industry's fall is read over, the index fund against SPY's window, the
-    // credit fund above its average and rising, and the S&P 500's breadth read in place of the index's own.
+    // credit fund above its average and rising, and the breadth the market check reads: the index's own, the S&P 500's
+    // in its place, or none.
     public const string FloorsParameter = "floors";
     public const string LowestCloseParameter = "lowestClose";
     public const string QualityParameter = "quality";
@@ -26,6 +27,13 @@ public abstract class IndexRuleCandidate(string index) : FamilyRuleEvaluator
     public const string CreditAverageParameter = "creditAverage";
     public const string CreditChangeParameter = "creditChange";
     public const string LargeBreadthParameter = "largeBreadth";
+
+    // The breadth level's third value, a rule reading no market check at all, and the short words naming it: the one
+    // value the registration form admits that no sweep read, for a variant beside an index's provisional rule.
+    // see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+    public const double NoMarketCheck = 2;
+
+    public const string MarketCheckOff = "market check off";
 
     public static IReadOnlyList<string> Levels { get; } =
     [

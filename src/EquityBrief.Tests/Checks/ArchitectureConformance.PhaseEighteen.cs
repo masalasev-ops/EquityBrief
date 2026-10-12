@@ -37,6 +37,10 @@ public partial class ArchitectureConformance
         ("18.5", [], []),
     ];
 
+    // The rows the document gains after phase 18's report, named beside the pair and never counted in it: 19.1's part of
+    // the card's rule on the S&P 400's and 600's variant reading no market check, which phase 19's own report counts.
+    internal static string[] AfterPhaseEighteen => [.. Reading.ReadSurface.MarketOffRows];
+
     // How many more rows each part of phase 18 landed than its count in the plan, a negative figure where it landed fewer,
     // and what it landed. The corrections, counted one, landed the chart averages' step, catalogue and matrix rows, store
     // and the chart's part, the dividend steps' row and the 17.10 correction's checklist item on the newest monthly run,
@@ -90,9 +94,9 @@ public partial class ArchitectureConformance
             counted.Select((count, at) => count + PhaseEighteenMore[at].More),
             landed.Select(part => part.Added.Length - part.Taken.Length));
 
-        // The rows the lists the rest of the harness reads name, the same rows: what phase 17's report names after it and
-        // what it takes out.
-        Assert.Equal(AfterPhaseSeventeen.Order(StringComparer.Ordinal), landed.SelectMany(part => part.Added).Order(StringComparer.Ordinal));
+        // The rows the lists the rest of the harness reads name, the same rows: what phase 17's report names after it, less
+        // what phase 18's own report names after it, and what it takes out.
+        Assert.Equal(AfterPhaseSeventeen.Except(AfterPhaseEighteen, StringComparer.Ordinal).Order(StringComparer.Ordinal), landed.SelectMany(part => part.Added).Order(StringComparer.Ordinal));
         Assert.Equal(TakenOutAfterPhaseSeventeen.Order(StringComparer.Ordinal), landed.SelectMany(part => part.Taken).Order(StringComparer.Ordinal));
 
         var rows = landed.SelectMany(part => part.Added).ToArray();
@@ -104,13 +108,15 @@ public partial class ArchitectureConformance
         Assert.Equal(high + 2, actual);
 
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood before
-        // it, none out of scope and none unexamined.
+        // it and the rows after its report, none out of scope and none unexamined.
         var report = Report();
+        var total = actual + AfterPhaseEighteen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(AfterPhaseEighteen, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.Equal(
-            (actual, 0, 0, actual),
+            (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.

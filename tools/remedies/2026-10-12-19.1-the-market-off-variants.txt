@@ -1,0 +1,14 @@
+# The remedy of 19.1 (the S&P 400's and 600's market-off variants), as its PROGRESS entry prints it: the index rules read a
+# third breadth value, no market check, which moves every S&P 400 and 600 rule's version, so the rules standing on those
+# indices, the S&P 600's two heavyweights books, would be skipped and named as failures on the night until they are
+# registered again. Registering the moved rules again names a heavyweights rule as not replayed and restarts it; the S&P
+# 500's rules move no version and are not touched. Then a variant reading no market check is registered beside the
+# provisional pullback, breakout and drift on each index, the pullback's own market dial off with it. No migration, no
+# request to the provider and no model call. Run from main after the merge and before the night, when no night is running.
+register --moved --evidence "19.1: the index rules read a third breadth value, no market check, so every S&P 400 and 600 rule's version moves; each standing rule is registered again before the market-off variants are"
+register --index-variants pullback --index MID --variants "largeBreadth=2,market=0"
+register --index-variants breakout --index MID --variants "largeBreadth=2"
+register --index-variants drift --index MID --variants "largeBreadth=2"
+register --index-variants pullback --index SML --variants "largeBreadth=2,market=0"
+register --index-variants breakout --index SML --variants "largeBreadth=2"
+register --index-variants drift --index SML --variants "largeBreadth=2"

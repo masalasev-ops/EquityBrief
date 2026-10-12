@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - the card's rule row and section 17's market gate row name the S&P 400's and 600's variants reading no market check
+Decision: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+Was:
+> 15.7, a family's card's rule: ... the closing line that the rule reads its other gates that night as on any other and lists five at most; on the S&amp;P 400 or 600 before a freeze the provisional rule alone with the line that no variant is registered before its freeze (see: ...) (see: ...) (see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches)
+> 17, market gate, why: half the index above its own long average is a market in which a pullback is more often bought than sold; a night below it lists nobody and says so
+Now:
+> 15.7, a family's card's rule: ... lists five at most; on the S&amp;P 400 or 600 where no variant stands before a freeze the provisional rule alone with the line that no variant is registered before its freeze; on the S&amp;P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off (see: ...) (see: An S&amp;P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule)
+> 17, market gate, why: ... a night below it lists nobody and says so; the S&amp;P 400's and 600's swing lists close on their own breadth at the floor the live filter reads, copied from the S&amp;P 500 and never tested on either index, and beside each family's provisional rule there a variant reads no market check, so its own list shows what the check costs (see: ...)
+Why: the operator ruled on 2026-10-12 with phase 19's plan that a variant reading no market check stands beside each swing family's provisional rule on both indices, so the card's line that none is registered holds only where none stands.
+
+### 2026-10-12 - docs/RUNBOOK.md - the index forms admit the breadth's third value, no market check, and 19.1's remedy registers six variants
+Decision: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+Was:
+> A family's freeze on the S&P 400 or 600 ... Every value is one its index's sweep read: the family's dials ...
+Now:
+> A family's freeze on the S&P 400 or 600 ... Every value is one its index's sweep read, or the breadth's third value below: the family's dials ...; and after the variants' paragraph, a paragraph on a swing rule reading no market check, `largeBreadth=2` with a pullback's `market=0`, and the remedy's three lines on each index.
+Why: the same; the form admits the value no sweep read, and the runbook said every value was one a sweep read.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations and read-surface state 19.1's variants reading no market check
+Decision: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+Was:
+> fixture-expectations: ... one with no ridge proposal of its kind beside it put to no one |
+> read-surface: ... and listing none where no stored model carries the key |
+Now:
+> fixture-expectations: ... put to no one; and from 19.1 an S&P 400 or 600 rule reading no market check listing on a night its index's breadth closes the provisional rule's list, worked by hand over a constructed night, ... its words ending on the market check off |
+> read-surface: ... where no stored model carries the key; and from 19.1 the S&P 400's selector listing a variant reading no market check after the provisional rule by its registration's words with no line that no variant is registered, and chosen in the link marking the clause naming the check off |
+Why: each roster row says what its check asserts, and 19.1's tests extend both.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - Figure 13.7, its description and its key apply an approved S&P 500 change by the night
 Corrects: 17.13 and 17.14 wrote section 13.16's approval paragraph and section 14's swing filter step for an S&P 500 change applied by the night, and left Figure 13.7 drawing it as waiting on a ruling; found reading the guide against 17.11 to 17.15 at the operator's ask.
 Was:
