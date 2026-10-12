@@ -43315,3 +43315,41 @@ Queue:      done, items 1 to 6 and item 7's run, scheduler and screens; in progr
             correction; next, item 8, the rulings b to e, and 18.5's report after it.
 Carried:    the first scheduled monthly run, read on 2026-11-07. The screens of the S&P 500's Tonight read again at 390
             pixels once main's build carrying the 17.2 correction serves the page.
+
+### 17.11 ruling - the owed decisions of the queue of 2026-10-11 built inside phase 17 after its report, the S&P 600's heavyweights' two books first as 17.11   2026-10-12
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator. On 2026-10-11, rulings (b) to (e) of the queue, as the 17.10 ruling above records them. On
+            2026-10-11, in the session building 18.5, asked "The phase 18 report (18.5) needs the checkout on a branch
+            for about two hours after tonight's CVX and PEP screenshots, and the other session plans to take it next for
+            item 8 of your queue (rulings b to e). Which goes first?", they chose "Item 8 first", 18.5's report waiting
+            until item 8 merges. On 2026-10-12, told the tester's result below and what running both books takes:
+            "Build it, and the card says beside each book that it did not pass the year-by-year test (adjusted p 0.60),
+            so neither reads as better than the live setting." Told that the twelve-month book needs one close more
+            than the night's year holds, they ruled for (d): "narrow the hard rule for the valuation reading alone: it
+            reads the prices before the store's year from the pulled history at the store's scale, as the chart
+            averages step does, held as it stood on each session by the point-in-time check. Record the decision and
+            the rule's prior wording in the changelog." Asked again for the book, they chose that it reads 251 sessions
+            back. The words are kept in `prompts/`.
+Tested:     the tester's run of 2026-10-09 on the S&P 600, loop-test-SML-20261009T155851Z, read each design's six
+            settings as a procedure searched on each fold's learning years. Design (a) chose the starting setting for
+            2022 and 2026 and the profit gate with the interest cover for 2023, 2024 and 2025, three of the five folds
+            agreeing with its final choice, better than the starting setting in 2 of 4 complete years, at an adjusted p
+            of 0.5999 against 0.0042: not passed. Design (b) chose twelve months' strength skipping the latest for 2022
+            to 2024 and nothing after, better in 1 of 4, at an adjusted p of 1.0000. October's run of 2026-10-11 read
+            the same. The two settings 17.1's search passed in-sample are both design (a)'s.
+Plan:       `BUILD_PLAN.md` gains 17.11 after the report, with its done condition: the S&P 600's heavyweights' two
+            books beside the starting setting. The valuation reading and the S&P 500's approvals with the FastTree
+            challenger follow as 17.12 and 17.13, each planned in a ruling of its own before it is built. Section 20's
+            row names 17.0 to 17.11. The decision is written (see: An index family's variants may stand registered
+            before its freeze, its provisional rule staying the live one), narrowing the S&P 400's and 600's
+            heavyweights' book decision, which stands. 17.11 adds no row of a table the harness reads, said beside
+            phase 17's pair.
+Read:       the S&P 500's Tonight at 390 pixels once 5152 served main's build of 5b4d81ad from 01:43:56 UTC, 390 wide
+            with the breakout's Variant 1 chosen and without it and nothing past the screen's edge, as the 17.10 entry
+            above carried.
+Queue:      done, items 1 to 7 of the queue of 2026-10-11, PRs 434 to 438; in progress, item 8 as 17.11 to 17.13, 17.11
+            first; next, 18.5's report by the session building it once item 8 merges, as the operator chose, then the
+            sign-offs of phases 15 to 18.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.11 below.
+Carried:    17.11, then 17.12 and 17.13 once each is planned.

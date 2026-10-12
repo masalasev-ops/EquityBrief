@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.11
+Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+Was:
+> the build plan's phase 17 checkpoints, 17.0 to 17.10
+Now:
+> the build plan's phase 17 checkpoints, 17.0 to 17.11
+Why: the operator's rulings of 2026-10-11 and 2026-10-12 are built inside phase 17 after its report, the S&P 600's heavyweights' two books first as 17.11.
+
 ### 2026-10-12 - .claude/rules/checks.md - read-surface states that no select is wider than what holds it
 Corrects: on a phone the S&P 500's Tonight was laid out 1,229 pixels wide at 390, its cards' rule pickers as wide as their longest choice, found reading October's monthly run's screenshots back at 390 pixels.
 Was:
