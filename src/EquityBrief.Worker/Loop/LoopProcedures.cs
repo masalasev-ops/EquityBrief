@@ -57,7 +57,7 @@ public sealed record LoopProposalRead(
     public string? Finding { get; init; }
 
     // The change in the form an approval applies it, none where the procedure chose no setting.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     public LoopChange? Change { get; init; }
 
     // The rule today's units over the test years as each entered and its edge, the live alarm's reference.

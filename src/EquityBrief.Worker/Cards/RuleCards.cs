@@ -464,7 +464,7 @@ public sealed class RuleCards : IComponent
 
         // The live rule's settings where one stands, the setting an approval stored for the provisional breakout where one
         // did, and the provisional setting otherwise.
-        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        // see: An approved change is applied by the night's own build on the index it was approved on alone
         var stored = live is null ? await IndexFamilies.StoredSettingsAsync(connection, index, cancellation, transaction) : null;
         var settings = live is not null ? BreakoutCandidate.SettingsOf(CandidateEvaluator.Read(live.Parameters))
             : stored?.GetValueOrDefault(BreakoutRule.Name)?.Places is { } places ? BreakoutAt(places)

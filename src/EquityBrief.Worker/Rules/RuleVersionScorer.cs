@@ -44,7 +44,7 @@ public sealed record VersionScoreOutcome(
 // already written under the window were computed against the old rule and
 // tonight's would be computed against the new one, and a record holding both is a
 // record of neither.
-// see: Adding a candidate later restarts the clock
+// see: A registration restarts only the registered rule's own record
 public sealed class RuleVersionScorer : IComponent
 {
     public static ComponentAccess Access => new(

@@ -593,7 +593,7 @@ public static class SchemaMigrations
     // have done is the point of scoring counterfactually. What it may not do is
     // count, so a score for a session on or before the New York date its window
     // opened on is `in_sample` and reaches no record and no verdict.
-    // see: Adding a candidate later restarts the clock
+    // see: A registration restarts only the registered rule's own record
     const string CreateRuleVersions = @"
         CREATE TABLE rule_version (
             rule             TEXT NOT NULL,
@@ -709,7 +709,58 @@ public static class SchemaMigrations
         new Migration(86, "add reported_quarter's gross profit and cash flow lines and company's mean rating and target, and create estimate_trend, dividend_event and treasury_yield", CreateReportParts),
         new Migration(87, "create earnings_move and long_view", CreatePageHistory),
         new Migration(88, "add setup.value_place", AddValuePlace),
+        new Migration(89, "add family_result.exit and family_result.risk_moves", AddFamilyResultExit),
+        new Migration(90, "add family_pick.exit", AddFamilyPickExit),
+        new Migration(91, "rebuild loop_model with its kind", LoopModelKinds),
     ];
+
+    // The learned score's models by their kind: the ridge score's, every row stored before 17.15, and from 17.15 its
+    // challenger's trees, fitted on the same rows of the same fold and stored beside it. A rebuild rather than an alter,
+    // because the kind joins the primary key, which SQLite cannot change in place; every row is copied across as the
+    // ridge score's before the old table goes.
+    // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+    const string LoopModelKinds = @"
+        CREATE TABLE loop_model_rebuilt (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            kind            TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            learned_from    TEXT    NOT NULL,
+            learned_before  TEXT    NOT NULL,
+            setups          INTEGER NOT NULL,
+            readings        TEXT    NOT NULL,
+            parameters      TEXT    NOT NULL,
+            hash            TEXT    NOT NULL,
+            pin             TEXT    NOT NULL,
+            words           TEXT    NOT NULL,
+            PRIMARY KEY (run_id, family, kind, year)
+        ) STRICT;
+
+        INSERT INTO loop_model_rebuilt (run_id, index_code, family, kind, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words)
+        SELECT run_id, index_code, family, 'ridge', year, learned_from, learned_before, setups, readings, parameters, hash, pin, words FROM loop_model;
+
+        DROP TABLE loop_model;
+
+        ALTER TABLE loop_model_rebuilt RENAME TO loop_model;
+    ";
+
+    // The exit of the menu an S&P 500 pullback pick is walked under where an approval stored one for the swing filter's
+    // page, its trade scored under a horizon of its own so the swing filter's rows keep their plan's own outcome for every
+    // candidate that reads them. A pick listed before the change, or under the plan's own exit, holds none.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    const string AddFamilyPickExit = @"
+        ALTER TABLE family_pick ADD COLUMN exit INTEGER;
+    ";
+
+    // The exit of the menu an S&P 500 breakout's or drift's pick is walked under where an approval stored one, and its
+    // stop's distance in the night's typical moves, which a trail of the menu is counted in. A row stored before the
+    // change, or under the family's own exit, holds neither.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    const string AddFamilyResultExit = @"
+        ALTER TABLE family_result ADD COLUMN exit INTEGER;
+        ALTER TABLE family_result ADD COLUMN risk_moves REAL;
+    ";
 
     // The setup ledger's valuation reading: a stock's earnings over its value placed among the same figure at the ends of
     // its own twelve quarters, a share, none where a part of it is missing. The rows standing keep none until the
@@ -864,7 +915,7 @@ public static class SchemaMigrations
     // it holds its edge and read against the reference of the tester run it names; the exit an index page's trade is
     // walked under with its stop's distance in typical moves; and the change a card's rule stands at where an approval
     // set one.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
     const string CreateLoopApprovals = @"
         ALTER TABLE loop_proposal ADD COLUMN change TEXT;
@@ -2112,10 +2163,10 @@ public static class SchemaMigrations
     // with their reasons and values, and the notes on what the night could not count.
     //
     // And the filter's versions: each a set of the settings the gates read, opened by the operator's
-    // acceptance of a shape proposal and closed by the next. None is open until the first is accepted,
+    // ruled settings or by an approved move of a shape proposal and closed by the next. None is open until the first,
     // and the filter reads section 17's proposed values until then.
     // see: Every computed table's writer is its own deleter
-    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     const string CreateGateResults = @"
         CREATE TABLE gate_result (
             ticker                 TEXT    NOT NULL,
@@ -2157,7 +2208,7 @@ public static class SchemaMigrations
     // A shape proposal the proposer wrote at a trigger, and the decision on it. The proposer inserts and
     // never decides; the operator's command writes the decision and nothing about the proposal itself.
     // Kept whole, since a rejected proposal is as much the record as an accepted one.
-    // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     const string CreateShapeProposal = @"
         CREATE TABLE shape_proposal (
             id               INTEGER PRIMARY KEY,

@@ -13,18 +13,18 @@ namespace EquityBrief.Worker.Filter;
 
 public sealed record ShapeOutcome(string Outcome, string? Version, string Detail);
 
-// The `shape` verb: a shape proposal accepted or rejected, or the settings the operator ruled opened
-// as a version. The one writer of the filter's versions and of a proposal's decision, and never a
-// night step, because an acceptance is a decision a person takes: a filter that moved its own
-// thresholds would be tuning itself toward whatever it last saw.
+// The `shape` verb: a shape proposal rejected, or the settings the operator ruled opened as a version,
+// and the one writer of the filter's versions and of a proposal's decision. It accepts no proposal: a
+// move is opened only by the night's apply step once the operator has approved it on the Loop page
+// after the tester tested it, because a filter that moved its own thresholds would be tuning itself
+// toward whatever it last saw.
 //
-// An acceptance closes the open version and opens the next at one instant. Where the live filter's
-// candidate stands registered, the same write retires it and registers the accepted settings through
-// the registrar, since the settings a candidate runs with never change while it runs, and the bound
-// on what that costs is held by `SwingFamily`. A rejection writes its decision and reason on the
-// proposal's row and nothing else. Every attempt, a refusal included, is one row on the run log.
-// see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
-// see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+// Opening a version closes the open one and opens the next at one instant. Where the live filter's
+// candidate stands registered, the same write retires it and registers the new settings through the
+// registrar, since the settings a candidate runs with never change while it runs, and the blocks it
+// restarts are stated on the row. A rejection writes its decision and reason on the proposal's row
+// and nothing else. Every attempt, a refusal included, is one row on the run log.
+// see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
 public sealed class ShapeCommand : IComponent
 {
     public static ComponentAccess Access => new(
@@ -57,6 +57,10 @@ public sealed class ShapeCommand : IComponent
     // The words every retirement a rule correction writes opens with, which the bound on acceptances
     // does not count.
     public const string CorrectionEvidence = "a rule correction opening filter version";
+
+    // Why the command accepts no shape proposal.
+    public const string NoAcceptance =
+        "a shape proposal is no longer accepted here: each of its moves is put to you on the Loop page once the tester has tested it on years it never saw, and the night opens the version a move you approve names";
 
     public const string Frozen = "frozen";
 
@@ -215,11 +219,12 @@ public sealed class ShapeCommand : IComponent
                 : await RefuseAsync(runId, $"'{Given("--reject")}' is not a proposal's number.");
         }
 
+        // From 17.14 a shape proposal's moves are put to the operator on the Loop page, each tested on years it never saw,
+        // and the night opens the version an approved one names, so the command accepts no proposal.
+        // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
         if (form.Flag == "--accept")
         {
-            return Id(Given("--accept")!) is { } accepted
-                ? await AcceptProposalAsync(accepted, restarts, runId)
-                : await RefuseAsync(runId, $"'{Given("--accept")}' is not a proposal's number.");
+            return await RefuseAsync(runId, NoAcceptance);
         }
 
         if (form.Flag == "--rule-correction")
@@ -403,39 +408,40 @@ public sealed class ShapeCommand : IComponent
         return new ShapeOutcome(Corrected, next, said);
     }
 
-    // A proposal accepted: its settings opened as the next version, the proposal marked with it.
-    public async Task<ShapeOutcome> AcceptProposalAsync(long id, int? restarts, string runId, CancellationToken cancellation = default)
+    // A shape move the operator approved on the Loop page, applied by the night's own build: the open version's settings
+    // with the move made on them opened as the next version and the live filter registered again under it, as an
+    // acceptance does, stating the non-empty blocks its record has run, which the Loop page draws beside the move; the
+    // apply step's own write beside them in the same transaction, handed the version opened.
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
+    public async Task<ShapeOutcome> ApplyTheMoveAsync(
+        IReadOnlyDictionary<string, double> move,
+        string evidence,
+        Func<SqliteConnection, SqliteTransaction, string, CancellationToken, Task> alongside,
+        string runId,
+        CancellationToken cancellation = default)
     {
         await using var connection = await OpenAsync(cancellation);
 
-        var open = await OpenVersionAsync(connection, cancellation);
-
-        if (await ProposalAsync(connection, id, cancellation) is not { } proposal)
+        if (await OpenVersionAsync(connection, cancellation) is not { } open)
         {
-            return await RefuseAsync(runId, FormattableString.Invariant($"no shape proposal {id} is stored."));
+            return await RefuseAsync(runId, "no filter version is open, so a shape move has no settings to move.");
         }
 
-        if (proposal.Decision is { } decided)
+        FilterSettings settings;
+
+        try
         {
-            return await RefuseAsync(runId, FormattableString.Invariant($"shape proposal {id} was {decided} already, and a decision is never written twice."));
+            settings = EquityBrief.Core.Loop.LoopChange.Moved(open.Settings, move);
+        }
+        catch (ArgumentException unread)
+        {
+            return await RefuseAsync(runId, unread.Message);
         }
 
-        if (proposal.Version != (open?.Version ?? ShapeClock.NoVersion))
-        {
-            return await RefuseAsync(
-                runId,
-                FormattableString.Invariant($"shape proposal {id} was written for filter version {proposal.Version}, and {open?.Version ?? "no version"} is open now, so it proposes a move from settings no longer held."));
-        }
+        var live = SwingFamily.Standing(await new CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), clock.UtcNow);
+        var blocks = live is null ? 0 : await LiveBlocksAsync(connection, live.Candidate, cancellation);
 
-        return await AcceptAsync(
-            connection,
-            open,
-            proposal.Settings,
-            FormattableString.Invariant($"shape proposal {id}, over {proposal.Ordinary} ordinary nights under filter version {proposal.Version}"),
-            id,
-            restarts,
-            runId,
-            cancellation);
+        return await AcceptAsync(connection, open, settings, evidence, null, blocks, runId, cancellation, alongside);
     }
 
     // Settings the operator ruled, opened as the next version: the open version's settings, or
@@ -496,7 +502,8 @@ public sealed class ShapeCommand : IComponent
         long? proposal,
         int? restarts,
         string runId,
-        CancellationToken cancellation)
+        CancellationToken cancellation,
+        Func<SqliteConnection, SqliteTransaction, string, CancellationToken, Task>? alongside = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -539,6 +546,11 @@ public sealed class ShapeCommand : IComponent
             if (proposal is { } id)
             {
                 await DecideAsync(writing, transaction, id, Accepted, null, next, startedAt, token);
+            }
+
+            if (alongside is not null)
+            {
+                await alongside(writing, transaction, next, token);
             }
         }
 

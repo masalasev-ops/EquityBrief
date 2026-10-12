@@ -79,6 +79,14 @@ public sealed class SweepIdeasRunner(IClock clock, string databaseFile, string d
     // for a series the store does not hold.
     public static (IdeaReplay Replay, SweepIdeasRun Run) Read(SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null)
     {
+        var (replay, run, _) = ReadWithCandidates(inputs, market, progress);
+
+        return (replay, run);
+    }
+
+    // The same, with the candidates the replay picks from, which a walk at a setting off the sweep's grid reads again.
+    public static (IdeaReplay Replay, SweepIdeasRun Run, IReadOnlyList<SweepCandidate> Candidates) ReadWithCandidates(SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null)
+    {
         var calendar = inputs.Sessions;
         var sessionAt = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
         var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
@@ -106,6 +114,6 @@ public sealed class SweepIdeasRunner(IClock clock, string databaseFile, string d
         var switches = SweepIdeas.Switches(breadth, highs, lows, index, vix);
         var replay = new IdeaReplay(series, candidates, members, switches, nights);
 
-        return (replay, new SweepIdeasRun(calendar[firstScored], inputs.Through, inputs.Names.Count, nights, candidates.Length, replay.Picks, SweepIdeas.LeftOut(market), default, default));
+        return (replay, new SweepIdeasRun(calendar[firstScored], inputs.Through, inputs.Names.Count, nights, candidates.Length, replay.Picks, SweepIdeas.LeftOut(market), default, default), candidates);
     }
 }

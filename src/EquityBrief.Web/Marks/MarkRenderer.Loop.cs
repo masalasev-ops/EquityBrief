@@ -131,7 +131,7 @@ public sealed partial class MarkRenderer
     // The operator's word on one proposal: what was decided and what the apply step did with it; for a proposal of the
     // index's newest run that passed and states a change, the Approve and Decline presses, or why none is offered; and
     // a proposal declined before over fewer blocks put again with the line that says so.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
     public string LoopDecision(string index, LoopRunRow run, LoopProposalRow proposal, LoopDecided decided, LoopProposalRow? put = null)
     {
@@ -410,7 +410,7 @@ public sealed partial class MarkRenderer
         html.Append(proposal.Detectable is { } detectable
             ? Formatted($"<p class=\"loop-power\" data-detectable=\"{detectable.ToString("R", Invariant)}\">At this bar the gate detects a difference of about {LoopFigure(proposal.Unit, detectable)} {(book ? "a month" : "a trade")} four times in five, read from the blocks' own scatter; a smaller true difference passes less often than that.</p>")
             : "<p class=\"loop-power degraded\" data-detectable=\"none\">The blocks are too few for the gate's power to be read.</p>");
-        html.Append(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)
+        html.Append(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) || proposal.Proposal.StartsWith(TreeScore.Proposal, StringComparison.Ordinal)
             ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds held enough finished setups to fit the score on their own years before.</p>")
             : Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds chose {(book ? "the same setting as" : "within a grid step of")} the proposal on their own years before.</p>"));
         html.Append("</div>");

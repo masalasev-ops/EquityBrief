@@ -72,6 +72,7 @@ public sealed class DecisionCards : IComponent
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -192,7 +193,7 @@ public sealed class DecisionCards : IComponent
 
     const string ScoreOf = @"
         SELECT m.parameters FROM loop_model m JOIN loop_run r ON r.run_id = m.run_id
-        WHERE m.run_id = $run AND m.family = $family AND m.learned_before > r.through;
+        WHERE m.run_id = $run AND m.family = $family AND m.kind = 'ridge' AND m.learned_before > r.through;
     ";
 
     const string ScorePassed = @"
@@ -318,6 +319,16 @@ public sealed class DecisionCards : IComponent
         var scores = new IndexScores();
         var written = 0;
 
+        // On the S&P 500, the change an approval stored for the breakout or the drift, which its card names in the record's
+        // place as an S&P 400's or 600's does.
+        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        var largeSettings = large ? await IndexFamilies.StoredSettingsAsync(connection, index, cancellation, transaction) : null;
+
+        string? Approved(string family) =>
+            large
+                ? largeSettings!.TryGetValue(family, out var stood) && stood.Hooks.Count > 0 ? stood.Words() : null
+                : ApprovedOf(indexSettings, family);
+
         foreach (var pick in picks)
         {
             var plan = large
@@ -328,7 +339,7 @@ public sealed class DecisionCards : IComponent
                 : new MarketReading(breadth, floor, true);
             var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, large ? null : ApprovedOf(indexSettings, pick.Family));
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family));
         }
 
         foreach (var pick in indexPicks)
@@ -368,7 +379,7 @@ public sealed class DecisionCards : IComponent
 
     // A rule standing at a change an approval set is not the rule its stored record replayed, so its card reads no
     // record and carries the change's words in its place.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     async Task<int> WriteAsync(SqliteConnection connection, SqliteTransaction transaction, string index, DateOnly night, string family, string ticker, int place, Plan plan, MarketReading market, IReadOnlyDictionary<string, string> sectors, IReadOnlyList<SectorPlace> ranks, int? bookHoldings, CancellationToken cancellation, ScorePart? score = null, string? approved = null)
     {
         var named = NameOf(index);

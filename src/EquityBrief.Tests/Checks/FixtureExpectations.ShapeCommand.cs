@@ -137,24 +137,21 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, (await ShapeVerb(store, RuledAt, "--settings", "strengthFloor=0.6", "--evidence", "the ruling")).Code);
         await RegisterLive(store, LiveRegisteredAt);
-        StoreProposal(store, "1", FilterSettings.Proposed with { StrengthFloor = 0.6, DryUpCeiling = 0.85 });
 
-        // A proposal written for another version proposes a move from settings no longer held.
-        StoreProposal(store, "0", FilterSettings.Proposed with { StrengthFloor = 0.9 });
+        // From 17.14 a shape move approved on the Loop page is the acceptance, the night opening the version it names. The
+        // first while a live candidate stands costs the restart alone.
+        // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
+        var opened = await new ShapeCommand(FixedClock.At(AcceptedAt.AddMinutes(1), SessionZones.UnitedStates), store.DatabaseFile)
+            .ApplyTheMoveAsync(
+                new Dictionary<string, double>(StringComparer.Ordinal) { [ShapeProposals.DryUpCeiling] = 0.85 },
+                "the move approved on the Loop page",
+                (_, _, _, _) => Task.CompletedTask,
+                "loop-apply-test");
 
-        var before = ShapeTables(store);
+        Assert.Equal(ShapeCommand.Accepted, opened.Outcome);
+        Assert.StartsWith("filter version 2 opened, closing 1, on the evidence: the move approved on the Loop page; retired 'the live swing filter, version 1' as 2 and registered 'the live swing filter, version 2' as 3 at one instant", opened.Detail, StringComparison.Ordinal);
 
-        Assert.Equal(1, (await ShapeVerb(store, AcceptedAt, "--accept", "2")).Code);
-        Assert.Equal(before, ShapeTables(store));
-
-        // The first acceptance while a live candidate stands states no count: it costs the restart alone.
-        var (code, said) = await ShapeVerb(store, AcceptedAt.AddMinutes(1), "--accept", "1");
-
-        Assert.Equal(0, code);
-        Assert.StartsWith("shape: filter version 2 opened, closing 1, on the evidence: shape proposal 1, over 60 ordinary nights under filter version 1; retired 'the live swing filter, version 1' as 2 and registered 'the live swing filter, version 2' as 3 at one instant", said, StringComparison.Ordinal);
-
-        // The version, the retirement and the registration landed at one instant, and the proposal names
-        // the version it opened.
+        // The version, the retirement and the registration landed at one instant.
         Assert.Equal("[[\"1\",\"2025-03-03T22:01:00Z\"],[\"2\",null]]", Text(store, "SELECT json_group_array(json_array(version, closed_at)) FROM (SELECT * FROM filter_version ORDER BY version);"));
         Assert.Equal(
             FilterSettings.Proposed with { StrengthFloor = 0.6, DryUpCeiling = 0.85 },
@@ -163,7 +160,6 @@ public partial class FixtureExpectations
             "[[1,\"the live swing filter, version 1\",\"registered\",null],[2,\"the live swing filter, version 1\",\"retired\",\"the live swing filter, version 1\"],[3,\"the live swing filter, version 2\",\"registered\",null]]",
             Text(store, "SELECT json_group_array(json_array(id, candidate, event, retires)) FROM (SELECT * FROM candidate_register ORDER BY id);"));
         Assert.Equal(1, Scalar(store, "SELECT COUNT(DISTINCT registered_at) FROM candidate_register WHERE id > 1;"));
-        Assert.Equal("[\"accepted\",\"2\"]", Text(store, "SELECT json_array(decision, opened) FROM shape_proposal WHERE id = 1;"));
 
         // The new candidate reads the parameters its evaluator reads, and the retirement's evidence says
         // what restarted.

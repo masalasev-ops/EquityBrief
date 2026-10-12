@@ -233,12 +233,13 @@ static async Task<int> VersionWindows(string[] args)
         Console.Error);
 }
 
-// A shape proposal accepted or rejected, or ruled settings opened as a filter version.
+// A shape proposal rejected, or ruled settings opened as a filter version. A proposal's moves are
+// approved on the Loop page and opened by the night, and the verb accepts none.
 //
 // A verb rather than a step, for the reason a registration is one: a filter that moved its own
 // thresholds would be tuning itself toward whatever it last saw. The verb's work is in
 // `ShapeCommand`, so a test runs the verb a person runs rather than a copy of it.
-// see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+// see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
 static async Task<int> Shape(string[] args)
 {
     var configuration = Configuration();
@@ -650,7 +651,7 @@ static async Task<int> LoopTestRun(string[] args)
 
 // The apply step by hand, as the night runs it before the S&P 400's and 600's families: every change the operator
 // approved on the Loop page that no apply has answered, applied or refused with why, under the configured adopt setting.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 static async Task<int> LoopApplyRun()
 {
     var configuration = Configuration();

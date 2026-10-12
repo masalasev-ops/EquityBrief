@@ -25,6 +25,286 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's family evaluator, lister, recorder, index families and walk-forward tester rows, the loop models' store row, section 13.14 and section 17's two rows of the learned score state 17.15
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> Family evaluator reads: bar store, market series, indicators, levels, earnings reactions, gate results, provisional settings, family results | ... and stores the exit it names beside each pick with the stop's distance in the night's typical moves (see: ...)
+> Family lister reads: ... index family trades, provisional settings | ... and each pick carries the exit they name (see: ...); it records ...
+> Family recorder reads: membership, bar store, indicators, family results, member readings, family trades | ... a rule stating none listing and walking as before (see: ...); each rule keeps its own list ...
+> Index families reads: ... index heavyweight rule holdings, provisional settings | ... walks its trades and their benchmark under the exit of the menu it names (see: ...); from 17.8 ...
+> Walk-forward tester reads: ... filter versions, shape proposals | ... the score fitted on the ledger's finished setups of all three indices that ended before the fold's year (see: A fitted statistical model is a rule), a test year a fold from 2022, ...
+> Loop models | one row per run, family and fold of the learned score: ... its parameters whole as their canonical text with that text's hash, the pin of the code that fitted it and its weight in words | forever, append-only, written by the walk-forward tester with its run, and read by the decision cards and the Loop page (see: ...)
+> 13.14: ... and the share of the weight the business readings carry.</p> (no paragraph on a challenger)
+> The learned score's fit | ... and no score fitted over fewer than 10 rows a weight it could fit (see: ...) | ... | ... a fit one row short of the floor refused; the figures read off the document against the constants
+> The learned score's proposals | ... each walked through the hooks a registration would set (see: ...) | ... | ... with the rank and both floors read off its hundredths; the figures read off the document against the constants
+Now:
+> Family evaluator reads: ..., provisional settings, loop models, family results | ...; from 17.15 a setting naming the learned trees by their key orders the family by the trees the tester stored, read back from their text and walked by code, and one naming trees no stored model carries lists none (see: ...)
+> Family lister reads: ..., provisional settings, loop models | ... (see: ...), and from 17.15 ordered by the learned trees the tester stored where the hooks name them by their key; it records ...
+> Family recorder reads: ..., member readings, loop models, family trades | ... (see: ...), and from 17.15 a score naming the learned trees by their key read off the trees the tester stored; each rule keeps its own list ...
+> Index families reads: ..., provisional settings, loop models | ... (see: ...), from 17.15 a score naming the learned trees by their key, a stored setting's or a rule's, read off the trees the tester stored; from 17.8 ...
+> Walk-forward tester reads: ..., shape proposals, loop models | ... (see: A fitted statistical model is a rule), and from 17.15 its challenger's trees fitted on the same rows of each fold by FastTree, each of their proposals passing only where its total edge over the test years is above the ridge score's proposal of its kind, a rule standing at an approved change naming trees walked by the trees an earlier run stored (see: ...), a test year a fold from 2022, ...
+> Loop models | one row per run, family, kind and fold of the learned score, the ridge score's and from 17.15 its challenger's trees: ... for the trees each tree's splits, thresholds and leaves, ... | forever, append-only, written by the walk-forward tester with its run, the ridge score read by the decision cards and the Loop page, and from 17.15 the trees by every component that orders a rule whose hooks name them by their key (see: ...) (see: ...)
+> 13.14: a paragraph added after the second: from 17.15 each fold fits a challenger beside the ridge score on the same rows and readings, its trees stored as text with their hash and every score of it the code's own walk, hooks naming trees no stored model carries scoring no member, its three proposals put only where each passes and earns more than the ridge score's of its kind, the card's part and the pick's rank reading the ridge score alone.
+> The learned score's fit | ... (see: ...); and beside it on the same rows the challenger's 100 trees of at most 8 leaves, each leaf fitted over at least 50 rows at a learning rate of 0.1, each tree on 0.8 of the rows drawn at the seed 17, on one thread (see: ...) | ... | ...; the challenger's trees fitted twice to one text and hash and at another seed to another, read back from their text and walked within a millionth of the package's own scores; the figures read off the document against the constants
+> The learned score's proposals | ... (see: ...); the challenger's trees bring the same three, each put only where its total edge after costs over the test years is above the ridge score's proposal of its kind (see: ...) | ... | ...; the trees' proposals worked by hand against the ridge score's of their kind, put where they pass and earn more and not where either fails; the figures read off the document against the constants
+Why: 17.15 builds the challenger the 17.13 ruling named, on the operator's answer of 2026-10-12 that beating the ridge score means passing and earning more.
+
+### 2026-10-12 - docs/SCHEMA.md - the loop's models gain their kind in their primary key
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> Grain: one row per run, family and fold of the learned score, the score fitted on all finished data among them. | (no `kind`) | `parameters` ... every figure at its round trip | `words` | TEXT | its weight in words: the readings weighing most, the business readings' share and the setups | Primary key: `run_id`, `family`, `year`. | ... The decision cards read the newest run's score fitted on all finished data, ... (see: A fitted statistical model is a rule).
+Now:
+> Grain: one row per run, family, kind and fold of the learned score, ... | `kind` | TEXT | `ridge` ... or from 17.15 `trees` ... | `parameters` ...; for the trees, the bias, the rows, the clip, the settings it was fitted at, each tree's weight, splits, thresholds, children and leaves, and each index's scores at each hundredth | `words` ...; for the trees, the readings split on most | Primary key: `run_id`, `family`, `kind`, `year`. | ... The decision cards read the newest run's ridge score ... From 17.15 the challenger's trees are written beside the ridge score, ... migration 91 rebuilding the table with its kind in its primary key and copying every earlier row across as the ridge score's; ... (see: ...).
+Why: the trees are stored beside the ridge score fitted on the same fold, which the old key could not hold.
+
+### 2026-10-12 - docs/RUNBOOK.md - the tester's learned score paragraph states the challenger
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> ... Every score it fits is written to `loop_model` with its parameters whole and their hash, and `--print` prints each one's weight in words.
+Now:
+> ... and `--print` prints each one's weight in words. From 17.15 the challenger's trees are fitted beside it on the same rows of each fold by FastTree, ... their trees are written to `loop_model` under the kind `trees` with their text and hash, and a rule approved at them is ordered on the night by the trees read back from that row and walked by code (see: ...). The fit asks nothing of any provider and calls no model.
+Why: the operator reads what a run fits and writes.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations, read-surface and rules-choose-the-stocks state 17.15
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> fixture-expectations: ... and the shape command refusing an acceptance with why and nothing changed |
+> read-surface: ... read back off the store and off the rendered Tonight page naming the change |
+> rules-choose-the-stocks: ... the reader shown to find a planted read (see: A fitted statistical model is a rule); and from 17.9 the apply step and the live alarm join the components held |
+Now:
+> fixture-expectations: ...; and from 17.15 the learned score's challenger fitted twice over constructed rows to one text and hash and at another seed to another, ... and a proposal of the trees put only where it passes and its total edge is above the ridge score's proposal of its kind, ... |
+> read-surface: ...; and from 17.15 the S&P 500's pullback standing at a change naming the learned trees by their key kept and ordered by the trees the store holds, ... and listing none where no stored model carries the key |
+> rules-choose-the-stocks: ... (see: ...), and from 17.15 the family evaluator, lister and recorder and the index families among the components touching it, each reading the challenger's trees a rule's hooks name; and from 17.9 ... |
+Why: the roster states what each check asserts after 17.15.
+
+### 2026-10-12 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, docs/BUILD_PLAN.md - the citations of the old loop's seven decisions move to the four decisions superseding them
+Decision: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+Was:
+> (see: Adding a candidate later restarts the clock)
+> (see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow)
+> (see: A candidate is retired by a futility guideline at its first two looks or by reaching its last look)
+> (see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts)
+> (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes)
+> (see: The variations a sweep explores are exploration, and count toward no correction of the live family)
+> (see: Condition thresholds are calibrated from your own nights, not from a backfill)
+Now:
+> (see: A registration restarts only the registered rule's own record)
+> (see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal), for the looks and for the futility guideline
+> (see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record), for both shape decisions
+> (see: History reaches a list only through a test on years a proposal never saw and the operator's approval), for the sweep's variations and the thresholds' calibration
+Why: 17.14 moves every decision of the old loop to Previously decided on the operator's answer of 2026-10-12, "Full, pullback included", so every citation in the specs moves with it: in the architecture's catalogue, sections 13, 14, 15 and 17, the schema's filter versions and shape proposals, the runbook's shape and candidate sections, and the build plan's phase 10 and 12 text and two operating rows. The citations in code move in the same commit.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 13's looks, futility and loop paragraphs read as monitoring, and the shape clock's moves become the Loop's proposals
+Decision: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
+Was:
+> ... which at sixteen blocks is exact and assumes nothing about what the setups inside a block did to each other (see: ...). The first look cannot promote: ...
+> A candidate is retired by a nonbinding futility guideline at its first or second look, where its win share is strictly below its null share, or by reaching its last look without crossing, each by a new dated row; the promotion boundary ignores the guideline (see: ...).
+> The list's thresholds move only through shape calibration and the operator's rulings, and the edge clock gathers evidence and changes nothing until it can retire a variant, after about two years, or promote one, after about three. ... At the shape clock's trigger the shape proposer proposes one setting a gate and applies none of them; the operator accepts or rejects the proposal with the <code>shape</code> command, and an acceptance opens the next filter version and, once the live filter's candidate stands registered, restarts its edge clock, bounded as section 17 states (see: ...) (see: ...).
+Now:
+> ... which at sixteen blocks is exact and assumes nothing about what the setups inside a block did to each other; from 17.14 what a look reads is monitoring, a crossing changing no rule by itself and a change to how a rule picks adopted only by the operator's approval of a tested proposal (see: ...). The first look cannot promote: ...
+> A candidate's nonbinding futility guideline is read at its first or second look, where its win share is strictly below its null share, and at its last look reached without crossing; from 17.14 it is monitoring, a retirement it says is due the operator's to take by a new dated row through the register's command, and the promotion boundary ignores the guideline (see: ...).
+> The list's thresholds move only through shape calibration and the operator's rulings, and the edge clock gathers evidence and changes nothing by itself, its first look after about two years and its second after about three. ... At the shape clock's trigger the shape proposer proposes one setting a gate and applies none of them; from 17.14 each of its moves is a proposal of the S&amp;P 500's tester run, tested on years it never saw against the filter as it stands and put to the operator on the Loop page, and the night opens an approved move as the next filter version, which, once the live filter's candidate stands registered, restarts its edge clock, bounded as section 17 states; the <code>shape</code> command accepts no proposal and still records a rejection with its reason (see: ...).
+Why: the looks and the guideline stand as monitoring, and adoption moves to the tester and the operator's approval.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - figure 11.4's description reads the edge clock's looks as monitoring
+Decision: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+Was:
+> Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing until it can retire a variant or promote one.
+Now:
+> Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing by itself, its looks telling you when a variant may be retired or promoted.
+Why: a look's verdict changes no rule by itself; the code that draws the figure is changed with it, and the run page's sentence that section 13.8 opens with is the paragraph's own as 17.14 rewords it.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's shape proposer, shape command, family lister, walk-forward tester, loop apply and forward return filler rows state 17.14
+Decision: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+Was:
+> Shape proposer: ... states the crossed trigger on its run log row, reads no outcome and nothing an evaluator reads, and never opens a version (see: ...)
+> Shape command: by hand, on the operator's command | ... opens the next filter version through the worker's <code>shape</code> verb, on a proposal the operator accepts or on settings the operator rules, closing the open one at the same instant, and writes a rejected proposal's reason and nothing else; where the live filter's candidate stands registered, the same write retires it and registers the accepted settings through the candidate registrar, and after one acceptance while the list is live each further one is refused unless it states the non-empty blocks the live filter's clock has run, the count the run page draws beside the proposal (see: ...); ...
+> Family lister: reads bar store, gate results, filter versions, fundamental readings, list rules, forward returns, family results, family nights, family picks, index family trades | ... and none whose trade from any family is still open, each row held back saying why; it records ...
+> Walk-forward tester: reads ... filed facts, setups, provisional settings | ... the live alarm's reference (see: ...) (see: ...); runs each of Part 0's procedures ...
+> Loop apply: ... and the rule a change replaced is retired through the registrar on the night whose session reaches the block after its successor's first; every other change is refused with why, the S&amp;P 500's pullback's, a sector heavyweights book's, ...
+> Forward return filler: reads listings, gate results, family results, bar store, calendar, forward returns | ... a win at its target, a loss or trailed at a close under its stop and unresolved at the exit's time or its cap (see: ...)
+Now:
+> Shape proposer: ... reads no outcome and nothing an evaluator reads, and never opens a version; from 17.14 each move of the newest proposal for the open version is a proposal of the S&amp;P 500's tester run, put to the operator on the Loop page (see: ...)
+> Shape command: by hand, on the operator's command; and from 17.14 nightly through the apply step | ... on settings the operator rules, ... and writes a rejected proposal's reason and nothing else, and from 17.14 refuses to accept a proposal, saying its moves are approved on the Loop page; and for the apply step, a shape move the operator approved there, the open version's settings with the move made, stating the non-empty blocks the live filter's record has run; ...
+> Family lister: reads ... index family trades, provisional settings | ... from 17.14 the pullback's names are kept and ordered by the hooks an approval stored for the S&amp;P 500's pullback over the night's readings, a member a condition refuses no pick, and each pick carries the exit they name (see: ...); it records ...
+> Walk-forward tester: reads ... provisional settings, filter versions, shape proposals | ... from 17.14 walks the S&amp;P 500's pullback as the swing filter at its open version's settings read by value, with the hooks an approval stored, proposing for it as for every family, and tests each move of the newest shape proposal written for that version as a proposal of the run against the filter as it stands (see: ...); ...
+> Loop apply: ... from 17.14 a change to the S&amp;P 500's pullback's hooks is written as a new row of the provisional settings on the S&amp;P 500 alone, which the family's list reads, and a shape move of it opens the swing filter's next version through the shape command on the nights a registration is made, its answer written in the version's transaction (see: ...); every other change is refused with why, a shape move of any other family or beside hooks, a sector heavyweights book's, ...
+> Forward return filler: reads listings, gate results, filter versions, family results, family picks, bar store, calendar, forward returns | ...; and from 17.14 each S&amp;P 500 pullback pick whose list carried an exit of the menu walked so on the plan its night's filter version's trade gate read, under an outcome of its own so the swing filter's rows keep their plan's own (see: ...)
+Why: the S&P 500's pullback joins the loop: the tester walks it and tests the shape clock's moves, the apply step stores its hook changes and opens an approved move, and the lister and the filler read the stored change.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 13's exits and approval paragraphs, section 14's swing filter step, the run page's shape proposal row, the shape proposals store row, section 17's shape bounds and the failure row of an approval that cannot be applied state 17.14
+Decision: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+Was:
+> ... and the heavyweights' two on every index with a book's month as their unit; the S&amp;P 500's pullback is the swing filter's walk and is proposed no exit.
+> ... A change to the S&amp;P 500's pullback is refused with why until its filter's versions take one, and a sector heavyweights book changes its setting by a freeze alone, so a change to it is refused with why; ...
+> Evaluate every member through the swing filter, having first applied ... from 17.13 an S&amp;P 500 breakout's or drift's written so and registered as the family's live rule, the rule a change replaced retired once ...; then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, ...
+> The shape proposal | ... and beside it the non-empty blocks accepting it would restart
+> Shape proposals | ... the findings, and the decision with when and why it was taken and the version it opened
+> Shape lever ranges | ... the trigger has none, proposed (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes)
+> Shape acceptance bound | the settings ruled before the family registers restart nothing; the first acceptance while the live filter's candidate stands costs its restart and states nothing; each later one states the live filter's non-empty blocks with <code>--restarts</code>, and any other count, or none, is refused with nothing changed; a rejection is never bounded (see: ...)
+> An approval that cannot be applied | the apply step answers it refused with why and writes no setting: the S&amp;P 500's pullback's change, a grid setting for the S&amp;P 500's breakout or drift, ...; an S&amp;P 500 breakout's or drift's change is answered by nothing by hand and on a night whose session a registration made then would not count from, and is applied by the next night; ...
+Now:
+> ... and the heavyweights' two on every index with a book's month as their unit; from 17.14 the S&amp;P 500's pullback is walked as the swing filter at its open version's settings, read by value, and proposed exits as every family is (see: ...).
+> ... From 17.14 a change to the S&amp;P 500's pullback's hooks is stored the same way on the S&amp;P 500 with no registration, and the swing filter's page reads it from that night on: ... A move of the shape clock's proposal, tested as a proposal of the run, opens the swing filter's next version from the night's own build with the move made, on the nights a registration is made, ... (see: ...) (see: ...). A sector heavyweights book changes its setting by a freeze alone, ...
+> Evaluate every member through the swing filter, having first applied ... from 17.13 an S&amp;P 500 breakout's or drift's written so and registered as the family's live rule, from 17.14 an S&amp;P 500 pullback's hook change written so with no registration and a shape move opening the swing filter's next version with the swing family registered again under it, the rule a change replaced retired once ...; then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, from 17.14 the pullback's kept and ordered by the hooks an approval stored for it with the exit they name beside each pick (see: ...), at most five a family, ...
+> The shape proposal | ... and beside it the non-empty blocks approving one of its moves on the Loop page would restart
+> Shape proposals | ... the findings, and the decision with when and why it was taken and the version it opened, from 17.14 a rejection's alone, a move approved on the Loop page recorded with the version it opened among the Loop's applications
+> Shape lever ranges | ... the trigger has none, proposed (see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record)
+> Shape acceptance bound | the settings ruled before the family registers restart nothing; the first acceptance by the command while the live filter's candidate stands costs its restart and states nothing; each later one states the live filter's non-empty blocks with <code>--restarts</code>, and any other count, or none, is refused with nothing changed; a shape move the operator approved on the Loop page is opened by the night, stating the blocks the page drew beside the proposal, and the command accepts no proposal; a rejection is never bounded (see: ...)
+> An approval that cannot be applied | the apply step answers it refused with why and writes no setting: a grid setting for the S&amp;P 500's pullback, breakout or drift, a shape move of any family but the S&amp;P 500's pullback or one beside hooks, ...; an S&amp;P 500 breakout's or drift's change and from 17.14 a shape move are answered by nothing by hand and on a night whose session a registration made then would not count from, and are applied by the next night; ...
+Why: the S&P 500's pullback is walked, proposed for and changed through the Loop, and its shape moves are opened by the night rather than accepted by the command.
+
+### 2026-10-12 - docs/SCHEMA.md - filter versions, shape proposals, family picks, stored settings and forward returns state 17.14
+Decision: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+Was:
+> filter_version: ... an acceptance, of a proposal or of settings the operator rules, closes the open row and inserts the next at one instant, ...
+> shape_proposal: ... the command writes `decision`, `decided_at`, `reason` and `opened` on a row with no decision and nothing else on it, and nothing deletes one.
+> family_pick: (no `exit` column) ... its trade is that row's; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. ...
+> provisional_setting: Grain: one row per change an approval made to a family of the S&P 400 or 600, and from 17.13 to the S&P 500's breakout or drift. | `family` | TEXT | `pullback`, `breakout` or `drift` | ... and the decision cards to name the change in the record's place (see: ...).
+> forward_return: Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon. | `horizon` | ... `drift` for one the earnings drift family passed, over its own (see: ...) |
+Now:
+> filter_version: ... an acceptance, of settings the operator rules or, before 17.14, of a proposal, and from 17.14 a shape move approved on the Loop page that the apply step opens through the command at the start of the night's swing filter step, closes the open row and inserts the next at one instant, ...
+> shape_proposal: ... on a row with no decision and nothing else on it, from 17.14 a rejection alone, since a proposal's moves are approved on the Loop page and the tester tests the newest undecided row for the open version, and nothing deletes one.
+> family_pick: `exit` INTEGER added, from 17.14 the exit of the menu a pullback pick is walked under; ... nothing here restates a plan. From 17.14 the pullback's names are kept and ordered by the hooks the newest `provisional_setting` row of the S&P 500's pullback states, ... A trade's outcome is the `forward_return` row of its stock and session under its family's horizon, and a pullback row carrying an exit's under `exit`. ...
+> provisional_setting: Grain: ..., from 17.13 to the S&P 500's breakout or drift, and from 17.14 to the S&P 500's pullback's hooks. | `family` | TEXT | `pullback`, `breakout` or `drift`, a `GSPC` row's `pullback` from 17.14 | ... From 17.14 an S&P 500 pullback row states hooks alone and is written with no registration, ...; a shape move the operator approved writes no row here, opening the swing filter's next version in `filter_version` instead (see: ...).
+> forward_return: Grain: one row per listing per horizon, one per swing filter row carrying a plan per swing horizon, and from 17.14 one per S&P 500 pullback pick walked under an exit of the menu. | `horizon` | ... ; and from 17.14 `exit` for an S&P 500 pullback pick walked under the exit of the menu its list carried, ... |
+Why: migration 90 adds the pick's exit, the apply step stores the pullback's hook changes, the night opens an approved shape move, and the filler walks a pullback pick under its exit apart from the swing filter row's own horizons.
+
+### 2026-10-12 - docs/RUNBOOK.md - the shape command's section, the trade autopsy, the Loop page's presses and promoting a candidate state 17.14
+Decision: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
+Was:
+> ### Opening the swing filter's version, and a shape proposal accepted or rejected
+> The filter's settings move only through this command, run by the operator from the repository root, and a night never runs it (see: ...). ...
+> **A shape proposal** is written by the night ... and, beside it, the non-empty blocks the live filter's clock has run (see: ...). Accept it by its number, or reject it with the reason:
+> dotnet run --project src/EquityBrief.Worker -- shape --accept 1
+> A rejection writes the reason on the proposal's row and changes nothing else, and the next proposal for the version waits on sixty more ordinary nights. An acceptance opens the proposal's settings as the next version; a proposal written for a version no longer open is refused. Before the swing family registers, an acceptance restarts nothing. Once the live filter's candidate stands registered, an acceptance also retires it and registers the accepted settings in the same write, which restarts its edge clock: the first such acceptance states nothing more, and every later one must state the blocks the run page draws beside the proposal, and is refused with nothing changed without them or at any other count:
+> dotnet run --project src/EquityBrief.Worker -- shape --accept 2 --restarts 3
+> ... and writes them to `loop_finding`. The S&P 500's pullback is the swing filter's walk and is proposed no exit.
+> ... Approve is not offered on the S&P 500's pullback, whose rule changes through its filter's versions, nor on a sector heavyweights book, which changes by a freeze alone; the page says why beside each.
+> ... The first look cannot promote: the level it releases is below the smallest p-value eight blocks can produce, so it can only retire.
+Now:
+> ### Opening the swing filter's version, and a shape proposal's moves approved or the proposal rejected
+> The filter's settings move through this command, run by the operator from the repository root, and from 17.14 through a shape move approved on the Loop page, which the night opens as the next version (see: ...). ...
+> **A shape proposal** is written by the night ... the non-empty blocks approving one of its moves restarts. From 17.14 the command accepts no proposal: each of its moves is a proposal of the next tester run on the S&P 500, ... Approve a move there, and the next night ... opens the next version with the move made ...
+> A rejection writes the reason on the proposal's row and changes nothing else, so its moves are tested no more, ... Settings you rule with `--settings` still open a version as a ruling: ...
+> dotnet run --project src/EquityBrief.Worker -- shape --settings dryUpCeiling=1.25 --restarts 3 --evidence "the ruling of the day"
+> ... and writes them to `loop_finding`. From 17.14 the S&P 500's pullback is walked as the swing filter at its open version's settings, read by value, and proposed exits as every family is, and each move of the newest shape proposal written for that version is tested in the same run (see: ...).
+> ... Approve is not offered on a sector heavyweights book, which changes by a freeze alone; the page says why beside it. From 17.14 the S&P 500's pullback takes a change of its hooks, ... and a shape move, which the night opens as the filter's next version (see: ...).
+> ... so it can only retire. From 17.14 what a look reads is monitoring and changes nothing by itself: the steps below are yours to take on its evidence, and a change to how a swing family picks reaches its list only as a proposal the tester passed and you approved on the Loop page.
+Why: the shape command accepts no proposal, a move is opened by the night once approved, the S&P 500's pullback is proposed exits and takes approvals, and a look's crossing is monitoring.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations and read-surface state 17.14
+Decision: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+Was:
+> fixture-expectations: ... refuses a stale proposal, a second decision and settings it cannot open with nothing changed, and in the first acceptance while a live candidate stands retires it and registers the accepted settings in the same write as the version; ... and a pick walked under the stored exit to its target, under a raised stop and at a time exit, each worked by hand |
+> read-surface: ... and beside it the non-empty blocks accepting it would restart, which a later acceptance while the list is live must state: read off the page, it is refused without them and at another count with nothing changed, and accepted at the count the page draws; ... and the blocks drawn beside a proposal and the blocks the shape command holds a later acceptance to are read off the live filter's own rows; ... the S&P 500's pullback offering no press and saying why, ... and from 17.13 the S&P 500's breakout and drift offering Approve and its pullback refused with why, and a change approved and applied by the night ... the S&P 400's and 600's pages the same byte for byte |
+Now:
+> fixture-expectations: ... refuses a second decision and settings it cannot open with nothing changed, and in the first move opened while a live candidate stands retires it and registers the moved settings in the same write as the version; ... each worked by hand; and from 17.14 the S&P 500's pullback walked by the tester at its open filter version's settings read by value, ... and the shape command refusing an acceptance with why and nothing changed |
+> read-surface: ... and beside it the non-empty blocks approving one of its moves would restart, which the night states as it opens the version: read off the page, the command's acceptance refused with nothing changed, and a move the night opens restarting the count the page draws; ... and the blocks drawn beside a proposal and the blocks the night states as it opens a move's version are read off the live filter's own rows; ... a sector heavyweights book offering no press and saying why, ... and from 17.13 the S&P 500's breakout and drift offering Approve, and a change approved and applied by the night ...; and from 17.14 the S&P 500's pullback offering Approve, ... read back off the store and off the rendered Tonight page naming the change |
+Why: the roster states what each check asserts after 17.14.
+
+### 2026-10-12 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - the citations of the apply decision move to the decision superseding it
+Decision: An approved change is applied by the night's own build on the index it was approved on alone
+Was:
+> (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone)
+Now:
+> (see: An approved change is applied by the night's own build on the index it was approved on alone)
+Why: 17.13 supersedes the decision that refused the S&P 500's changes, so every spec's citation of it moves to the decision that replaces it, eleven in the architecture, four in the schema and one in the runbook.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 13's approval paragraph applies the S&P 500's breakout and drift
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Before the next night the night's own build applies each approval no apply has answered (see: ...). ... An S&amp;P 500 rule's page is drawn by its family's own code, and a sector heavyweights book changes its setting by a freeze alone, so a change to either is refused with why and waits on the operator's ruling of how it reaches its page; so is a change to a family whose live rule stands registered on its index, since that rule draws the page.
+Now:
+> At the start of the next night's swing filter step, before anything in it reads the register, the night's own build applies each approval no apply has answered (see: ...). ... From 17.13 a change to the S&amp;P 500's breakout or drift, which states hooks alone, is stored the same way on the S&amp;P 500 and registered as the family's live rule in the same write: ... A family holding nine rules refuses the change with why, and the command run by hand leaves the S&amp;P 500's changes for the night (see: ...). A change to the S&amp;P 500's pullback is refused with why until its filter's versions take one, and a sector heavyweights book changes its setting by a freeze alone, so a change to it is refused with why; so is a change to a family whose live rule stands registered on the S&amp;P 400 or 600, since that rule draws the page.
+Why: the operator's ruling (b) of the queue of 2026-10-11 has the S&P 500's breakout and drift read the stored settings and register the change, and the apply step moves to the start of the swing filter's step so the page and the live rule read the change from the night it is applied.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 14's swing filter step applies approvals first and keeps the S&P 500's lists by the stored hooks
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Evaluate every member through the swing filter: the market gate on the night's breadth, ... storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); ... then apply each change the operator approved on the Loop page that no apply has answered, an S&amp;P 400 or 600 swing family's written as the setting the family reads from tonight on that index alone and every other refused with why, a failure named on the step's row while the families read the settings as they stood (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone); then read the fundamentals-first family ...
+Now:
+> Evaluate every member through the swing filter, having first applied each change the operator approved on the Loop page that no apply has answered, ... from 17.13 an S&amp;P 500 breakout's or drift's written so and registered as the family's live rule, the rule a change replaced retired once the block after the change is reached, ... (see: ...) (see: ...): the market gate on the night's breadth, ... storing every answer with the values that decided it and, from 17.13, keeping and ordering the S&amp;P 500's breakout's and drift's passing members by the hooks an approval stored for the family, with the exit it names beside each pick (see: ...); ... then read the fundamentals-first family ...
+Why: the apply step runs before anything in the swing filter's step reads the register, and the S&P 500's family evaluator reads the stored settings.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's family evaluator, walk-forward tester, loop apply, live alarm reader, decision cards and forward return filler rows, and three matrix rows, state 17.13
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Family evaluator: reads ... gate results, family results; ... and its row states each switch a standing rule holds, open or closed and why (see: ...)
+> Walk-forward tester: from 17.9 tests each family against the rule as it stands, on the S&amp;P 400 or 600 at the setting and the hooks an approval stored for it with every proposal set on top of them ...
+> Loop apply: nightly, once, in the swing filter's step before the index families; and by hand | candidate register, loop runs, ... | ... every other change is refused with why, an S&amp;P 500 rule's, a sector heavyweights book's and a family whose live rule stands registered among them; each answer one row and none written twice; reads no market data, makes no request and calls no model (see: ...)
+> Live alarm reader: bar store, loop runs, ... | ... on the S&amp;P 500 the breakout's and the drift's live rule's own trades and the sector heavyweights' book's holdings ...
+> Decision cards: reads ... loop runs, loop proposals, loop models | ... read from the index families' rows there with the index's own breadth, its gates naming the profit check in the index's form and the business the family read (see: ...)
+> Forward return filler: ... with what the plan put at risk stored beside what it made (see: ...)
+> Matrix: the family evaluator reading no forward returns store, the apply step no bars and the live alarm reader no candidate register
+Now:
+> Family evaluator: reads provisional settings as well; and from 17.13 keeps and orders the S&amp;P 500's breakout's and drift's passing members by an approved setting's hooks and stores the exit it names beside each pick
+> Walk-forward tester: and from 17.13 the S&amp;P 500's breakout and drift at their own setting with the hooks an approval stored
+> Loop apply: at the start of the swing filter's step; reads the bar store for the night's session; an S&amp;P 500 breakout's or drift's change stored and registered as the family's live rule by the night alone, the replaced rule retired on the night reaching the block after its successor's first, and the refusals the S&amp;P 500's pullback's, a book's, a frozen S&amp;P 400 or 600 family's and an S&amp;P 500 family at nine
+> Live alarm reader: reads the candidate register, the S&amp;P 500's live rule its family's newest registration carrying the live rule's name
+> Decision cards: reads provisional settings, and an S&amp;P 500 card at an approved change carries its words in the record's place
+> Forward return filler: and a pick an approved setting named an exit of the menu for walked under it
+> Matrix: the family evaluator reads the forward returns group, the apply step the bars and the live alarm reader the candidate register
+Why: each row states the component's reads and what it does, cell by cell against its declaration, which 17.13 moved.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the card's approved change row and the failure row of an approval that cannot be applied state the S&P 500
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> A rule standing at an approved change: from 17.9 on an S&amp;P 400 or 600 card whose family stands at a change an approval stored the change named among the rule's gates and in the record's place the line ... (see: ...)
+> An approval that cannot be applied: the apply step answers it refused with why and writes no setting: an S&amp;P 500 rule's change, which waits on the operator's ruling of how it reaches a page its family's code draws, a sector heavyweights book's, a family whose live rule stands registered on its index, a proposal stating no change and a restore naming a change the family does not hold; ...
+Now:
+> A rule standing at an approved change: ...; and from 17.13 on an S&amp;P 500 breakout or drift card the change named after the rule's words and in the record's place, and the rule it replaced among the selector's variants (see: ...)
+> An approval that cannot be applied: ... the S&amp;P 500's pullback's change, a grid setting for the S&amp;P 500's breakout or drift, an S&amp;P 500 family holding nine rules, from 17.13, with the registrar's words, a sector heavyweights book's, an S&amp;P 400 or 600 family whose live rule stands registered on its index, ...; an S&amp;P 500 breakout's or drift's change is answered by nothing by hand and on a night whose session a registration made then would not count from, and is applied by the next night; ...
+Why: the S&P 500's breakout and drift take a change from 17.13, and its card and its refusals say what happens to one.
+
+### 2026-10-12 - docs/SCHEMA.md - the stored settings hold the S&P 500's, family results gain the exit and the stop's distance, and the trailed outcome covers an exit of the menu
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> provisional_setting: Grain: one row per change an approval made to a family of the S&P 400 or 600. | `index_code` | TEXT | `MID` or `SML` | ... the tester tests the family against it, and the Loop page draws every row (see: ...).
+> family_result: | `exclusions` | TEXT | JSON: the exclusions the member's series carries, a gap or a suspect series as the swing filter stored them, empty where none does | ... The prices here keep the scale the series had on the night, as a setup's plan does.
+> forward_return: `trailed` is a trailing trade's alone, sold at a close under its stop, and such a trade ended by its cap is `unresolved`; it is never `win` or `loss`, having no target.
+Now:
+> provisional_setting: and from 17.13 to the S&P 500's breakout or drift; `MID` or `SML`, and from 17.13 `GSPC`; an S&P 500 row states hooks alone and is written in the transaction that registers the change, read by the family evaluator and the decision cards
+> family_result: `exit` and `risk_moves` from 17.13; the exclusions carry the words of an approved setting's condition or score floor a member fails; a row carrying an exit walked under it
+> forward_return: and from 17.13 a pick walked under an exit of the menu is `trailed` where a close under a stop the exit raised sold it and `unresolved` where the exit's time sold it
+Why: migration 89 adds the two columns, and the S&P 500's breakout and drift read and are walked under the stored settings from 17.13.
+
+### 2026-10-12 - docs/RUNBOOK.md - the Loop page's approvals reach the S&P 500's breakout and drift
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Approve is not offered on the S&P 500, whose rules' page is drawn by its families' own code, nor on a sector heavyweights book, which changes by a freeze alone; the page says why beside each.
+> The night applies each approval in the swing filter's step, before the S&P 400's and 600's families read the night, from its own clean build. ... To apply your approvals before the night, run the same step by hand:
+Now:
+> Approve is not offered on the S&P 500's pullback, whose rule changes through its filter's versions, nor on a sector heavyweights book, which changes by a freeze alone; the page says why beside each.
+> The night applies each approval at the start of the swing filter's step, before anything in it reads the register, from its own clean build. ... From 17.13 a change to the S&P 500's breakout or drift is written the same way under `GSPC` and registered as the family's live rule in the same write: ... To apply your S&P 400 and 600 approvals before the night, run the same step by hand; it leaves the S&P 500's for the night:
+Why: the S&P 500's breakout and drift take a change from 17.13, applied by the night alone.
+
+### 2026-10-12 - docs/BUILD_PLAN.md - 17.13 reads the change from the night the apply step writes it
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> A family holding nine rules refuses an approval with why until a replaced rule retires. The apply step answers approvals before the S&P 500's families read the night, so a change reaches every index's page the night after it is approved.
+Now:
+> A family holding nine rules refuses an approval with why until a replaced rule retires. The S&P 500's page and the rule the change registers read the change from the night the apply step writes it, the step answering before anything in the swing filter's step reads the register.
+Why: a registration the night's own apply step makes after the night started would count its record from a session its rule was not evaluated on, so the step runs before the swing filter's step reads the register and the step reads the rules standing with that registration.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations and read-surface state 17.13
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> fixture-expectations: ... an approval on the S&P 600 applied there alone while the S&P 500's is refused with why ... one that read a filing on the session it was filed named |
+> read-surface: ... the S&P 500 offering no press and saying why ... an older run's verdict not read and no line where no run stored one |
+Now:
+> fixture-expectations: ... an approval on the S&P 600 applied there alone while the S&P 500's is left by hand for the night ... one that read a filing on the session it was filed named; and from 17.13 an approval of the S&P 500's breakout stored and registered as the family's live rule by the night alone ... each worked by hand |
+> read-surface: ... the S&P 500's pullback offering no press and saying why ... no line where no run stored one; and from 17.13 the S&P 500's breakout and drift offering Approve and its pullback refused with why, and a change approved and applied by the night read on the S&P 500's breakout card ... |
+Why: the two checks assert what 17.13 builds, and the 17.9 tests now assert the S&P 500's drift taking a change.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.13 to 17.15
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> the build plan's phase 17 checkpoints, 17.0 to 17.12
+Now:
+> the build plan's phase 17 checkpoints, 17.0 to 17.15
+Why: the operator's rulings (b) and (c) of 2026-10-11, with their answers of 2026-10-12 on the scope, are built inside phase 17 after its report as 17.13 to 17.15.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - section 17's learned score's fit is worked over four hundred and forty setups
 Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 Was:

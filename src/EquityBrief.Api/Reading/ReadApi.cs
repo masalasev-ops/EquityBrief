@@ -1417,9 +1417,13 @@ public sealed partial class ReadApi : IComponent
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    // A pullback pick an approved setting named an exit of the menu for is read under the menu's own horizon.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
     static readonly string Picks = @"
         SELECT g.ticker, g.session_date,
-               CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END,
+               CASE WHEN (SELECT fx.exit FROM family_pick fx WHERE fx.session_date = g.session_date AND fx.ticker = g.ticker AND fx.family = $pullback) IS NOT NULL
+                    THEN '" + EquityBrief.Core.Returns.ForwardReturnSeries.MenuExit + @"'
+                    ELSE CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END END,
                g.swing_entry,
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_stop ELSE g.swing_stop END,
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_target ELSE g.swing_target END,
@@ -1444,7 +1448,9 @@ public sealed partial class ReadApi : IComponent
         LEFT JOIN filter_version v ON v.version = g.version
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date
-            AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
+            AND f.horizon = CASE WHEN (SELECT fx.exit FROM family_pick fx WHERE fx.session_date = g.session_date AND fx.ticker = g.ticker AND fx.family = $pullback) IS NOT NULL
+                                 THEN '" + EquityBrief.Core.Returns.ForwardReturnSeries.MenuExit + @"'
+                                 ELSE CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END END
         LEFT JOIN fundamental_reading s ON s.ticker = g.ticker AND s.session_date = g.session_date
         WHERE g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
           AND CASE WHEN " + EquityBrief.Core.Families.FamilyList.HasPicks("g.session_date") + @"
@@ -3458,7 +3464,7 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // The operator's word on a loop proposal or a restore, the Loop page's presses' one write.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     const string InsertDecision = @"
         INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
         VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";

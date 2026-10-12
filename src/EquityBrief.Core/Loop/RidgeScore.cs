@@ -61,7 +61,7 @@ public sealed record RidgeModel(
     int Rows,
     double LabelLow,
     double LabelHigh,
-    IReadOnlyDictionary<string, IReadOnlyList<double>> Hundredths)
+    IReadOnlyDictionary<string, IReadOnlyList<double>> Hundredths) : IScoreModel
 {
     // Each reading's weight on its own scale, the weight a rule's score hook carries, by its place in the catalogue.
     public IReadOnlyList<(int Reading, double Weight)> HookWeights =>
@@ -203,7 +203,7 @@ public static class RidgeScore
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "be11d99e21a1";
+    public const string Version = "1db76229d1c6";
 
     // The words every proposal of the score opens with, by which a run's proposals of it are told from the others'.
     public const string Proposal = "the learned score";
@@ -253,8 +253,12 @@ public static class RidgeScore
     public static double Quantile(IReadOnlyList<double> sorted, double share) =>
         sorted[Math.Clamp((int)Math.Ceiling(share * sorted.Count) - 1, 0, sorted.Count - 1)];
 
-    // The score fitted over the learning rows, none where fewer than the minimum hold every reading it would weigh.
-    public static RidgeModel? Fit(ScoreRows rows, IReadOnlyList<int> learning)
+    // The rows a score learns on and the readings it may weigh, which the ridge score and its challenger share: the
+    // readings held by enough of the learning rows and spread over more than one value, each with its mean and spread,
+    // the rows holding every one of them, and their labels clipped; none where fewer than the minimum hold them.
+    public sealed record Learnable(IReadOnlyList<int> Rows, IReadOnlyList<(int Weighable, double Mean, double Spread)> Kept, double Low, double High, IReadOnlyList<double> Labels);
+
+    public static Learnable? Prepare(ScoreRows rows, IReadOnlyList<int> learning)
     {
         if (learning.Count == 0)
         {
@@ -320,10 +324,18 @@ public static class RidgeScore
             }
         }
 
-        if (kept.Count == 0)
+        return kept.Count == 0 ? null : new Learnable(heldRows, kept, low, high, labels);
+    }
+
+    // The score fitted over the learning rows, none where fewer than the minimum hold every reading it would weigh.
+    public static RidgeModel? Fit(ScoreRows rows, IReadOnlyList<int> learning)
+    {
+        if (Prepare(rows, learning) is not { } learnable)
         {
             return null;
         }
+
+        var (heldRows, kept, low, high, labels) = (learnable.Rows, learnable.Kept, learnable.Low, learnable.High, learnable.Labels);
 
         // The columns: each reading standardised, then each shifted index's indicator less its share of the rows.
         var size = kept.Count + Shifted.Count;
@@ -338,7 +350,7 @@ public static class RidgeScore
                 on += rows.Index(row) == Shifted[at] ? 1 : 0;
             }
 
-            centres[kept.Count + at] = on / heldRows.Length;
+            centres[kept.Count + at] = on / heldRows.Count;
         }
 
         var labelSum = 0.0;
@@ -348,7 +360,7 @@ public static class RidgeScore
             labelSum += label;
         }
 
-        var meanLabel = labelSum / labels.Length;
+        var meanLabel = labelSum / labels.Count;
 
         // The normal equations with the penalty on the readings' diagonal, the indices' shifts unpenalised, each sum
         // taken row by row.
@@ -356,7 +368,7 @@ public static class RidgeScore
         var b = new double[size];
         var x = new double[size];
 
-        for (var place = 0; place < heldRows.Length; place++)
+        for (var place = 0; place < heldRows.Count; place++)
         {
             var row = heldRows[place];
 
@@ -416,7 +428,7 @@ public static class RidgeScore
             solved[..kept.Count],
             solved[kept.Count..],
             intercept,
-            heldRows.Length,
+            heldRows.Count,
             low,
             high,
             new Dictionary<string, IReadOnlyList<double>>(StringComparer.Ordinal));

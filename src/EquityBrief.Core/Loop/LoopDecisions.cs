@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Loop;
 // only with the adopt setting reading automatic, where it passed and no decision was written for it; the shipped
 // setting reads on approval. A declined proposal is put again only where a later run read at least one more complete
 // block than the run it was declined on, and it passed with that block included.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
 public static class LoopDecisions
 {
@@ -31,23 +31,28 @@ public static class LoopDecisions
     public static string RestoreProposal(long setting) => FormattableString.Invariant($"restore the setting before change {setting}");
 
     // Why a change is not applied.
-    public const string LargeIndexRefused = "an S&P 500 rule's page is drawn by its family's own code, so an approved change there waits on the operator's ruling of how it reaches the page";
-
     public const string BookRefused = "a sector heavyweights' book changes its setting only by a freeze, so an approved change to it is not applied";
 
     public const string FamilyRefused = "the family has no setting an approval applies";
 
     public const string FrozenRefused = "the family's live rule stands registered on the index and draws its page, and a registered rule changes only by a registration, which waits on the operator's ruling of how an approval registers one";
 
-    // The swing families an approval changes on the S&P 400 and 600.
+    // The swing families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
     public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
+
+    // The S&P 500's families an approval changes, each by its stored settings and a registration.
+    public static IReadOnlyList<string> LargeFamilies { get; } = [BreakoutRule.Name, DriftRule.Name];
+
+    // The sessions a rule a change replaced runs beside the change on the S&P 500 before the apply step retires it, a block.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    public const int ReplacedSessions = 63;
 
     // Why an approved change to a family on an index is not applied, none where it is.
     public static string? Refusal(string index, string family) =>
-        index == MarketCloses.Index ? LargeIndexRefused
-        : family == HeavyweightRule.Name ? BookRefused
-        : Families.Contains(family, StringComparer.Ordinal) ? null
-        : FamilyRefused;
+        family == HeavyweightRule.Name ? BookRefused
+        : !Families.Contains(family, StringComparer.Ordinal) ? FamilyRefused
+        : null;
 
     // The one proposal of a family a run puts to the operator: of those that passed and state a change, leaving out one
     // an earlier run's decline holds back, the lowest adjusted p-value, a tie settled by the proposal's name; none where

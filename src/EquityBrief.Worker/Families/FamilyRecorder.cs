@@ -41,6 +41,7 @@ public sealed class FamilyRecorder : IComponent
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -226,6 +227,7 @@ public sealed class FamilyRecorder : IComponent
         await ExecuteAsync(connection, transaction, ClearTheNight, cancellation, ("$night", Stamp(night)));
 
         var verdicts = await ShadowsAsync(connection, transaction, night, cancellation);
+        var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, transaction, cancellation);
         var kept = 0;
         var said = new List<string>();
 
@@ -234,7 +236,7 @@ public sealed class FamilyRecorder : IComponent
         {
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;
-            var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters));
+            var hooks = RuleHooks.Of(CandidateEvaluator.Read(rule.Parameters)).With(trees);
 
             // A rule whose hooks read readings the night did not supply lists nothing tonight rather than a list its
             // hooks did not order.

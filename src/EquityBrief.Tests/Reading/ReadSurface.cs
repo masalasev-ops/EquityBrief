@@ -181,7 +181,7 @@ public partial class ReadSurface
             // 12.4, the run page's shape proposal and the blocks beside it.
             CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands"),
             CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding"),
-            CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart"),
+            CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks approving one of its moves on the Loop page would restart"),
             CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
 
             // 14.6, a registered heavyweights rule's record read off the run page, beside the freeze's verdict.
@@ -570,7 +570,7 @@ public partial class ReadSurface
         // whose record over each rule's own book is read off the run page here.
         Held = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            [CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound")] = nameof(ALaterAcceptanceWhileTheListIsLiveIsHeldToTheBlocksThePageDrawsBesideTheProposal),
+            [CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound")] = nameof(AnApprovedMoveRestartsTheBlocksThePageDrawsBesideTheProposal),
             [CheckReach.Key(Scope.LimitsTable, "Heavyweights' registrations")] = nameof(EachRegisteredHeavyweightsRuleIsReadOnTheRunPageOverItsOwnBookByTheSessionEachHoldingEnded),
         },
     };

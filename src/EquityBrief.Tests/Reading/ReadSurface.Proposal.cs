@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 
 namespace EquityBrief.Tests.Reading;
@@ -31,18 +32,21 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-03-31"));
         var region = Regex.Match(page, "<section class=\"shape-proposal\">(.*?)</section>", RegexOptions.Singleline).Groups[1].Value;
 
-        Assert.Contains("<p class=\"proposal\" data-proposal=\"1\" data-version=\"none\" data-ordinary=\"60\" data-decision=\"none\">Proposal 1, written on the night of 2026-03-31 over 60 ordinary nights under filter version none, is waiting on your decision: shape --accept 1 opens it as the next filter version, and shape --reject 1 --reason records why not.</p>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"proposal\" data-proposal=\"1\" data-version=\"none\" data-ordinary=\"60\" data-decision=\"none\">Proposal 1, written on the night of 2026-03-31 over 60 ordinary nights under filter version none, is waiting: each of its moves is put to you on the Loop page once the tester has tested it on years it never saw, and shape --reject 1 --reason records why not.</p>", region, StringComparison.Ordinal);
         Assert.Contains("<td>trend and strength</td><td>strengthFloor</td><td class=\"num\">0.67</td><td class=\"num\">0.46</td><td class=\"num\">0</td><td class=\"num\">40</td><td class=\"num\">38 to 347</td>", region, StringComparison.Ordinal);
         Assert.Contains("<td>setup</td><td>dryUpCeiling</td><td class=\"num\">1.00</td><td class=\"num\">1.05</td><td class=\"num\">10</td><td class=\"num\">15</td><td class=\"num\">14 to 126</td>", region, StringComparison.Ordinal);
         Assert.Contains("<td>trigger</td><td>no threshold</td><td></td><td></td><td class=\"num\">6</td><td class=\"num\">6</td><td class=\"num\">6 to 56</td>", region, StringComparison.Ordinal);
         Assert.Contains("<td>trade</td><td>rewardToRiskFloor</td><td class=\"num\">2.00</td><td class=\"num\">none brings it inside</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">1 to 12</td>", region, StringComparison.Ordinal);
         Assert.Contains("<td>the list</td><td></td><td></td><td></td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">1 to 9</td>", region, StringComparison.Ordinal);
         Assert.Contains("<ul class=\"proposal-findings\" data-findings=\"1\"><li>no rewardToRiskFloor between 1.00 and 4.00 brings the trade's median inside 1 to 12, and it stays 0</li></ul>", region, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"restarts\" data-live=\"none\" data-accepted-while-live=\"0\" data-blocks=\"0\">No live filter candidate is registered, so accepting restarts nothing.</p>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"restarts\" data-live=\"none\" data-accepted-while-live=\"0\" data-blocks=\"0\">No live filter candidate is registered, so approving a move restarts nothing.</p>", region, StringComparison.Ordinal);
     }
 
+    // From 17.14 the page draws beside a proposal the blocks approving one of its moves restarts, and the night that opens
+    // the version a move names states the same count.
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     [Fact]
-    public async Task ALaterAcceptanceWhileTheListIsLiveIsHeldToTheBlocksThePageDrawsBesideTheProposal()
+    public async Task AnApprovedMoveRestartsTheBlocksThePageDrawsBesideTheProposal()
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -94,27 +98,27 @@ public partial class ReadSurface
         Assert.True(restarts.Success);
         Assert.Equal((live, "1", "2"), (restarts.Groups[1].Value, restarts.Groups[2].Value, restarts.Groups[3].Value));
         Assert.Equal(
-            $"Accepting it restarts the 2 non-empty block(s) '{live}' has run, of the {EquityBrief.Core.Returns.Blocks.Floor} its first look reads. Shape is frozen after one acceptance while the list is live, so the command states them: shape --accept 1 --restarts 2.",
+            $"Approving one of its moves opens the next filter version and restarts the 2 non-empty block(s) '{live}' has run, of the {EquityBrief.Core.Returns.Blocks.Floor} its first look reads, which the night states as it opens the version.",
             restarts.Groups[4].Value);
 
-        var drawn = restarts.Groups[3].Value;
+        // The command accepts the proposal no more, and nothing changes.
         var at = new DateTimeOffset(2025, 12, 2, 22, 0, 0, TimeSpan.Zero);
         var before = FixtureExpectations.ShapeTables(store);
 
-        // Without the count, and at a count other than the page's, the acceptance is refused and nothing changes.
-        var (unstated, saidUnstated) = await FixtureExpectations.ShapeVerb(store, at, "--accept", "1");
-
-        Assert.Equal(1, unstated);
-        Assert.Contains("--restarts 2", saidUnstated, StringComparison.Ordinal);
-        Assert.Equal(1, (await FixtureExpectations.ShapeVerb(store, at.AddMinutes(1), "--accept", "1", "--restarts", "3")).Code);
-        Assert.Equal(1, (await FixtureExpectations.ShapeVerb(store, at.AddMinutes(2), "--accept", "1", "--restarts", "1")).Code);
+        Assert.Equal(1, (await FixtureExpectations.ShapeVerb(store, at, "--accept", "1", "--restarts", restarts.Groups[3].Value)).Code);
         Assert.Equal(before, FixtureExpectations.ShapeTables(store));
 
-        // At the count read off the page it is accepted, and the live candidate restarts.
-        var (accepted, said) = await FixtureExpectations.ShapeVerb(store, at.AddMinutes(3), "--accept", "1", "--restarts", drawn);
+        // A move of it approved and opened by the night restarts the count the page drew, after one acceptance while the
+        // list was live, with no count stated by anyone.
+        var opened = await new EquityBrief.Worker.Filter.ShapeCommand(FixedClock.At(at.AddMinutes(3), SessionZones.UnitedStates), store.DatabaseFile)
+            .ApplyTheMoveAsync(
+                new Dictionary<string, double>(StringComparer.Ordinal) { [ShapeProposals.RewardToRiskFloor] = 1.5 },
+                "the move approved on the Loop page",
+                (_, _, _, _) => Task.CompletedTask,
+                "loop-apply-test");
 
-        Assert.Equal(0, accepted);
-        Assert.EndsWith("restarting 2 non-empty block(s)" + Environment.NewLine, said, StringComparison.Ordinal);
+        Assert.Equal(EquityBrief.Worker.Filter.ShapeCommand.Accepted, opened.Outcome);
+        Assert.EndsWith("restarting 2 non-empty block(s)", opened.Detail, StringComparison.Ordinal);
 
         using var connection = store.Open();
         using var command = connection.CreateCommand();

@@ -62,11 +62,12 @@ public sealed partial class ReadApi
         return rows;
     }
 
-    // Each family's learned score a run stored, the one fitted on all finished data, cut after the run's last session.
+    // Each family's learned score a run stored, the one fitted on all finished data, cut after the run's last session;
+    // the ridge score's, whose part the page draws, the challenger's trees drawn with their proposals.
     const string LoopModelsOf = @"
         SELECT m.family, m.learned_before, m.setups, m.hash, m.words
         FROM loop_model m JOIN loop_run r ON r.run_id = m.run_id
-        WHERE m.run_id = $run_id AND m.learned_before > r.through ORDER BY m.family;";
+        WHERE m.run_id = $run_id AND m.kind = 'ridge' AND m.learned_before > r.through ORDER BY m.family;";
 
     public async Task<IReadOnlyList<LoopModelRow>> LoopModelsAsync(LoopRunRow run)
     {

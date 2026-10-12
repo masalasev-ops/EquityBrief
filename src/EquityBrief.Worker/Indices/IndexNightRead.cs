@@ -164,8 +164,8 @@ public static class IndexNightRead
     // the provisional floors and gate, and the family's list kept and ordered by the setting's hooks over the night's
     // readings, a member they leave off naming why, and every member left off on a night handed no readings where the
     // hooks read them.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
-    public static IndexFamilyRead Stored(IndexNightInputs inputs, string family, LoopChange setting, Func<string, IReadOnlyList<double?>?>? readings)
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
+    public static IndexFamilyRead Stored(IndexNightInputs inputs, string family, LoopChange setting, Func<string, IReadOnlyList<double?>?>? readings, Func<long, TreeModel?>? trees = null)
     {
         string? FailsOnProvisional(int name) => FailsOn(inputs, name, 1m, MemberReadings.LowestPrice, IndexQuality.Profit);
 
@@ -178,7 +178,7 @@ public static class IndexNightRead
             _ => Provisional(inputs, family, readings),
         };
 
-        return Hooked(inputs, read, RuleHooks.Of(setting.Hooks), readings);
+        return Hooked(inputs, read, RuleHooks.Of(setting.Hooks).With(trees), readings);
     }
 
     // A family's read with its list kept and ordered by hooks: those the hooks keep first in their order, then those they

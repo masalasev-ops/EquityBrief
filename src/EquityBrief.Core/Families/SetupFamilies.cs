@@ -153,6 +153,13 @@ public static class SetupFamilies
         + string.Concat(InPageOrder.Concat(Former).Select(one => $" WHEN '{one.Name}' THEN " + (one.OnThePullbacksPlan ? PullbackHorizonIn(settings) : $"'{one.Horizon}'")))
         + " END";
 
+    // The horizon a listed pick is scored under, over its family, its night's filter settings and the exit of the menu
+    // its pick names: a pullback pick an approved setting named an exit for under the menu's own horizon, every other as
+    // its family's.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    public static string PickHorizonIn(string family, string settings, string exit) =>
+        $"CASE WHEN {exit} IS NOT NULL AND {family} = '{Pullback}' THEN '{ForwardReturnSeries.MenuExit}' ELSE {HorizonIn(family, settings)} END";
+
     // The sessions a family's trade is given, over a column holding its family.
     public static string CapIn(string family) =>
         "CASE " + family + string.Concat(InPageOrder.Concat(Former).Select(one => FormattableString.Invariant($" WHEN '{one.Name}' THEN {one.CapSessions}"))) + FormattableString.Invariant($" ELSE {ForwardReturnSeries.SetupSessionCap} END");

@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
@@ -54,9 +55,11 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopTest, Touch.Insert),
             new StoreTouch(Store.LoopFinding, Touch.Insert),
             new StoreTouch(Store.LoopReading, Touch.Insert),
-            new StoreTouch(Store.LoopModel, Touch.Insert),
+            new StoreTouch(Store.LoopModel, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopReference, Touch.Insert),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.ShapeProposal, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -100,8 +103,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     ";
 
     const string InsertModel = @"
-        INSERT INTO loop_model (run_id, index_code, family, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words)
-        VALUES ($run_id, $index_code, $family, $year, $learned_from, $learned_before, $setups, $readings, $parameters, $hash, $pin, $words);
+        INSERT INTO loop_model (run_id, index_code, family, kind, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words)
+        VALUES ($run_id, $index_code, $family, $kind, $year, $learned_from, $learned_before, $setups, $readings, $parameters, $hash, $pin, $words);
     ";
 
     // A family's finished setups on all three indices, each with the session its path ended on, its edge in risks, the
@@ -122,10 +125,11 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         VALUES ($run_id, $index_code, $family, $proposal, $year, $complete, $chosen, $current_units, $proposed_units, $current_total, $proposed_total);
     ";
 
-    // One proposal and its verdict, as the run writes them.
-    public sealed record Tested(LoopProposalRead Proposal, LoopVerdict Verdict)
+    // One proposal and its verdict, as the run writes them; from 17.15 a proposal of the learned score's challenger
+    // passes only where its total edge is above the ridge score's proposal of its kind.
+    public sealed record Tested(LoopProposalRead Proposal, LoopVerdict Verdict, bool? BeatsRidge = null)
     {
-        public bool Passed => Verdict.Passes && Proposal.Words is not null;
+        public bool Passed => Verdict.Passes && Proposal.Words is not null && BeatsRidge != false;
     }
 
     // A run on an index for a month, written whole; with print, read and printed and nothing written.
@@ -185,7 +189,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         }
 
         // Part 0's procedures on the S&P 400 and 600; then each family a rule's hooks reach, the S&P 400's and 600's
-        // provisional pullback and the breakout and the drift on every index, read once and handed to the autopsy's exits,
+        // provisional pullback, the S&P 500's swing filter with its shape clock's moves, and the breakout and the drift on
+        // every index, read once and handed to the autopsy's exits,
         // to winners against losers and to the learned score, fitted on the family's finished setups of all three
         // indices; then the sector heavyweights' two exits on every index; each family's proposals read together by the
         // step-down.
@@ -194,11 +199,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
-        // Each family is tested against the rule as it stands: on the S&P 400 or 600 at the setting an approval stored
-        // for it where one did, and at its provisional setting otherwise; on the S&P 500, whose approvals are refused, at
-        // its own. A family an approval set hooks on is not searched on its grid, whose walk reads no hook.
-        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
-        var standing = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StandingAsync(databaseFile, index, cancellation);
+        // Each family is tested against the rule as it stands: at the setting an approval stored for it on its index where
+        // one did, the S&P 500's breakout and drift at their own setting with the hooks it stores, and at its provisional
+        // or its own setting otherwise. A family an approval set hooks on is not searched on its grid, whose walk reads no
+        // hook.
+        // see: An approved change is applied by the night's own build on the index it was approved on alone
+        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        var standing = await StandingAsync(databaseFile, index, cancellation);
 
         if (!large)
         {
@@ -218,15 +225,36 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         }
 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
+        var trees = await StoredTreesAsync(databaseFile, cancellation);
         var rules = new List<RuleWalk>();
 
         if (!large)
         {
-            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings));
+            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees));
+        }
+        else if (await OpenVersionAsync(databaseFile, cancellation) is { } open)
+        {
+            // The S&P 500's pullback, the swing filter at its open version's settings read by value with the hooks an
+            // approval stored, and each move of the newest shape proposal written for that version a proposal of the run.
+            // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, await history.MarketAsync(through, cancellation), output.WriteLine);
+            var pullbacks = new LargePullback(replay.Series, candidates);
+
+            RuleWalk WalkAt(FilterSettings settings) =>
+                RuleWalk.LargeSwingFilter(read, pullbacks, open.Version, settings, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees);
+
+            var filter = WalkAt(open.Settings);
+
+            rules.Add(filter);
+
+            if (await ShapeMovesAsync(databaseFile, open.Version, cancellation) is { } shape)
+            {
+                proposals.AddRange(ShapeProcedures.Run(read, filter, WalkAt, open.Settings, shape.Moves, shape.Id, output.WriteLine));
+            }
         }
 
-        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings));
-        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings));
+        rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings, trees));
+        rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings, trees));
 
         var scores = new List<FittedScore>();
 
@@ -246,7 +274,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
 
         proposals.AddRange(ExitProcedures.Heavyweights(read, lay, output.WriteLine));
 
-        var tested = Judge(read, proposals);
+        var tested = ScoreProcedures.AgainstRidge(Judge(read, proposals));
         var runId = FormattableString.Invariant($"{Verb}-{index}-{started:yyyyMMddTHHmmssZ}");
 
         if (!print)
@@ -283,7 +311,50 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         return 0;
     }
 
-    // The setting an approval stored for each family of an S&P 400 or 600, the newest a family.
+    // The swing filter's open version and its settings, none before a version is opened.
+    const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC, rowid DESC LIMIT 1;";
+
+    // The newest shape proposal written for a version and not yet decided, with its levers.
+    const string NewestShape = "SELECT id, levers FROM shape_proposal WHERE version = $version AND decision IS NULL ORDER BY id DESC LIMIT 1;";
+
+    static async Task<(string Version, FilterSettings Settings)?> OpenVersionAsync(string databaseFile, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OpenVersion;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) ? (reader.GetString(0), FilterSettings.Read(reader.GetString(1))) : null;
+    }
+
+    static async Task<(long Id, IReadOnlyList<(string Setting, double Proposed)> Moves)?> ShapeMovesAsync(string databaseFile, string version, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestShape;
+        command.Parameters.AddWithValue("$version", version);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) ? (reader.GetInt64(0), ShapeProcedures.MovesOf(reader.GetString(1))) : null;
+    }
+
+    // The tree models earlier runs stored, which a rule standing at an approved change of the learned score's
+    // challenger is walked by.
+    static async Task<Func<long, TreeModel?>> StoredTreesAsync(string databaseFile, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await StoredTrees.ReadAsync(connection, null, cancellation);
+    }
+
+    // The setting an approval stored for each family of an index, the newest a family.
     static async Task<IReadOnlyDictionary<string, LoopChange>> StandingAsync(string databaseFile, string index, CancellationToken cancellation)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
@@ -522,6 +593,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                 ("$run_id", runId),
                 ("$index_code", index),
                 ("$family", score.Family),
+                ("$kind", score.Kind),
                 ("$year", score.Year),
                 ("$learned_from", score.LearnedFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                 ("$learned_before", score.LearnedBefore.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
@@ -529,8 +601,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
                 ("$readings", string.Join(",", score.Model.Readings.Select(reading => EquityBrief.Core.Ledger.LedgerReadings.All[reading].Column))),
                 ("$parameters", score.Model.Canonical()),
                 ("$hash", score.Model.Hash),
-                ("$pin", RidgeScore.Version),
-                ("$words", RidgeScore.Words(score.Model)),
+                ("$pin", score.Pin),
+                ("$words", score.Words),
             ], cancellation);
         }
 
@@ -554,7 +626,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var gate = verdict.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}");
 
         return FormattableString.Invariant(
-            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}; {proposal.StableFolds} of {proposal.Folds.Count} folds {(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) ? "fitted a score" : "within a step")}");
+            $"{proposal.Family}, {proposal.Proposal}: {(one.Passed ? "passed" : "did not pass")}; {proposal.Words ?? "no setting chosen on all finished data"}; {gate}; better in {verdict.Better} of {verdict.Counted} counted year(s){(verdict.Stable ? string.Empty : ", short of the stability screen")}; {verdict.Units} {proposal.Unit} unit(s){(verdict.Counts ? string.Empty : ", short of the count")}{(one.BeatsRidge == false ? ", not above the learned score's proposal of its kind" : string.Empty)}; {proposal.StableFolds} of {proposal.Folds.Count} folds {(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) || proposal.Proposal.StartsWith(TreeScore.Proposal, StringComparison.Ordinal) ? "fitted a score" : "within a step")}");
     }
 
     static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, CancellationToken cancellation)

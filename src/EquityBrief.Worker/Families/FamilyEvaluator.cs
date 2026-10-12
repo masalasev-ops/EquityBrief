@@ -5,9 +5,11 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Indices;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Families;
@@ -36,9 +38,13 @@ public sealed record FamilyNightInputs(IReadOnlyList<FamilyNightMember> Members,
 // stored on the member's row of its family, a missing or moved evaluator failing the stage. It replaces its
 // own rows for the night where the night is run again, and drops a row that did not pass once its session is
 // older than the bars the store keeps. It hands every registered rule the index's and the VIX's closes the fetch
-// step stored, on the store's own sessions to the night, which a rule's market switch reads. It makes no request
-// and calls no model.
+// step stored, on the store's own sessions to the night, which a rule's market switch reads. Where an approval
+// stored a setting for the S&P 500's breakout or drift, the family's passing members are kept and ordered by the
+// setting's hooks over the night's readings, a member they leave off failing on them, and the exit it names is
+// stored beside each pick with the stop's distance in typical moves, which the filler walks the trade under. It
+// makes no request and calls no model.
 // see: The nightly run is arithmetic only
+// see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
 // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 // see: The market check closes every swing family's list together, and the sector heavyweights read none
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
@@ -56,6 +62,8 @@ public sealed class FamilyEvaluator : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -122,9 +130,9 @@ public sealed class FamilyEvaluator : IComponent
 
     const string Insert = @"
         INSERT INTO family_result (
-            session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates, shadow)
+            session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates, shadow, exit, risk_moves)
         VALUES (
-            $night, $ticker, $family, $passed, $missed, $place, $entry, $stop, $target, $order_by, $exclusions, $gates, $shadow);
+            $night, $ticker, $family, $passed, $missed, $place, $entry, $stop, $target, $order_by, $exclusions, $gates, $shadow, $exit, $risk_moves);
     ";
 
     const string AppendRun = @"
@@ -150,7 +158,13 @@ public sealed class FamilyEvaluator : IComponent
     public Task<FamilyEvaluatorOutcome> RunAsync(string runId, CancellationToken cancellation = default) =>
         RunAsync(runId, FamilyRuleShadow.None, cancellation);
 
-    public async Task<FamilyEvaluatorOutcome> RunAsync(string runId, FamilyRuleShadow shadow, CancellationToken cancellation = default)
+    // `readingsTonight` reads the catalogue's readings of the night's members, asked for only where a stored setting's
+    // hooks read them.
+    public async Task<FamilyEvaluatorOutcome> RunAsync(
+        string runId,
+        FamilyRuleShadow shadow,
+        CancellationToken cancellation = default,
+        Func<CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsTonight = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -174,17 +188,26 @@ public sealed class FamilyEvaluator : IComponent
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
-        var results = new List<(FamilyResult Result, string? Shadow)>();
+        var own = new List<(FamilyResult Result, string? Shadow)>();
 
         foreach (var member in inputs.Members)
         {
-            results.Add((BreakoutRule.Evaluate(member.Inputs.Breakout), shadow.Evaluate(BreakoutRule.Name, member.Inputs, member.Withheld)));
-            results.Add((DriftRule.Evaluate(member.Inputs.Drift), shadow.Evaluate(DriftRule.Name, member.Inputs, member.Withheld)));
+            own.Add((BreakoutRule.Evaluate(member.Inputs.Breakout), shadow.Evaluate(BreakoutRule.Name, member.Inputs, member.Withheld)));
+            own.Add((DriftRule.Evaluate(member.Inputs.Drift), shadow.Evaluate(DriftRule.Name, member.Inputs, member.Withheld)));
         }
 
-        var places = SetupFamilies.Evaluated
-            .SelectMany(family => FamilyRule.Ranked(results.Select(pair => pair.Result).Where(result => result.Family == family.Name)).Select((result, at) => (result.Family, result.Ticker, Place: at + 1)))
-            .ToDictionary(row => (row.Family, row.Ticker), row => row.Place);
+        // The setting an approval stored for each family on the S&P 500, the newest a family, its hooks keeping and
+        // ordering the family's list and naming the exit its picks are walked under.
+        var stored = await EquityBrief.Worker.Indices.IndexFamilies.StoredSettingsAsync(connection, MarketCloses.Index, cancellation);
+        var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, null, cancellation);
+        var hooks = SetupFamilies.Evaluated.ToDictionary(
+            family => family.Name,
+            family => stored.TryGetValue(family.Name, out var setting) ? RuleHooks.Of(setting.Hooks).With(trees) : RuleHooks.Off,
+            StringComparer.Ordinal);
+        var readings = hooks.Values.Any(rule => rule.ReadsReadings) && readingsTonight is not null ? await readingsTonight(cancellation) : null;
+        var (hooked, places) = Hooked([.. own.Select(pair => pair.Result)], hooks, readings);
+        var results = hooked.Zip(own, (result, pair) => (Result: result, pair.Shadow)).ToList();
+        var typical = inputs.Members.ToDictionary(member => member.Ticker, member => member.Inputs.Breakout.TypicalMove, StringComparer.Ordinal);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
@@ -216,6 +239,13 @@ public sealed class FamilyEvaluator : IComponent
             insert.Parameters.AddWithValue("$exclusions", JsonSerializer.Serialize(result.Exclusions));
             insert.Parameters.AddWithValue("$gates", FamilyRule.GatesJson(result.Gates));
             insert.Parameters.AddWithValue("$shadow", verdicts is null ? DBNull.Value : verdicts);
+
+            // The exit a stored setting names, on a pick alone, with its stop's distance in the night's typical moves.
+            var exit = result.Passed ? hooks[result.Family].Exit : 0;
+            var riskMoves = exit != 0 ? RiskMoves(result, typical.GetValueOrDefault(result.Ticker)) : null;
+
+            insert.Parameters.AddWithValue("$exit", exit != 0 ? exit : DBNull.Value);
+            insert.Parameters.AddWithValue("$risk_moves", riskMoves is { } moves ? moves : DBNull.Value);
 
             await insert.ExecuteNonQueryAsync(cancellation);
         }
@@ -305,6 +335,46 @@ public sealed class FamilyEvaluator : IComponent
 
         return new FamilyNightInputs(read, closes);
     }
+
+    // The night's answers of the S&P 500's breakout and drift kept and ordered by the hooks an approval stored for each:
+    // a family's passing members in its own order handed to its hooks, those they keep placed in the hooks' order and
+    // those they leave off failing on them, a member a condition or a score cannot be read for among them; a family
+    // stating no hook answered and placed as its own rule answers it.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    public static (IReadOnlyList<FamilyResult> Results, IReadOnlyDictionary<(string Family, string Ticker), int> Places) Hooked(
+        IReadOnlyList<FamilyResult> results,
+        IReadOnlyDictionary<string, RuleHooks> hooks,
+        Func<string, IReadOnlyList<double?>?>? readings)
+    {
+        var places = new Dictionary<(string Family, string Ticker), int>();
+        var leftOff = new HashSet<(string Family, string Ticker)>();
+
+        foreach (var family in SetupFamilies.Evaluated)
+        {
+            var ranked = FamilyRule.Ranked(results.Where(result => result.Family == family.Name));
+            var kept = (hooks.GetValueOrDefault(family.Name) ?? RuleHooks.Off).Order(ranked, result => readings?.Invoke(result.Ticker));
+
+            for (var at = 0; at < kept.Count; at++)
+            {
+                places[(family.Name, kept[at].Ticker)] = at + 1;
+            }
+
+            foreach (var result in ranked.Where(result => !places.ContainsKey((family.Name, result.Ticker))))
+            {
+                leftOff.Add((family.Name, result.Ticker));
+            }
+        }
+
+        return (
+            [.. results.Select(result => leftOff.Contains((result.Family, result.Ticker)) ? result with { Exclusions = [.. result.Exclusions, IndexNightRead.NotByItsHooks] } : result)],
+            places);
+    }
+
+    // A pick's stop's distance under its buy in the night's typical moves, none where either cannot be read.
+    static double? RiskMoves(FamilyResult result, double? typical) =>
+        result.Entry is { } entry && result.Stop is { } stop && typical is > 0 && entry > stop
+            ? Statistic.FromPrice(entry - stop) / typical.Value
+            : null;
 
     // What the stage's row says: for each family, the members it passed of the ones it evaluated and the
     // ones a single gate short.

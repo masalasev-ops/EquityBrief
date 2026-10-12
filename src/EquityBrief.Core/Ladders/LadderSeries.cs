@@ -135,7 +135,7 @@ public readonly record struct LadderBar(DateOnly SessionDate, decimal High, deci
 // pass the live values would be a change to the thing being measured in order to
 // measure it. The merge distance is not here: it is already a parameter of the
 // level arithmetic, which is what makes a version of it replay levels as well.
-// see: Adding a candidate later restarts the clock
+// see: A registration restarts only the registered rule's own record
 public sealed record LadderRuleSet(
     int NearExitInTypicalDays = LadderSeries.NearExitInTypicalDays,
     bool StopTrailsTheLastHigherLow = true,
