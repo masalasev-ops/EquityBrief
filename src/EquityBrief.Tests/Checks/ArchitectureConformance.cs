@@ -1548,7 +1548,8 @@ public partial class ArchitectureConformance
         // 581 at 18.4: the calendar timeline as its eight parts, the headline as its four where it was one, the risks' two
         // columns as their four, the calendar as its eight and the sources as their four, where the dates and sources leave.
         // 582 at the 17.10 correction: the checklist's part on the newest monthly run.
-        Assert.Equal(582, inDocument.Length);
+        // 583 at 19.1: the card's rule row's part on the S&P 400's and 600's variant reading no market check.
+        Assert.Equal(583, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1656,7 +1657,8 @@ public partial class ArchitectureConformance
         // 508 at 18.4: the headline's four parts, the risks' two columns' four, the calendar's eight, the sources' four and
         // the calendar timeline's eight.
         // 509 at the 17.10 correction: the checklist's part on the newest monthly run.
-        Assert.Equal(509, checkedElements);
+        // 510 at 19.1: the card's rule row's part on the S&P 400's and 600's variant reading no market check.
+        Assert.Equal(510, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

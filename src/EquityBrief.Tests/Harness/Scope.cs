@@ -3535,8 +3535,10 @@ internal static class Scope
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the closing line that the rule reads its other gates that night as on any other and lists five at most")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 before a freeze the provisional rule alone with the line that no variant is registered before its freeze")] = new Scoped(
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 where no variant stands before a freeze the provisional rule alone with the line that no variant is registered before its freeze")] = new Scoped(
             Verdict.Pass, "read back off the rendered card over a constructed store with a variant chosen in the link and by default, and on the S&P 400 with no variant registered", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off")] = new Scoped(
+            Verdict.Pass, "read back off the rendered S&P 400 card over a constructed store with the variant reading no market check registered, listed after the provisional rule with no line that none is registered, and chosen in the link with the clause naming the check off marked", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark")] = new Scoped(
             Verdict.Pass, "the live breakout rule past its mark named with its stretch and mark on the checklist, read back off the rendered page", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, the newest monthly run having held every step it ran, and where it stopped its month and step named with why")] = new Scoped(
@@ -5729,7 +5731,8 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, its ranges' ratio and the gates it still fails and its next report where one falls within the window")] = "17.2",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a line where the market check closed the rule's list")] = "17.2",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the closing line that the rule reads its other gates that night as on any other and lists five at most")] = "17.2",
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 before a freeze the provisional rule alone with the line that no variant is registered before its freeze")] = "17.2",
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 where no variant stands before a freeze the provisional rule alone with the line that no variant is registered before its freeze")] = "17.2",
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, on the S&P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off")] = "19.1",
         [CheckReach.Key("15.10 Run", "Anything to worry about, no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark")] = "17.2",
         [CheckReach.Key("15.10 Run", "Anything to worry about, the newest monthly run having held every step it ran, and where it stopped its month and step named with why")] = "17.10",
         // The fundamentals-first family's card, 17.8.
@@ -6173,7 +6176,8 @@ internal static class Scope
             "its ranges' ratio and the gates it still fails and its next report where one falls within the window",
             "a line where the market check closed the rule's list",
             "the closing line that the rule reads its other gates that night as on any other and lists five at most",
-            "on the S&P 400 or 600 before a freeze the provisional rule alone with the line that no variant is registered before its freeze",
+            "on the S&P 400 or 600 where no variant stands before a freeze the provisional rule alone with the line that no variant is registered before its freeze",
+            "on the S&P 400 or 600 a variant reading no market check listed after the provisional rule by its registration's words, which end on the market check off",
         ],
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card")] =
         [

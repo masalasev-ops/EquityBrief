@@ -16,10 +16,11 @@ namespace EquityBrief.Tests.Reading;
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public partial class ReadSurface
 {
-    // The card's row as the parts the scope enumerates, and the checklist's item on a live rule past its mark.
+    // The card's row as the parts the scope enumerates less the one 19.1 adds, and the checklist's item on a live rule
+    // past its mark.
     internal static readonly string[] RuleCardsPageClaims =
     [
-        .. Scope.ElementsOf(CheckReach.Key("15.7 Tonight", "A family's card's rule")).Select(part => CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
+        .. Scope.ElementsOf(CheckReach.Key("15.7 Tonight", "A family's card's rule")).Where(part => part != MarketOffPart).Select(part => CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
         CheckReach.Key("15.10 Run", "Anything to worry about, no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark"),
     ];
 

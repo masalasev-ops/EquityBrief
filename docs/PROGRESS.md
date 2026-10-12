@@ -43930,3 +43930,56 @@ Tests:      2251, unchanged.
 Verified:   `tools/ci.ps1` green over main as above; this entry alone changes, so the same checks ran filtered over the
             tree carrying it, 159 of 159 passed.
 Carried:    nothing.
+
+### 19.1 - the S&P 400's and 600's market-off variants: a third breadth value reading no market check, a pullback stating it with its own market dial off, and six variants beside the provisional rules registered by the remedy   2026-10-12
+
+Built:      the index rules' breadth setting gains a third value, `largeBreadth=2`, no market check, beside the index's
+            own breadth at 0 and the S&P 500's at 1. A rule stating it opens its list on every night and hands its
+            family's listings the night read as every member above its average, since the breakout's and the drift's
+            sweeps make the check on the night themselves; their files are pinned by the S&P 500's evaluators and are left
+            as they were. The form's setting check admits the value, refuses a fourth, and refuses a pullback stating it
+            with its own market dial on, the provisional pullback's setting reading the index's breadth at 0.45 inside it.
+            The rule's words end on "the market check off" and the registration's rule words say "or none is stated"; the
+            short words "market check off" are written in the core for 19.3's chips and tabs. The decision (see: An S&P
+            400 or 600 swing family may carry a variant with no market check, the check standing on its provisional
+            rule); 15.7's card row, its last part reworded to hold where no variant stands and a part added for the
+            variant; section 17's market gate row; the runbook's freeze and variants paragraphs; the roster's two rows;
+            and the guide's selector paragraph, the prior text in `CHANGELOG.md`. The remedy
+            `tools/remedies/2026-10-12-19.1-the-market-off-variants.txt` registers the moved rules again and then the six
+            variants from main after the merge.
+Measured:   read-only on the live store: the rules standing on the S&P 400 and 600 are the S&P 600's two heavyweights
+            books, rows 284 and 285, which hold no holding and have read no night, the newest index night being
+            2026-10-09; no index rule holds a trade. The floor of 0.45 these indices' lists close at was copied from the
+            S&P 500's filter and never tested on either index, as 19.0's entry measured.
+Tests:      three more: a rule reading no market check listing IA, IC, ID and IB on a constructed S&P 400 night whose
+            breadth of 7 in 17 closes the provisional rule's list, every member of which fails at the check; the form
+            refusing the pullback with its dial on and a fourth value, then registering the six the remedy registers,
+            each the provisional setting with its moves and its words ending on the check off; and the S&P 400's card
+            listing the variant after the provisional rule with no line that none is registered, its clause marked when
+            chosen. The committed fixture holds no S&P 400 or 600 member, so these are worked by hand over constructed
+            nights as 15.5's and 17.11's are, and no expectation file is written.
+Claims:     one more, the card row's part on the variant, named after phase 18's report beside its pair; the part it
+            rewords stands as one claim.
+Pins:       the S&P 400's and 600's pullback, breakout, drift and heavyweights versions moved to a748b3a99fb5,
+            b808c533ad30, a7607ebffaea and 6c6b35c716e1 with the index rules' file, so the remedy registers the S&P
+            600's two books again, each named as not replayed and restarting, which loses nothing; no S&P 500 pin moves.
+Mutated:    the rule, stated before the runs: each property the checkpoint adds, one mutation each, filtered to 19.1's
+            three tests and the S&P 400's card test before them. M1 the listings handed the night's own breadth for a rule
+            reading none: predicted red at the closed night's test. M2 the list's check left to the index's breadth for a
+            rule reading none: predicted the same. M3 the form admitting a pullback reading none with its dial on:
+            predicted red at the form's test. M4 the form admitting a fourth value: predicted the same. M5 the words not
+            naming the check off: predicted red at the form's test and the card's. Results: M1 and M2 red at the closed
+            night's test alone, the variant listing nothing, one of four each; M3 red at the form's test, the pullback
+            registered, and M4 the same, a fourth value registered, one of four each; M5 red at the form's test and the
+            card's, two of four. Each reverted before anything was committed. Not mutated: the drift's and the pullback's
+            listings on a closed night, which read the sessions the breakout's do and are worked through the breakout's
+            alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 57c3c168: all six
+            steps, 0 warnings, 0 errors, 2254 of 2254 tests ran with none failed in 16 minutes 29 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report ran the
+            suite again over the commit, 2254 of 2254, and read 1268 claims, 1268 passing and none unexamined, 43 checks
+            on the roster run and passed.
+Queue:      done, 19.0 as PR 446 and its correction as PR 447; in progress, 19.1; next, 19.2, colour, the header, the
+            menu and the top of Tonight. The remedy runs from main after the merge and before the night, and the six
+            variants' first night is read the morning after.
+Carried:    the sign-offs of phases 16, 17 and 18 and the Linux test of 2aec8d18, as 19.0's entry carries them.

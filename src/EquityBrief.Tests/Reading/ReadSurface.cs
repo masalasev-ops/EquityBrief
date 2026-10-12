@@ -119,6 +119,9 @@ public partial class ReadSurface
             // 17.10, the checklist's item on the newest monthly run.
             .. MonthlyWorryRows,
 
+            // 19.1, the card's rule row's part on the S&P 400's and 600's variant reading no market check.
+            .. MarketOffRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

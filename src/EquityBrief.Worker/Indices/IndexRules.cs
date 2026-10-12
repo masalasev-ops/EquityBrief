@@ -82,7 +82,6 @@ public static class IndexRules
         [IndexRuleCandidate.FundOverSpyParameter] = [0, .. IndexSwitches.SmallWindows],
         [IndexRuleCandidate.CreditAverageParameter] = [0, 1],
         [IndexRuleCandidate.CreditChangeParameter] = [0, 1],
-        [IndexRuleCandidate.LargeBreadthParameter] = [0, 1],
         [IndexBreakoutCandidate.NearnessParameter] = [0, IndexSweepRunner.NearHigh, 1],
         [IndexBreakoutCandidate.RecencyParameter] = [0, IndexSweepRunner.RecentHighSessions, -IndexSweepRunner.RecentHighSessions],
         [IndexBreakoutCandidate.HighVolumeParameter] = [0, IndexSweepRunner.HighestVolume],
@@ -92,7 +91,7 @@ public static class IndexRules
     };
 
     // Why a rule's parameters cannot be registered: a value off its dial's grid or off its level's values, the first
-    // named; none where every value is one its index's sweep read.
+    // named; none where every value is one its index's sweep read or the breadth's third value, no market check.
     public static string? Refusal(IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> parameters)
     {
         // The engines' hooks a swing rule may state beside its own parameters are read by its keeping and its walk and
@@ -120,6 +119,26 @@ public static class IndexRules
         if (evaluator.Parameters.FirstOrDefault(name => !parameters.ContainsKey(name)) is { } missing)
         {
             return $"'{evaluator.Name}' reads '{missing}', and the registration states none.";
+        }
+
+        // The breadth the market check reads: the index's own and the S&P 500's, the two its index's sweep read, or none.
+        // A pullback reading none states its own market dial off as well, since the provisional pullback's setting reads
+        // the index's breadth at the same floor inside it.
+        // see: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
+        if (parameters.TryGetValue(IndexRuleCandidate.LargeBreadthParameter, out var breadth))
+        {
+            if (breadth is not (0 or 1 or IndexRuleCandidate.NoMarketCheck))
+            {
+                return FormattableString.Invariant($"'{IndexRuleCandidate.LargeBreadthParameter}' is {Number(breadth)}, and a rule's market check reads the index's own breadth at 0, the S&P 500's at 1 and none at {Number(IndexRuleCandidate.NoMarketCheck)} alone.");
+            }
+
+            if (breadth == IndexRuleCandidate.NoMarketCheck
+                && evaluator is IndexPullbackCandidate
+                && parameters.TryGetValue(IndexPullbackCandidate.MarketParameter, out var market)
+                && market != 0)
+            {
+                return FormattableString.Invariant($"a pullback reading no market check states its own market dial off, and '{IndexPullbackCandidate.MarketParameter}' is {Number(market)}.");
+            }
         }
 
         foreach (var (name, values) in LevelValues.Where(pair => parameters.ContainsKey(pair.Key)))
@@ -350,7 +369,7 @@ public static class IndexRules
         "the family's rule on its index at every setting stated, read through the index night reader's own functions over " +
         "the index's own members: the family's sweep's grid at its four dials, or the pullback's nine, each listing held to " +
         "the index's floors at the stated multiple and the stated lowest close, the stated quality, and each level stated, " +
-        "the market check on the index's own breadth unless the S&P 500's is stated; a member firing where every part " +
+        "the market check on the index's own breadth unless the S&P 500's or none is stated; a member firing where every part " +
         "passes, the rule's own list at most five a night in the family's order, with one open trade a stock";
 
     public const string Test =
@@ -615,9 +634,15 @@ public static class IndexRules
             words.Add("while HYG is up over 63 sessions");
         }
 
-        if (At(IndexRuleCandidate.LargeBreadthParameter, 0) == 1)
+        var breadth = At(IndexRuleCandidate.LargeBreadthParameter, 0);
+
+        if (breadth == 1)
         {
             words.Add("its market check on the S&P 500's breadth");
+        }
+        else if (breadth == IndexRuleCandidate.NoMarketCheck)
+        {
+            words.Add("the " + IndexRuleCandidate.MarketCheckOff);
         }
 
         if (evaluator is IndexBreakoutCandidate)
@@ -657,14 +682,28 @@ public static class IndexRules
     static string Number(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     // A rule's read on the night: its family's listings at its settings in its own order, its market check on the
-    // index's own breadth or the S&P 500's where it states so, and the first part of its rule past the setup a listed
-    // member fails, the floors and the quality and then each level in its sweep's order.
+    // index's own breadth, on the S&P 500's where it states so or open on every night where it states none, and the
+    // first part of its rule past the setup a listed member fails, the floors and the quality and then each level in its
+    // sweep's order.
     public static IndexFamilyRead Read(IndexNightInputs inputs, IndexRule rule, IndexLevels levels)
     {
         var p = rule.Parameters;
-        var large = p[IndexRuleCandidate.LargeBreadthParameter] == 1;
-        var sessions = large ? WithBreadth(inputs.Sessions, inputs.At, levels.LargeBreadth) : inputs.Sessions;
-        var open = large ? levels.LargeBreadth >= FamilySweep.MarketFloor : inputs.Open;
+        var breadth = p[IndexRuleCandidate.LargeBreadthParameter];
+
+        // A rule reading no market check reads the night as every member above its average, so the check its family's
+        // listings make on the night themselves opens with its own.
+        var sessions = breadth switch
+        {
+            1 => WithBreadth(inputs.Sessions, inputs.At, levels.LargeBreadth),
+            IndexRuleCandidate.NoMarketCheck => WithBreadth(inputs.Sessions, inputs.At, 1),
+            _ => inputs.Sessions,
+        };
+        var open = breadth switch
+        {
+            1 => levels.LargeBreadth >= FamilySweep.MarketFloor,
+            IndexRuleCandidate.NoMarketCheck => true,
+            _ => inputs.Open,
+        };
         var hold = (int)p[IndexRuleCandidate.HoldParameter];
         var floors = p[IndexRuleCandidate.FloorsParameter] switch { 0.5 => IndexSweepRunner.DollarVolumeHalf, 2 => 2m, _ => 1m };
         var lowest = p[IndexRuleCandidate.LowestCloseParameter] == Statistic.FromPrice(IndexSweepRunner.HigherPrice) ? IndexSweepRunner.HigherPrice : MemberReadings.LowestPrice;
@@ -768,7 +807,7 @@ public static class IndexRules
         return null;
     }
 
-    // The index's sessions with the night's breadth the S&P 500's.
+    // The index's sessions with the night's breadth another's: the S&P 500's, or every member's for a rule reading none.
     static IReadOnlyList<SweepColumns.Session> WithBreadth(IReadOnlyList<SweepColumns.Session> sessions, int at, double? breadth) =>
         [.. sessions.Select((one, place) => place == at ? one with { Breadth = breadth } : one)];
 
