@@ -82,6 +82,8 @@ body{background:var(--page);color:var(--ink);font:15px/1.6 var(--sans);-webkit-f
 a{color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 a:hover{text-decoration-thickness:2px}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* A select is as wide as its longest choice unless held to what holds it, and a rule's words run past a phone's screen. */
+select{max-width:100%}
 .num,td.num,.tnum{font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:var(--serif);font-weight:600;text-wrap:balance;margin:0}
 .wrap{width:100%;max-width:var(--column);margin:0 auto;padding-inline:var(--gutter)}

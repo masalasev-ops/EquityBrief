@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - .claude/rules/checks.md - read-surface states that no select is wider than what holds it
+Corrects: on a phone the S&P 500's Tonight was laid out 1,229 pixels wide at 390, its cards' rule pickers as wide as their longest choice, found reading October's monthly run's screenshots back at 390 pixels.
+Was:
+> read-surface: ... every table the Ledger page draws read in a box of its own, how many stated in advance |
+Now:
+> read-surface: ... every table the Ledger page draws read in a box of its own, how many stated in advance; and from the 17.2 correction of 2026-10-12 every select held to what holds it, the cards' rule pickers among them, and no rule a select reads giving it a width of its own, how many stated in advance |
+Why: each roster row says what its check asserts, and the correction's test extends read-surface's.
+
 ### 2026-10-11 - docs/ARCHITECTURE.html - a monthly run started again runs every step from the first no try held
 Decision: A monthly run started again runs every step from the first one no try of the month held
 Was:

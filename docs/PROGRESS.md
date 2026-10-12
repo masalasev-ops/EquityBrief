@@ -43255,3 +43255,63 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.10 ruling above; item 7, October's monthly run by hand, runs on the tree carrying this correction.
 Carried:    nothing new.
+
+### 17.2 - correction: no select a screen draws is wider than what holds it, where the S&P 500's cards' rule pickers laid its Tonight out 1,229 pixels wide on a phone's 390   2026-10-12
+
+Corrects:   17.2's rule picker on each setup card. A select is as wide as its longest choice and no rule held one to what
+            holds it, so on the S&P 500, whose cards pick among a live rule and its variants by the rules' words, Tonight
+            was laid out 1,229 pixels wide at a phone's 390, the heavyweights' picker alone 1,198, with a variant chosen
+            or none. The S&P 400's and 600's pickers hold the provisional rule alone and fitted.
+Found:      reading the screens of October's monthly run back at 390 pixels, in a browser laid out at that width, for the
+            17.10 entry below.
+Built:      one rule holding every select to what holds it. Measured in the same browser over the live page with the
+            rule added, the S&P 500's Tonight is 390 wide at 390 with nothing past the screen's edge. The roster's
+            read-surface row names the test, the prior text in `CHANGELOG.md`.
+Tests:      one more: the rule holding every select stated, and every rule a select reads, three stated in advance,
+            giving it no width of its own.
+Claims:     none more.
+Pins:       none moved; the stylesheet is in no pin list.
+Mutated:    the rule, stated before the run: the property that no select is wider than what holds it. M14 the rule
+            holding every select taken out: predicted red at the new test. Results: M14 red at the new test, the rule
+            not found; one of five failed in the run filtered to the screens' width tests. Reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.10 entry below.
+Queue:      as the 17.10 ruling above; it ships with the record of item 7.
+Carried:    nothing new.
+
+### 17.10 - October's monthly run by hand from main's build, every step held and no proposal put, the scheduler registered, and the screens read back at 1440 and 390 pixels   2026-10-12
+
+Ran:        from main at 30e3a311, the merge of PR 437, with no night, queue, report pass, labeller or store copy
+            running: `tools/monthly.ps1 --month 2026-10`, its clean copy built in 14 seconds, run
+            loop-month-2026-10-20261011T210212Z from 21:02:12 to 23:26:35 UTC. The SEC's facts passed over, held by the
+            try of 2026-10-10. The history written again beside the standing one from 21:02:12 to 22:00:24, every
+            index's count of setups with a benchmark equal to the standing build's: the S&P 500 67,176, the S&P 400
+            42,124 and the S&P 600 56,804. The point-in-time checks from 22:00:24 to 23:05:50, 200 sampled setups an
+            index each rebuilt with every reading the same. The testers from 23:05:50 to 23:26:35 and the report at
+            23:26:35, `data/loop/2026-10/report.txt`. No provider request and no model call.
+Proposals:  none passed, so none was put to the operator: the S&P 500's breakout 13, drift 13 and heavyweights 2; the S&P
+            400's breakout 14, drift 14, heavyweights 4 and pullback 13; the S&P 600's the same counts as the S&P 400's.
+Scheduled:  the Windows task "EquityBrief monthly" registered from the runbook at about 00:10 UTC on 2026-10-12: weekly on
+            Saturday from 2026-11-07T12:00:00Z, the action running `tools/monthly.ps1` on a month's first seven days
+            alone and appending to `data/monthly.log`, as the operator's user with a limit of six hours. Its first run is
+            read when it comes, the operating row the phase 17 report names.
+Screens:    read at 1440 and at 390 pixels in a browser laid out at each width, over main's build of 30e3a311 and the
+            live store: Tonight on each index, the S&P 500's with the breakout's Variant 1 chosen; the Ledger and Loop
+            pages on each index; and the decision cards of AMGN on the S&P 500 and of ATRC on the S&P 600, the S&P 400
+            listing nothing on 2026-10-09 and drawing no card. Read back against the store: the S&P 500 breakout's first
+            exit proposal on the Loop page at an adjusted p of 1.0000 over 18 blocks, better in 2 of 4 complete years,
+            500 trades and +3.92 risks with the five largest left out, each fold's chosen exit and totals as `loop_test`
+            holds them; the Ledger page's breakout and pullback rows for 2019 and 2026 as `ledger_summary` holds them;
+            Variant 1's card under its band, MRNA its one pick at 225 with its stop at 202.21 trailing and its funnel at
+            502, 9, 2, 1 and 1, as `family_trade` and `rule_night` hold them; and both cards' five lines as
+            `decision_card` holds them. Every page stood at the screen's width at 1440, and at 390 every page but the S&P
+            500's Tonight, which the 17.2 correction above holds to it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 17.2
+            correction's above, 549abf05: all six steps, 0 warnings, 0 errors, 2224 of 2224 tests ran with none failed in
+            15 minutes 39 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
+Queue:      done, items 1 to 6 and item 7's run, scheduler and screens; in progress, this record with the 17.2
+            correction; next, item 8, the rulings b to e, and 18.5's report after it.
+Carried:    the first scheduled monthly run, read on 2026-11-07. The screens of the S&P 500's Tonight read again at 390
+            pixels once main's build carrying the 17.2 correction serves the page.
