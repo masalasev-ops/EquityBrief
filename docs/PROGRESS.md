@@ -43697,3 +43697,73 @@ Carried:    the remedy `tools/remedies/2026-10-12-17.15-the-rules-registered-aga
             the night, each rule's line stating whether its record carried on or restarted; the first night after it read
             for every family rule's evaluation; the first monthly run's trees, on 2026-11-07, read on the Loop page beside
             the ridge score's.
+
+### 18.5 - the phase 18 report: the page's layout figure and its key, the guide's account of what a report contains, each of the two cases held to six sentences, the screens read back against the store with the reports written again, and the pair checked against the actual   2026-10-12
+
+Queue:      done, phase 18 through 18.4 with its corrections, 18.5's first half in PR 431, the bug hunt's corrections in
+            PR 433, and item 8 of the queue of 2026-10-11 in PRs 439 to 441, which went first on the operator's ruling of
+            2026-10-11, "Item 8 first"; in progress, this report; next, the sign-offs of phases 15 to 18, each by a
+            fresh session the operator starts, one at a time.
+Built:      in PR 431, Figure 15.1 in section 15.9, the page's layout with a key a line a part, its parts after the
+            first three the regions section 4 names in its order; the guide's "What a report contains" rewritten for a
+            reader who does not invest, with the same picture and a list naming each part as the architecture does; the
+            part reader's scope stated, a run of three or more items a comma apart that a semicolon ends, and the nine
+            parts of 18.3's four marks it showed held by no assertion each asserted; a test reading phase 18's pair off
+            the plan. In PR 433, each of the two cases held to six sentences, its closing one among them, a seventh
+            refused by its opening and the retry told the bound (see: Each of the two cases holds at most six
+            sentences, the last saying what it needs at the next report), and the fixture's requests it and the 12.6
+            correction moved answered with no paid call. Here, `obligation-reconciles` stating phase 18 at two.
+Written:    the reports written again from main's build on the operator's rulings of 2026-10-11, the corrections first
+            and then one rewrite, stopped after sixteen with "ok after this just do NVDA and stop. I think reports are
+            generating fine": ADM, AMGN, APLE, APOG, ATRC, BBY, BDX, DGII, DGX, DRH, ECL, ETN, GM, GOOG, HPQ and NVDA
+            on 2026-10-11, $1.145 on DeepSeek; then "Rewrite CVX and PEP (Recommended)" for these screens, written on
+            2026-10-12 from main's Release build at a0b8a83d, a regenerate being once a name a day, $0.131. The other
+            fourteen keep the reports they held.
+Screens:    read back on 2026-10-12 against the store, served by main's Release build at a0b8a83d: CVX and PEP on the
+            S&P 500 and APLE on the S&P 600, each at 1,440 pixels and at 390 inside a frame of that width, in both
+            palettes. The mastheads and tiles: CVX 211.98, +0.20% on the day, the year's high 217.78 on 2026-09-15 and
+            low 142.51 on 2025-12-16, -2.7% from the high, a yield of 3.36% at 7.12 a year; PEP 125.97, -1.85%, 166.41
+            on 2026-02-12 and 123.47 on 2026-10-07, -24.3%, 4.70% at 5.92; APLE 16.31, +0.55%, 17.11 on 2026-08-06 and
+            10.17 on 2025-10-14, -4.7%, 5.89% at 0.96; each equal to the stored bars and the newest dividend reading.
+            The two cases six sentences a side on all three; the risks composed by their facts' words and their events'
+            kinds; PEP's plan one line naming its trend and the close above 129.98 that would put a band beneath it, its
+            ladder saying no band stands below the price; CVX's short version writing its segments' growth in per cent.
+            At 390 every region stands in one column with nothing past the screen's edge.
+Pair:       before phase 18, 1149 claims; the plan's pair after 18.5 1222 within 1185 to 1265; the actual 1267, two above
+            the range and 45 past the pair by the net of what each part landed fewer or more than its count: the
+            corrections one fewer, 18.1 two more, 18.2 eight more, 18.3 twenty more, 18.4 eighteen more and 18.5 two
+            fewer, each part's rows named with what it landed in `ArchitectureConformance.PhaseEighteenLanded`.
+Operating:  phase 18 opened two operating rows, both at 18.0: "The day's live quotes stay under their cap on the first
+            five sessions" and "The short version's refusals after it is written from accepted claims";
+            `obligation-reconciles` states phase 18 at two.
+Tests:      none more; the operating rows' count gains phase 18.
+Claims:     1267, unchanged, with 1267 PASS.
+Pins:       none moved: the branch edits the record and the suite.
+Mutated:    the rule, stated before each run: each property 18.5 adds, broken alone, made in this checkout, filtered to
+            the tests that read it and reverted. In PR 431: M1 the architecture's key without part 17, red at the key
+            test, the keys skipping 17; M2 the guide's part 18 named "Price levels", red, the names differing; M3 the
+            architecture's parts 22 and 23 drawn in each other's place, red against section 4's order; M4 "LIVE 211.55"
+            in the guide's figure, red at the digit assertion, 1 of 63 items; M5 18.4's count of more at 17, red at the
+            pair test, 29 against the 30 landed; M6 the part reader taking a semicolon into an item, red at the reader
+            test; R1 the reactions' zero rule at 1%, red, the rule at 100.42 against the bar's top at 116.54; R2 the
+            long view's line left out, red, 1 point against 3; R3 the invalidation handed as support, red; R4 every
+            ladder pill in the support hue, red; R5 the ladder's rows spaced by band width, red, 84 apart above against
+            168 below; R6 the rule at one drawn at 1.5, red; R7 a bar past the axis's end not saying so, red. In PR 433:
+            M9 the bound read at seven, red at the bound's test, the seventh sentence not refused. Here: M8 phase 18
+            stated as opening one operating row: predicted red at the operating rows test. Result: red, phase 18 stated
+            at one against the two rows its table holds. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 5ed7905c, the
+            second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2251 of 2251 tests ran with none failed, migrations 0 to
+            91 with none pending, schema version 91, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1267 claims, 1267 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1278
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2251 of 2251 tests ran.
+Carried:    the sign-offs of phases 15 to 18; the S&P 600's last 192 interest refetch asks on 2026-10-13 and the lines
+            refetch's two runs of 220 on 2026-10-13 and 2026-10-14; the findings of the rewrite put to the operator and
+            not built here: numbers inside names read as figures, GLP-1 costing BDX its two cases and its risks and
+            Windows 10, iPhone 17 and 340B costing retries; the risks refused where the model names a fact by its words
+            or alters a segment's listing, AMGN's and NVDA's left out; ATRC's risks and PEP's segment commentary lost to
+            DeepSeek cutting the connection; and the swing filter's and the drift rule's stored trigger reasons writing
+            "session(s)", in sources a rule's version pins. The provider's counter read 8,317 for 2026-10-12 by 06:45Z
+            with no run either session made recording a call.
