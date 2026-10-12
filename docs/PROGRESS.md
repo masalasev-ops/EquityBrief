@@ -43686,8 +43686,11 @@ Mutated:    the rule, stated before the run: one mutation a property 17.15 adds.
             liquidity scoring higher, 4 of 42 with the pin; M44 at the trees' lowest fifth and two fifths put, 1 of 42;
             M45 at a key no model carries listing two, 1 of 42; M46 at the stored trees listing none, 1 of 42. Each
             reverted before anything was committed, the 42 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures to be
-            filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 4f190ffa: all
+            six steps, 0 warnings, 0 errors, 2251 of 2251 tests ran with none failed in 19 minutes 36 seconds,
+            migrations 0 to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report
+            54 tables, 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed. The run over
+            93392aac stopped at the suite on two of the score's card tests, whose helper wrote a model row with no kind.
 Queue:      done, 17.11 and 17.12, PRs 439 and 440, the 17.13 ruling, 17.13 and 17.14; in progress, 17.15; next, one pull
             request for 17.13 to 17.15 merged outside the night's window and its remedy run, then 18.5's report.
 Carried:    the remedy `tools/remedies/2026-10-12-17.15-the-rules-registered-again.txt` run after the merge and before
