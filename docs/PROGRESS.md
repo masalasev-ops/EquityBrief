@@ -43857,3 +43857,56 @@ Carried:    "The night's time and growth over the three indices read on its firs
             next session to read a night. The Linux red on 2aec8d18 is phase 17's, owed before its sign-off. Phases
             16, 17 and 18 are signed after this one, each by its own session.
 Signed:     phase 15, over 76635cd6.
+
+### 19.0 planning - phase 19 planned: the read surface redesigned, the market-off variants first, the per-rule test's and the business-first setups' costs stated before anything is built, and the S&P 400's nights read   2026-10-12
+
+Not a checkpoint entry. It lands 19.0, the pass that plans phase 19, and builds none of it.
+Queue:      done, phase 18 as PRs 419 to 433 and 442, phase 15's sign-off as PR 443 and the guide and Figure 13.7
+            corrections as PRs 444 and 445; in progress, this pass; next, in order, 19.1 the S&P 400's and 600's
+            market-off variants, 19.2 colour, the header, the menu and the top of Tonight, 19.3 the setup cards,
+            19.4 paper trading with its trade log and the monthly per-rule test, 19.5 Universe, 19.6 the Queue, 19.7
+            the remaining screens, 19.8 the report and 19.9 the ledger's business-first setups; between phase 19's
+            pull requests and never beside one, the fix for the Linux test that failed over 2aec8d18 and the
+            sign-offs of phases 16, 17 and 18, each in a fresh session the operator starts.
+Ruled:      by the operator on 2026-10-12: the brief, three questions answered, five reviews and the approval through
+            the plan tool at about 19:19 UTC, each word for word in `prompts/2026-10-12-19.0-*.md` with a copy of the
+            plan; R1 to R19 as the plan states them. The sign-offs of phases 16, 17 and 18 stay owed and outstanding;
+            nothing here discharges any of them.
+Asked:      by the operator while this pass ran: "do not forget to update build_plan doc". This pass writes the
+            phase into `BUILD_PLAN.md`.
+Planned:    `BUILD_PLAN.md`'s phase 19 section with its checkpoints 19.0 to 19.9; section 20's row; and the decision on
+            the sign-offs, the one the phase rests on that describes no running code. The decisions that change what
+            runs are written where they are built. Phase 19 opens no operating row.
+Measured:   read-only on the live store, with no provider call.
+            The S&P 400's breadth on each night since its families went live, recomputed from the stored bars and
+            200-day averages of its 400 members, every one holding both: 170 above on 2026-10-02, 175 on 10-05, 178
+            on 10-06, 167 on 10-07, 174 on 10-08 and 176 on 10-09, which is 0.425, 0.4375, 0.445, 0.4175, 0.435 and
+            0.44, each the breadth its night stored, and each under the floor of 0.45, so its market check closed on
+            every one and on 2026-10-09 every member failed every family at "the market check closed". That is the
+            rule as built and no defect, so no 15.1 correction is owed. The S&P 600's stood at 0.4723 to 0.5135 on the
+            same nights and its lists were open. The floor on both indices was copied from the S&P 500's filter and
+            never tested there.
+            The per-rule test, 19.4: migration 92 creates `loop_rule` and `loop_rule_year` empty, copying and dropping
+            nothing, and the monthly run gains a step an index after its tests. Its added time is estimated at about
+            12 minutes and at most about 24: October's tests read 28 proposals in 63 s on the S&P 500, 45 in 501 s on
+            the S&P 400 and 45 in 680 s on the S&P 600, so at most 15 s a proposal, where a proposal walks its grid
+            over every fold and a rule walks its one setting; and the step reads 48 rules once 19.1's are registered,
+            the 31 the register holds and 19.1's 6 beside 11 provisional and business-first rules, at 15 s each and
+            at 30 s for the bound. October's monthly run took 2 h 24 m. 19.4 measures it.
+            The business-first setups, 19.9: no migration is expected, since `setup`, `setup_night` and
+            `ledger_summary` hold a family by its word with no check on it, which 19.9 confirms against the ledger's
+            writer. The ledger's step took 49 s on the night of 2026-10-09 over its ten family and index pairs, about
+            5 s a pair, so the family's three pairs add about 15 s to the night. The history builds took 875, 641
+            and 898 s on 2026-10-12, about 40 minutes, and the family adds at most the pullback's share of the
+            setups, 30,723 of the S&P 500's 69,275, so a rebuild of the three indices takes at most about 58 minutes,
+            the monthly run's history step growing by the same. The tester's procedure for the family costs about a
+            drift family's share of each test step. 19.9 measures them.
+Tests:      2251, unchanged.
+Claims:     1267, unchanged: section 20's row is read by the check that counts the phases and is no claim, and the
+            plan and the decision sit in no table the harness reads.
+Pins:       none moved: the pass edits no source.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures to be filled from the run. Documents
+            alone, so `tools/verify-phase.ps1` does not run (see: A pull request of documents alone runs the checkpoint
+            script alone, and one changing code runs the phase report as well).
+Carried:    the sign-offs of phases 16, 17 and 18, owed to fresh sessions, and the night of 2026-10-12 carried to phase
+            16's; the fix for the Linux test that failed over 2aec8d18, owed before phase 17's sign-off.
