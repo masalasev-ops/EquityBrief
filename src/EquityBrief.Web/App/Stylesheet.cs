@@ -104,8 +104,29 @@ code{font-size:.92em}
 
 /* masthead */
 .mast{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--page);border-bottom:1px solid var(--hair)}
-.mast .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 20px;padding-block:10px}
-.m-id{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0}
+/* one line at every width: the brand and the screen's title, the index tabs, and the menu, whose panel stands in the line
+   on a wide screen and drops beneath its button on a narrower one, the button carrying the report lane's word */
+.mast .wrap{position:relative;display:flex;flex-wrap:nowrap;align-items:center;gap:8px 16px;padding-block:8px}
+.m-id{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0;flex:1 1 auto}
+.m-tabs{display:flex;flex:none;border:1px solid var(--hair-2);border-radius:6px;overflow:hidden}
+.m-tabs a{display:inline-flex;align-items:center;min-height:32px;padding:0 10px;font:600 12.5px var(--sans);text-decoration:none;color:var(--soft);background:var(--surface);white-space:nowrap}
+.m-tabs a+a{border-left:1px solid var(--hair-2)}
+.m-tabs a[aria-current='page']{background:var(--ink);color:var(--surface)}
+.m-tabs .t-short{display:none}
+.m-menu{display:none;flex:none;align-items:center;gap:6px;font:600 12.5px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 10px;min-height:36px;cursor:pointer}
+.m-lane-word{font-weight:400;color:var(--ink-2)}
+.m-panel{display:flex;flex:none;align-items:center;gap:16px}
+.m-badge{display:inline-block;margin-left:4px;min-width:16px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:600 10.5px/16px var(--sans);text-align:center}
+.m-badge[hidden]{display:none}
+@media (max-width:1499px){
+ .m-menu{display:inline-flex}
+ .m-panel{display:none;position:absolute;top:100%;right:var(--gutter);z-index:30;flex-direction:column;align-items:stretch;gap:12px;padding:14px;background:var(--surface);border:1px solid var(--hair-2);border-radius:8px;box-shadow:var(--shadow);width:min(340px,calc(100vw - 2*var(--gutter)))}
+ .m-panel.open{display:flex}
+ .m-panel .m-nav{flex-direction:column;gap:0}
+ .m-panel .m-nav a{padding-block:6px}
+ .m-panel .m-search input{width:100%}
+}
+@media (max-width:480px){ .m-tabs .t-full{display:none} .m-tabs .t-short{display:inline} .m-brand{display:none} }
 .m-brand{font:600 12px var(--sans);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--soft)}
 .m-tk{font:700 20px var(--sans);letter-spacing:.02em}
 .m-co{font:600 18px var(--serif)}
@@ -880,11 +901,6 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .headline .big{font-size:56px}
- .mast .wrap{grid-template-columns:minmax(0,1fr)}
- .m-right{flex-wrap:wrap;gap:4px 14px}
- .m-nav{flex-wrap:wrap;gap:0 14px}
- .m-search{flex-basis:100%}
- .m-search input{width:100%}
  .card-line,.card-figures{grid-template-columns:1fr}
  .card-mark{justify-self:start}
  /* a figure keeps a width its words can be read at and scrolls sideways in its box, where shrunk to the screen its

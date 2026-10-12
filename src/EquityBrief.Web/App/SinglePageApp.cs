@@ -165,6 +165,12 @@ public sealed class SinglePageApp : IComponent
     // own header as every press is.
     // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
     public const string AccountRoute = MarkRenderer.AccountRoute;
+
+    // Paper trading, in the account page's place in the menu, the account page's old address still opening it.
+    public const string PaperRoute = "#/paper";
+
+    // The count the Loop's badge draws, the proposals put to the operator that hold no decision.
+    public const string LoopPutRoute = "/screens/loop/put";
     public const string AccountPostRoute = "/account";
     public const string TakenPostRoute = "/taken/";
     public const string NotTakenPostRoute = "/taken/remove/";
@@ -289,6 +295,18 @@ public sealed class SinglePageApp : IComponent
         </span></div>
         """;
 
+    // The lane's word on the menu button, so the lane's state stays shown while the switch sits in the closed menu.
+    public static string LaneWord(string lane) => lane == LocalLane ? "Local" : "Paid";
+
+    // The three indices as tabs beside the screen's title, each keeping the index in the link as the selector did, its
+    // full name for a reader and the short one on a phone; the shell's script points each at the screen it is on.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public static string IndexTabs() =>
+        "<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">"
+        + string.Concat(Universes.Offered.Select(choice =>
+            $"<a href=\"#/?{Universes.Query}={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{Escaped(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{Escaped(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>"))
+        + "</nav>";
+
     public string Shell(string title, string lane = PaidLane) =>
         $$$"""
         <!doctype html>
@@ -305,7 +323,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{AccountRoute}}}" data-view="account">Account</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div>{{{IndexTabs()}}}<button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu<span class="m-lane-word" id="lane-word" data-lane="{{{Escaped(lane)}}}">{{{Escaped(LaneWord(lane))}}}</span></button><div class="m-panel" id="menu"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{LoopRoute}}}" data-view="loop">Loop<span class="m-badge" id="loop-badge" data-put="0" hidden></span></a><a href="{{{LedgerRoute}}}" data-view="ledger">Ledger</a><a href="{{{PaperRoute}}}" data-view="paper">Paper trading</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -338,11 +356,11 @@ public sealed class SinglePageApp : IComponent
             const universe = await fetch('/screens/universe' + (query ? '?' + query : ''));
             screen.innerHTML = await universe.text();
           } else if (path === '{{{LedgerRoute}}}') {
-            view = 'universe';
+            view = 'ledger';
             const ledger = await fetch('/screens/ledger' + (query ? '?' + query : ''));
             screen.innerHTML = await ledger.text();
           } else if (path === '{{{LoopRoute}}}') {
-            view = 'universe';
+            view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
             screen.innerHTML = await loop.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
@@ -370,8 +388,8 @@ public sealed class SinglePageApp : IComponent
             view = 'queue';
             const queued = await fetch('/screens/queue');
             screen.innerHTML = await queued.text();
-          } else if (path === '{{{AccountRoute}}}') {
-            view = 'account';
+          } else if (path === '{{{PaperRoute}}}' || path === '{{{AccountRoute}}}') {
+            view = 'paper';
             const account = await fetch('/screens/account');
             screen.innerHTML = await account.text();
           } else {
@@ -395,6 +413,15 @@ public sealed class SinglePageApp : IComponent
           for (const link of document.querySelectorAll('.m-nav a')) {
             if (link.dataset.view === view) { link.setAttribute('aria-current', 'page'); } else { link.removeAttribute('aria-current'); }
           }
+          // Each index tab opens the screen it is on for its index, the chosen one marked, the S&P 500 where the link names none.
+          const onPath = hash.indexOf('?') < 0 ? hash : hash.slice(0, hash.indexOf('?'));
+          const chosenIndex = query.get('{{{Universes.Query}}}') || '{{{Universes.Large.Word}}}';
+          for (const tab of document.querySelectorAll('#tabs a')) {
+            tab.setAttribute('href', (onPath || '#/') + '?{{{Universes.Query}}}=' + tab.dataset.universe);
+            if (tab.dataset.universe === chosenIndex) { tab.setAttribute('aria-current', 'page'); } else { tab.removeAttribute('aria-current'); }
+          }
+          closeMenu();
+          loopBadge();
           const named = head ? head.getAttribute('data-title') : null;
           document.title = named ? named + ' · EquityBrief' : 'EquityBrief';
           const tonight = screen.querySelector('section.tonight');
@@ -683,6 +710,28 @@ public sealed class SinglePageApp : IComponent
         }
         function paintTheme() {
           document.getElementById('theme').textContent = currentTheme() === 'dark' ? 'Light palette' : 'Dark palette';
+        }
+        // The menu: on a narrow screen its button opens the panel holding the links, the search, the palette's toggle and
+        // the report generation lane, and a screen drawn closes it; on a wide one the panel stands in the line.
+        const menuButton = document.getElementById('menu-button');
+        const menuPanel = document.getElementById('menu');
+        function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuPanel.classList.remove('open'); }
+        menuButton.addEventListener('click', () => {
+          const open = menuButton.getAttribute('aria-expanded') !== 'true';
+          menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+          menuPanel.classList.toggle('open', open);
+        });
+        // The Loop's badge: the proposals put to the operator that hold no decision, read off the surface on every screen
+        // drawn and shown at one or more.
+        async function loopBadge() {
+          const badge = document.getElementById('loop-badge');
+          try {
+            const answer = await fetch('{{{LoopPutRoute}}}');
+            const put = answer.ok ? parseInt(await answer.text(), 10) : 0;
+            badge.setAttribute('data-put', String(put > 0 ? put : 0));
+            badge.textContent = put > 0 ? String(put) : '';
+            badge.hidden = !(put > 0);
+          } catch (error) { badge.hidden = true; }
         }
         // A research control is a form, sent here with the page's own header so the
         // surface knows the press came from this page, and what the surface said back is
@@ -3048,6 +3097,13 @@ public sealed class SinglePageApp : IComponent
 
     // The families the Loop page draws, in the page's order.
     public static IReadOnlyList<string> LoopFamilies { get; } = ["pullback", "breakout", "drift", "heavyweight"];
+
+    // How many proposals a run puts to the operator that hold no word of theirs yet: at most one a family, the one the
+    // Loop page offers its presses on, read as the page reads it. The menu's badge counts them over each index's newest run.
+    public static int PutWithoutWord(EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals, LoopDecided decided) =>
+        LoopFamilies.Count(family =>
+            EquityBrief.Core.Loop.LoopDecisions.PutOf([.. proposals.Where(proposal => proposal.Family == family)], one => MarkRenderer.HeldBack(run, one, decided)) is { } put
+            && !decided.Decisions.Any(one => one.Run == run.RunId && one.Family == family && one.Proposal == put.Proposal));
 
     // The Loop page under Universe: for the index chosen and the month its newest tester run is for, each family's rule
     // today in the words the run stored, and each proposal tested against it with its verdict part by part and its test

@@ -567,21 +567,49 @@ public partial class ReadSurface
         return document[start..(end < 0 ? document.Length : end)];
     }
 
-    // The correction of 2026-10-11: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity
-    // line and its as-of line cut, since the narrow layout's one column was as wide as its widest item, the row of links,
-    // which did not wrap. The column shrinks to the screen and the links wrap onto as many lines as they need.
+    // 19.2: the header holds one line at every width: the brand and the screen's title, the three index tabs keeping the
+    // index in the link, and the menu, whose panel holds the links, the search, the palette's toggle and the report lane,
+    // standing in the line on a wide screen and dropping beneath its button on a narrower one, the button carrying the
+    // lane's word so its state stays shown. The account page's old address opens paper trading, and the menu holds the
+    // Loop page with its badge and the Ledger page. Where at 18.1's correction of 2026-10-11 the phone's masthead was one
+    // column whose links wrapped, the links now sit in the panel.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     [Fact]
-    public void ThePhonesMastheadIsOneColumnNoWiderThanTheScreenAndItsLinksWrap()
+    public async Task TheHeaderHoldsOneLineWithTheIndexTabsAndAMenuCarryingTheLanesWord()
     {
-        var narrow = Regex.Match(Stylesheet.Css, @"@media \(max-width:640px\)\{\n :root\{--gutter:14px\}(.*?)\n\}", RegexOptions.Singleline);
+        using var store = new TemporaryStore().Migrated();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
 
-        Assert.True(narrow.Success, "The stylesheet states no narrow layout for a phone.");
-        Assert.Contains(".mast .wrap{grid-template-columns:minmax(0,1fr)}", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains(".m-nav{flex-wrap:wrap;", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.DoesNotContain(".mast .wrap{grid-template-columns:1fr}", Stylesheet.Css, StringComparison.Ordinal);
+        var shell = await client.GetStringAsync("/");
 
-        // The wide layout keeps its links on one line beside the identity.
-        Assert.Contains(".m-nav{display:flex;gap:14px;font-size:13.5px}", Stylesheet.Css, StringComparison.Ordinal);
+        // The three tabs, each with its full name for a reader and its short word on a phone, keeping the index in the link.
+        Assert.Contains("<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">", shell, StringComparison.Ordinal);
+
+        foreach (var choice in Universes.Offered)
+        {
+            Assert.Contains(
+                $"<a href=\"#/?universe={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{WebUtility.HtmlEncode(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{WebUtility.HtmlEncode(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>",
+                shell,
+                StringComparison.Ordinal);
+        }
+
+        // The menu's button carries the lane's word, and its panel holds the search, the links, the lane and the palette.
+        Assert.Contains("<button type=\"button\" class=\"m-menu\" id=\"menu-button\" aria-expanded=\"false\" aria-controls=\"menu\">Menu<span class=\"m-lane-word\" id=\"lane-word\" data-lane=\"paid\">Paid</span></button><div class=\"m-panel\" id=\"menu\"><form class=\"m-search\" id=\"search\"", shell, StringComparison.Ordinal);
+        Assert.Matches(new Regex("<div class=\"m-panel\" id=\"menu\">.*<nav class=\"m-nav\".*<div class=\"lane\" id=\"lane\".*<button type=\"button\" class=\"theme\" id=\"theme\">Dark palette</button></div></div></header>", RegexOptions.Singleline), shell);
+        Assert.Contains($"<a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a></nav>", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-view=\"account\"", shell, StringComparison.Ordinal);
+        Assert.Contains($"path === '{SinglePageApp.PaperRoute}' || path === '{SinglePageApp.AccountRoute}'", shell, StringComparison.Ordinal);
+
+        // One line at every width; the panel in the line on a wide screen and beneath its button below that; the tabs'
+        // short words on a phone. The script points each tab at the screen it is on and closes the menu as a screen is drawn.
+        Assert.Contains(".mast .wrap{position:relative;display:flex;flex-wrap:nowrap;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:1499px){\n .m-menu{display:inline-flex}\n .m-panel{display:none;position:absolute;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(" .m-panel.open{display:flex}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:480px){ .m-tabs .t-full{display:none} .m-tabs .t-short{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.DoesNotContain(".mast .wrap{grid-template-columns", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("tab.setAttribute('href', (onPath || '#/') + '?universe=' + tab.dataset.universe);", shell, StringComparison.Ordinal);
+        Assert.Contains("closeMenu();", shell, StringComparison.Ordinal);
     }
 
     // The first cell of each row of section 4's table, as a reader reads it.

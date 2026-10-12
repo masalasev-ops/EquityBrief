@@ -1842,6 +1842,22 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest)), "text/html; charset=utf-8");
 });
 
+// The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.
+app.MapGet(SinglePageApp.LoopPutRoute, async (ReadApi read) =>
+{
+    var put = 0;
+
+    foreach (var index in Universes.Offered)
+    {
+        if ((await read.LoopMonthsAsync(index.Code)).FirstOrDefault() is { } month && await read.LoopRunAsync(index.Code, month) is { } run)
+        {
+            put += SinglePageApp.PutWithoutWord(run, await read.LoopProposalsAsync(run), new EquityBrief.Web.Marks.LoopDecided(await read.LoopDecisionsAsync(index.Code), [], [], null));
+        }
+    }
+
+    return Results.Text(put.ToString(System.Globalization.CultureInfo.InvariantCulture), "text/plain; charset=utf-8");
+});
+
 app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, SinglePageApp page) =>
 {
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
