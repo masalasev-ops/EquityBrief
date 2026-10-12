@@ -81,9 +81,9 @@ public static class LoopProcedures
 
     public const string Grid = "the grid";
 
-    public const string DesignA = "the six settings, design (a)";
+    public const string DesignA = EquityBrief.Core.Loop.SixSettings.DesignA;
 
-    public const string DesignB = "the six settings, design (b)";
+    public const string DesignB = EquityBrief.Core.Loop.SixSettings.DesignB;
 
     // The drift's stop floor in typical moves, as the runbook runs its search.
     public const double DriftStopFloor = 1;

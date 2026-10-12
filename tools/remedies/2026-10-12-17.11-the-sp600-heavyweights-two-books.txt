@@ -1,0 +1,8 @@
+# The remedy of 17.11 (the S&P 600's heavyweights' two books beside the starting setting), as its PROGRESS entry
+# prints it: on the operator's rulings of 2026-10-11 and 2026-10-12 the S&P 600's sector heavyweights keep their starting
+# setting live with no freeze, and the two design (a) settings 17.1's search passed in-sample run as books of their own,
+# the profit gate with the interest cover, and twelve months' strength skipping the latest month, read from 251 sessions
+# back to 21. The merge moves every S&P 400 and 600 rule's version and no such rule stands registered, so nothing is
+# registered again. No migration, no request to the provider and no model call. Run from main after the merge and
+# before the night, when no night is running.
+register --index-variants heavyweight --index SML --variants "quality=2;twelveOne=1"

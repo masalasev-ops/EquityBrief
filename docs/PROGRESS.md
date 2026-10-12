@@ -43315,3 +43315,82 @@ Queue:      done, items 1 to 6 and item 7's run, scheduler and screens; in progr
             correction; next, item 8, the rulings b to e, and 18.5's report after it.
 Carried:    the first scheduled monthly run, read on 2026-11-07. The screens of the S&P 500's Tonight read again at 390
             pixels once main's build carrying the 17.2 correction serves the page.
+
+### 17.11 ruling - the owed decisions of the queue of 2026-10-11 built inside phase 17 after its report, the S&P 600's heavyweights' two books first as 17.11   2026-10-12
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator. On 2026-10-11, rulings (b) to (e) of the queue, as the 17.10 ruling above records them. On
+            2026-10-11, in the session building 18.5, asked "The phase 18 report (18.5) needs the checkout on a branch
+            for about two hours after tonight's CVX and PEP screenshots, and the other session plans to take it next for
+            item 8 of your queue (rulings b to e). Which goes first?", they chose "Item 8 first", 18.5's report waiting
+            until item 8 merges. On 2026-10-12, told the tester's result below and what running both books takes:
+            "Build it, and the card says beside each book that it did not pass the year-by-year test (adjusted p 0.60),
+            so neither reads as better than the live setting." Told that the twelve-month book needs one close more
+            than the night's year holds, they ruled for (d): "narrow the hard rule for the valuation reading alone: it
+            reads the prices before the store's year from the pulled history at the store's scale, as the chart
+            averages step does, held as it stood on each session by the point-in-time check. Record the decision and
+            the rule's prior wording in the changelog." Asked again for the book, they chose that it reads 251 sessions
+            back. The words are kept in `prompts/`.
+Tested:     the tester's run of 2026-10-09 on the S&P 600, loop-test-SML-20261009T155851Z, read each design's six
+            settings as a procedure searched on each fold's learning years. Design (a) chose the starting setting for
+            2022 and 2026 and the profit gate with the interest cover for 2023, 2024 and 2025, three of the five folds
+            agreeing with its final choice, better than the starting setting in 2 of 4 complete years, at an adjusted p
+            of 0.5999 against 0.0042: not passed. Design (b) chose twelve months' strength skipping the latest for 2022
+            to 2024 and nothing after, better in 1 of 4, at an adjusted p of 1.0000. October's run of 2026-10-11 read
+            the same. The two settings 17.1's search passed in-sample are both design (a)'s.
+Plan:       `BUILD_PLAN.md` gains 17.11 after the report, with its done condition: the S&P 600's heavyweights' two
+            books beside the starting setting. The valuation reading and the S&P 500's approvals with the FastTree
+            challenger follow as 17.12 and 17.13, each planned in a ruling of its own before it is built. Section 20's
+            row names 17.0 to 17.11. The decision is written (see: An index family's variants may stand registered
+            before its freeze, its provisional rule staying the live one), narrowing the S&P 400's and 600's
+            heavyweights' book decision, which stands. 17.11 adds no row of a table the harness reads, said beside
+            phase 17's pair.
+Read:       the S&P 500's Tonight at 390 pixels once 5152 served main's build of 5b4d81ad from 01:43:56 UTC, 390 wide
+            with the breakout's Variant 1 chosen and without it and nothing past the screen's edge, as the 17.10 entry
+            above carried.
+Queue:      done, items 1 to 7 of the queue of 2026-10-11, PRs 434 to 438; in progress, item 8 as 17.11 to 17.13, 17.11
+            first; next, 18.5's report by the session building it once item 8 merges, as the operator chose, then the
+            sign-offs of phases 15 to 18.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.11 below.
+Carried:    17.11, then 17.12 and 17.13 once each is planned.
+
+### 17.11 - the S&P 600's heavyweights' two books beside the starting setting: the twelve-month strength read from 251 sessions back, a form registering an index's variants with no live rule, and each book's card saying it did not pass the year-by-year test   2026-10-12
+
+Built:      the S&P 400's and 600's heavyweights rule gains, in design (a), twelve months' strength skipping the latest
+            month, read by a file of its own in the core from 251 sessions back, the oldest close the night's year
+            holds, to 21 back, one session short of the search's 252, which the night's book reads in the look-back's
+            place where a rule states it. The register command's form `--index-variants` writes a family's variants on
+            the S&P 400 or 600 with no live rule, each the provisional setting with its moves, at one instant or none,
+            refused where any rule of the family stands. A book's card on an index with no live rule draws under its
+            band the line that it did not pass the year-by-year test at the adjusted p the index's newest tester run
+            stored for its design's six settings, the twelve-month book's adding that it reads one session short; the
+            six settings' proposal names moved to the core, which the tester and the read surface both read. The
+            decision of the ruling above; section 15.7's card part, the 15.5 paragraph, the runbook's form and the
+            freeze's example, the roster's two rows and the guide's selector paragraph, the prior text in
+            `CHANGELOG.md`. The remedy `tools/remedies/2026-10-12-17.11-the-sp600-heavyweights-two-books.txt` registers
+            the S&P 600's two books from main after the merge.
+Tests:      five more: the strength worked by hand at its window's edges; a design (a) rule reading it and a design (b)
+            registration stating it refused, with the rule's words; the form's registrations and each refusal; the
+            night keeping both books over a constructed store, each lead worked by hand from the closes; and the card
+            read back off the rendered S&P 400 page with each book chosen and none.
+Claims:     none more; the card's part stands as one claim.
+Pins:       the S&P 400's and 600's pullback, breakout, drift and heavyweights versions moved to 62d7d4441537,
+            e2e5e4fcaa29, 6210c5e7508c and 994911efdc46 with the index's files, no such rule standing registered, so
+            none restarts; no S&P 500 pin moves.
+Mutated:    the rule, stated before the run: each property the checkpoint adds, one mutation each. M15 the strength read
+            from 252 sessions back, the search's own window: predicted red at the strength's test. M16 the form naming
+            its first variant the live rule: predicted red at the form's test. M17 the night's book handed the look-back
+            where its rule states the strength: predicted red at the night's test, the leads the look-back's. M18 the
+            card's line read off the index's oldest tester run: predicted red at the card's test, September's passing
+            verdict read. Results: M15 red at the strength's test and at three more, the words' and the card's naming
+            251 and the night's book reading no strength, four of five failed in the run filtered to 17.11's tests; M16
+            red at the form's test and at the card's, the first book taking the live rule's place, two of five; M17 red
+            at the night's test alone, one of five; M18 red at the card's test alone, one of five. Each reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the ruling's
+            above, 7d6a1d9f: all six steps, 0 warnings, 0 errors, 2229 of 2229 tests ran with none failed in 15 minutes
+            55 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never `data`; the
+            phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
+Queue:      as the 17.11 ruling above; the remedy runs from main after the merge, before the night, and the books' first
+            night is read the morning after; 17.12, the valuation reading, is planned next.
+Carried:    nothing new.

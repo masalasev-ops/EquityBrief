@@ -1041,7 +1041,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             dated,
             indexRegister,
             request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
-            heavyweightCard.Rule);
+            heavyweightCard.Rule,
+            await read.SixSettingsAsync(reading.Code));
 
         heavyweightCard = (indexHeavyweightVariant is { } chosenBook
             ? TonightScreen.IndexHeavyweights(

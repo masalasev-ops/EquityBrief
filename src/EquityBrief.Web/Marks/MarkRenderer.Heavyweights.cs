@@ -115,6 +115,14 @@ public sealed partial class MarkRenderer
             if (variant is not null)
             {
                 body.Append(Invariant, $"<p class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\">{Escaped(RuleScreenWords.Band(variant.Chosen.Variant!.Value))}</p>");
+
+                // A book registered before its family's freeze says how the tester judged its design.
+                // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+                if (variant.Untested is { } untested)
+                {
+                    body.Append(Invariant, $"<p class=\"variant-untested\" data-adjusted=\"{(untested.Adjusted is { } p ? p.ToString("R", Invariant) : "none")}\">{Escaped(untested.Line)}</p>");
+                }
+
                 body.Append(RuleWordsLine(rule.Parts));
             }
 

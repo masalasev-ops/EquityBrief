@@ -1230,7 +1230,7 @@ public static class IndexHeavyweights
 
         // The rebalance: the sweep's own reading of the night's session within the index, the members clearing the floors
         // and the gate, which waits where it cannot read.
-        var rebalance = await ReadAsync(connection, transaction, index, night, names, Provisional, name => Clears(index, name, night, income.GetValueOrDefault(name.Ticker) ?? []), cancellation);
+        var rebalance = await ReadAsync(connection, transaction, index, night, names, Provisional, false, name => Clears(index, name, night, income.GetValueOrDefault(name.Ticker) ?? []), cancellation);
 
         if (rebalance.Waits is { } waits)
         {
@@ -1269,9 +1269,11 @@ public static class IndexHeavyweights
     // The leaders a rebalance on the night buys within the index at a setting, each with its sector and the size cut it
     // was chosen from, and the lead of every company ranked in a sector's size cut: the sweep's tape laid over the
     // members' year with each company's value from the newest count filed before the session, a beta against the index's
-    // fund, and the members failing the floors or the quality read by none; or why the rebalance waits, the members
-    // holding no close for the night, fewer sessions to it than the setting's readings need, or reading no lead, or no
-    // beta where the setting reads one.
+    // fund, and the members failing the floors or the quality read by none, each member's return over the look-back or,
+    // where the setting reads it, its twelve months' strength skipping the latest month; or why the rebalance waits, the
+    // members holding no close for the night, fewer sessions to it than the setting's readings need, or reading no lead,
+    // or no beta where the setting reads one.
+    // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
     static async Task<(IReadOnlyList<(string Ticker, string Sector, IReadOnlyList<string> Cut)> Leaders, IReadOnlyDictionary<string, double> Leads, int Read, string? Waits)> ReadAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
@@ -1279,6 +1281,7 @@ public static class IndexHeavyweights
         DateOnly night,
         IReadOnlyList<SweepName> names,
         HeavyweightSetting setting,
+        bool twelveOne,
         Func<SweepName, bool> clears,
         CancellationToken cancellation)
     {
@@ -1336,7 +1339,9 @@ public static class IndexHeavyweights
         var kept = session.Members
             .Where(candidate => clears(names[candidate.Name]))
             .ToArray();
-        var sectors = HeavyweightSweep.Sectors(session with { Members = kept }, setting);
+        var sectors = twelveOne
+            ? HeavyweightRule.Read([.. kept.Select(candidate => candidate.Member with { Return = TwelveMonthStrength.Of(tape.Close[candidate.Name], at) })], setting.Reading)
+            : HeavyweightSweep.Sectors(session with { Members = kept }, setting);
         var betas = kept.ToDictionary(candidate => candidate.Member.Ticker, candidate => candidate.Member.Beta, StringComparer.Ordinal);
 
         if (HeavyweightRule.ReadNothing(sectors, setting.Reading, ticker => betas.GetValueOrDefault(ticker), night) is { } unread)
@@ -1542,7 +1547,7 @@ public static class IndexHeavyweights
                 }
                 else if (!setting.HighBeta || await ScalarAsync(connection, transaction, FundCloseOn, [("$series", IndexSweepFunds[index]), ("$night", Stamp(night))], cancellation) is not null)
                 {
-                    var read = await ReadAsync(connection, transaction, index, night, names, setting, Clears, cancellation);
+                    var read = await ReadAsync(connection, transaction, index, night, names, setting, IndexRules.TwelveOne(p), Clears, cancellation);
 
                     if (read.Waits is { } waits)
                     {

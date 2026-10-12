@@ -62,8 +62,9 @@ public sealed record FormingRowView(int Place, string Ticker, decimal Close, dec
 public sealed record FormingListView(IReadOnlyList<FormingRowView> Rows, int Forming, bool MarketOpen);
 
 // The rule a card draws: the choice made, every choice, the chosen rule's words in clauses, a variant's own picks, the
-// funnel, the stretch line, the forming list, whether the night evaluated the rule, and the line an index with no
-// variant carries.
+// funnel, the stretch line, the forming list, whether the night evaluated the rule, the line an index with no variant
+// carries, and, for a book registered before its family's freeze, how the tester judged its design with the adjusted p
+// it stored.
 // see: A variant's picks are shown on its card when chosen and its results only under its tests
 public sealed record RuleView(
     RuleChoiceView Chosen,
@@ -74,7 +75,12 @@ public sealed record RuleView(
     StretchLineView? Stretch,
     FormingListView? Forming,
     bool Evaluated,
-    string? NoVariantLine);
+    string? NoVariantLine,
+    UntestedLineView? Untested = null);
+
+// The line beside a book registered before its family's freeze: the line itself and the adjusted p it states, as the
+// tester's newest run stored it.
+public sealed record UntestedLineView(string Line, double? Adjusted);
 
 // The line tonight's page opens on, on a night the families drew its list: the index it is over, whether the
 // market check left the lists open, the breadth it read against its floor, how many of the index's members a
