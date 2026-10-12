@@ -43470,8 +43470,12 @@ Mutated:    the rule, stated before the run: each property the checkpoint adds, 
             Each reverted before anything was committed. The run before the sweep found the readings' version test still
             building its two comparisons from the first two files, which the four-file pin failed until they read all
             four.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures
-            to be filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the ruling's
+            above and the 18.1 correction's below, 01dc0bc3: all six steps, 0 warnings, 0 errors, 2233 of 2233 tests
+            ran with none failed in 17 minutes 53 seconds, migrations 0 to 88 with none pending, schema version 88,
+            against `data-ci` and never `data`; the phase report 54 tables, 1267 claims, 1267 passing and none
+            unexamined, 43 checks on the roster run and passed. The runs over 5aa38ba6 and 835b33ad failed 3 and 1 of
+            2,233, as the tests above and the correction below say.
 Queue:      done, 17.11, PR 439, and the 17.12 ruling; in progress, 17.12; next, 17.13, the S&P 500's approvals with the
             FastTree challenger, then 18.5's report.
 Carried:    nothing new; the night's rows from 2026-10-06 to the merge keep none of the reading, written before it.
@@ -43492,6 +43496,7 @@ Mutated:    the rule, stated before the run: the property the correction adds, o
             to the machine's clock: predicted red at the design test on 2026-10-12, a day the exchange trades. Result:
             red at 04:26Z, the masthead not found as matched, one of one in the run filtered to the test; reverted
             before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
-            verifies 17.12 above.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 01dc0bc3, the run
+            that verifies 17.12 above: 2233 of 2233 tests ran with none failed on Monday 2026-10-12 at 04:47Z, the
+            design test among them, and the phase report's 1267 claims passing.
 Carried:    nothing.
