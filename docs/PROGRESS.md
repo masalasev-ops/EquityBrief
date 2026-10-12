@@ -43255,3 +43255,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.10 ruling above; item 7, October's monthly run by hand, runs on the tree carrying this correction.
 Carried:    nothing new.
+
+### 17.2 - correction: no select a screen draws is wider than what holds it, where the S&P 500's cards' rule pickers laid its Tonight out 1,229 pixels wide on a phone's 390   2026-10-12
+
+Corrects:   17.2's rule picker on each setup card. A select is as wide as its longest choice and no rule held one to what
+            holds it, so on the S&P 500, whose cards pick among a live rule and its variants by the rules' words, Tonight
+            was laid out 1,229 pixels wide at a phone's 390, the heavyweights' picker alone 1,198, with a variant chosen
+            or none. The S&P 400's and 600's pickers hold the provisional rule alone and fitted.
+Found:      reading the screens of October's monthly run back at 390 pixels, in a browser laid out at that width, for the
+            17.10 entry below.
+Built:      one rule holding every select to what holds it. Measured in the same browser over the live page with the
+            rule added, the S&P 500's Tonight is 390 wide at 390 with nothing past the screen's edge. The roster's
+            read-surface row names the test, the prior text in `CHANGELOG.md`.
+Tests:      one more: the rule holding every select stated, and every rule a select reads, three stated in advance,
+            giving it no width of its own.
+Claims:     none more.
+Pins:       none moved; the stylesheet is in no pin list.
+Mutated:    the rule, stated before the run: the property that no select is wider than what holds it. M14 the rule
+            holding every select taken out: predicted red at the new test. Results: M14 red at the new test, the rule
+            not found; one of five failed in the run filtered to the screens' width tests. Reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies the 17.10 entry below.
+Queue:      as the 17.10 ruling above; it ships with the record of item 7.
+Carried:    nothing new.

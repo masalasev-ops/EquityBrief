@@ -314,4 +314,24 @@ public partial class ReadSurface
         // the page as it did before.
         Assert.Matches(@"(?m)^\.tbl-wrap\{overflow-x:auto\}", Stylesheet.Css);
     }
+
+    // The 17.2 correction: a select is as wide as its longest choice, and each of the S&P 500's cards picks its rule in
+    // one whose choices are the rules' words, so at a phone's 390 pixels its Tonight was laid out 1,229 wide, the
+    // heavyweights' picker alone 1,198. Every select is held to what holds it, and no rule a select reads gives it a width
+    // of its own.
+    [Fact]
+    public void NoSelectAScreenDrawsIsWiderThanWhatHoldsIt()
+    {
+        var css = Regex.Replace(Stylesheet.Css, @"/\*.*?\*/", string.Empty, RegexOptions.Singleline);
+
+        Assert.Matches(@"(?m)^select\{max-width:100%\}$", css);
+
+        var rules = Regex.Matches(css, @"(?m)^[^{}]*\bselect\b[^{}]*\{([^}]*)\}").Select(rule => rule.Value.Trim()).ToArray();
+        var widened = rules.Where(rule => Regex.IsMatch(rule, @"[{;]\s*(?:min-)?width:")).ToArray();
+
+        // Stated in advance: the rule holding every select and the looks of the universe's picker and the run page's
+        // comparison, three.
+        Assert.Equal(3, rules.Length);
+        Assert.True(widened.Length == 0, $"A rule gives a select a width of its own: {string.Join("; ", widened)}.");
+    }
 }
