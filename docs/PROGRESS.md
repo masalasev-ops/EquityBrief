@@ -43630,8 +43630,14 @@ Mutated:    the rule, stated before the run: one mutation a property 17.14 adds.
             the condition refuses listed, 1 of 34; M39 at the refusal's words not found, 1 of 34; M40 at the exit a loss
             of 10 per cent in place of a win of 8, 1 of 34; M41 at a shape move answered applied on another family, 1 of
             34. Each reverted before anything was committed, the 34 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures to be
-            filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 02e80147: all
+            six steps, 0 warnings, 0 errors, 2246 of 2246 tests ran with none failed in 15 minutes 49 seconds,
+            migrations 0 to 90 with none pending, schema version 90, against `data-ci` and never `data`; the phase report
+            54 tables, 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed. The run over
+            19b2db88 stopped at the suite on three tests: the score's reach, which that tree had widened to the S&P 500's
+            pullback for the decision cards alone, the cards' own decision naming the S&P 400's and 600's, and which is
+            restored with the S&P 500 pullback's card test it failed, and the run page's sentence 13.8 opens with, held
+            in code and reworded with the paragraph.
 Queue:      done, 17.11 and 17.12, PRs 439 and 440, the 17.13 ruling and 17.13; in progress, 17.14; next, 17.15, then
             one pull request for 17.13 to 17.15, then 18.5's report.
 Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
