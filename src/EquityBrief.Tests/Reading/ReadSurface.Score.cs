@@ -113,8 +113,8 @@ public partial class ReadSurface
 
         store.Execute($"INSERT INTO loop_run (run_id, month, index_code, through, started_at, ended_at, folds) VALUES ('{run}', '2026-04', 'GSPC', '{ScoreDate(night)}', '2026-04-14T12:00:00Z', '2026-04-14T12:01:00Z', 5);");
         store.Execute(
-            "INSERT INTO loop_model (run_id, index_code, family, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words) " +
-            $"VALUES ('{run}', 'GSPC', 'breakout', 2027, '2019-01-02', '{ScoreDate(night.AddDays(1))}', 400, 'close_over_twenty', '{model.Canonical()}', '{model.Hash}', '{RidgeScore.Version}', 'the score weighs most close_over_twenty higher');");
+            "INSERT INTO loop_model (run_id, index_code, family, kind, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words) " +
+            $"VALUES ('{run}', 'GSPC', 'breakout', 'ridge', 2027, '2019-01-02', '{ScoreDate(night.AddDays(1))}', 400, 'close_over_twenty', '{model.Canonical()}', '{model.Hash}', '{RidgeScore.Version}', 'the score weighs most close_over_twenty higher');");
 
         for (var rank = 1; rank <= 3; rank++)
         {

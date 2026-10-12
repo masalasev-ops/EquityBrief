@@ -25,6 +25,10 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
+    <!-- The learned score's challenger is fitted here and nowhere else; its trees are stored as text and walked by the
+         core, so the night scores a member without the package.
+         see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score -->
+    <PackageReference Include="Microsoft.ML.FastTree" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

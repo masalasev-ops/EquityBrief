@@ -14,11 +14,13 @@ public sealed record AlsoRequires(int Reading, bool Above, double Level)
 
 // The settings every engine's proposal turns, read off a rule's own registered parameters and all off where none is
 // stated: the exit of the menu its trades are walked under, nought for its own; the conditions a member passing the
-// rule's own gates must also meet; and a score, a sum of the catalogue's readings each times its weight, its list
-// ordered by it, highest first, and a member scoring under its floor left off. A rule stating none of them is walked,
-// listed and ordered exactly as before they existed.
+// rule's own gates must also meet; and a score, a sum of the catalogue's readings each times its weight or from 17.15 a
+// stored tree model named by its key, its list ordered by it, highest first, and a member scoring under its floor left
+// off. A rule stating none of them is walked, listed and ordered exactly as before they existed. A tree model is found
+// by the reader that holds the stored models, and one not found scores no member, so the rule lists none.
 // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IReadOnlyDictionary<int, double> Score, double? ScoreFloor)
+// see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IReadOnlyDictionary<int, double> Score, double? ScoreFloor, long? Trees = null, TreeModel? Model = null)
 {
     public const string ExitParameter = "exit";
 
@@ -32,15 +34,17 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
 
     public const string ScoreFloorParameter = "score_floor";
 
+    public const string TreesParameter = "score_trees";
+
     public static RuleHooks Off { get; } = new(0, [], new Dictionary<int, double>(), null);
 
     // The files a hooked rule's list and trades are read through, which every family rule's version pins beside its own.
-    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs"];
+    public static IReadOnlyList<string> Sources { get; } = ["src/EquityBrief.Core/Loop/RuleHooks.cs", "src/EquityBrief.Core/Loop/ExitMenu.cs", "src/EquityBrief.Core/Loop/TreeScore.cs"];
 
-    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null;
+    public bool IsOff => Exit == 0 && Also.Count == 0 && Score.Count == 0 && ScoreFloor is null && Trees is null;
 
     // Whether a member's readings are needed: a condition or a score.
-    public bool ReadsReadings => Also.Count > 0 || Score.Count > 0;
+    public bool ReadsReadings => Also.Count > 0 || Score.Count > 0 || Trees is not null;
 
     public ExitChoice? ExitChoice => ExitMenu.Of(Exit);
 
@@ -48,6 +52,7 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
     public static bool IsHook(string name) =>
         name == ExitParameter
         || name == ScoreFloorParameter
+        || name == TreesParameter
         || (name.StartsWith(ScorePrefix, StringComparison.Ordinal) && Column(name[ScorePrefix.Length..]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(AboveSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^AboveSuffix.Length]) >= 0)
         || (name.StartsWith(AlsoPrefix, StringComparison.Ordinal) && name.EndsWith(BelowSuffix, StringComparison.Ordinal) && Column(name[AlsoPrefix.Length..^BelowSuffix.Length]) >= 0);
@@ -60,6 +65,7 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
         var also = new List<AlsoRequires>();
         var score = new Dictionary<int, double>();
         double? floor = null;
+        long? trees = null;
 
         foreach (var (name, value) in parameters.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
@@ -76,6 +82,10 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
             {
                 floor = value;
             }
+            else if (name == TreesParameter)
+            {
+                trees = (long)value;
+            }
             else if (name.StartsWith(ScorePrefix, StringComparison.Ordinal) && Column(name[ScorePrefix.Length..]) is var weighted and >= 0)
             {
                 score[weighted] = value;
@@ -90,8 +100,12 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
             }
         }
 
-        return new RuleHooks(exit, also, score, floor);
+        return new RuleHooks(exit, also, score, floor, trees);
     }
+
+    // The hooks with the tree model they name found by the reader given, none where they name none.
+    public RuleHooks With(Func<long, TreeModel?>? models) =>
+        Trees is { } key && models?.Invoke(key) is { } model ? this with { Model = model } : this;
 
     // The parameters a rule states without its hooks, which its own evaluation reads.
     public static IReadOnlyDictionary<string, double> Without(IReadOnlyDictionary<string, double> parameters) =>
@@ -100,9 +114,14 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
     // Whether a member's readings meet every condition; a reading the member does not hold meets none.
     public bool Passes(IReadOnlyList<double?> readings) => Also.All(condition => condition.Holds(readings));
 
-    // A member's score, none where a reading it weighs is not held.
+    // A member's score, none where a reading it weighs is not held or the tree model it names was not found.
     public double? ScoreOf(IReadOnlyList<double?> readings)
     {
+        if (Trees is not null)
+        {
+            return Model?.Score(readings);
+        }
+
         var sum = 0.0;
 
         foreach (var (reading, weight) in Score)
@@ -133,7 +152,7 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
             .Where(one => one.Readings is not null && Passes(one.Readings))
             .ToList();
 
-        if (Score.Count == 0)
+        if (Score.Count == 0 && Trees is null)
         {
             return [.. kept.Select(one => one.Candidate)];
         }
@@ -166,10 +185,15 @@ public sealed record RuleHooks(int Exit, IReadOnlyList<AlsoRequires> Also, IRead
 
         parts.AddRange(Also.Select(condition => FormattableString.Invariant($"also requires {condition.Column} {(condition.Above ? "at or above" : "at or under")} {condition.Level.ToString("0.####", CultureInfo.InvariantCulture)}")));
 
-        if (Score.Count > 0)
+        var floor = ScoreFloor is { } least ? FormattableString.Invariant($", a score under {least.ToString("0.####", CultureInfo.InvariantCulture)} left off") : string.Empty;
+
+        if (Trees is { } key)
         {
-            parts.Add("ordered by a score over " + string.Join(", ", Score.Keys.Order().Select(reading => LedgerReadings.All[reading].Column))
-                + (ScoreFloor is { } least ? FormattableString.Invariant($", a score under {least.ToString("0.####", CultureInfo.InvariantCulture)} left off") : string.Empty));
+            parts.Add(FormattableString.Invariant($"ordered by the learned trees {key:x12}") + floor);
+        }
+        else if (Score.Count > 0)
+        {
+            parts.Add("ordered by a score over " + string.Join(", ", Score.Keys.Order().Select(reading => LedgerReadings.All[reading].Column)) + floor);
         }
 
         return string.Join("; ", parts);

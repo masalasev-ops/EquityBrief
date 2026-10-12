@@ -63,6 +63,7 @@ public sealed class FamilyEvaluator : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -198,9 +199,10 @@ public sealed class FamilyEvaluator : IComponent
         // The setting an approval stored for each family on the S&P 500, the newest a family, its hooks keeping and
         // ordering the family's list and naming the exit its picks are walked under.
         var stored = await EquityBrief.Worker.Indices.IndexFamilies.StoredSettingsAsync(connection, MarketCloses.Index, cancellation);
+        var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, null, cancellation);
         var hooks = SetupFamilies.Evaluated.ToDictionary(
             family => family.Name,
-            family => stored.TryGetValue(family.Name, out var setting) ? RuleHooks.Of(setting.Hooks) : RuleHooks.Off,
+            family => stored.TryGetValue(family.Name, out var setting) ? RuleHooks.Of(setting.Hooks).With(trees) : RuleHooks.Off,
             StringComparer.Ordinal);
         var readings = hooks.Values.Any(rule => rule.ReadsReadings) && readingsTonight is not null ? await readingsTonight(cancellation) : null;
         var (hooked, places) = Hooked([.. own.Select(pair => pair.Result)], hooks, readings);

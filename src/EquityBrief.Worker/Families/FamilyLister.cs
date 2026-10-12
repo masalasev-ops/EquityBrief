@@ -46,6 +46,7 @@ public sealed class FamilyLister : IComponent
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.FamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -167,7 +168,7 @@ public sealed class FamilyLister : IComponent
         // walked under the exit they name; every other family's as its evaluator stored them.
         // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
         var pullbackHooks = (await IndexFamilies.StoredSettingsAsync(connection, MarketCloses.Index, cancellation)).TryGetValue(SetupFamilies.Pullback, out var stood)
-            ? EquityBrief.Core.Loop.RuleHooks.Of(stood.Hooks)
+            ? EquityBrief.Core.Loop.RuleHooks.Of(stood.Hooks).With(await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, null, cancellation))
             : EquityBrief.Core.Loop.RuleHooks.Off;
         var readings = pullbackHooks.ReadsReadings && readingsTonight is not null ? await readingsTonight(cancellation) : null;
         var qualifying = new List<FamilyQualifiers>();

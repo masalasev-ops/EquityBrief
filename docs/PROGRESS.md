@@ -43643,3 +43643,54 @@ Queue:      done, 17.11 and 17.12, PRs 439 and 440, the 17.13 ruling and 17.13; 
 Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
             merge read for the apply step's row; the first shape proposal under version 5, at sixty ordinary nights, read
             as proposals of the next tester run on the S&P 500.
+
+### 17.15 - the FastTree challenger: a tree ensemble fitted beside the ridge score on the same rows, stored as text and walked by code, put only where it passes and earns more than the ridge score of its kind   2026-10-12
+
+Built:      beside the ridge score, on the same learning rows and readings of each fold, the tester fits an ensemble of
+            100 trees by ML.NET's FastTree in the worker alone, package 5.0.0, on one thread at the seed 17, each tree on
+            0.8 of the rows; the rows and readings are the ridge score's own, its selection extracted so both read it.
+            The trees are taken out of the fitted ensemble as text, each tree's weight, splits, thresholds, children and
+            leaves with the bias, the rows, the clip, the settings and each index's hundredths, hashed, and written to
+            `loop_model` under the kind `trees`; migration 91 rebuilds the table with the kind in its primary key, every
+            earlier row copied across as the ridge score's. Every score of the trees, the tester's and the night's, is
+            the core's walk of the stored text. They bring the ridge score's three proposals, named for the learned
+            trees, each passing only where it passes the pass rule and its total edge after costs over the test years is
+            above the ridge score's proposal of its kind, the finding saying both totals. A rule's hooks gain the trees
+            by the first twelve hexadecimal characters of their hash; the family evaluator, lister and recorder, the
+            index families and the tester read the stored trees for a rule whose hooks name them, and hooks naming trees
+            no stored model carries score no member. The card's part and the pick's rank read the ridge score alone.
+            The trees' walk joins the hooks' sources, so the S&P 500's breakout and drift and every S&P 400 and 600
+            rule's version moves again; the remedy registers every moved rule again with its replay once. Writes the
+            score's paragraph and section 17's two rows, five catalogue rows and the models' store row, `SCHEMA.md`'s
+            models, the runbook, the guide, the roster's three rows and the remedy, the prior text in `CHANGELOG.md`.
+Measured:   read-only on the operator's store on 2026-10-12: `loop_model` holds 96 rows over 6 runs, each copied across
+            as the ridge score's by migration 91; the probe of ML.NET's FastTree 5.0.0 on this machine walked 2,000
+            constructed rows within 1.2e-7 of the package's own scores and fitted the same trees twice.
+Tests:      five new, three worked by hand over constructed rows and folds, the challenger's pin, and one read back off
+            the picks a constructed store's night keeps under a constructed tree; four changed, the fitted models'
+            readers, the migrations' stated rebuilds, the pinned figures of section 17 and the score's card tests' helper,
+            which writes a model's kind. 17.15 adds no row of a table the harness reads, beside phase 17's pair.
+Mutated:    the rule, stated before the run: one mutation a property 17.15 adds. M42 the fit fitting at its own seed
+            whatever seed it is handed: predicted red at the fitted-twice test alone. M43 the walk turning left over the
+            threshold and right at or under it: predicted red at the walk against the package and the night's order.
+            M44 a trees proposal put against the rule today's total in place of the ridge score's: predicted red at the
+            put test alone. M45 hooks naming trees no stored model carries scoring each member nothing in place of no
+            score: predicted red at the night's order alone. M46 the lister reading no stored trees: predicted red at
+            the night's order alone. Not mutated: the parse of the stored text, which the fitted-twice test reads back
+            whole, and the store's rebuild, which the stated rebuilds hold.
+            Results: each red where predicted, every run filtered to the 42 apply step, Loop page, shape, exit menu,
+            score, 17.13, 17.14 and 17.15 tests; M42 and M43, made in the two sources the challenger's version pins, red
+            at the pin test as well, which any change to those sources reaches and which the prediction left out. M42 at
+            another seed fitting the same hash, 2 of 42 with the pin; M43 at row 0 walked to -0.722 where the package
+            scored 1.738 and the constructed tree scoring 2 and 1, and at the fitted-twice test's reading of a higher
+            liquidity scoring higher, 4 of 42 with the pin; M44 at the trees' lowest fifth and two fifths put, 1 of 42;
+            M45 at a key no model carries listing two, 1 of 42; M46 at the stored trees listing none, 1 of 42. Each
+            reverted before anything was committed, the 42 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures to be
+            filled from the run.
+Queue:      done, 17.11 and 17.12, PRs 439 and 440, the 17.13 ruling, 17.13 and 17.14; in progress, 17.15; next, one pull
+            request for 17.13 to 17.15 merged outside the night's window and its remedy run, then 18.5's report.
+Carried:    the remedy `tools/remedies/2026-10-12-17.15-the-rules-registered-again.txt` run after the merge and before
+            the night, each rule's line stating whether its record carried on or restarted; the first night after it read
+            for every family rule's evaluation; the first monthly run's trees, on 2026-11-07, read on the Loop page beside
+            the ridge score's.

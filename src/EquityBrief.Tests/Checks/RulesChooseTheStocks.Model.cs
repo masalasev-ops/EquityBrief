@@ -28,8 +28,13 @@ public partial class RulesChooseTheStocks
         var touching = components.Where(component => component.Access.On(DataStore.LoopModel) != Touch.None).ToArray();
         var writing = touching.Where(component => (component.Access.On(DataStore.LoopModel) & (Touch.Insert | Touch.Update | Touch.Delete)) != Touch.None).ToArray();
 
-        // The scope, by name: the tester writes it, and the decision cards and the read surface read it.
-        Assert.Equal(["DecisionCards", ReadSurface, "WalkForwardTester"], touching.Select(component => component.Name).Order(StringComparer.Ordinal));
+        // The scope, by name: the tester writes it, and the decision cards and the read surface read it; from 17.15 the
+        // night's family evaluator, lister and recorder and the index families read the challenger's trees a rule's hooks
+        // name by their key.
+        // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+        Assert.Equal(
+            ["DecisionCards", "FamilyEvaluator", "FamilyLister", "FamilyRecorder", "IndexFamilies", ReadSurface, "WalkForwardTester"],
+            touching.Select(component => component.Name).Order(StringComparer.Ordinal));
         Assert.Equal(["WalkForwardTester"], writing.Select(component => component.Name));
         Assert.Empty(touching.SelectMany(component => TouchesTheModelAndReadsWhatItMayNot(component.Name, component.Access)));
     }

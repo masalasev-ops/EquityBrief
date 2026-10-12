@@ -1590,26 +1590,27 @@ Primary key: `run_id`, `index_code`, `family`, `reading`.
 **Written once by the walk-forward tester with its run**, from 17.6, over every listing the rule made that had finished by the history's end; context for the conditions winners against losers proposes and never a test of them (see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search).
 
 ### loop_model
-Grain: one row per run, family and fold of the learned score, the score fitted on all finished data among them.
+Grain: one row per run, family, kind and fold of the learned score, the score fitted on all finished data among them.
 
 | Column | Type | Notes |
 |---|---|---|
 | `run_id` | TEXT | the run |
 | `index_code` | TEXT | as `loop_run` carries it |
 | `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `kind` | TEXT | `ridge`, the ridge score, every row stored before 17.15 among them, or from 17.15 `trees`, its challenger's tree ensemble fitted on the same rows |
 | `year` | INTEGER | the year the fold tests, or for the score fitted on all finished data the year after the history's last session |
 | `learned_from` | TEXT | the first session of the setups it learned on |
 | `learned_before` | TEXT | the session it was cut at: it learned on the setups whose paths ended before it, the fold's first session or the day after the history's last |
 | `setups` | INTEGER | the finished setups it was fitted over, those holding every reading it weighs |
 | `readings` | TEXT | the readings it weighs, their columns in the catalogue's order joined by commas |
-| `parameters` | TEXT | the parameters whole as their canonical text: each reading's mean, spread and weight, each index's shift, the intercept, the label's clip, the penalty and each index's scores at each hundredth, every figure at its round trip |
+| `parameters` | TEXT | the parameters whole as their canonical text: each reading's mean, spread and weight, each index's shift, the intercept, the label's clip, the penalty and each index's scores at each hundredth, every figure at its round trip; for the trees, the bias, the rows, the clip, the settings it was fitted at, each tree's weight, splits, thresholds, children and leaves, and each index's scores at each hundredth |
 | `hash` | TEXT | the first sixteen hexadecimal characters of the SHA-256 of that text |
 | `pin` | TEXT | the version of the code that fitted it, the pin of its source |
-| `words` | TEXT | its weight in words: the readings weighing most, the business readings' share and the setups |
+| `words` | TEXT | its weight in words: the readings weighing most, the business readings' share and the setups; for the trees, the readings split on most |
 
-Primary key: `run_id`, `family`, `year`.
+Primary key: `run_id`, `family`, `kind`, `year`.
 
-**Written once by the walk-forward tester with its run**, from 17.7, a row a fold and one for all finished data, each fitted on the ledger's finished setups of the family on all three indices whose paths ended before its cut. The decision cards read the newest run's score fitted on all finished data, the one cut after the run's last session, for the part a pick's card draws and its rank, and the Loop page draws it (see: A fitted statistical model is a rule).
+**Written once by the walk-forward tester with its run**, from 17.7, a row a fold and one for all finished data, each fitted on the ledger's finished setups of the family on all three indices whose paths ended before its cut. The decision cards read the newest run's ridge score fitted on all finished data, the one cut after the run's last session, for the part a pick's card draws and its rank, and the Loop page draws it (see: A fitted statistical model is a rule). From 17.15 the challenger's trees are written beside the ridge score, a row a fold and one for all finished data, migration 91 rebuilding the table with its kind in its primary key and copying every earlier row across as the ridge score's; a rule whose hooks name trees by their key is ordered by the trees stored here, read back from their text and walked by code, by the family evaluator, the family lister, the family recorder, the index families and the tester (see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score).
 
 ### loop_reference
 Grain: one row per run, family and trade of the rule today over the run's test years.

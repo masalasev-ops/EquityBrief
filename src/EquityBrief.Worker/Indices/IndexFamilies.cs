@@ -63,6 +63,7 @@ public sealed class IndexFamilies : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.LoopModel, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
@@ -362,13 +363,14 @@ public sealed class IndexFamilies : IComponent
         // The setting an approval stored for each family on the index, none on the S&P 500, whose approvals are refused.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
         var stored = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StoredSettingsAsync(connection, index, cancellation);
+        var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, null, cancellation);
 
         // A family whose live rule stands draws the index's page on that rule's settings, one an approval stored a setting
         // for on that setting, and every other on its provisional rule.
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
             rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels)
-            : stored.TryGetValue(family, out var setting) ? IndexNightRead.Stored(prepared, family, setting, tonight)
+            : stored.TryGetValue(family, out var setting) ? IndexNightRead.Stored(prepared, family, setting, tonight, trees)
             : IndexNightRead.Provisional(prepared, family, tonight);
 
         var read = inputs is null
@@ -1941,6 +1943,7 @@ public static class IndexRuleTrades
         }
 
         var (ended, benchmarked) = await WalkAsync(connection, transaction, inputs, cancellation);
+        var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, transaction, cancellation);
         var kept = 0;
 
         foreach (var (rule, answers) in rules)
@@ -1968,7 +1971,7 @@ public static class IndexRuleTrades
             // night's readings, a rule reading them on a night that supplied none listing nothing; and the exit its
             // trades are walked under.
             // see: Every engine's settings hooks land together and all default off, so the families' pins move once
-            var hooks = RuleHooks.Of(rule.Parameters);
+            var hooks = RuleHooks.Of(rule.Parameters).With(trees);
 
             if (hooks.ReadsReadings && readings is null)
             {

@@ -193,7 +193,7 @@ public sealed class DecisionCards : IComponent
 
     const string ScoreOf = @"
         SELECT m.parameters FROM loop_model m JOIN loop_run r ON r.run_id = m.run_id
-        WHERE m.run_id = $run AND m.family = $family AND m.learned_before > r.through;
+        WHERE m.run_id = $run AND m.family = $family AND m.kind = 'ridge' AND m.learned_before > r.through;
     ";
 
     const string ScorePassed = @"

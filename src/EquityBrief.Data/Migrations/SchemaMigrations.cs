@@ -711,7 +711,39 @@ public static class SchemaMigrations
         new Migration(88, "add setup.value_place", AddValuePlace),
         new Migration(89, "add family_result.exit and family_result.risk_moves", AddFamilyResultExit),
         new Migration(90, "add family_pick.exit", AddFamilyPickExit),
+        new Migration(91, "rebuild loop_model with its kind", LoopModelKinds),
     ];
+
+    // The learned score's models by their kind: the ridge score's, every row stored before 17.15, and from 17.15 its
+    // challenger's trees, fitted on the same rows of the same fold and stored beside it. A rebuild rather than an alter,
+    // because the kind joins the primary key, which SQLite cannot change in place; every row is copied across as the
+    // ridge score's before the old table goes.
+    // see: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+    const string LoopModelKinds = @"
+        CREATE TABLE loop_model_rebuilt (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            kind            TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            learned_from    TEXT    NOT NULL,
+            learned_before  TEXT    NOT NULL,
+            setups          INTEGER NOT NULL,
+            readings        TEXT    NOT NULL,
+            parameters      TEXT    NOT NULL,
+            hash            TEXT    NOT NULL,
+            pin             TEXT    NOT NULL,
+            words           TEXT    NOT NULL,
+            PRIMARY KEY (run_id, family, kind, year)
+        ) STRICT;
+
+        INSERT INTO loop_model_rebuilt (run_id, index_code, family, kind, year, learned_from, learned_before, setups, readings, parameters, hash, pin, words)
+        SELECT run_id, index_code, family, 'ridge', year, learned_from, learned_before, setups, readings, parameters, hash, pin, words FROM loop_model;
+
+        DROP TABLE loop_model;
+
+        ALTER TABLE loop_model_rebuilt RENAME TO loop_model;
+    ";
 
     // The exit of the menu an S&P 500 pullback pick is walked under where an approval stored one for the swing filter's
     // page, its trade scored under a horizon of its own so the swing filter's rows keep their plan's own outcome for every

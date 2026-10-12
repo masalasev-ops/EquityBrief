@@ -34,7 +34,8 @@ public sealed class RuleWalk(
     IReadOnlyList<RuleListing> listings,
     Func<ExitChoice?, Func<int, bool>?, Func<IReadOnlyList<int>, IReadOnlyList<int>>?, IReadOnlyList<ExitProcedures.Walked>> walk,
     IReadOnlyDictionary<string, double>? standing = null,
-    Func<int, IReadOnlyList<double?>>? readingsOf = null)
+    Func<int, IReadOnlyList<double?>>? readingsOf = null,
+    Func<long, TreeModel?>? trees = null)
 {
     IReadOnlyList<ExitProcedures.Walked>? own;
 
@@ -61,17 +62,17 @@ public sealed class RuleWalk(
 
     // The rule's walk with a proposal's hooks set on top of those it stands at, as an approval sets them: each night's
     // listings kept and ordered by them exactly as the night keeps and orders a hooked rule's candidates, a listing's
-    // readings read by its place.
-    public IReadOnlyList<ExitProcedures.Walked> Hooked(IReadOnlyDictionary<string, double> change, Func<int, IReadOnlyList<double?>> readings) =>
-        Walk(change, null, readings);
+    // readings read by its place; a tree model the run fitted found beside those stored.
+    public IReadOnlyList<ExitProcedures.Walked> Hooked(IReadOnlyDictionary<string, double> change, Func<int, IReadOnlyList<double?>> readings, TreeModel? fitted = null) =>
+        Walk(change, null, readings, fitted);
 
     // The hooks a walk reads: a change's on top of the rule's own, through the one composition an approval applies.
     public static RuleHooks Composed(IReadOnlyDictionary<string, double> change, IReadOnlyDictionary<string, double> standing) =>
         RuleHooks.Of(LoopChange.OfHooks(change).OnTopOf(new LoopChange(null, null, null, standing)).Hooks);
 
-    IReadOnlyList<ExitProcedures.Walked> Walk(IReadOnlyDictionary<string, double> change, Func<int, bool>? keep, Func<int, IReadOnlyList<double?>>? readings)
+    IReadOnlyList<ExitProcedures.Walked> Walk(IReadOnlyDictionary<string, double> change, Func<int, bool>? keep, Func<int, IReadOnlyList<double?>>? readings, TreeModel? fitted = null)
     {
-        var hooks = Composed(change, Standing);
+        var hooks = Composed(change, Standing).With(key => fitted is not null && fitted.Key == key ? fitted : trees?.Invoke(key));
 
         if (hooks.ReadsReadings && readings is null)
         {
@@ -91,7 +92,7 @@ public sealed class RuleWalk(
     // The breakout or the drift at the setting it froze at on the S&P 500, which the S&P 400 and 600 run provisionally,
     // or at the setting an approval stored for it there: its sweep's own listings and exit, each listing kept only where
     // it clears the index's floors and gate, and on the S&P 500 every listing.
-    public static RuleWalk Swing(LoopRead read, string family, bool large, LoopChange? standing = null, LoopReadings? readings = null)
+    public static RuleWalk Swing(LoopRead read, string family, bool large, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
     {
         var floor = standing?.StopFloor ?? 0;
         var adapter = floor > 0
@@ -161,14 +162,15 @@ public sealed class RuleWalk(
             [.. listed.Select(Unit)],
             Walk,
             hooks,
-            readings is null ? null : at => readings.Of(listed[at].Name, listed[at].Bar, listed[at].Session));
+            readings is null ? null : at => readings.Of(listed[at].Name, listed[at].Bar, listed[at].Session),
+            trees);
     }
 
     // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one
     // open trade a stock over the listings clearing the index's floors and gate, the plan bought at the close with its
     // stop its typical moves under and its target its reward to risk, at the hooks an approval stored for it where it
     // stored any.
-    public static RuleWalk Pullback(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null)
+    public static RuleWalk Pullback(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
     {
         var (replay, _) = SweepIdeasRunner.Read(read.Inputs, market, progress);
         var series = replay.Series;
@@ -176,14 +178,14 @@ public sealed class RuleWalk(
 
         bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
 
-        return OverListings(read, series, replay.Listings(rule, Keeps), rule, RuleReplay.PullbackWords, progress, standing, readings);
+        return OverListings(read, series, replay.Listings(rule, Keeps), rule, RuleReplay.PullbackWords, progress, standing, readings, trees);
     }
 
     // The S&P 500's pullback: the swing filter at a version's settings read by value over the ideas' run's candidates,
     // every listing kept, five a night in the list's own order, held on closes to the cap, with the hooks an approval
     // stored for it.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null) =>
+    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null) =>
         OverListings(
             read,
             history.Series,
@@ -192,10 +194,11 @@ public sealed class RuleWalk(
             LargePullback.Words(version, settings),
             progress,
             standing,
-            readings);
+            readings,
+            trees);
 
     // A pullback's listings walked as the ideas' run walks them, under the exit the rule stands at or a proposal's.
-    static RuleWalk OverListings(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, IdeaRule rule, string words, Action<string> progress, LoopChange? standing, LoopReadings? readings)
+    static RuleWalk OverListings(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, IdeaRule rule, string words, Action<string> progress, LoopChange? standing, LoopReadings? readings, Func<long, TreeModel?>? trees)
     {
         var tickers = series.Select(one => one.Name.Ticker).ToArray();
         var closes = ClosesOf(series);
@@ -346,6 +349,7 @@ public sealed class RuleWalk(
             [.. listings.Select(Unit)],
             Walk,
             hooks,
-            readings is null ? null : at => readings.Of(listings[at].Name, listings[at].Bar, listings[at].Session));
+            readings is null ? null : at => readings.Of(listings[at].Name, listings[at].Bar, listings[at].Session),
+            trees);
     }
 }

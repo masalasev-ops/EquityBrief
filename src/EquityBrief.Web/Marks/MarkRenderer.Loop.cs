@@ -410,7 +410,7 @@ public sealed partial class MarkRenderer
         html.Append(proposal.Detectable is { } detectable
             ? Formatted($"<p class=\"loop-power\" data-detectable=\"{detectable.ToString("R", Invariant)}\">At this bar the gate detects a difference of about {LoopFigure(proposal.Unit, detectable)} {(book ? "a month" : "a trade")} four times in five, read from the blocks' own scatter; a smaller true difference passes less often than that.</p>")
             : "<p class=\"loop-power degraded\" data-detectable=\"none\">The blocks are too few for the gate's power to be read.</p>");
-        html.Append(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)
+        html.Append(proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal) || proposal.Proposal.StartsWith(TreeScore.Proposal, StringComparison.Ordinal)
             ? Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds held enough finished setups to fit the score on their own years before.</p>")
             : Formatted($"<p class=\"loop-folds\" data-stable-folds=\"{proposal.StableFolds}\" data-folds=\"{years.Count}\">{proposal.StableFolds} of the {years.Count} folds chose {(book ? "the same setting as" : "within a grid step of")} the proposal on their own years before.</p>"));
         html.Append("</div>");

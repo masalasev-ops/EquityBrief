@@ -25,6 +25,58 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's family evaluator, lister, recorder, index families and walk-forward tester rows, the loop models' store row, section 13.14 and section 17's two rows of the learned score state 17.15
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> Family evaluator reads: bar store, market series, indicators, levels, earnings reactions, gate results, provisional settings, family results | ... and stores the exit it names beside each pick with the stop's distance in the night's typical moves (see: ...)
+> Family lister reads: ... index family trades, provisional settings | ... and each pick carries the exit they name (see: ...); it records ...
+> Family recorder reads: membership, bar store, indicators, family results, member readings, family trades | ... a rule stating none listing and walking as before (see: ...); each rule keeps its own list ...
+> Index families reads: ... index heavyweight rule holdings, provisional settings | ... walks its trades and their benchmark under the exit of the menu it names (see: ...); from 17.8 ...
+> Walk-forward tester reads: ... filter versions, shape proposals | ... the score fitted on the ledger's finished setups of all three indices that ended before the fold's year (see: A fitted statistical model is a rule), a test year a fold from 2022, ...
+> Loop models | one row per run, family and fold of the learned score: ... its parameters whole as their canonical text with that text's hash, the pin of the code that fitted it and its weight in words | forever, append-only, written by the walk-forward tester with its run, and read by the decision cards and the Loop page (see: ...)
+> 13.14: ... and the share of the weight the business readings carry.</p> (no paragraph on a challenger)
+> The learned score's fit | ... and no score fitted over fewer than 10 rows a weight it could fit (see: ...) | ... | ... a fit one row short of the floor refused; the figures read off the document against the constants
+> The learned score's proposals | ... each walked through the hooks a registration would set (see: ...) | ... | ... with the rank and both floors read off its hundredths; the figures read off the document against the constants
+Now:
+> Family evaluator reads: ..., provisional settings, loop models, family results | ...; from 17.15 a setting naming the learned trees by their key orders the family by the trees the tester stored, read back from their text and walked by code, and one naming trees no stored model carries lists none (see: ...)
+> Family lister reads: ..., provisional settings, loop models | ... (see: ...), and from 17.15 ordered by the learned trees the tester stored where the hooks name them by their key; it records ...
+> Family recorder reads: ..., member readings, loop models, family trades | ... (see: ...), and from 17.15 a score naming the learned trees by their key read off the trees the tester stored; each rule keeps its own list ...
+> Index families reads: ..., provisional settings, loop models | ... (see: ...), from 17.15 a score naming the learned trees by their key, a stored setting's or a rule's, read off the trees the tester stored; from 17.8 ...
+> Walk-forward tester reads: ..., shape proposals, loop models | ... (see: A fitted statistical model is a rule), and from 17.15 its challenger's trees fitted on the same rows of each fold by FastTree, each of their proposals passing only where its total edge over the test years is above the ridge score's proposal of its kind, a rule standing at an approved change naming trees walked by the trees an earlier run stored (see: ...), a test year a fold from 2022, ...
+> Loop models | one row per run, family, kind and fold of the learned score, the ridge score's and from 17.15 its challenger's trees: ... for the trees each tree's splits, thresholds and leaves, ... | forever, append-only, written by the walk-forward tester with its run, the ridge score read by the decision cards and the Loop page, and from 17.15 the trees by every component that orders a rule whose hooks name them by their key (see: ...) (see: ...)
+> 13.14: a paragraph added after the second: from 17.15 each fold fits a challenger beside the ridge score on the same rows and readings, its trees stored as text with their hash and every score of it the code's own walk, hooks naming trees no stored model carries scoring no member, its three proposals put only where each passes and earns more than the ridge score's of its kind, the card's part and the pick's rank reading the ridge score alone.
+> The learned score's fit | ... (see: ...); and beside it on the same rows the challenger's 100 trees of at most 8 leaves, each leaf fitted over at least 50 rows at a learning rate of 0.1, each tree on 0.8 of the rows drawn at the seed 17, on one thread (see: ...) | ... | ...; the challenger's trees fitted twice to one text and hash and at another seed to another, read back from their text and walked within a millionth of the package's own scores; the figures read off the document against the constants
+> The learned score's proposals | ... (see: ...); the challenger's trees bring the same three, each put only where its total edge after costs over the test years is above the ridge score's proposal of its kind (see: ...) | ... | ...; the trees' proposals worked by hand against the ridge score's of their kind, put where they pass and earn more and not where either fails; the figures read off the document against the constants
+Why: 17.15 builds the challenger the 17.13 ruling named, on the operator's answer of 2026-10-12 that beating the ridge score means passing and earning more.
+
+### 2026-10-12 - docs/SCHEMA.md - the loop's models gain their kind in their primary key
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> Grain: one row per run, family and fold of the learned score, the score fitted on all finished data among them. | (no `kind`) | `parameters` ... every figure at its round trip | `words` | TEXT | its weight in words: the readings weighing most, the business readings' share and the setups | Primary key: `run_id`, `family`, `year`. | ... The decision cards read the newest run's score fitted on all finished data, ... (see: A fitted statistical model is a rule).
+Now:
+> Grain: one row per run, family, kind and fold of the learned score, ... | `kind` | TEXT | `ridge` ... or from 17.15 `trees` ... | `parameters` ...; for the trees, the bias, the rows, the clip, the settings it was fitted at, each tree's weight, splits, thresholds, children and leaves, and each index's scores at each hundredth | `words` ...; for the trees, the readings split on most | Primary key: `run_id`, `family`, `kind`, `year`. | ... The decision cards read the newest run's ridge score ... From 17.15 the challenger's trees are written beside the ridge score, ... migration 91 rebuilding the table with its kind in its primary key and copying every earlier row across as the ridge score's; ... (see: ...).
+Why: the trees are stored beside the ridge score fitted on the same fold, which the old key could not hold.
+
+### 2026-10-12 - docs/RUNBOOK.md - the tester's learned score paragraph states the challenger
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> ... Every score it fits is written to `loop_model` with its parameters whole and their hash, and `--print` prints each one's weight in words.
+Now:
+> ... and `--print` prints each one's weight in words. From 17.15 the challenger's trees are fitted beside it on the same rows of each fold by FastTree, ... their trees are written to `loop_model` under the kind `trees` with their text and hash, and a rule approved at them is ordered on the night by the trees read back from that row and walked by code (see: ...). The fit asks nothing of any provider and calls no model.
+Why: the operator reads what a run fits and writes.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations, read-surface and rules-choose-the-stocks state 17.15
+Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
+Was:
+> fixture-expectations: ... and the shape command refusing an acceptance with why and nothing changed |
+> read-surface: ... read back off the store and off the rendered Tonight page naming the change |
+> rules-choose-the-stocks: ... the reader shown to find a planted read (see: A fitted statistical model is a rule); and from 17.9 the apply step and the live alarm join the components held |
+Now:
+> fixture-expectations: ...; and from 17.15 the learned score's challenger fitted twice over constructed rows to one text and hash and at another seed to another, ... and a proposal of the trees put only where it passes and its total edge is above the ridge score's proposal of its kind, ... |
+> read-surface: ...; and from 17.15 the S&P 500's pullback standing at a change naming the learned trees by their key kept and ordered by the trees the store holds, ... and listing none where no stored model carries the key |
+> rules-choose-the-stocks: ... (see: ...), and from 17.15 the family evaluator, lister and recorder and the index families among the components touching it, each reading the challenger's trees a rule's hooks name; and from 17.9 ... |
+Why: the roster states what each check asserts after 17.15.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md, docs/BUILD_PLAN.md - the citations of the old loop's seven decisions move to the four decisions superseding them
 Decision: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
 Was:
