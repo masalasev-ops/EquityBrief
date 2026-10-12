@@ -43767,3 +43767,93 @@ Carried:    the sign-offs of phases 15 to 18; the S&P 600's last 192 interest re
             DeepSeek cutting the connection; and the swing filter's and the drift rule's stored trigger reasons writing
             "session(s)", in sources a rule's version pins. The provider's counter read 8,317 for 2026-10-12 by 06:45Z
             with no run either session made recording a call.
+
+### Phase 15 sign-off                                                        2026-10-12
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. This is the second review of phase 15. The first, over e79e38cb,
+            signed nothing over F1 to F3, which the 15.1 and 15.5 corrections of PR 396 corrected, its figures filled
+            by PR 397; the 15.2 correction of PR 400, the 15.3 correction carried in PR 401, the 15.1 correction of PR
+            414, the 15.2 correction of PR 418 and the 15.1 correction of PR 433 corrected what later phases found.
+            This review read those seven corrections and the later changes to the index families' files, and signs
+            over 76635cd6.
+Verified:   by re-running both gates on `main` at 76635cd6 before this entry: `tools/ci.ps1` green end to end,
+            13:49:22 to 14:08:38 UTC, all six steps, 0 warnings, 0 errors, 2251 of 2251 tests passing inside it,
+            migrations 0 to 91 applied against `data-ci/` and then none pending at schema version 91, exit 0;
+            `tools/verify-phase.ps1` green, reading that run's suite result over the same commit and a clean tree, at
+            54 tables, 1267 claims, 1267 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1278 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names, 43
+            checks on the roster, 43 carried and 43 passed, none failed or unrun, the suite 2251 of 2251. Over the
+            tree carrying this entry, a record entry alone, the checks that read the record ran filtered in place of
+            the full script, on the operator's standing ruling: 147 of 147 tests passing.
+            Hosted CI for PRs 396, 397, 400, 401, 414, 418, 433 and 442: 19 runs over every pushed head of both
+            events, 38 jobs, case-sensitivity and macOS on each, all green. Main's push runs since 2026-10-08 01:50
+            UTC: 48, of which 47 are green on both jobs; 2aec8d18, the merge of PR 412 at 17.7, is red on the Linux
+            job in a phase 17 test and every run after it is green, 76635cd6's included.
+Plan:       checkpoints 15.0 to 15.6 are in `BUILD_PLAN.md` and recorded above with their rulings and corrections, the
+            last the 15.1 correction of 2026-10-11. The carried obligations hold 116 rows, 83 discharged, 33 operating
+            and none open; phase 15's two operating rows are carried below.
+Read:       the seven corrections against F1 to F3 and their done conditions: d892bf71 and 770b5f78 (PR 396), 17c7b280
+            (PR 400), the 15.3 part of f89d94b8 (PR 401), e03368ae (PR 414), db218a93 (PR 418) and 4d49aa79 (PR 433);
+            and the changes 17.5, 17.8, 17.9, 17.11, 17.13 and 17.15 made to `IndexFamilies.cs` and
+            `IndexNightRead.cs`, which leave the leaver's sale, the lead at the buy and the books' costs as the
+            corrections wrote them. F1: a provisional trade's round trip reads its company's value on its listing
+            session and a holding's on its buy, each under its index. F2: each design (a) holding stores its lead at
+            the buy, and the index card's key names its sector's members' mean. F3: a holding leaving the index is
+            sold at the bar table's close on the session it was last carried to, in the index's book and in a
+            registered rule's.
+Store:      read-only before the night: schema 91; `index_family_night` 13 rows, `index_family_pick` 23 and
+            `index_family_trade` 13, every trade the S&P 600's, INSP and ATRC ended at 0.034 and 0.032 risks of cost
+            and 11 open, none past its cap and so none benchmarked; `index_heavyweight_holding` 15, the S&P 400's 7
+            and the S&P 600's 7 open and FORM sold on leaving at 147.99, its close of 2026-10-05, at a cost of
+            0.001285, every holding bought on 2026-10-02 and none holding a lead; `index_heavyweight_rule_holding` and
+            `index_rule_trade` empty; the S&P 600's two heavyweights books registered as rows 284 and 285, rows 264
+            and 265 retired by 266 and 267, all on 2026-10-12. FORM joined the S&P 400 on 2026-10-06, so its page
+            served as the S&P 400 name page; APLE and GTES are S&P 600 members.
+Screens:    on 5152, the Release build of a0b8a83d, under each Universe choice, read as text and screenshotted. Past
+            picks on the S&P 600 draws FORM sold "2026-10-05 at 147.99", left the index, -0.8% against its sector's
+            largest at -0.9%, and the 13 trades, INSP and ATRC at +0.03 of cost. Tonight on the S&P 400 and 600 draws
+            7 holdings each, every lead "bought before its book stored a lead" under a key naming the sector's
+            members' mean, last rebalance 2026-10-02 and next 2026-11-03. The Run page under each matches
+            `index_family_night` and the trades: the S&P 600's 601 members at 48.3% breadth with its lists open, the
+            S&P 400's 400 at 44.0% with its lists closed. GTES's and APLE's pages name their company under the S&P
+            600, FORM's under the S&P 400, and FORM's page for 2026-10-05 under the S&P 600 at 147.99.
+Night:      not read. The handoff asked that the night of 2026-10-12, the first of this code over the live store and
+            the first of the S&P 600's two registered heavyweights books, be read before signing; at about 15:33 UTC
+            on 2026-10-12, told the review had found no defect and that only the night remained, the operator ruled:
+            "sign off". Its reading is carried below.
+Swept:      12 mutations, each predicted before its run, made on a branch in this checkout over the file's own text
+            and restored from it, the tree's diff the same after each as before. The handoff's eleven ran filtered to
+            33 tests, those over the corrected code and the evaluators' pin test, which reddens on any edit to
+            `IndexFamilies.cs` and is discounted, after the filter ran green over the clean tree; the combined edit
+            ran over the whole suite. (m1) a provisional trade's company value read as none: red in the trade's cost
+            test alone. (m2) a provisional holding's value read as none: red in the book's night test alone. (m3) a
+            leaver sold at its buy: red there alone, L2 at 170.3593 where it last closed as a member at 169.0305. (m4)
+            a holding bought with no lead: red there alone. (m5) a registered rule's leaver sold at its buy: red in
+            the rule books' test alone, rules 1 and 5. (m6) a rule's holding bought with no lead: red there alone.
+            (m7) the switches' calendar cut to its newest 252 sessions, the members' year: red in the switches test
+            alone, a year switch read as none. (m8) the level and one-ratio clause of a name's match read as true: red
+            in the tracking test alone, Mapped Co matched to none. (m9) a page trade's benchmark never written: red in
+            its benchmark test alone. (m10) a fetch made before the rating counts read as having filed them: red in
+            the member readings page test alone. (m11) a member's page read from the list's index: red in the own
+            index page test alone. (x) the first review's combined edit, both provisional round trips doubled and a
+            leaver sold at twice its buy, over the whole suite: red in the trade's cost test, the book's night test
+            and the pin test, 3 of 2251, where at the first review it went red in the pin test alone.
+Judged:     the four judgement calls the handoff names stand. A lead stored at the buy and never refreshed keeps an
+            earlier night's card true, and the 14 holdings bought before migration 72 say they hold none until the
+            rebalance of 2026-11-03. A company with no stored value priced in the $1 to 2 billion band is what the
+            decision states, and touched only ATRC and INSP, listed before any member reading. A leaver priced at the
+            bar table's close on its last carried session is how the S&P 500's book prices one. The 15.3 correction
+            carried inside a 17.1 commit has its own entry headed 15.3, which is what the record reads.
+Found:      no defect in shipped code.
+Carried:    "The night's time and growth over the three indices read on its first five nights" (15.0) has triggered:
+            the five scheduled three-index nights reached the close in 48 minutes over two tries for the session of
+            2026-10-05, 65 over three for 2026-10-06, then 1,590, 1,592 and 1,891 seconds, against the 40 minutes
+            proposed; the file grew 44 MB between 17.0's two readings against the 25 proposed, and ruling (a) of
+            2026-10-11 measures five nights after the news window fills on 2026-11-01. Settling both is the
+            operator's. "Analyst coverage tested as a dial once dated counts exist" (15.0) stays operating: 0 of the
+            1,002 S&P 400 and 600 members held four dated rating counts on 2026-10-09, against 902. The night of
+            2026-10-12, read on its run page and run log, the index families' stage, each book's rebalance wait and
+            the first night of the S&P 600's books of rows 284 and 285, is carried to phase 16's sign-off review, the
+            next session to read a night. The Linux red on 2aec8d18 is phase 17's, owed before its sign-off. Phases
+            16, 17 and 18 are signed after this one, each by its own session.
+Signed:     phase 15, over 76635cd6.
