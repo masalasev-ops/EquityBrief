@@ -43974,8 +43974,11 @@ Mutated:    the rule, stated before the runs: each property the checkpoint adds,
             card's, two of four. Each reverted before anything was committed. Not mutated: the drift's and the pullback's
             listings on a closed night, which read the sessions the breakout's do and are worked through the breakout's
             alone.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to be
-            filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 57c3c168: all six
+            steps, 0 warnings, 0 errors, 2254 of 2254 tests ran with none failed in 16 minutes 29 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report ran the
+            suite again over the commit, 2254 of 2254, and read 1268 claims, 1268 passing and none unexamined, 43 checks
+            on the roster run and passed.
 Queue:      done, 19.0 as PR 446 and its correction as PR 447; in progress, 19.1; next, 19.2, colour, the header, the
             menu and the top of Tonight. The remedy runs from main after the merge and before the night, and the six
             variants' first night is read the morning after.
