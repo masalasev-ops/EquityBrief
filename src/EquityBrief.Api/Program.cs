@@ -1549,7 +1549,7 @@ app.MapPost(SinglePageApp.ExitPostRoute + "{ticker}/{takenAt}", async (string ti
 
 // The Loop page's presses: approve or decline of a proposal of an index's newest run, a decline with its reason, and
 // approve of a restore of a family the live alarm flagged, each one row of the decisions table, applied by the worker.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 app.MapPost(SinglePageApp.LoopDecidePostRoute + "{index}/{run}/{family}", async (string index, string run, string family, HttpRequest request, ReadApi read) =>
 {
     if (!FromAPage(request))
@@ -1977,7 +1977,7 @@ app.MapGet("/screens/run/{night?}", async (
                 indexNight is null ? null : TonightScreen.IndexRun(indexNight, indexPicks, await read.IndexResultsAsync(reading.Code, dated), indexTrades, indexHoldings),
                 TonightScreen.WithIndexFreezes(TonightScreen.IndexFamilyRun(indexPicks, indexTrades, indexHoldings), reading, indexRegister, indexRecords, indexNight, dated),
                 indexRecords,
-                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated)),
+                RuleScreen.Flagged(await read.RuleNightsAsync(reading.Code, dated), dated, indexRegister)),
             "text/html; charset=utf-8");
     }
 
@@ -2109,7 +2109,7 @@ app.MapGet("/screens/run/{night?}", async (
                 log,
                 [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()],
                 storeCopy,
-                RuleScreen.Flagged(await read.RuleNightsAsync(index, dated), dated),
+                RuleScreen.Flagged(await read.RuleNightsAsync(index, dated), dated, await read.RegisteredCandidatesAsync()),
                 await read.NewestMonthlyRunAsync()),
             background: versions,
             compare: compare,

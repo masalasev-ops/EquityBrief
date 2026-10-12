@@ -360,7 +360,7 @@ public sealed class IndexFamilies : IComponent
         var tonight = inputs is not null && readingsOf is not null ? await readingsOf(index, cancellation) : null;
 
         // The setting an approval stored for each family on the index, none on the S&P 500, whose approvals are refused.
-        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        // see: An approved change is applied by the night's own build on the index it was approved on alone
         var stored = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StoredSettingsAsync(connection, index, cancellation);
 
         // A family whose live rule stands draws the index's page on that rule's settings, one an approval stored a setting
@@ -958,7 +958,7 @@ public sealed class IndexFamilies : IComponent
             double? result;
 
             // A trade kept under an approved setting's exit of the menu is walked under it, as a rule's own trade is.
-            // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+            // see: An approved change is applied by the night's own build on the index it was approved on alone
             if (ExitMenu.Of(trade.Exit) is { } exit)
             {
                 var anchor = new SetupAnchor(trade.Session, entry, stop, trade.Trail is null ? Statistic.FromPrice(trade.Target ?? trade.Entry) * scale : null, trade.Trail is { } trailing ? Statistic.FromPrice(trailing) * scale : null, trade.Cap, trade.RiskMoves);

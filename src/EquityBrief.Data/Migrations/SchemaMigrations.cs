@@ -709,7 +709,17 @@ public static class SchemaMigrations
         new Migration(86, "add reported_quarter's gross profit and cash flow lines and company's mean rating and target, and create estimate_trend, dividend_event and treasury_yield", CreateReportParts),
         new Migration(87, "create earnings_move and long_view", CreatePageHistory),
         new Migration(88, "add setup.value_place", AddValuePlace),
+        new Migration(89, "add family_result.exit and family_result.risk_moves", AddFamilyResultExit),
     ];
+
+    // The exit of the menu an S&P 500 breakout's or drift's pick is walked under where an approval stored one, and its
+    // stop's distance in the night's typical moves, which a trail of the menu is counted in. A row stored before the
+    // change, or under the family's own exit, holds neither.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    const string AddFamilyResultExit = @"
+        ALTER TABLE family_result ADD COLUMN exit INTEGER;
+        ALTER TABLE family_result ADD COLUMN risk_moves REAL;
+    ";
 
     // The setup ledger's valuation reading: a stock's earnings over its value placed among the same figure at the ends of
     // its own twelve quarters, a share, none where a part of it is missing. The rows standing keep none until the
@@ -864,7 +874,7 @@ public static class SchemaMigrations
     // it holds its edge and read against the reference of the tester run it names; the exit an index page's trade is
     // walked under with its stop's distance in typical moves; and the change a card's rule stands at where an approval
     // set one.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
     const string CreateLoopApprovals = @"
         ALTER TABLE loop_proposal ADD COLUMN change TEXT;

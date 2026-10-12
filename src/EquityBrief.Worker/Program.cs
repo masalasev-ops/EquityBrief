@@ -650,7 +650,7 @@ static async Task<int> LoopTestRun(string[] args)
 
 // The apply step by hand, as the night runs it before the S&P 400's and 600's families: every change the operator
 // approved on the Loop page that no apply has answered, applied or refused with why, under the configured adopt setting.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 static async Task<int> LoopApplyRun()
 {
     var configuration = Configuration();

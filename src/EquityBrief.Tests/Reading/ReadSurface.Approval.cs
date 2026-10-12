@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Reading;
 // what the store cannot hold or no apply could apply, with nothing written; the page draws the presses on the newest
 // run's passing proposals, each decision with what the apply did, the settings approvals stored and the live alarm with
 // its restore; and a change approved on the S&P 600 and applied is read on the S&P 600's cards alone.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
 // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
 public partial class ReadSurface
@@ -81,6 +81,7 @@ public partial class ReadSurface
         Proposed(store, SmallOctober, "SML", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60), blocks: 19);
         Proposed(store, SmallOctober, "SML", "pullback", "winners against losers, ranked 2", true, Condition("depth", 2), blocks: 20);
         Proposed(store, LargeOctober, "GSPC", "drift", "the autopsy's exit, ranked 1", true, Exit(7));
+        Proposed(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -103,12 +104,15 @@ public partial class ReadSurface
             (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline", "the first is enough")).Said,
             StringComparison.Ordinal);
 
-        // Refused: a proposal that did not pass, one stating no change, a book's, an S&P 500 rule's, a run that is not the
-        // newest and a proposal the run does not hold.
+        // Refused: a proposal that did not pass, one stating no change, a book's, the S&P 500's pullback's, a run that is not
+        // the newest and a proposal the run does not hold.
         Assert.Contains("did not pass the tester", (await Press("SML", SmallOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("states no change", (await Press("SML", SmallOctober, "drift", "the grid", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains(LoopDecisions.BookRefused, (await Press("SML", SmallOctober, "heavyweight", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
-        Assert.Contains(LoopDecisions.LargeIndexRefused, (await Press("GSPC", LargeOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
+        Assert.Contains(LoopDecisions.LargePullbackRefused, (await Press("GSPC", LargeOctober, "pullback", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
+
+        // From 17.13 the S&P 500's drift exit is approved, and the press says the change registers the family's live rule.
+        Assert.Contains("registered as the family's live rule", (await Press("GSPC", LargeOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("a newer tester run stands", (await Press("SML", SmallSeptember, "breakout", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("holds no proposal", (await Press("SML", SmallOctober, "drift", "an exit no run proposed", "approve")).Said, StringComparison.Ordinal);
 
@@ -156,6 +160,7 @@ public partial class ReadSurface
         Proposed(store, SmallOctober, "SML", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
         Proposed(store, SmallOctober, "SML", "heavyweight", "the autopsy's exit, ranked 1", true, new LoopChange(null, "exit=break", null, LoopChange.NoHooks).Json);
         Proposed(store, LargeOctober, "GSPC", "drift", "the autopsy's exit, ranked 1", true, Exit(7));
+        Proposed(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
         Decided(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
         Decided(store, SmallOctober, "SML", "pullback", "winners against losers, ranked 1", LoopDecisions.Declined, "too young");
         store.Execute($"INSERT INTO loop_applied (run_id, index_code, family, proposal, applied_at, outcome, words) VALUES ('{SmallOctober}', 'SML', 'drift', 'the autopsy''s exit, ranked 1', '2026-10-09T23:35:00Z', 'applied', 'the family stands from the next night at exit: the eighth');");
@@ -210,11 +215,13 @@ public partial class ReadSurface
         Assert.Contains("already holds your word", (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [])).Said, StringComparison.Ordinal);
         Assert.Contains("data-restore=\"waiting\"><b>Restore approved</b> on ", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600")), StringComparison.Ordinal);
 
-        // The S&P 500's passing exit offers no press, saying why.
+        // From 17.13 the S&P 500's passing drift exit carries its presses, and its pullback's condition offers none, saying
+        // why.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
 
-        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.LargeIndexRefused}.</p>", large, StringComparison.Ordinal);
-        Assert.DoesNotContain("class=\"loop-press\"", large, StringComparison.Ordinal);
+        Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("GSPC", LargeOctober, "drift")}\" data-loop-key=\"drift|the autopsy's exit, ranked 1\">", large, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.LargePullbackRefused}.</p>", large, StringComparison.Ordinal);
+        Assert.DoesNotContain($"action=\"{Decide("GSPC", LargeOctober, "pullback")}\"", large, StringComparison.Ordinal);
 
         // A family the alarm flags on the index is named above its Tonight, and none on another index.
         var notice = WebUtility.HtmlDecode(SinglePageApp.LoopAlarmNotice(Universes.Of("600"), [("drift", new DateOnly(2026, 8, 1), 2)]));
@@ -269,6 +276,72 @@ public partial class ReadSurface
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
         Assert.Contains($"<p class=\"lede\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
+    }
+
+    // From 17.13 a change approved to the S&P 500's breakout and applied by the night is read on the S&P 500's breakout
+    // card, named in its words with the rule it replaced among the selector's variants, and the S&P 400's and 600's pages
+    // stand as they were, byte for byte.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    [Fact]
+    public async Task AChangeApprovedOnTheSAndP500sBreakoutIsReadOnItsCardWithTheRuleItReplacedAVariantAndTheSAndP400sAndTheSAndP600sStandAsTheyWere()
+    {
+        using var store = UniversesStore();
+
+        // The S&P 500's night: its two members' gate rows, listed by the filter, and the families its page drew.
+        GateRow(store, IndexNight, new Member("AAA"));
+        GateRow(store, IndexNight, new Member("BBB"));
+        store.Execute($"INSERT INTO list_rule (session_date, rule) VALUES ('{IndexNight}', 'filter');");
+        store.Execute($"INSERT INTO family_night (session_date, families) VALUES ('{IndexNight}', '[\"pullback\",\"breakout\",\"drift\"]');");
+        await new EquityBrief.Worker.Candidates.CandidateRegistrar(FixedClock.At(new DateTimeOffset(2026, 9, 1, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+            .RegisterTogetherAsync(EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts, "register-breakouts");
+        Run(store, LargeOctober, "GSPC", "2026-10");
+        Proposed(store, LargeOctober, "GSPC", "breakout", "the autopsy's exit, ranked 1", true, Exit(14));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var mid = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
+        var small = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
+        var before = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
+
+        Assert.DoesNotContain("approved on the Loop page", before, StringComparison.Ordinal);
+
+        // The operator approves the S&P 500's breakout exit, and the night of the session applies it, under a run the
+        // pages read as no night's so their notice stands as it was.
+        Assert.Equal(HttpStatusCode.OK, (await CardPress(client, Decide("GSPC", LargeOctober, "breakout"), [("proposal", "the autopsy's exit, ranked 1"), ("decision", "approve")])).Status);
+        Assert.Equal(1, (await new LoopApply(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, null).NightAsync("loop-apply-test")).Applied);
+
+        // Read back off the rendered pages: the S&P 500's breakout card names the change, its selector drawing the change
+        // as the live rule and the rule it replaced as a variant; the S&P 400's and the S&P 600's pages as before it.
+        var large = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
+        var replaced = EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts[0].Candidate;
+        var picker =Assert.Single(Blocks(large, "<select data-rule-choice=\"breakout\".*?</select>"));
+
+        Assert.Contains("It stands at a change approved on the Loop page: exit: a target at 1.5 risks.", large, StringComparison.Ordinal);
+        Assert.Contains($"selected data-variant=\"none\">{replaced}; exit: a target at 1.5 risks</option>", picker, StringComparison.Ordinal);
+        Assert.Matches($"data-variant=\"[0-9]+\">Variant [0-9]+: {Regex.Escape(replaced)}</option>", picker);
+        Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
+        Assert.Equal(small, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600")));
+    }
+
+    // From 17.13 a card whose S&P 500 breakout stands at a change an approval stored carries the change's words in the
+    // record's place, as an S&P 400's or 600's does, while the pullback's card beside it is drawn as before.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    [Fact]
+    public async Task AnSAndP500BreakoutCardAtAnApprovedChangeNamesTheChangeInTheRecordsPlace()
+    {
+        using var store = await FamilyPagesStore();
+
+        store.Execute($"INSERT INTO provisional_setting (index_code, family, change, words, set_at, run_id, proposal) VALUES ('GSPC', 'breakout', '{Exit(14)}', 'exit: a target at 1.5 risks', '2026-10-02T23:35:00Z', '{LargeOctober}', 'the autopsy''s exit, ranked 1');");
+        await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var rows = await CardsReadBack(client, StoredCards(store), TheSwitch);
+
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: a target at 1.5 risks\"><h5>The record of the breakout on the S&P 500</h5>", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the pullback on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["F1"], StringComparison.Ordinal);
     }
 
     [Fact]

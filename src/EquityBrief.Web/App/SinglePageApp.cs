@@ -131,7 +131,7 @@ public sealed class SinglePageApp : IComponent
 
     // The Loop page's presses, approve or decline of a proposal and approve of a restore, each refused without the page's
     // own header as every press is.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     public const string LoopDecidePostRoute = MarkRenderer.LoopDecideRoute;
     public const string LoopRestorePostRoute = MarkRenderer.LoopRestoreRoute;
 
@@ -3145,7 +3145,7 @@ public sealed class SinglePageApp : IComponent
         }
 
         // What the operator decided on this index and what the apply step did, and the live alarm's periods.
-        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+        // see: An approved change is applied by the night's own build on the index it was approved on alone
         // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
         if (decided is not null)
         {

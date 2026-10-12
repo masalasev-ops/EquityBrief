@@ -129,7 +129,7 @@ public static class RuleWords
         + " " + Differs(settings, index) + Approved(settings, DriftRule.Name);
 
     // The change an approval set on the family, where the night read it at one.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     public static string Approved(IndexRuleSettings settings, string family) =>
         settings.Approved is { } approved && approved.TryGetValue(family, out var words) ? $" It stands at a change approved on the Loop page: {words}." : string.Empty;
 

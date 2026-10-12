@@ -10,7 +10,7 @@ namespace EquityBrief.Api.Reading;
 // writes, under the page's own header; refused where the store does not hold what it names or where no apply could apply
 // it, with nothing written. And what the page draws of them: every decision on the index with what the apply step did,
 // the settings approvals stored, and the live alarm's periods, read and never worked out here.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
 // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
 public sealed partial class ReadApi
@@ -302,7 +302,10 @@ public sealed partial class ReadApi
         await DecisionAsync(connection, transaction, run, index, family, proposal, LoopDecisions.Approved, null);
         await transaction.CommitAsync();
 
-        return new RequestWritten(true, "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
+        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        return new RequestWritten(true, index == EquityBrief.Core.Families.MarketCloses.Index
+            ? FormattableString.Invariant($"Approved. The change is applied at the start of the next night, on this index alone, and registered as the family's live rule, which the page reads from that night on; the rule it replaces runs beside it as a variant for {LoopDecisions.ReplacedSessions} sessions.")
+            : "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
     }
 
     // The operator's approval of a restore of a family the live alarm flagged: the setting standing before the newest

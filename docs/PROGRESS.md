@@ -43531,3 +43531,55 @@ Queue:      done, 17.11 and 17.12, PRs 439 and 440, each remedy run from main; i
             17.15; next, 18.5's report.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.13 to 17.15 below.
 Carried:    17.13 to 17.15.
+
+### 17.13 - the S&P 500's breakout and drift approved on the Loop page: the change stored and registered as the family's live rule by the night, the page kept and ordered by its hooks and each pick walked under its exit, the rule it replaced a variant until the block after it   2026-10-12
+
+Built:      the apply step runs at the start of the swing filter's step, before anything in it reads the register. A
+            change approved to the S&P 500's breakout or drift states hooks alone; the night writes it as a stored
+            setting under `GSPC` and, in the same transaction, registers it through the registrar as the family's live
+            rule, the family's own setting with the hooks, named as the live rule with the hooks' words, only where the
+            night's session, the newest the bar store holds, is the first a registration made then counts from; by hand
+            and after midnight UTC it waits. The step then reads the register the second after the apply's newest row, so
+            the night evaluates the change from the night it is applied. A family's live rule is its newest standing
+            registration carrying the live rule's name; the one before it is drawn as a variant, its record kept, and the
+            apply step retires it on the night whose session reaches the block after its successor's first; a restore
+            registers it again unchanged as the live rule. A family holding nine refuses with the registrar's words. The
+            family evaluator keeps and orders the family's passing members by the stored hooks over the night's readings,
+            a member they leave off failing on them with their words among its exclusions, and stores the exit it names
+            and the stop's distance in typical moves beside each pick; the filler walks such a pick under the exit; the
+            tester tests the S&P 500's breakout and drift against their stored hooks; the live alarm reads the live rule's
+            trades alone; the card names the change in the record's place; the selector, the run page's flagged rules and
+            the rule records read the newest live registration. Migration 89 adds `family_result.exit` and `risk_moves`.
+            The old apply decision moves to Previously decided under the one superseding it, every citation moved, with
+            section 13's paragraph, section 14's swing filter step, six catalogue rows and three matrix rows, the card's
+            and the failure's rows, `SCHEMA.md`'s three tables, the runbook, the guide and the roster's two rows, the prior
+            text in `CHANGELOG.md`. Every family rule's evaluator moves with the family evaluator's source, the S&P 500's
+            breakout and drift and the S&P 400's and 600's rules and books; they are registered again with the replay once,
+            after 17.15.
+Measured:   read-only on the operator's store on 2026-10-12: the S&P 500's breakout and drift each hold 8 standing rules,
+            the live rule and seven variants, so one approval each fits and a second waits for the replaced rule's
+            retirement; no stored setting, no decision and no passing proposal stands on any index, the first scheduled
+            monthly run being 2026-11-07.
+Tests:      seven new, five worked by hand over constructed stores, results and closes and two read back off rendered
+            pages; four changed, the 17.9 apply step's and Loop page's tests where they asserted the S&P 500's refusal.
+            17.13 adds no row of a table the harness reads, beside phase 17's pair.
+Mutated:    the rule, stated before the run: one mutation a property 17.13 adds. M28 the night registering a change on a
+            session the registration does not count from: predicted red at the registration test alone. M29 the replaced
+            rule retired a night early: predicted red at the retirement test alone. M30 a family's live rule read as its
+            oldest registration carrying the live rule's name: predicted red at the registration, retirement and page
+            tests. M31 the hooks leaving every member as the family's own rule answers it: predicted red at the list test
+            alone. M32 a menu pick's return read as its result in risks: predicted red at the pick test alone. M33 the
+            command run by hand registering the S&P 500's change: predicted red at the registration test alone. M34 the
+            S&P 500's card drawing the replayed record beside a stored change: predicted red at the card test alone.
+            Results: each red where predicted and nowhere else, every run filtered to the 17 apply step, Loop page and
+            17.13 tests. M28 at the night after midnight applying the change, 1 of 17; M29 at the night of 2027-01-08
+            retiring the replaced rule, 1 of 17; M30 at the live rule named and drawn as the one replaced, 3 of 17; M31
+            at the member a condition refuses kept, 1 of 17; M32 at a return of 160 per cent, 1 of 17; M33 at the change
+            applied by hand, 1 of 17; M34 at the card drawing the outline unread, 1 of 17. Each reverted before anything
+            was committed, the 17 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures
+            to be filled from the run.
+Queue:      done, 17.11 and 17.12, PRs 439 and 440, and the 17.13 ruling; in progress, 17.13; next, 17.14 and 17.15,
+            then 18.5's report.
+Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
+            merge read for the apply step's row at the start of the swing filter's step.

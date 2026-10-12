@@ -101,6 +101,25 @@ public static class FamilyRecords
 
     public static bool IsLive(string candidate) => candidate.StartsWith(LivePrefix, StringComparison.Ordinal);
 
+    // A family's live rule among its standing rules: the newest registration carrying the live rule's name, the register's
+    // order settling two at one instant. An older one carrying it is the rule a change approved on the Loop page
+    // replaced, which runs beside the change as a variant until it retires.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    public static RegisterRow? LiveOf(IEnumerable<RegisterRow> family) =>
+        LiveOf(family, row => row.Candidate, row => row.RegisteredAt, row => row.Id);
+
+    // The same over any row carrying a rule's name, the instant it registered and its place in the register.
+    public static T? LiveOf<T>(IEnumerable<T> family, Func<T, string> name, Func<T, DateTimeOffset> registeredAt, Func<T, long> id)
+        where T : class =>
+        family.Where(row => IsLive(name(row))).OrderBy(registeredAt).ThenBy(id).LastOrDefault();
+
+    public static bool IsLiveAmong(string candidate, IEnumerable<RegisterRow> family) =>
+        string.Equals(LiveOf(family)?.Candidate, candidate, StringComparison.Ordinal);
+
+    // A rule a change replaced: one carrying the live rule's name that is not the family's live rule.
+    public static bool IsReplaced(string candidate, IEnumerable<RegisterRow> family) =>
+        IsLive(candidate) && !IsLiveAmong(candidate, family);
+
     // The first session a rule's record counts from: the first exchange session on or after the day it
     // registered, the night it was first evaluated on.
     public static DateOnly FirstSession(DateTimeOffset registeredAt)
@@ -207,7 +226,7 @@ public static class FamilyRecords
 
                 return new FamilyRecordView(
                     rule.Candidate,
-                    IsLive(rule.Candidate),
+                    IsLiveAmong(rule.Candidate, rules),
                     firsts[rule.Candidate],
                     mine.Count,
                     decided.Length,

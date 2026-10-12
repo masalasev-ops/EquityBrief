@@ -1,9 +1,13 @@
 using System.Globalization;
+using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Loop;
+using EquityBrief.Core.Returns;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Candidates;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Loop;
@@ -11,28 +15,34 @@ namespace EquityBrief.Worker.Loop;
 // What the apply step did with one proposal: its run, index, family and name, whether it was applied, and why in words.
 public sealed record LoopApplication(string Run, string Index, string Family, string Proposal, bool Applied, string Words);
 
-public sealed record LoopApplyOutcome(IReadOnlyList<LoopApplication> Applications)
+// What the apply step did: its answers, the S&P 500 approvals it left for a night that can register them, and the
+// replaced rules it retired.
+public sealed record LoopApplyOutcome(IReadOnlyList<LoopApplication> Applications, int Waiting = 0, IReadOnlyList<string>? Retired = null, DateTimeOffset? WroteFrom = null)
 {
     public int Applied => Applications.Count(one => one.Applied);
 
     public int Refused => Applications.Count(one => !one.Applied);
 }
 
-// The apply step. Before the index families read the night, it takes every proposal the operator approved and the step
-// has not yet answered, and, only where the adopt setting reads automatic, every proposal of an index's newest run that
-// passed and holds no decision, a declined one only where it was put again; and every restore the operator approved. A
-// change to an S&P 400 or 600 swing family is written on top of the setting the family stands at as a new row of the
-// stored settings, which the family reads from the night on, on that index alone; every other change is refused with
-// its reason, an S&P 500 rule's because its page is drawn by its family's own code, and a sector heavyweights' book's
-// because it changes only by a freeze. Every answer is one row and none is written twice. It reads no market data,
-// makes no request and calls no model.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// The apply step. At the start of the swing filter's step, before anything in it reads the register, it takes every
+// proposal the operator approved and the step has not yet answered, and, only where the adopt setting reads automatic,
+// every proposal of an index's newest run that passed and holds no decision, a declined one only where it was put again;
+// and every restore the operator approved. A change to an S&P 400 or 600 swing family is written on top of the setting
+// the family stands at as a new row of the stored settings, which the family reads from the night on, on that index
+// alone. A change to the S&P 500's breakout or drift is written the same way on the S&P 500 and registered as the
+// family's live rule in the same transaction, on a night whose session is the first a registration made then counts
+// from, and left waiting otherwise; the rule it replaces is retired once the block after the change is reached. A
+// sector heavyweights' book's change and the S&P 500's pullback's are refused with their reasons. Every answer is one
+// row and none is written twice. It reads no market data, makes no request and calls no model.
+// see: An approved change is applied by the night's own build on the index it was approved on alone
+// see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
 public sealed class LoopApply(IClock clock, string databaseFile, string? adopt = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
@@ -48,6 +58,12 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     public const string Verb = "loop-apply";
 
     public const string NoChangeRefused = "the proposal states no change in the form an approval applies";
+
+    public const string LargeSettingRefused = "the S&P 500's breakout and drift stand at their own settings, so an approval changes their hooks alone";
+
+    public const string NoLiveRuleRefused = "the family holds no registered live rule for the change to replace";
+
+    public const string StandsAlreadyRefused = "the change leaves the family's live rule where it stands";
 
     // Every approved decision the step has not answered, oldest first.
     const string Approved = @"
@@ -78,6 +94,9 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     // The settings a family has stood at, oldest first.
     const string Standing = "SELECT id, change FROM provisional_setting WHERE index_code = $index AND family = $family ORDER BY id;";
 
+    // The night's session: the newest the store holds.
+    const string NewestSession = "SELECT MAX(session_date) FROM bar;";
+
     const string InsertSetting = @"
         INSERT INTO provisional_setting (index_code, family, change, words, set_at, run_id, proposal)
         VALUES ($index, $family, $change, $words, $set_at, $run_id, $proposal);
@@ -92,7 +111,19 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail)
         VALUES ($run_id, $stage, $started_at, $ended_at, 'ok', $rows_written, 0, 0, '0', $detail);";
 
-    public async Task<LoopApplyOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    // One proposal waiting for its answer, and whether it waits on the automatic setting rather than an approval.
+    sealed record Waiting(string Run, string Index, string Family, string Proposal, string? Change, bool Automatic);
+
+    // The step run by hand: the S&P 400's and 600's changes alone, the S&P 500's left for the night, which alone registers
+    // one.
+    public Task<LoopApplyOutcome> RunAsync(string runId, CancellationToken cancellation = default) =>
+        ApplyAsync(runId, large: false, cancellation);
+
+    // The step the night runs, every index's changes and the S&P 500's replaced rules' retirements.
+    public Task<LoopApplyOutcome> NightAsync(string runId, CancellationToken cancellation = default) =>
+        ApplyAsync(runId, large: true, cancellation);
+
+    async Task<LoopApplyOutcome> ApplyAsync(string runId, bool large, CancellationToken cancellation)
     {
         var mode = LoopDecisions.AdoptOf(adopt);
         var started = clock.UtcNow;
@@ -100,11 +131,11 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var waiting = new List<(string Run, string Index, string Family, string Proposal, string? Change)>();
+        var waiting = new List<Waiting>();
 
         await foreach (var row in RowsAsync(connection, null, Approved, [], cancellation))
         {
-            waiting.Add((row.GetString(0), row.GetString(1), row.GetString(2), row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4)));
+            waiting.Add(new Waiting(row.GetString(0), row.GetString(1), row.GetString(2), row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4), false));
         }
 
         // On the automatic setting, the strongest of a family's undecided passing proposals in its index's newest run, one
@@ -123,54 +154,147 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
 
                 if (declinedAt is null || LoopDecisions.PutAgain(declinedAt.Value, row.GetInt32(5), passedNow: true))
                 {
-                    waiting.Add((run, index, family, row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4)));
+                    waiting.Add(new Waiting(run, index, family, row.GetString(3), row.IsDBNull(4) ? null : row.GetString(4), true));
                 }
             }
         }
 
-        // The families whose live rule stands registered on an index, which draw its page in the provisional rule's place.
-        var register = await new EquityBrief.Worker.Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation);
-        var frozen = EquityBrief.Worker.Indices.IndexFamilies.StandingRules(register, started).Rules
+        var night = await ScalarAsync(connection, NewestSession, cancellation) is string newest ? Date(newest) : (DateOnly?)null;
+        var registrar = new CandidateRegistrar(clock, databaseFile);
+        var applications = new List<LoopApplication>();
+        var answered = new List<(Waiting One, bool Applied, string Words, LoopChange? Written)>();
+
+        // The S&P 500's breakout and drift, each registered as the family's live rule with its setting written beside the
+        // registration in one transaction, on a night whose session is the first a registration made now counts from, so
+        // the rule is evaluated from the night its record counts from; left waiting by hand and on any other night.
+        var largeOnes = waiting.Where(one => IsLarge(one.Index, one.Family)).ToList();
+        var registersTonight = large && night is { } session && FamilyRecords.FirstSession(clock.UtcNow) == session;
+        var left = registersTonight ? 0 : largeOnes.Count;
+
+        if (registersTonight)
+        {
+            foreach (var one in largeOnes)
+            {
+                var standing = await StandingAsync(connection, null, one.Index, one.Family, cancellation);
+                var (applied, said, written) = Answer(one.Run, one.Index, one.Family, one.Proposal, one.Change, standing);
+
+                if (!applied || written is null)
+                {
+                    answered.Add((one, false, said, null));
+
+                    continue;
+                }
+
+                var words = one.Run == LoopDecisions.RestoreRun ? said : "the family stands from tonight at " + written.Words();
+
+                var family = CandidateFamily.In(CandidateFamily.Standing(await registrar.RowsAsync(cancellation), clock.UtcNow), one.Family);
+                var live = FamilyRecords.LiveOf(family);
+                var registration = live is null ? null : LargeRegistration(one.Family, written.Hooks, live);
+
+                if (live is null || registration is null || string.Equals(live.Candidate, registration.Candidate, StringComparison.Ordinal))
+                {
+                    answered.Add((one, false, live is null ? NoLiveRuleRefused : StandsAlreadyRefused, null));
+
+                    continue;
+                }
+
+                var evidence = (one.Run == LoopDecisions.RestoreRun ? "the restore " : "the change ")
+                    + (one.Automatic ? $"that passed, applied with {LoopDecisions.AdoptSetting} reading {LoopDecisions.Automatic}" : "approved on the Loop page")
+                    + $", '{one.Proposal}' of {one.Run}, the family standing from tonight at {written.Words()}";
+                var registered = await registrar.RegisterTheChangeAsync(
+                    registration,
+                    evidence,
+                    async (writing, transaction, token) =>
+                    {
+                        await WriteSettingAsync(writing, transaction, one, written, token);
+                        await WriteAppliedAsync(writing, transaction, one, true, words, token);
+                    },
+                    runId,
+                    cancellation);
+
+                if (registered.Outcome == CandidateRegistrar.Refused)
+                {
+                    answered.Add((one, false, registered.Detail, null));
+                }
+                else
+                {
+                    applications.Add(new LoopApplication(one.Run, one.Index, one.Family, one.Proposal, true, words + "; " + registered.Detail));
+                }
+            }
+        }
+
+        // A rule a change replaced, retired on the night whose session reaches the block after the session its successor's
+        // record counts from, so it ran beside the change for one whole block and not the night after it.
+        var retired = new List<string>();
+
+        if (large && night is { } tonight)
+        {
+            foreach (var name in LoopDecisions.LargeFamilies)
+            {
+                var family = CandidateFamily.In(CandidateFamily.Standing(await registrar.RowsAsync(cancellation), clock.UtcNow), name);
+
+                foreach (var replaced in family.Where(row => FamilyRecords.IsReplaced(row.Candidate, family)).ToArray())
+                {
+                    var successor = family
+                        .Where(row => FamilyRecords.IsLive(row.Candidate) && (row.RegisteredAt, row.Id).CompareTo((replaced.RegisteredAt, replaced.Id)) > 0)
+                        .MinBy(row => (row.RegisteredAt, row.Id));
+
+                    if (successor is null || Blocks.Of(FamilyRecords.FirstSession(successor.RegisteredAt), tonight) < 1)
+                    {
+                        continue;
+                    }
+
+                    var first = FamilyRecords.FirstSession(successor.RegisteredAt);
+                    var retiring = await registrar.RetireAsync(
+                        replaced.Candidate,
+                        FormattableString.Invariant($"replaced by '{successor.Candidate}', whose record counts from {first:yyyy-MM-dd}, and the {LoopDecisions.ReplacedSessions} sessions it ran beside it have passed by {tonight:yyyy-MM-dd}"),
+                        runId,
+                        cancellation);
+
+                    if (retiring.Outcome == CandidateRegistrar.Retired)
+                    {
+                        retired.Add(replaced.Candidate);
+                    }
+                }
+            }
+        }
+
+        // The families whose live rule stands registered on an S&P 400 or 600, which draw its page in the provisional
+        // rule's place.
+        var frozen = EquityBrief.Worker.Indices.IndexFamilies.StandingRules(await registrar.RowsAsync(cancellation), started).Rules
             .Where(rule => rule.Live)
             .Select(rule => (rule.Index, rule.Family))
             .ToHashSet();
-        var applications = new List<LoopApplication>();
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var (run, index, family, proposal, change) in waiting)
+        foreach (var one in waiting.Where(one => !IsLarge(one.Index, one.Family)))
         {
-            var standing = new List<(long Id, string Change)>();
+            var standing = await StandingAsync(connection, transaction, one.Index, one.Family, cancellation);
+            var (applied, words, written) = frozen.Contains((one.Index, one.Family)) ? (false, LoopDecisions.FrozenRefused, null) : Answer(one.Run, one.Index, one.Family, one.Proposal, one.Change, standing);
 
-            await foreach (var row in RowsAsync(connection, transaction, Standing, [("$index", index), ("$family", family)], cancellation))
-            {
-                standing.Add((row.GetInt64(0), row.GetString(1)));
-            }
-
-            var (applied, words, written) = frozen.Contains((index, family)) ? (false, LoopDecisions.FrozenRefused, null) : Answer(run, index, family, proposal, change, standing);
-
-            if (written is { } setting)
-            {
-                await ExecuteAsync(connection, transaction, InsertSetting,
-                [
-                    ("$index", index), ("$family", family), ("$change", setting.Json), ("$words", setting.Words()),
-                    ("$set_at", Stamp(clock.UtcNow)), ("$run_id", run), ("$proposal", proposal),
-                ], cancellation);
-            }
-
-            await ExecuteAsync(connection, transaction, InsertApplied,
-            [
-                ("$run_id", run), ("$index", index), ("$family", family), ("$proposal", proposal), ("$applied_at", Stamp(clock.UtcNow)),
-                ("$outcome", applied ? LoopDecisions.Applied : LoopDecisions.Refused), ("$words", words),
-            ], cancellation);
-            applications.Add(new LoopApplication(run, index, family, proposal, applied, words));
+            answered.Add((one, applied, words, written));
         }
 
-        var outcome = new LoopApplyOutcome(applications);
-        var detail = applications.Count == 0
-            ? $"no approved change waiting, the adopt setting reading {mode}"
-            : FormattableString.Invariant($"{outcome.Applied} applied and {outcome.Refused} refused, the adopt setting reading {mode}: ")
-                + string.Join("; ", applications.Select(one => $"{one.Index} {one.Family}, {one.Proposal}, {(one.Applied ? "applied" : "refused")}: {one.Words}"));
+        foreach (var (one, applied, words, written) in answered)
+        {
+            if (written is not null)
+            {
+                await WriteSettingAsync(connection, transaction, one, written, cancellation);
+            }
+
+            await WriteAppliedAsync(connection, transaction, one, applied, words, cancellation);
+            applications.Add(new LoopApplication(one.Run, one.Index, one.Family, one.Proposal, applied, words));
+        }
+
+        var wrote = retired.Count > 0 || applications.Any(one => one.Applied && IsLarge(one.Index, one.Family));
+        var outcome = new LoopApplyOutcome(applications, left, retired, wrote ? started : null);
+        var detail = (applications.Count == 0
+                ? $"no approved change waiting, the adopt setting reading {mode}"
+                : FormattableString.Invariant($"{outcome.Applied} applied and {outcome.Refused} refused, the adopt setting reading {mode}: ")
+                    + string.Join("; ", applications.Select(one => $"{one.Index} {one.Family}, {one.Proposal}, {(one.Applied ? "applied" : "refused")}: {one.Words}")))
+            + (left == 0 ? string.Empty : FormattableString.Invariant($"; {left} S&P 500 change(s) left for a night whose session a registration made then counts from"))
+            + (retired.Count == 0 ? string.Empty : "; retired " + string.Join(", ", retired.Select(name => $"'{name}'")));
 
         await ExecuteAsync(connection, transaction, AppendRun,
         [
@@ -183,9 +307,59 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         return outcome;
     }
 
+    // The instant a night's swing filter's step reads the register at: the night's start, or, where the apply step wrote to
+    // the register from an instant on, the second after the newest row written since, so the step reads the rules standing
+    // when the night started with the apply step's own registration and retirement, the only rows a night's window adds.
+    // see: A register row in the same second as the instant it is compared with is read as after it
+    public static DateTimeOffset ReadFrom(IReadOnlyList<RegisterRow> register, DateTimeOffset nightStartedAt, DateTimeOffset? wroteFrom)
+    {
+        if (wroteFrom is not { } from)
+        {
+            return nightStartedAt;
+        }
+
+        var written = register.Where(row => row.RegisteredAt >= Second(from)).Select(row => row.RegisteredAt).ToArray();
+
+        return written.Length == 0 ? nightStartedAt : Second(written.Max()).AddSeconds(1);
+    }
+
+    static DateTimeOffset Second(DateTimeOffset at) => new(at.UtcTicks - (at.UtcTicks % TimeSpan.TicksPerSecond), TimeSpan.Zero);
+
+    // Whether a change is one the S&P 500's breakout or drift registers.
+    static bool IsLarge(string index, string family) =>
+        index == MarketCloses.Index && LoopDecisions.LargeFamilies.Contains(family, StringComparer.Ordinal);
+
+    // The rule a change to the S&P 500's breakout or drift registers: the family's own setting as its page reads it with
+    // the hooks the change leaves it standing at, named as the family's live rule with the hooks' words, its rule and test
+    // the live rule's; none for a family the S&P 500's approvals do not reach.
+    public static Registration? LargeRegistration(string family, IReadOnlyDictionary<string, double> hooks, RegisterRow live)
+    {
+        var (own, words) = family switch
+        {
+            BreakoutRule.Name => (BreakoutCandidate.ParametersOf(BreakoutRule.Live), TheSetupFamilies.Words(BreakoutRule.Live)),
+            DriftRule.Name => (DriftCandidate.ParametersOf(DriftRule.Live), TheSetupFamilies.Words(DriftRule.Live)),
+            _ => ((IReadOnlyDictionary<string, double>?)null, string.Empty),
+        };
+
+        if (own is null)
+        {
+            return null;
+        }
+
+        var parameters = own.Concat(hooks).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        var hooked = RuleHooks.Of(hooks).Words();
+
+        return new Registration(
+            FamilyRecords.LivePrefix + words + MarketSwitches.None.Words + (hooked is null ? string.Empty : "; " + hooked),
+            live.Rule,
+            live.Test,
+            live.Evaluator,
+            parameters);
+    }
+
     // What the step does with one proposal: a restore writes again the setting standing before the change it names, or
-    // the family's code setting where none stood before it; an S&P 400 or 600 swing family's change is written on top of
-    // the setting it stands at; every other is refused with its reason.
+    // the family's code setting where none stood before it; a swing family's change is written on top of the setting it
+    // stands at, the S&P 500's hooks alone; every other is refused with its reason.
     public static (bool Applied, string Words, LoopChange? Written) Answer(string run, string index, string family, string proposal, string? change, IReadOnlyList<(long Id, string Change)> standing)
     {
         if (LoopDecisions.Refusal(index, family) is { } refused)
@@ -215,6 +389,11 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
             return (false, NoChangeRefused, null);
         }
 
+        if (index == MarketCloses.Index && made.Places is not null)
+        {
+            return (false, LargeSettingRefused, null);
+        }
+
         if (family == SetupFamilies.Pullback && made.Places is not null)
         {
             return (false, "the pullback's setting on its grid is not moved by an approval, only its hooks", null);
@@ -225,7 +404,44 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         return (true, "the family stands from the next night at " + stands.Words(), stands);
     }
 
+    async Task WriteSettingAsync(SqliteConnection connection, SqliteTransaction transaction, Waiting one, LoopChange setting, CancellationToken cancellation) =>
+        await ExecuteAsync(connection, transaction, InsertSetting,
+        [
+            ("$index", one.Index), ("$family", one.Family), ("$change", setting.Json), ("$words", setting.Words()),
+            ("$set_at", Stamp(clock.UtcNow)), ("$run_id", one.Run), ("$proposal", one.Proposal),
+        ], cancellation);
+
+    async Task WriteAppliedAsync(SqliteConnection connection, SqliteTransaction transaction, Waiting one, bool applied, string words, CancellationToken cancellation) =>
+        await ExecuteAsync(connection, transaction, InsertApplied,
+        [
+            ("$run_id", one.Run), ("$index", one.Index), ("$family", one.Family), ("$proposal", one.Proposal), ("$applied_at", Stamp(clock.UtcNow)),
+            ("$outcome", applied ? LoopDecisions.Applied : LoopDecisions.Refused), ("$words", words),
+        ], cancellation);
+
+    static async Task<IReadOnlyList<(long Id, string Change)>> StandingAsync(SqliteConnection connection, SqliteTransaction? transaction, string index, string family, CancellationToken cancellation)
+    {
+        var standing = new List<(long Id, string Change)>();
+
+        await foreach (var row in RowsAsync(connection, transaction, Standing, [("$index", index), ("$family", family)], cancellation))
+        {
+            standing.Add((row.GetInt64(0), row.GetString(1)));
+        }
+
+        return standing;
+    }
+
     static string Stamp(DateTimeOffset at) => at.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+
+    static DateOnly Date(string stamp) => DateOnly.ParseExact(stamp, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    static async Task<object?> ScalarAsync(SqliteConnection connection, string sql, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        return await command.ExecuteScalarAsync(cancellation);
+    }
 
     static async Task ExecuteAsync(SqliteConnection connection, SqliteTransaction transaction, string sql, IReadOnlyList<(string Name, object Value)> parameters, CancellationToken cancellation)
     {

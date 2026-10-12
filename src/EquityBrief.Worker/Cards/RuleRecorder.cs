@@ -259,8 +259,10 @@ public sealed class RuleRecorder(IClock clock, string databaseFile, string dataR
         return variants;
     }
 
+    // A family's live rule, the newest registration of it carrying the live rule's name.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
     static string? LiveName(IReadOnlyList<RegisterRow> standing, Func<RegisterRow, bool> ofTheRule) =>
-        standing.FirstOrDefault(row => ofTheRule(row) && FamilyRecords.IsLive(row.Candidate))?.Candidate;
+        FamilyRecords.LiveOf(standing.Where(ofTheRule))?.Candidate;
 
     async Task WriteAsync(string index, RuleReplay.Replayed rule, RuleRecordFigures figures, DateTimeOffset at, CancellationToken cancellation)
     {

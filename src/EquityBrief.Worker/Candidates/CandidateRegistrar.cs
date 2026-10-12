@@ -573,6 +573,89 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // A change approved on the Loop page for an S&P 500 family registered as the family's live rule, with the apply step's
+    // own writes beside it in the same transaction, or none of it: the rule the change stands at registered, or, where a
+    // rule of that name stands already, as a restore finds the rule it brings back, retired and registered again
+    // unchanged at one instant so it is the family's newest.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    public async Task<RegistrationOutcome> RegisterTheChangeAsync(
+        Registration registration,
+        string evidence,
+        Func<SqliteConnection, SqliteTransaction, CancellationToken, Task> alongside,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var taken = rows.ToList();
+        var again = CandidateFamily.StandsAt(rows, registration.Candidate, startedAt);
+
+        if (again)
+        {
+            if (RetirementRefusal(taken, registration.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync(refusal);
+            }
+
+            var standing = CandidateFamily.Standing(rows, startedAt).Single(row => string.Equals(row.Candidate, registration.Candidate, StringComparison.Ordinal));
+
+            taken.Add(standing with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = registration.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        if ((Unstated(registration.Rule, registration.Test) ?? Refusal(taken, registration.Candidate, registration.Evaluator, registration.Parameters, startedAt)) is { } refused)
+        {
+            return await RefuseAsync(refused);
+        }
+
+        taken.Add(new RegisterRow(
+            taken.Max(row => row.Id) + 1,
+            registration.Candidate,
+            registration.Rule,
+            registration.Test,
+            registration.Evaluator,
+            CandidateEvaluator.Write(registration.Parameters),
+            CandidateEvaluators.Find(registration.Evaluator)!.Version,
+            Registered,
+            null,
+            startedAt,
+            null));
+
+        var appended = rows;
+
+        foreach (var row in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, row.Parameters,
+                row.EvaluatorVersion, row.Event, row.Retires, startedAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+        }
+
+        await alongside(connection, transaction, cancellation);
+
+        var detail = (again ? $"registered '{registration.Candidate}' again unchanged" : $"registered '{registration.Candidate}'")
+            + $" as the family's live rule, on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
     public async Task<RegistrationOutcome> RetireAsync(
         string candidate,
         string evidence,

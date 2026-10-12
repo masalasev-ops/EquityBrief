@@ -24,7 +24,7 @@ public sealed record RuleListing(int Name, int Bar, int Session, int? Exit, doub
 // see: The trade autopsy proposes exits of a fixed menu, each tested as the procedure that chose it
 // see: Winners against losers proposes a condition only where it beats a within-night shuffle of its own search
 // see: A fitted statistical model is a rule
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 public sealed class RuleWalk(
     string family,
     string current,

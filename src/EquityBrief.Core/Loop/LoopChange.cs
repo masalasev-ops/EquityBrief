@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Loop;
 // The change a proposal makes to the rule it was tested against, in the form an approval applies it: a swing family's
 // setting on its sweep's grid by its places and its key, the stop floor a drift reads beside it, and the hooks a
 // registration states. A part the change does not move is not stated.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 public sealed record LoopChange(IReadOnlyList<int>? Places, string? Key, double? StopFloor, IReadOnlyDictionary<string, double> Hooks)
 {
     public static IReadOnlyDictionary<string, double> NoHooks { get; } = new Dictionary<string, double>(StringComparer.Ordinal);

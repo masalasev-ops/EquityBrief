@@ -131,7 +131,7 @@ public sealed partial class MarkRenderer
     // The operator's word on one proposal: what was decided and what the apply step did with it; for a proposal of the
     // index's newest run that passed and states a change, the Approve and Decline presses, or why none is offered; and
     // a proposal declined before over fewer blocks put again with the line that says so.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
     public string LoopDecision(string index, LoopRunRow run, LoopProposalRow proposal, LoopDecided decided, LoopProposalRow? put = null)
     {

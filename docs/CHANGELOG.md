@@ -25,6 +25,100 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html, docs/SCHEMA.md, docs/RUNBOOK.md - the citations of the apply decision move to the decision superseding it
+Decision: An approved change is applied by the night's own build on the index it was approved on alone
+Was:
+> (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone)
+Now:
+> (see: An approved change is applied by the night's own build on the index it was approved on alone)
+Why: 17.13 supersedes the decision that refused the S&P 500's changes, so every spec's citation of it moves to the decision that replaces it, eleven in the architecture, four in the schema and one in the runbook.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 13's approval paragraph applies the S&P 500's breakout and drift
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Before the next night the night's own build applies each approval no apply has answered (see: ...). ... An S&amp;P 500 rule's page is drawn by its family's own code, and a sector heavyweights book changes its setting by a freeze alone, so a change to either is refused with why and waits on the operator's ruling of how it reaches its page; so is a change to a family whose live rule stands registered on its index, since that rule draws the page.
+Now:
+> At the start of the next night's swing filter step, before anything in it reads the register, the night's own build applies each approval no apply has answered (see: ...). ... From 17.13 a change to the S&amp;P 500's breakout or drift, which states hooks alone, is stored the same way on the S&amp;P 500 and registered as the family's live rule in the same write: ... A family holding nine rules refuses the change with why, and the command run by hand leaves the S&amp;P 500's changes for the night (see: ...). A change to the S&amp;P 500's pullback is refused with why until its filter's versions take one, and a sector heavyweights book changes its setting by a freeze alone, so a change to it is refused with why; so is a change to a family whose live rule stands registered on the S&amp;P 400 or 600, since that rule draws the page.
+Why: the operator's ruling (b) of the queue of 2026-10-11 has the S&P 500's breakout and drift read the stored settings and register the change, and the apply step moves to the start of the swing filter's step so the page and the live rule read the change from the night it is applied.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 14's swing filter step applies approvals first and keeps the S&P 500's lists by the stored hooks
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Evaluate every member through the swing filter: the market gate on the night's breadth, ... storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); ... then apply each change the operator approved on the Loop page that no apply has answered, an S&amp;P 400 or 600 swing family's written as the setting the family reads from tonight on that index alone and every other refused with why, a failure named on the step's row while the families read the settings as they stood (see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone); then read the fundamentals-first family ...
+Now:
+> Evaluate every member through the swing filter, having first applied each change the operator approved on the Loop page that no apply has answered, ... from 17.13 an S&amp;P 500 breakout's or drift's written so and registered as the family's live rule, the rule a change replaced retired once the block after the change is reached, ... (see: ...) (see: ...): the market gate on the night's breadth, ... storing every answer with the values that decided it and, from 17.13, keeping and ordering the S&amp;P 500's breakout's and drift's passing members by the hooks an approval stored for the family, with the exit it names beside each pick (see: ...); ... then read the fundamentals-first family ...
+Why: the apply step runs before anything in the swing filter's step reads the register, and the S&P 500's family evaluator reads the stored settings.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's family evaluator, walk-forward tester, loop apply, live alarm reader, decision cards and forward return filler rows, and three matrix rows, state 17.13
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Family evaluator: reads ... gate results, family results; ... and its row states each switch a standing rule holds, open or closed and why (see: ...)
+> Walk-forward tester: from 17.9 tests each family against the rule as it stands, on the S&amp;P 400 or 600 at the setting and the hooks an approval stored for it with every proposal set on top of them ...
+> Loop apply: nightly, once, in the swing filter's step before the index families; and by hand | candidate register, loop runs, ... | ... every other change is refused with why, an S&amp;P 500 rule's, a sector heavyweights book's and a family whose live rule stands registered among them; each answer one row and none written twice; reads no market data, makes no request and calls no model (see: ...)
+> Live alarm reader: bar store, loop runs, ... | ... on the S&amp;P 500 the breakout's and the drift's live rule's own trades and the sector heavyweights' book's holdings ...
+> Decision cards: reads ... loop runs, loop proposals, loop models | ... read from the index families' rows there with the index's own breadth, its gates naming the profit check in the index's form and the business the family read (see: ...)
+> Forward return filler: ... with what the plan put at risk stored beside what it made (see: ...)
+> Matrix: the family evaluator reading no forward returns store, the apply step no bars and the live alarm reader no candidate register
+Now:
+> Family evaluator: reads provisional settings as well; and from 17.13 keeps and orders the S&amp;P 500's breakout's and drift's passing members by an approved setting's hooks and stores the exit it names beside each pick
+> Walk-forward tester: and from 17.13 the S&amp;P 500's breakout and drift at their own setting with the hooks an approval stored
+> Loop apply: at the start of the swing filter's step; reads the bar store for the night's session; an S&amp;P 500 breakout's or drift's change stored and registered as the family's live rule by the night alone, the replaced rule retired on the night reaching the block after its successor's first, and the refusals the S&amp;P 500's pullback's, a book's, a frozen S&amp;P 400 or 600 family's and an S&amp;P 500 family at nine
+> Live alarm reader: reads the candidate register, the S&amp;P 500's live rule its family's newest registration carrying the live rule's name
+> Decision cards: reads provisional settings, and an S&amp;P 500 card at an approved change carries its words in the record's place
+> Forward return filler: and a pick an approved setting named an exit of the menu for walked under it
+> Matrix: the family evaluator reads the forward returns group, the apply step the bars and the live alarm reader the candidate register
+Why: each row states the component's reads and what it does, cell by cell against its declaration, which 17.13 moved.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the card's approved change row and the failure row of an approval that cannot be applied state the S&P 500
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> A rule standing at an approved change: from 17.9 on an S&amp;P 400 or 600 card whose family stands at a change an approval stored the change named among the rule's gates and in the record's place the line ... (see: ...)
+> An approval that cannot be applied: the apply step answers it refused with why and writes no setting: an S&amp;P 500 rule's change, which waits on the operator's ruling of how it reaches a page its family's code draws, a sector heavyweights book's, a family whose live rule stands registered on its index, a proposal stating no change and a restore naming a change the family does not hold; ...
+Now:
+> A rule standing at an approved change: ...; and from 17.13 on an S&amp;P 500 breakout or drift card the change named after the rule's words and in the record's place, and the rule it replaced among the selector's variants (see: ...)
+> An approval that cannot be applied: ... the S&amp;P 500's pullback's change, a grid setting for the S&amp;P 500's breakout or drift, an S&amp;P 500 family holding nine rules, from 17.13, with the registrar's words, a sector heavyweights book's, an S&amp;P 400 or 600 family whose live rule stands registered on its index, ...; an S&amp;P 500 breakout's or drift's change is answered by nothing by hand and on a night whose session a registration made then would not count from, and is applied by the next night; ...
+Why: the S&P 500's breakout and drift take a change from 17.13, and its card and its refusals say what happens to one.
+
+### 2026-10-12 - docs/SCHEMA.md - the stored settings hold the S&P 500's, family results gain the exit and the stop's distance, and the trailed outcome covers an exit of the menu
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> provisional_setting: Grain: one row per change an approval made to a family of the S&P 400 or 600. | `index_code` | TEXT | `MID` or `SML` | ... the tester tests the family against it, and the Loop page draws every row (see: ...).
+> family_result: | `exclusions` | TEXT | JSON: the exclusions the member's series carries, a gap or a suspect series as the swing filter stored them, empty where none does | ... The prices here keep the scale the series had on the night, as a setup's plan does.
+> forward_return: `trailed` is a trailing trade's alone, sold at a close under its stop, and such a trade ended by its cap is `unresolved`; it is never `win` or `loss`, having no target.
+Now:
+> provisional_setting: and from 17.13 to the S&P 500's breakout or drift; `MID` or `SML`, and from 17.13 `GSPC`; an S&P 500 row states hooks alone and is written in the transaction that registers the change, read by the family evaluator and the decision cards
+> family_result: `exit` and `risk_moves` from 17.13; the exclusions carry the words of an approved setting's condition or score floor a member fails; a row carrying an exit walked under it
+> forward_return: and from 17.13 a pick walked under an exit of the menu is `trailed` where a close under a stop the exit raised sold it and `unresolved` where the exit's time sold it
+Why: migration 89 adds the two columns, and the S&P 500's breakout and drift read and are walked under the stored settings from 17.13.
+
+### 2026-10-12 - docs/RUNBOOK.md - the Loop page's approvals reach the S&P 500's breakout and drift
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> Approve is not offered on the S&P 500, whose rules' page is drawn by its families' own code, nor on a sector heavyweights book, which changes by a freeze alone; the page says why beside each.
+> The night applies each approval in the swing filter's step, before the S&P 400's and 600's families read the night, from its own clean build. ... To apply your approvals before the night, run the same step by hand:
+Now:
+> Approve is not offered on the S&P 500's pullback, whose rule changes through its filter's versions, nor on a sector heavyweights book, which changes by a freeze alone; the page says why beside each.
+> The night applies each approval at the start of the swing filter's step, before anything in it reads the register, from its own clean build. ... From 17.13 a change to the S&P 500's breakout or drift is written the same way under `GSPC` and registered as the family's live rule in the same write: ... To apply your S&P 400 and 600 approvals before the night, run the same step by hand; it leaves the S&P 500's for the night:
+Why: the S&P 500's breakout and drift take a change from 17.13, applied by the night alone.
+
+### 2026-10-12 - docs/BUILD_PLAN.md - 17.13 reads the change from the night the apply step writes it
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> A family holding nine rules refuses an approval with why until a replaced rule retires. The apply step answers approvals before the S&P 500's families read the night, so a change reaches every index's page the night after it is approved.
+Now:
+> A family holding nine rules refuses an approval with why until a replaced rule retires. The S&P 500's page and the rule the change registers read the change from the night the apply step writes it, the step answering before anything in the swing filter's step reads the register.
+Why: a registration the night's own apply step makes after the night started would count its record from a session its rule was not evaluated on, so the step runs before the swing filter's step reads the register and the step reads the rules standing with that registration.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations and read-surface state 17.13
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> fixture-expectations: ... an approval on the S&P 600 applied there alone while the S&P 500's is refused with why ... one that read a filing on the session it was filed named |
+> read-surface: ... the S&P 500 offering no press and saying why ... an older run's verdict not read and no line where no run stored one |
+Now:
+> fixture-expectations: ... an approval on the S&P 600 applied there alone while the S&P 500's is left by hand for the night ... one that read a filing on the session it was filed named; and from 17.13 an approval of the S&P 500's breakout stored and registered as the family's live rule by the night alone ... each worked by hand |
+> read-surface: ... the S&P 500's pullback offering no press and saying why ... no line where no run stored one; and from 17.13 the S&P 500's breakout and drift offering Approve and its pullback refused with why, and a change approved and applied by the night read on the S&P 500's breakout card ... |
+Why: the two checks assert what 17.13 builds, and the 17.9 tests now assert the S&P 500's drift taking a change.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.13 to 17.15
 Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
 Was:

@@ -75,8 +75,7 @@ public static class RuleScreen
         bool marketOpen)
     {
         var standing = Standing(card.Family, large, indexName, register, night);
-        var live = standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
-        var variants = standing.Where(row => !FamilyRecords.IsLive(row.Candidate)).OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).ToArray();
+        var (live, variants) = LiveAndVariants(standing);
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true) };
 
         choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false)));
@@ -108,8 +107,7 @@ public static class RuleScreen
     public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null)
     {
         var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
-        var live = standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
-        var variants = standing.Where(row => !FamilyRecords.IsLive(row.Candidate)).OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).ToArray();
+        var (live, variants) = LiveAndVariants(standing);
         var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true) };
 
         choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false)));
@@ -251,11 +249,38 @@ public static class RuleScreen
         return [.. document.RootElement.EnumerateArray().Select(gate => gate.GetString() ?? string.Empty)];
     }
 
-    // The live rules over their mark on the night, which the Run page carries among the things to worry about.
-    public static IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> Flagged(IReadOnlyList<RuleNightRow> nights, DateOnly night) =>
-    [
-        .. nights
-            .Where(row => row.Session == night && row.Flagged && row.Mark is not null && (FamilyRecords.IsLive(row.Rule) || row.Rule == RuleRows.ProvisionalRule))
-            .Select(row => (row.Family, row.Rule, row.Stretch ?? 0, row.Mark!.Value)),
-    ];
+    // A family's live rule among its standing rules, its newest registration carrying the live rule's name, and every
+    // other in the order each first registered, the rule an approved change replaced among them.
+    // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+    static (CandidateRow? Live, CandidateRow[] Variants) LiveAndVariants(IReadOnlyList<CandidateRow> standing)
+    {
+        var live = FamilyRecords.LiveOf(standing, row => row.Candidate, row => row.RegisteredAt, row => row.Id);
+
+        return (live, [.. standing.Where(row => row != live).OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id)]);
+    }
+
+    // The live rules over their mark on the night, which the Run page carries among the things to worry about: a family's
+    // live rule as the register stood past the night, the rule an approved change replaced being a variant.
+    public static IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)> Flagged(IReadOnlyList<RuleNightRow> nights, DateOnly night, IReadOnlyList<CandidateRow> register)
+    {
+        var standing = CandidateFamily.StandingBefore(
+            [
+                .. register.Select(row => new RegisterRow(
+                    row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                    row.Parameters, row.EvaluatorVersion, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+            ],
+            TonightScreen.PastTheNight(night));
+        var live = standing
+            .GroupBy(row => CandidateFamily.SetupFamilyOf(row.Evaluator) + "|" + (CandidateEvaluators.Find(row.Evaluator) is IndexRuleCandidate rule ? rule.Index : string.Empty), StringComparer.Ordinal)
+            .Select(family => FamilyRecords.LiveOf(family)?.Candidate)
+            .OfType<string>()
+            .ToHashSet(StringComparer.Ordinal);
+
+        return
+        [
+            .. nights
+                .Where(row => row.Session == night && row.Flagged && row.Mark is not null && (live.Contains(row.Rule) || row.Rule == RuleRows.ProvisionalRule))
+                .Select(row => (row.Family, row.Rule, row.Stretch ?? 0, row.Mark!.Value)),
+        ];
+    }
 }

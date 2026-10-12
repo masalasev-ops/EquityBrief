@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // shipped off, the tester walking each rule at the setting it stands at, and the live alarm. Each is worked over
 // constructed stores and constructed units, the alarm's low by a reference whose every unit holds one edge so every
 // draw's mean is that edge.
-// see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+// see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
 // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running
 public partial class FixtureExpectations
@@ -122,11 +122,13 @@ public partial class FixtureExpectations
 
         var outcome = await new LoopApply(ApprovalClock, store.DatabaseFile, "on approval").RunAsync("night-applied");
 
-        // The S&P 600's breakout is applied; the S&P 500's drift is refused with why; the decline is answered by nothing.
+        // The S&P 600's breakout is applied; from 17.13 the S&P 500's drift is left for the night, which alone registers
+        // one, and answered by nothing by hand; the decline is answered by nothing.
         Assert.Equal(
-            ["GSPC|drift|refused", "SML|breakout|applied"],
+            ["SML|breakout|applied"],
             [.. outcome.Applications.Select(one => $"{one.Index}|{one.Family}|{(one.Applied ? "applied" : "refused")}").Order(StringComparer.Ordinal)]);
-        Assert.Equal([LoopDecisions.LargeIndexRefused], FamilyRows(store, "SELECT words FROM loop_applied WHERE index_code = 'GSPC';"));
+        Assert.Equal(1, outcome.Waiting);
+        Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM loop_applied WHERE index_code = 'GSPC';"));
         Assert.Equal(["SML|breakout"], FamilyRows(store, "SELECT index_code, family FROM provisional_setting;"));
 
         // The S&P 600's night reads its breakout at the change and states it among its settings; the S&P 400's and the
@@ -183,9 +185,11 @@ public partial class FixtureExpectations
         var exit = ExitChange(7);
         var rsi = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["also_rsi_above"] = 50 }).Json;
 
-        // Refused: an S&P 500 rule, a book, a family no approval reaches, a proposal stating no change and the pullback's
-        // grid setting.
-        Assert.Equal((false, LoopDecisions.LargeIndexRefused), Words(LoopApply.Answer("run", "GSPC", "drift", "p", exit, [])));
+        // Refused: the S&P 500's pullback and a grid setting of its drift, a book, a family no approval reaches, a proposal
+        // stating no change and the pullback's grid setting; from 17.13 the S&P 500's drift takes a change of its hooks.
+        Assert.Equal((false, LoopDecisions.LargePullbackRefused), Words(LoopApply.Answer("run", "GSPC", "pullback", "p", exit, [])));
+        Assert.Equal((false, LoopApply.LargeSettingRefused), Words(LoopApply.Answer("run", "GSPC", "drift", "p", LoopChange.OfSetting([1, 1], "a=1|b=2", 0).Json, [])));
+        Assert.True(LoopApply.Answer("run", "GSPC", "drift", "p", exit, []).Applied);
         Assert.Equal((false, LoopDecisions.BookRefused), Words(LoopApply.Answer("run", "SML", "heavyweight", "p", exit, [])));
         Assert.Equal((false, LoopDecisions.FamilyRefused), Words(LoopApply.Answer("run", "SML", "fundamentals", "p", exit, [])));
         Assert.Equal((false, LoopApply.NoChangeRefused), Words(LoopApply.Answer("run", "SML", "breakout", "p", null, [])));

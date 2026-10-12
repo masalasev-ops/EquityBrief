@@ -194,11 +194,13 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var spreads = new Dictionary<string, IReadOnlyList<ReadingSpread>>(StringComparer.Ordinal);
         var lay = await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation);
 
-        // Each family is tested against the rule as it stands: on the S&P 400 or 600 at the setting an approval stored
-        // for it where one did, and at its provisional setting otherwise; on the S&P 500, whose approvals are refused, at
-        // its own. A family an approval set hooks on is not searched on its grid, whose walk reads no hook.
-        // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
-        var standing = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StandingAsync(databaseFile, index, cancellation);
+        // Each family is tested against the rule as it stands: at the setting an approval stored for it on its index where
+        // one did, the S&P 500's breakout and drift at their own setting with the hooks it stores, and at its provisional
+        // or its own setting otherwise. A family an approval set hooks on is not searched on its grid, whose walk reads no
+        // hook.
+        // see: An approved change is applied by the night's own build on the index it was approved on alone
+        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        var standing = await StandingAsync(databaseFile, index, cancellation);
 
         if (!large)
         {
@@ -283,7 +285,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         return 0;
     }
 
-    // The setting an approval stored for each family of an S&P 400 or 600, the newest a family.
+    // The setting an approval stored for each family of an index, the newest a family.
     static async Task<IReadOnlyDictionary<string, LoopChange>> StandingAsync(string databaseFile, string index, CancellationToken cancellation)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));

@@ -39,6 +39,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopReference, Touch.Read),
             new StoreTouch(Store.LoopAlarm, Touch.Read | Touch.Insert),
@@ -110,6 +111,13 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
     {
         var started = clock.UtcNow;
 
+        // The S&P 500's breakout's and drift's live rules, each its family's newest registration carrying the live rule's
+        // name, whose trades alone the alarm reads, the rule an approved change replaced being a variant.
+        // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+        var register = CandidateFamily.Standing(await new EquityBrief.Worker.Candidates.CandidateRegistrar(clock, databaseFile).RowsAsync(cancellation), started);
+
+        var live = LoopDecisions.LargeFamilies.ToDictionary(family => family, family => FamilyRecords.LiveOf(CandidateFamily.In(register, family))?.Candidate, StringComparer.Ordinal);
+
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -138,7 +146,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
 
                 foreach (var (family, reference) in references)
                 {
-                    var units = await UnitsAsync(connection, transaction, index, family, cancellation);
+                    var units = await UnitsAsync(connection, transaction, index, family, live.GetValueOrDefault(family), cancellation);
 
                     reads.Add(await ReadAsync(connection, transaction, index, family, run, runId, night, reference, units, cancellation));
                 }
@@ -228,7 +236,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
     }
 
     // A family's live units on an index, as the alarm counts them.
-    async Task<IReadOnlyList<LiveUnit>> UnitsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, CancellationToken cancellation)
+    async Task<IReadOnlyList<LiveUnit>> UnitsAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, string? drawing, CancellationToken cancellation)
     {
         var units = new List<LiveUnit>();
 
@@ -245,7 +253,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         {
             await foreach (var row in RowsAsync(connection, transaction, LargeTrades, [("$family", family)], cancellation))
             {
-                if (FamilyRecords.IsLive(row.GetString(0)))
+                if (drawing is not null && row.GetString(0) == drawing)
                 {
                     units.Add(Trade(Date(row.GetString(1)), row.GetDouble(2), Optional(row, 3), Optional(row, 4), !row.IsDBNull(5)));
                 }

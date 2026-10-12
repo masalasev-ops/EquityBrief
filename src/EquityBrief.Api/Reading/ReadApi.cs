@@ -3458,7 +3458,7 @@ public sealed partial class ReadApi : IComponent
     ";
 
     // The operator's word on a loop proposal or a restore, the Loop page's presses' one write.
-    // see: An approved change is applied before the next night from the night's own build, on the index it was approved on alone
+    // see: An approved change is applied by the night's own build on the index it was approved on alone
     const string InsertDecision = @"
         INSERT INTO loop_decision (run_id, index_code, family, proposal, decision, reason, decided_at)
         VALUES ($run_id, $index, $family, $proposal, $decision, $reason, $decided_at);";
