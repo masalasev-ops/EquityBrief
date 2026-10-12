@@ -43414,3 +43414,61 @@ Queue:      done, 17.11, PR 439, its remedy run from main and the two books regi
             ruling and 17.12; next, 17.13, the S&P 500's approvals with the FastTree challenger, then 18.5's report.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.12 below.
 Carried:    17.12, then 17.13 once it is planned.
+
+### 17.12 - the valuation reading: a stock's earnings over its value placed among its own twelve quarters, the cover's share counts kept with the SEC's facts and the closes before the store's year read from the pull at the store's scale   2026-10-12
+
+Built:      the ledger's catalogue gains its forty-sixth reading, `value_place`, defined in a file of its own in the core:
+            the four newest quarters' net income as first filed before the session over the company's value, the cover's
+            share count times the close, placed among the same figure at the ends of its own twelve quarters, a tie
+            counting half; each count brought to the store's scale by the close as traded against the close at that
+            scale on its own day, the twelve quarters running back unbroken from the newest, a quarter missing a part
+            leaving none. The SEC's facts keep the cover's share count, a row a day it stands for. On the night the ledger
+            reads each member's closes before its first stored session from the newest pull holding that session, from
+            the newest on or before its oldest quarter's end, at the store's scale by the ratio of the two closes there,
+            for this reading alone; the history reads its merged bars; the re-read after the filings refresh reads it
+            again. Migration 88 adds the column. The readings' version pins the facts' and the reading's definitions
+            beside the catalogue and the filler. Section 13.10, the catalogue, store and pull rows, `SCHEMA.md`'s three
+            tables, the runbook, the guide and the roster's row, the prior text in `CHANGELOG.md`; the decision gains
+            the two-class finding below. A capture of Alphabet's facts, trimmed to its entity taxonomy. The remedy
+            `tools/remedies/2026-10-12-17.12-the-valuation-reading.txt` runs the whole facts refresh after the
+            migration, and each index's history is then built again with `--again` and checked.
+Measured:   read-only on the operator's store on 2026-10-12: every name's pulled closes from 2022-01-01 to its first
+            stored session, 1,393,187 rows over the 1,505 of 1,510 names a pull holds on that session, read in 11 seconds
+            cold, and from 2023-03-01, 971,130 rows, in 0.6 seconds read again; the chart averages step reads the same
+            table earlier in the night. Seven filers of two classes asked of the archive: four held no share count,
+            three only counts before 2015 or one of a single share with none after it, so each reads none.
+Tests:      four more: the share counts read off the Apple capture and stored 47 of 70 a day once, a period's count
+            passed over and Alphabet's facts holding none; the reading worked by hand over sixteen quarters, ten
+            twelfths on the night, a tie, either end, a split, a filing on the session, a count after it and three
+            missing parts; the night over a constructed store at the store's scale with no other reading reading the
+            pull, read again after the refresh and the same as the hooks' readings; and the point-in-time rebuild equal,
+            one that read a filing on its session named. Changed: the facts' concepts 17 and the fixture's night storing
+            Keysight's counts worked from its capture; the catalogue 46; the readings' version read over the four
+            files, a line of the reading's own moving it; and the price check's stated crossings gaining the reading's
+            `Yield`, a count and four quarters' net income in and a statistic out.
+Claims:     none; 17.12 adds no row of a table the harness reads, so nothing is named beside phase 17's pair.
+Pins:       the readings' version moved from 61029e708aa9 to 771a9e07dfdc; no evaluator pins the ledger's or the facts'
+            files, so no rule's version moves.
+Mutated:    the rule, stated before the run: each property the checkpoint adds, one mutation each, run filtered to the
+            four tests above. M19 a value read at the close alone, no close as traded: predicted red at the hand-worked
+            test alone, the split. M20 a fact filed on the session read on it: predicted red at the hand-worked test and
+            the point-in-time test. M21 the night's pulled closes left at the pull's scale: predicted red at the night's
+            test alone. M22 the re-read after the refresh writing no valuation reading: predicted red at the night's test
+            alone. M23 the twelve quarters read across a missing one: predicted red at the hand-worked test alone. M24 a
+            count standing for a day after the session read: predicted red at the hand-worked test alone. M25 the
+            night's series joined to the pulled closes for every reading: predicted red at the night's test alone, at
+            the readings a longer window reads. M26 a count stated for a period read as a day's: predicted red at the
+            share counts' test alone. Results: each red where predicted and nowhere else. M19 at the split, 0 for ten
+            twelfths, one of four failed; M20 at 2026-07-30's figure in both tests, eleven and a half twelfths for one,
+            two of four; M21 at the night's first figure, one for eleven twelfths, one of four; M22 after the re-read,
+            eleven twelfths left, one of four; M23 at the missing income, ten twelfths for none, one of four; M24 at the
+            count after the night, one for ten twelfths, one of four; M25 at the longer windows, all four read, the
+            valuation reading itself unchanged, one of four; M26 at the period's count, read as a day's, one of four.
+            Each reverted before anything was committed. The run before the sweep found the readings' version test still
+            building its two comparisons from the first two files, which the four-file pin failed until they read all
+            four.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures
+            to be filled from the run.
+Queue:      done, 17.11, PR 439, and the 17.12 ruling; in progress, 17.12; next, 17.13, the S&P 500's approvals with the
+            FastTree challenger, then 18.5's report.
+Carried:    nothing new; the night's rows from 2026-10-06 to the merge keep none of the reading, written before it.

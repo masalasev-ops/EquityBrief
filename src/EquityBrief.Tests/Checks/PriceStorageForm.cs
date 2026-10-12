@@ -213,6 +213,11 @@ public class PriceStorageForm
         // share, out as a percentage, through `Statistic.FromRatio`, which every figure of the name page's quarter, segments,
         // margins and analysts in per cent is read through.
         // see: The latest quarter is read line by line against the estimate kept before its report and the same quarter a year earlier
+        //
+        // `ValuationReading.Yield` joined it at 17.12: four quarters' net income and a filed share count in, the
+        // earnings over the value at a close out, the count brought to the store's scale by the close as traded on
+        // its own day, through `Statistic.FromRatio`. It is every figure the valuation reading places.
+        // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -230,6 +235,7 @@ public class PriceStorageForm
                 "TradeCost.cs: InRisk",
                 "TrailingExit.cs: RiskPct",
                 "UniverseScreen.cs: Distance",
+                "ValuationReading.cs: Yield",
             ],
             crossings);
     }

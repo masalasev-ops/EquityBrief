@@ -1356,6 +1356,13 @@
       "endpoint": "real-time/CVX.US",
       "query": "real-time/CVX.US?fmt=json",
       "fetchedAt": "2026-10-10T15:51:54Z"
+    },
+    {
+      "file": "phase17-sec-facts-GOOGL.json",
+      "endpoint": "api/xbrl/companyfacts/CIK0001652044.json",
+      "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json",
+      "fetchedAt": "2026-10-12T03:09:55Z",
+      "trimmedTo": "the entity taxonomy whole, one concept, and of its 543 us-gaap concepts NetIncomeLoss alone, its newest four of 152 facts, from a payload of 3.2 megabytes. Every key and nesting level kept is the archive's. Kept as a filer of two share classes whose facts hold no share count at all: the archive's facts carry only figures filed with no dimension, and a filer of more than one class states its cover's count by class, so its entity taxonomy holds the public float alone while its net income is there. Of seven filers of two classes asked the same morning, Alphabet, Watsco, Lennar and Brown-Forman held no count, Berkshire Hathaway's last was for 2011-04-29, Comcast's for 2009-12-31, and Fox's one count was of one share on 2019-03-18, its first filing's; so the valuation reading of such a filer is none rather than a value read off one class."
     }
   ]
 }

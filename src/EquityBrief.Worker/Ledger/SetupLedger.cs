@@ -112,9 +112,22 @@ public sealed class SetupLedger : IComponent
     const string BusinessAgain = @"
         UPDATE setup
         SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
-            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income
+            operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income, value_place = $value_place
         WHERE ticker = $ticker AND session_date = $session AND source = $source;
     ";
+
+    // A member's closes on the night, which the valuation reading reads again once the filings refresh has stored its facts.
+    const string StoredCloses = "SELECT session_date, close, raw_close FROM bar WHERE ticker = $ticker AND session_date <= $night ORDER BY session_date;";
+
+    // The newest pull holding a member's first stored session, and its close there, which the scale is read from.
+    const string PullHoldingFirst = "SELECT pull, close FROM pulled_bar WHERE ticker = $ticker AND session_date = $first ORDER BY pull DESC LIMIT 1;";
+
+    // That pull's sessions before the first stored session, from the newest on or before the oldest day the reading reaches.
+    const string PulledBeforeTheYear = @"
+        SELECT session_date, close, raw_close FROM pulled_bar
+        WHERE ticker = $ticker AND pull = $pull AND session_date < $first
+            AND session_date >= COALESCE((SELECT MAX(session_date) FROM pulled_bar WHERE ticker = $ticker AND pull = $pull AND session_date <= $oldest), $oldest)
+        ORDER BY session_date;";
 
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.
     const string Costs = "SELECT ticker, cost FROM member_reading WHERE index_code = $index AND session_date = $night AND cost IS NOT NULL;";
@@ -245,8 +258,9 @@ public sealed class SetupLedger : IComponent
         var market = await MarketAsync(connection, MarketBars, night, cancellation);
         var sectors = await SectorsAsync(connection, Sectors, names, cancellation);
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-        var context = new LedgerContext(income, sectors, highs, lows, facts);
+        var context = new LedgerContext(income, sectors, highs, lows, facts, before);
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
         IReadOnlyList<double?>? Of(string ticker)
@@ -309,6 +323,7 @@ public sealed class SetupLedger : IComponent
         var picks = await PicksAsync(connection, index, night, cancellation);
         var open = await OpenAsync(connection, index, night, cancellation);
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
+        var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
 
         // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
         // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
@@ -334,7 +349,7 @@ public sealed class SetupLedger : IComponent
             {
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var context = new LedgerContext(income, sectors, highs, lows, facts);
+                var context = new LedgerContext(income, sectors, highs, lows, facts, before);
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
 
                 foreach (var family in families)
@@ -1511,9 +1526,10 @@ public sealed class SetupLedger : IComponent
         return facts;
     }
 
-    // The business readings of the night's setups read again for the tickers given, once the filings refresh has
-    // stored what the archive posted before the session; the night's rows alone, each from the facts filed before
-    // the setup's session. It returns how many rows it read again.
+    // The business readings and the valuation reading of the night's setups read again for the tickers given, once the
+    // filings refresh has stored what the archive posted before the session; the night's rows alone, each from the facts
+    // filed before the setup's session and the valuation reading over the closes the night's step read. It returns how
+    // many rows it read again.
     public async Task<int> BusinessAgainAsync(DateOnly session, IReadOnlyList<string> tickers, CancellationToken cancellation = default)
     {
         if (tickers.Count == 0)
@@ -1525,6 +1541,13 @@ public sealed class SetupLedger : IComponent
         await connection.OpenAsync(cancellation);
 
         var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
+        var places = new Dictionary<string, double?>(StringComparer.Ordinal);
+
+        foreach (var ticker in tickers.Distinct(StringComparer.Ordinal))
+        {
+            places[ticker] = await ValuePlaceAsync(connection, ticker, facts.GetValueOrDefault(ticker) ?? [], session, cancellation);
+        }
+
         var read = 0;
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -1543,6 +1566,7 @@ public sealed class SetupLedger : IComponent
                 ("$gross_margin_change", (object?)business.GrossMarginChange ?? DBNull.Value),
                 ("$operating_margin_change", (object?)business.OperatingMarginChange ?? DBNull.Value),
                 ("$cash_over_income", (object?)business.CashOverIncome ?? DBNull.Value),
+                ("$value_place", (object?)places[ticker] ?? DBNull.Value),
             ]);
 
             read += await command.ExecuteNonQueryAsync(cancellation);
@@ -1551,6 +1575,99 @@ public sealed class SetupLedger : IComponent
         await transaction.CommitAsync(cancellation);
 
         return read;
+    }
+
+    // A member's valuation reading on the night over its stored closes and those before its year, as the night's step
+    // reads it.
+    static async Task<double?> ValuePlaceAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation)
+    {
+        var bars = new List<SweepBar>();
+
+        await using (var command = Command(connection, null, StoredCloses, [("$ticker", ticker), ("$night", Stamp(night))]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                bars.Add(new SweepBar(Date(reader.GetString(0)), 0m, 0m, Money.FromStorage(reader.GetString(1)), 0, RawClose: reader.IsDBNull(2) ? 0m : Money.FromStorage(reader.GetString(2))));
+            }
+        }
+
+        if (bars.Count == 0)
+        {
+            return null;
+        }
+
+        var before = await BeforeTheYearAsync(connection, [(ticker, bars[0].Session, bars[0].Close)], new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { [ticker] = facts }, night, cancellation);
+
+        return ValuationReading.Place(ValuationReading.PartsOf(facts, night), (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars)), night);
+    }
+
+    // Each name's first stored session and its close there.
+    static IEnumerable<(string Ticker, DateOnly First, decimal Close)> FirstSessions(IReadOnlyList<SweepName> names) =>
+        names.Where(name => name.Bars.Length > 0).Select(name => (name.Ticker, name.Bars[0].Session, name.Bars[0].Close));
+
+    // Each member's closes before its first stored session that its valuation reading reaches on the night: the sessions
+    // of the newest pull holding that first session, from the newest on or before the end of the oldest of the reading's
+    // twelve quarters, each close brought to the store's scale by the ratio of the stored close to the pulled close on
+    // the first session as the chart averages step brings them, and each close as traded as the pull holds it. A member
+    // whose reading reaches no session before its year, or whose first session no pull holds, reads none; no other
+    // reading reads them.
+    // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+    static async Task<IReadOnlyDictionary<string, PriceHistory>> BeforeTheYearAsync(
+        SqliteConnection connection,
+        IEnumerable<(string Ticker, DateOnly First, decimal Close)> names,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
+        DateOnly night,
+        CancellationToken cancellation)
+    {
+        var before = new Dictionary<string, PriceHistory>(StringComparer.Ordinal);
+
+        foreach (var (ticker, first, firstClose) in names)
+        {
+            if (ValuationReading.OldestDay(ValuationReading.PartsOf(facts.GetValueOrDefault(ticker) ?? [], night)) is not { } oldest || oldest >= first)
+            {
+                continue;
+            }
+
+            string? pull = null;
+            var pulledClose = 0m;
+
+            await using (var command = Command(connection, null, PullHoldingFirst, [("$ticker", ticker), ("$first", Stamp(first))]))
+            {
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                if (await reader.ReadAsync(cancellation))
+                {
+                    pull = reader.GetString(0);
+                    pulledClose = Money.FromStorage(reader.GetString(1));
+                }
+            }
+
+            if (pull is null || pulledClose <= 0m)
+            {
+                continue;
+            }
+
+            var ratio = firstClose / pulledClose;
+            var (sessions, closes, traded) = (new List<DateOnly>(), new List<double>(), new List<double>());
+
+            await using (var command = Command(connection, null, PulledBeforeTheYear, [("$ticker", ticker), ("$pull", pull), ("$first", Stamp(first)), ("$oldest", Stamp(oldest))]))
+            {
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    sessions.Add(Date(reader.GetString(0)));
+                    closes.Add(Statistic.FromPrice(Money.FromStorage(reader.GetString(1)) * ratio));
+                    traded.Add(reader.IsDBNull(2) ? 0 : Statistic.FromPrice(Money.FromStorage(reader.GetString(2))));
+                }
+            }
+
+            before[ticker] = new PriceHistory([.. sessions], [.. closes], [.. traded]);
+        }
+
+        return before;
     }
 
     static async Task<IReadOnlyDictionary<string, double>> CostsAsync(SqliteConnection connection, string index, DateOnly night, CancellationToken cancellation)

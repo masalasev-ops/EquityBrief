@@ -84,7 +84,7 @@ public partial class FixtureExpectations
 
         // The catalogue names each column once.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(45, LedgerReadings.Count);
+        Assert.Equal(46, LedgerReadings.Count);
     }
 
     [Fact]
@@ -240,15 +240,19 @@ public partial class FixtureExpectations
 
         Assert.Equal(LedgerReadings.Version, SourcePin.Of(sources, LedgerReadings.VersionDeclaration));
 
-        // A line of the filling source moved moves the pin, and a comment added does not.
-        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\nvar moved = 1;\n"], LedgerReadings.VersionDeclaration));
-        Assert.Equal(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\n// a comment\n"], LedgerReadings.VersionDeclaration));
+        // A line of the filling source moved moves the pin, and a comment added does not; and from 17.12 a line of the
+        // valuation reading's definition moved moves it too.
+        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\nvar moved = 1;\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
+        Assert.Equal(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\n// a comment\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
+        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..3], sources[3] + "\nvar moved = 1;\n"], LedgerReadings.VersionDeclaration));
     }
 
     internal static IReadOnlyList<string> LedgerSources { get; } =
     [
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "LedgerReadings.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "LedgerSetups.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "FiledFacts.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "ValuationReading.cs"),
     ];
 
     [Fact]

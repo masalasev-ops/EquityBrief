@@ -23,9 +23,10 @@ public sealed record BusinessReading(
 //
 // Six measures, each the concepts a filer may state it under in the order one filing stating two is read by: revenue
 // as the revenue rule orders it, gross profit, operating income, net income, cash from operations and interest
-// expense. A filer's facts are stored for each concept, each period of a quarter, nine months or a year ending on or
-// after the first day stored, as first filed: the earliest filing stating the period, and a later one stating it again
-// changes nothing. A quarter is read by the revenue rule over the measure's own concepts, a fiscal fourth quarter
+// expense; and beside them the share count a filing's cover states, for the day it stands for. A filer's facts are
+// stored for each concept, each period of a quarter, nine months or a year ending on or after the first day stored and
+// each count's day, as first filed: the earliest filing stating the period or the day, and a later one stating it
+// again changes nothing. A quarter is read by the revenue rule over the measure's own concepts, a fiscal fourth quarter
 // being the year less its first nine months, and a reading takes only the facts filed before its session, so a
 // filing made on the session is read from the session after.
 // see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months
@@ -46,8 +47,13 @@ public static class FiledFacts
     public static IReadOnlyList<string> InterestExpense { get; } =
         ["InterestExpense", "InterestExpenseNonoperating", "InterestExpenseDebt", "InterestAndDebtExpense"];
 
+    // The share count a filing's cover states, kept for the day it stands for beside the six measures, which the
+    // valuation reading reads.
+    // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+    public static IReadOnlyList<string> SharesOutstanding => ConceptAnswers.EntityCounts;
+
     public static IReadOnlyList<string> Concepts { get; } =
-        [.. Revenue, .. GrossProfit, .. OperatingIncome, .. NetIncome, .. OperatingCash, .. InterestExpense];
+        [.. Revenue, .. GrossProfit, .. OperatingIncome, .. NetIncome, .. OperatingCash, .. InterestExpense, .. SharesOutstanding];
 
     // The first period end stored: four years before the history the ledger is built over begins, enough for the
     // year before's quarter and the quarter before that of the history's first session.
@@ -59,7 +65,8 @@ public static class FiledFacts
         .. facts
             .Where(concept => Concepts.Contains(concept.Key, StringComparer.Ordinal))
             .SelectMany(concept => concept.Value
-                .Where(fact => fact.End >= FirstPeriodEnd && Kept(fact.Start, fact.End))
+                .Where(fact => fact.End >= FirstPeriodEnd
+                    && (SharesOutstanding.Contains(concept.Key, StringComparer.Ordinal) ? fact.Start == fact.End : Kept(fact.Start, fact.End)))
                 .GroupBy(fact => (fact.Start, fact.End))
                 .Select(period => period
                     .OrderBy(fact => fact.Filed)
