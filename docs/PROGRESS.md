@@ -43752,8 +43752,13 @@ Mutated:    the rule, stated before each run: each property 18.5 adds, broken al
             M9 the bound read at seven, red at the bound's test, the seventh sentence not refused. Here: M8 phase 18
             stated as opening one operating row: predicted red at the operating rows test. Result: red, phase 18 stated
             at one against the two rows its table holds. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures to be
-            filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 5ed7905c, the
+            second reading the suite result the first wrote over it.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 2251 of 2251 tests ran with none failed, migrations 0 to
+            91 with none pending, schema version 91, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 54 tables, 1267 claims, 1267 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1278
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 2251 of 2251 tests ran.
 Carried:    the sign-offs of phases 15 to 18; the S&P 600's last 192 interest refetch asks on 2026-10-13 and the lines
             refetch's two runs of 220 on 2026-10-13 and 2026-10-14; the findings of the rewrite put to the operator and
             not built here: numbers inside names read as figures, GLP-1 costing BDX its two cases and its risks and
