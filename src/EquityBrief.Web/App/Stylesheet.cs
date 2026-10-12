@@ -8,31 +8,35 @@ namespace EquityBrief.Web.App;
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
 // every picture without a mark knowing which one is showing.
 // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+// see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
 // see: Not yet measured is drawn as a dashed outline, never as a pale value
 public static class Stylesheet
 {
     public const string Css = """
 /* COLOUR RULES. Every token is one of these kinds; none of them carries a meaning not written here.
-   --sup, --sup-fill, --sup-ink   A level BELOW the price, and the left rule of a name page's region that buys. Nothing
-                 else may use this hue.
-   --res, --res-fill, --res-ink   A level ABOVE the price, and the left rule of a name page's part that sells. Nothing
-                 else may use this hue, and as text it is --res-ink, at 4.5 to 1 or more on every ground.
-   --up, --up-fill      A figure that ROSE, on the name page and its file alone, its sign always written beside it.
-   --down, --down-fill  A figure that FELL, on the name page and its file alone, its sign always written beside it.
-                 Never a failure, which is --fail's, and never a level.
-   --warn, --warn-fill  Caution: the left rule of a name page's risks with the word written beside it, and a pick's
-                 card's warning. Never a level and never a failure.
+   --sup, --sup-fill, --sup-ink   The GREEN: a level BELOW the price, the part of a page that buys, and every figure
+                 that rose. As text it is --sup-ink, at 4.5 to 1 or more on every ground.
+   --res, --res-fill, --res-ink   The ORANGE: a level ABOVE the price and the part of a page that sells. As text it
+                 is --res-ink.
+   --up, --up-fill      A figure that ROSE, in the green, its sign always written beside it, on every page.
+   --down, --down-fill  A figure that FELL and a stop, in the red, its sign or its word always written beside it.
+   --warn, --warn-fill  The AMBER: caution, a pick's card's warning and waiting, the word always written beside it.
    --dash-ink    The stroke of a dashed outline, which always means not yet measured or not stored.
                  A neutral grey: it is never a fill, and it is never used without the dash.
-   --accent      Neutral slate. The top rule of a section computed tonight, the computed badge, and controls.
+   --accent      Neutral slate. The top rule of a section computed tonight, the computed badge, controls, and the
+                 pill of a live rule, ink on solid slate.
    --research    Neutral plum-grey. The top rule and dateline of a section written by research or taken
                  from a filing, which may be weeks old.
    --s1 to --s4  Four steps of one neutral hue, for more or less.
    --stat, --stat-2, --stat-fill   Status: a night that finished or is running, and the Run page's pictures
-                 of counts. Two steps of one blue. Never a level.
-   --wait, --wait-fill   Waiting: a night not run yet. One violet, for waiting and nothing else.
-   --fail, --fail-fill   A failure: a night that stopped, was left unfinished or never ran. One red, for a
-                 failure alone and never for a fall in price.
+                 of counts. Two steps of one blue. Never a level and never a pill.
+   --wait, --wait-fill   Waiting: a night not run yet and a provisional rule's pill, in the amber.
+   --fail, --fail-fill   The RED: a night that stopped, was left unfinished or never ran, a loss and a stop. The night's
+                 state is always in words beside it.
+   --fam-<family>, --fam-<family>-tint   A setup family's own hue, drawn as a MARK alone, a card's or a tile's edge, a
+                 tag's swatch or an account's line, at 3 to 1 or more on every ground and 15 or more in OKLab times a
+                 hundred from the green, the orange, the red and each other; and its tint behind ink text on its tags,
+                 tiles and card headers. Never the colour of text, and always beside the family's word.
    The rest are paper and ink: grounds, text, hairlines, shadow. */
 :root{
  --page:#f1efe9; --surface:#fbfaf6; --plot:#f6f4ee; --ink:#1d1f22; --ink-2:#43464b; --soft:#5f6369; --hair:#dcd8ce; --hair-2:#c9c4b7;
@@ -40,10 +44,13 @@ public static class Stylesheet
  --s1:#e4e1d9; --s2:#bab5a9; --s3:#7f7a6f; --s4:#2f2f2d;
  --sup:#2e7a53; --sup-fill:rgba(46,122,83,.12); --sup-ink:#1f5b3c;
  --res:#bd631d; --res-fill:rgba(189,99,29,.12); --res-ink:#8a4511;
- --up:#3b5db3; --up-fill:rgba(59,93,179,.12); --down:#8f3a8c; --down-fill:rgba(143,58,140,.12); --warn:#6e5a00; --warn-fill:rgba(110,90,0,.12);
+ --up:#1f5b3c; --up-fill:rgba(46,122,83,.12); --down:#9e2f2a; --down-fill:rgba(178,58,52,.1); --warn:#6e5a00; --warn-fill:rgba(110,90,0,.12);
  --dash-ink:#6a6d71; --shadow:0 1px 2px rgba(40,34,20,.06),0 2px 8px rgba(40,34,20,.04);
  --stat:#2f6db0; --stat-2:#8db4de; --stat-fill:rgba(47,109,176,.12);
- --wait:#6a55a3; --wait-fill:rgba(106,85,163,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
+ --wait:#6e5a00; --wait-fill:rgba(110,90,0,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
+ --fam-pullback:#084e6c; --fam-pullback-tint:rgba(8,78,108,.16); --fam-breakout:#70639e; --fam-breakout-tint:rgba(112,99,158,.16);
+ --fam-drift:#663d05; --fam-drift-tint:rgba(102,61,5,.16); --fam-fundamentals:#274fe7; --fam-fundamentals-tint:rgba(39,79,231,.16);
+ --fam-heavyweight:#851473; --fam-heavyweight-tint:rgba(133,20,115,.16);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
@@ -58,10 +65,13 @@ public static class Stylesheet
  --s1:#262a2e; --s2:#4b5157; --s3:#868c92; --s4:#dcd8cf;
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
- --up:#86b0ff; --up-fill:rgba(134,176,255,.14); --down:#f582c8; --down-fill:rgba(245,130,200,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
+ --up:#93d4ab; --up-fill:rgba(111,192,143,.13); --down:#f49089; --down-fill:rgba(229,83,75,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
  --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
- --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
+ --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
+ --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
+ --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
 }}
 :root[data-theme='dark']:not([data-eb-theme='light']),:root[data-eb-theme='dark']{
  --page:#121416; --surface:#1a1d20; --plot:#16191b; --ink:#e8e5dd; --ink-2:#c3c0b8; --soft:#9ea3a9; --hair:#2d3237; --hair-2:#3d434a;
@@ -69,10 +79,13 @@ public static class Stylesheet
  --s1:#262a2e; --s2:#4b5157; --s3:#868c92; --s4:#dcd8cf;
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
- --up:#86b0ff; --up-fill:rgba(134,176,255,.14); --down:#f582c8; --down-fill:rgba(245,130,200,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
+ --up:#93d4ab; --up-fill:rgba(111,192,143,.13); --down:#f49089; --down-fill:rgba(229,83,75,.14); --warn:#efe08a; --warn-fill:rgba(239,224,138,.13);
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
  --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
- --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
+ --wait:#efe08a; --wait-fill:rgba(239,224,138,.13); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
+ --fam-pullback:#4097bd; --fam-pullback-tint:rgba(64,151,189,.18); --fam-breakout:#9d58e9; --fam-breakout-tint:rgba(157,88,233,.18);
+ --fam-drift:#90693e; --fam-drift-tint:rgba(144,105,62,.18); --fam-fundamentals:#8ec4fc; --fam-fundamentals-tint:rgba(142,196,252,.18);
+ --fam-heavyweight:#f478dc; --fam-heavyweight-tint:rgba(244,120,220,.18);
 }
 /* The names the marks draw with, each the token of the same kind, so every mark follows the palette. */
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
@@ -184,6 +197,22 @@ main{padding-block:8px 64px}
 .card-b{margin-top:16px}
 .card-b>:first-child{margin-top:0}
 .pill{display:inline-block;font:600 11.5px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:1px 9px;color:var(--ink-2);white-space:nowrap}
+/* a rule's state: a live rule ink on solid slate, a provisional one in the amber with its word, and a variant a dashed slate outline */
+.status-pill{display:inline-block;font:600 11px var(--sans);letter-spacing:.04em;border:1px solid transparent;border-radius:999px;padding:1px 9px;white-space:nowrap}
+.status-pill.live{background:var(--accent);color:var(--accent-ink)}
+.status-pill.provisional{background:var(--wait-fill);border-color:var(--wait);color:var(--wait)}
+.status-pill.variant{border:1.3px dashed var(--accent);color:var(--ink-2)}
+/* a setup family: its word in ink on its tint, beside a swatch of its hue; and its hue as the edge of its tile or card */
+.fam-tag{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--sans);color:var(--ink);border-radius:5px;padding:1px 8px 1px 6px;white-space:nowrap}
+.fam-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;flex:none}
+.fam-tag[data-family='pullback']{background:var(--fam-pullback-tint)} .fam-swatch[data-family='pullback']{background:var(--fam-pullback)} .fam-edge[data-family='pullback']{border-left-color:var(--fam-pullback)}
+.fam-tag[data-family='breakout']{background:var(--fam-breakout-tint)} .fam-swatch[data-family='breakout']{background:var(--fam-breakout)} .fam-edge[data-family='breakout']{border-left-color:var(--fam-breakout)}
+.fam-tag[data-family='drift']{background:var(--fam-drift-tint)} .fam-swatch[data-family='drift']{background:var(--fam-drift)} .fam-edge[data-family='drift']{border-left-color:var(--fam-drift)}
+.fam-tag[data-family='fundamentals']{background:var(--fam-fundamentals-tint)} .fam-swatch[data-family='fundamentals']{background:var(--fam-fundamentals)} .fam-edge[data-family='fundamentals']{border-left-color:var(--fam-fundamentals)}
+.fam-tag[data-family='heavyweight']{background:var(--fam-heavyweight-tint)} .fam-swatch[data-family='heavyweight']{background:var(--fam-heavyweight)} .fam-edge[data-family='heavyweight']{border-left-color:var(--fam-heavyweight)}
+.fam-edge{border-left:4px solid var(--s3)}
+/* a signed figure: a rise in the green and a fall in the red, on every page, its sign always written beside it */
+.gain{color:var(--up)} .loss{color:var(--down)}
 .key{margin-top:12px;background:var(--page);border:1px solid var(--hair);border-radius:6px;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--soft)}
 .key b{color:var(--ink);font-weight:600}
 .key p{margin:0}
@@ -377,7 +406,7 @@ span[data-last-asked-at]::before{content:none}
 .family-empty{margin:0 0 8px}
 .family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
 .family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}
-.family-table td.plan-stop{color:var(--sup-ink)}
+.family-table td.plan-stop{color:var(--down)}
 .family-table td.plan-target{color:var(--res-ink)}
 .also-family{display:inline-block;margin-left:6px;font:400 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--soft);vertical-align:middle}
 .card-toggle{display:inline-block;margin-left:6px;font:600 11.5px var(--sans);color:var(--ink-2);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:1px 8px;min-height:0;cursor:pointer;vertical-align:middle}
@@ -399,14 +428,14 @@ span[data-last-asked-at]::before{content:none}
 .card-figures dd{margin:0;font-variant-numeric:tabular-nums}
 .card-caution{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
 .card-rule{margin:6px 0 0;font-size:12px;color:var(--soft)}
-.stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--sup) 0,var(--sup) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
+.stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--fail) 0,var(--fail) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
 .stt .stt-mark{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:var(--ink)}
 .stt.trailing{width:auto;height:auto;background:none;font-size:12px;color:var(--soft);white-space:nowrap}
-.stt.trailing .stt-stop{display:inline-block;width:3px;height:10px;margin-right:6px;border-radius:2px;background:var(--sup);vertical-align:middle}
+.stt.trailing .stt-stop{display:inline-block;width:3px;height:10px;margin-right:6px;border-radius:2px;background:var(--fail);vertical-align:middle}
 .rp-labeller{margin:10px 0 0;font-size:13.5px}
 .trade-line{display:block;overflow:visible}
 .tl-track{stroke:var(--s2);stroke-width:1.5}
-.tl-stop{stroke:var(--sup);stroke-width:2.5}
+.tl-stop{stroke:var(--fail);stroke-width:2.5}
 .tl-target{stroke:var(--res);stroke-width:2.5}
 .tl-buy{stroke:var(--ink-2);stroke-width:1.5}
 .tl-open{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
