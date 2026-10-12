@@ -43586,3 +43586,54 @@ Queue:      done, 17.11 and 17.12, PRs 439 and 440, and the 17.13 ruling; in pro
             then 18.5's report.
 Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
             merge read for the apply step's row at the start of the swing filter's step.
+
+### 17.14 - the S&P 500's pullback joins the loop: walked at the open filter version's settings by value, the shape clock's moves tested as proposals, an approved hook change stored for its page and an approved move opened by the night, the old loop's decisions moved   2026-10-12
+
+Built:      the tester walks the S&P 500's pullback as the ideas' run replays it, at the open filter version's settings read
+            by value on a grid of one level a dial, with the hooks an approval stored, and proposes for it as for every
+            family: the autopsy's exits, winners against losers' conditions and the learned score. Each move of the newest
+            shape proposal written for the open version, one gate's setting, is a proposal of the same run, walked at the
+            moved setting and tested on years it never saw against the filter as it stands. An approved change to the
+            pullback's hooks is stored under `GSPC` with no registration; the family lister keeps and orders the filter's
+            passing names by it over the night's readings and stores the exit it names on the pick, migration 90 adding
+            `family_pick.exit`, and the filler walks such a pick under the exit on the plan its night's version read,
+            under a horizon of its own, `exit`, so the swing filter's rows keep their plan's outcome. An approved shape
+            move is opened by the night's apply step through the shape command on a night a registration counts from,
+            the next version with the move made, the swing family registered again under it and the blocks it restarts
+            stated, its answer written in the version's transaction; the command accepts no proposal and says why. The
+            old loop's seven decisions move to Previously decided under four that now govern, every citation moved in the
+            specs, the code and the tests' keys, with section 13's looks, futility, loop, exits and approval paragraphs,
+            the run page's sentence 13.8 opens with and figure 11.4's description, both held in code, section 14's swing
+            filter step, the six catalogue rows, the run page's proposal row, the shape proposals'
+            store row, section 17's bound and the failure row, `SCHEMA.md`'s five tables, the runbook's shape command,
+            autopsy, presses and promotion, the guide's loop section and the roster's two rows, the prior text in
+            `CHANGELOG.md`. No evaluator's version moves.
+Measured:   read-only on the operator's store on 2026-10-12: filter version 5 is open, since 2026-10-02T11:35:34Z, at a
+            strength floor of 0.5, a dry-up ceiling of 1.5, a reward to risk floor of 2 and section 10's plan, with 6
+            sessions stored under it and no shape proposal written, so no move is tested before the proposer's sixty
+            ordinary nights; no stored setting stands under `GSPC`.
+Tests:      six new, five worked by hand over constructed candidates, walks, stores and closes and one read back off the
+            rendered Tonight page; six changed, the 17.9 apply step's and Loop page's, the shape command's first
+            acceptance and the run page's proposal, where they asserted the pullback refused or a proposal accepted.
+            17.14 adds no row of a table the harness reads, beside phase 17's pair.
+Mutated:    the rule, stated before the run: one mutation a property 17.14 adds. M35 the walk reading the strength floor at
+            the grid's tenth nearest it: predicted red at the walk test alone. M36 a shape move walked at the filter's
+            own settings: predicted red at the shape move test alone. M37 the apply step opening a shape move by hand:
+            predicted red at the approved move test alone. M38 the lister leaving the pullback's names as the filter
+            passed them: predicted red at the hook change page test alone. M39 the command refusing an acceptance without
+            saying why: predicted red at the command test alone. M40 the filler walking a pullback pick's exit on the
+            nearest bands' plan whatever its version read: predicted red at the filler test alone. M41 the apply step
+            opening a shape move named on any family: predicted red at the apply step's answers test alone.
+            Results: each red where predicted and nowhere else, every run filtered to the 34 apply step, Loop page, shape
+            command, proposal, exit menu, 17.13 and 17.14 tests. M35 at a floor of 0.53 keeping the 0.52 as well, 1 of 34;
+            M36 at the move walked at a floor of 0.5, 1 of 34; M37 at version 2 opened by hand, 1 of 34; M38 at the member
+            the condition refuses listed, 1 of 34; M39 at the refusal's words not found, 1 of 34; M40 at the exit a loss
+            of 10 per cent in place of a win of 8, 1 of 34; M41 at a shape move answered applied on another family, 1 of
+            34. Each reverted before anything was committed, the 34 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures to be
+            filled from the run.
+Queue:      done, 17.11 and 17.12, PRs 439 and 440, the 17.13 ruling and 17.13; in progress, 17.14; next, 17.15, then
+            one pull request for 17.13 to 17.15, then 18.5's report.
+Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
+            merge read for the apply step's row; the first shape proposal under version 5, at sixty ordinary nights, read
+            as proposals of the next tester run on the S&P 500.

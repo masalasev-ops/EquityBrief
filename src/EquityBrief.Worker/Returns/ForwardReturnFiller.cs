@@ -30,7 +30,9 @@ public sealed class ForwardReturnFiller : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -84,6 +86,23 @@ public sealed class ForwardReturnFiller : IComponent
         WHERE r.passed = 1 AND r.stop IS NOT NULL
           AND r.family IN (" + string.Join(", ", SetupFamilies.ScoredOnTheirOwnRows.Select(family => $"'{family.Name}'")) + @")
         ORDER BY r.session_date, r.ticker, r.family;
+    ";
+
+    // Every S&P 500 pullback pick an approved setting named an exit of the menu for, on the plan its night's filter
+    // version's trade gate read, with its menu row already written for it.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    static readonly string EveryPullbackExit = @"
+        SELECT p.ticker, p.session_date, p.exit,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + EquityBrief.Core.Filter.FilterSettings.ClearWord + @"' THEN g.clear_stop ELSE g.swing_stop END,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + EquityBrief.Core.Filter.FilterSettings.ClearWord + @"' THEN g.clear_target ELSE g.swing_target END,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + EquityBrief.Core.Filter.FilterSettings.ClearWord + @"' THEN g.clear_stop_moves ELSE g.swing_stop_moves END,
+               f.horizon, f.outcome
+        FROM family_pick p
+        JOIN gate_result g ON g.ticker = p.ticker AND g.session_date = p.session_date
+        LEFT JOIN filter_version v ON v.version = g.version
+        LEFT JOIN forward_return f ON f.ticker = p.ticker AND f.session_date = p.session_date AND f.horizon = '" + ForwardReturnSeries.MenuExit + @"'
+        WHERE p.family = '" + SetupFamilies.Pullback + @"' AND p.state = '" + FamilyList.Listed + @"' AND p.exit IS NOT NULL
+        ORDER BY p.session_date, p.ticker;
     ";
 
     // The sessions after a listing's own, in order, which is what a horizon is
@@ -455,6 +474,59 @@ public sealed class ForwardReturnFiller : IComponent
             }
         }
 
+        // The S&P 500's pullback picks walked under the exit an approved setting named, under the menu's own horizon, so the
+        // swing filter's rows keep their plan's own outcome for every candidate that reads them.
+        // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+        foreach (var pick in await PullbackExitsAsync(connection, transaction, cancellation))
+        {
+            if (pick.Stored && Decided(pick.Outcome))
+            {
+                kept++;
+
+                continue;
+            }
+
+            var origin = await CloseOnAsync(connection, pick.Ticker, pick.SessionDate, cancellation);
+
+            if (EquityBrief.Core.Loop.ExitMenu.Of(pick.Exit) is not { } exit
+                || pick.Stop is not { } stop || pick.Target is not { } aimed || stop >= aimed
+                || origin is not { } bar || RawClose(pick.Ticker, pick.SessionDate, origin, stop, aimed) is not { } listedAt)
+            {
+                familyNotScorable++;
+
+                continue;
+            }
+
+            var after = await SessionsAfterAsync(connection, pick.Ticker, pick.SessionDate, cancellation);
+            var scale = bar.Close / listedAt;
+
+            if (Menu(after, bar.Close, stop * scale, aimed * scale, pick.StopMoves, ForwardReturnSeries.MenuExit, SetupFamilies.Pullbacks.CapSessions, exit) is not { } walked)
+            {
+                familyNotScorable++;
+
+                continue;
+            }
+
+            if (!pick.Stored || walked.Outcome is not null)
+            {
+                var calibrated = walked.Outcome is null
+                    ? Calibration.None
+                    : new Calibration(null, null, TrailingExit.RiskPct(bar.Close, stop * scale), OnEarnings(await PrintsAsync(connection, pick.Ticker, cancellation), after, walked.ResolvedOn));
+
+                await WriteAsync(connection, transaction, pick.Ticker, pick.SessionDate, walked, calibrated, cancellation);
+                written++;
+            }
+
+            if (walked.Outcome is null)
+            {
+                immature++;
+            }
+            else
+            {
+                matured++;
+            }
+        }
+
         // The base rate per horizon, over every name-night rather than over the
         // rows where a reason fired. The setup horizon has none, because there
         // is no universe-wide notion of target before stop for a name with no
@@ -486,6 +558,35 @@ public sealed class ForwardReturnFiller : IComponent
     }
 
     sealed record FamilyTrade(string Ticker, string SessionDate, string Family, decimal Stop, decimal? Target, bool Stored, string? Outcome, int Exit = 0, double? RiskMoves = null);
+
+    sealed record PullbackExit(string Ticker, string SessionDate, int Exit, decimal? Stop, decimal? Target, double? StopMoves, bool Stored, string? Outcome);
+
+    static async Task<IReadOnlyList<PullbackExit>> PullbackExitsAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, CancellationToken cancellation)
+    {
+        var picks = new List<PullbackExit>();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = (SqliteTransaction)transaction;
+        command.CommandText = EveryPullbackExit;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            picks.Add(new PullbackExit(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.IsDBNull(3) ? null : Money.FromStorage(reader.GetString(3)),
+                reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                !reader.IsDBNull(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7)));
+        }
+
+        return picks;
+    }
 
     // A pick's trade walked under an exit of the menu from the close it was bought at, as the families' own walks read
     // its plan: its stop, and its target or, where it has none, a trail of the buy less its stop, a trail of the menu

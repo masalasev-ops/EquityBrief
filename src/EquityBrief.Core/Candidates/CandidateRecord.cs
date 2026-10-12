@@ -89,8 +89,9 @@ public static class CandidateRecord
     public const string NoLookYet = "no look has been read";
 
     // The looks the futility guideline is read at, which are the first two and
-    // never the last: a candidate at its last look is retired by reaching it.
-    // see: A candidate is retired by a futility guideline at its first two looks or by reaching its last look
+    // never the last: a candidate at its last look meets it by reaching it, and
+    // the retirement either says is due is the operator's.
+    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
     public const int FutilityLooks = 2;
 
     public static Measured For(IReadOnlyList<CandidateSetup> setups, DateOnly? first, DateOnly night, double level) =>

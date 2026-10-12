@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
@@ -171,16 +172,36 @@ public sealed class RuleWalk(
     {
         var (replay, _) = SweepIdeasRunner.Read(read.Inputs, market, progress);
         var series = replay.Series;
+        var rule = SweepIdeas.BaseRule with { PerNight = SetupFamilies.ListedANight };
+
+        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
+
+        return OverListings(read, series, replay.Listings(rule, Keeps), rule, RuleReplay.PullbackWords, progress, standing, readings);
+    }
+
+    // The S&P 500's pullback: the swing filter at a version's settings read by value over the ideas' run's candidates,
+    // every listing kept, five a night in the list's own order, held on closes to the cap, with the hooks an approval
+    // stored for it.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null) =>
+        OverListings(
+            read,
+            history.Series,
+            history.Listings(settings),
+            SweepIdeas.TodaysRule with { PerNight = SetupFamilies.ListedANight },
+            LargePullback.Words(version, settings),
+            progress,
+            standing,
+            readings);
+
+    // A pullback's listings walked as the ideas' run walks them, under the exit the rule stands at or a proposal's.
+    static RuleWalk OverListings(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, IdeaRule rule, string words, Action<string> progress, LoopChange? standing, LoopReadings? readings)
+    {
         var tickers = series.Select(one => one.Name.Ticker).ToArray();
         var closes = ClosesOf(series);
-        var rule = SweepIdeas.BaseRule with { PerNight = SetupFamilies.ListedANight };
         var ownExit = SweepAxes.ExitIndex(SweepIdeas.Cap, breakEven: false);
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
-
-        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(tickers[name]) ?? []);
-
-        var listings = replay.Listings(rule, Keeps);
 
         // A listing as the family's walk states one.
         FamilyListing PlanOf(IdeaListing listing)
@@ -319,7 +340,7 @@ public sealed class RuleWalk(
 
         return new RuleWalk(
             SetupFamilies.Pullback,
-            WordsOf(RuleReplay.PullbackWords, hooks),
+            WordsOf(words, hooks),
             closes,
             SweepIdeas.Cap,
             [.. listings.Select(Unit)],

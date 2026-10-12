@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Reading;
 // and each version at a checkpoint, each worked by hand over constructed gate rows and read back off the rendered
 // page, a version's picks drawn in the comparison alone and no outcome of one drawn anywhere before its look.
 // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-// see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+// see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
 public partial class ReadSurface
 {
     // The claims the 12.3 correction drawing how the system learns, the comparison of tonight's picks and each

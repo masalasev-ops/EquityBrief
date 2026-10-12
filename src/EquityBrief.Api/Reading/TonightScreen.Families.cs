@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -78,8 +79,15 @@ public static partial class TonightScreen
         IReadOnlyList<CandidateRow> register,
         ListRuleView rule,
         IReadOnlyList<FamilyResultRow>? results = null,
-        FilterSettings? pullback = null)
+        FilterSettings? pullback = null,
+        IReadOnlyList<LoopSettingRow>? stored = null)
     {
+        // The change an approval stored for the swing filter's page as the night stood, which its card names.
+        // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+        var pullbackChange = (stored ?? [])
+            .Where(row => row.Family == SetupFamilies.Pullback && string.CompareOrdinal(row.SetAt, PastTheNight(night).ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)) < 0)
+            .MaxBy(row => row.Id)?.Words;
+
         var rowByTicker = rows.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var gateByTicker = gates.ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
         var resultBy = (results ?? []).ToDictionary(result => (result.Family, result.Ticker));
@@ -109,7 +117,7 @@ public static partial class TonightScreen
                 family.Label,
                 family.Heading,
                 family.Eyebrow,
-                RuleOf(family, pullback, StandingRows(family.Name, register, night).Live),
+                RuleOf(family, pullback, StandingRows(family.Name, register, night).Live, pullbackChange),
                 at + 1,
                 families.Length,
                 liveSince,
@@ -125,9 +133,10 @@ public static partial class TonightScreen
     // An S&P 500 card's rule in words, written from the settings its live rule runs at: the pullback's from the swing
     // filter version its night ran under, and the proposed settings where none is named.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    static string RuleOf(SetupFamily family, FilterSettings? pullback, RegisterRow? live) => family.Name switch
+    static string RuleOf(SetupFamily family, FilterSettings? pullback, RegisterRow? live, string? pullbackChange) => family.Name switch
     {
-        SetupFamilies.Pullback => RuleWords.Pullback(pullback ?? FilterSettings.Proposed),
+        SetupFamilies.Pullback => RuleWords.Pullback(pullback ?? FilterSettings.Proposed)
+            + (pullbackChange is { } words && words != "no change" ? $" It stands at a change approved on the Loop page: {words}." : string.Empty),
         BreakoutRule.Name => RuleWords.Breakout(BreakoutRule.Live) + Changed(live),
         DriftRule.Name => RuleWords.Drift(DriftRule.Live) + Changed(live),
         _ => family.Rule,

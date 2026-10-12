@@ -4759,9 +4759,8 @@ public sealed partial class MarkRenderer : IComponent
 
     // The newest shape proposal beneath the shape clock: what it proposes gate by gate, the list's median
     // held and proposed, the gates it names as findings rather than forcing, its decision, and beside it
-    // the blocks accepting it would restart, the count the shape command holds a later acceptance to.
-    // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
-    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    // the blocks approving one of its moves would restart, the count the night states as it opens the version.
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     public string Proposal(ProposalView? proposal)
     {
         var region = new StringBuilder();
@@ -4770,14 +4769,16 @@ public sealed partial class MarkRenderer : IComponent
 
         if (proposal is null)
         {
-            region.Append("<p class=\"proposal\" data-proposal=\"none\">No shape proposal is stored. The proposer writes one once the shape clock's trigger is crossed, and nothing moves until you accept it.</p></section>");
+            region.Append("<p class=\"proposal\" data-proposal=\"none\">No shape proposal is stored. The proposer writes one once the shape clock's trigger is crossed, and nothing moves until you approve one of its moves on the Loop page.</p></section>");
 
             return region.ToString();
         }
 
+        // From 17.14 a proposal's moves are put to the operator on the Loop page, each once the tester has tested it.
+        // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
         var decided = proposal.Decision switch
         {
-            null => Formatted($"waiting on your decision: shape --accept {proposal.Id} opens it as the next filter version, and shape --reject {proposal.Id} --reason records why not"),
+            null => Formatted($"waiting: each of its moves is put to you on the Loop page once the tester has tested it on years it never saw, and shape --reject {proposal.Id} --reason records why not"),
             "accepted" => $"accepted, opening filter version {Escaped(proposal.Opened ?? "none")}",
             _ => $"rejected: {Escaped(proposal.Reason ?? string.Empty)}",
         };
@@ -4820,9 +4821,8 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<p class=\"restarts\" data-live=\"{Escaped(proposal.Live ?? "none")}\" data-accepted-while-live=\"{proposal.AcceptedWhileLive}\" data-blocks=\"{proposal.Blocks}\">");
         region.Append(proposal switch
         {
-            { Live: null } => "No live filter candidate is registered, so accepting restarts nothing.",
-            { Live: { } live, AcceptedWhileLive: 0 } => Formatted($"Accepting it restarts '{Escaped(live)}', which has run {proposal.Blocks} non-empty block(s) of the {Blocks.Floor} its first look reads. It is the first acceptance while the list is live, which costs its restart and states nothing more."),
-            { Live: { } live } => Formatted($"Accepting it restarts the {proposal.Blocks} non-empty block(s) '{Escaped(live)}' has run, of the {Blocks.Floor} its first look reads. Shape is frozen after one acceptance while the list is live, so the command states them: shape --accept {proposal.Id} --restarts {proposal.Blocks}."),
+            { Live: null } => "No live filter candidate is registered, so approving a move restarts nothing.",
+            { Live: { } live } => Formatted($"Approving one of its moves opens the next filter version and restarts the {proposal.Blocks} non-empty block(s) '{Escaped(live)}' has run, of the {Blocks.Floor} its first look reads, which the night states as it opens the version."),
         });
         region.Append("</p></section>");
 
@@ -4937,7 +4937,7 @@ public sealed partial class MarkRenderer : IComponent
     // look, which is the whole of the arrangement: a figure read every night and acted on when it
     // looks good is the choice the looks exist to keep out of the decision.
     // see: The nightly running figure is monitoring and never the verdict
-    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
     // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     // The trend rule's versions: what each labelled the night's names, how far each stands from
     // the live rule, and how often a label the stored nights show went away and came back.
@@ -8018,7 +8018,7 @@ public sealed partial class MarkRenderer : IComponent
     // hundred. Before its first look a row is a dashed, locked outline with its trades and blocks so far; from
     // its first look the share of its trades that reached the target, the break-even they needed, what no
     // skill scored from the same starts and how far luck alone could move it, with the verdict in words.
-    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
     public string CheckpointRegion(IReadOnlyList<CheckpointRow> rows)
     {
         const double Wide = 560;

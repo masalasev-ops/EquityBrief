@@ -60,6 +60,11 @@ public static class ForwardReturnSeries
     public const string Clear = "clear";
     public const string ClearTwenty = "clear-20";
 
+    // An S&P 500 pullback pick walked under the exit of the menu an approved setting names, apart from the swing filter's
+    // row's own plan, which every candidate reading the row reads.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    public const string MenuExit = "exit";
+
     public const int SwingTwentySessions = 20;
 
     public static readonly string[] SwingHorizons = [Swing, SwingTwenty];

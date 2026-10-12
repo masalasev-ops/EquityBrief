@@ -184,7 +184,7 @@ public static class RunScreen
                 // before the first listing night; a candidate promoted to live
                 // would join them and restart the window, which is why the
                 // divisor is the family and not a count of anything this page holds.
-                // see: Adding a candidate later restarts the clock
+                // see: A registration restarts only the registered rule's own record
                 var tested = ReasonVerdict.For(setups, ReasonVerdict.LiveFamily);
 
                 var record = new ReasonRecord(
@@ -967,11 +967,11 @@ public static class RunScreen
             openVersion ?? ShapeClock.NoVersion,
             night);
 
-    // The newest shape proposal as the page draws it, with what accepting it would restart now: the live
-    // filter's candidate standing as the page is read, the acceptances already taken while one stood,
+    // The newest shape proposal as the page draws it, with what approving one of its moves would restart now:
+    // the live filter's candidate standing as the page is read, the acceptances already taken while one stood,
     // and the non-empty blocks its clock has run by the newest night the listings hold, counted by the
-    // arithmetic the shape command holds an acceptance to.
-    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    // arithmetic the night's opening of the version states.
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     public static ProposalView? Proposal(
         ShapeProposalRow? latest,
         IReadOnlyList<CandidateRow> register,
@@ -1928,7 +1928,7 @@ public static class RunScreen
     // Each version at a checkpoint: locked with its setups and blocks until its first look is read, and from
     // then the last look's share, the break-even its plans needed, what no skill scored from the same starts,
     // the smallest excess luck alone could not explain, and the verdict in words.
-    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
     public static IReadOnlyList<CheckpointRow> Checkpoints(EdgeView edge) =>
     [
         .. edge.Candidates

@@ -976,7 +976,7 @@
 </div>
 
 <h3>What the loop can change</h3>
-<p>Only the pullback's filter settings move. The shape clock moves three of them: how strong a stock's recent return must be, how quiet the volume must be on the way down, and the minimum reward for the risk. How deep a pullback counts, and whether the market gate applies at all, move only when a variant differing in them is promoted; how far away the stop may sit and how healthy the market must be move only by your ruling. The breakout's and the drift's settings change only at a new freeze, on your word. The rules for finding levels and building the report's plan do not change through this loop.</p>
+<p>On the S&amp;P 500 the shape clock proposes moves to three of the pullback's filter settings: how strong a stock's recent return must be, how quiet the volume must be on the way down, and the minimum reward for the risk. Each move is tested like any other proposal, on years it never saw, and a move you approve opens a new filter version from the next night. The pullback, the breakout and the drift can also take an exit, an extra condition or a score order you approve on the Loop page, on the index you approve it on. How deep a pullback counts, whether the market gate applies at all, how far away the stop may sit and how healthy the market must be move only by your ruling. The rules for finding levels and building the report's plan do not change through this loop.</p>
 
 <h3>Two clocks, answering two different questions</h3>
 <figure>
@@ -990,16 +990,16 @@
     <line class="tl-ax" x1="190" y1="140" x2="990" y2="140"/>
     <circle class="dot-v" cx="190" cy="56" r="7"/><text class="ts" x="190" y="34" text-anchor="middle">List goes live</text>
     <circle class="dot-n" cx="310" cy="56" r="7"/><text class="ts" x="310" y="34" text-anchor="middle">A few months</text>
-    <text class="ts" x="310" y="86" text-anchor="middle">first adjustment</text>
+    <text class="ts" x="310" y="86" text-anchor="middle">first proposal</text>
     <circle class="dot-v" cx="190" cy="140" r="7"/>
     <circle class="dot-k" cx="690" cy="140" r="7"/><text class="ts" x="690" y="118" text-anchor="middle">About two years</text>
-    <text class="ts" x="690" y="170" text-anchor="middle">can drop a variant</text>
+    <text class="ts" x="690" y="170" text-anchor="middle">first checkpoint</text>
     <circle class="dot-n" cx="930" cy="140" r="7"/><text class="ts" x="990" y="118" text-anchor="end">About three years</text>
-    <text class="ts" x="990" y="170" text-anchor="end">can promote one</text>
+    <text class="ts" x="990" y="170" text-anchor="end">last checkpoint</text>
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> The shape clock adjusts those settings so each gate lets through a sensible number of stocks. The edge clock runs a few alternative versions of each setup's rule in the background, each differing in one setting, and judges which version's trades actually do better than they need to, each setup against a bar of its own.</p>
+  <p><b>How to read it.</b> The shape clock proposes moves to those settings so each gate lets through a sensible number of stocks, and each move is tested before it is put to you. The edge clock runs a few alternative versions of each setup's rule in the background, each differing in one setting, and shows at its checkpoints which version's trades actually do better than they need to, each setup against a bar of its own. What it shows is monitoring: the list changes only through a proposal tested on years it never saw and approved by you.</p>
   <p><b>What to take from it.</b> The list's size can be tuned within months. Whether the picks make money takes years to answer with confidence, and the page says so plainly so an empty result reads as waiting, not broken.</p>
 </div>
 
@@ -1007,19 +1007,19 @@
   <p><b>Why so slow.</b> Try enough settings and one will look good by luck. Studies of trading rules show that most apparent winners disappear once you account for how many were tried (<a href="#s-stw">Sullivan, Timmermann and White 1999</a>; <a href="#s-white">White 2000</a>; <a href="#s-hlz">Harvey, Liu and Zhu 2016</a>). So every alternative is registered before it is measured, measured in the background where it cannot influence the list, and judged against a stricter bar when several are tested at once (<a href="#s-holm">Holm 1979</a>).</p>
   <p><b>Why years rather than a count of trades.</b> Trades that overlap in time share the same market, so they are not independent pieces of evidence. The system counts evidence in blocks of time rather than in trades (<a href="#s-cm">Cameron and Miller 2015</a>).</p>
   <p><b>Why fixed checkpoints.</b> Looking at results again and again and stopping when they look good finds false winners. Results are judged only at set points, the way medical trials handle the same problem (<a href="#s-armitage">Armitage, McPherson and Rowe 1969</a>; <a href="#s-lan">Lan and DeMets 1983</a>; <a href="#s-fda">FDA 2019</a>).</p>
-  <p><b>Why a limit on adjustments.</b> Each time the live settings change, the edge clock has to start again. So after the first adjustment, any further change shows how much evidence it would throw away before you accept it.</p>
+  <p><b>Why a limit on adjustments.</b> Each time the live settings change, the edge clock has to start again. So after the first adjustment, any further change shows how much evidence it would throw away before you approve it.</p>
   <p><b>Why the turned-away stocks count.</b> Each gate is also judged by what it turned away. If the stocks a gate rejects would have done as well as the ones it lets through, that gate is not earning its place, and the page says so.</p>
 </div>
 
 <h3>Where the starting settings come from</h3>
-<p>The settings the list starts from were first chosen by hand. The sweep replaces that guess with a starting point the stored history supports: it replays the filter over the years of history the store holds under tens of thousands of designs, each a different way of measuring strength, reading the trend, finding support, spotting the trigger and placing the trade, and under every combination of the settings, and scores every trade each would have taken the way the live record scores them, with one open trade a stock as the list holds it. Each result is read as an edge over what the same trade, placed on every stock in the index that night, would have come to, so a setting is not credited for a rising market. Seven further conditions, such as the stock sitting near its 52-week high or a recent earnings beat, are each tried alone and kept only where they help on most of the strongest designs, and before anything is ranked a sample of nights is rebuilt with the night's own code to show the sweep read each night as it stood. It does not pick the single best result, because among that many tries one always looks good by luck. It looks for a plateau instead, a region of settings that all beat the odds year after year, and proposes the setting sitting deepest inside it, the one that can be moved furthest in any direction and still hold. Beside it, it proposes a few variants, each changing one thing on a question the history left open and picking stocks the starting point would not. None of it takes effect by itself: the sweep writes a report, and the starting point and its variants begin running only when you register them, after which only the trades that follow are judged. When one variant eventually proves better and is promoted, the sweep is run again with the added years to choose the next open questions, so the loop keeps going.</p>
+<p>The settings the list starts from were first chosen by hand. The sweep replaces that guess with a starting point the stored history supports: it replays the filter over the years of history the store holds under tens of thousands of designs, each a different way of measuring strength, reading the trend, finding support, spotting the trigger and placing the trade, and under every combination of the settings, and scores every trade each would have taken the way the live record scores them, with one open trade a stock as the list holds it. Each result is read as an edge over what the same trade, placed on every stock in the index that night, would have come to, so a setting is not credited for a rising market. Seven further conditions, such as the stock sitting near its 52-week high or a recent earnings beat, are each tried alone and kept only where they help on most of the strongest designs, and before anything is ranked a sample of nights is rebuilt with the night's own code to show the sweep read each night as it stood. It does not pick the single best result, because among that many tries one always looks good by luck. It looks for a plateau instead, a region of settings that all beat the odds year after year, and proposes the setting sitting deepest inside it, the one that can be moved furthest in any direction and still hold. Beside it, it proposes a few variants, each changing one thing on a question the history left open and picking stocks the starting point would not. None of it takes effect by itself: the sweep writes a report, and the starting point and its variants begin running only when you register them, after which only the trades that follow are judged. When the checkpoints show a variant ahead, the sweep can be run again with the added years to choose the next open questions, and a change it suggests reaches the list only as a proposal tested on years it never saw and approved by you, so the loop keeps going.</p>
 <p>The breakout and the drift each have a sweep of their own, which takes minutes, since a setup's grid holds tens of settings and not millions: its own rule replayed over the history at every setting, five a night with one open trade a stock, each trade read as an edge over the same plan placed on every stock that night. You froze all three setups on 2026-10-02: the pullback at its settings with the minimum reward for the risk raised to 2, and the breakout and the drift at their sweeps' proposals, each first checked against the settings one step away so that neither is a point the history happened to favour. Each was registered with its variants beside it, and only the trades after the freeze count toward its record.</p>
 <p>The ideas' run then tests kinds of idea the sweep's grid does not hold, each added to the pullback alone: switches that keep the list off a weak market, a stop touched during the day, only the night's best three, a trailing stop, a stop no closer than a typical move, and shorter holds. An idea is kept only where it does better than the pullback in at least six of the eight years with two of the last three, and stays better without its largest few results. A market switch is judged on each year's total result instead, since the edge already subtracts what the whole market did on the nights it keeps off. The report says how many ideas were tried and how many luck alone would pass, and nothing it proposes reaches the list until you freeze it.</p>
 <p>The same ideas are read on the breakouts and the earnings drift as each was frozen, one setup a run and by the same test, with the two trailing stops tried on the drift alone, since the breakout's stop already trails. What they show is a report and nothing more: a setup's rule changes only when you freeze it again.</p>
 <p>From those two reports you registered one switch on each setup as a variant on 2026-10-03: the breakout listing only on nights the index closes above its 200-session average, and the drift only on nights the VIX closes under its close ten sessions before. Neither passed the test, each failing on the yearly totals a switch is judged on, since a night it sits out counts nothing, the breakout's on its count of trades as well, and the drift's lowering its plain result a trade from 0.278 to 0.241, its edge rising only because the same plan placed on every stock did worse on the nights it kept, so their own records weigh them from their first night. To read them the night asks for the index's and the VIX's daily closes, one request each, and a night it cannot read a switch on lists nothing under that variant.</p>
 
 <h3>How a result reaches tonight's list</h3>
-<p>The pullback's filter runs every night on a stored settings version, and each setup's rule on the settings it was frozen at. The feedback never edits those settings itself. It prepares a change, the run page tells you it is ready, and the change reaches the list only when you accept it.</p>
+<p>The pullback's filter runs every night on a stored settings version, and each setup's rule on the settings it was frozen at. The feedback never edits those settings itself. It prepares a change, the tester tests it on years it never saw, the Loop page puts it to you, and the change reaches the list only when you approve it.</p>
 <figure>
   <svg viewBox="0 0 1000 330" role="img" aria-labelledby="f12">
     <title id="f12">How a measured result becomes a change to tonight's list</title>
@@ -1045,8 +1045,8 @@
     <path class="ln" d="M198 145 V235 H211" marker-end="url(#ah5)"/>
 
     <rect class="bx-v" x="470" y="108" width="180" height="74" rx="6"/>
-    <text class="t" x="560" y="138" text-anchor="middle">Run page</text>
-    <text class="ts" x="560" y="160" text-anchor="middle">says one is ready</text>
+    <text class="t" x="560" y="138" text-anchor="middle">Loop page</text>
+    <text class="ts" x="560" y="160" text-anchor="middle">tested on new years</text>
     <path class="ln" d="M435 55 H452 V145 H466" marker-end="url(#ah5)"/>
     <path class="ln" d="M435 145 H466" marker-end="url(#ah5)"/>
     <path class="ln" d="M435 235 H452 V145"/>
@@ -1057,11 +1057,11 @@
     <path class="ln" d="M650 145 H681" marker-end="url(#ah5)"/>
 
     <rect class="bx" x="850" y="18" width="140" height="66" rx="6"/>
-    <text class="t" x="920" y="46" text-anchor="middle">Reject</text>
+    <text class="t" x="920" y="46" text-anchor="middle">Decline</text>
     <text class="ts" x="920" y="68" text-anchor="middle">kept on record</text>
     <rect class="bx-n" x="850" y="108" width="140" height="74" rx="6"/>
-    <text class="t" x="920" y="138" text-anchor="middle">Accept</text>
-    <text class="ts" x="920" y="160" text-anchor="middle">new version</text>
+    <text class="t" x="920" y="138" text-anchor="middle">Approve</text>
+    <text class="ts" x="920" y="160" text-anchor="middle">change stored</text>
     <rect class="bx-v" x="850" y="232" width="140" height="74" rx="6"/>
     <text class="t" x="920" y="262" text-anchor="middle">Next night</text>
     <text class="ts" x="920" y="284" text-anchor="middle">the list uses it</text>
@@ -1069,7 +1069,7 @@
     <path class="ln" d="M815 132 H832 V51 H846" marker-end="url(#ah5)"/>
     <path class="ln" d="M815 145 H846" marker-end="url(#ah5)"/>
     <path class="ln-v" d="M920 182 V228" marker-end="url(#ah5)"/>
-    <text class="ts" x="470" y="316" text-anchor="middle">Nothing moves from the run page to the list except through your decision.</text>
+    <text class="ts" x="470" y="316" text-anchor="middle">Nothing moves from the Loop page to the list except through your decision.</text>
   </svg>
 </figure>
 <div class="key">
@@ -1081,21 +1081,21 @@
   <tr><th>Step</th><th>What happens</th><th>Who does it</th></tr>
   <tr><td>Every night</td><td>Every stock's result on every check is stored, with the trade it would have taken.</td><td>The system</td></tr>
   <tr><td>As trades finish</td><td>Each trade is scored: target reached first, stop reached first, or neither in time.</td><td>The system</td></tr>
-  <tr><td>A clock reaches its point</td><td>The top of the run page says a proposal or a verdict is ready, with its evidence.</td><td>The system</td></tr>
-  <tr><td>Decide</td><td>Accept or reject, with a reason. A rejection changes nothing and is recorded.</td><td>You</td></tr>
-  <tr><td>From the next night</td><td>The filter runs on the new settings version. The previous version and everything measured under it are kept.</td><td>The system</td></tr>
+  <tr><td>A proposal is tested</td><td>The monthly run tests each proposal on years it never saw, and the Loop page puts the strongest that passed to you with its evidence. A checkpoint's verdict is shown on the run page as monitoring.</td><td>The system</td></tr>
+  <tr><td>Decide</td><td>Approve or decline, with a reason. A decline changes nothing and is recorded.</td><td>You</td></tr>
+  <tr><td>From the next night</td><td>The setup runs on the change, a shape move as a new settings version of the filter. The previous version and everything measured under it are kept.</td><td>The system</td></tr>
 </table></div>
 
 <div class="wrap"><table>
   <tr><th>What was found</th><th>What it changes</th></tr>
-  <tr><td>A shape proposal, accepted</td><td>One or more settings. A new settings version opens and the next night uses it.</td></tr>
-  <tr><td>An alternative clearly better, promoted</td><td>If it differs only in a setting, the same as above. If it differs in a rule, such as how the stop is placed or how fresh the signal must be, the code and the specification are changed first, as a build step.</td></tr>
-  <tr><td>An alternative clearly worse</td><td>It is retired and stops running. The live list is unchanged.</td></tr>
+  <tr><td>A shape move, tested and approved</td><td>One setting. A new settings version opens and the next night uses it.</td></tr>
+  <tr><td>An alternative clearly better at a checkpoint</td><td>Nothing by itself: it is shown on the run page. A change it suggests reaches the list as a proposal the tester passed and you approve; one in a rule, such as how the stop is placed or how fresh the signal must be, is changed in the code and the specification first, as a build step.</td></tr>
+  <tr><td>An alternative clearly worse at a checkpoint</td><td>It is shown as due for retirement, and you retire it with the register's command. The live list is unchanged.</td></tr>
   <tr><td>A gate whose turned-away stocks did as well as its admitted ones</td><td>Nothing automatically. It is the evidence for you to loosen or remove that gate as a ruling.</td></tr>
 </table></div>
 
 <div class="why">
-  <p><b>An example over time, with illustrative steps.</b> A few months after the list goes live, the run page says the trend gate lets through too few stocks on ordinary nights and proposes a slightly lower strength bar. You accept it, and from the next night the list runs on it. About two years in, the first checkpoint shows the alternative without the market gate doing clearly worse, so it is retired and the list is unchanged. About three years in, an alternative that differs from the live filter in one setting is shown clearly beating it. You promote it, and its setting becomes the live one from the next night.</p>
+  <p><b>An example over time, with illustrative steps.</b> A few months after the list goes live, the shape clock finds the trend gate lets through too few stocks on ordinary nights and proposes a slightly lower strength bar. The monthly run tests the move on years it never saw, the Loop page puts it to you, you approve it, and from the next night the list runs on it. About two years in, the first checkpoint shows the alternative without the market gate doing clearly worse, and you retire it; the list is unchanged. About three years in, an alternative that differs from the live filter in one setting is shown clearly beating it. That is evidence and not a change: the setting reaches the list as a proposal the tester passes on unseen years and you approve.</p>
   <p><b>Why the system never applies a change itself.</b> A filter that moved its own settings would tune itself toward whatever it saw last. Every change also restarts the evidence for the settings it replaces, so it should be a deliberate choice with a written reason.</p>
 </div>
 

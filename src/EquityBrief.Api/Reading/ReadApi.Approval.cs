@@ -303,9 +303,16 @@ public sealed partial class ReadApi
         await transaction.CommitAsync();
 
         // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
-        return new RequestWritten(true, index == EquityBrief.Core.Families.MarketCloses.Index
-            ? FormattableString.Invariant($"Approved. The change is applied at the start of the next night, on this index alone, and registered as the family's live rule, which the page reads from that night on; the rule it replaces runs beside it as a variant for {LoopDecisions.ReplacedSessions} sessions.")
-            : "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
+        // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+        var large = index == EquityBrief.Core.Families.MarketCloses.Index;
+
+        return new RequestWritten(true, large && family == EquityBrief.Core.Families.SetupFamilies.Pullback
+            ? LoopChange.Read(held.Change)?.Shape is { Count: > 0 }
+                ? "Approved. The move is applied at the start of the next night, on this index alone: the swing filter opens its next version with the move made and the live filter registered again under it, restarting its record."
+                : "Approved. The change is applied at the start of the next night, on this index alone, and the swing filter's page reads it from that night on."
+            : large
+                ? FormattableString.Invariant($"Approved. The change is applied at the start of the next night, on this index alone, and registered as the family's live rule, which the page reads from that night on; the rule it replaces runs beside it as a variant for {LoopDecisions.ReplacedSessions} sessions.")
+                : "Approved. The change is applied before the next night, on this index alone, and the family reads it from that night on.");
     }
 
     // The operator's approval of a restore of a family the live alarm flagged: the setting standing before the newest

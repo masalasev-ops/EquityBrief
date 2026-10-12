@@ -64,9 +64,9 @@ public static class ExitProcedures
         ];
     }
 
-    // The proposals and the autopsy's figures for one family's rule on an index: the breakout and the drift on every
-    // index and the S&P 400's and 600's provisional pullback. The S&P 500's pullback is the swing filter's, whose walk
-    // every S&P 500 evaluator pins, and no exit is proposed for it.
+    // The proposals and the autopsy's figures for one family's rule on an index: the breakout, the drift and the pullback
+    // on every index, the S&P 500's pullback the swing filter at its open version's settings from 17.14.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
     public static (IReadOnlyList<LoopProposalRead> Proposals, IReadOnlyList<AutopsyFigure> Figures) Autopsy(LoopRead read, RuleWalk rule, Action<string> progress)
     {
         progress(FormattableString.Invariant($"walking the {rule.Family} on the {DecisionCards.NameOf(read.Index)} under its own exit and the menu's {ExitMenu.Swing.Count}"));

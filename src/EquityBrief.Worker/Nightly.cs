@@ -505,7 +505,7 @@ public static class Nightly
                     readingsRead ??= await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).ReadingsTonightAsync(indexCode, token);
 
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token, ReadingsTonightAsync);
-                var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token, ReadingsTonightAsync);
                 var hookReadings = rules.Standing.Any(rule => EquityBrief.Core.Loop.RuleHooks.Of(EquityBrief.Core.Candidates.CandidateEvaluator.Read(rule.Parameters)).ReadsReadings)
                     ? await ReadingsTonightAsync(night.Token)
                     : null;

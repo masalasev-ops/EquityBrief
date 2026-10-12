@@ -3,11 +3,11 @@ using EquityBrief.Core.Returns;
 
 namespace EquityBrief.Core.Filter;
 
-// The live swing filter's place in the candidate register, as a shape acceptance reads it: which
+// The live swing filter's place in the candidate register, as opening a version reads it: which
 // candidate stands for the live settings, how many acceptances have already retired one, and what
-// accepting another costs. The page draws the cost from here and the command refuses by it, so the
-// count read before an acceptance and the count the command holds it to are one statement.
-// see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+// approving another move costs. The page draws the cost from here and the night states it as it opens
+// the version, so the count read before an approval and the count the night states are one statement.
+// see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
 public static class SwingFamily
 {
     // Every candidate standing for the live settings is named from here, and nothing else in the

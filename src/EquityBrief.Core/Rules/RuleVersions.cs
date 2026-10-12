@@ -10,7 +10,7 @@ namespace EquityBrief.Core.Rules;
 // rather than being replaced: a measurement whose subject moved says nothing
 // about either version, so the only way to change a rule is to close the window
 // measuring it and open another, with both rows standing afterwards.
-// see: Adding a candidate later restarts the clock
+// see: A registration restarts only the registered rule's own record
 public sealed record RuleVersionRow(
     string Rule,
     string Version,
@@ -292,7 +292,7 @@ public static class RuleVersions
     // scores tonight would be computed against the new one, and a record holding
     // both is a record of neither. The only way through is to close the window
     // and open a new one, which keeps the old rows and says what they were of.
-    // see: Adding a candidate later restarts the clock
+    // see: A registration restarts only the registered rule's own record
     public static IReadOnlyList<string> Drifted(
         IReadOnlyList<RuleVersionRow> open,
         IReadOnlyDictionary<string, string> hashesNow)

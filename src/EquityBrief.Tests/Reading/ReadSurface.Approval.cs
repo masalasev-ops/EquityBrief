@@ -104,15 +104,16 @@ public partial class ReadSurface
             (await Press("SML", SmallOctober, "breakout", "the autopsy's exit, ranked 2", "decline", "the first is enough")).Said,
             StringComparison.Ordinal);
 
-        // Refused: a proposal that did not pass, one stating no change, a book's, the S&P 500's pullback's, a run that is not
-        // the newest and a proposal the run does not hold.
+        // Refused: a proposal that did not pass, one stating no change, a book's, a run that is not the newest and a
+        // proposal the run does not hold.
         Assert.Contains("did not pass the tester", (await Press("SML", SmallOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("states no change", (await Press("SML", SmallOctober, "drift", "the grid", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains(LoopDecisions.BookRefused, (await Press("SML", SmallOctober, "heavyweight", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
-        Assert.Contains(LoopDecisions.LargePullbackRefused, (await Press("GSPC", LargeOctober, "pullback", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
 
-        // From 17.13 the S&P 500's drift exit is approved, and the press says the change registers the family's live rule.
+        // From 17.13 the S&P 500's drift exit is approved, the press saying the change registers the family's live rule,
+        // and from 17.14 its pullback's condition, the press saying the swing filter's page reads it.
         Assert.Contains("registered as the family's live rule", (await Press("GSPC", LargeOctober, "drift", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
+        Assert.Contains("the swing filter's page reads it", (await Press("GSPC", LargeOctober, "pullback", "winners against losers, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("a newer tester run stands", (await Press("SML", SmallSeptember, "breakout", "the autopsy's exit, ranked 1", "approve")).Said, StringComparison.Ordinal);
         Assert.Contains("holds no proposal", (await Press("SML", SmallOctober, "drift", "an exit no run proposed", "approve")).Said, StringComparison.Ordinal);
 
@@ -215,13 +216,12 @@ public partial class ReadSurface
         Assert.Contains("already holds your word", (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [])).Said, StringComparison.Ordinal);
         Assert.Contains("data-restore=\"waiting\"><b>Restore approved</b> on ", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600")), StringComparison.Ordinal);
 
-        // From 17.13 the S&P 500's passing drift exit carries its presses, and its pullback's condition offers none, saying
-        // why.
+        // From 17.13 the S&P 500's passing drift exit carries its presses, and from 17.14 its pullback's condition.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
 
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("GSPC", LargeOctober, "drift")}\" data-loop-key=\"drift|the autopsy's exit, ranked 1\">", large, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"degraded\" data-decision=\"not-offered\">Approve is not offered here: {LoopDecisions.LargePullbackRefused}.</p>", large, StringComparison.Ordinal);
-        Assert.DoesNotContain($"action=\"{Decide("GSPC", LargeOctober, "pullback")}\"", large, StringComparison.Ordinal);
+        Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{Decide("GSPC", LargeOctober, "pullback")}\" data-loop-key=\"pullback|winners against losers, ranked 1\">", large, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-decision=\"not-offered\"", large, StringComparison.Ordinal);
 
         // A family the alarm flags on the index is named above its Tonight, and none on another index.
         var notice = WebUtility.HtmlDecode(SinglePageApp.LoopAlarmNotice(Universes.Of("600"), [("drift", new DateOnly(2026, 8, 1), 2)]));
@@ -342,6 +342,65 @@ public partial class ReadSurface
 
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\" data-approved=\"exit: a target at 1.5 risks\"><h5>The record of the breakout on the S&P 500</h5>", rows["K1"], StringComparison.Ordinal);
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the pullback on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["F1"], StringComparison.Ordinal);
+    }
+
+    // From 17.14 a hook change approved for the S&P 500's pullback is read by the swing filter's page: the lister keeps and
+    // orders the filter's passing names by it, a pick carrying the exit it names, and the pullback's card names the change,
+    // read back off the rendered page.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    [Fact]
+    public async Task AHookChangeApprovedForTheSAndP500sPullbackIsReadByTheSwingFiltersPage()
+    {
+        using var store = UniversesStore();
+
+        // The S&P 500's night: AAA and BBB both passed by the filter, AAA ranked first, listed by the filter.
+        GateRow(store, IndexNight, new Member("AAA", Passed: true, Rank: 1));
+        GateRow(store, IndexNight, new Member("BBB", Passed: true, Rank: 2));
+        store.Execute($"INSERT INTO list_rule (session_date, rule) VALUES ('{IndexNight}', 'filter');");
+
+        // The stored change: a target at 1.5 risks, and an RSI of at least 50, which AAA at 40 fails and BBB at 60 meets.
+        var change = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { [RuleHooks.ExitParameter] = 14, ["also_rsi_above"] = 50 });
+
+        store.Execute($"INSERT INTO provisional_setting (index_code, family, change, words, set_at, run_id, proposal) VALUES ('GSPC', 'pullback', '{change.Json}', '{change.Words()}', '2026-10-01T23:35:00Z', '{LargeOctober}', 'winners against losers, ranked 1');");
+
+        var rsi = EquityBrief.Core.Ledger.LedgerReadings.All.Select((reading, at) => (reading, at)).First(one => one.reading.Column == "rsi").at;
+
+        Task<Func<string, IReadOnlyList<double?>?>> Readings(CancellationToken _) =>
+            Task.FromResult<Func<string, IReadOnlyList<double?>?>>(ticker =>
+            {
+                var held = new double?[EquityBrief.Core.Ledger.LedgerReadings.Count];
+
+                held[rsi] = ticker == "AAA" ? 40 : 60;
+
+                return held;
+            });
+
+        await new EquityBrief.Worker.Families.FamilyLister(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync("night-list", CancellationToken.None, Readings);
+
+        // BBB is the pullback's one pick, carrying the exit; AAA, which the condition refuses, is no pick.
+        using (var connection = store.Open())
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"SELECT ticker, state, IFNULL(exit, 0) FROM family_pick WHERE session_date = '{IndexNight}' AND family = 'pullback' ORDER BY ticker;";
+
+            using var reader = command.ExecuteReader();
+            var rows = new List<string>();
+
+            while (reader.Read())
+            {
+                rows.Add($"{reader.GetString(0)}|{reader.GetString(1)}|{reader.GetInt64(2)}");
+            }
+
+            Assert.Equal(["BBB|listed|14"], rows);
+        }
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
+
+        Assert.Contains($"It stands at a change approved on the Loop page: {change.Words()}.", page, StringComparison.Ordinal);
     }
 
     [Fact]

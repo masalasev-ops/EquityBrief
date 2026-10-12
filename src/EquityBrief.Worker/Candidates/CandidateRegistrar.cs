@@ -808,10 +808,10 @@ public sealed class CandidateRegistrar : IComponent
     }
 
     // A retirement and the registration that replaces it at one instant, with the caller's own write in
-    // the same transaction, or none of the three. What a shape acceptance writes when the live filter's
-    // candidate stands: the accepted settings are a new candidate, and the version they open is the
+    // the same transaction, or none of the three. What opening a filter version writes when the live
+    // filter's candidate stands: the new settings are a new candidate, and the version they open is the
     // caller's row, so the register and the version can never disagree about which settings are live.
-    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     public async Task<RegistrationOutcome> ReplaceAsync(
         string retire,
         Registration with,

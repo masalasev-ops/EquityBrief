@@ -21,8 +21,10 @@ public static class ScoreProcedures
 
     public const string ProposalPrefix = RidgeScore.Proposal;
 
-    // Whether a score reaches a family on an index: the breakout and the drift on every index, and the pullback on the
-    // S&P 400 and 600, whose provisional rule takes the hooks where the S&P 500's swing filter takes none.
+    // Whether a pick's card on a family draws the score's part: the breakout and the drift on every index, and the
+    // pullback on the S&P 400 and 600, as the card's decision names them; the tester fits the score for every family a
+    // rule's hooks reach, the S&P 500's pullback among them from 17.14.
+    // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
     public static bool Reaches(string index, string family) =>
         family is EquityBrief.Core.Families.BreakoutRule.Name or EquityBrief.Core.Families.DriftRule.Name
         || (family == EquityBrief.Core.Families.SetupFamilies.Pullback && index != WalkForwardTester.LargeIndex);

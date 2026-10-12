@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Reading;
 // What they do not see is any name: a record is a count of setups and the sessions they were
 // listed on, and the evaluation of a name stays in the column the night writes and no screen draws.
 // see: The nightly running figure is monitoring and never the verdict
-// see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+// see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
 public partial class ReadSurface
 {
     const string Judged = "momentum index at thirty";

@@ -7,7 +7,9 @@ namespace EquityBrief.Core.Returns;
 // often than its level says, so the reads are fixed when the candidate is
 // registered: three of them, at eight, twelve and sixteen non-empty blocks,
 // triggered by the block count alone and never by where the figure stands.
-// see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+// A look's verdict is monitoring: a change is adopted only by the operator's
+// approval of a proposal the tester tested.
+// see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
 public static class Looks
 {
     // Section 17's looks, in non-empty blocks.

@@ -61,11 +61,10 @@ public sealed record ReasonThreshold(string Reason, string Value, string Constan
 // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 //
 // Every threshold here is a proposal and the page says so. Two of them are known
-// to produce too many names as written, and the calibration is not a backfill:
-// the run page records how many names fired each night and which reason
-// contributed, and the thresholds are set against the operator's own
-// distribution after enough nights.
-// see: Condition thresholds are calibrated from your own nights, not from a backfill
+// to produce too many names as written. The run page records how many names
+// fired each night and which reason contributed, and a threshold moves only
+// through a proposal tested on years it never saw and approved by the operator.
+// see: History reaches a list only through a test on years a proposal never saw and the operator's approval
 public static class ShortlistSeries
 {
     public const string AtEntryZone = "at entry zone";

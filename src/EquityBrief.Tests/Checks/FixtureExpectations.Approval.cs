@@ -185,11 +185,17 @@ public partial class FixtureExpectations
         var exit = ExitChange(7);
         var rsi = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["also_rsi_above"] = 50 }).Json;
 
-        // Refused: the S&P 500's pullback and a grid setting of its drift, a book, a family no approval reaches, a proposal
-        // stating no change and the pullback's grid setting; from 17.13 the S&P 500's drift takes a change of its hooks.
-        Assert.Equal((false, LoopDecisions.LargePullbackRefused), Words(LoopApply.Answer("run", "GSPC", "pullback", "p", exit, [])));
+        // Refused: a grid setting of the S&P 500's drift, a shape move of any family but the S&P 500's pullback, a book, a
+        // family no approval reaches, a proposal stating no change and the pullback's grid setting; from 17.13 the S&P
+        // 500's drift takes a change of its hooks, and from 17.14 its pullback a change of its hooks or a shape move.
+        var shape = LoopChange.OfShape("strengthFloor", 0.53).Json;
+
         Assert.Equal((false, LoopApply.LargeSettingRefused), Words(LoopApply.Answer("run", "GSPC", "drift", "p", LoopChange.OfSetting([1, 1], "a=1|b=2", 0).Json, [])));
         Assert.True(LoopApply.Answer("run", "GSPC", "drift", "p", exit, []).Applied);
+        Assert.True(LoopApply.Answer("run", "GSPC", "pullback", "p", exit, []).Applied);
+        Assert.Equal((true, "the swing filter opens its next version at the swing filter's strength floor at 0.53"), Words(LoopApply.Answer("run", "GSPC", "pullback", "p", shape, [])));
+        Assert.Equal((false, LoopApply.ShapeRefused), Words(LoopApply.Answer("run", "GSPC", "breakout", "p", shape, [])));
+        Assert.Equal((false, LoopApply.ShapeRefused), Words(LoopApply.Answer("run", "SML", "pullback", "p", shape, [])));
         Assert.Equal((false, LoopDecisions.BookRefused), Words(LoopApply.Answer("run", "SML", "heavyweight", "p", exit, [])));
         Assert.Equal((false, LoopDecisions.FamilyRefused), Words(LoopApply.Answer("run", "SML", "fundamentals", "p", exit, [])));
         Assert.Equal((false, LoopApply.NoChangeRefused), Words(LoopApply.Answer("run", "SML", "breakout", "p", null, [])));

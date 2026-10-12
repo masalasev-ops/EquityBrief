@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Core.Time;
@@ -57,6 +58,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopModel, Touch.Insert),
             new StoreTouch(Store.LoopReference, Touch.Insert),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.ShapeProposal, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -185,7 +188,8 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         }
 
         // Part 0's procedures on the S&P 400 and 600; then each family a rule's hooks reach, the S&P 400's and 600's
-        // provisional pullback and the breakout and the drift on every index, read once and handed to the autopsy's exits,
+        // provisional pullback, the S&P 500's swing filter with its shape clock's moves, and the breakout and the drift on
+        // every index, read once and handed to the autopsy's exits,
         // to winners against losers and to the learned score, fitted on the family's finished setups of all three
         // indices; then the sector heavyweights' two exits on every index; each family's proposals read together by the
         // step-down.
@@ -225,6 +229,26 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         if (!large)
         {
             rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings));
+        }
+        else if (await OpenVersionAsync(databaseFile, cancellation) is { } open)
+        {
+            // The S&P 500's pullback, the swing filter at its open version's settings read by value with the hooks an
+            // approval stored, and each move of the newest shape proposal written for that version a proposal of the run.
+            // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, await history.MarketAsync(through, cancellation), output.WriteLine);
+            var pullbacks = new LargePullback(replay.Series, candidates);
+
+            RuleWalk WalkAt(FilterSettings settings) =>
+                RuleWalk.LargeSwingFilter(read, pullbacks, open.Version, settings, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings);
+
+            var filter = WalkAt(open.Settings);
+
+            rules.Add(filter);
+
+            if (await ShapeMovesAsync(databaseFile, open.Version, cancellation) is { } shape)
+            {
+                proposals.AddRange(ShapeProcedures.Run(read, filter, WalkAt, open.Settings, shape.Moves, shape.Id, output.WriteLine));
+            }
         }
 
         rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings));
@@ -283,6 +307,39 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             : FormattableString.Invariant($"{Verb}: run {runId}, {tested.Count(one => one.Passed)} of {tested.Count} proposal(s) passed, for {runMonth}"));
 
         return 0;
+    }
+
+    // The swing filter's open version and its settings, none before a version is opened.
+    const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC, rowid DESC LIMIT 1;";
+
+    // The newest shape proposal written for a version and not yet decided, with its levers.
+    const string NewestShape = "SELECT id, levers FROM shape_proposal WHERE version = $version AND decision IS NULL ORDER BY id DESC LIMIT 1;";
+
+    static async Task<(string Version, FilterSettings Settings)?> OpenVersionAsync(string databaseFile, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OpenVersion;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) ? (reader.GetString(0), FilterSettings.Read(reader.GetString(1))) : null;
+    }
+
+    static async Task<(long Id, IReadOnlyList<(string Setting, double Proposed)> Moves)?> ShapeMovesAsync(string databaseFile, string version, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestShape;
+        command.Parameters.AddWithValue("$version", version);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) ? (reader.GetInt64(0), ShapeProcedures.MovesOf(reader.GetString(1))) : null;
     }
 
     // The setting an approval stored for each family of an index, the newest a family.

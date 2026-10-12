@@ -15,8 +15,9 @@ public sealed record ShapeProposalOutcome(string Version, int Ordinary, bool Cro
 // the night's market readings and the listings' firing, and nothing a candidate's evaluator reads; once
 // sixty ordinary nights are stored under the open filter version it writes one proposal for that
 // version's window and states the crossed trigger on its run log row, and after a rejection the next
-// waits on sixty more. It never opens a version: an acceptance is the operator's command.
-// see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+// waits on sixty more. It never opens a version: a move is opened only once the tester has tested it and
+// the operator has approved it on the Loop page.
+// see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
 // see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes
 public sealed class ShapeProposer : IComponent
 {

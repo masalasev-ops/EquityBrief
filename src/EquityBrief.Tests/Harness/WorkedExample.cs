@@ -238,7 +238,7 @@ internal static class WorkedExample
             700,
             262,
             "The swing filter's two clocks on one timeline, illustrative",
-            "Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing until it can retire a variant or promote one.",
+            "Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing by itself, its looks telling you when a variant may be retired or promoted.",
             body.ToString(),
             "Figure 11.4. The two clocks on one timeline, illustrative.",
             "Illustrative: the positions show the order the events come in and not when they fall. The upper lane is the shape clock, which counts ordinary nights under one filter version and proposes a setting for your ruling, and is frozen after the one further acceptance the bound allows. The lower lane is the edge clock, which reads each candidate's blocks and can first retire one at its first look and first promote one at the look after.",

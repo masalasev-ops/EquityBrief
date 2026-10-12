@@ -31,15 +31,14 @@ public static class LoopDecisions
     public static string RestoreProposal(long setting) => FormattableString.Invariant($"restore the setting before change {setting}");
 
     // Why a change is not applied.
-    public const string LargePullbackRefused = "the S&P 500's pullback changes through its filter's versions, which an approval does not reach";
-
     public const string BookRefused = "a sector heavyweights' book changes its setting only by a freeze, so an approved change to it is not applied";
 
     public const string FamilyRefused = "the family has no setting an approval applies";
 
     public const string FrozenRefused = "the family's live rule stands registered on the index and draws its page, and a registered rule changes only by a registration, which waits on the operator's ruling of how an approval registers one";
 
-    // The swing families an approval changes on the S&P 400 and 600.
+    // The swing families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
     public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
 
     // The S&P 500's families an approval changes, each by its stored settings and a registration.
@@ -53,7 +52,6 @@ public static class LoopDecisions
     public static string? Refusal(string index, string family) =>
         family == HeavyweightRule.Name ? BookRefused
         : !Families.Contains(family, StringComparer.Ordinal) ? FamilyRefused
-        : index == MarketCloses.Index && family == SetupFamilies.Pullback ? LargePullbackRefused
         : null;
 
     // The one proposal of a family a run puts to the operator: of those that passed and state a change, leaving out one

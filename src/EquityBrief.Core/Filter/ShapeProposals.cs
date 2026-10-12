@@ -51,8 +51,9 @@ public sealed record ShapeProposal(
 // per gate, in the funnel's order, to the value nearest the one held that puts the gate's median count
 // inside its band, holding every gate before it at what it has just proposed. A gate no value in its range
 // brings inside its band, and the trigger, which has no threshold, are named as findings about the gate
-// rather than forced. It proposes and never applies.
-// see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+// rather than forced. It proposes and never applies: each move is tested by the tester and opened only
+// once the operator approves it.
+// see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
 public static class ShapeProposals
 {
     public const string StrengthFloor = "strengthFloor";

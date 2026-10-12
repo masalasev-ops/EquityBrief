@@ -45,6 +45,7 @@ public sealed class FamilyLister : IComponent
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
+            new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.FamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -87,7 +88,7 @@ public sealed class FamilyLister : IComponent
         LEFT JOIN filter_version v ON v.version = g.version
         LEFT JOIN forward_return f
             ON f.ticker = p.ticker AND f.session_date = p.session_date
-            AND f.horizon = " + SetupFamilies.HorizonIn("p.family", "v.settings") + @"
+            AND f.horizon = " + SetupFamilies.PickHorizonIn("p.family", "v.settings", "p.exit") + @"
         WHERE p.state = '" + FamilyList.Listed + @"' AND p.session_date < $night
         UNION ALL
         SELECT g.ticker, g.session_date, '" + SetupFamilies.Pullback + @"', f.horizon IS NOT NULL, f.outcome, f.resolved_on, " + SetupFamilies.Pullbacks.CapSessions.ToString(CultureInfo.InvariantCulture) + @"
@@ -108,8 +109,8 @@ public sealed class FamilyLister : IComponent
     const string RecordTheNight = "INSERT INTO family_night (session_date, families) VALUES ($night, $families);";
 
     const string Insert = @"
-        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night, held_index)
-        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night, $held_index);
+        INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night, held_index, exit)
+        VALUES ($night, $ticker, $family, $state, $place, $also, $held_family, $held_night, $held_index, $exit);
     ";
 
     const string AppendRun = @"
@@ -130,7 +131,9 @@ public sealed class FamilyLister : IComponent
         this.databaseFile = databaseFile;
     }
 
-    public async Task<FamilyListOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    // `readingsTonight` reads the catalogue's readings of the night's members, asked for only where the pullback's stored
+    // setting's hooks read them.
+    public async Task<FamilyListOutcome> RunAsync(string runId, CancellationToken cancellation = default, Func<CancellationToken, Task<Func<string, IReadOnlyList<double?>?>>>? readingsTonight = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -160,11 +163,20 @@ public sealed class FamilyLister : IComponent
             }
         }
 
+        // The pullback's names kept and ordered by the hooks an approval stored for the S&P 500's swing filter, its picks
+        // walked under the exit they name; every other family's as its evaluator stored them.
+        // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+        var pullbackHooks = (await IndexFamilies.StoredSettingsAsync(connection, MarketCloses.Index, cancellation)).TryGetValue(SetupFamilies.Pullback, out var stood)
+            ? EquityBrief.Core.Loop.RuleHooks.Of(stood.Hooks)
+            : EquityBrief.Core.Loop.RuleHooks.Off;
+        var readings = pullbackHooks.ReadsReadings && readingsTonight is not null ? await readingsTonight(cancellation) : null;
         var qualifying = new List<FamilyQualifiers>();
 
         foreach (var family in SetupFamilies.InPageOrder)
         {
-            qualifying.Add(new FamilyQualifiers(family.Name, await QualifiersAsync(connection, family, session, cancellation)));
+            var passed = await QualifiersAsync(connection, family, session, cancellation);
+
+            qualifying.Add(new FamilyQualifiers(family.Name, family.Name == SetupFamilies.Pullback ? pullbackHooks.Order(passed, ticker => readings?.Invoke(ticker)) : passed));
         }
 
         var tickers = qualifying.SelectMany(family => family.Tickers).Distinct(StringComparer.Ordinal).ToArray();
@@ -236,6 +248,7 @@ public sealed class FamilyLister : IComponent
             insert.Parameters.AddWithValue("$held_family", pick.HeldBy is { } held ? held.Family : DBNull.Value);
             insert.Parameters.AddWithValue("$held_night", pick.HeldBy is { } holding ? Stamp(holding.Listed) : DBNull.Value);
             insert.Parameters.AddWithValue("$held_index", pick.HeldBy is not null && otherIndex.TryGetValue(pick.Ticker, out var index) ? index : DBNull.Value);
+            insert.Parameters.AddWithValue("$exit", pick.Family == SetupFamilies.Pullback && pick.State == FamilyList.Listed && pullbackHooks.Exit != 0 ? pullbackHooks.Exit : DBNull.Value);
 
             await insert.ExecuteNonQueryAsync(cancellation);
         }

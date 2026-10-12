@@ -27,7 +27,7 @@ namespace EquityBrief.Tests.Checks;
 // point of the table. Scores belong to a window, so a version closed and opened
 // again is two measurements and not one, and a row edited after its scores were
 // written would make them scores of something else.
-// see: Adding a candidate later restarts the clock
+// see: A registration restarts only the registered rule's own record
 public class RuleVersionsScored
 {
     internal static CheckReach Reach => new(

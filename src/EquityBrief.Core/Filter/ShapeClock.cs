@@ -98,7 +98,7 @@ public static class ShapeClock
 
     // What the two clocks can do, in the one sentence the run page and section 13 both state.
     public const string Timeline =
-        "The list's thresholds move only through shape calibration and the operator's rulings, and the edge clock gathers evidence and changes nothing until it can retire a variant, after about two years, or promote one, after about three.";
+        "The list's thresholds move only through shape calibration and the operator's rulings, and the edge clock gathers evidence and changes nothing by itself, its first look after about two years and its second after about three.";
 
     public static ShapeState For(IReadOnlyList<NightShape> nights, IReadOnlyList<NightFiring> firings, string version, DateOnly night)
     {

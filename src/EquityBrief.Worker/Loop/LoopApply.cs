@@ -32,7 +32,9 @@ public sealed record LoopApplyOutcome(IReadOnlyList<LoopApplication> Application
 // alone. A change to the S&P 500's breakout or drift is written the same way on the S&P 500 and registered as the
 // family's live rule in the same transaction, on a night whose session is the first a registration made then counts
 // from, and left waiting otherwise; the rule it replaces is retired once the block after the change is reached. A
-// sector heavyweights' book's change and the S&P 500's pullback's are refused with their reasons. Every answer is one
+// change to the S&P 500's pullback's hooks is written as a stored setting on the S&P 500 alone, which the family's
+// list reads, and a shape move of it opens the swing filter's next version through the shape command on the same
+// nights a registration is made. A sector heavyweights' book's change is refused with its reason. Every answer is one
 // row and none is written twice. It reads no market data, makes no request and calls no model.
 // see: An approved change is applied by the night's own build on the index it was approved on alone
 // see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
@@ -64,6 +66,11 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     public const string NoLiveRuleRefused = "the family holds no registered live rule for the change to replace";
 
     public const string StandsAlreadyRefused = "the change leaves the family's live rule where it stands";
+
+    public const string ShapeRefused = "a shape move names the S&P 500 swing filter's settings alone, and stands alone in its change";
+
+    // The words a shape move's answer opens with.
+    public const string ShapeOpened = "the swing filter opens version";
 
     // Every approved decision the step has not answered, oldest first.
     const string Approved = @"
@@ -168,8 +175,48 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         // registration in one transaction, on a night whose session is the first a registration made now counts from, so
         // the rule is evaluated from the night its record counts from; left waiting by hand and on any other night.
         var largeOnes = waiting.Where(one => IsLarge(one.Index, one.Family)).ToList();
+        var shapeOnes = waiting.Where(IsShapeMove).ToList();
         var registersTonight = large && night is { } session && FamilyRecords.FirstSession(clock.UtcNow) == session;
-        var left = registersTonight ? 0 : largeOnes.Count;
+        var left = registersTonight ? 0 : largeOnes.Count + shapeOnes.Count;
+
+        // A shape move of the S&P 500's swing filter, opening the next filter version with the move made and registering
+        // the swing family again under it, on the same nights a registration is made, the move's row written in the
+        // version's transaction.
+        // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
+        if (registersTonight)
+        {
+            foreach (var one in shapeOnes)
+            {
+                var standing = await StandingAsync(connection, null, one.Index, one.Family, cancellation);
+                var (applied, said, written) = Answer(one.Run, one.Index, one.Family, one.Proposal, one.Change, standing);
+
+                if (!applied || written?.Shape is not { Count: > 0 } move)
+                {
+                    answered.Add((one, false, said, null));
+
+                    continue;
+                }
+
+                var evidence = (one.Automatic ? $"the move that passed, applied with {LoopDecisions.AdoptSetting} reading {LoopDecisions.Automatic}" : "the move approved on the Loop page")
+                    + $", '{one.Proposal}' of {one.Run}: {written.Words()}";
+                var opened = await new EquityBrief.Worker.Filter.ShapeCommand(clock, databaseFile).ApplyTheMoveAsync(
+                    move,
+                    evidence,
+                    async (writing, transaction, version, token) =>
+                        await WriteAppliedAsync(writing, transaction, one, true, $"{ShapeOpened} {version} at {written.Words()}", token),
+                    runId,
+                    cancellation);
+
+                if (opened.Outcome == EquityBrief.Worker.Filter.ShapeCommand.Accepted)
+                {
+                    applications.Add(new LoopApplication(one.Run, one.Index, one.Family, one.Proposal, true, $"{ShapeOpened} {opened.Version} at {written.Words()}; {opened.Detail}"));
+                }
+                else
+                {
+                    answered.Add((one, false, opened.Detail, null));
+                }
+            }
+        }
 
         if (registersTonight)
         {
@@ -268,7 +315,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var one in waiting.Where(one => !IsLarge(one.Index, one.Family)))
+        foreach (var one in waiting.Where(one => !IsLarge(one.Index, one.Family) && !IsShapeMove(one)))
         {
             var standing = await StandingAsync(connection, transaction, one.Index, one.Family, cancellation);
             var (applied, words, written) = frozen.Contains((one.Index, one.Family)) ? (false, LoopDecisions.FrozenRefused, null) : Answer(one.Run, one.Index, one.Family, one.Proposal, one.Change, standing);
@@ -287,7 +334,9 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
             applications.Add(new LoopApplication(one.Run, one.Index, one.Family, one.Proposal, applied, words));
         }
 
-        var wrote = retired.Count > 0 || applications.Any(one => one.Applied && IsLarge(one.Index, one.Family));
+        // Every application on the S&P 500 but a hook change of its pullback, which writes a stored setting alone, wrote to
+        // the register: a breakout's or drift's registration, or a shape move's.
+        var wrote = retired.Count > 0 || applications.Any(one => one.Applied && one.Index == MarketCloses.Index && (IsLarge(one.Index, one.Family) || one.Words.StartsWith(ShapeOpened, StringComparison.Ordinal)));
         var outcome = new LoopApplyOutcome(applications, left, retired, wrote ? started : null);
         var detail = (applications.Count == 0
                 ? $"no approved change waiting, the adopt setting reading {mode}"
@@ -328,6 +377,10 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
     // Whether a change is one the S&P 500's breakout or drift registers.
     static bool IsLarge(string index, string family) =>
         index == MarketCloses.Index && LoopDecisions.LargeFamilies.Contains(family, StringComparer.Ordinal);
+
+    // Whether a change is a shape move of the S&P 500's swing filter, which opens a filter version.
+    static bool IsShapeMove(Waiting one) =>
+        one.Index == MarketCloses.Index && one.Family == SetupFamilies.Pullback && LoopChange.Read(one.Change)?.Shape is { Count: > 0 };
 
     // The rule a change to the S&P 500's breakout or drift registers: the family's own setting as its page reads it with
     // the hooks the change leaves it standing at, named as the family's live rule with the hooks' words, its rule and test
@@ -397,6 +450,14 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
         if (family == SetupFamilies.Pullback && made.Places is not null)
         {
             return (false, "the pullback's setting on its grid is not moved by an approval, only its hooks", null);
+        }
+
+        // A shape move names the S&P 500 swing filter's settings, which no other family holds.
+        if (made.Shape is { Count: > 0 })
+        {
+            return index == MarketCloses.Index && family == SetupFamilies.Pullback && made.Hooks.Count == 0
+                ? (true, "the swing filter opens its next version at " + made.Words(), made)
+                : (false, ShapeRefused, null);
         }
 
         var stands = made.OnTopOf(current);

@@ -593,7 +593,7 @@ public static class SchemaMigrations
     // have done is the point of scoring counterfactually. What it may not do is
     // count, so a score for a session on or before the New York date its window
     // opened on is `in_sample` and reaches no record and no verdict.
-    // see: Adding a candidate later restarts the clock
+    // see: A registration restarts only the registered rule's own record
     const string CreateRuleVersions = @"
         CREATE TABLE rule_version (
             rule             TEXT NOT NULL,
@@ -710,7 +710,16 @@ public static class SchemaMigrations
         new Migration(87, "create earnings_move and long_view", CreatePageHistory),
         new Migration(88, "add setup.value_place", AddValuePlace),
         new Migration(89, "add family_result.exit and family_result.risk_moves", AddFamilyResultExit),
+        new Migration(90, "add family_pick.exit", AddFamilyPickExit),
     ];
+
+    // The exit of the menu an S&P 500 pullback pick is walked under where an approval stored one for the swing filter's
+    // page, its trade scored under a horizon of its own so the swing filter's rows keep their plan's own outcome for every
+    // candidate that reads them. A pick listed before the change, or under the plan's own exit, holds none.
+    // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
+    const string AddFamilyPickExit = @"
+        ALTER TABLE family_pick ADD COLUMN exit INTEGER;
+    ";
 
     // The exit of the menu an S&P 500 breakout's or drift's pick is walked under where an approval stored one, and its
     // stop's distance in the night's typical moves, which a trail of the menu is counted in. A row stored before the
@@ -2122,10 +2131,10 @@ public static class SchemaMigrations
     // with their reasons and values, and the notes on what the night could not count.
     //
     // And the filter's versions: each a set of the settings the gates read, opened by the operator's
-    // acceptance of a shape proposal and closed by the next. None is open until the first is accepted,
+    // ruled settings or by an approved move of a shape proposal and closed by the next. None is open until the first,
     // and the filter reads section 17's proposed values until then.
     // see: Every computed table's writer is its own deleter
-    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     const string CreateGateResults = @"
         CREATE TABLE gate_result (
             ticker                 TEXT    NOT NULL,
@@ -2167,7 +2176,7 @@ public static class SchemaMigrations
     // A shape proposal the proposer wrote at a trigger, and the decision on it. The proposer inserts and
     // never decides; the operator's command writes the decision and nothing about the proposal itself.
     // Kept whole, since a rejected proposal is as much the record as an accepted one.
-    // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+    // see: The shape clock proposes moves tested like any proposal, and an approved move opens the next filter version restarting the live filter's record
     const string CreateShapeProposal = @"
         CREATE TABLE shape_proposal (
             id               INTEGER PRIMARY KEY,

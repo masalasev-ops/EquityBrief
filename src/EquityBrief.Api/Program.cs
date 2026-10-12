@@ -1262,7 +1262,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         : RuleScreen.WithRules(
             CardScreen.WithCards(
                 TonightScreen.WithSweepLines(
-                    TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings),
+                    TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, register, ruleView, familyResults, pullbackSettings, await read.LoopSettingsAsync(reading.Code)),
                     answers,
                     family => TonightScreen.FrozenAt(family, register, dated)),
                 await read.DecisionCardsAsync(reading.Code, dated),

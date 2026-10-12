@@ -35,7 +35,7 @@ public static class ReasonVerdict
     // The six live reasons are one family, registered by section 11 before the
     // first listing night. A candidate promoted to live joins them, which
     // restarts the window they are measured over.
-    // see: Adding a candidate later restarts the clock
+    // see: A registration restarts only the registered rule's own record
     public const int LiveFamily = 6;
 
     // Section 17's minimum, and the night floor beside it.
