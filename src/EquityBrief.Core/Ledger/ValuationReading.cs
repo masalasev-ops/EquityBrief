@@ -21,7 +21,9 @@ public sealed record PriceHistory(DateOnly[] Sessions, double[] Closes, double[]
     {
         if (Sessions.Length > 0 && after.Sessions.Length > 0 && after.Sessions[0] <= Sessions[^1])
         {
-            throw new ArgumentException($"A history beginning {after.Sessions[0]:yyyy-MM-dd} cannot follow one ending {Sessions[^1]:yyyy-MM-dd}.", nameof(after));
+            throw new ArgumentException(
+                FormattableString.Invariant($"A history beginning {after.Sessions[0]:yyyy-MM-dd} cannot follow one ending {Sessions[^1]:yyyy-MM-dd}."),
+                nameof(after));
         }
 
         return Sessions.Length == 0 ? after

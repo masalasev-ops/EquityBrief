@@ -43444,10 +43444,13 @@ Tests:      four more: the share counts read off the Apple capture and stored 47
             pull, read again after the refresh and the same as the hooks' readings; and the point-in-time rebuild equal,
             one that read a filing on its session named. Changed: the facts' concepts 17 and the fixture's night storing
             Keysight's counts worked from its capture; the catalogue 46; the readings' version read over the four
-            files, a line of the reading's own moving it; and the price check's stated crossings gaining the reading's
-            `Yield`, a count and four quarters' net income in and a statistic out.
+            files, a line of the reading's own moving it; the price check's stated crossings gaining the reading's
+            `Yield`, a count and four quarters' net income in and a statistic out; and the learned score worked by hand
+            over four hundred and forty setups an index, since the forty-sixth reading puts its floor of ten rows a
+            weight at 410, above the four hundred the tests constructed. The first run over 5aa38ba6 found that floor,
+            with a date written into a message against the machine's locale, in 3 of 2,233 tests.
 Claims:     none; 17.12 adds no row of a table the harness reads, so nothing is named beside phase 17's pair.
-Pins:       the readings' version moved from 61029e708aa9 to 771a9e07dfdc; no evaluator pins the ledger's or the facts'
+Pins:       the readings' version moved from 61029e708aa9 to f3311f905a3e; no evaluator pins the ledger's or the facts'
             files, so no rule's version moves.
 Mutated:    the rule, stated before the run: each property the checkpoint adds, one mutation each, run filtered to the
             four tests above. M19 a value read at the close alone, no close as traded: predicted red at the hand-worked

@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - section 17's learned score's fit is worked over four hundred and forty setups
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> fixture-expectations, the score worked by hand over four hundred constructed setups and over eight hundred on two indices,
+Now:
+> fixture-expectations, the score worked by hand over four hundred and forty constructed setups and over eight hundred and eighty on two indices,
+Why: the score fits over no fewer than ten rows a weight it could fit, and the catalogue's forty-sixth reading puts that floor at 410, above the four hundred the tests constructed, so the tests construct four hundred and forty.
+
 ### 2026-10-12 - .claude/rules/checks.md - fixture-expectations states 17.12's valuation reading
 Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 Was:
