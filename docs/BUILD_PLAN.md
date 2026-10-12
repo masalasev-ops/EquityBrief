@@ -1587,7 +1587,7 @@ Rules choose the stocks, code owns every number, and no paid or model call is ma
 - **The Run page and the Queue.** The Run page still draws the retired loop's two clocks with their checkpoints at about two and three years. The by-hand regenerations of 2026-10-11 and 10-12 wrote no request row and stand only on the run log.
 
 **The rulings of 2026-10-12.** The operator answered three questions and reviewed the plan five times before approving it, word for word in `prompts/2026-10-12-19.0-*.md`; R1 to R19 stand as the plan states them.
-- The sign-offs of phases 16, 17 and 18 stay owed, named outstanding in 19.0's entry and discharged by no checkpoint of this phase (see: The sign-offs of phases 16 to 18 run between phase 19's pull requests, never beside one). The fix for the Linux test that failed on 2aec8d18 lands as its own correction before phase 17's sign-off.
+- The sign-offs of phases 16, 17 and 18 stay owed, named outstanding in 19.0's entry and discharged by no checkpoint of this phase (see: The sign-offs of phases 16 to 18 run between phase 19's pull requests, never beside one). The Linux test that failed on 2aec8d18 was fixed before this plan, by the 1.3 correction of 2026-10-09 in PR 413, so phase 17's sign-off waits on no fix.
 - A gain and a buy are green and a loss and a stop red on every page and in the exported file, the red a failure's as well. Orange stays resistance and a sale, amber is caution and waiting, and the rise's indigo, the fall's plum and the wait's violet are retired.
 - Each family's hue is drawn as a mark with its word beside it, and a tint of it behind ink text on its tags, tiles and card headers, never as text.
 - Status pills are slate for live, amber for provisional and a dashed outline for a variant.

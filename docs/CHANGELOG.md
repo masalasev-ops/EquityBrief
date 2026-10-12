@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/BUILD_PLAN.md - phase 19's rulings say the Linux test that failed on 2aec8d18 was fixed before the plan
+Corrects: the plan carried the fix as owed before phase 17's sign-off, where the 1.3 correction of 2026-10-09 had fixed it in PR 413; found reading the failed run's log and the record before writing the fix.
+Was:
+> The fix for the Linux test that failed on 2aec8d18 lands as its own correction before phase 17's sign-off.
+Now:
+> The Linux test that failed on 2aec8d18 was fixed before this plan, by the 1.3 correction of 2026-10-09 in PR 413, so phase 17's sign-off waits on no fix.
+Why: the failure on 2aec8d18 is the one the 1.3 correction names, two of the suite's hosts started on one store within one second, and every hosted run since has passed.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the card's rule row and section 17's market gate row name the S&P 400's and 600's variants reading no market check
 Decision: An S&P 400 or 600 swing family may carry a variant with no market check, the check standing on its provisional rule
 Was:

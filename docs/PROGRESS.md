@@ -43983,3 +43983,25 @@ Queue:      done, 19.0 as PR 446 and its correction as PR 447; in progress, 19.1
             menu and the top of Tonight. The remedy runs from main after the merge and before the night, and the six
             variants' first night is read the morning after.
 Carried:    the sign-offs of phases 16, 17 and 18 and the Linux test of 2aec8d18, as 19.0's entry carries them.
+
+### 19.0 - correction: the Linux test that failed over 2aec8d18 was fixed by the 1.3 correction of 2026-10-09, where 19.0's entry and the plan carried the fix as owed   2026-10-12
+
+Not a checkpoint entry: it corrects 19.0's record and lands nothing.
+Corrects:   19.0's entry and 19.1's, which carry the fix for the Linux test that failed over 2aec8d18 as owed before
+            phase 17's sign-off, as phase 15's sign-off carried it; the rulings of phase 19 in `BUILD_PLAN.md`, which
+            said the same; and the decision on the sign-offs, which says phase 17's waits on it.
+Found:      by this session reading the red run's log, run 37934648172, before writing the fix: its Linux job failed
+            17.7's score page test with "UNIQUE constraint failed: run_log.run_id, run_log.stage" from the read
+            surface's start row. That is the failure the 1.3 correction of 2026-10-09 above names and fixed, as
+            b81e0d4b, merged in PR 413 about half an hour after 2aec8d18 was committed, and every hosted run since has
+            passed the test on both jobs.
+Repaired:   the ruling in `BUILD_PLAN.md` now says the test was fixed before the plan, its prior text in `CHANGELOG.md`.
+            Nothing is owed: phase 17's sign-off waits on no fix, and the decision's clause saying it waits is answered
+            by this entry, a decision being changed only by another decision.
+Tests:      2254, unchanged.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 57c3c168 as 19.1's entry records; documents
+            alone change here, so the checks reading them ran filtered over the tree carrying this entry, 7473be90:
+            `ArchitectureConformance`, `BannedProse`, `ChangelogReconciles`, `CoverageReported`, `DecisionCitations`,
+            `DoneConditionProducible`, `FigureFits`, `ObligationReconciles`, `PinnedConstants`, `RecordAppendOnly`,
+            `StatedCounts` and `TwoPlatform`, 159 of 159 passed.
+Carried:    the sign-offs of phases 16, 17 and 18.
