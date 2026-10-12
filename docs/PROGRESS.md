@@ -43394,3 +43394,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 17.11 ruling above; the remedy runs from main after the merge, before the night, and the books' first
             night is read the morning after; 17.12, the valuation reading, is planned next.
 Carried:    nothing new.
+
+### 17.12 ruling - the valuation reading built inside phase 17 after its report, the hard rule on pulled history narrowed for it alone   2026-10-12
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator, ruling (d) of the queue of 2026-10-11 as the 17.10 ruling above records it, and on
+            2026-10-12: "For ruling (d), narrow the hard rule for the valuation reading alone: it reads the prices before
+            the store's year from the pulled history at the store's scale, as the chart averages step does, held as it
+            stood on each session by the point-in-time check. Record the decision and the rule's prior wording in the
+            changelog." The words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` gains 17.12 after 17.11, with its done condition: a stock's earnings over its value placed
+            among its own twelve quarters, the earnings and the cover's share count from the SEC's facts as first filed,
+            the prices before the store's year from the pulled history at the store's scale. Section 20's row names
+            17.0 to 17.12. The decision is written (see: The valuation reading reads the prices before the store's year
+            at the store's scale from the history pulled for those years), narrowing the pulled history's decision, which
+            stands, and CLAUDE.md's hard rule is narrowed for the reading alone, its prior wording in `CHANGELOG.md`.
+            17.12 adds no row of a table the harness reads, said beside phase 17's pair.
+Queue:      done, 17.11, PR 439, its remedy run from main and the two books registered as 264 and 265; in progress, this
+            ruling and 17.12; next, 17.13, the S&P 500's approvals with the FastTree challenger, then 18.5's report.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.12 below.
+Carried:    17.12, then 17.13 once it is planned.

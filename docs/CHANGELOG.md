@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - CLAUDE.md - the hard rule on pulled history narrowed for the valuation reading alone
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws).
+Now:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, which reads its prices at the store's scale as that step does, held as they stood by the point-in-time check, on the operator's ruling of 2026-10-12; and it is removed whole by the pull that wrote it (see: ...) (see: ...) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years).
+Why: the operator ruled on 2026-10-12, "For ruling (d), narrow the hard rule for the valuation reading alone: it reads the prices before the store's year from the pulled history at the store's scale, as the chart averages step does, held as it stood on each session by the point-in-time check. Record the decision and the rule's prior wording in the changelog."
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.12
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> the build plan's phase 17 checkpoints, 17.0 to 17.11
+Now:
+> the build plan's phase 17 checkpoints, 17.0 to 17.12
+Why: the operator's ruling (d) of 2026-10-11 is built inside phase 17 after its report as 17.12.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the heavyweights card's rule and the 15.5 paragraph name books registered before a freeze
 Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
 Was:
