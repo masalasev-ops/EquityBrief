@@ -4,9 +4,15 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Loop;
+using EquityBrief.Core.Sweep;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
+
+// The sector heavyweights' six settings of one design as an index's newest tester run judged them: the proposal, the
+// month the run was for, its adjusted p and whether it passed.
+public sealed record SixSettingsVerdict(string Proposal, string Month, double? Adjusted, bool Passed);
 
 // One standing rule's row on a night, as the night or the record command's replay stored it.
 public sealed record RuleNightRow(string Index, DateOnly Session, string Family, string Rule, bool Evaluated, int Listed, string? Gates, int? Stretch, int? Mark, bool Flagged, int? Completed, int? Sessions, string Source);
@@ -99,7 +105,7 @@ public static class RuleScreen
     // chooses under the family's own key, the live rule where it names none or one that does not stand; with the chosen
     // variant's name, whose own book the card is then drawn from.
     // see: A variant's picks are shown on its card when chosen and its results only under its tests
-    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords)
+    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null)
     {
         var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
         var live = standing.FirstOrDefault(row => FamilyRecords.IsLive(row.Candidate));
@@ -111,10 +117,56 @@ public static class RuleScreen
         var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
         var chosenRow = chosen.Live ? null : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
         var words = chosenRow is null ? liveWords : Words(HeavyweightRule.Name, chosenRow) ?? chosenRow.Candidate;
+        var untested = !large && live is null && chosenRow is not null ? Untested(chosenRow, sixSettings ?? []) : null;
 
         return (
-            new RuleView(chosen, choices, Parts(words, liveWords), null, null, null, null, true, large || variants.Length > 0 ? null : NoVariantLine(indexName)),
+            new RuleView(chosen, choices, Parts(words, liveWords), null, null, null, null, true, large || variants.Length > 0 ? null : NoVariantLine(indexName), untested),
             chosenRow?.Candidate);
+    }
+
+    // The line beside a heavyweights book registered before its family's freeze: how the index's newest tester run judged
+    // its design's six settings year by year, at the adjusted p it stored against the bar, so a book that did not pass
+    // does not read as better than the provisional rule; and, for a book reading twelve months' strength, that it reads
+    // from the oldest close the night holds, one session short of the search's setting. None where no run judged them.
+    // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+    public static UntestedLineView? Untested(CandidateRow book, IReadOnlyList<SixSettingsVerdict> sixSettings)
+    {
+        IReadOnlyDictionary<string, double> parameters;
+
+        try
+        {
+            parameters = CandidateEvaluator.Read(book.Parameters);
+        }
+        catch (Exception failure) when (failure is ArgumentException or JsonException or InvalidCastException)
+        {
+            return null;
+        }
+
+        var design = parameters.GetValueOrDefault(IndexHeavyweightCandidate.DesignParameter);
+
+        if (sixSettings.FirstOrDefault(verdict => verdict.Proposal == SixSettings.Of(design)) is not { } verdict)
+        {
+            return null;
+        }
+
+        var named = design == IndexHeavyweightCandidate.DesignA ? "design (a)'s" : "design (b)'s";
+        var line = verdict switch
+        {
+            { Passed: true, Adjusted: { } p } => FormattableString.Invariant(
+                $"This book's design passed the year-by-year test: the run for {verdict.Month} read {named} six settings at an adjusted p of {p:0.00} against the bar of {LoopGate.Bar:0.0000}."),
+            { Adjusted: { } p } => FormattableString.Invariant(
+                $"This book did not pass the year-by-year test: the run for {verdict.Month} read {named} six settings at an adjusted p of {p:0.00} against the bar of {LoopGate.Bar:0.0000}, so it does not read as better than the provisional rule."),
+            _ => FormattableString.Invariant(
+                $"This book did not pass the year-by-year test: the run for {verdict.Month} held too few blocks to read {named} six settings, so it does not read as better than the provisional rule."),
+        };
+
+        if (parameters.GetValueOrDefault(IndexHeavyweightCandidate.TwelveOneParameter) == 1)
+        {
+            line += FormattableString.Invariant(
+                $" It reads twelve months' strength from {TwelveMonthStrength.From} sessions back, the oldest close the night holds, one session short of the {SweepAxes.TwelveMonthSessions} the search read.");
+        }
+
+        return new UntestedLineView(line, verdict.Adjusted);
     }
 
     // The rules of a family standing on an index at the night's end: on the S&P 500 the family's own evaluators' rows,

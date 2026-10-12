@@ -43353,3 +43353,42 @@ Queue:      done, items 1 to 7 of the queue of 2026-10-11, PRs 434 to 438; in pr
             sign-offs of phases 15 to 18.
 Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.11 below.
 Carried:    17.11, then 17.12 and 17.13 once each is planned.
+
+### 17.11 - the S&P 600's heavyweights' two books beside the starting setting: the twelve-month strength read from 251 sessions back, a form registering an index's variants with no live rule, and each book's card saying it did not pass the year-by-year test   2026-10-12
+
+Built:      the S&P 400's and 600's heavyweights rule gains, in design (a), twelve months' strength skipping the latest
+            month, read by a file of its own in the core from 251 sessions back, the oldest close the night's year
+            holds, to 21 back, one session short of the search's 252, which the night's book reads in the look-back's
+            place where a rule states it. The register command's form `--index-variants` writes a family's variants on
+            the S&P 400 or 600 with no live rule, each the provisional setting with its moves, at one instant or none,
+            refused where any rule of the family stands. A book's card on an index with no live rule draws under its
+            band the line that it did not pass the year-by-year test at the adjusted p the index's newest tester run
+            stored for its design's six settings, the twelve-month book's adding that it reads one session short; the
+            six settings' proposal names moved to the core, which the tester and the read surface both read. The
+            decision of the ruling above; section 15.7's card part, the 15.5 paragraph, the runbook's form and the
+            freeze's example, the roster's two rows and the guide's selector paragraph, the prior text in
+            `CHANGELOG.md`. The remedy `tools/remedies/2026-10-12-17.11-the-sp600-heavyweights-two-books.txt` registers
+            the S&P 600's two books from main after the merge.
+Tests:      five more: the strength worked by hand at its window's edges; a design (a) rule reading it and a design (b)
+            registration stating it refused, with the rule's words; the form's registrations and each refusal; the
+            night keeping both books over a constructed store, each lead worked by hand from the closes; and the card
+            read back off the rendered S&P 400 page with each book chosen and none.
+Claims:     none more; the card's part stands as one claim.
+Pins:       the S&P 400's and 600's pullback, breakout, drift and heavyweights versions moved to 62d7d4441537,
+            e2e5e4fcaa29, 6210c5e7508c and 994911efdc46 with the index's files, no such rule standing registered, so
+            none restarts; no S&P 500 pin moves.
+Mutated:    the rule, stated before the run: each property the checkpoint adds, one mutation each. M15 the strength read
+            from 252 sessions back, the search's own window: predicted red at the strength's test. M16 the form naming
+            its first variant the live rule: predicted red at the form's test. M17 the night's book handed the look-back
+            where its rule states the strength: predicted red at the night's test, the leads the look-back's. M18 the
+            card's line read off the index's oldest tester run: predicted red at the card's test, September's passing
+            verdict read. Results: M15 red at the strength's test and at three more, the words' and the card's naming
+            251 and the night's book reading no strength, four of five failed in the run filtered to 17.11's tests; M16
+            red at the form's test and at the card's, the first book taking the live rule's place, two of five; M17 red
+            at the night's test alone, one of five; M18 red at the card's test alone, one of five. Each reverted before
+            anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
+            the run.
+Queue:      as the 17.11 ruling above; the remedy runs from main after the merge, before the night, and the books' first
+            night is read the morning after; 17.12, the valuation reading, is planned next.
+Carried:    nothing new.

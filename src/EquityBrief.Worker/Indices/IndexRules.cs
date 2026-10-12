@@ -155,6 +155,7 @@ public static class IndexRules
         (IndexHeavyweightCandidate.BetaParameter, [0, 1]),
         (IndexHeavyweightCandidate.LeadingExitParameter, [0, 1]),
         (IndexHeavyweightCandidate.AverageExitParameter, [0, 1]),
+        (IndexHeavyweightCandidate.TwelveOneParameter, [0, 1]),
     ];
 
     static readonly (string Name, double[] Values)[] DesignBDials =
@@ -267,6 +268,7 @@ public static class IndexRules
                 [IndexHeavyweightCandidate.BetaParameter] = book.HighBeta ? 1 : 0,
                 [IndexHeavyweightCandidate.LeadingExitParameter] = book.Exit is HeavyweightExit.Both or HeavyweightExit.Drop ? 1 : 0,
                 [IndexHeavyweightCandidate.AverageExitParameter] = book.Exit is HeavyweightExit.Both or HeavyweightExit.Break ? 1 : 0,
+                [IndexHeavyweightCandidate.TwelveOneParameter] = 0,
                 [IndexHeavyweightCandidate.WindowParameter] = 0,
                 [IndexHeavyweightCandidate.IndustriesParameter] = 0,
                 [IndexHeavyweightCandidate.MembersParameter] = 0,
@@ -441,6 +443,69 @@ public static class IndexRules
             null);
     }
 
+    // A family's variants on its index registered with no live rule, its provisional rule staying the live one: each the
+    // provisional setting with the parameters it names moved, at most eight, every one at settings its index's sweep read
+    // and none stating the provisional setting itself or a setting given before it; or why none can be written, any rule
+    // of the family standing on the index among the reasons, since a freeze is then the form that changes it.
+    // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+    public static (IReadOnlyList<Registration>? Registrations, string? Refusal) Variants(
+        string family,
+        string index,
+        IReadOnlyList<IReadOnlyDictionary<string, double>> variants,
+        IReadOnlyList<RegisterRow> register,
+        DateTimeOffset at)
+    {
+        if (CandidateEvaluators.All.OfType<IndexRuleCandidate>().FirstOrDefault(evaluator => evaluator.SetupFamily == family && evaluator.Index == index) is not { } carried)
+        {
+            return (null, $"no rule of a family named '{family}' is carried for an index coded '{index}'; the families are {string.Join(", ", CandidateEvaluators.All.OfType<IndexRuleCandidate>().Select(evaluator => evaluator.SetupFamily).Distinct(StringComparer.Ordinal))} and the indices MID and SML.");
+        }
+
+        if (variants.Count == 0)
+        {
+            return (null, "no variant was given; each variant names the parameters it moves from the provisional rule.");
+        }
+
+        if (variants.Count > MostVariants)
+        {
+            return (null, FormattableString.Invariant($"{variants.Count} variants were given, and at most {MostVariants} stand beside a family's provisional rule."));
+        }
+
+        if (CandidateFamily.In(CandidateFamily.Standing(register, at), carried.Family).Count > 0)
+        {
+            return (null, $"rules of the {carried.Family} already stand registered; variants are registered beside the provisional rule alone, and a family whose rules stand changes by a freeze once they are retired.");
+        }
+
+        var provisional = Provisional(carried);
+        var settings = new List<IReadOnlyDictionary<string, double>> { provisional };
+
+        foreach (var moved in variants)
+        {
+            var variant = new Dictionary<string, double>(provisional, StringComparer.Ordinal);
+
+            foreach (var (name, value) in moved)
+            {
+                variant[name] = value;
+            }
+
+            if (Refusal(carried, variant) is { } refused)
+            {
+                return (null, FormattableString.Invariant($"variant {settings.Count}: {refused}"));
+            }
+
+            if (settings.Any(one => one.Count == variant.Count && one.All(pair => variant[pair.Key] == pair.Value)))
+            {
+                return (null, FormattableString.Invariant($"variant {settings.Count} states the provisional rule's settings or a variant's given before it."));
+            }
+
+            settings.Add(variant);
+        }
+
+        var named = IndexRuleCandidate.NameOf(index) + " ";
+        var (rule, test) = carried is IndexHeavyweightCandidate ? (HeavyweightRuleWords, HeavyweightTest) : (RuleWords, Test);
+
+        return ([.. settings.Skip(1).Select(one => new Registration("the " + named + Words(carried, one), rule, test, carried.Name, one))], null);
+    }
+
     // A rule's settings in words, which its registration's name carries after the family on its index.
     public static string Words(IndexRuleCandidate evaluator, IReadOnlyDictionary<string, double> p)
     {
@@ -452,7 +517,7 @@ public static class IndexRules
                 $"drift rule within {p[IndexDriftCandidate.WindowSessionsParameter]} sessions, up {Number(p[IndexDriftCandidate.ReactionMovesParameter])} typical moves on {Number(p[IndexDriftCandidate.VolumeMultipleParameter])} times the volume, the target at {Number(p[IndexDriftCandidate.TargetMultipleParameter])} times the risk")
                 + (p[IndexDriftCandidate.StopFloorParameter] > 0 ? FormattableString.Invariant($", the stop at least {Number(p[IndexDriftCandidate.StopFloorParameter])} typical move beneath") : string.Empty),
             IndexHeavyweightCandidate when p[IndexHeavyweightCandidate.DesignParameter] == IndexHeavyweightCandidate.DesignA => FormattableString.Invariant(
-                $"heavyweights rule of each sector's {(p[IndexHeavyweightCandidate.LargestParameter] == 0 ? "every member" : Number(p[IndexHeavyweightCandidate.LargestParameter]) + " largest members")} leading it over {p[IndexHeavyweightCandidate.LookBackParameter]} sessions, {p[IndexHeavyweightCandidate.LeadersParameter]} leader(s) a sector{(p[IndexHeavyweightCandidate.BetaParameter] == 1 ? " with a beta of at least 1" : string.Empty)}, sold {ExitWords(p)}"),
+                $"heavyweights rule of each sector's {(p[IndexHeavyweightCandidate.LargestParameter] == 0 ? "every member" : Number(p[IndexHeavyweightCandidate.LargestParameter]) + " largest members")} leading it {StrengthWords(p)}, {p[IndexHeavyweightCandidate.LeadersParameter]} leader(s) a sector{(p[IndexHeavyweightCandidate.BetaParameter] == 1 ? " with a beta of at least 1" : string.Empty)}, sold {ExitWords(p)}"),
             IndexHeavyweightCandidate => FormattableString.Invariant(
                 $"heavyweights rule following the S&P 500's {(p[IndexHeavyweightCandidate.IndustriesParameter] == 0 ? "every leading industry" : Number(p[IndexHeavyweightCandidate.IndustriesParameter]) + " strongest industries")} over {p[IndexHeavyweightCandidate.WindowParameter]} sessions, {p[IndexHeavyweightCandidate.MembersParameter]} member(s) an industry, sold where it is no longer bought"),
             _ => FormattableString.Invariant(
@@ -461,6 +526,18 @@ public static class IndexRules
 
         return family + LevelWords(evaluator, p);
     }
+
+    // What a design (a) leader leads its sector on, in words: its return over the look-back, or twelve months' strength
+    // skipping the latest month as the night reads it.
+    static string StrengthWords(IReadOnlyDictionary<string, double> p) =>
+        TwelveOne(p)
+            ? FormattableString.Invariant($"on twelve months' strength skipping the latest month, from {TwelveMonthStrength.From} sessions back to {TwelveMonthStrength.Skipped}")
+            : FormattableString.Invariant($"over {p[IndexHeavyweightCandidate.LookBackParameter]} sessions");
+
+    // Whether a design (a) rule reads twelve months' strength in its look-back's place, none where its registration
+    // states no such dial.
+    public static bool TwelveOne(IReadOnlyDictionary<string, double> p) =>
+        p.TryGetValue(IndexHeavyweightCandidate.TwelveOneParameter, out var stated) && stated == 1;
 
     // What sells a design (a) holding besides its stock leaving the index, in words.
     static string ExitWords(IReadOnlyDictionary<string, double> p) =>

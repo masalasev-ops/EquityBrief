@@ -16,7 +16,7 @@ public sealed class IndexDriftCandidate(string index) : IndexRuleCandidate(index
     public const string WideWindowParameter = "wideWindow";
     public const string PeersParameter = "peers";
 
-    public override string Version => "285c79d96f7a";
+    public override string Version => "6210c5e7508c";
 
     public override string SetupFamily => DriftRule.Name;
 

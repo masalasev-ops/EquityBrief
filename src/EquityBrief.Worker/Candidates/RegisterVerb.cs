@@ -50,6 +50,11 @@ public static class RegisterVerb
     // see: A rule of the S&P 400's or 600's swing families is registered as the family on its index and evaluated by their step alone
     public const string IndexFamily = "--index-family";
 
+    // The flag that registers a family's variants on the S&P 400 or the S&P 600 with no live rule, its provisional rule
+    // staying the live one: each the provisional setting with the parameters it names moved, registered at one instant.
+    // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+    public const string IndexVariants = "--index-variants";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -61,6 +66,7 @@ public static class RegisterVerb
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
         new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
         new(IndexFamily, [IndexFamily, "--index", "--parameters"], ["--variants"], []),
+        new(IndexVariants, [IndexVariants, "--index", "--variants"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -172,6 +178,31 @@ public static class RegisterVerb
             }
 
             var (registrations, refused) = Indices.IndexRules.Freeze(Given(IndexFamily), Given("--index"), live, variants, await registrar.RowsAsync(), at);
+
+            return registrations is null
+                ? await RefusedAsync(registrar, runId, refused!, error)
+                : await Said(await registrar.RegisterTogetherAsync(registrations, runId), output, error);
+        }
+
+        if (form.Flag == IndexVariants)
+        {
+            IReadOnlyList<IReadOnlyDictionary<string, double>> variants;
+
+            try
+            {
+                variants =
+                [
+                    .. Given("--variants")
+                        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Select(VerbArguments.Parameters),
+                ];
+            }
+            catch (FormatException unreadable)
+            {
+                return await RefusedAsync(registrar, runId, unreadable.Message, error);
+            }
+
+            var (registrations, refused) = Indices.IndexRules.Variants(Given(IndexVariants), Given("--index"), variants, await registrar.RowsAsync(), at);
 
             return registrations is null
                 ? await RefusedAsync(registrar, runId, refused!, error)

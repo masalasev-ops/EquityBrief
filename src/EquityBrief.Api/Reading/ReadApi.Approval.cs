@@ -102,6 +102,39 @@ public sealed partial class ReadApi
         return await command.ExecuteScalarAsync() as string;
     }
 
+    // The sector heavyweights' six settings of each design as the index's newest tester run judged them, the month it ran
+    // for, each design's adjusted p and whether it passed, read for the card of a book registered before its family's
+    // freeze and never worked out here.
+    // see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+    const string SixSettingsOf = @"
+        SELECT r.month, p.proposal, p.adjusted, p.passed FROM loop_proposal p JOIN loop_run r ON r.run_id = p.run_id
+        WHERE p.index_code = $index AND p.family = $family AND p.proposal IN ($a, $b)
+            AND p.run_id = (SELECT n.run_id FROM loop_run n WHERE n.index_code = $index ORDER BY n.rowid DESC LIMIT 1)
+        ORDER BY p.proposal;";
+
+    public async Task<IReadOnlyList<SixSettingsVerdict>> SixSettingsAsync(string index)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SixSettingsOf;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$family", EquityBrief.Core.Families.HeavyweightRule.Name);
+        command.Parameters.AddWithValue("$a", SixSettings.DesignA);
+        command.Parameters.AddWithValue("$b", SixSettings.DesignB);
+
+        var verdicts = new List<SixSettingsVerdict>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            verdicts.Add(new SixSettingsVerdict(reader.GetString(1), reader.GetString(0), reader.IsDBNull(2) ? null : reader.GetDouble(2), reader.GetInt64(3) == 1));
+        }
+
+        return verdicts;
+    }
+
     // Each family on an index whose newest period the live alarm read stands flagged, with that period and the one before
     // it that counted.
     const string FlaggedOf = @"

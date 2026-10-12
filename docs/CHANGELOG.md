@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - the heavyweights card's rule and the 15.5 paragraph name books registered before a freeze
+Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+Was:
+> ... the live rule drawn where the link names none or names a rule that does not stand; and on an index whose heavyweights no freeze registered the provisional rule alone with the line that no variant is registered before its freeze (see: A variant's picks are shown on its card when chosen and its results only under its tests)
+> ... and the index's own book drawn on any night the live rule's was not kept (see: ...) (see: An S&amp;P 400 or 600 heavyweights holding keeps the lead it was bought on).
+Now:
+> ... the live rule drawn where the link names none or names a rule that does not stand; on an index whose heavyweights no freeze registered the provisional rule alone with the line that no variant is registered before its freeze where none stands (see: ...); and from 17.11 a book registered before its family's freeze listed after the provisional rule and drawn with the line that it did not pass the year-by-year test at the adjusted p the index's newest tester run stored for its design's six settings, the twelve-month book's adding that it reads one session short of the search's setting (see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one)
+> ... (see: An S&amp;P 400 or 600 heavyweights holding keeps the lead it was bought on). From 17.11 a family on either index may carry books registered before its freeze, its provisional rule staying the live one: ... The S&amp;P 600's sector heavyweights carry two, ... (see: An index family's variants may stand registered before its freeze, its provisional rule staying the live one).
+Why: the operator ruled on 2026-10-11 and 2026-10-12 that the S&P 600's heavyweights keep their starting setting live with no freeze and run both settings 17.1's search passed in-sample as books of their own, each card saying it did not pass the year-by-year test.
+
+### 2026-10-12 - docs/RUNBOOK.md - the heavyweights' twelve-month dial and the form for an index's variants before its freeze
+Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+Was:
+> design (a) as `design=0` with the size cut `largest`, 0 for every company, `lookBack`, `leaders`, `highBeta` and the two exits `soldOnLeading` and `soldUnderAverage`, and design (b) ... --parameters design=0,largest=10,lookBack=251,leaders=2,highBeta=1,soldOnLeading=1,soldUnderAverage=0,window=0,... and the index's heavyweights' card draws the live rule's book.
+Now:
+> design (a) as `design=0` with the size cut `largest`, 0 for every company, `lookBack`, `leaders`, `highBeta`, the two exits `soldOnLeading` and `soldUnderAverage`, and from 17.11 `twelveOne`, 1 where it leads on twelve months' strength skipping the latest month in the look-back's place, and design (b) ... --parameters design=0,largest=10,lookBack=251,leaders=2,highBeta=1,soldOnLeading=1,soldUnderAverage=0,twelveOne=0,window=0,... and the index's heavyweights' card draws the live rule's book. **A family's variants before its freeze on the S&P 400 or 600** are registered beside its provisional rule ... by the form `--index-variants` ... register --index-variants heavyweight --index SML --variants "quality=2;twelveOne=1" ...
+Why: the same; the freeze's example states the new dial, without which it is refused.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations and read-surface state 17.11's books
+Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
+Was:
+> fixture-expectations: ... or one sentence carrying no digit, each stated in advance |
+> read-surface: ... giving it a width of its own, how many stated in advance |
+Now:
+> fixture-expectations: ... or one sentence carrying no digit, each stated in advance; and from 17.11 the twelve-month strength worked by hand from the oldest close a year of 252 holds to the close 21 back, ... worked by hand from the closes |
+> read-surface: ... giving it a width of its own, how many stated in advance; and from 17.11 a book registered before its family's freeze listed after the provisional rule and drawn from its own holdings under the band with the line that it did not pass the year-by-year test ... and no line where no run stored one |
+Why: each roster row says what its check asserts, and 17.11's tests extend both.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.11
 Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
 Was:
