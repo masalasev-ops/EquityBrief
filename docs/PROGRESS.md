@@ -43910,3 +43910,23 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, the figures 
             script alone, and one changing code runs the phase report as well).
 Carried:    the sign-offs of phases 16, 17 and 18, owed to fresh sessions, and the night of 2026-10-12 carried to phase
             16's; the fix for the Linux test that failed over 2aec8d18, owed before phase 17's sign-off.
+
+### 19.0 - correction: the planning entry's Verified line names the checks that ran over its tree, where it said the checkpoint script ran there   2026-10-12
+
+Not a checkpoint entry: it corrects 19.0's record and lands nothing.
+Corrects:   the 19.0 planning entry above, whose Verified line says `tools/ci.ps1` ran green over the tree carrying it,
+            the figures to be filled from the run. It did not run there: the operator stopped the run started over that
+            tree on 2026-10-12, "why are you doing full CI on just doc changes", and the pass ran the checks reading
+            what it changed instead.
+Found:      by this session after PR 446 merged as eebc6523: the line was rewritten after the pass's one commit,
+            9b0b300a, and the rewrite was never committed, so the merge kept the text written before the run.
+Repaired:   nothing in code; a record is corrected by a new dated entry, and this is that entry. What verified the pass
+            was `tools/ci.ps1` green over main as 18.5's entry records, at 5ed7905c, with `tools/verify-phase.ps1` green
+            beside it, and over 9b0b300a the checks reading what the pass changed, run filtered:
+            `ArchitectureConformance`, `BannedProse`, `ChangelogReconciles`, `CoverageReported`, `DecisionCitations`,
+            `DoneConditionProducible`, `FigureFits`, `ObligationReconciles`, `PinnedConstants`, `RecordAppendOnly`,
+            `StatedCounts` and `TwoPlatform`, 159 of 159 passed, then the hosted macOS and Linux runs over the merge.
+Tests:      2251, unchanged.
+Verified:   `tools/ci.ps1` green over main as above; this entry alone changes, so the same checks ran filtered over the
+            tree carrying it, 159 of 159 passed.
+Carried:    nothing.
