@@ -61,17 +61,23 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
 }
 
 // What the ledger reads of one index on one session besides its series: each member's quarters as filed, its sector as
-// filed, the members at a new high and a new low on each session, and each member's filer's facts as first filed, read
-// for a session from those filed before it. The business readings change only when a fact is filed, so they are kept
-// for a member by how many of its facts were filed before the session.
+// filed, the members at a new high and a new low on each session, each member's filer's facts as first filed, read for
+// a session from those filed before it, and on a night each member's closes before the store's year that its valuation
+// reading reaches, from the history pulled for those years at the store's scale, which no other reading reads. The
+// business readings and the valuation reading's facts change only when a fact is filed, so they are kept for a member by
+// how many of its facts were filed before the session, and a series' closes are joined to those before its year once.
+// see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 public sealed record LedgerContext(
     IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> Income,
     IReadOnlyDictionary<string, string?> Sectors,
     int[] Highs,
     int[] Lows,
-    IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>? Facts = null)
+    IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>>? Facts = null,
+    IReadOnlyDictionary<string, PriceHistory>? BeforeTheYear = null)
 {
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), BusinessReading> business = new();
+    readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), ValuationParts> valuation = new();
+    readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, PriceHistory> prices = new();
 
     public BusinessReading Business(string ticker, DateOnly session)
     {
@@ -79,6 +85,16 @@ public sealed record LedgerContext(
         var filed = facts.Count(fact => fact.Filed < session);
 
         return business.GetOrAdd((ticker, filed), _ => FiledFacts.Read(facts, session));
+    }
+
+    public double? ValuePlace(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
+
+        return ValuationReading.Place(parts, prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars))), session);
     }
 }
 
@@ -489,6 +505,7 @@ public static class LedgerSetups
         Set("gross_margin_change", business.GrossMarginChange);
         Set("operating_margin_change", business.OperatingMarginChange);
         Set("cash_over_income", business.CashOverIncome);
+        Set("value_place", context.ValuePlace(one, day));
 
         return readings;
     }

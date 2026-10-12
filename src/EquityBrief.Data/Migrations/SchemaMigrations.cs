@@ -708,7 +708,16 @@ public static class SchemaMigrations
         new Migration(85, "create quote_request and live_quote", CreateLiveQuotes),
         new Migration(86, "add reported_quarter's gross profit and cash flow lines and company's mean rating and target, and create estimate_trend, dividend_event and treasury_yield", CreateReportParts),
         new Migration(87, "create earnings_move and long_view", CreatePageHistory),
+        new Migration(88, "add setup.value_place", AddValuePlace),
     ];
+
+    // The setup ledger's valuation reading: a stock's earnings over its value placed among the same figure at the ends of
+    // its own twelve quarters, a share, none where a part of it is missing. The rows standing keep none until the
+    // history is built again.
+    // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+    const string AddValuePlace = @"
+        ALTER TABLE setup ADD COLUMN value_place REAL;
+    ";
 
     // What the name page reads of the years before the store's own, from the chart averages step: each name's typical
     // earnings move over every print the store holds, with how many it read and left out and the pull it read, and its

@@ -43394,3 +43394,109 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      as the 17.11 ruling above; the remedy runs from main after the merge, before the night, and the books' first
             night is read the morning after; 17.12, the valuation reading, is planned next.
 Carried:    nothing new.
+
+### 17.12 ruling - the valuation reading built inside phase 17 after its report, the hard rule on pulled history narrowed for it alone   2026-10-12
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator, ruling (d) of the queue of 2026-10-11 as the 17.10 ruling above records it, and on
+            2026-10-12: "For ruling (d), narrow the hard rule for the valuation reading alone: it reads the prices before
+            the store's year from the pulled history at the store's scale, as the chart averages step does, held as it
+            stood on each session by the point-in-time check. Record the decision and the rule's prior wording in the
+            changelog." The words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` gains 17.12 after 17.11, with its done condition: a stock's earnings over its value placed
+            among its own twelve quarters, the earnings and the cover's share count from the SEC's facts as first filed,
+            the prices before the store's year from the pulled history at the store's scale. Section 20's row names
+            17.0 to 17.12. The decision is written (see: The valuation reading reads the prices before the store's year
+            at the store's scale from the history pulled for those years), narrowing the pulled history's decision, which
+            stands, and CLAUDE.md's hard rule is narrowed for the reading alone, its prior wording in `CHANGELOG.md`.
+            17.12 adds no row of a table the harness reads, said beside phase 17's pair.
+Queue:      done, 17.11, PR 439, its remedy run from main and the two books registered as 264 and 265; in progress, this
+            ruling and 17.12; next, 17.13, the S&P 500's approvals with the FastTree challenger, then 18.5's report.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.12 below.
+Carried:    17.12, then 17.13 once it is planned.
+
+### 17.12 - the valuation reading: a stock's earnings over its value placed among its own twelve quarters, the cover's share counts kept with the SEC's facts and the closes before the store's year read from the pull at the store's scale   2026-10-12
+
+Built:      the ledger's catalogue gains its forty-sixth reading, `value_place`, defined in a file of its own in the core:
+            the four newest quarters' net income as first filed before the session over the company's value, the cover's
+            share count times the close, placed among the same figure at the ends of its own twelve quarters, a tie
+            counting half; each count brought to the store's scale by the close as traded against the close at that
+            scale on its own day, the twelve quarters running back unbroken from the newest, a quarter missing a part
+            leaving none. The SEC's facts keep the cover's share count, a row a day it stands for. On the night the ledger
+            reads each member's closes before its first stored session from the newest pull holding that session, from
+            the newest on or before its oldest quarter's end, at the store's scale by the ratio of the two closes there,
+            for this reading alone; the history reads its merged bars; the re-read after the filings refresh reads it
+            again. Migration 88 adds the column. The readings' version pins the facts' and the reading's definitions
+            beside the catalogue and the filler. Section 13.10, the catalogue, store and pull rows, `SCHEMA.md`'s three
+            tables, the runbook, the guide and the roster's row, the prior text in `CHANGELOG.md`; the decision gains
+            the two-class finding below. A capture of Alphabet's facts, trimmed to its entity taxonomy. The remedy
+            `tools/remedies/2026-10-12-17.12-the-valuation-reading.txt` runs the whole facts refresh after the
+            migration, and each index's history is then built again with `--again` and checked.
+Measured:   read-only on the operator's store on 2026-10-12: every name's pulled closes from 2022-01-01 to its first
+            stored session, 1,393,187 rows over the 1,505 of 1,510 names a pull holds on that session, read in 11 seconds
+            cold, and from 2023-03-01, 971,130 rows, in 0.6 seconds read again; the chart averages step reads the same
+            table earlier in the night. Seven filers of two classes asked of the archive: four held no share count,
+            three only counts before 2015 or one of a single share with none after it, so each reads none.
+Tests:      four more: the share counts read off the Apple capture and stored 47 of 70 a day once, a period's count
+            passed over and Alphabet's facts holding none; the reading worked by hand over sixteen quarters, ten
+            twelfths on the night, a tie, either end, a split, a filing on the session, a count after it and three
+            missing parts; the night over a constructed store at the store's scale with no other reading reading the
+            pull, read again after the refresh and the same as the hooks' readings; and the point-in-time rebuild equal,
+            one that read a filing on its session named. Changed: the facts' concepts 17 and the fixture's night storing
+            Keysight's counts worked from its capture; the catalogue 46; the readings' version read over the four
+            files, a line of the reading's own moving it; the price check's stated crossings gaining the reading's
+            `Yield`, a count and four quarters' net income in and a statistic out; and the learned score worked by hand
+            over four hundred and forty setups an index, since the forty-sixth reading puts its floor of ten rows a
+            weight at 410, above the four hundred the tests constructed. The first run over 5aa38ba6 found that floor,
+            with a date written into a message against the machine's locale, in 3 of 2,233 tests.
+Claims:     none; 17.12 adds no row of a table the harness reads, so nothing is named beside phase 17's pair.
+Pins:       the readings' version moved from 61029e708aa9 to f3311f905a3e; no evaluator pins the ledger's or the facts'
+            files, so no rule's version moves.
+Mutated:    the rule, stated before the run: each property the checkpoint adds, one mutation each, run filtered to the
+            four tests above. M19 a value read at the close alone, no close as traded: predicted red at the hand-worked
+            test alone, the split. M20 a fact filed on the session read on it: predicted red at the hand-worked test and
+            the point-in-time test. M21 the night's pulled closes left at the pull's scale: predicted red at the night's
+            test alone. M22 the re-read after the refresh writing no valuation reading: predicted red at the night's test
+            alone. M23 the twelve quarters read across a missing one: predicted red at the hand-worked test alone. M24 a
+            count standing for a day after the session read: predicted red at the hand-worked test alone. M25 the
+            night's series joined to the pulled closes for every reading: predicted red at the night's test alone, at
+            the readings a longer window reads. M26 a count stated for a period read as a day's: predicted red at the
+            share counts' test alone. Results: each red where predicted and nowhere else. M19 at the split, 0 for ten
+            twelfths, one of four failed; M20 at 2026-07-30's figure in both tests, eleven and a half twelfths for one,
+            two of four; M21 at the night's first figure, one for eleven twelfths, one of four; M22 after the re-read,
+            eleven twelfths left, one of four; M23 at the missing income, ten twelfths for none, one of four; M24 at the
+            count after the night, one for ten twelfths, one of four; M25 at the longer windows, all four read, the
+            valuation reading itself unchanged, one of four; M26 at the period's count, read as a day's, one of four.
+            Each reverted before anything was committed. The run before the sweep found the readings' version test still
+            building its two comparisons from the first two files, which the four-file pin failed until they read all
+            four.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the ruling's
+            above and the 18.1 correction's below, 01dc0bc3: all six steps, 0 warnings, 0 errors, 2233 of 2233 tests
+            ran with none failed in 17 minutes 53 seconds, migrations 0 to 88 with none pending, schema version 88,
+            against `data-ci` and never `data`; the phase report 54 tables, 1267 claims, 1267 passing and none
+            unexamined, 43 checks on the roster run and passed. The runs over 5aa38ba6 and 835b33ad failed 3 and 1 of
+            2,233, as the tests above and the correction below say.
+Queue:      done, 17.11, PR 439, and the 17.12 ruling; in progress, 17.12; next, 17.13, the S&P 500's approvals with the
+            FastTree challenger, then 18.5's report.
+Carried:    nothing new; the night's rows from 2026-10-06 to the merge keep none of the reading, written before it.
+
+### 18.1 - correction: the design test reads a name's masthead under a clock held to a Saturday, where on a day the exchange trades the quote's attributes the masthead carries broke its match   2026-10-12
+
+Corrects:   18.1's masthead against 5.8's design test. From 18.1 a name's page for tonight carries on its masthead the
+            attributes the shell's script asks for its quote by, on any day the exchange holds a regular session, and the
+            test matched the masthead with none, its host reading the machine's clock, so it passed only on a day with no
+            session. Every run since 18.1 merged on 2026-10-10 fell on a weekend; 17.12's second run, on 2026-10-12 at
+            04:10Z, a Monday in New York, failed it alone, 1 of 2,233. No page was wrong: the masthead is as 18.1 drew it.
+Found:      by 17.12's run of `tools/ci.ps1` over 835b33ad.
+Built:      the test's host reads a clock held to Saturday 2026-10-10 at 16:00Z, the day it last passed on the machine's,
+            so the name page draws the last stored close with no quote to ask for whatever day the suite runs; the
+            masthead in the session stays held by the quote's own tests.
+Tests:      none more; one changed.
+Mutated:    the rule, stated before the run: the property the correction adds, one mutation. M27 the test's host left
+            to the machine's clock: predicted red at the design test on 2026-10-12, a day the exchange trades. Result:
+            red at 04:26Z, the masthead not found as matched, one of one in the run filtered to the test; reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 01dc0bc3, the run
+            that verifies 17.12 above: 2233 of 2233 tests ran with none failed on Monday 2026-10-12 at 04:47Z, the
+            design test among them, and the phase report's 1267 claims passing.
+Carried:    nothing.

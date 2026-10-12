@@ -42,6 +42,16 @@ public static class ConceptAnswers
     // The taxonomy the revenue concepts are filed under.
     public const string Taxonomy = "us-gaap";
 
+    // The share count a filing's cover states, filed under the entity taxonomy in shares and for a day rather than a
+    // period, which the setup ledger's valuation reading reads; each count is kept as a figure whose first and last
+    // days are the day it stands for.
+    // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+    public const string Entity = "dei";
+
+    public const string Shares = "shares";
+
+    public static IReadOnlyList<string> EntityCounts { get; } = ["EntityCommonStockSharesOutstanding"];
+
     // One concept's answer.
     public static IReadOnlyList<ConceptFact> Parse(string json, string cik, string concept)
     {
@@ -63,17 +73,70 @@ public static class ConceptAnswers
             throw new FormatException($"The archive's facts of CIK {cik} are not one object, so their figures cannot be read.");
         }
 
-        var filed = root.TryGetProperty("facts", out var facts) && facts.ValueKind is JsonValueKind.Object
-            && facts.TryGetProperty(Taxonomy, out var taxonomy) && taxonomy.ValueKind is JsonValueKind.Object
+        JsonElement? Of(string name) =>
+            root.TryGetProperty("facts", out var facts) && facts.ValueKind is JsonValueKind.Object
+            && facts.TryGetProperty(name, out var taxonomy) && taxonomy.ValueKind is JsonValueKind.Object
                 ? taxonomy
-                : (JsonElement?)null;
+                : null;
+
+        var filed = Of(Taxonomy);
+        var entity = Of(Entity);
 
         return concepts.ToDictionary(
             concept => concept,
-            concept => filed is { } held && held.TryGetProperty(concept, out var holder) && holder.ValueKind is JsonValueKind.Object
-                ? Figures(holder, cik, concept)
-                : (IReadOnlyList<ConceptFact>)[],
+            concept => EntityCounts.Contains(concept, StringComparer.Ordinal)
+                ? entity is { } cover && cover.TryGetProperty(concept, out var counted) && counted.ValueKind is JsonValueKind.Object
+                    ? Counts(counted, cik, concept)
+                    : (IReadOnlyList<ConceptFact>)[]
+                : filed is { } held && held.TryGetProperty(concept, out var holder) && holder.ValueKind is JsonValueKind.Object
+                    ? Figures(holder, cik, concept)
+                    : (IReadOnlyList<ConceptFact>)[],
             StringComparer.Ordinal);
+    }
+
+    // The share counts one entity concept holds, each for the day it stands for: a count stated for a period rather than
+    // a day is passed over, and the archive's empty set of shares reads as none.
+    static IReadOnlyList<ConceptFact> Counts(JsonElement holder, string cik, string concept)
+    {
+        if (!holder.TryGetProperty("units", out var units) || units.ValueKind is not JsonValueKind.Object
+            || !units.TryGetProperty(Shares, out var shares)
+            || (shares.ValueKind is JsonValueKind.Object && !shares.EnumerateObject().Any()))
+        {
+            return [];
+        }
+
+        if (shares.ValueKind is not JsonValueKind.Array)
+        {
+            throw new FormatException(
+                $"The archive holds the share counts for {concept} of CIK {cik} in neither an array nor an empty object, so they cannot be read.");
+        }
+
+        var counts = new List<ConceptFact>();
+
+        foreach (var fact in shares.EnumerateArray())
+        {
+            if (fact.ValueKind is not JsonValueKind.Object)
+            {
+                throw new FormatException($"A count the archive holds for {concept} of CIK {cik} is not an object.");
+            }
+
+            if (Text(fact, "start") is not null)
+            {
+                continue;
+            }
+
+            counts.Add(
+                Date(Text(fact, "end")) is { } day
+                && fact.TryGetProperty("val", out var value) && value.ValueKind is JsonValueKind.Number && value.TryGetDecimal(out var count)
+                && Date(Text(fact, "filed")) is { } filed
+                && Text(fact, "form") is { } form
+                && Text(fact, "accn") is { } accession
+                    ? new ConceptFact(day, day, count, filed, form, accession)
+                    : throw new FormatException(
+                        $"A count the archive holds for {concept} of CIK {cik} carries no day, value, filing day, form or accession it can be read by."));
+        }
+
+        return counts;
     }
 
     // The dollar figures one concept holds, under its units.

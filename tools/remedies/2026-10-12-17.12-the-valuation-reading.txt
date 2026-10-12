@@ -1,0 +1,9 @@
+# The remedy of 17.12 (the valuation reading), as its PROGRESS entry prints it: run tools/migrate.ps1 first, which adds
+# migration 88's valuation reading to the setups. The whole facts refresh then asks the SEC's archive once for every
+# filer the store knows, free and keyless at ten requests a second, about 2,200 requests, and stores each filer's cover
+# share counts beside the six measures as first filed. Each index's ledger history is then built again by hand with
+# tools/ledger-build.ps1 --index <GSPC, MID or SML> --from 2019-01-02 --through 2026-10-05 --again, which builds main's
+# own commit from a clean copy and so is not a worker command this file can run, and checked after each with
+# ledger-check --index <the same>. No request to the provider and no model call. Run from main after the merge, when
+# no night is running.
+filings --whole

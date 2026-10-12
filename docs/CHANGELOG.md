@@ -25,6 +25,114 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - section 17's learned score's fit is worked over four hundred and forty setups
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> fixture-expectations, the score worked by hand over four hundred constructed setups and over eight hundred on two indices,
+Now:
+> fixture-expectations, the score worked by hand over four hundred and forty constructed setups and over eight hundred and eighty on two indices,
+Why: the score fits over no fewer than ten rows a weight it could fit, and the catalogue's forty-sixth reading puts that floor at 410, above the four hundred the tests constructed, so the tests construct four hundred and forty.
+
+### 2026-10-12 - .claude/rules/checks.md - fixture-expectations states 17.12's valuation reading
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> fixture-expectations: ... the twelve-month book's leads on the strength and not on the look-back and the cover's over the members clearing it, worked by hand from the closes |
+Now:
+> fixture-expectations: ... the twelve-month book's leads on the strength and not on the look-back and the cover's over the members clearing it, worked by hand from the closes; and from 17.12 the share counts a filer's facts hold read off the Apple capture for the day each stands for and stored a day once as first filed, a count stated for a period passed over and Alphabet's facts holding none; the valuation reading worked by hand ... and the reading rebuilt from a history cut at its session equal to the one read off the whole, one that read a filing on the session it was filed named |
+Why: each roster row says what its check asserts, and 17.12's tests extend fixture-expectations'.
+
+### 2026-10-12 - docs/RUNBOOK.md - the SEC's facts keep the cover's share counts, and 17.12's remedy builds the history again
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> (no paragraph; added after the whole refresh's)
+Now:
+> From 17.12 the refresh stores beside the six measures the share count each filing's cover states, a row a day it stands for, which the ledger's valuation reading reads with each quarter's net income ... so a purge of that pull leaves the night's reading none for the members it held until a pull holds those years again.
+Why: the operator's ruling (d) of 2026-10-11, built as 17.12.
+
+### 2026-10-12 - docs/SCHEMA.md - the pulled bars are read by the setup ledger's step for its valuation reading
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> **This is not the bar table, and no night reads it but the chart averages step**, for the chart's averages, each stock's typical earnings move and its long view (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull). The operator's history pull ...
+> No stored bar may be removed that way, and these rows may because no listing, score, rule or gate ever reads one, and what a night reads of them for the name page is read again from the newest pull still holding them.
+Now:
+> **This is not the bar table, and no night reads it but the chart averages step and the setup ledger's step**, the first for the chart's averages, each stock's typical earnings move and its long view (see: ...), and from 17.12 the second for the closes before each member's first stored session that its valuation reading reaches, from the newest pull holding that session and at the store's scale, the one reading of the ledger's that reads them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). The operator's history pull ...
+> No stored bar may be removed that way, and these rows may because no listing, score, rule or gate reads one but a rule an approval sets to read the ledger's valuation reading, and what a night reads of them, for the name page and for that reading, is read again from the newest pull still holding them.
+Why: the operator ruled on 2026-10-12 that the valuation reading alone reads the prices before the store's year from the pulled history at the store's scale.
+
+### 2026-10-12 - docs/SCHEMA.md - the setups carry the valuation reading and the readings' pin covers its definition
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> | `pin` | TEXT | the readings' version, the pin of their catalogue and the source that fills them |
+> | `cash_over_income` | REAL | ... null where that income is not above nothing |
+Now:
+> | `pin` | TEXT | the readings' version, the pin of their catalogue, the facts' and the valuation reading's definitions and the source that fills them |
+> | `cash_over_income` | REAL | ... null where that income is not above nothing |
+> | `value_place` | REAL | from migration 88, the valuation reading: ... a row written before the migration holds none, and the history's rows read it once the history is built again |
+Why: the reading is stored on every setup from migration 88, and its definition and the facts' are pinned by the version every row carries.
+
+### 2026-10-12 - docs/SCHEMA.md - the filed facts keep the cover's share count
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> | `concept` | TEXT | the archive's concept the figure was filed under, one of the six measures' |
+> | `period_start` | TEXT | the first day of the period, a quarter, nine months or a year |
+> | `period_end` | TEXT | the last day of the period, on or after 2015-01-01 |
+> | `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it |
+> ... (see: A figure the filing and the provider's fetch state differently beyond rounding is listed under the sources with the filing first, and the page draws the fetch's). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored ...
+Now:
+> | `concept` | TEXT | the archive's concept the figure was filed under, one of the six measures' or from 17.12 the cover's share count |
+> | `period_start` | TEXT | the first day of the period, a quarter, nine months or a year, and for a share count the day it stands for |
+> | `period_end` | TEXT | the last day of the period, on or after 2015-01-01, and for a share count the day it stands for |
+> | `dollars` | TEXT | decimal in code, the figure as the first filing stating the period states it, and for a share count the shares |
+> ... (see: ...). From 17.12 the share count a filing's cover states under the archive's entity taxonomy is stored beside the six measures, a row a day it stands for, which the ledger's valuation reading reads; the archive's facts carry only figures filed with no dimension, so a filer stating its count a class at a time holds none (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). The night's refresh and the whole refresh by hand insert a period's figure only where none is stored ...
+Why: the ruling asked for the SEC's facts as first filed, and the value reads the cover's count at the day it stands for.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the pulled history's store row and the history pull's row name the setup ledger's step
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> [the pulled history's store row] no night reads any of the twelve tables but the chart averages step, which reads the pulled bars and the pulled earnings, so removing one moves nothing a listing or a score read and nothing a night or a page read but the name page's figures before the store's year, the chart's averages, the typical earnings move and the long view, which the next night reads again from the newest pull still holding them
+> [the history pull's catalogue row] no night reads any of its tables but the chart averages step, which reads the pulled bars and the pulled earnings for the name page's figures, and a purge removes one pull's rows whole (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull);
+Now:
+> [the pulled history's store row] no night reads any of the twelve tables but the chart averages step, which reads the pulled bars and the pulled earnings, and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, so removing one moves nothing a listing or a score read but through that reading where an approval sets a rule to read it, and nothing a night or a page read but the name page's figures before the store's year, the chart's averages, the typical earnings move and the long view, and that reading, which the next night reads again from the newest pull still holding them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years)
+> [the history pull's catalogue row] no night reads any of its tables but the chart averages step, which reads the pulled bars and the pulled earnings for the name page's figures, and from 17.12 the setup ledger's step, which reads the pulled bars for its valuation reading alone, and a purge removes one pull's rows whole (see: ...) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years);
+Why: the operator ruled on 2026-10-12 that the valuation reading alone reads the prices before the store's year from the pulled history at the store's scale.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the filed facts' store row keeps the cover's share counts
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> one row per filer, concept and period of the six measures, revenue, gross profit, operating income, net income, cash from operations and interest expense, each a quarter, nine months or a year, with the figure, the day and the form and accession of the first filing stating it ... read by the night's ledger and the index families (see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session),
+Now:
+> one row per filer, concept and period of the six measures, revenue, gross profit, operating income, net income, cash from operations and interest expense, each a quarter, nine months or a year, and from 17.12 one per filer and day of the share count a filing's cover states, with the figure, the day and the form and accession of the first filing stating it ... read by the night's ledger and the index families (see: ...) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years),
+Why: the value reads the cover's count at the day it stands for, as first filed.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the setup ledger reads forty-six readings, the valuation reading among them
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> [13.10] Every reading is defined once, in the core's catalogue, and read as it stood: the forty-five readings of the stock, its business and the market,
+> [the setups' store row] a heavyweights' setup holding no stop, the forty-five readings as they stood,
+> [the setup ledger's catalogue row] after the filings refresh it reads the business readings of the night's setups again for the members refreshed (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood) (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor)</td></tr>
+Now:
+> [13.10] Every reading is defined once, in the core's catalogue, and read as it stood: the forty-six readings of the stock, its business and the market,
+> [13.10, a paragraph added after the business readings'] One reading sets the price against the company's own earnings over its last three years (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). ...
+> [the setups' store row] a heavyweights' setup holding no stop, the forty-six readings as they stood,
+> [the setup ledger's catalogue row] after the filings refresh it reads the business readings and the valuation reading of the night's setups again for the members refreshed (see: ...) (see: ...); and on the night it reads, for the valuation reading alone, each member's closes before its first stored session that the reading reaches from the pulled bars, brought to the store's scale (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years)</td></tr>
+Why: the operator's ruling (d) of 2026-10-11 adds the reading to the catalogue, built as 17.12.
+
+### 2026-10-12 - CLAUDE.md - the hard rule on pulled history narrowed for the valuation reading alone
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws).
+Now:
+> History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, which reads its prices at the store's scale as that step does, held as they stood by the point-in-time check, on the operator's ruling of 2026-10-12; and it is removed whole by the pull that wrote it (see: ...) (see: ...) (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years).
+Why: the operator ruled on 2026-10-12, "For ruling (d), narrow the hard rule for the valuation reading alone: it reads the prices before the store's year from the pulled history at the store's scale, as the chart averages step does, held as it stood on each session by the point-in-time check. Record the decision and the rule's prior wording in the changelog."
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.12
+Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+Was:
+> the build plan's phase 17 checkpoints, 17.0 to 17.11
+Now:
+> the build plan's phase 17 checkpoints, 17.0 to 17.12
+Why: the operator's ruling (d) of 2026-10-11 is built inside phase 17 after its report as 17.12.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the heavyweights card's rule and the 15.5 paragraph name books registered before a freeze
 Decision: An index family's variants may stand registered before its freeze, its provisional rule staying the live one
 Was:

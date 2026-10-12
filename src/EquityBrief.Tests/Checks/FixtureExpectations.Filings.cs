@@ -86,7 +86,7 @@ public partial class FixtureExpectations
             stored.Select(row => (row.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), row.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), row.Value, row.Accession)).ToArray());
         Assert.All(stored, row => Assert.Equal("Revenues", row.Concept));
         Assert.Equal(new DateOnly(2015, 1, 1), FiledFacts.FirstPeriodEnd);
-        Assert.Equal(16, FiledFacts.Concepts.Count);
+        Assert.Equal(17, FiledFacts.Concepts.Count);
     }
 
     // A filer's quarters as filed: revenue, gross profit and operating income for the quarter to 2026-06-30, the
@@ -245,6 +245,28 @@ public partial class FixtureExpectations
             }
         }
 
+        // And the share counts its cover states under the entity taxonomy, each for the day it stands for from the first
+        // day stored, the earliest filing of each day.
+        var counts = new Dictionary<string, (string Filed, string Accession, decimal Value)>(StringComparer.Ordinal);
+
+        foreach (var fact in capture.RootElement.GetProperty("facts").GetProperty("dei").GetProperty("EntityCommonStockSharesOutstanding").GetProperty("units").GetProperty("shares").EnumerateArray())
+        {
+            var end = fact.GetProperty("end").GetString()!;
+            var candidate = (fact.GetProperty("filed").GetString()!, fact.GetProperty("accn").GetString()!, fact.GetProperty("val").GetDecimal());
+
+            if (string.CompareOrdinal(end, "2015-01-01") >= 0
+                && (!counts.TryGetValue(end, out var held) || string.CompareOrdinal(candidate.Item1 + candidate.Item2, held.Filed + held.Accession) < 0))
+            {
+                counts[end] = candidate;
+            }
+        }
+
+        foreach (var (end, (filed, accession, value)) in counts)
+        {
+            worked.Add($"EntityCommonStockSharesOutstanding|{end}|{end}|{filed}|{accession}|{value.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        Assert.True(counts.Count >= 4, $"Worked {counts.Count} count(s) from the capture, expected at least 4.");
         Assert.True(worked.Count >= 4, $"Worked {worked.Count} fact(s) from the capture, expected at least 4.");
         Assert.Equal(
             [.. worked],

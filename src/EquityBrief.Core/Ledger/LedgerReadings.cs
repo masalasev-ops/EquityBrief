@@ -4,17 +4,20 @@ namespace EquityBrief.Core.Ledger;
 public sealed record LedgerReading(string Column, string Definition);
 
 // The ledger's readings, each defined once here and read as it stood on the setup's session: every figure comes from
-// the bars to that session, the market series to that session and the quarters filed before it, through the rules'
-// own functions, so a row written on the night and a row rebuilt from the history for the same session carry the same
-// figures. A reading the inputs do not reach is stored as none and never as nought. The version is the pin of this
-// file and of the worker's source that fills the columns, stored on every row, so a row written under another
+// the bars to that session, the market series to that session and the quarters and facts filed before it, through the
+// rules' own functions, the valuation reading on a night reading the closes before the store's year from the history
+// pulled for those years at the store's scale as the history's merged bars hold them, so a row written on the night
+// and a row rebuilt from the history for the same session carry the same figures. A reading the inputs do not reach is
+// stored as none and never as nought. The version is the pin of this file, of the facts' and the valuation reading's
+// definitions and of the worker's source that fills the columns, stored on every row, so a row written under another
 // definition can be told apart.
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+// see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "61029e708aa9";
+    public const string Version = "f3311f905a3e";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -75,6 +78,7 @@ public static class LedgerReadings
         new("gross_margin_change", "the newest quarter's gross profit over its revenue less the same quarter's a year before"),
         new("operating_margin_change", "the newest quarter's operating income over its revenue less the same quarter's a year before"),
         new("cash_over_income", "the newest fiscal year's cash from operations over its net income, both as first filed before the session, where that income is above nothing"),
+        new("value_place", "the four newest quarters' net income as first filed before the session over the company's value, the share count its filings' covers state times the close, as the share of the same figure at the ends of its own twelve quarters before it that it stands above, a tie counting half"),
     ];
 
     public static int Count => All.Count;

@@ -58,11 +58,12 @@ public partial class FixtureExpectations
         return readings;
     }
 
-    // Four hundred setups on an index, a hundred at each liquidity of 0, 1, 2 and 3, every other reading the same for all,
-    // each one's edge twice its liquidity and one more on the S&P 400, at a risk of one move.
-    static void FourHundred(ScoreRows rows, string index)
+    // Four hundred and forty setups on an index, a hundred and ten at each liquidity of 0, 1, 2 and 3, every other reading
+    // the same for all, each one's edge twice its liquidity and one more on the S&P 400, at a risk of one move: more than
+    // the floor of ten rows a weight the score could fit, which the catalogue's forty-six readings put at 410.
+    static void FourHundredForty(ScoreRows rows, string index)
     {
-        for (var at = 0; at < 400; at++)
+        for (var at = 0; at < 440; at++)
         {
             var liquidity = at % 4;
 
@@ -84,33 +85,34 @@ public partial class FixtureExpectations
         Assert.Equal((1.5, 3.0), (labels.Label(0), labels.Label(1)));
 
         // Only liquidity moves, so it alone is weighed: its mean 1.5 and its spread the square root of 1.25 over the four
-        // hundred; in standard units its weight is twice the rows times the spread over the rows and the penalty, so on its
-        // own scale 2 x 400 / (400 + 10) = 80/41, and the intercept the labels' mean less that times the mean, 3 - 120/41.
+        // hundred and forty; in standard units its weight is twice the rows times the spread over the rows and the penalty,
+        // so on its own scale 2 x 440 / (440 + 10) = 88/45, and the intercept the labels' mean less that times the mean,
+        // 3 - 132/45 = 1/15.
         var rows = new ScoreRows();
 
-        FourHundred(rows, "GSPC");
+        FourHundredForty(rows, "GSPC");
 
         var model = Fitted(rows);
 
         Assert.Equal(["liquidity"], model.Readings.Select(reading => LedgerReadings.All[reading].Column));
         Assert.Equal(1.5, model.Means.Single(), 12);
         Assert.Equal(Math.Sqrt(1.25), model.Spreads.Single(), 12);
-        Assert.Equal(80.0 / 41.0, model.HookWeights.Single().Weight, 12);
-        Assert.Equal(3.0 / 41.0, model.Intercept, 12);
+        Assert.Equal(88.0 / 45.0, model.HookWeights.Single().Weight, 12);
+        Assert.Equal(1.0 / 15.0, model.Intercept, 12);
         Assert.Equal([0.0, 0.0], model.IndexShifts);
-        Assert.Equal((400, 0.0, 6.0), (model.Rows, model.LabelLow, model.LabelHigh));
+        Assert.Equal((440, 0.0, 6.0), (model.Rows, model.LabelLow, model.LabelHigh));
 
-        // The same four hundred again on the S&P 400, each one's edge one more: the shift is unpenalised and, the liquidity
-        // spread the same on both indices, apart from the weight, so it is one exactly, and the weight over eight hundred
-        // rows is 2 x 800 / 810 = 160/81, the intercept 3.5 - 1.5 x 160/81 - 0.5 = 1/27.
-        FourHundred(rows, "MID");
+        // The same four hundred and forty again on the S&P 400, each one's edge one more: the shift is unpenalised and, the
+        // liquidity spread the same on both indices, apart from the weight, so it is one exactly, and the weight over eight
+        // hundred and eighty rows is 2 x 880 / 890 = 176/89, the intercept 3.5 - 1.5 x 176/89 - 0.5 = 3/89.
+        FourHundredForty(rows, "MID");
 
         var pooled = Fitted(rows);
 
-        Assert.Equal(160.0 / 81.0, pooled.HookWeights.Single().Weight, 12);
+        Assert.Equal(176.0 / 89.0, pooled.HookWeights.Single().Weight, 12);
         Assert.Equal(1.0, pooled.IndexShifts[0], 12);
         Assert.Equal(0.0, pooled.IndexShifts[1]);
-        Assert.Equal(1.0 / 27.0, pooled.Intercept, 12);
+        Assert.Equal(3.0 / 89.0, pooled.Intercept, 12);
         Assert.Equal(["GSPC", "MID"], pooled.Hundredths.Keys.Order(StringComparer.Ordinal));
     }
 
@@ -151,8 +153,8 @@ public partial class FixtureExpectations
     {
         var rows = new ScoreRows();
 
-        FourHundred(rows, "GSPC");
-        FourHundred(rows, "MID");
+        FourHundredForty(rows, "GSPC");
+        FourHundredForty(rows, "MID");
 
         var model = Fitted(rows);
         var again = Fitted(rows);
@@ -178,13 +180,14 @@ public partial class FixtureExpectations
     {
         var rows = new ScoreRows();
 
-        FourHundred(rows, "GSPC");
+        FourHundredForty(rows, "GSPC");
 
         var model = Fitted(rows);
         double Score(double liquidity) => model.Score(Weighed(1, ("liquidity", liquidity)))!.Value;
 
-        // The four hundred scores are a hundred each of 0, 80/41, 160/41 and 240/41: the nearest rank puts hundredths 0 to
-        // 25 at the first, 26 to 50 at the second, 51 to 75 at the third and 76 to 100 at the last.
+        // The four hundred and forty scores are a hundred and ten each of the intercept and 88/45, 176/45 and 264/45 over
+        // it: the nearest rank puts hundredths 0 to 25 at the first, 26 to 50 at the second, 51 to 75 at the third and 76
+        // to 100 at the last.
         Assert.Equal(25, model.Rank("GSPC", Score(0)));
         Assert.Equal(50, model.Rank("GSPC", Score(1)));
         Assert.Equal(75, model.Rank("GSPC", Score(2)));
