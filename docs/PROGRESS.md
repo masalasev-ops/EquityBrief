@@ -43577,8 +43577,11 @@ Mutated:    the rule, stated before the run: one mutation a property 17.13 adds.
             at the member a condition refuses kept, 1 of 17; M32 at a return of 160 per cent, 1 of 17; M33 at the change
             applied by hand, 1 of 17; M34 at the card drawing the outline unread, 1 of 17. Each reverted before anything
             was committed, the 17 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, its figures
-            to be filled from the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 0292bac6: all
+            six steps, 0 warnings, 0 errors, 2240 of 2240 tests ran with none failed in 15 minutes 51 seconds,
+            migrations 0 to 89 with none pending, schema version 89, against `data-ci` and never `data`; the phase report
+            54 tables, 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed. The run over
+            e003382e stopped at the suite on this line's wording before the run, which `two-platform` reads.
 Queue:      done, 17.11 and 17.12, PRs 439 and 440, and the 17.13 ruling; in progress, 17.13; next, 17.14 and 17.15,
             then 18.5's report.
 Carried:    the remedy registering every moved rule again with the replay, after 17.15 merges; the first night after the
