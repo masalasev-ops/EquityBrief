@@ -1870,8 +1870,6 @@ public sealed class SinglePageApp : IComponent
         region.Append(selector);
 
         // The setup ledger of the same index, under Universe.
-        region.Append(Invariant($"<p class=\"ledger-link\"><a href=\"{LedgerRoute}?universe={reading.Word}\" data-ledger=\"{reading.Word}\">The setup ledger: every near-setup on the {Escaped(reading.Name)} and how it turned out</a></p>"));
-        region.Append(Invariant($"<p class=\"loop-link\"><a href=\"{LoopRoute}?universe={reading.Word}\" data-loop=\"{reading.Word}\">The loop: each family's proposals on the {Escaped(reading.Name)}, tested on years they never saw</a></p>"));
 
         // The S&P 400's and 600's members are read by the stages every member's figures need, and not by the listings,
         // the ladder or the swing readings, which read the S&P 500's alone, so their rows say so where those draw.

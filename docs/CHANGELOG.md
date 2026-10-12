@@ -25,6 +25,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - the Ledger and Loop pages are reached from the header's menu, the Loop with its badge
+Corrects: phase 19's plan, approved on 2026-10-12, moves both pages' links from Universe's body into the header's menu at 19.2, which leaves the two route lines naming the Universe page.
+Was:
+> 15.19: `#/ledger`, reached from the Universe page and drawn under it, with the index, the family and the chosen setup in the hash so a view is a link.
+> 15.20: `#/loop`, reached from the Universe page and drawn under it, with the index and the month in the hash so a view is a link.
+Now:
+> 15.19: `#/ledger`, reached from the header's menu from 19.2, with the index, the family and the chosen setup in the hash so a view is a link.
+> 15.20: `#/loop`, reached from the header's menu from 19.2, where a badge counts the proposals put to the operator that hold no decision, with the index and the month in the hash so a view is a link.
+Why: the two links leave Universe's body for the menu, and the Loop's badge says from any page that a proposal waits on the operator's word.
+
 ### 2026-10-12 - docs/BUILD_PLAN.md - phase 19's rulings say the Linux test that failed on 2aec8d18 was fixed before the plan
 Corrects: the plan carried the fix as owed before phase 17's sign-off, where the 1.3 correction of 2026-10-09 had fixed it in PR 413; found reading the failed run's log and the record before writing the fix.
 Was:
