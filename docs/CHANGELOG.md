@@ -25,6 +25,18 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - Figure 13.7, its description and its key apply an approved S&P 500 change by the night
+Corrects: 17.13 and 17.14 wrote section 13.16's approval paragraph and section 14's swing filter step for an S&P 500 change applied by the night, and left Figure 13.7 drawing it as waiting on a ruling; found reading the guide against 17.11 to 17.15 at the operator's ask.
+Was:
+> desc: ... an approved change is applied to that index alone, while a change to a rule whose page its code draws waits on the operator's ruling.
+> the large caps' last box: Waits on a ruling | its page drawn by code
+> key: ... and an approved change is <b>applied to it alone</b> by the worker before the next night, on the S&amp;P 400 or 600 as a stored setting of that index, while a change to an S&amp;P 500 rule <b>waits on a ruling</b>, the operator's, of how it reaches a page its family's code draws.
+Now:
+> desc: ... an approved change is applied to that index alone, by the first night that can apply it.
+> the large caps' last box: Applied to it alone | the first night it can
+> key: ... and an approved change is <b>applied to it alone</b> by the night's own build: on the S&amp;P 400 or 600 before the next night, as a stored setting of that index; on the S&amp;P 500 by the night, a breakout's or a drift's change stored and registered as the family's live rule on the first night whose session a registration made then counts from, with the rule it replaced running beside it as a variant (see: ...); a pullback's hook change stored for the swing filter's page; and a move of the shape clock's proposal opening the filter's next version on such a night (see: ...).
+Why: the figure drew what the approval paragraph above it had stopped saying, so a reader of the figure alone read every S&P 500 change as waiting.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the catalogue's family evaluator, lister, recorder, index families and walk-forward tester rows, the loop models' store row, section 13.14 and section 17's two rows of the learned score state 17.15
 Decision: The learned score's challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it passes and earns more than the ridge score
 Was:
