@@ -44000,6 +44000,8 @@ Repaired:   the ruling in `BUILD_PLAN.md` now says the test was fixed before the
             by this entry, a decision being changed only by another decision.
 Tests:      2254, unchanged.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 57c3c168 as 19.1's entry records; documents
-            alone change here, so the checks reading them ran filtered over the tree carrying this entry, the figures to
-            be filled from the run.
+            alone change here, so the checks reading them ran filtered over the tree carrying this entry, 7473be90:
+            `ArchitectureConformance`, `BannedProse`, `ChangelogReconciles`, `CoverageReported`, `DecisionCitations`,
+            `DoneConditionProducible`, `FigureFits`, `ObligationReconciles`, `PinnedConstants`, `RecordAppendOnly`,
+            `StatedCounts` and `TwoPlatform`, 159 of 159 passed.
 Carried:    the sign-offs of phases 16, 17 and 18.
