@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -615,7 +616,11 @@ public partial class ReadSurface
     public async Task EveryScreenIsLaidOutInCardsAndEveryKeyClosesOnWhatToTakeFromTheFigure()
     {
         using var store = await FixtureExpectations.WithListings();
-        using var host = new Host(store.Root);
+
+        // A Saturday, when no regular session stands and the name page draws the last stored close with no quote to ask
+        // for, so the masthead reads the same whatever day the suite runs; the masthead in the session is held by the
+        // quote's own tests.
+        using var host = new PassHost(store.Root) { Clock = FixedClock.At(DateTimeOffset.Parse("2026-10-10T16:00:00Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates) };
         using var client = host.CreateClient();
 
         var night = NightIn(store);

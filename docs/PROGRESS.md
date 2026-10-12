@@ -43475,3 +43475,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Queue:      done, 17.11, PR 439, and the 17.12 ruling; in progress, 17.12; next, 17.13, the S&P 500's approvals with the
             FastTree challenger, then 18.5's report.
 Carried:    nothing new; the night's rows from 2026-10-06 to the merge keep none of the reading, written before it.
+
+### 18.1 - correction: the design test reads a name's masthead under a clock held to a Saturday, where on a day the exchange trades the quote's attributes the masthead carries broke its match   2026-10-12
+
+Corrects:   18.1's masthead against 5.8's design test. From 18.1 a name's page for tonight carries on its masthead the
+            attributes the shell's script asks for its quote by, on any day the exchange holds a regular session, and the
+            test matched the masthead with none, its host reading the machine's clock, so it passed only on a day with no
+            session. Every run since 18.1 merged on 2026-10-10 fell on a weekend; 17.12's second run, on 2026-10-12 at
+            04:10Z, a Monday in New York, failed it alone, 1 of 2,233. No page was wrong: the masthead is as 18.1 drew it.
+Found:      by 17.12's run of `tools/ci.ps1` over 835b33ad.
+Built:      the test's host reads a clock held to Saturday 2026-10-10 at 16:00Z, the day it last passed on the machine's,
+            so the name page draws the last stored close with no quote to ask for whatever day the suite runs; the
+            masthead in the session stays held by the quote's own tests.
+Tests:      none more; one changed.
+Mutated:    the rule, stated before the run: the property the correction adds, one mutation. M27 the test's host left
+            to the machine's clock: predicted red at the design test on 2026-10-12, a day the exchange trades. Result:
+            red at 04:26Z, the masthead not found as matched, one of one in the run filtered to the test; reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run that
+            verifies 17.12 above.
+Carried:    nothing.
