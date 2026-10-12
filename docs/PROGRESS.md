@@ -43387,8 +43387,10 @@ Mutated:    the rule, stated before the run: each property the checkpoint adds, 
             red at the form's test and at the card's, the first book taking the live rule's place, two of five; M17 red
             at the night's test alone, one of five; M18 red at the card's test alone, one of five. Each reverted before
             anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the ruling's
+            above, 7d6a1d9f: all six steps, 0 warnings, 0 errors, 2229 of 2229 tests ran with none failed in 15 minutes
+            55 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never `data`; the
+            phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      as the 17.11 ruling above; the remedy runs from main after the merge, before the night, and the books' first
             night is read the morning after; 17.12, the valuation reading, is planned next.
 Carried:    nothing new.
