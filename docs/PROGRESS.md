@@ -43500,3 +43500,34 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             that verifies 17.12 above: 2233 of 2233 tests ran with none failed on Monday 2026-10-12 at 04:47Z, the
             design test among them, and the phase report's 1267 claims passing.
 Carried:    nothing.
+
+### 17.13 ruling - the S&P 500's approvals and the FastTree challenger built inside phase 17 after its report as 17.13 to 17.15, the S&P 500's pullback joining the loop   2026-10-12
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator, rulings (b) and (c) of the queue of 2026-10-11 as the 17.10 ruling above records them, and on
+            2026-10-12, asked how far 17.13 reaches, "Full, pullback included (Recommended)": the tester walks the S&P
+            500's swing filter, the shape proposer's moves become proposals tested on years they never saw, an approval
+            opens a filter version, and every old-loop decision moves to Previously decided. Asked what beating the ridge
+            score means, "Passes, and more edge (Recommended)": a FastTree proposal is put only where it passes the pass
+            rule itself and its total edge after costs over the same test years exceeds the ridge proposal of its kind.
+            The words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` gains 17.13 to 17.15 after 17.12, each with its done condition, and section 20's row names
+            17.0 to 17.15. Three decisions are written, each moving what it replaces to Previously decided as its
+            checkpoint lands (see: An approved change reaches the S&P 500's breakout and drift through the stored settings
+            and a registration, and the rule it replaces runs beside it for 63 sessions) (see: The S&P 500's pullback is
+            proposed for and changed through the Loop, the shape clock's moves among its sources) (see: The learned score's
+            challenger is a tree ensemble fitted by FastTree and scored by code from its stored trees, put only where it
+            passes and earns more than the ridge score). One pull request carries the three, and one remedy registers
+            every moved rule again with the replay after it merges. 17.13 to 17.15 add no row of a table the harness
+            reads, said beside phase 17's pair.
+Remedy:     17.12's, from main after PR 440 merged at 04:55Z: migration 88; the whole facts refresh asked 2,104 filers and
+            stored 77,348 facts in 1,305 seconds, the share counts among them, with no provider call; each index's
+            history built again over 2019-01-02 to 2026-10-05 to the counts the builds before it wrote, the S&P 500's
+            69,275 setups, the 400's 43,508 and the 600's 59,163; and each index's point-in-time check rebuilt 200 of 200
+            sampled setups with every reading the same. The valuation reading is held by 62 per cent of each index's
+            history setups and 82 to 86 per cent from 2022, none in 2019, its twelve quarters reaching three years
+            before a pull that begins in 2018.
+Queue:      done, 17.11 and 17.12, PRs 439 and 440, each remedy run from main; in progress, this ruling and 17.13 to
+            17.15; next, 18.5's report.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, the run that verifies 17.13 to 17.15 below.
+Carried:    17.13 to 17.15.

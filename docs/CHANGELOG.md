@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - docs/ARCHITECTURE.html - section 20's phase 17 row names 17.13 to 17.15
+Decision: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions
+Was:
+> the build plan's phase 17 checkpoints, 17.0 to 17.12
+Now:
+> the build plan's phase 17 checkpoints, 17.0 to 17.15
+Why: the operator's rulings (b) and (c) of 2026-10-11, with their answers of 2026-10-12 on the scope, are built inside phase 17 after its report as 17.13 to 17.15.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - section 17's learned score's fit is worked over four hundred and forty setups
 Decision: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 Was:
