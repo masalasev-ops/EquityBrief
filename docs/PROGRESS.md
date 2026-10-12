@@ -43307,8 +43307,10 @@ Screens:    read at 1440 and at 390 pixels in a browser laid out at each width, 
             502, 9, 2, 1 and 1, as `family_trade` and `rule_night` hold them; and both cards' five lines as
             `decision_card` holds them. Every page stood at the screen's width at 1440, and at 390 every page but the S&P
             500's Tonight, which the 17.2 correction above holds to it.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: to be filled from
-            the run.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 17.2
+            correction's above, 549abf05: all six steps, 0 warnings, 0 errors, 2224 of 2224 tests ran with none failed in
+            15 minutes 39 seconds, migrations 0 to 87 with none pending, schema version 87, against `data-ci` and never
+            `data`; the phase report 1267 claims, 1267 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      done, items 1 to 6 and item 7's run, scheduler and screens; in progress, this record with the 17.2
             correction; next, item 8, the rulings b to e, and 18.5's report after it.
 Carried:    the first scheduled monthly run, read on 2026-11-07. The screens of the S&P 500's Tonight read again at 390
