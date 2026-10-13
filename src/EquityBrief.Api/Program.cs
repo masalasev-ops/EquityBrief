@@ -1658,10 +1658,13 @@ async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice readin
     var rows = await read.PaperRowsAsync(reading.Code);
     var cells = large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [];
     var provisional = large ? null : await read.IndexNightAsync(reading.Code, night) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
-    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code));
+    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code), large ? await read.FamilyReplaysAsync() : []);
     (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
+
+    // The trades an account leaves out are read for their trade log's result so far, and walked by nothing.
+    (string Ticker, DateOnly Session)[] earlier = [.. sources.SelectMany(account => (account.Earlier ?? []).Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
     var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
-    var closes = await read.ClosesAsync([.. bought.Select(one => one.Ticker).Distinct(StringComparer.Ordinal)], from);
+    var closes = await read.ClosesAsync([.. bought.Concat(earlier).Select(one => one.Ticker).Distinct(StringComparer.Ordinal)], earlier.Select(one => one.Session).Append(from).Min());
 
     sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
 
@@ -1968,18 +1971,19 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PicksRoute) : string.Empty;
 
-    // Each paper account's trade log, chosen in the link: a variant's own trades or yours, with its verdict and its
-    // record's label beside them; the page's lists where the link names none, with each family's verdict beside them.
+    // Each paper account's trade log, chosen in the link: a live or provisional rule's, a variant's or yours, the trades
+    // it counts with its verdict and its record's label beside them and those it leaves out folded beneath; the page's
+    // lists where the link names none, with each family's verdict beside them.
     // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
     var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
-    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount && !view.Head) is { } chosenAccount)
+    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount) is { } chosenAccount)
     {
         var source = accounts.Sources.First(one => one.Key == chosenAccount.Key);
 
         return Results.Content(
-            page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close)),
+            page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close), PaperScreen.EarlierLog(source, logged, accounts.Close)),
             "text/html; charset=utf-8");
     }
 

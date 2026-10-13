@@ -422,6 +422,12 @@ public static class RuleScreen
         ];
     }
 
+    // Every registration of a family's rules on an index, retired or standing, which names the version that listed a trade.
+    public static IReadOnlyList<CandidateRow> Registrations(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register) =>
+    [
+        .. register.Where(row => row.Event == CandidateFamily.Registered && CandidateEvaluators.Find(row.Evaluator) is { } evaluator && OfTheFamily(evaluator, family, large, indexName)),
+    ];
+
     static bool OfTheFamily(CandidateEvaluator evaluator, string family, bool large, string indexName) =>
         evaluator switch
         {

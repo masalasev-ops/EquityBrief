@@ -10,8 +10,9 @@ public sealed record PaperYearView(int Year, bool Complete, int Units, double To
 // One paper account as paper trading and the trade log draw it: its key in the link, its family, its standing (live,
 // provisional, variant or the operator's own), its name and its rule's words, its test years verdict with what it was
 // read against, its unit and its test years, its walk where the account settings are set, its trades and those ended,
-// its record since registration's label until the count screen's minimum is met, the day its record starts, its adjusted
-// p in that test, and its record's count in one line.
+// its record since registration's label until the count screen's minimum is met, the day it starts, its adjusted p in
+// that test, its record's count in one line, the words naming the version it counts, and how many trades it leaves out
+// as listed before that version.
 public sealed record PaperAccountView(
     string Key,
     string Family,
@@ -28,7 +29,9 @@ public sealed record PaperAccountView(
     string? TooFew,
     DateOnly? Since,
     double? Adjusted = null,
-    string? CountLine = null)
+    string? CountLine = null,
+    string? Version = null,
+    int Earlier = 0)
 {
     public const string Live = "live";
 
@@ -42,8 +45,9 @@ public sealed record PaperAccountView(
 }
 
 // One trade of an account's trade log: its stock, its buy session and price, its stop where it holds one, the session it
-// ended on, its result in the account's unit, so far at tonight's close where it is open, and why the account skipped it.
-public sealed record PaperTradeView(string Ticker, DateOnly Bought, decimal Buy, decimal? Stop, DateOnly? Ended, double? Result, bool Open, string? Skipped);
+// ended on, its result in the account's unit, so far at tonight's close where it is open, why the account skipped it, and
+// for a trade listed before the version the account counts, the version that listed it.
+public sealed record PaperTradeView(string Ticker, DateOnly Bought, decimal Buy, decimal? Stop, DateOnly? Ended, double? Result, bool Open, string? Skipped, string? Version = null);
 
 // Paper trading's marks: the chart of each account's return since its record began, the table of every account with its
 // test years verdict and its record since registration side by side and never merged, and an account's trade log. Every
@@ -121,7 +125,7 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"paper-table\" data-accounts=\"{accounts.Count}\" data-walked=\"{Flag(walked)}\"><thead><tr>");
         html.Append(TippedHeading("Account", "the setup and the rule whose trades the account takes: the live or provisional rule's list, each registered variant's own list or book, and your own trades"));
         html.Append(TippedHeading("Test years", "the rule's verdict in the newest monthly per-rule test over the ledger's years, a variant against its live rule and the live rule against its benchmark"));
-        html.Append(TippedHeading("Since registered", "the account's own record from its first trade on: its trades, those skipped for cash and those with no cost read, under its too-few label until the test's count is met"));
+        html.Append(TippedHeading("Since registered", "the account's own record from its start, its rule's current version's or a provisional account's first trade: its trades, those skipped for cash and those with no cost read, under its too-few label until the test's count is met, and the version it counts"));
         html.Append(TippedHeading("Return", "the account's value against its size, open positions at tonight's close", "r"));
         html.Append(TippedHeading("Worst drop", "the deepest fall from a high the account's value made", "r"));
         html.Append(TippedHeading("Against the fund", "the account's return less its index fund's over the same sessions", "r"));
@@ -184,8 +188,19 @@ public sealed partial class MarkRenderer
         return svg.ToString();
     }
 
-    // An account's row; its link opens its trade log on Past picks on the same index, a live or provisional account's the
-    // lists' trades under its setup.
+    // The words saying where an account starts and the version it counts, beside its count on the lists' verdicts.
+    public static string StartWords(PaperAccountView account) =>
+        account.Since is { } since
+            ? Formatted($", from {DayOf(since)}{(account.Version is { } version ? ", counting " + Escaped(version) : string.Empty)}")
+            : account.Version is { } words ? ", counting " + Escaped(words) : string.Empty;
+
+    // The version an account counts and how many trades of earlier versions it leaves out, in its row and its log.
+    static string VersionLine(PaperAccountView account) =>
+        account.Version is not { } version
+            ? string.Empty
+            : Formatted($"<span class=\"paper-version\" data-earlier=\"{account.Earlier}\">counts {Escaped(version)}{(account.Earlier > 0 ? Formatted($"; {account.Earlier} trade(s) of earlier versions left out") : string.Empty)}</span>");
+
+    // An account's row; its link opens its trade log on Past picks on the same index.
     string PaperRow(PaperAccountView account, bool walked, string universe)
     {
         var walk = account.Walk;
@@ -198,9 +213,7 @@ public sealed partial class MarkRenderer
             ? "<td class=\"paper-name\">"
             : Formatted($"<td class=\"paper-name\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyName(account.Family))}</span> "));
         row.Append(Invariant, $"<span class=\"status-pill {(account.Standing == PaperAccountView.You ? "variant" : account.Standing)}\">{Escaped(account.Name)}</span>");
-        var log = account.Head
-            ? Formatted($"#/picks?universe={Uri.EscapeDataString(universe)}&amp;setup={Uri.EscapeDataString(account.Family)}")
-            : Formatted($"#/picks?universe={Uri.EscapeDataString(universe)}&amp;account={Uri.EscapeDataString(account.Key)}");
+        var log = Formatted($"#/picks?universe={Uri.EscapeDataString(universe)}&amp;account={Uri.EscapeDataString(account.Key)}");
 
         row.Append(Invariant, $"<a class=\"paper-log\" href=\"{log}\" title=\"{Escaped(account.Words)}\">trade log</a></td>");
 
@@ -252,6 +265,7 @@ public sealed partial class MarkRenderer
         }
 
         row.Append(detail.Count > 0 ? "<span class=\"paper-walked\">" + string.Join(" · ", detail) + "</span>" : string.Empty);
+        row.Append(VersionLine(account));
         row.Append(account.Standing != PaperAccountView.You && account.TooFew is null ? "<span class=\"too-few met\">its count is met</span>" : string.Empty);
         row.Append("</td>");
 
@@ -277,8 +291,10 @@ public sealed partial class MarkRenderer
 
     // An account's trade log: its verdict and its record's label beside each other and apart, each trade a row newest
     // first, an open one's result so far at tonight's close marked open, and the running total of its ended trades as a
-    // line, labelled not evidence yet under the minimums.
-    public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades)
+    // line, labelled not evidence yet under the minimums; beneath it, folded, the trades of earlier versions the account
+    // leaves out, each naming the version that listed it.
+    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    public string PaperLog(PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var html = new StringBuilder();
         var percent = account.Unit == LoopPoints;
@@ -290,13 +306,14 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<div class=\"paper-log-head\" data-account=\"{Escaped(account.Key)}\" data-family=\"{Escaped(account.Family)}\" data-trades=\"{trades.Count}\">");
         html.Append(Invariant, $"<p class=\"paper-log-verdict\"><b>Test years.</b> <span data-verdict=\"{Escaped(account.Verdict)}\">{Escaped(account.Verdict)}</span>{(account.Head && account.Years.Count > 0 ? "; " + Escaped(RuleVerdict.Chosen) : string.Empty)}.</p>");
         html.Append(Invariant, $"<p class=\"paper-log-since\"><b>Since registered.</b> {account.Trades} trade(s), {account.Ended} ended{(account.TooFew is { } few ? Formatted($"; <span class=\"too-few\" data-too-few=\"{Escaped(few)}\">{Escaped(few)}</span>") : string.Empty)}.</p>");
+        html.Append(Invariant, $"<p class=\"paper-log-start\" data-since=\"{(account.Since is { } since ? DayOf(since) : "none")}\"><b>Counts from.</b> {(account.Since is { } from ? DayOf(from) : "its first trade, none yet")}{VersionLine(account)}.</p>");
         html.Append(Invariant, $"<p class=\"paper-entry\">{Escaped(EntryPriceLine)}</p></div>");
 
         if (trades.Count == 0)
         {
             html.Append("<p class=\"degraded\" data-log=\"none\">This account holds no trade yet.</p>");
 
-            return html.ToString();
+            return html.ToString() + EarlierVersions(earlier ?? [], Result);
         }
 
         var ended = trades.Where(trade => !trade.Open && trade.Result is not null && trade.Skipped is null).OrderBy(trade => trade.Ended).ThenBy(trade => trade.Bought).ToArray();
@@ -318,6 +335,34 @@ public sealed partial class MarkRenderer
         }
 
         html.Append("</tbody></table></div>");
+
+        return html.ToString() + EarlierVersions(earlier ?? [], Result);
+    }
+
+    // The trades of earlier versions an account leaves out, folded, each row naming the version that listed it; none where
+    // it leaves none out.
+    static string EarlierVersions(IReadOnlyList<PaperTradeView> earlier, Func<double?, string> result)
+    {
+        if (earlier.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var html = new StringBuilder();
+
+        html.Append(Invariant, $"<details class=\"paper-earlier\" data-earlier=\"{earlier.Count}\"><summary>Earlier versions: {earlier.Count} trade(s) listed before the version this account counts, left out of its line, return, worst drop and counts</summary>");
+        html.Append("<div class=\"tbl-wrap\"><table class=\"paper-log-table\"><thead><tr><th>Stock</th><th>Bought</th><th>Listed by</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th>Ended</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+        foreach (var trade in earlier.OrderByDescending(trade => trade.Bought).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
+        {
+            html.Append(Invariant, $"<tr data-ticker=\"{Escaped(trade.Ticker)}\" data-bought=\"{DayOf(trade.Bought)}\" data-open=\"{Flag(trade.Open)}\" data-version=\"{Escaped(trade.Version ?? string.Empty)}\">");
+            html.Append(Invariant, $"<td><a href=\"#/name/{Uri.EscapeDataString(trade.Ticker)}\">{Escaped(trade.Ticker)}</a></td><td>{DayOf(trade.Bought)}</td><td>{Escaped(trade.Version ?? string.Empty)}</td>");
+            html.Append(Invariant, $"<td class=\"r num\">{Figures.Price(trade.Buy)}</td><td class=\"r num\">{(trade.Stop is { } stop ? Figures.Price(stop) : "<span class=\"degraded\">none</span>")}</td>");
+            html.Append(trade.Open ? "<td><span class=\"pill\">open</span></td>" : Formatted($"<td>{(trade.Ended is { } on ? DayOf(on) : "not read")}</td>"));
+            html.Append(Invariant, $"<td class=\"r num\">{result(trade.Result)}{(trade.Open ? " <span class=\"degraded\">so far</span>" : string.Empty)}</td></tr>");
+        }
+
+        html.Append("</tbody></table></div></details>");
 
         return html.ToString();
     }

@@ -25,6 +25,24 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - ARCHITECTURE.html - a paper account starts at its rule's current version
+Authorised by: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+Was:
+> 15.21 The chart row: each account's return in per cent of its size session by session from its first trade or its registration; ...
+> 15.17 The trade log's account row: from 19.4 a selector of the index's accounts above the trades with the lists first and each registered variant after them in the one family order by its card's tab and You last; the choice kept in the hash; ...
+> 15.17 An account's trade log row: ... the running total of its ended trades as a line labelled not evidence yet under the test's count (see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight)
+Now:
+> The chart reads from the account's start, its rule's current version's or a provisional account's first trade; the selector lists each family's live or provisional account before its variants, its row on paper trading linking its own log; the trade log states the day it counts from and the version, with the trades of earlier versions folded beneath it; 15.21 gains the row "An account's start and the version it counts" and a paragraph on why
+Why: the second 19.4 correction of 2026-10-13, display only: an account is evidence about one unchanged rule.
+
+### 2026-10-13 - .claude/rules/checks.md - read-surface holds an account's start at its rule's current version
+Authorised by: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+Was:
+> read-surface row: ... and every instant on the page marked ET with UTC beneath the pointer, read back off the route |
+Now:
+> ... read back off the route; and from the second 19.4 correction of 2026-10-13 a variant registered again counting only the trades bought from its new registration's first session, worked by hand, the earlier trades folded in its trade log, and reading the pages deleting nothing |
+Why: the row states the test the correction adds.
+
 ### 2026-10-13 - ARCHITECTURE.html - the Queue's settled days, its reports written by hand, its time form and section 17's window
 Authorised by: The queue page draws settled requests a row a stock and New York day over fourteen days, and the passes no request names a row a day
 Was:

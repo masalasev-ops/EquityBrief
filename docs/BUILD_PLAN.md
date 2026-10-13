@@ -1627,6 +1627,8 @@ Rules choose the stocks, code owns every number, and no paid or model call is ma
 
 19.9, after the report, adds about 3.
 
+19.10, queued beside 19.9 on the ruling of 2026-10-13, adds none until the operator approves moving entries to the next session's open.
+
 ### 19.0 Planning
 Writes this section, section 20's row for phase 19 and the decision on the sign-offs, which describes no running code; the decisions that change what runs are written where they are built. Its entry names the sign-offs of phases 16, 17 and 18 outstanding and says the phase opens no operating row. It also states two things read read-only. The first is the S&P 400's nights since its families went live, each night's breadth recomputed from the stored bars and 200-day averages against the stored row, any disagreement a correction under 15.1 before 19.1. The second is what the two approved changes beyond the pages cost before anything is built:
 - the per-rule test's migration, its two stores created empty with nothing copied or dropped, and the time it adds to the monthly run, estimated from October's tester;
@@ -1680,6 +1682,11 @@ Screenshots of every screen, Tonight on each index, paper trading with a trade l
 The business-first family's loose gates, written before the build as the other families' were, write its setups in the ledger's history build and its night step on all three indices with the benchmark, the readings and the point-in-time check the other families carry. The walk-forward tester gains the family's procedure over its grid, so the autopsy, the conditions, the score and the per-rule test read it and a proposal can be put for it on every index. The migration it needs, none expected, the time it adds to the night and the history build's time are stated in 19.0's entry before anything is built and measured here. Writes sections 13 and 14's rows, the schema, the runbook, the Ledger and Loop pages without their notes, and a decision naming the family's loose gates.
 
 **Done when** each loose gate is worked by hand on both sides of its threshold, the night step appends the family's setups over a constructed store, the point-in-time check holds over the family, and the procedure is worked over constructed folds.
+
+### 19.10 Entries priced at the next session's open
+Queued beside 19.9 after the report on the operator's ruling of 2026-10-13, with the second 19.4 correction. Every setup, trade and paper account is priced today at the close of the night that listed it, which the night computes after that close, so no one could have bought at that price. The item starts with a read-only check: over the ledger's settled setups on each index and family, each setup's result and edge worked out both ways, at the listing night's close and at the next session's open from the stored bar, with the same stop and target, and the differences reported by family, index and year, with how often the next open gapped past the entry zone or past the target. Nothing moves on the check alone. If the operator then approves moving entries to the next session's open, every stored trade is priced again from the stored bars in the same change, so no paper account starts again because of it (see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts). Writes, where the move is approved, the decision moving the entry, sections 13, 15.17 and 15.21's rows, the schema where a column moves, the runbook and the guide.
+
+**Done when** the check's differences by family, index and year and its counts of next opens gapping past the entry zone and past the target are stated in the entry, each figure worked by hand over a constructed ledger; and, where the operator approves the move, every stored trade is priced again from the stored bars in the change that moves the entry, worked by hand over a constructed store, with no paper account's start moved by it.
 
 ---
 

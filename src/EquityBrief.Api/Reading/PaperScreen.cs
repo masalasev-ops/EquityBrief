@@ -1,3 +1,4 @@
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
@@ -8,9 +9,10 @@ using EquityBrief.Web.Marks;
 namespace EquityBrief.Api.Reading;
 
 // One paper account before it is walked: its key, family, standing, name and words, the register's name its test row
-// carries, none for the live or provisional rule, whose row is read by its standing, whether it is a book, its trades
-// with each one's stored result, the day its record starts, and the name its stored trades are kept under, none where
-// they are the S&P 500's page list or the operator's.
+// carries, none for the live or provisional rule, whose row is read by its standing, whether it is a book, the trades it
+// counts with each one's stored result, the day it starts, the name its stored trades are kept under, none where they
+// are the S&P 500's page list or the operator's, the words naming the version it counts, and the trades it leaves out
+// as listed before that version, each with the words naming the version that listed it.
 public sealed record PaperAccountSource(
     string Key,
     string Family,
@@ -21,7 +23,9 @@ public sealed record PaperAccountSource(
     bool Book,
     IReadOnlyList<(PaperTrade Trade, double? Result)> Trades,
     DateOnly? Since,
-    string? Listed = null)
+    string? Listed = null,
+    string? Version = null,
+    IReadOnlyList<(PaperTrade Trade, double? Result, string Version)>? Earlier = null)
 {
     // Whether a stored trade is one of this account's: kept under its name, or under its name and the filter version it
     // was listed from.
@@ -63,8 +67,51 @@ public static class PaperScreen
 
     static string ListKey(string family) => ReadApi.PageList + "-" + family;
 
+    // The words a provisional account and the operator's own name what they count, having no registered version.
+    public const string ProvisionalVersion = "provisional settings, no registered version: every trade since its first";
+
+    public const string YourVersion = "your own trades: every one since your first";
+
+    // The words an earlier trade listed before its account's rule first registered is named by.
+    public const string BeforeRegistration = "before its first registration";
+
+    // A registered version as the page names it: the day it registered and its code version.
+    public static string VersionWords(CandidateRow row) =>
+        "the version registered " + Stamp(DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime)) + (row.EvaluatorVersion.Length > 0 ? ", code " + row.EvaluatorVersion : string.Empty);
+
+    static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    // Where a registered rule's account starts: where the Run page's record of the rule counts from, its standing
+    // registration's first session, or the session a replay under its version found it counting from where that replay
+    // reproduced every trade. The S&P 400's and 600's records read no replay.
+    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
+    public static DateOnly StartOf(CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays) =>
+        FamilyRecords.StartOf(
+            new RegisterRow(standing.Id, standing.Candidate, string.Empty, string.Empty, standing.Evaluator, standing.Parameters, standing.EvaluatorVersion, standing.Event, standing.Retires, standing.RegisteredAt, standing.Evidence),
+            replays).First;
+
+    // The version that listed a trade: its rule's newest registration whose first session is on or before the trade's buy.
+    public static string VersionAt(IReadOnlyList<CandidateRow> lineage, DateOnly bought) =>
+        lineage.Where(row => FamilyRecords.FirstSession(row.RegisteredAt) <= bought).MaxBy(row => (row.RegisteredAt, row.Id)) is { } listed
+            ? VersionWords(listed)
+            : BeforeRegistration;
+
+    // An account's trades split at its start: those it counts, bought on or after it, and those it leaves out, each named by
+    // the version that listed it.
+    public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
+        account with
+        {
+            Trades = [.. trades.Where(one => one.Trade.Bought >= start)],
+            Since = start,
+            Version = version,
+            Earlier = [.. trades.Where(one => one.Trade.Bought < start).Select(one => (one.Trade, one.Result, VersionAt(lineage, one.Trade.Bought)))],
+        };
+
     // Every account on an index in the one family order, each family's live or provisional rule first and its variants
-    // after it as its card numbers them, then the operator's own.
+    // after it as its card numbers them, then the operator's own. A registered rule's account counts the trades of its
+    // current version alone, from where the Run page's record of the rule starts; a provisional account and the
+    // operator's own count every trade from their first.
+    // see: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
     public static IReadOnlyList<PaperAccountSource> Accounts(
         bool large,
         string indexName,
@@ -73,9 +120,11 @@ public static class PaperScreen
         IndexRuleSettings? provisional,
         IReadOnlyList<PaperRow> rows,
         IReadOnlyList<PickCell> pageCells,
-        IReadOnlyList<(PaperTrade Trade, double? Result, string Family)> yours)
+        IReadOnlyList<(PaperTrade Trade, double? Result, string Family)> yours,
+        IReadOnlyList<FamilyReplayRow>? replays = null)
     {
         var accounts = new List<PaperAccountSource>();
+        var replayed = large ? replays ?? [] : [];
 
         static IReadOnlyList<(PaperTrade, double?)> Of(IEnumerable<PaperRow> rows) =>
         [
@@ -112,8 +161,11 @@ public static class PaperScreen
                 null,
                 listed);
             IReadOnlyList<(PaperTrade, double?)> trades = pageList ? PageTrades(pageCells.Where(cell => cell.Family == family)) : Of(rows.Where(head.Keeps));
+            var registrations = RuleScreen.Registrations(family, large, indexName, register);
 
-            accounts.Add(head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.Bought) : null });
+            accounts.Add(live is not null
+                ? Started(head, trades, StartOf(live, replayed), VersionWords(live), [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                : head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.Bought) : null, Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in variants)
             {
@@ -126,10 +178,10 @@ public static class PaperScreen
                     row.Candidate,
                     book,
                     [],
-                    DateOnly.FromDateTime(register.Where(one => one.Candidate == row.Candidate).Min(one => one.RegisteredAt).UtcDateTime),
+                    null,
                     row.Candidate);
 
-                accounts.Add(variant with { Trades = Of(rows.Where(variant.Keeps)) });
+                accounts.Add(Started(variant, Of(rows.Where(variant.Keeps)), StartOf(row, replayed), VersionWords(row), [.. registrations.Where(one => one.Candidate == row.Candidate)]));
             }
         }
 
@@ -142,7 +194,9 @@ public static class PaperScreen
             null,
             false,
             [.. yours.Select(one => (one.Trade, one.Result))],
-            yours.Count > 0 ? yours.Min(one => one.Trade.Bought) : null));
+            yours.Count > 0 ? yours.Min(one => one.Trade.Bought) : null,
+            Version: YourVersion,
+            Earlier: []));
 
         return accounts;
     }
@@ -268,7 +322,9 @@ public static class PaperScreen
                 account.Standing == PaperAccountView.You ? null : RuleVerdict.TooFew(account.Book, ended, months),
                 account.Since,
                 test?.Adjusted,
-                RuleVerdict.CountLine(account.Book, account.Trades.Count, ended, months, account.Standing == PaperAccountView.You));
+                RuleVerdict.CountLine(account.Book, account.Trades.Count, ended, months, account.Standing == PaperAccountView.You),
+                account.Version,
+                account.Earlier?.Count ?? 0);
         });
 
         return
@@ -288,29 +344,32 @@ public static class PaperScreen
     {
         var skipped = walk?.Trades.Where(one => one.Skipped is not null).ToDictionary(one => (one.Trade.Ticker, one.Trade.Bought), one => one.Skipped) ?? [];
 
-        return
-        [
-            .. account.Trades.Select(one =>
-            {
-                var trade = one.Trade;
-                var open = trade.Ended is null;
-                double? result = one.Result;
+        return [.. account.Trades.Select(one => Logged(account.Book, one.Trade, one.Result, night, close, skipped.GetValueOrDefault((one.Trade.Ticker, one.Trade.Bought)), null))];
+    }
 
-                if (open && close(trade.Ticker, night) is { } now && close(trade.Ticker, trade.Bought) is { } then && then > 0m)
-                {
-                    var ratio = now / then;
+    // The trades an account leaves out as listed before the version it counts, each with the version that listed it and an
+    // open one's result so far as the log reads it; walked by nothing.
+    public static IReadOnlyList<PaperTradeView> EarlierLog(PaperAccountSource account, DateOnly night, Func<string, DateOnly, decimal?> close) =>
+        [.. (account.Earlier ?? []).Select(one => Logged(account.Book, one.Trade, one.Result, night, close, null, one.Version))];
 
-                    result = account.Book || trade.Stop is null
-                        ? Statistic.FromRatio(ratio - 1m)
-                        : trade.Buy > trade.Stop ? Statistic.FromRatio((ratio - 1m) * trade.Buy / (trade.Buy - trade.Stop.Value)) : null;
-                }
-                else if (open)
-                {
-                    result = null;
-                }
+    static PaperTradeView Logged(bool book, PaperTrade trade, double? stored, DateOnly night, Func<string, DateOnly, decimal?> close, string? skipped, string? version)
+    {
+        var open = trade.Ended is null;
+        var result = stored;
 
-                return new PaperTradeView(trade.Ticker, trade.Bought, trade.Buy, trade.Stop, trade.Ended, result, open, skipped.GetValueOrDefault((trade.Ticker, trade.Bought)));
-            }),
-        ];
+        if (open && close(trade.Ticker, night) is { } now && close(trade.Ticker, trade.Bought) is { } then && then > 0m)
+        {
+            var ratio = now / then;
+
+            result = book || trade.Stop is null
+                ? Statistic.FromRatio(ratio - 1m)
+                : trade.Buy > trade.Stop ? Statistic.FromRatio((ratio - 1m) * trade.Buy / (trade.Buy - trade.Stop.Value)) : null;
+        }
+        else if (open)
+        {
+            result = null;
+        }
+
+        return new PaperTradeView(trade.Ticker, trade.Bought, trade.Buy, trade.Stop, trade.Ended, result, open, skipped, version);
     }
 }

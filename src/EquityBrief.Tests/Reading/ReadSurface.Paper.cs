@@ -22,7 +22,7 @@ public partial class ReadSurface
     // The rows 19.4 adds that this check reaches: paper trading's seven and the trade log's two.
     internal static readonly string[] PaperRows =
     [
-        .. new[] { "Your account", "The chart", "The chart's key", "Every account", "An account's test years verdict", "An account's record since registration", "The lines beneath" }
+        .. new[] { "Your account", "The chart", "The chart's key", "Every account", "An account's test years verdict", "An account's record since registration", "An account's start and the version it counts", "The lines beneath" }
             .Select(row => CheckReach.Key("15.21 Paper trading", row)),
         CheckReach.Key("15.17 Past picks", "The trade log's account"),
         CheckReach.Key("15.17 Past picks", "An account's trade log"),
@@ -200,7 +200,7 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"paper-p\" data-adjusted=\"0.3\"", variant, StringComparison.Ordinal);
         Assert.Contains("<g data-year=\"2025\" data-total=\"12.5\" data-compared=\"0\"><title>2025: this rule made 12.5 risks over 140, its benchmark made 0.0 over 140</title><text class=\"yb-year\" x=\"0\" y=\"10\">2025</text><rect class=\"yb-this\" x=\"117\" y=\"2\" width=\"81\" height=\"5\"/><rect class=\"yb-that\" x=\"117\" y=\"7\" width=\"0\" height=\"5\"/></g>", live, StringComparison.Ordinal);
         Assert.Contains($"href=\"#/picks?universe=500&account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
-        Assert.Contains("href=\"#/picks?universe=500&setup=breakout\"", live, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/picks?universe=500&account=list-breakout\"", live, StringComparison.Ordinal);
 
         // The chart draws the heads and yours by default and no variant; the breakout chosen in the hash adds the
         // variant's line dashed, each line with a key whose press the shell's script toggles.
@@ -229,13 +229,14 @@ public partial class ReadSurface
         Assert.Contains(", not evidence yet", log, StringComparison.Ordinal);
         Assert.Contains(MarkRenderer.EntryPriceLine, log, StringComparison.Ordinal);
 
-        // The lists' view: the selector with the lists first, the variants after them in the one family order, the
-        // pullback's two before the breakout's, and You last; and each family's verdict beside the lists' trades.
+        // The lists' view: the selector with the lists first, then from the 19.4 correction of 2026-10-13 each family's
+        // live or provisional account and its variants in the one family order, the pullback's before the breakout's,
+        // and You last; and each family's verdict beside the lists' trades.
         var lists = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
         var options = Regex.Matches(lists, "<select data-merge-key=\"account\".*?</select>", RegexOptions.Singleline).Single().Value;
 
         Assert.Equal(
-            ["", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), variantKey, "you"],
+            ["", "list-pullback", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "list-breakout", variantKey, "list-drift", "list-fundamentals", "list-heavyweight", "you"],
             Regex.Matches(options, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
         Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
 
@@ -251,6 +252,92 @@ public partial class ReadSurface
         }
 
         Assert.Empty(Strings(store, "SELECT detail FROM run_log WHERE detail LIKE '%98765%';"));
+    }
+
+    [Fact]
+    public async Task AnAccountCountsOnlyItsRulesCurrentVersionAndFoldsTheEarlierVersionsTradesIntoItsLog()
+    {
+        using var store = await FamilyPagesStore();
+
+        // The breakout's variant registered on Monday 2026-09-21 and registered again on Tuesday 2026-09-29, its first
+        // session that day; no replay stands on the run log, so its account starts on 2026-09-29 as the Run page's
+        // record of it does.
+        RegisteredRule(store, 201, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 202, TheSetupFamilies.Breakouts[^2], "2026-09-21T12:00:00Z");
+        RegisteredRule(store, 203, TheSetupFamilies.Breakouts[^2], "2026-09-29T12:00:00Z", retires: ProvisionalBreakout);
+        RegisteredRule(store, 204, TheSetupFamilies.Breakouts[^2], "2026-09-29T12:00:00Z");
+
+        // Under the first version: E1 bought on 2026-09-24 and ended on 09-28 at a risk, and E2 bought on 09-25 and open.
+        // Under the second: N1 bought on 09-29 and ended on 10-01 at two risks, a sale at 106, and N2 bought on 09-30 and
+        // ended on the night at a loss of its risk, a sale at 97. Each bought at 100 over a stop at 97 paying nothing.
+        foreach (var (ticker, bought, ended, result) in new[] { ("E1", "2026-09-24", "2026-09-28", 1.0), ("E2", "2026-09-25", (string?)null, (double?)null), ("N1", "2026-09-29", "2026-10-01", 2.0), ("N2", "2026-09-30", TheSwitch, -1.0) })
+        {
+            store.Execute(
+                "INSERT INTO family_trade (candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, benchmark, members, cost) VALUES " +
+                $"('{ProvisionalBreakout}', '{ticker}', '{bought}', 'breakout', 1, '100', '97', NULL, 1.5, NULL, 63, {Quoted(ended)}, {Number(result)}, {Number(result is null ? null : 0.0)}, {(result is null ? "NULL" : "400")}, 0);");
+        }
+
+        foreach (var (ticker, session, close) in new[]
+        {
+            ("N1", "2026-09-29", "100"), ("N1", "2026-09-30", "102"), ("N1", "2026-10-01", "106"), ("N1", TheSwitch, "106"),
+            ("N2", "2026-09-30", "100"), ("N2", "2026-10-01", "98"), ("N2", TheSwitch, "97"),
+            ("E1", "2026-09-24", "100"), ("E2", "2026-09-25", "100"), ("E2", TheSwitch, "103"),
+        })
+        {
+            PickBar(store, ticker, session, close);
+        }
+
+        AccountFile.Write(store.Root, new AccountSettings(10_000m, 1.5m, 1m));
+
+        var trades = Strings(store, "SELECT ticker || session_date FROM family_trade ORDER BY rowid;");
+        var register = Strings(store, "SELECT id || event FROM candidate_register ORDER BY id;");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+        var key = RunScreen.Slug(ProvisionalBreakout);
+        var row = AccountRowOf(page, key);
+
+        // A risk of 150, one and a half per cent of 10,000, over 3 a share buys 50 shares. 09-29: N1 for 5,000, valued at
+        // 10,000. 09-30: N2 for 5,000 off a worth of 10,000, the cash at nothing, N1 at 102 over 100, 10,100. 10-01: N1
+        // sold at 106, 5,300 in cash, N2 at 98 over 100, 4,900: 10,200. The night: N2 sold at 97, 4,850: 10,150. Its
+        // return 0.015 and its worst drop 50 under the high of 10,200. E1 and E2 are in none of it.
+        Assert.Contains("data-trades=\"2\" data-ended=\"2\"", row, StringComparison.Ordinal);
+        Assert.Contains("data-return=\"0.015\"", row, StringComparison.Ordinal);
+        Assert.Equal(50.0 / 10_200, double.Parse(Regex.Match(row, "data-worst=\"([^\"]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), 12);
+        Assert.Contains("<span class=\"paper-count\">2 trades · 2 decided of 300</span>", row, StringComparison.Ordinal);
+        Assert.Contains("from <span class=\"day\">2026-09-29</span>", row, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"paper-version\" data-earlier=\"2\">counts the version registered 2026-09-29, code v; 2 trade(s) of earlier versions left out</span>", row, StringComparison.Ordinal);
+
+        // Its trade log counts N1 and N2, and folds E1 and E2 beneath, each named by the version that listed it, E2's
+        // result so far 1 risk at 103 over 100 on a risk of 3.
+        var log = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/picks?account={Uri.EscapeDataString(key)}"));
+        var folded = Regex.Match(log, "<details class=\"paper-earlier\" data-earlier=\"2\">.*?</details>", RegexOptions.Singleline).Value;
+        var counted = log[..log.IndexOf("<details class=\"paper-earlier\"", StringComparison.Ordinal)];
+
+        Assert.Contains("<p class=\"paper-log-start\" data-since=\"2026-09-29\"><b>Counts from.</b> 2026-09-29", log, StringComparison.Ordinal);
+        Assert.Equal(["N2", "N1"], Regex.Matches(counted, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(
+            [("E2", "the version registered 2026-09-21, code v"), ("E1", "the version registered 2026-09-21, code v")],
+            Regex.Matches(folded, "<tr data-ticker=\"([^\"]+)\" data-bought=\"[^\"]+\" data-open=\"[^\"]+\" data-version=\"([^\"]+)\"").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+        Assert.Matches("<tr data-ticker=\"E2\".*?<span class=\"gain\">\\+1\\.00</span> risks <span class=\"degraded\">so far</span>", folded);
+        Assert.Contains("<figure class=\"paper-running\" data-total=\"1\" data-ended=\"2\">", counted, StringComparison.Ordinal);
+
+        // The breakout's live account, registered once on 2026-01-02, leaves nothing out, and reading the pages deleted
+        // no stored trade and no registration.
+        Assert.Contains("<span class=\"paper-version\" data-earlier=\"0\">counts the version registered 2026-01-02, code v</span>", AccountRowOf(page, "list-breakout"), StringComparison.Ordinal);
+        Assert.Equal(trades, Strings(store, "SELECT ticker || session_date FROM family_trade ORDER BY rowid;"));
+        Assert.Equal(register, Strings(store, "SELECT id || event FROM candidate_register ORDER BY id;"));
+        Assert.Equal(4, trades.Count);
+
+        // Where a replay under the version a rule stands at reproduced every trade, its account starts where the Run
+        // page's record does, at the session the replay counted from.
+        var standing = new CandidateRow(204, ProvisionalBreakout, TheSetupFamilies.Breakouts[^2].Evaluator, "registered", null, new DateTimeOffset(2026, 9, 29, 12, 0, 0, TimeSpan.Zero), EvaluatorVersion: "v");
+
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, []));
+        Assert.Equal(new DateOnly(2026, 9, 21), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
+        Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
     }
 
     [Fact]
