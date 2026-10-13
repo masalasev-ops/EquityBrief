@@ -44562,3 +44562,44 @@ Queue:      done, 19.0 to 19.5 as PRs 446 to 449 and 452 to 455, the screens' co
             correction as PR 457; in progress, 19.6; next, 19.7, the remaining screens.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
             of phases 16, 17 and 18.
+
+### 19.4 - correction: each paper account counts only its rule's current version, from where the Run page's record of the rule starts, the earlier versions' trades folded in its trade log   2026-10-13
+
+Corrects:   19.4's paper accounts, which counted a variant from its first registration and a live account from its
+            first trade, across every version its rule had been registered at.
+Ruled:      by the operator on 2026-10-13, display only, with a provisional account counting every trade from its first
+            on their answer of the same day; and 19.10, entries priced at the next session's open, queued beside 19.9.
+Built:      a registered rule's account counts the trades bought from the session the Run page's record of the rule
+            counts from, its standing registration's first session or a reproducing replay's on the S&P 500, saying where
+            the replay carried it back; the trades before it in none of its line, return, worst drop or counts, and in
+            its trade log folded beneath its trades, each named by the registration that listed it; each row and log
+            stating the start and the version; a live or provisional account's trade log of its own, its row linking it
+            and the selector listing it before its variants. One decision; 15.21's row and paragraph, 15.17's two rows
+            and the chart's row; 19.10 in `BUILD_PLAN.md`; the guide and the roster, the prior text in `CHANGELOG.md`.
+            Nothing stored is written or deleted.
+Measured:   read from the branch's build over the live store, read-only but the read surface's start row: on the S&P 500
+            the pullback's live account counts 8 trades from 2026-10-05 and leaves 7 out, the heavyweights' live book
+            none from 2026-10-07 leaving 5 out, two drift variants none from 2026-10-09 leaving 2 and 3 out, and the
+            breakout's and the drift's live accounts, registered again on 2026-10-12, count from 2026-10-02 as a
+            reproducing replay carried them; on the S&P 400 and 600 nothing is left out.
+Tests:      one new: a variant registered again, its walk, return, worst drop and counts worked by hand over trades
+            either side of it, the earlier two folded in its log by the version that listed each, the live account
+            leaving none out, the start at a reproducing replay's session and not a differing one's, and the stored
+            trades and registrations read the same after the pages. The paper page test's log link and selector moved,
+            and the stated counts with the row: 207 screen rows, 614 due points.
+Claims:     one more, 1306: 15.21's start and version row.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, each filtered to the paper
+            tests, 8. M20 trades before the start counted, M21 the start read with no replay, M22 an earlier trade named
+            by the newest registration, M23 no earlier versions drawn, M24 the version left out of the row, M25 the
+            carried words never written: each predicted red at the new test; so, 1 of 8 each. Not mutated: the
+            selector's order and the closes read for the earlier trades. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 922e7721: all six
+            steps, 0 warnings, 0 errors, 2321 of 2321 tests ran with none failed in 19 minutes 59 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1306 claims, 1306 passing and none unexamined, 43 checks on the roster run and passed.
+Queue:      done, 19.0 to 19.6 as PRs 446 to 449, 452 to 455 and 458, the screens' corrections as PR 456, the 11.4
+            correction as PR 457; in progress, this correction of 19.4; next, 19.7, the remaining screens, on the
+            operator's word.
+Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; 19.10 after
+            the report; the sign-offs of phases 16, 17 and 18.

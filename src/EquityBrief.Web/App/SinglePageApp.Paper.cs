@@ -13,7 +13,7 @@ public sealed partial class SinglePageApp
 {
     // How paper trading is read, opened from its "?".
     public const string PaperGuide =
-        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The chart draws each account's return since its record began, the live and provisional accounts always and a chosen family's variants dashed; a key's press hides or shows its line. The table puts two things side by side and never merges them: the rule's verdict in the newest monthly test over the ledger's years, and the account's own record since it was registered, which is too few to read until it holds the test's count of trades or months.";
+        "Each account takes one rule's trades: a family's live or provisional rule takes the page's own list, each registered variant its own list or book, and You the trades you took from the cards. Each trade is sized off the account's value at its buy by the card's own sizing, the trades ending on a session sold before any is bought, and one the free cash cannot buy is skipped and counted; each pays its round trip, half at its buy and half at its sale. The chart draws each account's return since its record began, the live and provisional accounts always and a chosen family's variants dashed; a key's press hides or shows its line. The table puts two things side by side and never merges them: the rule's verdict in the newest monthly test over the ledger's years, and the account's own record since it was registered, which is too few to read until it holds the test's count of trades or months. An account is evidence about one unchanged rule, so a registered rule's account counts only the trades of its current version, from where the Run page's record of the rule starts, and starts again when the rule is registered again; each row names its start and the version it counts, and the trades of earlier versions stay in its trade log, folded and left out of its line, return, worst drop and counts. A provisional account and yours count every trade from the first.";
 
     public string PaperRegion(
         MarkRenderer marks,
@@ -96,7 +96,8 @@ public sealed partial class SinglePageApp
     }
 
     // The trade log's selector on Past picks: the page's own lists first, the live and provisional rules' trades, then
-    // each variant in the one family order, then You, the choice kept in the link; the lists are the key's absence.
+    // each family's live or provisional account and its variants in the one family order, then You, the choice kept in
+    // the link; the lists are the key's absence.
     public static string AccountSelector(IReadOnlyList<PaperAccountView> accounts, string? chosen)
     {
         var html = new StringBuilder();
@@ -104,7 +105,7 @@ public sealed partial class SinglePageApp
         html.Append(Invariant($"<label class=\"account-pick\" data-account=\"{Escaped(chosen ?? "lists")}\"><span class=\"universe-lbl\">Account</span> <select data-merge-key=\"account\" aria-label=\"The account whose trades are drawn\">"));
         html.Append(Invariant($"<option value=\"\"{(chosen is null ? " selected" : string.Empty)}>Live and provisional lists</option>"));
 
-        foreach (var account in accounts.Where(one => one.Standing == PaperAccountView.Variant).OrderBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family)).Concat(accounts.Where(one => one.Standing == PaperAccountView.You)))
+        foreach (var account in accounts.Where(one => one.Standing != PaperAccountView.You).OrderBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family)).ThenBy(one => one.Head ? 0 : 1).Concat(accounts.Where(one => one.Standing == PaperAccountView.You)))
         {
             html.Append(Invariant($"<option value=\"{Escaped(account.Key)}\" title=\"{Escaped(account.Words)}\"{(account.Key == chosen ? " selected" : string.Empty)}>{Escaped(account.Standing == PaperAccountView.You ? "You" : FamilyLabel(account.Family) + " · " + account.Name)}</option>"));
         }
@@ -119,10 +120,10 @@ public sealed partial class SinglePageApp
     public static string ListsVerdicts(IReadOnlyList<PaperAccountView> accounts) =>
         "<div class=\"paper-heads\"><p><b>Test years and since registered.</b></p><ul>"
         + string.Concat(accounts.Where(one => one.Head).OrderBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family)).Select(account =>
-            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Name)}: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since registered: {account.Trades} trade(s){(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}.</li>")))
+            Invariant($"<li data-family=\"{Escaped(account.Family)}\" data-verdict=\"{Escaped(account.Verdict)}\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyLabel(account.Family))}</span> {Escaped(account.Name)}: {Escaped(account.Verdict)}{(account.Years.Count > 0 ? "; " + Escaped(EquityBrief.Core.Loop.RuleVerdict.Chosen) : string.Empty)}. Since registered: {account.Trades} trade(s){(account.TooFew is { } few ? Invariant($", <span class=\"too-few\">{Escaped(few)}</span>") : string.Empty)}{MarkRenderer.StartWords(account)}.</li>")))
         + Invariant($"</ul><p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p></div>");
 
-    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades)
+    public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades, IReadOnlyList<PaperTradeView>? earlier = null)
     {
         var region = new StringBuilder();
         var heading = "Past picks: " + reading.Titled;
@@ -132,7 +133,7 @@ public sealed partial class SinglePageApp
         region.Append(AccountSelector(accounts, account.Key));
         region.Append(Cards.Computed(
             "Trade log",
-            marks.PaperLog(account, trades),
+            marks.PaperLog(account, trades, earlier ?? []),
             title: Escaped(account.Standing == PaperAccountView.You ? "Your trades" : FamilyLabel(account.Family) + " · " + account.Name),
             lede: Escaped(account.Words),
             stamp: Cards.Night(night),
