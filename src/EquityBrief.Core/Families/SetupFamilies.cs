@@ -111,6 +111,24 @@ public static class SetupFamilies
         "Largest companies leading their sectors",
         "On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's ten largest companies, the two whose twelve-month returns beat the sector fund's by the most, where they beat it at all, their close is above their 50-day average and that above their 200-day, and their beta is at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.");
 
+    // The one order every page lists the families in, Tonight's: the three swing families in the page's order, the
+    // fundamentals-first family after them and the sector heavyweights last, by the word the store keeps each under.
+    public static IReadOnlyList<string> Order { get; } = [.. OnEveryIndex.Select(family => family.Name), HeavyweightRule.Name];
+
+    // Where a family stands in the one order, counted from one, and past every family for a word it does not hold.
+    public static int OrderOf(string name)
+    {
+        for (var at = 0; at < Order.Count; at++)
+        {
+            if (string.Equals(Order[at], name, StringComparison.Ordinal))
+            {
+                return at + 1;
+            }
+        }
+
+        return Order.Count + 1;
+    }
+
     // The families the page drew once and draws no longer, kept so a pick one listed is still named and scored.
     public static IReadOnlyList<SetupFamily> Former { get; } = [SectorLeaders];
 

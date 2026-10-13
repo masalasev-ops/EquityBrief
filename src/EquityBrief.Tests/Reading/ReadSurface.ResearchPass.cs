@@ -1156,7 +1156,7 @@ public partial class ReadSurface
             "('AAAA', 'The key under each figure', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL);");
 
         var prose = TonightScreen.Prose(night, await Api(store).WrittenOnOrBeforeAsync(night));
-        var header = new MarkRenderer().NightHeader(night, 503, 4, "00:03:10", null, null, prose);
+        var header = new MarkRenderer().NightOps(night, "00:03:10", null, null, prose);
         var line = Regex.Match(header, "<p class=\"night-prose\" data-fresh=\"(\\d+)\" data-reused=\"(\\d+)\" data-names=\"(\\d+)\">([^<]*)</p>");
 
         Assert.True(line.Success);
@@ -1188,14 +1188,15 @@ public partial class ReadSurface
             WebUtility.HtmlDecode(line.Groups[4].Value));
         Assert.DoesNotContain("data-prose=\"absent\"", header, StringComparison.Ordinal);
 
-        // The route states it too, over a store with no research at all.
+        // The Run page's route states it too, over a store with no research at all, as Tonight's did until 19.2.
         using var listed = await FixtureExpectations.WithListings();
         using var host = new Host(listed.Root);
         using var client = host.CreateClient();
 
         Assert.Contains(
             "<p class=\"night-prose\" data-fresh=\"0\" data-reused=\"0\" data-names=\"0\">",
-            await client.GetStringAsync($"/screens/tonight/{NightIn(listed)}"),
+            await client.GetStringAsync($"/screens/run/{NightIn(listed)}"),
             StringComparison.Ordinal);
+        Assert.DoesNotContain("night-prose", await client.GetStringAsync($"/screens/tonight/{NightIn(listed)}"), StringComparison.Ordinal);
     }
 }

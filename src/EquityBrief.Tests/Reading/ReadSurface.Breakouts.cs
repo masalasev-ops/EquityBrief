@@ -105,12 +105,16 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"why-tonight\">Closed at 50.00, above its high of 49.50 over the 126 sessions before, on volume 2.10 times its average, after its daily ranges ran at 0.80 of the 20 sessions before them.</td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"why-tonight\">Closed at 80.25, above its high of 80.00 over the 251 sessions before, on volume 1.60 times its average, after its daily ranges ran at 1.00 of the 20 sessions before them.</td>", FamilyRowOf(card, "K2"), StringComparison.Ordinal);
 
-        // F1, which both families passed, is drawn once, on the pullback's card, with the breakout's label
-        // and the pullback's own trade, and the breakout's card names it in a note.
+        // F1, which both families passed, is drawn once across the cards, on the pullback's card, with the breakout's label
+        // and the pullback's own trade, and the breakout's card names it in a note; and from 19.2 once in tonight's buy
+        // points above the cards, tagged with the pullback.
         var pullbacks = FamilyCardOf(page, SetupFamilies.Pullback);
         var shared = FamilyRowOf(pullbacks, "F1");
+        var points = Regex.Match(page, "<table class=\"list-table buy-points\".*?</table>", RegexOptions.Singleline).Value;
 
-        Assert.Single(Regex.Matches(page, "<tr data-ticker=\"F1\""));
+        Assert.Single(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
+        Assert.Single(Regex.Matches(points, "<tr data-ticker=\"F1\" data-family=\"pullback\""));
+        Assert.DoesNotContain("data-family=\"breakout\" data-selects=\"F1\"", points, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"F1\" data-family=\"pullback\" data-also=\"Breakout\"", shared, StringComparison.Ordinal);
         Assert.Contains("<span class=\"also-family\" data-also=\"Breakout\">also a breakout</span>", shared, StringComparison.Ordinal);
         Assert.Contains("data-target=\"110\">110.00</td>", shared, StringComparison.Ordinal);

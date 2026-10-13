@@ -1419,7 +1419,9 @@ public partial class ArchitectureConformance
         // long view and ladder figure.
         // 182 at 18.4: the calendar timeline, and the name page's risks' two columns, calendar and sources, where the dates
         // and sources leave.
-        Assert.Equal(182, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 188 at 19.2: the family tag, the setup tile and what is behind it among the marks, Tonight's setups and buy
+        // points, and the card's chart, the reason totals moving from Tonight to the Run page.
+        Assert.Equal(188, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1549,7 +1551,10 @@ public partial class ArchitectureConformance
         // columns as their four, the calendar as its eight and the sources as their four, where the dates and sources leave.
         // 582 at the 17.10 correction: the checklist's part on the newest monthly run.
         // 583 at 19.1: the card's rule row's part on the S&P 400's and 600's variant reading no market check.
-        Assert.Equal(583, inDocument.Length);
+        // 591 at 19.2: the three marks, Tonight's setups and buy points, the card's chart, the night's state's part on a
+        // night not yet run and the swing readings' part on the chart, the night header's four parts and the reason totals
+        // moving to the Run page.
+        Assert.Equal(591, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1658,7 +1663,9 @@ public partial class ArchitectureConformance
         // the calendar timeline's eight.
         // 509 at the 17.10 correction: the checklist's part on the newest monthly run.
         // 510 at 19.1: the card's rule row's part on the S&P 400's and 600's variant reading no market check.
-        Assert.Equal(510, checkedElements);
+        // 512 at 19.2: the night header's four parts on the night's cost and its checks moving to how last night went,
+        // the night's state's part on a night not yet run, and the swing readings' part on the chart beneath them.
+        Assert.Equal(512, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

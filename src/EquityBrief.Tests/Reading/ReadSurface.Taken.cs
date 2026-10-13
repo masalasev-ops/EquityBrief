@@ -500,11 +500,11 @@ public partial class ReadSurface
 
     static string LineSix(string card)
     {
-        var line = Regex.Match(card, "<li class=\"card-line\" data-line=\"6\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\1\">\\1</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">([^<]*)</span></li>");
+        var line = Regex.Match(card, "<li class=\"card-line\" data-line=\"6\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\1\">\\1</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>");
 
         Assert.True(line.Success, "The card draws no sixth line.");
 
-        return $"6|{line.Groups[1].Value}|{line.Groups[2].Value}|{line.Groups[3].Value}";
+        return $"6|{line.Groups[1].Value}|{line.Groups[2].Value}|{CardWords(line.Groups[3].Value)}";
     }
 
     static (string Mark, string Words) Words(CardLine line) => (line.Mark, line.Words);

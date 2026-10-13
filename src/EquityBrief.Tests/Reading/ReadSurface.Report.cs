@@ -129,8 +129,8 @@ public partial class ReadSurface
             Marked(shares, "rect"));
         Assert.Equal(["180", "120"], Regex.Matches(shares, "<rect class=\"sb-bar\"[^>]*width=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
-            [("up", "+20.0%"), ("down", "-4.8%")],
-            Regex.Matches(shares, "<text class=\"sb-change sb-(up|down)\"[^>]*>([^<]+)</text>").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+            [("gain", "+20.0%"), ("loss", "-4.8%")],
+            Regex.Matches(shares, "<text class=\"sb-change (gain|loss)\"[^>]*>([^<]+)</text>").Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
 
         // A table summing to no total draws none and says why.
         Assert.Equal(
@@ -344,12 +344,12 @@ public partial class ReadSurface
         Assert.Contains("<table class=\"quarter-table\" data-quarter=\"2026-06-30\" data-year-earlier=\"2025-06-30\">", quarter, StringComparison.Ordinal);
         Assert.Contains(
             "<tr data-line=\"Revenue\"><td>Revenue</td><td class=\"num\" data-reported=\"1100000000\">$1.1B</td><td class=\"num\" data-estimate=\"1050000000\">$1.1B</td>"
-            + "<td class=\"num\"><span class=\"up\" data-difference=\"50000000\">+$50.0M</span> (<span class=\"up\" data-against=\"4.7619\">+4.8%</span>)</td>"
-            + "<td class=\"num\" data-year-earlier=\"900000000\">$900.0M</td><td class=\"num\"><span class=\"up\" data-on-the-year=\"22.2222\">+22.2%</span></td>",
+            + "<td class=\"num\"><span class=\"gain\" data-difference=\"50000000\">+$50.0M</span> (<span class=\"gain\" data-against=\"4.7619\">+4.8%</span>)</td>"
+            + "<td class=\"num\" data-year-earlier=\"900000000\">$900.0M</td><td class=\"num\"><span class=\"gain\" data-on-the-year=\"22.2222\">+22.2%</span></td>",
             quarter,
             StringComparison.Ordinal);
         Assert.Contains(
-            "<td class=\"num\"><span class=\"down\" data-difference=\"-0.10\">-0.10</span> (<span class=\"down\" data-against=\"-4.3478\">-4.3%</span>)</td>",
+            "<td class=\"num\"><span class=\"loss\" data-difference=\"-0.10\">-0.10</span> (<span class=\"loss\" data-against=\"-4.3478\">-4.3%</span>)</td>",
             quarter,
             StringComparison.Ordinal);
         Assert.Contains($"<td class=\"num degraded\" data-reported=\"absent\">{QuarterLines.FetchedBefore}</td><td class=\"num degraded\" data-estimate=\"absent\">none kept</td>", quarter, StringComparison.Ordinal);
@@ -382,11 +382,11 @@ public partial class ReadSurface
         Assert.Contains("<table class=\"consensus-table\" data-fetched=\"2026-09-27\"><tr><th>The analysts' estimate for</th>", consensus, StringComparison.Ordinal);
         Assert.Contains(
             "<tr data-period=\"0y\" data-period-end=\"2026-12-31\"><td>This fiscal year to 2026-12-31</td><td class=\"num\" data-eps=\"10.00\">10.00</td><td class=\"num\">9.00 to 11.00</td><td class=\"num\" data-analysts=\"20\">20</td>"
-            + "<td class=\"num\"><span class=\"up\" data-eps-growth=\"25\">+25.0%</span></td><td class=\"num\" data-revenue=\"1000000000\">$1.0B</td><td class=\"num\">$1.0B to $1.1B</td><td class=\"num\"><span class=\"up\" data-revenue-growth=\"25\">+25.0%</span></td></tr>",
+            + "<td class=\"num\"><span class=\"gain\" data-eps-growth=\"25\">+25.0%</span></td><td class=\"num\" data-revenue=\"1000000000\">$1.0B</td><td class=\"num\">$1.0B to $1.1B</td><td class=\"num\"><span class=\"gain\" data-revenue-growth=\"25\">+25.0%</span></td></tr>",
             consensus,
             StringComparison.Ordinal);
         Assert.Contains(
-            "<tr data-period=\"0y\"><td>This fiscal year</td><td class=\"num\" data-up-7=\"3\">3</td><td class=\"num degraded\" data-down-7=\"absent\">none filed</td><td class=\"num\" data-up-30=\"8\">8</td><td class=\"num\" data-down-30=\"2\">2</td><td class=\"num\"><span class=\"up\" data-change-30=\"5.2632\">+5.3%</span></td></tr>",
+            "<tr data-period=\"0y\"><td>This fiscal year</td><td class=\"num\" data-up-7=\"3\">3</td><td class=\"num degraded\" data-down-7=\"absent\">none filed</td><td class=\"num\" data-up-30=\"8\">8</td><td class=\"num\" data-down-30=\"2\">2</td><td class=\"num\"><span class=\"gain\" data-change-30=\"5.2632\">+5.3%</span></td></tr>",
             consensus,
             StringComparison.Ordinal);
 
@@ -411,7 +411,7 @@ public partial class ReadSurface
         Assert.Contains("<tr data-row=\"rate\"><td>Rate a share a year, forward</td><td class=\"num\"><span data-rate=\"4.00\">4.00</span></td></tr>", safety, StringComparison.Ordinal);
         Assert.Contains("<tr data-row=\"yield\"><td>Yield at 100.00, the quote</td><td class=\"num\"><span data-yield=\"4\">4.00%</span></td></tr>", safety, StringComparison.Ordinal);
         Assert.Contains("<tr data-row=\"ten-year\"><td>The Treasury's 10-year par yield on 2026-10-08</td><td class=\"num\"><span data-ten-year=\"4.2\">4.20%</span></td></tr>", safety, StringComparison.Ordinal);
-        Assert.Matches("<tr data-row=\"spread\"><td>The yield against the 10-year</td><td class=\"num\"><span class=\"down\" data-spread=\"-0\\.2[0-9]*\">-0\\.20 points</span></td></tr>", safety);
+        Assert.Matches("<tr data-row=\"spread\"><td>The yield against the 10-year</td><td class=\"num\"><span class=\"loss\" data-spread=\"-0\\.2[0-9]*\">-0\\.20 points</span></td></tr>", safety);
         Assert.Contains("<span data-payout-earnings=\"50\">50.0%</span> of 8.00", safety, StringComparison.Ordinal);
         Assert.Contains("<span data-payout-cash=\"50\">50.0%</span>, $2.0B of $4.0B", safety, StringComparison.Ordinal);
         Assert.Contains("<tr data-row=\"raised\"><td>Whole years in a row it raised the dividend</td><td class=\"num\"><span data-raised=\"1\">1</span></td></tr>", safety, StringComparison.Ordinal);
@@ -436,7 +436,7 @@ public partial class ReadSurface
         ])!);
 
         Assert.Equal(["BBB", "AAA", "OWN", "CCC"], Regex.Matches(peers, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<tr data-ticker=\"OWN\" class=\"key-row\" data-own=\"yes\"><td><a href=\"#/name/OWN\">OWN</a></td><td class=\"num\" data-multiple=\"25\">25.0</td><td class=\"num\" data-yield=\"3\">3.00%</td><td class=\"num\"><span class=\"up\" data-sales-growth=\"7\">+7.0%</span></td></tr>", peers, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"OWN\" class=\"key-row\" data-own=\"yes\"><td><a href=\"#/name/OWN\">OWN</a></td><td class=\"num\" data-multiple=\"25\">25.0</td><td class=\"num\" data-yield=\"3\">3.00%</td><td class=\"num\"><span class=\"gain\" data-sales-growth=\"7\">+7.0%</span></td></tr>", peers, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"CCC\"><td><a href=\"#/name/CCC\">CCC</a></td><td class=\"num degraded\">none read</td><td class=\"num\" data-yield=\"1\">1.00%</td><td class=\"num degraded\">none read</td></tr>", peers, StringComparison.Ordinal);
         Assert.Contains("<tr class=\"group-row\" data-row=\"median\"><td>The median</td><td class=\"num\">20.0 of 3</td><td class=\"num\">2.00% of 3</td><td class=\"num\">7.0% of 3</td></tr>", peers, StringComparison.Ordinal);
     }
@@ -583,7 +583,7 @@ public partial class ReadSurface
         var close = Rows(store, "SELECT close FROM bar WHERE ticker = 'MSFT' ORDER BY session_date DESC LIMIT 1;").Single()[0];
 
         Assert.Contains($"<td>Yield at {Figures.Price(Held(close))}, the last close</td>", page, StringComparison.Ordinal);
-        Assert.Matches("<tr data-row=\"spread\"><td>The yield against the 10-year</td><td class=\"num\"><span class=\"down\" data-spread=\"-[0-9.]+\">-[0-9.]+ points</span>", page);
+        Assert.Matches("<tr data-row=\"spread\"><td>The yield against the 10-year</td><td class=\"num\"><span class=\"loss\" data-spread=\"-[0-9.]+\">-[0-9.]+ points</span>", page);
         Assert.Contains(FormattableString.Invariant($"</span> of {Figures.PerShare(Held(newest.Row[8]))}</td>"), page, StringComparison.Ordinal);
         Assert.Contains("<span data-raised=\"0\">0</span> (no dividend is kept to read years from)", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"0\">", page, StringComparison.Ordinal);

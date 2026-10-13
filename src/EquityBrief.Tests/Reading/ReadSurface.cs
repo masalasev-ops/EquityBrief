@@ -122,6 +122,9 @@ public partial class ReadSurface
             // 19.1, the card's rule row's part on the S&P 400's and 600's variant reading no market check.
             .. MarketOffRows,
 
+            // 19.2, the three marks, Tonight's top, the date line's night and the chart of what is behind a stock.
+            .. ColourAndTopRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
@@ -302,7 +305,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Fact strip, the averages"),
             CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move"),
             CheckReach.Key("15.4 The two surfaces", "The app, selection"),
-            CheckReach.Key("15.7 Tonight", "Night header, the harness verdict"),
+            CheckReach.Key("15.10 Run", "How last night went, the harness verdict"),
             CheckReach.Key("15.7 Tonight", "The list, day change"),
             CheckReach.Key("15.7 Tonight", "The list, trend state in a word"),
             CheckReach.Key("15.7 Tonight", "The list, the distance row mark"),
@@ -420,7 +423,7 @@ public partial class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved"),
             CheckReach.Key("15.7 Tonight", "Night header, names in the index"),
             CheckReach.Key("15.7 Tonight", "Night header, names that fired"),
-            CheckReach.Key("15.7 Tonight", "Night header, run duration"),
+            CheckReach.Key("15.10 Run", "How last night went, how long the night took"),
             CheckReach.Key("15.7 Tonight", "An evening before the switch, one row per name that fired"),
             CheckReach.Key("15.7 Tonight", "An evening before the switch, ordered by how many fired then by the plan's reward to risk"),
             CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none"),
@@ -480,7 +483,7 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Harness, failed"),
             CheckReach.Key("15.10 Run", "Harness, unexamined"),
             CheckReach.Key("15.7 Tonight", "Reasons, per row"),
-            CheckReach.Key("15.7 Tonight", "Reason totals"),
+            CheckReach.Key("15.10 Run", "Reason totals"),
             CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars"),
 
             // 6.3, the third part of that region. The refusals are drawn from the
@@ -508,7 +511,7 @@ public partial class ReadSurface
             // written sections, what each research state offers
             // and the cost beside it, the page's half of section 18's cloud model row
             // and of its two local lane rows, and tonight's fresh prose against reused.
-            CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
+            CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
             CheckReach.Key("15.9 Name", "The short version"),
             CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks"),
             CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed"),
@@ -521,7 +524,7 @@ public partial class ReadSurface
 
             // 6.7, what research spent in tonight's header, and research paused on the
             // name page, which is the page's half of section 18's spend cap row.
-            CheckReach.Key("15.7 Tonight", "Night header, spend"),
+            CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
             CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes"),
             CheckReach.Key(Scope.FailureTable, "Spend cap reached, the name says research is paused and when it resumes"),
 
@@ -1103,7 +1106,7 @@ public partial class ReadSurface
 
         // Neutral ink. The two hues belong to support and resistance, and a
         // volume band is a magnitude.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         Assert.DoesNotContain("green", profile, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("orange", profile, StringComparison.OrdinalIgnoreCase);
     }
@@ -1183,7 +1186,7 @@ public partial class ReadSurface
     public void SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger()
     {
         // The one place in the system those hues appear.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
 
         var fills = Regex.Matches(svg, "class=\"level-band\" data-role=\"([a-z]+)\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
@@ -1205,7 +1208,7 @@ public partial class ReadSurface
         // drew every support band in the resistance hue and left the suite
         // green. Green is a level below the price and orange is one above it, so
         // the mapping is the claim rather than the palette.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         Assert.All(fills, fill => Assert.Contains(
             "--" + fill.Role,
             fill.Hue,
@@ -1932,11 +1935,11 @@ public partial class ReadSurface
         Assert.Equal(listings.Count(listing => listing.FiredCount > 0), fired);
 
         var marks = new MarkRenderer();
-        var header = marks.NightHeader(night.Value, universe.Count, fired, "00:00:01", new HarnessCounts(211, 0, 0, 87));
+        var header = marks.NightHeader(night.Value, universe.Count, fired);
 
         Assert.Contains($"data-fired=\"{fired}\"", header, StringComparison.Ordinal);
         Assert.Contains($"data-index=\"{universe.Count}\"", header, StringComparison.Ordinal);
-        Assert.Contains("data-prose=\"absent\"", header, StringComparison.Ordinal);
+        Assert.Contains("data-prose=\"absent\"", marks.NightOps(night.Value, "00:00:01", new HarnessCounts(211, 0, 0, 87)), StringComparison.Ordinal);
 
         // A night with more than twenty fired names draws twenty and states the
         // true count. The committed fixture holds four names, so the night of
@@ -4379,10 +4382,10 @@ public partial class ReadSurface
                 list,
                 StringComparison.Ordinal);
 
-            // And in words, with its sign, because the sign is the only channel
-            // the direction has: the two hues belong to support and resistance
-            // and a day's change is not allowed either of them.
-            Assert.Contains($">{reads}%</td>", list, StringComparison.Ordinal);
+            // And in words, with its sign, which from 19.2 stands in the gain's
+            // green or the loss's red beside it, so the direction is never in the
+            // hue alone.
+            Assert.Contains($"<span class=\"{MarkRenderer.Hue(change)}\">{reads}%</span></td>", list, StringComparison.Ordinal);
 
             // The trend state in a word, which is the ladder's own label.
             var ladder = await api.LadderAsync(row.Ticker);
@@ -4438,16 +4441,59 @@ public partial class ReadSurface
         Assert.Contains("data-absence=\"no-earlier-close\"", first, StringComparison.Ordinal);
     }
 
+    // 19.2: the night's operations, how long it took, the harness verdict, what research spent and the prose counts,
+    // stand on the Run page beneath how the night went, and the reason totals in its reasons fold, read off both rendered
+    // pages over the replayed fixture; Tonight draws none of them.
     [Fact]
-    public void TheNightHeaderStatesTheHarnessVerdictAndSaysSoWhereNoReportHasBeenWritten()
+    public async Task TheNightsOperationsAndTheReasonTotalsStandOnTheRunPageAndNotOnTonight()
     {
-        // Section 15.7 puts the harness verdict in the night header. It stood on
-        // the run page alone until 5.8, which is a different screen answering a
-        // different question.
+        using var store = await FixtureExpectations.WithListings();
+
+        var api = Api(store);
+        var night = (await api.NewestNightAsync())!.Value;
+        var stamp = night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var run = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{stamp}"));
+        var tonight = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{stamp}"));
+        var operations = Regex.Match(run, "<div class=\"night-ops\" data-night=\"" + stamp + "\">.*?</div>", RegexOptions.Singleline);
+
+        Assert.True(operations.Success, "The Run page draws no line of the night's operations.");
+        Assert.StartsWith($"<div class=\"night-ops\" data-night=\"{stamp}\"><p class=\"duration\" data-duration=\"{await api.NightDurationAsync(night) ?? "not recorded"}\">", operations.Value, StringComparison.Ordinal);
+        Assert.Contains("class=\"harness-verdict", operations.Value, StringComparison.Ordinal);
+        Assert.Matches("class=\"night-spend\"|data-spend=\"absent\"", operations.Value);
+        Assert.Contains("class=\"night-prose\"", operations.Value, StringComparison.Ordinal);
+        Assert.True(run.IndexOf("data-region=\"night\"", StringComparison.Ordinal) < operations.Index, "The night's operations stand outside how the night went.");
+
+        // The reason totals, each reason counted by the test's own reading of the night's stored listings.
+        var counted = Strings(store, $"SELECT json_extract(reason.value, '$.name') || ' ' || COUNT(*) FROM listing, json_each(listing.reasons) AS reason WHERE listing.session_date = '{stamp}' AND json_extract(reason.value, '$.fired') = 1 GROUP BY json_extract(reason.value, '$.name') ORDER BY json_extract(reason.value, '$.name');");
+
+        Assert.NotEmpty(counted);
+
+        foreach (var reason in counted)
+        {
+            var cut = reason.LastIndexOf(' ');
+
+            Assert.Contains($"<tr data-reason=\"{reason[..cut]}\" data-names=\"{reason[(cut + 1)..]}\">", run, StringComparison.Ordinal);
+        }
+
+        foreach (var moved in new[] { "night-ops", "class=\"duration\"", "harness-verdict", "night-spend", "data-spend=\"absent\"", "night-prose", "data-prose=\"absent\"", "class=\"reason-count\"" })
+        {
+            Assert.DoesNotContain(moved, tonight, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void TheNightsOperationsStateTheHarnessVerdictAndSaySoWhereNoReportHasBeenWritten()
+    {
+        // From 19.2 the harness verdict stands with the night's operations on the
+        // Run page, which Tonight's header drew from 5.8 until then.
         var marks = new MarkRenderer();
         var night = new DateOnly(2026, 9, 5);
 
-        var header = marks.NightHeader(night, 4, 2, "00:00:01", new HarnessCounts(211, 0, 0, 87));
+        var header = marks.NightOps(night, "00:00:01", new HarnessCounts(211, 0, 0, 87));
 
         Assert.Contains("class=\"harness-verdict\"", header, StringComparison.Ordinal);
         Assert.Contains("data-passed=\"211\"", header, StringComparison.Ordinal);
@@ -4464,7 +4510,7 @@ public partial class ReadSurface
 
         // A machine with no report says so rather than drawing four zeros, which
         // would read as a build nothing has ever checked.
-        var none = marks.NightHeader(night, 4, 2, "00:00:01", null);
+        var none = marks.NightOps(night, "00:00:01", null);
 
         Assert.Contains("data-report=\"none\"", none, StringComparison.Ordinal);
         Assert.Contains("no phase report has been written", none, StringComparison.Ordinal);
@@ -4536,8 +4582,8 @@ public partial class ReadSurface
         // And the page states which row it is drawn for, so the selection is
         // legible on the surface rather than only in the hash.
         var tonight = page.TonightRegion(
-            marks, night, universe.Count, TonightScreen.Fired(listings), "00:00:01",
-            rows, 0, region, null, picked.Ticker);
+            marks, night, universe.Count, TonightScreen.Fired(listings),
+            rows, 0, region, picked.Ticker);
 
         Assert.Contains($"data-selected=\"{picked.Ticker}\"", tonight, StringComparison.Ordinal);
 
@@ -5120,7 +5166,9 @@ public partial class ReadSurface
     {
         using var store = await FixtureExpectations.WithListings();
 
-        var sector = Rows(store, "SELECT sector FROM membership WHERE ticker = 'AAPL' AND \"left\" IS NULL;").Single()[0];
+        FiledSectors(store);
+
+        var sector = FiledSectorOf(store, "AAPL");
 
         // The span the provider listed before it re-dated a member, and a name with no bars
         // listed under two join dates, which is stale on every night.

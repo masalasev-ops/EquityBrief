@@ -3,6 +3,7 @@ using System.Text;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Core.Time;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
@@ -165,6 +166,12 @@ public sealed class SinglePageApp : IComponent
     // own header as every press is.
     // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
     public const string AccountRoute = MarkRenderer.AccountRoute;
+
+    // Paper trading, in the account page's place in the menu, the account page's old address still opening it.
+    public const string PaperRoute = "#/paper";
+
+    // The count the Loop's badge draws, the proposals put to the operator that hold no decision.
+    public const string LoopPutRoute = "/screens/loop/put";
     public const string AccountPostRoute = "/account";
     public const string TakenPostRoute = "/taken/";
     public const string NotTakenPostRoute = "/taken/remove/";
@@ -204,7 +211,7 @@ public sealed class SinglePageApp : IComponent
         if (quote is { } quoted)
         {
             var sign = quoted.Change is { } moved ? Math.Sign(moved) : 0;
-            var hue = sign > 0 ? " up" : sign < 0 ? " down" : string.Empty;
+            var hue = sign > 0 ? " gain" : sign < 0 ? " loss" : string.Empty;
             var change = quoted.Change is { } amount
                 ? Invariant($"<span class=\"m-chg{hue}\" data-change=\"{amount.ToString(CultureInfo.InvariantCulture)}\">{amount.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}{(quoted.ChangePercent is { } percent ? Invariant($" ({percent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%)") : string.Empty)}</span>")
                 : string.Empty;
@@ -214,7 +221,7 @@ public sealed class SinglePageApp : IComponent
 
         return (bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
             + (mast?.DayChangePct is { } day
-                ? Invariant($"<span class=\"m-chg\">{day.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
+                ? Invariant($"<span class=\"m-chg {MarkRenderer.Hue(day)}\">{(Math.Round(day, 2) == 0 ? 0 : day).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
                 : string.Empty);
     }
 
@@ -240,9 +247,84 @@ public sealed class SinglePageApp : IComponent
     // where it was left unfinished; nothing on a day the exchange did not trade.
     // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
     public string NightNotice(MarkRenderer marks, NightView night) =>
-        night.State == NightStates.NoSession
+        night.State is NightStates.NoSession or NightStates.NotYet
             ? string.Empty
             : "<section class=\"night-notice-box\">" + marks.NightNotice(night) + NightPress(night) + "</section>";
+
+    // Tonight's top on a night the families drew the page's list: a tile a setup in the one family order with tonight's
+    // count and its state, and one table of tonight's buy points across every setup, each family's picks in its own order.
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    public static (IReadOnlyList<SetupTileView> Tiles, IReadOnlyList<BuyPointView> Points) TopOf(
+        IReadOnlyList<FamilyCardView> families,
+        HeavyweightCardView? heavyweights,
+        bool marketOpen,
+        DateOnly night)
+    {
+        var tiles = new List<SetupTileView>();
+        var points = new List<BuyPointView>();
+
+        static string HeldBack(int held) => Invariant($"{held} held back by a trade still open");
+
+        foreach (var card in families.OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family)))
+        {
+            var forming = card.RuleChoice?.Forming?.Forming ?? 0;
+            var state = card.Picks.Count > 0
+                ? card.HeldBack > 0 ? HeldBack(card.HeldBack) : "listing tonight"
+                : !marketOpen ? "the market check closed"
+                : card.HeldBack > 0 ? HeldBack(card.HeldBack)
+                : forming > 0 ? Invariant($"{forming} forming")
+                : "nothing tonight";
+
+            tiles.Add(new SetupTileView(card.Family, card.Label, card.Picks.Count, card.Picks.Count == 1 ? "pick" : "picks", state));
+            points.AddRange(card.Picks.Select(pick => new BuyPointView(card.Family, card.Label, pick)));
+        }
+
+        if (heavyweights is not null)
+        {
+            var until = heavyweights.NextRebalance is { } next ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, next) : null;
+
+            tiles.Add(new SetupTileView(
+                EquityBrief.Core.Families.HeavyweightRule.Name,
+                "Sector heavyweights",
+                heavyweights.Holdings.Count,
+                heavyweights.Holdings.Count == 1 ? "holding" : "holdings",
+                heavyweights.LastRebalance == night ? "rebalanced tonight"
+                    : until is { } sessions ? Invariant($"rebalance in {sessions} {(sessions == 1 ? "session" : "sessions")}")
+                    : "its next rebalance not read"));
+        }
+
+        return (tiles, points);
+    }
+
+    // Tonight's buy points as a card of their own, the table across every setup with its key.
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "") =>
+        Cards.Computed(
+            "Buy points",
+            marks.BuyPoints(points, selected, plan, query) + Cards.Key(
+                "How to read the table.",
+                "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
+                "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
+            title: "Tonight's buy points",
+            lede: Invariant($"{points.Count} across every setup tonight."),
+            stamp: Cards.Night(night),
+            region: "buy-points");
+
+    // The date line's words for a night not yet run, in place of the notice it drew: when tonight's night starts, in New
+    // York's time with UTC beneath the pointer, read off the start the newest nights share; none for a night in any other
+    // state, or where the run log holds no night to read the start off.
+    // see: The date line names tonight's night by the start the most of the newest seven nights share
+    public static string NightDue(NightView night, TimeOnly? usual, TimeZoneInfo zone)
+    {
+        if (night.State != NightStates.NotYet || usual is not { } minute)
+        {
+            return string.Empty;
+        }
+
+        var starts = NightTime.On(night.Session, minute, zone);
+        var local = TimeZoneInfo.ConvertTime(starts, zone);
+
+        return Invariant($" · tonight's night runs at <time class=\"night-due\" datetime=\"{starts.UtcDateTime:yyyy-MM-dd'T'HH:mm'Z'}\" title=\"{starts.UtcDateTime:HH:mm} UTC\">{local:HH:mm} ET</time>");
+    }
 
     public const string PassHeader = "X-EquityBrief-Pass";
     public const string PassHeaderValue = "name-page";
@@ -289,6 +371,18 @@ public sealed class SinglePageApp : IComponent
         </span></div>
         """;
 
+    // The lane's word on the menu button, so the lane's state stays shown while the switch sits in the closed menu.
+    public static string LaneWord(string lane) => lane == LocalLane ? "Local" : "Paid";
+
+    // The three indices as tabs beside the screen's title, each keeping the index in the link as the selector did, its
+    // full name for a reader and the short one on a phone; the shell's script points each at the screen it is on.
+    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    public static string IndexTabs() =>
+        "<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">"
+        + string.Concat(Universes.Offered.Select(choice =>
+            $"<a href=\"#/?{Universes.Query}={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{Escaped(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{Escaped(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>"))
+        + "</nav>";
+
     public string Shell(string title, string lane = PaidLane) =>
         $$$"""
         <!doctype html>
@@ -305,7 +399,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{AccountRoute}}}" data-view="account">Account</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div>{{{IndexTabs()}}}<button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu<span class="m-lane-word" id="lane-word" data-lane="{{{Escaped(lane)}}}">{{{Escaped(LaneWord(lane))}}}</span></button><div class="m-panel" id="menu"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{LoopRoute}}}" data-view="loop">Loop<span class="m-badge" id="loop-badge" data-put="0" hidden></span></a><a href="{{{LedgerRoute}}}" data-view="ledger">Ledger</a><a href="{{{PaperRoute}}}" data-view="paper">Paper trading</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -338,11 +432,11 @@ public sealed class SinglePageApp : IComponent
             const universe = await fetch('/screens/universe' + (query ? '?' + query : ''));
             screen.innerHTML = await universe.text();
           } else if (path === '{{{LedgerRoute}}}') {
-            view = 'universe';
+            view = 'ledger';
             const ledger = await fetch('/screens/ledger' + (query ? '?' + query : ''));
             screen.innerHTML = await ledger.text();
           } else if (path === '{{{LoopRoute}}}') {
-            view = 'universe';
+            view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
             screen.innerHTML = await loop.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
@@ -370,8 +464,8 @@ public sealed class SinglePageApp : IComponent
             view = 'queue';
             const queued = await fetch('/screens/queue');
             screen.innerHTML = await queued.text();
-          } else if (path === '{{{AccountRoute}}}') {
-            view = 'account';
+          } else if (path === '{{{PaperRoute}}}' || path === '{{{AccountRoute}}}') {
+            view = 'paper';
             const account = await fetch('/screens/account');
             screen.innerHTML = await account.text();
           } else {
@@ -395,6 +489,15 @@ public sealed class SinglePageApp : IComponent
           for (const link of document.querySelectorAll('.m-nav a')) {
             if (link.dataset.view === view) { link.setAttribute('aria-current', 'page'); } else { link.removeAttribute('aria-current'); }
           }
+          // Each index tab opens the screen it is on for its index, the chosen one marked, the S&P 500 where the link names none.
+          const onPath = hash.indexOf('?') < 0 ? hash : hash.slice(0, hash.indexOf('?'));
+          const chosenIndex = query.get('{{{Universes.Query}}}') || '{{{Universes.Large.Word}}}';
+          for (const tab of document.querySelectorAll('#tabs a')) {
+            tab.setAttribute('href', (onPath || '#/') + '?{{{Universes.Query}}}=' + tab.dataset.universe);
+            if (tab.dataset.universe === chosenIndex) { tab.setAttribute('aria-current', 'page'); } else { tab.removeAttribute('aria-current'); }
+          }
+          closeMenu();
+          loopBadge();
           const named = head ? head.getAttribute('data-title') : null;
           document.title = named ? named + ' · EquityBrief' : 'EquityBrief';
           const tonight = screen.querySelector('section.tonight');
@@ -684,6 +787,38 @@ public sealed class SinglePageApp : IComponent
         function paintTheme() {
           document.getElementById('theme').textContent = currentTheme() === 'dark' ? 'Light palette' : 'Dark palette';
         }
+        // The menu: on a narrow screen its button opens the panel holding the links, the search, the palette's toggle and
+        // the report generation lane, and a screen drawn closes it; on a wide one the panel stands in the line.
+        const menuButton = document.getElementById('menu-button');
+        const menuPanel = document.getElementById('menu');
+        function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuPanel.classList.remove('open'); }
+        menuButton.addEventListener('click', () => {
+          const open = menuButton.getAttribute('aria-expanded') !== 'true';
+          menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+          menuPanel.classList.toggle('open', open);
+        });
+        // A setup's tile at the top of tonight's page brings its card into view, the sector heavyweights' by their own card.
+        screen.addEventListener('click', (event) => {
+          const tile = event.target.closest('.setup-tile[data-card]');
+          if (!tile) { return; }
+          const family = tile.getAttribute('data-card');
+          const card = family === '{{{EquityBrief.Core.Families.HeavyweightRule.Name}}}'
+            ? screen.querySelector('section.card[data-card="heavyweights"]')
+            : (screen.querySelector('section.family-card[data-family="' + CSS.escape(family) + '"]') || { closest: () => null }).closest('section.card');
+          if (card) { card.scrollIntoView({ block: 'start' }); }
+        });
+        // The Loop's badge: the proposals put to the operator that hold no decision, read off the surface on every screen
+        // drawn and shown at one or more.
+        async function loopBadge() {
+          const badge = document.getElementById('loop-badge');
+          try {
+            const answer = await fetch('{{{LoopPutRoute}}}');
+            const put = answer.ok ? parseInt(await answer.text(), 10) : 0;
+            badge.setAttribute('data-put', String(put > 0 ? put : 0));
+            badge.textContent = put > 0 ? String(put) : '';
+            badge.hidden = !(put > 0);
+          } catch (error) { badge.hidden = true; }
+        }
         // A research control is a form, sent here with the page's own header so the
         // surface knows the press came from this page, and what the surface said back is
         // put beside the control. It writes a request and starts nothing: the worker
@@ -944,7 +1079,9 @@ public sealed class SinglePageApp : IComponent
         // differently with whether any filing's facts are held to check them against.
         CalendarView? calendar = null,
         IReadOnlyList<EquityBrief.Core.Report.FigureConflict>? figuresChecked = null,
-        bool filedFactsHeld = false)
+        bool filedFactsHeld = false,
+        // The chart of what is behind the stock, from 19.2.
+        BehindItView? behind = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1119,12 +1256,16 @@ public sealed class SinglePageApp : IComponent
         // members' returns, the recent high and the pullback from it, the volume while it came down
         // and the range's tightness, as the swing reader stored them for the night.
         // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
+        // From 19.2 the chart of what is behind the stock stands beneath the swing readings, or beneath the member readings
+        // on an index the swing reader does not read.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        var behindPart = behind is null ? string.Empty : marks.BehindIt(behind);
         var swingPart = swing is null
             ? string.Empty
             : Fold(
                 "swing",
                 "Its swing readings: where it stands for a swing trade",
-                marks.SwingTable(ticker, swing) + Cards.Key(
+                marks.SwingTable(ticker, swing) + behindPart + Cards.Key(
                     "How to read it.",
                     Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
                     "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."));
@@ -1137,7 +1278,7 @@ public sealed class SinglePageApp : IComponent
             : Fold(
                 "member",
                 Invariant($"Its member readings: what a trade in it costs and what its quarters say, as a member of the {Escaped(member.Index)}"),
-                marks.MemberReadingsTable(ticker, member) + Cards.Key(
+                marks.MemberReadingsTable(ticker, member) + (swing is null ? behindPart : string.Empty) + Cards.Key(
                     "How to read it.",
                     Invariant($"The dollar volume is the mean of the close times the volume over the last {EquityBrief.Core.Readings.MemberReadings.DollarVolumeSessions} sessions. A round trip is half the published effective spread for the company's value and the price at the buy and half again at the sale, stated at the table's figure and at double. The profit gate sums net income over the {EquityBrief.Core.Readings.MemberReadings.Quarters} newest quarters filed before the night, and the coverage asks their operating income for at least twice their interest expense, a company filing none and a financial company passing. The year's high is the highest high of the {EquityBrief.Core.Readings.MemberReadings.YearSessions} sessions before the night, and the industry's figures are its S&amp;P 500 members', each weighted by its company's value."),
                     "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."));
@@ -1543,7 +1684,7 @@ public sealed class SinglePageApp : IComponent
 
             analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
             analystBody.Append(analysts.Target is { } target
-                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? Invariant($", {against:+0.0;-0.0;0.0}% on the price drawn") : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
+                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? ", " + MarkRenderer.SignedFigure(against, 1, Invariant($"{(Math.Round(against, 1) == 0 ? 0 : against):+0.0;-0.0;0.0}%")) + " on the price drawn" : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
                 : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");
             analystBody.Append("<div class=\"sub\">The consensus over the last 90 days</div><div class=\"fig\">").Append(marks.EstimateTrend(analysts)).Append("</div>");
             analystBody.Append("<div class=\"sub\">Ratings by month</div><div class=\"fig\">").Append(marks.RatingBars(analysts)).Append("</div>");
@@ -1821,8 +1962,6 @@ public sealed class SinglePageApp : IComponent
         region.Append(selector);
 
         // The setup ledger of the same index, under Universe.
-        region.Append(Invariant($"<p class=\"ledger-link\"><a href=\"{LedgerRoute}?universe={reading.Word}\" data-ledger=\"{reading.Word}\">The setup ledger: every near-setup on the {Escaped(reading.Name)} and how it turned out</a></p>"));
-        region.Append(Invariant($"<p class=\"loop-link\"><a href=\"{LoopRoute}?universe={reading.Word}\" data-loop=\"{reading.Word}\">The loop: each family's proposals on the {Escaped(reading.Name)}, tested on years they never saw</a></p>"));
 
         // The S&P 400's and 600's members are read by the stages every member's figures need, and not by the listings,
         // the ladder or the swing readings, which read the S&P 500's alone, so their rows say so where those draw.
@@ -1900,7 +2039,7 @@ public sealed class SinglePageApp : IComponent
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\">"));
                 body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
                 body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
-                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "not on file")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
+                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
@@ -2129,16 +2268,11 @@ public sealed class SinglePageApp : IComponent
         DateOnly night,
         int index,
         int fired,
-        string? duration,
         IReadOnlyList<ListingCell> rows,
         int watching,
         string selectedName,
-        HarnessCounts? harness,
         string? selectedTicker = null,
         IReadOnlyList<ReasonRecord>? records = null,
-        IReadOnlyList<ReasonTrackRow>? totals = null,
-        NightSpend? spend = null,
-        NightProse? prose = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         MarketView? market = null,
         ListRuleView? rule = null,
@@ -2150,7 +2284,8 @@ public sealed class SinglePageApp : IComponent
         MarketLineView? line = null,
         IReadOnlyList<CloseToBuyCell>? closeAcross = null,
         HeavyweightCardView? heavyweights = null,
-        string selector = "")
+        string selector = "",
+        string due = "")
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2167,14 +2302,14 @@ public sealed class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
 
         region.Append(selector);
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
-            marks.NightHeader(night, index, fired, duration, harness, spend, prose, market, byFilter ? listed : null)
-                + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, and what it cost</a></p>"),
+            marks.NightHeader(night, index, fired, market, byFilter ? listed : null)
+                + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, what it cost and how the code is checked</a></p>"),
             stamp: Cards.Night(night),
             region: "night"));
 
@@ -2200,6 +2335,17 @@ public sealed class SinglePageApp : IComponent
             {
                 region.Append(marks.MarketLine(line));
             }
+
+            // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, the row selected
+            // drawing its plan and its card beneath it.
+            // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+            var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night);
+            var plan = selectedName.Length > 0 && selectedTicker is { } planned
+                ? selectedName + SelectedLinks(planned, rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == planned))
+                : string.Empty;
+
+            region.Append(marks.SetupTiles(tiles));
+            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night));
 
             foreach (var card in families)
             {
@@ -2310,9 +2456,12 @@ public sealed class SinglePageApp : IComponent
 
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
-        // plan beneath the list, on the same page, and brings it into view.
-        // see: Selecting a row draws its plan beneath the list and is no navigation
-        if (selectedName.Length > 0 && selectedTicker is { } chosen)
+        // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, a buy
+        // point's plan is drawn beneath its row in the table instead, and this region draws any other name selected.
+        // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+        var inTheTable = families is not null && selectedTicker is { } asked && families.Any(card => card.Picks.Any(pick => pick.Row.Ticker == asked));
+
+        if (!inTheTable && selectedName.Length > 0 && selectedTicker is { } chosen)
         {
             var picked = rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == chosen);
             var name = picked?.Distance?.Name;
@@ -2331,25 +2480,9 @@ public sealed class SinglePageApp : IComponent
                 id: "selected",
                 region: "selected"));
         }
-        else
+        else if (!inTheTable)
         {
             region.Append(selectedName);
-        }
-
-        // The reason totals, 15.7's last region, drawn beneath the list because
-        // it is a statement about the evening rather than about a name in it.
-        if (totals is not null)
-        {
-            region.Append(Cards.Computed(
-                "Reason totals",
-                marks.ReasonTotals(totals, fired) + Cards.Key(
-                    "One long bar.",
-                    "Most of tonight's fired names carry the same reason, so the evening is one thing happening to many names. Several short bars mean different things happened to a few names each.",
-                    "These are tonight's counts. How a reason's setups have ended over time is on the run page, read against the base rate."),
-                title: byFilter ? "Which reasons fired tonight, as context" : "Which reasons put tonight's names on the list",
-                lede: Invariant($"How many of tonight's {fired} fired names carry each reason."),
-                stamp: Cards.Night(night),
-                region: "totals"));
         }
 
         region.Append("</section>");
@@ -2371,18 +2504,20 @@ public sealed class SinglePageApp : IComponent
         MarketLineView? line,
         IReadOnlyList<FamilyCardView> families,
         HeavyweightCardView? heavyweights,
-        string? notComputed = null)
+        string? notComputed = null,
+        string due = "",
+        string? selectedTicker = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Name;
         var query = "?" + Universes.Query + "=" + universe.Word;
 
-        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"none\">"));
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
 
         region.Append(selector);
 
@@ -2398,6 +2533,15 @@ public sealed class SinglePageApp : IComponent
         region.Append(notComputed is { } said
             ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
             : marks.MarketLine(line));
+
+        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, the row
+        // selected, the first where the link names none, drawing its pick's card beneath it, and every row's link keeping
+        // the index.
+        var (tiles, points) = TopOf(families, heavyweights, line.Open, night);
+        var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
+
+        region.Append(marks.SetupTiles(tiles));
+        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word));
 
         foreach (var card in families)
         {
@@ -2512,7 +2656,13 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
         IReadOnlyList<FamilyRecordRow>? familyRecords = null,
         StoreCopyRead? storeCopy = null,
-        string selector = "")
+        string selector = "",
+        string? duration = null,
+        NightSpend? spend = null,
+        NightProse? prose = null,
+        IReadOnlyList<ReasonTrackRow>? totals = null,
+        int fired = 0,
+        bool listedByFilter = true)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Name;
@@ -2531,18 +2681,16 @@ public sealed class SinglePageApp : IComponent
 
         // How last night went: its state from its own run log rows and its tries, the four headline figures,
         // the time its steps took, and the press running the rest of a night left unfinished, above
-        // everything else.
+        // everything else; and from 19.2, beneath them, how long it took, the harness verdict, what research
+        // spent and the prose counts, which Tonight drew in its header before.
         // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
-        if (how is { } went)
-        {
-            region.Append(Cards.Computed(
-                "Last night",
-                marks.NightStatus(went) + NightPress(went),
-                title: "How last night went",
-                lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
-                stamp: Cards.Night(night),
-                region: "night"));
-        }
+        region.Append(Cards.Computed(
+            "Last night",
+            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness, spend, prose),
+            title: "How last night went",
+            lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
+            stamp: Cards.Night(night),
+            region: "night"));
 
         // The market and the funnel side by side, each a picture with its words beneath.
         region.Append("<div class=\"run-pair\">");
@@ -2715,6 +2863,23 @@ public sealed class SinglePageApp : IComponent
         region.Append(Folded);
 
         region.Append(Fold("records", "The old list's reasons, kept as context"));
+
+        // The reason totals, which Tonight drew beneath its list until 19.2: a statement about the evening rather than
+        // about a name in it.
+        if (totals is not null)
+        {
+            region.Append(Cards.Computed(
+                "Reason totals",
+                marks.ReasonTotals(totals, fired) + Cards.Key(
+                    "One long bar.",
+                    "Most of the night's fired names carry the same reason, so the evening is one thing happening to many names. Several short bars mean different things happened to a few names each.",
+                    "These are the night's counts. How a reason's setups have ended over time is beneath, read against the base rate."),
+                title: listedByFilter ? "Which reasons fired on the night, as context" : "Which reasons put the night's names on the list",
+                lede: Invariant($"How many of the night's {fired} fired names carry each reason."),
+                stamp: Cards.Night(night),
+                region: "totals"));
+        }
+
         region.Append(Cards.Computed(
             "Reason records",
             marks.ReasonRecords(records, tracks, baseRates, nights) + Cards.Key(
@@ -2925,7 +3090,7 @@ public sealed class SinglePageApp : IComponent
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\"><td class=\"num\">{at + 1}</td>"));
                 body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
                 body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
-                body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num\">{change:+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num {MarkRenderer.Hue(change)}\">{(Math.Round(change, 2) == 0 ? 0 : change):+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
                 body.Append(row.RewardToRisk is { } ratio ? Invariant($"<td class=\"r num\">{ratio:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td class=\"{(one.Listed ? "listed" : "stopped")}\" data-filter=\"{Escaped(one.Filter)}\">{Escaped(one.Filter)}</td>"));
@@ -2981,7 +3146,7 @@ public sealed class SinglePageApp : IComponent
 
         var region = new StringBuilder();
         var heading = "Setup ledger: " + reading.Name;
-        var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).ToArray();
+        var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).OrderBy(EquityBrief.Core.Families.SetupFamilies.OrderOf).ToArray();
 
         region.Append(Invariant($"<section class=\"ledger\" data-universe=\"{reading.Word}\" data-families=\"{families.Length}\" data-family=\"{Escaped(family ?? "none")}\">"));
         region.Append(Cards.Masthead(
@@ -3003,7 +3168,7 @@ public sealed class SinglePageApp : IComponent
             return region.ToString();
         }
 
-        foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal))
+        foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal).OrderBy(group => EquityBrief.Core.Families.SetupFamilies.OrderOf(group.Key)))
         {
             var rows = group.OrderBy(year => year.Year).ToArray();
             var newest = rows.LastOrDefault(year => year.Settled > 0);
@@ -3046,8 +3211,17 @@ public sealed class SinglePageApp : IComponent
         return region.ToString();
     }
 
-    // The families the Loop page draws, in the page's order.
-    public static IReadOnlyList<string> LoopFamilies { get; } = ["pullback", "breakout", "drift", "heavyweight"];
+    // The families the Loop page draws, in the one order every page lists them in, the fundamentals-first family left out
+    // while the ledger holds none of its setups for the tester to read.
+    public static IReadOnlyList<string> LoopFamilies { get; } =
+        [.. EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name)];
+
+    // How many proposals a run puts to the operator that hold no word of theirs yet: at most one a family, the one the
+    // Loop page offers its presses on, read as the page reads it. The menu's badge counts them over each index's newest run.
+    public static int PutWithoutWord(EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals, LoopDecided decided) =>
+        LoopFamilies.Count(family =>
+            EquityBrief.Core.Loop.LoopDecisions.PutOf([.. proposals.Where(proposal => proposal.Family == family)], one => MarkRenderer.HeldBack(run, one, decided)) is { } put
+            && !decided.Decisions.Any(one => one.Run == run.RunId && one.Family == family && one.Proposal == put.Proposal));
 
     // The Loop page under Universe: for the index chosen and the month its newest tester run is for, each family's rule
     // today in the words the run stored, and each proposal tested against it with its verdict part by part and its test
@@ -3288,7 +3462,7 @@ public sealed class SinglePageApp : IComponent
             "Past picks",
             marks.PicksCounts(summary) + Cards.Key(
                 "How to read it.",
-                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so -1 is a full stop-out and +2 a target twice as far away as the stop."),
+                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
             title: "How the list's picks have done",
             lede: Invariant($"Every name the live list recommended from the swing filter's first night, each followed from the close it was listed at to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),

@@ -1,10 +1,13 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Ledger;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -38,10 +41,38 @@ public partial class ReadSurface
             ["GSPC breakout K1", "GSPC breakout K2", "GSPC pullback F1", "GSPC pullback F2", "GSPC pullback F3", "GSPC pullback F4", "GSPC pullback F5"],
             stored.Select(card => $"{card.Index} {card.Family} {card.Ticker}"));
 
+        // From 19.2 the chart of what is behind each pick: K1 and F1 hold the night's readings, K1's close 1.05 times its
+        // 20-session average and F1's 0.95, and K2 none; the breakout's learned score passed on the S&P 500 and the
+        // pullback has none.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        foreach (var (ticker, overTwenty) in new[] { ("K1", 1.05), ("F1", 0.95) })
+        {
+            var held = new double?[LedgerReadings.Count];
+
+            held[LedgerReadings.IndexOf("close_over_twenty")] = overTwenty;
+            store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{TheSwitch}', '{ticker}', '{SetupLedger.ReadingsText(held)}', '{LedgerReadings.Version}');");
+        }
+
+        ScoreRun(store, "loop-test-GSPC-1", passed: true);
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var rows = await CardsReadBack(client, stored, TheSwitch);
+
+        // K1's card pushes by its momentum alone, 0.2 times 1.05 less the mean of 1 over the spread of 0.1, from a setup at
+        // the means scoring 2 to its own 2.1; F1's, whose family has no score, and K2's, holding no readings, draw the
+        // readings alone, K2's none read.
+        var momentum = 0.2 * (1.05 - 1.0) / 0.1;
+
+        Assert.Contains($"<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<li data-heading=\"Momentum\" data-push=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<ul class=\"behind-push\" data-centre=\"2\" data-score=\"{(0.2 / 0.1 * 1.05).ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.75\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.25\">", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["K2"], StringComparison.Ordinal);
+        Assert.DoesNotContain("data-percentile=\"0", rows["K2"], StringComparison.Ordinal);
 
         // No rule replayed on the S&P 500: each card's record is the outline under the rule's own heading.
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the breakout on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["K1"], StringComparison.Ordinal);
@@ -78,6 +109,12 @@ public partial class ReadSurface
 
         await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
 
+        // M1 holds the S&P 400's readings on the night, which its card's chart reads among its own index's members.
+        var m1 = new double?[LedgerReadings.Count];
+
+        m1[LedgerReadings.IndexOf("close_over_twenty")] = 1.02;
+        store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('MID', '{IndexNight}', 'M1', '{SetupLedger.ReadingsText(m1)}', '{LedgerReadings.Version}');");
+
         var stored = StoredCards(store);
 
         Assert.Equal(
@@ -89,6 +126,35 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
+        // From 19.2 the S&P 600's buy points select their first row where the link names none, drawing S1's card beneath
+        // it, and each row's link keeps the index.
+        var points = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
+        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"7\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
+
+        // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
+        // link naming a stock no row holds selects the first.
+        store.Execute(
+            "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
+            $"('SML', '{IndexNight}', 'S3', 'breakout', 1, 2, '40', '38', NULL, '2', 63, 1.9, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            $"('SML', '{IndexNight}', 'S3', 'breakout', 'listed', 2, '[]', NULL, NULL, NULL);");
+
+        var named = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S3&universe=600\" class=\"sel\" aria-selected=\"true\">", named, StringComparison.Ordinal);
+        Assert.Equal(["S3"], Regex.Matches(named, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+
+        var unnamed = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Equal(["S1"], Regex.Matches(unnamed, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+
+        // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", rows["M1"], StringComparison.Ordinal);
+
         // The S&P 400's breakout record under the rule's own heading naming its index, opening with the line that it is the
         // rule's record and not the stock's, its figures as the record stored them and no word of the stock; a rule not
         // replayed draws the outline under its own heading, named for its index.
@@ -96,7 +162,8 @@ public partial class ReadSurface
 
         Assert.True(record.Success, "M1's card draws no record.");
         Assert.StartsWith($"<h5>The record of the breakout on the S&P 400</h5><p class=\"card-caution\">{MarkRenderer.RecordIsTheRules}</p>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-average=\"0.21\">0.21 of the risk after each trade's cost</dd>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<dd data-average=\"0.21\"><span class=\"gain\">+0.21</span> of the risk after each trade's cost</dd>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<dd data-worst=\"-0.4\">a median <span class=\"loss\">-0.40</span> of the risk from the buy before the end</dd>", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<dd data-won=\"none\">none read: the rule sets no target, so a trade has no win</dd>", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<dd data-median=\"12\" data-held=\"", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"card-caution\">{MarkRenderer.RecordReadsHigh}</p>", record.Groups[1].Value, StringComparison.Ordinal);
@@ -155,8 +222,8 @@ public partial class ReadSurface
 
                 // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
                 // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">([^<]*)</span></li>")
-                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{match.Groups[4].Value}")
+                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 
                 Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"), drawn[..^1]);
@@ -183,11 +250,16 @@ public partial class ReadSurface
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             Assert.Equal(
                 card.Lines.Select(line => line.Words),
-                Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">([^<]*)</span>").Select(match => match.Groups[1].Value));
+                Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">(.*?)</span></li>").Select(match => CardWords(match.Groups[1].Value)));
         }
 
         return rows;
     }
+
+    // A card line's words as stored, read off the markup with each signed figure's gain or loss span taken off and no
+    // other markup, so a line drawing anything but the pair beside its words fails.
+    static string CardWords(string drawn) =>
+        Regex.Replace(drawn, "<span class=\"(?:gain|loss)\">([^<]*)</span>", "$1");
 
     // The cards the night stored, each line read off the stored lines by the test's own reading.
     static IReadOnlyList<StoredCard> StoredCards(TemporaryStore store)

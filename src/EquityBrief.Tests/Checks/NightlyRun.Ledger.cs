@@ -135,6 +135,22 @@ public partial class NightlyRun
 
         Assert.Null(tonight("ZZZ"));
 
+        // From 19.2 the night stores every member's readings, a row a member of the index holding a bar, under the
+        // catalogue's version, each the readings a rule's hooks are supplied, the catalogue's in its order with none as null.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        Assert.Equal(
+            [$"GSPC|AAA|{EquityBrief.Core.Ledger.LedgerReadings.Version}", $"GSPC|BBB|{EquityBrief.Core.Ledger.LedgerReadings.Version}", $"GSPC|CCC|{EquityBrief.Core.Ledger.LedgerReadings.Version}"],
+            Texts(store, $"SELECT index_code || '|' || ticker || '|' || pin FROM ledger_reading WHERE session_date = '{LedgerStamp(70)}' ORDER BY ticker;"));
+
+        foreach (var ticker in new[] { "AAA", "BBB" })
+        {
+            var stored = System.Text.Json.JsonSerializer.Deserialize<double?[]>(Texts(store, $"SELECT readings FROM ledger_reading WHERE ticker = '{ticker}' AND session_date = '{LedgerStamp(70)}';").Single())!;
+            var read = tonight(ticker)!;
+
+            Assert.Equal(EquityBrief.Core.Ledger.LedgerReadings.Count, stored.Length);
+            Assert.All(Enumerable.Range(0, stored.Length), at => Assert.Equal(read[at] is { } value ? value.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : "none", stored[at] is { } held ? held.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : "none"));
+        }
+
         // The night after: AAA falls to 100, through both stops; the others hold at 100, so the same plan on them is
         // still open and neither benchmark is settled. Both windows are closed at the stop with their result, their
         // sessions and the session they ended on, settled no.
@@ -163,6 +179,7 @@ public partial class NightlyRun
 
         Assert.Equal(LedgerSession(71), again.Session);
         Assert.Equal(["2", "6"], Texts(store, "SELECT COUNT(*) FROM setup UNION ALL SELECT COUNT(*) FROM setup_night;"));
+        Assert.Equal([$"{LedgerStamp(70)}|3", $"{LedgerStamp(71)}|3"], Texts(store, "SELECT session_date || '|' || COUNT(*) FROM ledger_reading GROUP BY session_date ORDER BY session_date;"));
         Assert.Equal([SetupLedger.Ok, SetupLedger.Ok, SetupLedger.Ok], Texts(store, $"SELECT outcome FROM run_log WHERE stage = '{SetupLedger.Stage}' ORDER BY rowid;"));
     }
 

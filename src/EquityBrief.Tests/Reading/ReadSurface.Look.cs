@@ -51,11 +51,11 @@ public partial class ReadSurface
             ]);
 
         Assert.Contains("<th class=\"num\">Change</th>", moves, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"num up\">+9.22%</td>", moves, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"num down\">-7.20%</td>", moves, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num gain\">+9.22%</td>", moves, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"num loss\">-7.20%</td>", moves, StringComparison.Ordinal);
         Assert.Contains("<td class=\"nw\">2026-01-05</td>", moves, StringComparison.Ordinal);
         Assert.Contains("data-group-median=\"0\"><span class=\"flat\">0.00%</span>, the median of", moves, StringComparison.Ordinal);
-        Assert.Contains("data-group-median=\"1.23\"><span class=\"up\">+1.23%</span>, the median of", moves, StringComparison.Ordinal);
+        Assert.Contains("data-group-median=\"1.23\"><span class=\"gain\">+1.23%</span>, the median of", moves, StringComparison.Ordinal);
 
         // A margin a hair under nothing is drawn as nothing, with no minus sign.
         var margins = marks.MarginTable([new QuarterMargins(new DateOnly(2025, 9, 30), null, 2.7, -0.0004)]);

@@ -108,7 +108,7 @@ public partial class ReadSurface
             Assert.Contains($"data-value=\"{WholeOf(row[2])}\" data-place=\"{WholeOf(row[4])}\"", Cell("return-short"), StringComparison.Ordinal);
             Assert.Contains($"data-value=\"{WholeOf(row[3])}\" data-place=\"{WholeOf(row[5])}\"", Cell("return-long"), StringComparison.Ordinal);
             Assert.Contains(
-                string.Create(CultureInfo.InvariantCulture, $"{double.Parse(row[2], CultureInfo.InvariantCulture):+0.00;-0.00;0.00}% over {SwingReadings.ReturnShortSessions} sessions, above {double.Parse(row[4], CultureInfo.InvariantCulture) * 100:0.0}% of the other members' returns"),
+                string.Create(CultureInfo.InvariantCulture, $"<span class=\"{MarkRenderer.Hue(double.Parse(row[2], CultureInfo.InvariantCulture))}\">{double.Parse(row[2], CultureInfo.InvariantCulture):+0.00;-0.00;0.00}</span>% over {SwingReadings.ReturnShortSessions} sessions, above {double.Parse(row[4], CultureInfo.InvariantCulture) * 100:0.0}% of the other members' returns"),
                 Cell("return-short"),
                 StringComparison.Ordinal);
 
@@ -243,13 +243,13 @@ public partial class ReadSurface
         var view = new MarketView(new DateOnly(2026, 9, 8), 5, 2, 1, null, 2, 2, null, 0, null);
         var marks = new MarkRenderer();
 
-        var header = WebUtility.HtmlDecode(marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, null, null, market: view));
+        var header = WebUtility.HtmlDecode(marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, market: view));
         var region = WebUtility.HtmlDecode(marks.MarketReading(view));
 
         Assert.Contains("breadth: not available, 2 of the 5 members hold a close and a 200-day average, fewer than half", header, StringComparison.Ordinal);
         Assert.Contains("not available: 2 of the 5 members hold a close and a 200-day average, fewer than half", region, StringComparison.Ordinal);
         Assert.Contains("data-breadth=\"none\"", region, StringComparison.Ordinal);
-        Assert.Contains("breadth: no market reading is stored for this night", marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, null, null), StringComparison.Ordinal);
+        Assert.Contains("breadth: no market reading is stored for this night", marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -272,7 +272,7 @@ public partial class ReadSurface
             "ZZBB",
             new SwingReadingsView(on, 252, 4.0, 8.0, null, null, 25m, on, 0, 0.5, null, 0.9, null)));
 
-        Assert.Contains("+4.00% over 63 sessions, with no other member's return to place it among", alone, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"gain\">+4.00</span>% over 63 sessions, with no other member's return to place it among", alone, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -284,7 +284,7 @@ public partial class ReadSurface
             "ZZCC",
             new SwingReadingsView(on, 252, 4.0, -8.0, 0.25, 0.75, 25m, on, 0, 0.5, null, 0.9, null)));
 
-        Assert.Contains("<td data-value=\"4\" data-place=\"0.25\">+4.00% over 63 sessions, above 25.0% of the other members' returns</td>", table, StringComparison.Ordinal);
-        Assert.Contains("<td data-value=\"-8\" data-place=\"0.75\">-8.00% over 126 sessions, above 75.0% of the other members' returns</td>", table, StringComparison.Ordinal);
+        Assert.Contains("<td data-value=\"4\" data-place=\"0.25\"><span class=\"gain\">+4.00</span>% over 63 sessions, above 25.0% of the other members' returns</td>", table, StringComparison.Ordinal);
+        Assert.Contains("<td data-value=\"-8\" data-place=\"0.75\"><span class=\"loss\">-8.00</span>% over 126 sessions, above 75.0% of the other members' returns</td>", table, StringComparison.Ordinal);
     }
 }

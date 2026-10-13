@@ -200,7 +200,7 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"<td class=\"setup\">{Escaped(holding.Sector)}</td>");
         cells.Append(Invariant, $"<td>{DayOf(holding.HeldSince)}</td>");
         cells.Append(holding.Lead is { } lead
-            ? Formatted($"<td class=\"r num heavyweight-lead\">{lead * 100:+0.0;-0.0;0.0} points over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at {DayOf(on)}") : string.Empty)}</td>")
+            ? Formatted($"<td class=\"r num heavyweight-lead\">{SignedTenth(lead * 100)} points over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at {DayOf(on)}") : string.Empty)}</td>")
             : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(holding.NoLead ?? "not read")}</span></td>"));
         cells.Append(holding.Close is { } shut && holding.Average200 is { } line
             ? Formatted($"<td class=\"heavyweight-average\" data-under=\"{Flag(holding.Under)}\">{Figures.Price(shut)}, {(holding.Under ? "under" : "at or above")} its 200-day average of {line.ToString("#,##0.00", Invariant)}</td>")
@@ -251,7 +251,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td>{(row.Reason is { } why ? Escaped(why) : "still held")}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{InPercent(row.Result)}</td><td class=\"r num\">{InPercent(row.CutReturn)}</td>");
             body.Append(row.Edge is { } edge
-                ? Formatted($"<td class=\"r num\">{edge * 100:+0.0;-0.0;0.0} points</td>")
+                ? Formatted($"<td class=\"r num\">{SignedTenth(edge * 100)} points</td>")
                 : "<td class=\"r num\"><span class=\"degraded\">open</span></td>");
             body.Append("</tr>");
         }
@@ -264,5 +264,5 @@ public sealed partial class MarkRenderer
     static string Stated(double? value) => value is { } held ? held.ToString("R", Invariant) : "none";
 
     static string InPercent(double? fraction) =>
-        fraction is { } held ? Formatted($"{held * 100:+0.0;-0.0;0.0}%") : "<span class=\"degraded\">open</span>";
+        fraction is { } held ? SignedTenth(held * 100) + "%" : "<span class=\"degraded\">open</span>";
 }

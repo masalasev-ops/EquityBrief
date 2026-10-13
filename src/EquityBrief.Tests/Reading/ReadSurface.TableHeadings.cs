@@ -20,8 +20,8 @@ public partial class ReadSurface
 
         return (
             [
-                .. Regex.Matches(row, "<th class=\"([^\"]*)\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">([^<]+)</span></th>")
-                    .Select(heading => (heading.Groups[2].Value, heading.Groups[1].Value, heading.Groups[3].Value, heading.Groups[4].Value)),
+                .. Regex.Matches(row, "<th class=\"([^\"]*)\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">((?:[^<]|<span class=\"(?:gain|loss)\">[^<]*</span>)+)</span></th>")
+                    .Select(heading => (heading.Groups[2].Value, heading.Groups[1].Value, heading.Groups[3].Value, Regex.Replace(heading.Groups[4].Value, "</?span[^>]*>", string.Empty))),
             ],
             Regex.Matches(row, "<th[ >]").Count);
     }

@@ -137,7 +137,7 @@ public partial class ReadSurface
         var (from, to) = TonightScreen.SpendWindow(night);
         var spent = TonightScreen.Spend(night, await api.SpentRowsAsync(from, to), SpendCaps.Default);
 
-        var header = new MarkRenderer().NightHeader(night, 503, 4, "00:03:10", null, spent);
+        var header = new MarkRenderer().NightOps(night, "00:03:10", null, spent);
         var line = Regex.Match(header, "<p class=\"night-spend\" data-spent-day=\"([^\"]+)\" data-spent-month=\"([^\"]+)\" data-day-cap=\"([^\"]+)\" data-month-cap=\"([^\"]+)\">([^<]*)</p>");
 
         Assert.True(line.Success);

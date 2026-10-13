@@ -77,15 +77,15 @@ public partial class ReadSurface
         Assert.Contains("data-card=\"ledger-pullback\"", page, StringComparison.Ordinal);
         Assert.Contains("data-card=\"ledger-heavyweight\"", page, StringComparison.Ordinal);
         Assert.Contains("<tr data-year=\"2026\" data-setups=\"40\" data-live-passes=\"10\" data-picked=\"4\" data-settled=\"30\"><td class=\"num\">2026</td><td class=\"r num\">40</td><td class=\"r num\">25%</td><td class=\"r num\">50% of 8</td><td class=\"r num\">30</td>", page, StringComparison.Ordinal);
-        Assert.Contains("data-result-mean=\"0.4\">+0.40 ×</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.4\"><span class=\"gain\">+0.40</span> ×</td>", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"degraded\">none written by a night</span></td>", page, StringComparison.Ordinal);
 
         // The heavyweights' year read as a share of the buy, 0.12 as 12.0 per cent.
-        Assert.Contains("data-result-mean=\"0.12\">+12.0%</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.12\"><span class=\"gain\">+12.0</span>%</td>", page, StringComparison.Ordinal);
 
         // The deciles of the pullback's newest year holding settled setups, 2026's, nine cut points, the fourth at 0.25.
         Assert.Contains("<table class=\"ledger-deciles\" data-family=\"pullback\" data-year=\"2026\" data-settled=\"30\">", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\">+0.25 ×</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\"><span class=\"gain\">+0.25</span> ×</td>", page, StringComparison.Ordinal);
         Assert.Equal(2 * LedgerSummaries.CutPoints, page.Split("data-cut=\"", StringSplitOptions.None).Length - 1);
         Assert.Contains("<b>Setups a year.</b>", page, StringComparison.Ordinal);
         Assert.Contains("<b>The deciles.</b>", page, StringComparison.Ordinal);
@@ -118,6 +118,40 @@ public partial class ReadSurface
             "The ledger holds no setup on this index yet.",
             WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?universe=400")),
             StringComparison.Ordinal);
+    }
+
+    // 19.2: the Ledger page and the Loop page list the families in Tonight's order, the one list the core holds, over a
+    // store whose rows a family stand in the reverse of it, which the store's own order by name would draw as breakout,
+    // drift, heavyweight and pullback.
+    [Fact]
+    public async Task TheLedgerAndTheLoopPagesListTheFamiliesInTonightsOrder()
+    {
+        using var store = new TemporaryStore().Migrated();
+        string[] reversed = ["heavyweight", "drift", "breakout", "pullback"];
+
+        foreach (var family in reversed)
+        {
+            LedgerYearRow(store, family, 2026, 10, 2, 0, 0, 5, "0.1", "0.05", "-1,-0.5,0,0.25,0.5,1,1.5,2,3");
+            store.Execute(
+                "INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id) VALUES " +
+                $"('GSPC', '{family}', '2026-08-01', 5, 0.1, -0.1, 1, 0, 0, 0, '{LargeOctober}', 'night-1');");
+        }
+
+        Run(store, LargeOctober, "GSPC", "2026-10");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var ledger = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger"));
+        var loop = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
+        string[] order = ["pullback", "breakout", "drift", "heavyweight"];
+
+        Assert.Equal(order, EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name));
+        Assert.Equal(order, Regex.Matches(ledger, "data-card=\"ledger-([a-z]+)\"").Select(match => match.Groups[1].Value).Where(card => card != "path"));
+        Assert.Equal(order, Regex.Matches(ledger, "data-family-(?:link|chosen)=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("<b data-family-chosen=\"pullback\">Pullback</b>", ledger, StringComparison.Ordinal);
+        Assert.Equal(order, Regex.Matches(loop, "<div class=\"loop-alarm\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(order, Regex.Matches(loop, "data-loop-rule=\"none\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
     }
 
     [Fact]

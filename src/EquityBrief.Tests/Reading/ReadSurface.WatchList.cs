@@ -5,6 +5,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
@@ -182,7 +183,7 @@ public partial class ReadSurface
 
             Assert.Contains($"<a href=\"{SinglePageApp.NameRoute}{ticker}\"><b>{ticker}</b></a>", row, StringComparison.Ordinal);
             Assert.Contains(company == "none" ? "</b></a></td>" : $"<span class=\"co\">{company}</span>", row, StringComparison.Ordinal);
-            Assert.Contains(FormattableString.Invariant($"<td class=\"r num\">{closes[0]:0.00}</td><td class=\"r num\">{change:+0.00;-0.00;0.00}%</td><td>{trend}</td>"), row, StringComparison.Ordinal);
+            Assert.Contains(FormattableString.Invariant($"<td class=\"r num\">{closes[0]:0.00}</td><td class=\"r num {MarkRenderer.Hue(change)}\">{change:+0.00;-0.00;0.00}%</td><td>{trend}</td>"), row, StringComparison.Ordinal);
             Assert.Contains(ratio == "none" ? "</td><td class=\"r\"><span class=\"degraded\">none</span></td><td class=" : $"<td class=\"r num\">{ratio}</td>", row, StringComparison.Ordinal);
             Assert.Contains($"<td class=\"num\">{added}</td>", row, StringComparison.Ordinal);
             Assert.Contains($"action=\"{SinglePageApp.UnwatchPostRoute}\" data-ticker=\"{ticker}\"", row, StringComparison.Ordinal);
@@ -227,7 +228,7 @@ public partial class ReadSurface
         var head = Regex.Match(offered, "<div class=\"screen-mast\"[^>]*>(.*?)<span class=\"m-asof\">(.*?)</span></div>", RegexOptions.Singleline);
 
         Assert.True(head.Success);
-        Assert.Matches("<span class=\"m-chg\">[^<]*</span></span><form class=\"watch-control name-watch\"", head.Groups[1].Value);
+        Assert.Matches("<span class=\"m-chg (?:gain|loss|flat)\">[^<]*</span></span><form class=\"watch-control name-watch\"", head.Groups[1].Value);
         Assert.DoesNotContain("watch-control", head.Groups[2].Value, StringComparison.Ordinal);
 
         Assert.Contains($"<p class=\"watch-line\" data-watching=\"0\">No name is watched yet. <a href=\"{SinglePageApp.WatchRoute}\">Add names on the watch list</a></p>", await client.GetStringAsync("/screens/tonight"), StringComparison.Ordinal);

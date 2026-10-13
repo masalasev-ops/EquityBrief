@@ -18,7 +18,7 @@ namespace EquityBrief.Tests.Reading;
 // rows, and every table the page drew before read back inside a section folded shut beneath them.
 // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 // see: The market on the Run page is named in one word by a stated rule that moves no gate
-// see: Status is drawn in blues with violet for a wait and red for a failure alone
+// see: Status is drawn in blues with amber for a wait and red for a failure alone
 public partial class ReadSurface
 {
     // The claims the 12.3 correction that opens the Run page on its pictures adds, which this check reaches and
@@ -376,7 +376,8 @@ public partial class ReadSurface
     }
 
     // Status is drawn in the status tokens and never in a level's: every rule of the stylesheet drawing the Run
-    // page's pictures names no level token, and every status token is used by those rules alone.
+    // page's pictures names no level token, and every status token is used by those rules alone, and from 19.2 the
+    // wait's amber by a provisional rule's pill and the failure's red by a stop, which share them.
     [Fact]
     public void TheRunPagesPicturesDrawInTheStatusColoursAndNeverInALevels()
     {
@@ -396,7 +397,7 @@ public partial class ReadSurface
             var users = rules.Where(rule => rule.Body.Contains($"var({token})", StringComparison.Ordinal)).ToArray();
 
             Assert.NotEmpty(users);
-            Assert.All(users, rule => Assert.Contains(pictures.Append(".run-").Append(".ns-"), picture => rule.Selector.Contains(picture, StringComparison.Ordinal)));
+            Assert.All(users, rule => Assert.Contains(pictures.Append(".run-").Append(".ns-").Append(".status-pill.provisional").Append(".stt").Append(".tl-stop"), picture => rule.Selector.Contains(picture, StringComparison.Ordinal)));
         }
     }
 }

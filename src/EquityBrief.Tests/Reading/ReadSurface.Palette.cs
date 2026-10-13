@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // holding it and off the page, the surface and the plot where neither sets one; the kinds the name page draws a band's
 // role, a change and a caution in read so on their own fill too; a rise and a fall are drawn by the name page's rules
 // alone; and no rule drawing either names the failure's hue.
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public partial class ReadSurface
 {
     static readonly string[] Grounds = ["--page", "--surface", "--plot"];
@@ -208,24 +208,93 @@ public partial class ReadSurface
             }
         }
 
-        // A rise and a fall are drawn by the name page's rules alone: every selector of a rule naming either hue opens on
-        // the name page's region or the masthead's price, which the exported file carries too.
-        string[] riseAndFall = ["--up", "--up-fill", "--down", "--down-fill"];
+        // From 19.2 a rise is the green and a fall the red, on every page: the rise's fill is the support band's, its ink the
+        // support band's ink, and the fall's fill the failure's, in both palettes, and the one class pair every page marks
+        // a signed figure with draws them.
+        foreach (var palette in new[] { light, dark })
+        {
+            Assert.Equal(Colour(palette, "--sup-ink"), Colour(palette, "--up"));
+            Assert.Equal(Colour(palette, "--sup-fill"), Colour(palette, "--up-fill"));
+            Assert.Equal(Colour(palette, "--fail-fill"), Colour(palette, "--down-fill"));
+        }
 
-        var drawing = rules.Where(rule => riseAndFall.Any(token => rule.Body.Contains($"var({token})", StringComparison.Ordinal))).ToArray();
+        Assert.Equal("color:var(--up)", rules.Single(rule => rule.Selectors == ".gain").Body);
+        Assert.Equal("color:var(--down)", rules.Single(rule => rule.Selectors == ".loss").Body);
+    }
 
-        Assert.True(drawing.Length >= 6, $"Read {drawing.Length} rule(s) drawing a rise or a fall, expected at least 6.");
-        Assert.All(
-            drawing.SelectMany(rule => rule.Selectors.Split(',').Select(one => one.Trim())),
-            selector => Assert.Matches(@"^(\.name|\.m-price)\s", selector));
+    // The setup families' tokens, each the family's word as the store keeps it.
+    static readonly string[] Families = ["pullback", "breakout", "drift", "fundamentals", "heavyweight"];
 
-        // No rule drawing a rise or a fall, by its hue or by the classes the page marks one with, names the failure's.
-        var marked = rules.Where(rule =>
-            riseAndFall.Any(token => rule.Body.Contains($"var({token})", StringComparison.Ordinal))
-            || rule.Selectors.Split(',').Any(one => Regex.IsMatch(Steps(one)[^1], @"\.(?:up|down|col-up|col-down|nb-positive|nb-negative)(?![\w-])"))).ToArray();
+    // A colour in OKLab times a hundred, from its six digits over the sRGB curve.
+    static (double L, double A, double B) OkLab(string hex)
+    {
+        static double Linear(int channel)
+        {
+            var c = channel / 255.0;
 
-        Assert.True(marked.Length >= drawing.Length, $"Read {marked.Length} rule(s) marking a rise or a fall.");
-        Assert.All(marked, rule => Assert.DoesNotMatch(@"var\(--fail(?:-fill)?\)", rule.Body));
+            return c <= 0.04045 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+        }
+
+        var (r, g, b) = (Linear(int.Parse(hex[1..3], NumberStyles.HexNumber, CultureInfo.InvariantCulture)), Linear(int.Parse(hex[3..5], NumberStyles.HexNumber, CultureInfo.InvariantCulture)), Linear(int.Parse(hex[5..7], NumberStyles.HexNumber, CultureInfo.InvariantCulture)));
+        var l = Math.Cbrt((0.4122214708 * r) + (0.5363325363 * g) + (0.0514459929 * b));
+        var m = Math.Cbrt((0.2119034982 * r) + (0.6806995451 * g) + (0.1073969566 * b));
+        var s = Math.Cbrt((0.0883024619 * r) + (0.2817188376 * g) + (0.6299787005 * b));
+
+        return (
+            100 * ((0.2104542553 * l) + (0.7936177850 * m) - (0.0040720468 * s)),
+            100 * ((1.9779984951 * l) - (2.4285922050 * m) + (0.4505937099 * s)),
+            100 * ((0.0259040371 * l) + (0.7827717662 * m) - (0.8086757660 * s)));
+    }
+
+    static double Apart(string one, string other)
+    {
+        var (a, b) = (OkLab(one), OkLab(other));
+
+        return Math.Sqrt(Math.Pow(a.L - b.L, 2) + Math.Pow(a.A - b.A, 2) + Math.Pow(a.B - b.B, 2));
+    }
+
+    // 19.2: each setup family's hue reads as a mark at 3 to 1 on every ground and stands 15 or more apart in OKLab from the
+    // green, the orange, the red and each other family's, its tint holds ink at 4.5 to 1, in both palettes, and no rule
+    // draws text in a family's hue.
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    [Fact]
+    public void EachFamilysHueReadsAsAMarkStandsApartAndItsTintHoldsInkInBothPalettes()
+    {
+        var rules = StyleRules();
+        var (light, dark) = Palettes();
+        var read = 0;
+
+        foreach (var (name, palette) in new[] { ("light", light), ("dark", dark) })
+        {
+            string Solid(string token) => Over(Colour(palette, token), Colour(palette, "--surface"));
+
+            var fixedHues = new[] { "--sup", "--res", "--fail" }.Select(Solid).ToArray();
+            var hues = Families.Select(family => Solid($"--fam-{family}")).ToArray();
+
+            foreach (var (family, at) in Families.Select((family, at) => (family, at)))
+            {
+                foreach (var ground in Grounds)
+                {
+                    var beneath = Over(Colour(palette, ground), Colour(palette, ground));
+                    var mark = Over(Colour(palette, $"--fam-{family}"), Colour(palette, ground));
+                    var tint = Over(Colour(palette, $"--fam-{family}-tint"), Colour(palette, ground));
+                    var ink = Over(Colour(palette, "--ink"), Colour(palette, ground));
+
+                    Assert.True(ResearchMarked.Contrast(mark, beneath) >= 3, FormattableString.Invariant($"{family}'s mark on {ground} in the {name} palette reads at {ResearchMarked.Contrast(mark, beneath):0.00}."));
+                    Assert.True(ResearchMarked.Contrast(ink, tint) >= 4.5, FormattableString.Invariant($"ink on {family}'s tint over {ground} in the {name} palette reads at {ResearchMarked.Contrast(ink, tint):0.00}."));
+                    read++;
+                }
+
+                Assert.All(fixedHues, other => Assert.True(Apart(hues[at], other) >= 15, FormattableString.Invariant($"{family} stands {Apart(hues[at], other):0.0} from {other} in the {name} palette.")));
+                Assert.All(hues.Where((_, other) => other != at), other => Assert.True(Apart(hues[at], other) >= 15, FormattableString.Invariant($"{family} stands {Apart(hues[at], other):0.0} from {other} in the {name} palette.")));
+            }
+        }
+
+        // Five families on three grounds in two palettes.
+        Assert.Equal(30, read);
+
+        // No rule draws text in a family's hue or its tint.
+        Assert.DoesNotContain(rules, rule => Regex.IsMatch(rule.Body, @"(?<![\w-])color\s*:\s*var\(--fam-"));
     }
 
     // The 18.1 correction of 2026-10-11: every written section's prose is set in the page's own type. The short version's

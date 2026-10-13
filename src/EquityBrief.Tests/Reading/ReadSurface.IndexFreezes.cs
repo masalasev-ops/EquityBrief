@@ -144,7 +144,7 @@ public partial class ReadSurface
                 $"<tr data-family=\"breakout\" data-rule=\"{variant}\" data-live=\"false\" data-trades=\"1\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
             ],
             rows.Select(row => row[..(row.IndexOf('>') + 1)]));
-        Assert.Contains("<td class=\"r num\">3</td><td class=\"r num\">2</td><td class=\"r num\">0.100</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>", rows[0], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">3</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>", rows[0], StringComparison.Ordinal);
 
         // The card names its index, and the setups' table draws the breakout live since its freeze with its variant and its
         // live rule's record in words, the other setups provisional still.
@@ -243,7 +243,7 @@ public partial class ReadSurface
 
         Assert.Equal(2, rows.Length);
         Assert.Contains("data-live=\"true\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.038\"", rows[0], StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">+3.8 points</td>", rows[0], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\"><span class=\"gain\">+3.8</span> points</td>", rows[0], StringComparison.Ordinal);
         Assert.Contains("data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\"", rows[1], StringComparison.Ordinal);
         Assert.Contains("<tr data-family=\"heavyweight\" data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\"", Assert.Single(Blocks(run, "<table class=\"list-table family-run\".*?</table>")), StringComparison.Ordinal);
 
@@ -289,7 +289,7 @@ public partial class ReadSurface
             0.05);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"0\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\" data-look-back=\"126\"", shorter, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+5.0 points over 126 sessions, at 2026-10-02</td>", shorter, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+5.0</span> points over 126 sessions, at 2026-10-02</td>", shorter, StringComparison.Ordinal);
 
         // Design (b) at a month's window: its rebalance needs 22 closes; it reads no lead over a sector, and the card's
         // keys and M1's row say so in design (b)'s words.

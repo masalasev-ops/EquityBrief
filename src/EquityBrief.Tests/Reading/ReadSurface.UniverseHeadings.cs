@@ -16,8 +16,8 @@ public partial class ReadSurface
     [
         .. Regex.Matches(
                 WebUtility.HtmlDecode(Regex.Match(table, "<table class=\"universe-table\"[^>]*><tr>(.*?)</tr>", RegexOptions.Singleline).Groups[1].Value),
-                "<th class=\"tipped\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">([^<]+)</span></th>")
-            .Select(heading => (heading.Groups[1].Value, heading.Groups[2].Value, heading.Groups[3].Value)),
+                "<th class=\"tipped\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">((?:[^<]|<span class=\"(?:gain|loss)\">[^<]*</span>)+)</span></th>")
+            .Select(heading => (heading.Groups[1].Value, heading.Groups[2].Value, Regex.Replace(heading.Groups[3].Value, "</?span[^>]*>", string.Empty))),
     ];
 
     // The twelve sentences, written out: a window the swing reader or the indicator engine moves makes

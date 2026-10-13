@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
@@ -307,7 +308,7 @@ public partial class ReadSurface
         // Each heading states where its readings stood at the last session: 50 + 39 % 10 is 59,
         // and 39 / 25 is 1.56, whose gap to a signal of 1.2 is the 0.36 the bars hold.
         Assert.Contains(">Relative strength over 14 sessions (rsi14): 59 at the last session drawn</text>", strength, StringComparison.Ordinal);
-        Assert.Contains(">Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed): the line 1.56, its signal line 1.2 and the gap 0.36 at the last session drawn</text>", convergence, StringComparison.Ordinal);
+        Assert.Contains(">Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed): the line <tspan class=\"gain\">+1.56</tspan>, its signal line <tspan class=\"gain\">+1.2</tspan> and the gap <tspan class=\"gain\">+0.36</tspan> at the last session drawn</text>", convergence, StringComparison.Ordinal);
 
         // Relative strength's two edges are drawn and named with its balanced rule, at the
         // heights 70, 30 and 50 take on an axis running 0 to 100: the plot's top edge plus its
@@ -567,21 +568,95 @@ public partial class ReadSurface
         return document[start..(end < 0 ? document.Length : end)];
     }
 
-    // The correction of 2026-10-11: at a phone's 390 pixels the masthead ran past the screen's right edge, its identity
-    // line and its as-of line cut, since the narrow layout's one column was as wide as its widest item, the row of links,
-    // which did not wrap. The column shrinks to the screen and the links wrap onto as many lines as they need.
+    // 19.2: the header holds one line at every width: the brand and the screen's title, the three index tabs keeping the
+    // index in the link, and the menu, whose panel holds the links, the search, the palette's toggle and the report lane,
+    // standing in the line on a wide screen and dropping beneath its button on a narrower one, the button carrying the
+    // lane's word so its state stays shown. The account page's old address opens paper trading, and the menu holds the
+    // Loop page with its badge and the Ledger page. Where at 18.1's correction of 2026-10-11 the phone's masthead was one
+    // column whose links wrapped, the links now sit in the panel.
+    // see: The header's three tabs choose the index every page reads, beside the selector each page opens on
     [Fact]
-    public void ThePhonesMastheadIsOneColumnNoWiderThanTheScreenAndItsLinksWrap()
+    public async Task TheHeaderHoldsOneLineWithTheIndexTabsAndAMenuCarryingTheLanesWord()
     {
-        var narrow = Regex.Match(Stylesheet.Css, @"@media \(max-width:640px\)\{\n :root\{--gutter:14px\}(.*?)\n\}", RegexOptions.Singleline);
+        using var store = new TemporaryStore().Migrated();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
 
-        Assert.True(narrow.Success, "The stylesheet states no narrow layout for a phone.");
-        Assert.Contains(".mast .wrap{grid-template-columns:minmax(0,1fr)}", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains(".m-nav{flex-wrap:wrap;", narrow.Groups[1].Value, StringComparison.Ordinal);
-        Assert.DoesNotContain(".mast .wrap{grid-template-columns:1fr}", Stylesheet.Css, StringComparison.Ordinal);
+        var shell = await client.GetStringAsync("/");
 
-        // The wide layout keeps its links on one line beside the identity.
-        Assert.Contains(".m-nav{display:flex;gap:14px;font-size:13.5px}", Stylesheet.Css, StringComparison.Ordinal);
+        // The three tabs, each with its full name for a reader and its short word on a phone, keeping the index in the link.
+        Assert.Contains("<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">", shell, StringComparison.Ordinal);
+
+        foreach (var choice in Universes.Offered)
+        {
+            Assert.Contains(
+                $"<a href=\"#/?universe={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{WebUtility.HtmlEncode(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{WebUtility.HtmlEncode(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>",
+                shell,
+                StringComparison.Ordinal);
+        }
+
+        // The menu's button carries the lane's word, and its panel holds the search, the links, the lane and the palette.
+        Assert.Contains("<button type=\"button\" class=\"m-menu\" id=\"menu-button\" aria-expanded=\"false\" aria-controls=\"menu\">Menu<span class=\"m-lane-word\" id=\"lane-word\" data-lane=\"paid\">Paid</span></button><div class=\"m-panel\" id=\"menu\"><form class=\"m-search\" id=\"search\"", shell, StringComparison.Ordinal);
+        Assert.Matches(new Regex("<div class=\"m-panel\" id=\"menu\">.*<nav class=\"m-nav\".*<div class=\"lane\" id=\"lane\".*<button type=\"button\" class=\"theme\" id=\"theme\">Dark palette</button></div></div></header>", RegexOptions.Singleline), shell);
+        Assert.Contains($"<a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a></nav>", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-view=\"account\"", shell, StringComparison.Ordinal);
+        Assert.Contains($"path === '{SinglePageApp.PaperRoute}' || path === '{SinglePageApp.AccountRoute}'", shell, StringComparison.Ordinal);
+
+        // One line at every width; the panel in the line on a wide screen and beneath its button below that; the tabs'
+        // short words on a phone. The script points each tab at the screen it is on and closes the menu as a screen is drawn.
+        Assert.Contains(".mast .wrap{position:relative;display:flex;flex-wrap:nowrap;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:1499px){\n .m-menu{display:inline-flex}\n .m-panel{display:none;position:absolute;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(" .m-panel.open{display:flex}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:480px){ .m-tabs .t-full{display:none} .m-tabs .t-short{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.DoesNotContain(".mast .wrap{grid-template-columns", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("tab.setAttribute('href', (onPath || '#/') + '?universe=' + tab.dataset.universe);", shell, StringComparison.Ordinal);
+        Assert.Contains("closeMenu();", shell, StringComparison.Ordinal);
+    }
+
+    // 19.2: the Loop's badge counts the proposals each index's newest run puts to the operator that hold no word yet, one a
+    // family at most, worked by hand over a constructed store on both sides of one, and the shell's script shows it at one
+    // or more and hides it at none, read off the script since the suite has no browser to run it in.
+    [Fact]
+    public async Task TheLoopsBadgeCountsTheProposalsPutWithNoWordOnBothSidesOfOne()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Put() => await client.GetStringAsync(SinglePageApp.LoopPutRoute);
+
+        // No run: none put.
+        Assert.Equal("0", await Put());
+
+        // The S&P 600's October run puts its breakout's first passing proposal of two, and its drift's, which failed, none.
+        Run(store, SmallOctober, "SML", "2026-10");
+        Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", true, Exit(7));
+        Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 2", true, Exit(8));
+        Proposed(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 1", false, Exit(7));
+
+        Assert.Equal("1", await Put());
+
+        // The S&P 500's October run puts its pullback's as well: two.
+        Run(store, LargeOctober, "GSPC", "2026-10");
+        Proposed(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
+
+        Assert.Equal("2", await Put());
+
+        // A word on the S&P 600's breakout leaves one, and a word on the S&P 500's pullback none; a word on the breakout's
+        // second proposal, which is not the one put, would have left the count as it was.
+        Decided(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+
+        Assert.Equal("1", await Put());
+
+        Decided(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", LoopDecisions.Declined, "too young");
+
+        Assert.Equal("0", await Put());
+
+        var shell = await client.GetStringAsync("/");
+
+        Assert.Contains($"const answer = await fetch('{SinglePageApp.LoopPutRoute}');", shell, StringComparison.Ordinal);
+        Assert.Contains("badge.textContent = put > 0 ? String(put) : '';", shell, StringComparison.Ordinal);
+        Assert.Contains("badge.hidden = !(put > 0);", shell, StringComparison.Ordinal);
     }
 
     // The first cell of each row of section 4's table, as a reader reads it.
@@ -640,9 +715,9 @@ public partial class ReadSurface
 
         var screens = new[]
         {
-            (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
+            (tonight, new[] { "night", "watch", "list", "selected" }),
             (universe, new[] { "sectors", "index" }),
-            (run, new[] { "operational", "records", "shadow", "stale", "harness" }),
+            (run, new[] { "night", "operational", "totals", "records", "shadow", "stale", "harness" }),
             (page, new[] { "how-to-read", "chart", "how-it-got-here", "levels", "plan", "rules", "sources" }),
         };
 

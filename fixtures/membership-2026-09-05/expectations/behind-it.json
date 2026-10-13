@@ -1,0 +1,9 @@
+{
+  "stage": "behind-it",
+  "derivation": "derived",
+  "derivedFrom": "the ledger's catalogue and the chart's table of headings, not a run: the ledger's night step stores one ledger_reading row for every member holding a bar on the night, its readings in the catalogue's order, and each member's percentile under a heading is the mean of its places among the members on each of the heading's readings that no market series gives, a place being the share of the members holding the reading under its value and half the share level with it, its own among them; the suite works each out from the stored rows by its own arithmetic and reads it back off each name's page",
+  "tables": ["ledger_reading"],
+  "headings": ["Momentum", "Valuation", "Analyst sentiment", "Volatility", "Size and liquidity", "Financial strength", "Earnings quality"],
+  "readingsAMember": 46,
+  "pushes": "none: the fixture stores no tester run, so no learned score has passed on its index and no name's chart draws a push"
+}

@@ -234,7 +234,7 @@ public static partial class NameScreen
         Fact("50-day average", Hundredths(latest, IndicatorSeries.Sma50));
         Fact("200-day average", Hundredths(latest, IndicatorSeries.Sma200));
         Fact("Relative strength", latest.TryGetValue(IndicatorSeries.Rsi14, out var strength) && strength is { } rsi ? rsi.ToString("0.0", CultureInfo.InvariantCulture) : NotOnFile);
-        Fact("Trend momentum", latest.TryGetValue(IndicatorSeries.MacdHist, out var momentum) && momentum is { } gap ? gap.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : NotOnFile);
+        Fact("Trend momentum", latest.TryGetValue(IndicatorSeries.MacdHist, out var momentum) && momentum is { } gap ? MarkRenderer.SignedFigure(gap, 2, (Math.Round(gap, 2) == 0 ? 0 : gap).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)) : NotOnFile);
         Fact("Typical daily move", Hundredths(latest, IndicatorSeries.Atr14));
         html.Append("</dl>");
 
@@ -572,25 +572,30 @@ public static partial class NameScreen
 
         string Money(decimal value) => Figures.Money(value, currency);
 
+        // A change on a year earlier, from 19.2 written green or red by its sign.
+        // see: A figure that rose or fell is drawn green or red with its sign on every page
         string? OnAYearEarlier(string name) =>
-            Text(growth, name) is { } change ? Drawn(change, Signed) + " on a year earlier" : null;
+            Text(growth, name) is not { } change ? null
+            : decimal.TryParse(change, NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction)
+                ? Invariant($"<span class=\"{(fraction > 0 ? "gain" : fraction < 0 ? "loss" : "flat")}\">{Escaped(Signed(fraction))}</span> on a year earlier")
+                : Escaped(change) + " on a year earlier";
 
         var html = new System.Text.StringBuilder();
 
-        void Row(string label, string key, string? stored, Func<decimal, string> read, string? beneath = null)
+        void Row(string label, string key, string? stored, Func<decimal, string> read, string? beneath = null, string? beneathDrawn = null)
         {
             html.Append(Invariant($"<div><dt>{Escaped(label)}</dt>"));
             html.Append(stored is null
                 ? Invariant($"<dd class=\"degraded\" data-{key}=\"absent\">not filed</dd></div>")
                 : Invariant($"<dd data-{key}=\"{stored}\"><b>{Drawn(stored, read)}</b>")
-                    + (beneath is null ? string.Empty : "<small>" + Escaped(beneath) + "</small>")
+                    + (beneathDrawn is not null ? "<small>" + beneathDrawn + "</small>" : beneath is null ? string.Empty : "<small>" + Escaped(beneath) + "</small>")
                     + "</dd></div>");
         }
 
         html.Append(Invariant($"<dl class=\"snapshot\" data-snapshot-of=\"{ended ?? "absent"}\">"));
 
-        Row(ended is null ? "Revenue, newest quarter" : "Revenue, quarter to " + ended, "revenue", Text(quarter, "revenue"), Money, OnAYearEarlier("revenue"));
-        Row("Net income, that quarter", "netIncome", Text(quarter, "netIncome"), Money, OnAYearEarlier("netIncome"));
+        Row(ended is null ? "Revenue, newest quarter" : "Revenue, quarter to " + ended, "revenue", Text(quarter, "revenue"), Money, beneathDrawn: OnAYearEarlier("revenue"));
+        Row("Net income, that quarter", "netIncome", Text(quarter, "netIncome"), Money, beneathDrawn: OnAYearEarlier("netIncome"));
         Row(
             "Earnings per share, that quarter",
             "epsActual",
@@ -1232,7 +1237,9 @@ public static partial class NameScreen
         // handed it.
         HistoryInputs? historyInputs = null,
         // The SEC's facts as first filed for the name's filer, which the sources check the latest quarter's lines against.
-        IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null)
+        IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null,
+        // The chart of what is behind the stock, worked out from the readings the night stored, from 19.2.
+        BehindItView? behind = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1328,7 +1335,7 @@ public static partial class NameScreen
         // last close otherwise, which the tiles are worked at.
         var live = night is null && quoteSession is { IsOpen: true } ? quote : null;
         var cards = (decisionCards ?? [])
-            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
+            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
             .Select(card => CardScreen.View(card, cardContext))
             .FirstOrDefault();
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);
@@ -1425,7 +1432,8 @@ public static partial class NameScreen
                 ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings)
                 : null,
             figuresChecked: checkedFigures.Conflicts,
-            filedFactsHeld: checkedFigures.Compared > 0);
+            filedFactsHeld: checkedFigures.Compared > 0,
+            behind: behind);
     }
 
     // The ninety days after the night the page draws: the company's next results, its next ex-dividend date, declared or

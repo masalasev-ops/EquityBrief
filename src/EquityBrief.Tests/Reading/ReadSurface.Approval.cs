@@ -208,7 +208,7 @@ public partial class ReadSurface
         Assert.Contains("data-flagged=\"1\" data-periods=\"2\"", alarm, StringComparison.Ordinal);
         Assert.Contains("<b>The drift rule is flagged.</b> Its edge after costs stood under its reference's low in 2 counted months running, the newest 2026-08. The flag changes nothing by itself.", alarm, StringComparison.Ordinal);
         Assert.Contains($"<form class=\"loop-press\" method=\"post\" action=\"{SinglePageApp.LoopRestorePostRoute}SML/drift/1\" data-loop-key=\"drift|{LoopDecisions.RestoreProposal(1)}\"><button type=\"submit\">Approve the restore</button></form>", alarm, StringComparison.Ordinal);
-        Assert.Contains("<tr data-period=\"2026-08-01\" data-units=\"5\" data-counted=\"1\" data-under=\"1\" data-streak=\"2\" data-reference=\"loop-test-SML-20261009T120000Z\"><td class=\"num\">2026-08</td><td class=\"r num\">5</td><td class=\"r num\">-0.30 risks</td><td class=\"r num\">-0.10 risks</td><td>under the low, 2 running</td></tr>", alarm, StringComparison.Ordinal);
+        Assert.Contains("<tr data-period=\"2026-08-01\" data-units=\"5\" data-counted=\"1\" data-under=\"1\" data-streak=\"2\" data-reference=\"loop-test-SML-20261009T120000Z\"><td class=\"num\">2026-08</td><td class=\"r num\">5</td><td class=\"r num\"><span class=\"loss\">-0.30</span> risks</td><td class=\"r num\"><span class=\"loss\">-0.10</span> risks</td><td>under the low, 2 running</td></tr>", alarm, StringComparison.Ordinal);
 
         // A restore pressed: refused without the header, then written once; the page then says it is waiting.
         Assert.Equal(HttpStatusCode.Forbidden, (await CardPress(client, $"{SinglePageApp.LoopRestorePostRoute}SML/drift/1", [], fromThePage: false)).Status);

@@ -93,6 +93,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
 | `ledger_summary` | SetupLedger | none | SetupLedger |
+| `ledger_reading` | SetupLedger | none | SetupLedger |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -1482,6 +1483,21 @@ Grain: one row per index, family and year of the setups' sessions.
 Primary key: `index_code`, `family`, `year`.
 
 **The Ledger page's counts, rewritten whole for an index by the setup ledger after each night and each build**, so the page draws them and computes none (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood). The cut points are statistics and are stored as text only because nine of them sit in one cell; each reads back as the double it was.
+
+### ledger_reading
+Grain: one row per index, member and night the ledger read, from 19.2.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `session_date` | TEXT | the night's session |
+| `ticker` | TEXT | the member |
+| `readings` | TEXT | the ledger's readings in the catalogue's order as a list in the invariant form, `null` where the night read none |
+| `pin` | TEXT | the catalogue's version the readings were read under, as `setup` carries it |
+
+Primary key: `index_code`, `session_date`, `ticker`.
+
+**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's forty-six sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score.
 
 ### loop_run
 Grain: one row per tester run on an index.

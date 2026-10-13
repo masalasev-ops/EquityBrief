@@ -9,7 +9,7 @@ namespace EquityBrief.Web.Marks;
 // is never the only channel.
 // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
 // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public sealed partial class MarkRenderer
 {
     public string Lead(string ticker, HeadlineView? headline, TilesView? tiles)
@@ -102,12 +102,8 @@ public sealed partial class MarkRenderer
     static string LeadTile(string kind, string key, string value, string beneath) =>
         Formatted($"<div class=\"lead-tile\" data-tile=\"{kind}\"><span class=\"k\">{key}</span>{value}<span class=\"s\">{beneath}</span></div>");
 
-    // A change in per cent with its sign always written, in the rise or the fall hue by that sign and in ink where it is
-    // none, its value whole on its element.
-    static string Signed(double percent, string name, string? kind = null)
-    {
-        var hue = percent > 0 ? "up" : percent < 0 ? "down" : "flat";
-
-        return Formatted($"<span class=\"{(kind is null ? string.Empty : kind + " ")}{hue}\" data-{name}=\"{percent.ToString(Invariant)}\">{percent.ToString("+0.0;-0.0;0.0", Invariant)}%</span>");
-    }
+    // A change in per cent with its sign always written, green or red by that sign and in ink where it rounds to none,
+    // its value whole on its element.
+    static string Signed(double percent, string name, string? kind = null) =>
+        Formatted($"<span class=\"{(kind is null ? string.Empty : kind + " ")}{Hue(percent, 1)}\" data-{name}=\"{percent.ToString(Invariant)}\">{Unsigned(percent, 1).ToString("+0.0;-0.0;0.0", Invariant)}%</span>");
 }

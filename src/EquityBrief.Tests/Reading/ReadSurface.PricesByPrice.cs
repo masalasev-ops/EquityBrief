@@ -268,7 +268,9 @@ public partial class ReadSurface
         // The distances the row's mark carries, worked here and written as the mark writes them.
         string Days(decimal edge) => (Math.Abs((double)(close - edge)) / typical).ToString("0.##", CultureInfo.InvariantCulture);
 
-        var sector = Rows(store, $"SELECT sector FROM membership WHERE ticker = '{name}' AND \"left\" IS NULL;").Single()[0];
+        FiledSectors(store);
+
+        var sector = FiledSectorOf(store, name);
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();

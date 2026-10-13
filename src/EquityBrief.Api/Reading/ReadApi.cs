@@ -810,6 +810,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
             new StoreTouch(Store.LedgerSummary, Touch.Read),
+            new StoreTouch(Store.LedgerReading, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),
             new StoreTouch(Store.LoopProposal, Touch.Read),
             new StoreTouch(Store.LoopTest, Touch.Read),
@@ -1533,7 +1534,7 @@ public sealed partial class ReadApi : IComponent
     // spans for one ticker, and the screen draws the one it listed most recently.
     const string Universe = @"
         SELECT m.ticker,
-               m.sector,
+               " + FiledSector + @",
                (SELECT b.close FROM bar b WHERE b.ticker = m.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
                (SELECT l.trend_state FROM ladder l WHERE l.ticker = m.ticker AND l.as_of <= $on
@@ -1599,15 +1600,21 @@ public sealed partial class ReadApi : IComponent
         ORDER BY m.ticker;
     ";
 
-    // Every name holding a researched section, newest first, with the name and sector its
-    // newest membership row carries and how many sections it holds.
+    // A member's sector as every page names it: the GICS sector its newest company fetch filed, none where no fetch
+    // filed one, read over a row aliased m holding its ticker.
+    // see: Every page names a member's sector by the GICS sector its company fetch files
+    const string FiledSector = @"(SELECT c.sector FROM company c WHERE c.ticker = m.ticker
+                ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1)";
+
+    // Every name holding a researched section, newest first, with the name its newest
+    // membership row carries, the sector its newest company fetch filed and how many sections it holds.
     // see: A researched name is one holding an accepted section besides the key under each figure
     const string Researched = @"
         SELECT r.ticker,
                (SELECT m.name FROM membership m WHERE m.ticker = r.ticker
                 ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
-               (SELECT m.sector FROM membership m WHERE m.ticker = r.ticker
-                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               (SELECT c.sector FROM company c WHERE c.ticker = r.ticker
+                ORDER BY c.fetched_at DESC, c.rowid DESC LIMIT 1),
                MAX(r.as_of),
                COUNT(DISTINCT r.section)
         FROM research_section r

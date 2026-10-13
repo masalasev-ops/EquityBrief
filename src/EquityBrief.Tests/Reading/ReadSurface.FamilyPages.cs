@@ -162,6 +162,91 @@ public partial class ReadSurface
         Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: the S&P 500's breadth: 40.0% of its members closed above their 200-day average, below its floor of 50%.", shut, StringComparison.Ordinal);
     }
 
+    // The rows 19.2 adds that this check reaches: the three marks, Tonight's top and the date line's night, and the chart
+    // of what is behind a stock on its card and its page.
+    internal static readonly string[] ColourAndTopRows =
+    [
+        CheckReach.Key("15.5 The mark vocabulary", "Family tag"),
+        CheckReach.Key("15.5 The mark vocabulary", "Setup tile"),
+        CheckReach.Key("15.5 The mark vocabulary", "What is behind it"),
+        CheckReach.Key("15.7 Tonight", "Tonight's setups"),
+        CheckReach.Key("15.7 Tonight", "Tonight's buy points"),
+        CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer"),
+        CheckReach.Key("15.18 The decision card", "What is behind it"),
+        CheckReach.Key("15.9 Name", "Swing readings, the chart of what is behind the stock beneath them"),
+    ];
+
+    // The rows 19.2 moves from Tonight to the Run page under their new keys, reached where the old ones were.
+    internal static readonly string[] MovedToTheRunPageRows =
+    [
+        CheckReach.Key("15.10 Run", "How last night went, how long the night took"),
+        CheckReach.Key("15.10 Run", "How last night went, the harness verdict"),
+        CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
+        CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
+        CheckReach.Key("15.10 Run", "Reason totals"),
+    ];
+
+    // 19.2: Tonight opens on a tile a setup in the one family order and one table of tonight's buy points across every
+    // setup, each tile's count and state worked by hand off the night the lister drew, and a row selected drawing its plan
+    // and its pick's card in a row beneath it.
+    // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    [Fact]
+    public async Task TonightOpensOnATileASetupAndOneTableOfBuyPointsWhoseSelectedRowDrawsItsPlanAndCardBeneathIt()
+    {
+        using var store = await FamilyPagesStore();
+
+        await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
+
+        // The tiles, by hand: the pullback lists F1 to F5, five, and holds HELD back for its trade still open; the breakout
+        // lists K1 and K2, two, holding none back; the drift lists nothing on a night the market check is open with
+        // nothing forming; and the sector heavyweights hold nothing, their card naming its next rebalance on Tuesday
+        // 2026-10-06, which from Friday 2026-10-02 is Monday the 5th and Tuesday the 6th, two sessions. Each in the one
+        // order, the heavyweights last.
+        var tiles = Assert.Single(Blocks(page, "<nav class=\"setup-tiles\".*?</nav>"));
+
+        Assert.Contains("data-next-rebalance=\"2026-10-06\"", HeavyweightCardOf(page), StringComparison.Ordinal);
+        Assert.Equal(
+            [
+                ("pullback", "5", "picks", "1 held back by a trade still open"),
+                ("breakout", "2", "picks", "listing tonight"),
+                ("drift", "0", "picks", "nothing tonight"),
+                ("heavyweight", "0", "holdings", "rebalance in 2 sessions"),
+            ],
+            Regex.Matches(tiles, "<button type=\"button\" class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\" data-card=\"\\1\" data-count=\"(\\d+)\" data-state=\"([^\"]+)\">.*?<b class=\"tile-count\">\\2</b><span class=\"tile-counted\">([^<]+)</span><span class=\"tile-state\">\\3</span></button>", RegexOptions.Singleline)
+                .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[4].Value, match.Groups[3].Value)));
+        Assert.Equal(SetupFamilies.Order.Where(family => family != SetupFamilies.FundamentalsFirst.Name), Regex.Matches(tiles, "class=\"setup-tile fam-edge\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+
+        // The counts read back against the store: the listed rows a family, and the held-back one the pullback's.
+        Assert.Equal(["breakout 2", "pullback 5"], Strings(store, $"SELECT family || ' ' || COUNT(*) FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'listed' GROUP BY family ORDER BY family;"));
+
+        // The buy points: the pullback's five in its own order, then the breakout's two, each tagged with its setup and
+        // numbered from one across the table.
+        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Equal(
+            ["pullback F1 1", "pullback F2 2", "pullback F3 3", "pullback F4 4", "pullback F5 5", "breakout K1 6", "breakout K2 7"],
+            Regex.Matches(points, "<tr data-ticker=\"([^\"]+)\" data-family=\"([^\"]+)\".*?<td class=\"place\" data-place=\"(\\d+)\">", RegexOptions.Singleline)
+                .Select(match => $"{match.Groups[2].Value} {match.Groups[1].Value} {match.Groups[3].Value}"));
+
+        // With no name in the link the first row is the one selected, and its plan's row the only one drawn.
+        Assert.Equal(["F1"], Regex.Matches(points, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+
+        // F2 selected: its row marked, and straight after it a row drawing its plan and its card, before F3's row.
+        var chosen = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=F2")), "<table class=\"list-table buy-points\".*?</table>"));
+        var row = Regex.Match(chosen, "<tr data-ticker=\"F2\" data-family=\"pullback\"[^>]* class=\"sel\" aria-selected=\"true\">.*?</tr><tr class=\"plan-row\" data-plan-for=\"F2\"><td colspan=\"7\">(.*?)</td></tr><tr data-ticker=\"F3\"", RegexOptions.Singleline);
+
+        Assert.True(row.Success, "F2's row is not followed by its plan's row before F3's.");
+        Assert.StartsWith("<section class=\"selected-name\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"pullback\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(chosen, "class=\"plan-row\""));
+    }
+
     [Fact]
     public async Task PastPicksFiltersBySetupLabelsEachTradeAndKeepsAProvisionalSetupsTradesOutOfTheShare()
     {

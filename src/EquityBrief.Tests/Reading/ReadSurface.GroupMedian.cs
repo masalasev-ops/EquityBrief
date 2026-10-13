@@ -39,8 +39,8 @@ public partial class ReadSurface
 
         Assert.Contains("<th>Its group</th>", table, StringComparison.Ordinal);
         // Each median signed in its hue to two places, as the move beside it is.
-        Assert.EndsWith("<span class=\"up\">+1.25%</span>, the median of 2 of the 3 other members of the Technology sector, 1 holding no close on one of the two sessions</td>", GroupCellOf(table, "2026-09-01"), StringComparison.Ordinal);
-        Assert.EndsWith("<span class=\"down\">-0.50%</span>, the median of 6 of the 6 other members of the Utilities - Regulated Electric industry</td>", GroupCellOf(table, "2026-09-02"), StringComparison.Ordinal);
+        Assert.EndsWith("<span class=\"gain\">+1.25%</span>, the median of 2 of the 3 other members of the Technology sector, 1 holding no close on one of the two sessions</td>", GroupCellOf(table, "2026-09-01"), StringComparison.Ordinal);
+        Assert.EndsWith("<span class=\"loss\">-0.50%</span>, the median of 6 of the 6 other members of the Utilities - Regulated Electric industry</td>", GroupCellOf(table, "2026-09-02"), StringComparison.Ordinal);
         Assert.EndsWith(">the Communication Services sector holds no other member, so no median is drawn</td>", GroupCellOf(table, "2026-09-03"), StringComparison.Ordinal);
         Assert.EndsWith(">none of the 2 other members of the Energy sector held a close on both sessions</td>", GroupCellOf(table, "2026-09-04"), StringComparison.Ordinal);
         Assert.EndsWith(">no group median is stored for this move</td>", GroupCellOf(table, "2026-09-05"), StringComparison.Ordinal);

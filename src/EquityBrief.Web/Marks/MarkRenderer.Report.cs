@@ -36,7 +36,7 @@ public sealed record ValuationView(
 // axis, and a row above it naming what it draws where it draws two series or more; each degrades by saying what it has.
 // A change is drawn in the rise or the fall hue by its sign with the sign always written, on the name page alone.
 // see: Marks are defined once and every screen draws from that list
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public sealed partial class MarkRenderer
 {
     const double ChartWide = 640;
@@ -92,10 +92,10 @@ public sealed partial class MarkRenderer
         return table.Append("</table></div>").ToString();
     }
 
-    // A difference in its own unit with its sign always written, in the rise or the fall hue by that sign.
+    // A difference in its own unit with its sign always written, green or red by that sign.
     static string SignedAmount(decimal amount, bool perShare, string currency, string name)
     {
-        var hue = amount > 0 ? "up" : amount < 0 ? "down" : "flat";
+        var hue = amount > 0 ? "gain" : amount < 0 ? "loss" : "flat";
         var drawn = perShare ? Figures.PerShare(Math.Abs(amount)) : Figures.Money(Math.Abs(amount), currency);
 
         return Formatted($"<span class=\"{hue}\" data-{name}=\"{amount.ToString(Invariant)}\">{(amount > 0 ? "+" : amount < 0 ? "-" : string.Empty)}{drawn}</span>");
@@ -240,7 +240,7 @@ public sealed partial class MarkRenderer
         {
             string Cell(double? value, string name) =>
                 value is { } held
-                    ? Formatted($"<td class=\"num\" data-{name}=\"{held.ToString(Invariant)}\">{Tenth(held)}%</td>")
+                    ? Formatted($"<td class=\"num{(Unsigned(held, 1) < 0 ? " loss" : string.Empty)}\" data-{name}=\"{held.ToString(Invariant)}\">{Tenth(held)}%</td>")
                     : Formatted($"<td class=\"num degraded\" data-{name}=\"absent\">none</td>");
 
             table.Append(Formatted($"<tr data-quarter=\"{DayOf(quarter.Quarter)}\"><td>{DayOf(quarter.Quarter)}</td>"))
@@ -312,7 +312,7 @@ public sealed partial class MarkRenderer
 
             if (row.RevenueChange is { } change)
             {
-                svg.Append(Formatted($"<text class=\"sb-change sb-{(change >= 0 ? "up" : "down")}\" x=\"{Number(ChartWide - 4)}\" y=\"{Number(y + 15)}\" text-anchor=\"end\">{change.ToString("+0.0;-0.0;0.0", Invariant)}%</text>"));
+                svg.Append(Formatted($"<text class=\"sb-change {Hue(change, 1)}\" x=\"{Number(ChartWide - 4)}\" y=\"{Number(y + 15)}\" text-anchor=\"end\">{Unsigned(change, 1).ToString("+0.0;-0.0;0.0", Invariant)}%</text>"));
             }
         }
 
@@ -514,7 +514,7 @@ public sealed partial class MarkRenderer
             "ten-year");
         Row(
             "The yield against the 10-year",
-            dividend.Spread is { } spread ? Formatted($"<span class=\"{(spread >= 0 ? "up" : "down")}\" data-spread=\"{spread.ToString(Invariant)}\">{spread.ToString("+0.00;-0.00;0.00", Invariant)} points</span>") : "<span class=\"degraded\">none</span>",
+            dividend.Spread is { } spread ? Formatted($"<span class=\"{Hue(spread)}\" data-spread=\"{spread.ToString(Invariant)}\">{Unsigned(spread, 2).ToString("+0.00;-0.00;0.00", Invariant)} points</span>") : "<span class=\"degraded\">none</span>",
             "spread");
         Row(
             "Payout on earnings, the rate over the last four quarters' earnings a share",
