@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# What the scheduler calls at 16:30Z every day. Runs the work the night leaves queued from a clean copy of the
+# committed code, as tools/nightly builds a night: the main checkout's own HEAD, read with no fetch, exported whole
+# with `git archive` into the data root's folder of nights, one folder a commit, built once in Release and reused
+# where a night built that commit already; the data root and the secrets file are the checkout's, each named by
+# absolute path, so the copy never finds, creates or writes a store of its own. A checkout off main, or holding a
+# commit origin/main does not have, is refused before any worker exists.
+#
+# The worker then labels the newest night's list, and then drains the report requests the night queued, each a run
+# of its own whose calls and spend are on its own rows; the drain waits out any peak window it starts in, as every
+# drain does, and a labeller that stops leaves the drain to run.
+#
+#   tools/offpeak            the labeller and then the drain
+#   tools/offpeak --check    print what a run would build and run, and run nothing
+set -euo pipefail
+
+# The root in the form the platform's own tools read, as tools/nightly reads it.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
+cd "$root"
+
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+mkdir -p "$data"
+
+check=0
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        *) echo "offpeak: '$argument' is not an argument this script takes" >&2; exit 1 ;;
+    esac
+done
+
+refuse() {
+    echo "offpeak: refused before any worker exists: $1" >&2
+    exit 1
+}
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+
+if [ "$branch" != "main" ]; then
+    refuse "the checkout is on '${branch:-no branch}' and not on main, so no build was made from it"
+fi
+
+commit="$(git rev-parse HEAD)"
+short="${commit:0:12}"
+note="built from $short"
+
+if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
+    ahead="$(git rev-list --count origin/main..HEAD)"
+
+    if [ "$ahead" != 0 ]; then
+        refuse "the checkout holds $ahead commit(s) origin/main does not have, so no build was made from it"
+    fi
+
+    behind="$(git rev-list --count HEAD..origin/main)"
+
+    if [ "$behind" != 0 ]; then
+        note="$note, $behind commit(s) behind origin/main"
+    fi
+else
+    note="$note, with no origin/main to read against"
+fi
+
+copies="$data/nights"
+copy="$copies/$short"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+built="$(worker_in "$copy")"
+
+if [ "$check" = 1 ]; then
+    echo "offpeak: would run $commit, $note"
+    echo "offpeak: copy $copy, ${built:+built already}${built:-to build}"
+    echo "offpeak: data root $data"
+    echo "offpeak: secrets read from $secrets, none copied"
+    echo "offpeak: would label the newest night's list and then drain the queued reports"
+    exit 0
+fi
+
+if [ -z "$built" ]; then
+    started=$SECONDS
+    rm -rf "$copy" "$copy.partial"
+    mkdir -p "$copy.partial"
+    git archive "$commit" | tar -x -C "$copy.partial"
+    dotnet build "$copy.partial/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    mv "$copy.partial" "$copy"
+    built="$(worker_in "$copy")"
+
+    if [ -z "$built" ]; then
+        echo "offpeak: the build of $short left no worker assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, built in $((SECONDS - started)) s"
+else
+    note="$note, build reused"
+fi
+
+touch "$copy"
+
+echo "offpeak: $note"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+labelled=0
+dotnet "$built" label-news || labelled=$?
+
+if [ "$labelled" != 0 ]; then
+    echo "offpeak: the labeller stopped with $labelled, and the drain runs" >&2
+fi
+
+exec dotnet "$built" drain

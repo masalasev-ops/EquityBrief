@@ -61,6 +61,13 @@ public sealed record NightFeeds(
     // see: The Treasury's 10-year par yield is read once a night after the close and kept a session a row
     public ITreasuryYieldFeed? Treasury { get; init; }
 
+    // The thirteenth is Yahoo's daily chart and Nasdaq's quote, asked by the fetch for each member whose row the
+    // provider's day file refused once every file is read, at most twenty a night, free, keyless and neither the
+    // provider's, so in neither figure below, and asked nothing on a night every member's row reads. A set of feeds
+    // built without them leaves each such member without the session, and the step's row says so.
+    // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+    public ISubstituteBarFeed? Substitutes { get; init; }
+
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
@@ -132,6 +139,7 @@ public sealed record NightFeeds(
             Funds = BlackRockFundHoldingsFeed.Live(),
             Dividends = EodhdDividendCalendarFeed.Live(address, key),
             Treasury = TreasuryParYieldFeed.Live(),
+            Substitutes = YahooNasdaqBarFeed.Live(),
         };
     }
 

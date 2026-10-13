@@ -79,7 +79,7 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration."),
 
             // 12.6's correction, the news labeller the night starts after its own request.
-            CheckReach.Key(NightlyRunSteps.Heading, "Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Start no news labeller, writing the night's row saying the off-peak run labels tonight's list at 16:30Z, a process of its own that labels the stored admitted articles of the names on the newest night's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, the row saying on a night run again for an earlier session that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own)."),
 
             // The store's copy, on the operator's ruling of 2026-10-02, the night's last step.
             CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.StoreCopyStep),
@@ -141,7 +141,7 @@ public partial class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
 
             // 11.4 and 13.1, the night's own requests after the queue, and the count of six it asks for.
-            CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Ask for six reports taken in turn across the S&P 500's, 400's and 600's pages, one name at a time in that order and each page's own order across its families, a sector heavyweight on the night it is bought and never on a night it is carried, a page with no name left passing its turn, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night no page lists a stock, and leave them queued, starting no drain: the off-peak run starts the drain at 16:30Z, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order) (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z)."),
             CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
@@ -540,12 +540,13 @@ public partial class NightlyRun
     }
 
     [Fact]
-    public async Task ARowTheReaderCannotReadStopsTheNightOnlyWhenItIsAMembers()
+    public async Task ARowTheReaderCannotReadStopsNoNightAndOneOnAMemberIsNamed()
     {
         // The row section 18 gained at the phase 5 sign-off, over a whole night
         // rather than over the fetcher alone. The fractional volume is the
         // provider's own, copied from its file for 2026-09-08, where six of
         // 50,249 rows carried one and each refused the night for every name.
+        // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
         var fixture = File.ReadAllText(Directory.GetFiles(FixtureFolder(), "bulk-*.json").Single());
         const string Fund =
             """{"code":"EWG","exchange_short_name":"US","date":"2026-09-08","open":43.79,"high":43.8401,"low":43.545,"close":43.57,"adjusted_close":43.57,"volume":530131.7}""";
@@ -563,29 +564,24 @@ public partial class NightlyRun
 
         using (var store = new TemporaryStore())
         {
-            var (clean, _, _) = await NightAsync(store, runId: "night-one");
-
-            Assert.Equal(0, clean);
-
-            var before = Count(store);
             var onMember = System.Text.RegularExpressions.Regex.Replace(
                 fixture, @"(""code"":\s*""MSFT""[^}]*?""volume"":\s*)(\d+)", "${1}${2}.5");
 
             Assert.NotEqual(fixture, onMember);
 
-            var (code, _, error) = await NightAsync(store, runId: "night-member", bulk: new RecordedBulkPriceFeed(onMember));
+            var (code, output, error) = await NightAsync(store, runId: "night-member", bulk: new RecordedBulkPriceFeed(onMember));
 
-            Assert.Equal(1, code);
-            Assert.Contains("step 'fetch'", error, StringComparison.Ordinal);
-            Assert.Contains("MSFT carries a volume of", error, StringComparison.Ordinal);
-            Assert.Contains("which is not a whole number", error, StringComparison.Ordinal);
-            Assert.Equal(before, Count(store));
+            // The night runs to its end: the fixture's night is handed no second source, so MSFT holds no bar for
+            // the session and every other member does, as for a member the file carries nothing for.
+            Assert.True(code == 0, error);
+            Assert.Contains("1 member row(s) the reader refused, 0 stored from the second sources over 0 request(s)", output, StringComparison.Ordinal);
+            Assert.Equal(["AAPL", "KEYS", "NFLX"], Tickers(store, "2026-09-08"));
 
-            // And on the run log, where the operator reads it.
-            var stopped = Assert.Single(RunLog(store, "night-member"), row => row.Outcome != "ok");
+            // And on the fetch's row, where the operator reads it.
+            var fetch = Assert.Single(RunLog(store, "night-member"), row => row.Stage == "fetch");
 
-            Assert.Equal("fetch", stopped.Stage);
-            Assert.Contains("MSFT", stopped.Detail, StringComparison.Ordinal);
+            Assert.Equal("ok", fetch.Outcome);
+            Assert.Contains("\"refused\":[{\"ticker\":\"MSFT\",\"session\":\"2026-09-08\",\"stored\":false,\"why\":\"no second source was handed to this night\",\"reason\":\"MSFT carries a volume of", fetch.Detail, StringComparison.Ordinal);
         }
     }
 
@@ -1365,7 +1361,7 @@ public partial class NightlyRun
         Assert.StartsWith("Read the archive's daily index", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Ask the Treasury, and not the provider, for its daily par yields", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
         Assert.DoesNotContain(steps, step => step.Contains("overnight queue", StringComparison.OrdinalIgnoreCase));
 
@@ -1535,7 +1531,7 @@ public partial class NightlyRun
         Assert.Equal(steps.Count - 3, treasury);
         Assert.Equal((close + 1, close + 2, close + 3), (quarters, filings, treasury));
         Assert.StartsWith("Ask for six reports taken in turn", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start no news labeller", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.

@@ -7,7 +7,7 @@ namespace EquityBrief.Worker.News;
 // The news labeller's own limits, as configuration states them: the most it spends in a UTC month, in
 // dollars, and how long one run may take. Both are section 17's proposals until its first twenty nights
 // settle them.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 public sealed record NewsLimits(decimal MonthLimit, TimeSpan TimeLimit)
 {
     public const decimal DefaultMonthLimit = 5m;

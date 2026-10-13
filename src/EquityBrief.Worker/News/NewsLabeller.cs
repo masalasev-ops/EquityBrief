@@ -46,7 +46,7 @@ public sealed record NewsLabelOutcome(
 // and then kept as unreadable with its cause, so it is not paid for again under that profile and version; a
 // retry a stop refuses leaves the article unlabelled for the next night. A label is never overwritten: the
 // insert ignores a conflict, and after a switch the new profile writes rows of its own.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
 public sealed class NewsLabeller : IComponent

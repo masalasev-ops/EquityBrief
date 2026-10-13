@@ -44005,3 +44005,107 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 57c3c16
             `DoneConditionProducible`, `FigureFits`, `ObligationReconciles`, `PinnedConstants`, `RecordAppendOnly`,
             `StatedCounts` and `TwoPlatform`, 159 of 159 passed.
 Carried:    the sign-offs of phases 16, 17 and 18.
+
+### 2.1 - correction: a member's row the provider's day file refuses is skipped, and its bar asked of Yahoo with Nasdaq's check once every file is read, where one impossible row stopped the night for every member on every try   2026-10-12
+
+Corrects:   the fetch's refusal of a current member's unreadable row, from the 2.1 correction e14eeff3. The night of
+            2026-10-12 stopped at its fetch at 23:00Z and again at 23:15Z on one row: LUMN opening at 5.25 above a high
+            of 5.05, its high, low and close all 5.05. The provider's per-ticker endpoint served the same row when asked
+            after, so each try would have stopped the same way; the operator had the night stopped at 23:28Z.
+Ruled:      by the operator on 2026-10-12. For the second source, "Yahoo, Nasdaq cross-check (Recommended)"; for a member
+            the sources cannot fix, "I need you to design a fallback calls for all the stocks that have such failure for
+            the night and while the design should be to skip the stock and carry on, at the end all the failed stock are
+            to be consolidated and the fallback call to be used to fix those"; and "It should work for any stock". The
+            decision is written (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read).
+            For the reports, "Off-peak drain at 16:30Z (Recommended)": the night queues its report requests and stops,
+            starting neither the drain nor the labeller, and a scheduled run writes them at 16:30Z; carried below.
+Built:      the fetch stores nothing from a file for a member whose row the reader refused and keeps the row's reason,
+            open, close and adjusted close; once every file is read it asks the refused members of every session
+            together, in session and then ticker order, at most 20 a night, of Yahoo's daily chart and, where Yahoo
+            answers a bar, of Nasdaq's dated history and then its quote naming the session it last closed. The bar is
+            stored under the source `substitute` where it could have traded, its open and close stand within half a
+            cent of the provider's and its high, low and close within half a cent of Nasdaq's; otherwise the member is
+            left without the session as a member the file carries nothing for is. The fetch's row names every refused
+            member with whether its bar was stored and why, and counts the sources' requests beside the bulk file's.
+            The sources' one file, `YahooNasdaqBarFeed`, is the twenty-third permitted a client, each request tried
+            twice at most and each try bounded by 20 seconds. CLAUDE.md's hard rule names the eighth carve-out; the
+            catalogue row, section 14's note, section 17's per-name row and section 18's unreadable row, SCHEMA's bar
+            source and the roster's nightly-cost row, the prior text in `CHANGELOG.md`. The answers each source sent for
+            LUMN on that evening are captured in the fixture and declared in its manifest.
+Tests:      five more: each capture read as sent, the provider's own row refused by the reader; the rule worked by hand
+            on LUMN and on each check at its edge, half a cent passing and a hundredth past it refused, and at the
+            provider's adjustment; a member's impossible row stored from the sources over the fixture's file; one whose
+            sources disagree left without the session; twenty asked, the twenty-first named past the cap, one source's
+            failure stopping no other and a file every member reads asking nothing. And one more over the live feed
+            through a constructed handler answering the captures: Nasdaq's history asked for the week to the session,
+            since asked for the session's day alone it answers that the date is less than the date it starts from and
+            holds no row, as a probe of LUMN's session found after the gates first ran, the quote read where the history
+            holds no row, an older session read from the history with no quote asked, and a class of shares asked of
+            Yahoo with a hyphen. Three changed: the fetcher's and the night's test of a member's unreadable row, which
+            now finishes the night and names the member, and the count of shipped files permitted a client, 22 to 23.
+Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the 16
+            fetcher, substitute and night tests. M1 Nasdaq's check ignored: predicted red at the rule test and the
+            disagreeing sources test. M2 the cap removed: predicted red at the cap test alone. M3 a refused member stopping
+            the night again: predicted red at every test reading a refused member. M4 a substitute stored as `bulk`:
+            predicted red at the store test alone. M5 Nasdaq asked where Yahoo answered no bar: predicted red at the cap
+            test alone. Results: each red where predicted and nowhere else. M1 2 of 16, M2 1 of 16, M3 5 of 16, M4 1 of
+            16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree. M6, for
+            the history's span, stated before its run: Nasdaq's history asked for the session's day alone, predicted red
+            at the live feed's test alone; red there alone, 1 of 17, and reverted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 4790d9e6: all six
+            steps, 0 warnings, 0 errors, 2260 of 2260 tests ran with none failed in 15 minutes 12 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
+            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed. The run over
+            4659e15e stopped at the suite on the count of shipped files permitted a client, 22 against the 23 this
+            correction makes; the runs over 6fcecc5a were green, 2259 of 2259 tests and 1268 claims passing, before the
+            history's span was found.
+Carried:    the night of 2026-10-12 run to its end from main after the merge, LUMN's row asked of the sources; the
+            night's report requests left queued and its drain and labeller stopped, written by a drain started at 16:30Z
+            on 2026-10-13; and the night queuing its requests and starting neither the drain nor the labeller, with the
+            scheduled run at 16:30Z that starts both, as the operator ruled, built next.
+
+### 11.4 - correction: the night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z   2026-10-12
+
+Corrects:   the night's report step from 11.4 (f88d58ee), which started the drain after the close, and its labeller step
+            from the 12.6 correction (5cd3d42b), which started the labeller beside it; both then waited into the small
+            hours for the research model's peak to end, and the night's tail was the reports waiting.
+Ruled:      by the operator on 2026-10-12: "I think the reports needs to be queued after that and the night should just
+            stop. The report generation is continously getting in the high cost time period so i dont see any point in
+            attempting this anymore", choosing "Off-peak drain at 16:30Z (Recommended)", the night queuing the requests
+            and stopping without starting the drain or the paid labeller, and a scheduled drain writing them at 16:30Z.
+            Told after that the settings' peak for the research model is 01:00 to 04:00 and 06:00 to 10:00 UTC on
+            weekdays, so 10:00Z is off-peak too, the time was kept at 16:30Z. Two decisions are written (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z)
+            (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own),
+            the second superseding the labeller's decision of the 12.6 ruling.
+Built:      the night writes its six requests as before and its report row says they wait for the off-peak run; its
+            labeller row says the off-peak run labels tonight's list, and it starts no drain and no labeller; its store's
+            copy waits for neither. `tools/offpeak` and `tools/offpeak.ps1` build a clean copy of main's commit as the
+            monthly run's script does, refuse a checkout off main or ahead of origin/main, then run `label-news` over the
+            newest night's list and `drain`. Every citation of the superseded decision in the code, the tests and the
+            specs moved to its successor; section 14's report, labeller and copy steps and its note, section 17's model
+            calls row and section 18's labeller and drain rows; CLAUDE.md's hard rule, merge rule, layout and commands;
+            the runbook's labelling and copy passages and a section on the off-peak run with its tasks for Windows and
+            macOS; the roster's nightly-run row; the guide's sentence on when the six reports are written; the prior
+            text in `CHANGELOG.md`.
+Tests:      one more: the off-peak script in its check mode over temporary repositories, building main's commit,
+            reusing a night's copy and refusing a checkout off main or ahead. One changed: the night's labeller test,
+            which now asserts no labeller and no drain started, the labeller row's words, a copy waiting for none and
+            the night's source asking its launcher for neither. The store-never-deleted script removals gain the
+            off-peak script's two, and the harness's three step keys and due-point key follow the steps' words.
+Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the
+            labeller test, the off-peak script's test and store-never-deleted, 9 tests. M7 the night starting the drain
+            again: predicted red at the labeller test alone. M8 the night starting the labeller again: predicted red at
+            the labeller test alone. M9 the copy waiting for a labeller: predicted red at the labeller test alone. M10
+            the off-peak script accepting a checkout off main: predicted red at the script's test alone. Results: each
+            red where predicted and nowhere else, 1 of 9 each. Each reverted before anything was committed, the 9
+            passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 73fe3163: all six
+            steps, 0 warnings, 0 errors, 2261 of 2261 tests ran with none failed in 16 minutes 52 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
+            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed.
+Night:      the night of 2026-10-12, run fresh from main's c3c77ab7 after the 2.1 correction merged, finished green
+            with 0 model calls and 370 weighted calls, LUMN's bar stored from Yahoo; its drain was stopped as the night
+            started it and its requests for PBI and DAVE wait for the 16:30Z run, its labeller having found no name on
+            the S&P 500's list.
+Carried:    the off-peak task registered with the machine's scheduler at 16:30Z every day once this merges, and the
+            one-off task registered for 2026-10-13 removed in its place.

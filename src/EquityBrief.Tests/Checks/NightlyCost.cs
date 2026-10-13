@@ -135,6 +135,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/OpenFigiMappingFeed.cs",
         "src/EquityBrief.Core/Providers/TavilySearchFeed.cs",
         "src/EquityBrief.Core/Providers/TreasuryParYieldFeed.cs",
+        "src/EquityBrief.Core/Providers/YahooNasdaqBarFeed.cs",
     ];
 
     // The shipped files permitted to reach a model, each by its path, which is the
@@ -308,11 +309,13 @@ public partial class NightlyCost
         // the 21 sessions after the night, twenty from 17.1, OpenFIGI's mapping of a holding's identifier to the
         // tickers it traded under, which the holdings pull asks by hand and no night does, twenty-one from 18.1, the
         // delayed quote, one request a listing on a name page's ask in the session, which no night asks, and twenty-two
-        // from 18.2, the Treasury's par yield table, one free request a night to the Treasury and none to the provider.
+        // from 18.2, the Treasury's par yield table, one free request a night to the Treasury and none to the provider,
+        // and twenty-three from the 2.1 correction that skips a refused member, Yahoo's chart and Nasdaq's quote, asked by the fetch
+        // for a member whose row the provider's day file refused.
         Assert.True(
-            MayHoldAClient.Length <= 22,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-two feed " +
-            "implementations. A twenty-third is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 23,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twenty-three feed " +
+            "implementations. A twenty-fourth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.
@@ -562,6 +565,10 @@ public partial class NightlyCost
         // of the members that filed, free and from the SEC rather than the provider, bounded by its own limit.
         // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
         (nameof(EquityBrief.Worker.Ledger.FilingsRefresher), Feed.FilingsArchive),
+        // The eighth, the second sources the fetch asks for each member whose row the provider's day file refused,
+        // once every file is read and at most twenty a night, free and neither the provider's.
+        // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+        (nameof(BarFetcher), Feed.SubstituteBar),
     ];
 
     static string NightSource() =>

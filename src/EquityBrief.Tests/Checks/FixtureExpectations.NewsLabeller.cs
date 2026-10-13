@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Checks;
 // overwriting a label and writing rows of its own after a switch; its stops before the call that would pass
 // the month limit, at the time limit and inside a peak window, a retry judged by each as a first call is; and
 // the counter keeping each member's articles judged as they are stored and dropping them past thirty-one days.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
 public partial class FixtureExpectations

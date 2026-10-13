@@ -249,12 +249,15 @@ public static class Nightly
             // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
             new("fetch", async () =>
             {
-                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
+                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile, feeds.Substitutes)
                     .RunAsync(indexCode, runId, night.Token, wider);
                 var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
+                var refused = outcome.Refused ?? [];
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
+                    $"{refused.Count} member row(s) the reader refused, {refused.Count(one => one.Stored)} stored from the second sources " +
+                    $"over {outcome.SubstituteRequests} request(s), " +
                     FormattableString.Invariant($"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, ") +
                     $"{outcome.NotTraded} row(s) listed and not traded, " +
                     $"{outcome.Unreadable} row(s) outside the index the reader refused, " +
@@ -732,12 +735,13 @@ public static class Nightly
                 return Treasury.TreasuryReader.Detail(read, clock.SessionDateAt(clock.UtcNow));
             }),
             // Section 14's step 27, after the Treasury's 10-year. The night asks for six reports taken
-            // in turn across the S&P 500's, 400's and 600's pages and starts the drain as a press
-            // does: it writes a row a name and starts one process, and each pass is the drain's own
-            // run, its calls and requests on its own rows, at the off-peak rate. It is handed no token
-            // from the night's deadline, which bounds the arithmetic. A night run again for an earlier
+            // in turn across the S&P 500's, 400's and 600's pages and leaves them queued: it writes a
+            // row a name and starts no drain, and the off-peak run starts the drain at 16:30Z, each pass
+            // the drain's own run, its calls and requests on its own rows. It is handed no token from
+            // the night's deadline, which bounds the arithmetic. A night run again for an earlier
             // session asks for nothing, since its list is not tonight's.
             // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
+            // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
             new("report", async () =>
             {
                 var started = clock.UtcNow;
@@ -753,43 +757,39 @@ public static class Nightly
                     var ask = await RequestDrain.AskForTheNightAsync(store.DatabaseFile, clock.SessionDateAt(clock.UtcNow), clock);
 
                     asked = ask.Asked.Count;
-                    said = asked == 0
-                        ? ask.Line
-                        : ask.Line + ". " + (launcher?.Start().Line ?? "No drain was started, since this night was handed nothing to start one with.");
+                    said = asked == 0 ? ask.Line : ask.Line + ". " + QueuedForTheOffPeakRun;
                 }
 
                 await RequestDrain.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, asked, said);
 
                 return said;
             }),
-            // Section 14's step after the report. The night starts the news labeller as it starts the
-            // drain: one process of its own, whose calls and spend sit on the labeller's own run and never
-            // the night's, the fifth carve-out of the nightly rule. It is handed no token from the night's
-            // deadline. A night run again for an earlier session starts none, since its list is not tonight's,
-            // and a night handed nothing to start one with says so and starts none, which is how the suite's
-            // nights make no model call.
-            // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+            // Section 14's step after the report. The night starts no news labeller: the off-peak run starts
+            // it at 16:30Z over the newest night's list, one process of its own whose calls and spend sit on
+            // the labeller's own run and never the night's, the fifth carve-out of the nightly rule. The step
+            // writes the night's row saying so, and a night run again for an earlier session says its list
+            // is not tonight's.
+            // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
             new("label-news", async () =>
             {
                 var started = clock.UtcNow;
                 var said = !askForTheFirstName
                     ? "no labeller was started, since this night was run again for an earlier session"
-                    : launcher?.StartTheLabeller().Line ?? "No labeller was started, since this night was handed nothing to start one with.";
+                    : LabelledByTheOffPeakRun;
 
                 await NewsLabeller.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
 
                 return said;
             }),
-            // Section 14's last step, after the labeller's start. The night starts the store's copy as it starts
-            // the labeller: one process of its own, which waits until the night, its drain and its labeller have
-            // finished, copies the store and writes one row of its own. A night run again for an earlier session
-            // starts one that waits for no labeller, since that night starts none, and a night handed nothing to
+            // Section 14's last step, after the labeller's row. The night starts the store's copy: one process of
+            // its own, which waits until the night has finished, copies the store and writes one row of its own.
+            // It waits for no labeller and no drain, since the night starts neither, and a night handed nothing to
             // start one with says so and starts none.
             // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
             new("backup", async () =>
             {
                 var started = clock.UtcNow;
-                var said = launcher?.StartTheBackup(afterTheLabeller: askForTheFirstName).Line
+                var said = launcher?.StartTheBackup(afterTheLabeller: false).Line
                     ?? "No copy of the store was started, since this night was handed nothing to start one with.";
 
                 await Backup.StoreBackup.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
@@ -1021,6 +1021,13 @@ public static class Nightly
     // the row says so on stderr and the night still exits 1: recording the
     // refusal must never turn it into a different failure.
     public const string FirstStep = "migrate";
+
+    // What the night's report and labeller rows say on a night whose list is tonight's: the requests wait for the
+    // off-peak run, which starts the labeller and then the drain at 16:30Z, and the night starts neither.
+    // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+    public const string QueuedForTheOffPeakRun = "The requests wait for the off-peak run, which starts the drain at 16:30Z; the night starts none.";
+
+    public const string LabelledByTheOffPeakRun = "No labeller was started: the off-peak run labels tonight's list at 16:30Z.";
 
     public static async Task<int> RefusedAsync(
         StoreLocation store,
