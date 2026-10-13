@@ -22,7 +22,7 @@ public partial class ReadSurface
     // The family's card from the card holding its heading and its rule to the next card the page draws.
     static string FundamentalsCard(string page)
     {
-        const string Opens = "<section class=\"card\" data-card=\"family\">";
+        const string Opens = "<section class=\"card\" id=\"setup-fundamentals\" data-card=\"family\">";
         var at = page.IndexOf("<section class=\"family-card\" data-family=\"fundamentals\"", StringComparison.Ordinal);
 
         Assert.True(at >= 0, "The page draws no fundamentals-first card.");
@@ -67,8 +67,8 @@ public partial class ReadSurface
         Assert.Contains("data-place=\"4\" data-of=\"4\" data-picks=\"1\"", midCard, StringComparison.Ordinal);
         Assert.Contains(SetupFamilies.FundamentalsFirst.Heading, Read(midCard), StringComparison.Ordinal);
         Assert.Contains("revenue up more than 0 per cent on the year-earlier quarter and growing faster than the quarter before", Read(midCard), StringComparison.Ordinal);
-        Assert.Contains("M2", midCard, StringComparison.Ordinal);
-        Assert.Contains("every part of the fundamentals-first rule passing on the S&P 400's provisional setting", Read(midCard), StringComparison.Ordinal);
+        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M2\"", midCard, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M2\" data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
         Assert.True(mid.IndexOf("data-family=\"drift\"", StringComparison.Ordinal) < mid.IndexOf("data-family=\"fundamentals\"", StringComparison.Ordinal));
 
         // The S&P 600: the card listing none and saying how many members stopped at each part of the rule.
@@ -106,8 +106,8 @@ public partial class ReadSurface
 
         // After the S&P 500's three cards, the fourth of four, its rule read on the S&P 500 by the index families' step.
         Assert.Equal(["pullback|1|4", "breakout|2|4", "drift|3|4", "fundamentals|4|4"], families);
-        Assert.Contains("FF1", card, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"card-pick\" data-ticker=\"FF1\"", card, StringComparison.Ordinal);
         Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
-        Assert.Contains("every part of the fundamentals-first rule passing on the S&P 500's provisional setting", Read(card), StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
     }
 }

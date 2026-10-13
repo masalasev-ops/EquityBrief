@@ -109,17 +109,24 @@ public partial class ReadSurface
             "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-03\" data-look-back=\"251\">",
             card,
             StringComparison.Ordinal);
-        Assert.Contains($"<div class=\"lbl\">Rotation · {SetupFamilies.SectorHeavyweights.Eyebrow}</div><h2>{SetupFamilies.SectorHeavyweights.Heading}</h2>", page, StringComparison.Ordinal);
+        Assert.Contains($"<div class=\"lbl\">Rotation · {SetupFamilies.SectorHeavyweights.Eyebrow}</div>", page, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"fam-swatch\" data-family=\"heavyweight\"></span>{SetupFamilies.SectorHeavyweights.Heading}</span>", card, StringComparison.Ordinal);
         // Its rule in words, written from the settings its live rule runs at: each sector's 10 largest, a 251-session
         // look-back, 2 leaders against the sector fund, a beta of at least one, and sold when it no longer leads at a later
         // month's rebalance, the session the book reads it on.
-        Assert.Contains("<p class=\"lede\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.</p>", page, StringComparison.Ordinal);
-        Assert.Contains("It is sold at the close of a later month's rebalance where it no longer leads, or at its last close as a member.", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-words\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.</p>", card, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"guide-b\">{EquityBrief.Web.Marks.MarkRenderer.HeavyweightCardGuide}</p>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", page, StringComparison.Ordinal);
-        Assert.Contains(
-            $"<p class=\"family-state\"><b class=\"provisional\">{SetupFamilies.ProvisionalStatus}</b> · 3 holdings tonight · held while leading · last rebalance 2026-10-01 · next rebalance <b class=\"next-rebalance\">2026-11-03</b></p>",
-            card,
-            StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"status-pill provisional\" title=\"{SetupFamilies.ProvisionalStatus}\">Provisional</span> <span class=\"fam-count\">3 holdings tonight</span>", card, StringComparison.Ordinal);
+
+        // From 19.3 its four tiles: three holdings, in three of the eleven sectors, the return since the rebalance of
+        // 2026-10-01, and the sessions to the next, Tuesday 2026-11-03, from Friday 2026-10-02.
+        var tiles = Assert.Single(Blocks(card, "<div class=\"hw-tiles\".*?</div></div>"));
+
+        Assert.StartsWith("<div class=\"hw-tiles\" data-holdings=\"3\" data-sectors=\"3\" data-of=\"11\"", tiles, StringComparison.Ordinal);
+        Assert.Contains("since the last rebalance of 2026-10-01", tiles, StringComparison.Ordinal);
+        Assert.Contains($"data-sessions-to-next=\"{EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(DateOnly.Parse(TheSwitch, System.Globalization.CultureInfo.InvariantCulture), new DateOnly(2026, 11, 3))}\"", tiles, StringComparison.Ordinal);
+        Assert.Contains("sessions to the next rebalance, 2026-11-03</span>", tiles, StringComparison.Ordinal);
 
         // Both directions: every row a holding open at the night's close, in the order of its sector, and every such
         // holding a row, Y3, sold after the night, among them and Y1, Y2 and Z9 not.
@@ -133,17 +140,20 @@ public partial class ReadSurface
         var f1 = card[card.IndexOf("<tr data-ticker=\"F1\"", StringComparison.Ordinal)..];
         f1 = f1[..f1.IndexOf("</tr>", StringComparison.Ordinal)];
 
-        Assert.StartsWith("<tr data-ticker=\"F1\" data-sector=\"Energy\" data-held-since=\"2026-10-01\" data-lead=\"0.123\" data-close=\"100\" data-average=\"90.5\">", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"setup\">Energy</td><td>2026-10-01</td>", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+12.3</span> points over 251 sessions, at 2026-10-01</td>", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"heavyweight-average\" data-under=\"false\">100.00, at or above its 200-day average of 90.50</td>", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"heavyweight-plan\">held while leading</td>", f1, StringComparison.Ordinal);
+        Assert.StartsWith("<tr data-ticker=\"F1\" data-sector=\"Energy\" data-held-since=\"2026-10-01\" title=\"held since 2026-10-01\" data-lead=\"0.123\" data-close=\"100\" data-average=\"90.5\"", f1, StringComparison.Ordinal);
+        Assert.True(card.IndexOf("<tr class=\"hw-sector\" data-sector=\"Energy\"", StringComparison.Ordinal) < card.IndexOf("<tr data-ticker=\"F1\"", StringComparison.Ordinal), "F1 stands under its sector's heading");
 
-        // X3 closes under its average, and Y3, whose rebalance stored no row for it and which stores no bar tonight, says
-        // so in both cells.
-        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+5.0</span> points over 251 sessions, at 2026-10-01</td><td class=\"heavyweight-average\" data-under=\"true\">30.00, under its 200-day average of 35.25</td>", card, StringComparison.Ordinal);
-        Assert.Contains("data-ticker=\"Y3\" data-sector=\"Financials\" data-held-since=\"2026-09-01\" data-lead=\"none\" data-close=\"none\" data-average=\"none\">", card, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"degraded\">not read</span></td><td class=\"heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>", card, StringComparison.Ordinal);
+        // Its lead as a bar against the card's largest, its own, and its close 10.5 per cent over its 200-day average.
+        Assert.Contains("<td class=\"r num heavyweight-lead\" title=\"over 251 sessions, at the rebalance of 2026-10-01\"><span class=\"hw-bar\"><span class=\"hw-fill gain\" style=\"width:100%\"></span></span> <span class=\"gain\">+12.3</span> points</td>", f1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-average\" data-under=\"false\"><span class=\"gain\">+10.5%</span></td>", f1, StringComparison.Ordinal);
+
+        // X3 closes under its average, 14.9 per cent, its lead a bar 0.05 of 0.123 long, and its standing below its
+        // 200-day; Y3, whose rebalance stored no row for it and which stores no bar tonight, says so in both cells.
+        Assert.Contains("<td class=\"r num heavyweight-lead\" title=\"over 251 sessions, at the rebalance of 2026-10-01\"><span class=\"hw-bar\"><span class=\"hw-fill gain\" style=\"width:40.7%\"></span></span> <span class=\"gain\">+5.0</span> points</td><td class=\"r num heavyweight-average\" data-under=\"true\"><span class=\"loss\">-14.9%</span></td>", card, StringComparison.Ordinal);
+        Assert.Contains($"data-ticker=\"X3\"", card, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"hw-pill\" data-standing=\"{EquityBrief.Core.Families.HeavyweightStandings.BelowItsAverage}\"", card[card.IndexOf("<tr data-ticker=\"X3\"", StringComparison.Ordinal)..], StringComparison.Ordinal);
+        Assert.Contains("data-ticker=\"Y3\" data-sector=\"Financials\" data-held-since=\"2026-09-01\" title=\"held since 2026-09-01\" data-lead=\"none\" data-close=\"none\" data-average=\"none\"", card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"degraded\">not read</span></td><td class=\"r num heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>", card, StringComparison.Ordinal);
 
         // What the last rebalance bought, and what was sold at it or since, in the order sold, each with why.
         Assert.Contains("<p class=\"family-note heavyweight-entered\" data-entered=\"F1,X3\">The rebalance of 2026-10-01 bought F1, X3.</p>", card, StringComparison.Ordinal);
@@ -154,11 +164,8 @@ public partial class ReadSurface
         // F1 stands on the pullback's card as well: each card keeps its own one trade a stock.
         Assert.Contains("data-ticker=\"F1\" data-family=\"pullback\"", page, StringComparison.Ordinal);
 
-        // The key says how to read it.
-        Assert.Contains(
-            "<b>How to read the card.</b> Each row is a stock the sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the two leaders of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index.",
-            page,
-            StringComparison.Ordinal);
+        // The key the card repeated is gone, the guide in its place.
+        Assert.DoesNotContain("<b>How to read the card.</b>", page, StringComparison.Ordinal);
     }
 
     static IReadOnlyList<string> MarkRendererHeadings() =>
@@ -213,7 +220,8 @@ public partial class ReadSurface
             var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
             Assert.Contains("data-last-rebalance=\"none\" data-next-rebalance=\"2026-10-06\"", card, StringComparison.Ordinal);
-            Assert.Contains("· no rebalance read yet · next rebalance <b class=\"next-rebalance\">2026-10-06</b></p>", card, StringComparison.Ordinal);
+            Assert.Contains("<div class=\"hw-tile\"><b>none</b><span>no rebalance read yet</span></div>", card, StringComparison.Ordinal);
+            Assert.Contains("<span>sessions to the next rebalance, 2026-10-06</span>", card, StringComparison.Ordinal);
             Assert.DoesNotContain("heavyweight-waits", card, StringComparison.Ordinal);
         }
 

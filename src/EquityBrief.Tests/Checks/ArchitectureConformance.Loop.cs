@@ -1588,7 +1588,7 @@ public partial class ArchitectureConformance
         var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length + FixtureExpectations.ContextClaims.Length + FixtureExpectations.HeavyweightSweepClaims.Length + RegistrationRows.Length + AfterPhaseFourteen.Length - TakenOutAfterPhaseSeventeen.Length;
         var pending = PhaseThirteenPending(report);
 
-        Assert.All(PhaseThirteenRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(PhaseThirteenRows.Except(TakenOutAfterPhaseSeventeen), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.Equal(
             (now, pending, 0, now - pending),

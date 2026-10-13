@@ -20,11 +20,13 @@ public sealed partial class MarkRenderer
     [
         ("Setup", "The setup that lists the stock tonight, in its hue."),
         ("#", "The row's place in the table, counted from one across every setup, each setup's picks in its own order."),
-        ("Stock", "The ticker selects the row and draws its plan and its card beneath it; the company is named beneath."),
+        ("Stock", "The ticker selects the row and draws its plan and its card beneath it. Beside it, card opens the pick's card, report opens the stock's written report or not written its page, and the company is named beneath. A label names another setup the stock also qualified under tonight."),
+        ("Business", "The state the company's reported quarters gave it on the night, with what its numbers say under the pointer. It removes no stock from the table."),
         ("Buy", "The price the plan buys at, which is the evening's close."),
         ("Stop", "The price a close beneath ends the trade at a loss, or the first level of a stop that trails the price."),
         ("Target", "The price a close at or above ends the trade at a gain. A setup that trails its stop names none."),
         ("Reward to risk", "How far the target sits above the buy against how far the stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything."),
+        ("News, 30 days", NewsSays),
     ];
 
     // A tile a setup, each in its family's tint with its edge in its hue, its word beside both, opening its card.
@@ -47,8 +49,11 @@ public sealed partial class MarkRenderer
     }
 
     // Tonight's buy points across every setup, in the one family order and each setup's own order, each row tagged with
-    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card. The
-    // query given follows each row's link, so a page reading one index selects a row on it.
+    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card, and
+    // every other pick's card in a row of its own beneath it, opened by the control in its name cell, since the setups'
+    // cards draw their picks here alone. The query given follows each row's link, so a page reading one index selects a
+    // row on it.
+    // see: Live picks are drawn once in tonight's buy points, and a setup's card names them by their place
     public string BuyPoints(IReadOnlyList<BuyPointView> points, string? selected, string plan, string query = "")
     {
         if (points.Count == 0)
@@ -58,7 +63,7 @@ public sealed partial class MarkRenderer
 
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table buy-points\" data-rows=\"{points.Count}\"><thead><tr>");
+        body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table buy-points\" data-rows=\"{points.Count}\"><thead><tr>");
 
         foreach (var (heading, says) in BuyPointHeadings)
         {
@@ -82,19 +87,25 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}{Escaped(query)}\"{(chosen ? " class=\"sel\" aria-selected=\"true\"" : string.Empty)}>");
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
             body.Append(Invariant, $"<td class=\"place\" data-place=\"{number}\">{number}</td>");
-            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
-            body.Append(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
+            body.Append(PickNameCell(pick, !chosen));
+            body.Append(PickBusinessCell(pick));
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
             body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
             body.Append(pick.RewardToRisk is { } ratio
                 ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
-                : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : "<span class=\"degraded\">none</span>")}</td>");
+                : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>");
+            body.Append(PickNewsCell(pick));
             body.Append("</tr>");
 
             if (chosen)
             {
-                body.Append(Invariant, $"<tr class=\"plan-row\" data-plan-for=\"{Escaped(row.Ticker)}\"><td colspan=\"{BuyPointHeadings.Count}\">{plan}{(pick.Card is { } card ? DecisionCard(card) : string.Empty)}</td></tr>");
+                body.Append(Invariant, $"<tr class=\"plan-row\" data-plan-for=\"{Escaped(row.Ticker)}\"><td colspan=\"{BuyPointHeadings.Count}\"><div class=\"row-open\">{plan}{(pick.Card is { } card ? DecisionCard(card) : string.Empty)}</div></td></tr>");
+            }
+            else if (pick.Card is { } closed)
+            {
+                // Every other pick's card in place beneath its row, opened by the control in its name cell.
+                body.Append(CardRow(closed, BuyPointHeadings.Count));
             }
         }
 

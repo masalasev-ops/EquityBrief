@@ -866,6 +866,65 @@ static async Task<IReadOnlyList<FamilyCardView>> WithBehindAsync(ReadApi read, I
     return drawn;
 }
 
+// Each card with its own rows close to a buy point and the numbers its rows draw in place of sentences, read off the
+// index's stored readings once: for each stock a chosen variant picks or that stands close to a buy point.
+// see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+static async Task<IReadOnlyList<FamilyCardView>> WithNumbersAsync(ReadApi read, IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, DateOnly night, IReadOnlyList<CloseToBuyCell>? close = null)
+{
+    var readings = await read.LedgerReadingsAsync(universe.Code, night);
+
+    return
+    [
+        .. cards.Select(card =>
+        {
+            var own = (close ?? []).Where(row => row.Family == card.Family).ToArray();
+            var tickers = own.Select(row => row.Ticker).Concat((card.RuleChoice?.Picks ?? []).Select(pick => pick.Ticker)).Distinct(StringComparer.Ordinal);
+
+            return card with
+            {
+                Close = own,
+                Numbers = tickers.ToDictionary(
+                    ticker => ticker,
+                    ticker => readings.TryGetValue(ticker, out var held) ? EquityBrief.Core.Cards.CardNumbers.Values(card.Family, held) : new double?[EquityBrief.Core.Cards.CardNumbers.Of(card.Family).Count],
+                    StringComparer.Ordinal),
+            };
+        }),
+    ];
+}
+
+// A heavyweights card with its standing tonight, read off tonight's closes once: each holding's and each sector fund's
+// close tonight, a look-back before and at the last rebalance, and, where the book reads a sector's members' mean, every
+// member's of the index with its sector.
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+static async Task<HeavyweightCardView> WithStandingAsync(
+    ReadApi read,
+    HeavyweightCardView card,
+    UniverseChoice universe,
+    DateOnly night,
+    IReadOnlyDictionary<string, double?> growth,
+    bool fundReturn,
+    Func<string, string?> reason,
+    bool designB = false)
+{
+    var largeFunds = universe != Universes.Large;
+    var funds = await read.FundStandingClosesAsync([.. EquityBrief.Core.Families.GicsSectors.Funds.Values], night, card.LookBack, card.LastRebalance);
+    var held = card.Holdings.Select(holding => holding.Ticker).ToArray();
+    var sectors = fundReturn || designB ? new Dictionary<string, string?>(StringComparer.Ordinal) : await read.MemberSectorsAsync(universe.Code, night);
+    var stocks = await read.StockStandingClosesAsync([.. held.Concat(sectors.Keys).Distinct(StringComparer.Ordinal)], night, card.LookBack, card.LastRebalance);
+
+    double? SectorReturn(string sector) =>
+        fundReturn
+            ? EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(sector, out var fund) && funds.TryGetValue(fund, out var closes) ? TonightScreen.ReturnOf(closes) : null
+            : EquityBrief.Core.Families.HeavyweightStandings.MembersMean(sectors.Where(member => member.Value == sector).Select(member => stocks.TryGetValue(member.Key, out var closes) ? TonightScreen.ReturnOf(closes) : null));
+
+    return TonightScreen.WithStanding(card, night, stocks, funds, growth, SectorReturn, reason, designB, largeFunds);
+}
+
+// Each open holding's growth carried to the night, the newest buy of a stock taking it.
+static IReadOnlyDictionary<string, double?> Growths(IEnumerable<(string Ticker, DateOnly EnteredOn, double? Growth)> open) =>
+    open.GroupBy(holding => holding.Ticker, StringComparer.Ordinal)
+        .ToDictionary(group => group.Key, group => group.MaxBy(holding => holding.EnteredOn).Growth, StringComparer.Ordinal);
+
 // What the cards a page draws are handed beyond the night's rows: the operator's account where it is set, their taken
 // trades, and the card's presses, which a page the operator reads draws and an export never does.
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
@@ -1050,8 +1109,10 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RuleNightsAsync(reading.Code, dated),
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
-            indexNight.MarketOpen);
+            indexNight.MarketOpen,
+            IndexRuleSettings.Read(indexNight.Settings));
         indexCards = await WithBehindAsync(read, indexCards, reading, dated);
+        indexCards = await WithNumbersAsync(read, indexCards, reading, dated);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
@@ -1059,11 +1120,12 @@ app.MapGet("/screens/tonight/{night?}", async (
         // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
         var heavyweightRule = TonightScreen.IndexLiveRule(reading.Code, EquityBrief.Core.Families.HeavyweightRule.Name, indexRegister, indexNight);
         var boughtCards = await read.BoughtCardsAsync(reading.Code, dated);
+        var bookRows = heavyweightRule is null ? await read.IndexHoldingsAsync(reading.Code, dated) : await read.IndexRuleHoldingsAsync(heavyweightRule, dated);
         var heavyweightCard = heavyweightRule is null
             ? TonightScreen.IndexHeavyweights(
                 reading,
                 indexNight,
-                await read.IndexHoldingsAsync(reading.Code, dated),
+                bookRows,
                 await read.IndexLastRebalanceAsync(reading.Code, dated),
                 await read.IndexHoldingClosesAsync(reading.Code, dated),
                 members)
@@ -1071,7 +1133,7 @@ app.MapGet("/screens/tonight/{night?}", async (
                 TonightScreen.IndexHeavyweights(
                     reading,
                     indexNight,
-                    await read.IndexRuleHoldingsAsync(heavyweightRule, dated),
+                    bookRows,
                     await read.IndexRuleLastRebalanceAsync(heavyweightRule, dated),
                     await read.IndexRuleHoldingClosesAsync(heavyweightRule, dated),
                     members),
@@ -1089,17 +1151,40 @@ app.MapGet("/screens/tonight/{night?}", async (
             indexRegister,
             request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
             heavyweightCard.Rule,
-            await read.SixSettingsAsync(reading.Code));
+            await read.SixSettingsAsync(reading.Code),
+            IndexRuleSettings.Read(indexNight.Settings));
+        var liveHoldings = heavyweightCard.Holdings.Select(holding => holding.Ticker).ToArray();
 
-        heavyweightCard = (indexHeavyweightVariant is { } chosenBook
-            ? TonightScreen.IndexHeavyweights(
+        if (indexHeavyweightVariant is { } chosenBook)
+        {
+            bookRows = await read.IndexRuleHoldingsAsync(chosenBook, dated);
+            heavyweightCard = TonightScreen.IndexHeavyweights(
                 reading,
                 indexNight,
-                await read.IndexRuleHoldingsAsync(chosenBook, dated),
+                bookRows,
                 await read.IndexRuleLastRebalanceAsync(chosenBook, dated),
                 await read.IndexRuleHoldingClosesAsync(chosenBook, dated),
-                members)
-            : heavyweightCard) with { RuleChoice = indexHeavyweightChoice };
+                members);
+        }
+
+        heavyweightCard = heavyweightCard with
+        {
+            RuleChoice = indexHeavyweightVariant is null
+                ? indexHeavyweightChoice
+                : indexHeavyweightChoice with { Share = RuleScreen.ShareOf(heavyweightRule is not null, liveHoldings, [.. heavyweightCard.Holdings.Select(holding => holding.Ticker)]) },
+        };
+
+        // The book's standing tonight, its sectors read over the index's own members' mean, an empty sector saying the book
+        // stores no reading of it, and a design (b) book reading no lead of its own.
+        heavyweightCard = await WithStandingAsync(
+            read,
+            heavyweightCard,
+            reading,
+            dated,
+            Growths(bookRows.Where(holding => holding.EndedOn is null).Select(holding => (holding.Ticker, holding.EnteredOn, holding.Growth))),
+            false,
+            _ => TonightScreen.StoresNoSectorReading,
+            RuleScreen.DesignB(indexHeavyweightVariant ?? heavyweightRule, indexRegister));
 
         return Results.Content(
             notice + page.IndexTonightRegion(
@@ -1352,18 +1437,20 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RuleNightsAsync(reading.Code, dated),
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
-            largeIndexNight.MarketOpen);
+            largeIndexNight.MarketOpen,
+            IndexRuleSettings.Read(largeIndexNight.Settings));
         var count = cards.Count + fundamentals.Count;
 
         cards = [.. cards.Select(card => card with { Of = count }), .. fundamentals.Select((card, at) => card with { Place = cards.Count + at + 1, Of = count })];
     }
 
+    var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
+
     if (cards is not null)
     {
         cards = await WithBehindAsync(read, cards, reading, dated);
+        cards = await WithNumbersAsync(read, cards, reading, dated, closeAcross);
     }
-
-    var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
 
     // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
     // market check read.
@@ -1377,18 +1464,41 @@ app.MapGet("/screens/tonight/{night?}", async (
         register,
         request.Query[RuleScreen.QueryKey(EquityBrief.Core.Families.HeavyweightRule.Name)].FirstOrDefault(),
         RuleWords.Heavyweights(EquityBrief.Core.Families.HeavyweightRule.Live));
+    var heavyweightHoldings = await read.HeavyweightHoldingsAsync(dated, heavyweightVariant);
+    var heavyweightRead = await read.HeavyweightReadAsync(dated, heavyweightVariant);
+    var heavyweightSettings = RuleScreen.HeavyweightSettingsOf(heavyweightVariant, register) ?? EquityBrief.Core.Families.HeavyweightRule.Live;
     var heavyweights = cards is null
         ? null
         : CardScreen.WithCards(
-            TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated, heavyweightVariant), await read.HeavyweightReadAsync(dated, heavyweightVariant), await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register) with
+            TonightScreen.Heavyweights(dated, heavyweightHoldings, heavyweightRead, await read.HeavyweightClosesAsync(dated, heavyweightVariant), cells, register) with
             {
                 SweepFoundNone = EquityBrief.Core.Sweep.SweepLine.Drawn(
                     [.. answers.Where(answer => answer.Family == EquityBrief.Core.Families.HeavyweightRule.Name)],
                     TonightScreen.FrozenAt(EquityBrief.Core.Families.HeavyweightRule.Name, register, dated)),
-                RuleChoice = heavyweightChoice,
+                RuleChoice = heavyweightVariant is null
+                    ? heavyweightChoice
+                    : heavyweightChoice with
+                    {
+                        Share = RuleScreen.ShareOf(
+                            true,
+                            TonightScreen.OpenHoldings(await read.HeavyweightHoldingsAsync(dated, null)),
+                            TonightScreen.OpenHoldings(heavyweightHoldings)),
+                    },
             },
             heavyweightVariant is null ? await read.BoughtCardsAsync(reading.Code, dated) : [],
             cardContext);
+
+    if (heavyweights is not null)
+    {
+        heavyweights = await WithStandingAsync(
+            read,
+            heavyweights,
+            reading,
+            dated,
+            Growths(heavyweightHoldings.Where(holding => holding.EndedOn is null).Select(holding => (holding.Ticker, holding.EnteredOn, holding.Growth))),
+            heavyweightSettings.FundReturn,
+            sector => TonightScreen.EmptySectorReason(sector, heavyweightRead, heavyweightSettings.FundReturn, heavyweightSettings.HighBeta));
+    }
     var line = cards is null
         ? null
         : TonightScreen.Line(

@@ -67,8 +67,12 @@ public partial class ReadSurface
         // registered and no line on a test.
         var page = await Card(null);
 
+        // From 19.3 each book's tab names what it differs from the provisional rule on, read off its stored settings: the
+        // cover's interest cover beside the profit gate, and the twelve-month book's strength in the look-back's place.
         Assert.Contains(
-            $"<option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{RuleScreen.ProvisionalChoice}</option><option value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\">Variant 1: {cover}</option><option value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\">Variant 2: {twelve}</option>",
+            $"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" aria-current=\"true\">Provisional</a>"
+            + $"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(cover)}\" data-variant=\"1\" title=\"{cover}\">V1 · profit and cover</a>"
+            + $"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(twelve)}\" data-variant=\"2\" title=\"{twelve}\">V2 · twelve months less the latest</a>",
             page,
             StringComparison.Ordinal);
         Assert.DoesNotContain("no-variant", page, StringComparison.Ordinal);

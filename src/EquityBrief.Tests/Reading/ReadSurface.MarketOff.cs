@@ -47,15 +47,19 @@ public partial class ReadSurface
         // The provisional rule first and selected, then the variant by its number and its registration's words, which end
         // on the market check off; no line that no variant is registered.
         Assert.EndsWith(", the " + IndexRuleCandidate.MarketCheckOff, variant.Candidate, StringComparison.Ordinal);
-        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(card, "<option ").Count);
-        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{RuleScreen.ProvisionalChoice}</option>", card, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{RunScreen.Slug(variant.Candidate)}\" data-variant=\"1\">Variant 1: {variant.Candidate}</option>", card, StringComparison.Ordinal);
+        Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(card, "<a class=\"rule-tab").Count);
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" aria-current=\"true\">Provisional</a>", card, StringComparison.Ordinal);
+
+        // From 19.3 its tab names it by the one setting it differs from the provisional rule on, its full name under the
+        // pointer.
+        Assert.Contains($"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{RunScreen.Slug(variant.Candidate)}\" data-variant=\"1\" title=\"{variant.Candidate}\">V1 · {IndexRuleCandidate.MarketCheckOff}</a>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-no-variant", card, StringComparison.Ordinal);
 
-        // Chosen in the link, the card is drawn under the band with the clause naming the check off marked.
+        // Chosen in the link, the card is drawn under the band with the clause naming the check off marked, and its chip.
         var chosen = Section(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400&breakout={RunScreen.Slug(variant.Candidate)}")), "breakout");
 
-        Assert.Contains($"<option value=\"{RunScreen.Slug(variant.Candidate)}\" selected data-variant=\"1\">", chosen, StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{RunScreen.Slug(variant.Candidate)}\" data-variant=\"1\"", chosen, StringComparison.Ordinal);
         Assert.Contains("the " + IndexRuleCandidate.MarketCheckOff, Marked(chosen));
+        Assert.Equal([IndexRuleCandidate.MarketCheckOff], System.Text.RegularExpressions.Regex.Matches(chosen, "<li class=\"rule-chip differs\">([^<]*)</li>").Select(match => match.Groups[1].Value).ToArray());
     }
 }

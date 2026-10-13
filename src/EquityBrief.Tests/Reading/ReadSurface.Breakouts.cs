@@ -75,61 +75,50 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">Provisional: not yet frozen</b> · 2 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 2 of {families} · Breakout from a base</div><h2>Breakouts to a new high</h2>"), page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">2 picks tonight</span>", card, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 2 of {families} · Breakout from a base</div>"), page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"fam-swatch\" data-family=\"breakout\"></span>Breakouts to a new high</span>", card, StringComparison.Ordinal);
 
         // Its rule in words, written from the settings it froze at: a 126-session high, 1.5 times the volume, ranges
-        // at 0.85 of the 20 sessions before and a stop 1.5 typical moves under.
-        Assert.Contains("<p class=\"lede\">A stock closes above its highest price of the 126 sessions before on 1.5 times its average volume, after its daily ranges narrowed to at most 0.85 of those over the 20 sessions before them. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target.</p>", page, StringComparison.Ordinal);
+        // at 0.85 of the 20 sessions before and a stop 1.5 typical moves under, a click away beneath its chips.
+        Assert.Contains("<p class=\"rule-words\">A stock closes above its highest price of the 126 sessions before on 1.5 times its average volume, after its daily ranges narrowed to at most 0.85 of those over the 20 sessions before them. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target.</p>", card, StringComparison.Ordinal);
 
-        // Its rows, in the page's order: K1 sixth and K2 seventh, and no row for F1 or K3.
-        Assert.Equal(
-            [("K1", "6"), ("K2", "7")],
-            Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"breakout\".*?<td class=\"place\" data-place=\"(\\d+)\">\\2</td>", RegexOptions.Singleline)
-                .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.All(new[] { "F1", "K3" }, ticker => Assert.DoesNotContain($"<tr data-ticker=\"{ticker}\"", card, StringComparison.Ordinal));
+        // Its picks named by their place among the buy points, K1 and K2, and no name for F1 or K3; their rows in the
+        // buy points, K1 sixth and K2 seventh.
+        Assert.Equal(["K1", "K2"], Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.All(new[] { "F1", "K3" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\" href", card, StringComparison.Ordinal));
+        Assert.Contains("<td class=\"place\" data-place=\"6\">6</td>", PickRowOf(page, "K1"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"place\" data-place=\"7\">7</td>", PickRowOf(page, "K2"), StringComparison.Ordinal);
 
-        // K1's trade: bought at 50 with the stop at 47, and no target, since the stop trails the price: the
-        // target's cell and the reward to risk say so, and the bar between the stop and the target has no
-        // right end.
-        var first = FamilyRowOf(card, "K1");
+        // K1's trade: bought at 50 with the stop at 47, and no target, since the stop trails the price: the target's
+        // cell and the reward to risk say so.
+        var first = PickRowOf(page, "K1");
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"47\">47.00</td><td class=\"r num plan-target\" data-target=\"none\">trailing</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"stop-to-target\"><span class=\"stt trailing\" data-along=\"none\"", first, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"stt-open\">no fixed target</span>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", first, StringComparison.Ordinal);
 
-        // Why each is listed, in the figures its gates stored: K1's high over the 126 sessions its gate names,
-        // and K2's, stored as a night before the freeze stored it with no window named, over the provisional
-        // setting's 251.
-        Assert.Contains("<td class=\"why-tonight\">Closed at 50.00, above its high of 49.50 over the 126 sessions before, on volume 2.10 times its average, after its daily ranges ran at 0.80 of the 20 sessions before them.</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"why-tonight\">Closed at 80.25, above its high of 80.00 over the 251 sessions before, on volume 1.60 times its average, after its daily ranges ran at 1.00 of the 20 sessions before them.</td>", FamilyRowOf(card, "K2"), StringComparison.Ordinal);
-
-        // F1, which both families passed, is drawn once across the cards, on the pullback's card, with the breakout's label
-        // and the pullback's own trade, and the breakout's card names it in a note; and from 19.2 once in tonight's buy
-        // points above the cards, tagged with the pullback.
-        var pullbacks = FamilyCardOf(page, SetupFamilies.Pullback);
-        var shared = FamilyRowOf(pullbacks, "F1");
+        // F1, which both families passed, is drawn once, in tonight's buy points tagged with the pullback, with the
+        // breakout's label and the pullback's own trade, and the breakout's card names it in a note.
         var points = Regex.Match(page, "<table class=\"list-table buy-points\".*?</table>", RegexOptions.Singleline).Value;
+        var shared = PickRowOf(page, "F1");
 
-        Assert.Single(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
+        Assert.Empty(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
         Assert.Single(Regex.Matches(points, "<tr data-ticker=\"F1\" data-family=\"pullback\""));
         Assert.DoesNotContain("data-family=\"breakout\" data-selects=\"F1\"", points, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"F1\" data-family=\"pullback\" data-also=\"Breakout\"", shared, StringComparison.Ordinal);
         Assert.Contains("<span class=\"also-family\" data-also=\"Breakout\">also a breakout</span>", shared, StringComparison.Ordinal);
         Assert.Contains("data-target=\"110\">110.00</td>", shared, StringComparison.Ordinal);
-        Assert.DoesNotContain("also-family", FamilyRowOf(pullbacks, "F2"), StringComparison.Ordinal);
+        Assert.DoesNotContain("also-family", PickRowOf(page, "F2"), StringComparison.Ordinal);
         Assert.Equal(
             ["F1 also qualified here tonight and is shown once, under Pullbacks to support, with both labels. One stock is one trade."],
             Regex.Matches(card, "<p class=\"family-note\">(.*?)</p>").Select(match => match.Groups[1].Value));
 
-        // Read back against the store in both directions: each card's rows are the stocks the page's list
-        // holds as listed under its family, in their places, and the one under another holds no place.
+        // Read back against the store in both directions: each card names the stocks the page's list holds as listed
+        // under its family, in their places, and the one under another holds no place.
         foreach (var family in new[] { SetupFamilies.Pullback, BreakoutRule.Name })
         {
             Assert.Equal(
                 Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND family = '{family}' AND state = 'listed' ORDER BY place;"),
-                Regex.Matches(FamilyCardOf(page, family), "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+                Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, family), "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         }
 
         Assert.Equal(["F1"], Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'under another' AND place IS NULL;"));
@@ -155,7 +144,8 @@ public partial class ReadSurface
 
             Assert.Contains("data-picks=\"0\"", card, StringComparison.Ordinal);
             Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: of 3 members, 2 passed the new high gate, 1 of those the volume gate, 0 of those the tightened gate and 0 of those the trade gate.</p>", card, StringComparison.Ordinal);
-            Assert.DoesNotContain("<table", card, StringComparison.Ordinal);
+            Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
+            Assert.DoesNotContain("variant-table", card, StringComparison.Ordinal);
         }
 
         // A night whose page the family is on and its evaluator stored no answer for says that and no count.

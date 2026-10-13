@@ -109,9 +109,10 @@ public sealed partial class MarkRenderer
     public static string CardToggle(DecisionCardView card) =>
         $" <button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{Escaped(card.Id)}\" title=\"open this pick's card\">card</button>";
 
-    // A pick's card in a row of its own beneath the pick's, hidden until its control opens it.
+    // A pick's card in a row of its own beneath the pick's, hidden until its control opens it, held inside the width of the
+    // box its table scrolls in.
     public string CardRow(DecisionCardView card, int columns) =>
-        Formatted($"<tr class=\"card-row\" id=\"{Escaped(card.Id)}\" hidden><td colspan=\"{columns}\">{DecisionCard(card)}</td></tr>");
+        Formatted($"<tr class=\"card-row\" id=\"{Escaped(card.Id)}\" hidden><td colspan=\"{columns}\"><div class=\"row-open\">{DecisionCard(card)}</div></td></tr>");
 
     // A pick's card: the checklist's lines, each with its mark and its reason, and the rule's record under the rule's own
     // heading, naming the rule and its index and never the stock.

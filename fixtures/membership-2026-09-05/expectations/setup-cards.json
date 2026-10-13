@@ -1,0 +1,13 @@
+{
+ "stage": "setup-cards",
+ "derivation": "derived",
+ "derivedFrom": "section 15.7's rows on a family's card and its rule, section 11's arrival rule and the decision that tonight's page is drawn from setup families, not a run. The fixture's night of 2026-09-08 is the first its store runs the swing filter over, so the trigger every pullback buy point needs reads its arrival off gate rows stored for the sessions before the night, finds none and fails for every member, as night-request.json derives; the families pass no stock and every card lists nothing. On the S&P 500 no family rule stands registered in the fixture's store, so the pullback, the breakout and the drift draw no rule's night and no funnel, each provisional with one tab saying so, and each card's one line reads Nothing tonight with its reason beneath it. The fundamentals-first family buys at the pullback's buy point, so its rule's night on the index stores a funnel whose market check passes all four members, the breadth of 0.75 standing above every floor, and whose setup passes none: the largest fall from one gate's count to the next is the setup's, four of the four reaching it, and the store holds no completed empty stretch, none of the thirty a usual stretch waits for. The heavyweights have read no rebalance, so their card holds nothing in none of the eleven sectors. The suite reads every member's stored gate result on the night failing its trigger, works the line from the stored funnel by its own arithmetic and reads each card back off the page the whole night draws. It names the gate results the derivation rests on, which the replay the other checks read writes, and not the rule nights, which the whole night alone writes and the suite runs for this file.",
+ "tables": ["gate_result"],
+ "night": "2026-09-08",
+ "indexDrawn": "S&P 500",
+ "cards": ["pullback", "breakout", "drift", "fundamentals", "heavyweight"],
+ "ruled": ["fundamentals"],
+ "ruledLine": "Nothing tonight · most stopped at the setup gate (4 of 4) · no usual stretch yet (0 of 30)",
+ "unruledLine": "Nothing tonight",
+ "heavyweights": { "holdings": 0, "sectors": 0, "of": 11 }
+}

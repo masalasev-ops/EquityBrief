@@ -84,30 +84,35 @@ public partial class ReadSurface
         // Frozen the day after the night: the night's card is the provisional rule's still, its sweep's line drawn.
         var before = await CardFrozenAt("2026-10-03T12:00:00Z", readByIt: false);
 
-        Assert.Contains("<b class=\"provisional\">Provisional: not yet frozen</b> · 1 pick tonight · 0 variants scoring in the background</p>" + SweepLineDrawn, before.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", before.Card, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, before.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(FrozenRule, before.Page, StringComparison.Ordinal);
 
         // Frozen before the night, but the night read its list by the provisional rule, as it does where the live rule's
         // evaluator moved: the card is the provisional rule's the list was drawn by, its line drawn.
         var unread = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: false);
 
-        Assert.Contains("<b class=\"provisional\">Provisional: not yet frozen</b> · 1 pick tonight · 0 variants scoring in the background</p>" + SweepLineDrawn, unread.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", unread.Card, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, unread.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(FrozenRule, unread.Page, StringComparison.Ordinal);
 
         // Frozen on the night and read by it: live since that day with its two variants, its rule in the words its name
         // carries above the card, the line gone, and still listing M1 as the night stored it.
         var frozen = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true);
 
-        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 pick tonight · 2 variants scoring in the background</p>", frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 pick tonight</span>", frozen.Card, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(frozen.Card, "<a class=\"rule-tab").Count);
         Assert.DoesNotContain(SweepLineDrawn, frozen.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, frozen.Card, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(frozen.Page, Regex.Escape(FrozenRule)));
-        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M1\"", frozen.Card, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", frozen.Page, StringComparison.Ordinal);
 
         // A sweep recorded after the freeze that found none draws the line again beneath the live rule's standing.
         var answeredAfter = await CardFrozenAt("2026-10-02T12:00:00Z", readByIt: true, "2026-10-02T13:00:00Z");
 
-        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 pick tonight · 2 variants scoring in the background</p>" + SweepLineDrawn, answeredAfter.Card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span>", answeredAfter.Card, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, answeredAfter.Card, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -226,7 +231,8 @@ public partial class ReadSurface
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"1\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-03\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain(SweepLineDrawn, card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-10-02</b> · 1 holding tonight · held while leading · 1 variant kept in books of their own · last rebalance 2026-10-02", card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-10-02\">Live</span> <span class=\"fam-count\">1 holding tonight</span>", card, StringComparison.Ordinal);
+        Assert.Contains("since the last rebalance of 2026-10-02", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"M1\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"M2\"", card, StringComparison.Ordinal);
         Assert.Contains("The rebalance of 2026-10-02 bought M1.", card, StringComparison.Ordinal);
@@ -289,7 +295,7 @@ public partial class ReadSurface
             0.05);
 
         Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-02\" data-variants=\"0\" data-last-rebalance=\"2026-10-02\" data-next-rebalance=\"2026-11-02\" data-look-back=\"126\"", shorter, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+5.0</span> points over 126 sessions, at 2026-10-02</td>", shorter, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\" title=\"over 126 sessions, at the rebalance of 2026-10-02\"><span class=\"hw-bar\"><span class=\"hw-fill gain\" style=\"width:100%\"></span></span> <span class=\"gain\">+5.0</span> points</td>", shorter, StringComparison.Ordinal);
 
         // Design (b) at a month's window: its rebalance needs 22 closes; it reads no lead over a sector, and the card's
         // keys and M1's row say so in design (b)'s words.
@@ -311,7 +317,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-next-rebalance=\"2026-11-02\" data-look-back=\"21\"", followers, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"degraded\">none: design (b) reads no lead over a sector</span></td>", followers, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"head-tip\" role=\"tooltip\">The sector its company files, or none where it files none: design (b) buys a member of an industry leading the S&P 500, not a sector's leader.</span>", followers, StringComparison.Ordinal);
+        Assert.Contains($"<span class=\"hw-pill\" data-standing=\"{EquityBrief.Core.Families.HeavyweightStandings.NotForThisDesign}\"", followers, StringComparison.Ordinal);
         Assert.Contains("<span class=\"head-tip\" role=\"tooltip\">Design (b) buys the strongest members of the industries whose S&P 500 members lead the S&P 500 over its window, and reads no lead over a sector.</span>", followers, StringComparison.Ordinal);
         Assert.DoesNotContain("bought before its book stored a lead", followers, StringComparison.Ordinal);
     }

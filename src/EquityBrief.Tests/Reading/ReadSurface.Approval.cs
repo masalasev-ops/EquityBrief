@@ -269,13 +269,13 @@ public partial class ReadSurface
         // Read back off the rendered pages: the S&P 600's breakout card states the change; the S&P 400's and the S&P 500's
         // pages are drawn as before it, byte for byte.
         var small600 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
-        var stated = Assert.Single(Blocks(small600, "<p class=\"lede\">[^<]*approved on the Loop page[^<]*</p>"));
+        var stated = Assert.Single(Blocks(small600, "<p class=\"rule-words\">[^<]*approved on the Loop page[^<]*</p>"));
 
-        Assert.StartsWith("<p class=\"lede\">A stock closes above its highest price of the 126 sessions before", stated, StringComparison.Ordinal);
+        Assert.StartsWith("<p class=\"rule-words\">A stock closes above its highest price of the 126 sessions before", stated, StringComparison.Ordinal);
         Assert.Contains("lists close while the S&P 600's own breadth is under 45%; each trade's result is read after the published spread, half paid at each end. It stands at a change approved on the Loop page: exit: ", stated, StringComparison.Ordinal);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(large, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}")));
-        Assert.Contains($"<p class=\"lede\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", mid, StringComparison.Ordinal);
     }
 
     // From 17.13 a change approved to the S&P 500's breakout and applied by the night is read on the S&P 500's breakout
@@ -315,11 +315,11 @@ public partial class ReadSurface
         // as the live rule and the rule it replaced as a variant; the S&P 400's and the S&P 600's pages as before it.
         var large = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}"));
         var replaced = EquityBrief.Worker.Candidates.TheSetupFamilies.Breakouts[0].Candidate;
-        var picker =Assert.Single(Blocks(large, "<select data-rule-choice=\"breakout\".*?</select>"));
+        var picker = Assert.Single(Blocks(large, "<nav class=\"rule-tabs\" data-rule-choice=\"breakout\".*?</nav>"));
 
         Assert.Contains("It stands at a change approved on the Loop page: exit: a target at 1.5 risks.", large, StringComparison.Ordinal);
-        Assert.Contains($"selected data-variant=\"none\">{replaced}; exit: a target at 1.5 risks</option>", picker, StringComparison.Ordinal);
-        Assert.Matches($"data-variant=\"[0-9]+\">Variant [0-9]+: {Regex.Escape(replaced)}</option>", picker);
+        Assert.Contains($"data-variant=\"none\" title=\"{replaced}; exit: a target at 1.5 risks\" aria-current=\"true\">Live</a>", picker, StringComparison.Ordinal);
+        Assert.Matches($"data-variant=\"[0-9]+\" title=\"{Regex.Escape(replaced)}\">V[0-9]+ · without ", picker);
         Assert.Equal(mid, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
         Assert.Equal(small, WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600")));
     }

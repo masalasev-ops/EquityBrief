@@ -638,9 +638,6 @@ public sealed class SinglePageApp : IComponent
           if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
           const universe = event.target.closest ? event.target.closest('select[data-universe-route]') : null;
           if (universe) { location.hash = universe.getAttribute('data-universe-route') + '?{{{Universes.Query}}}=' + encodeURIComponent(universe.value); }
-          // A card's rule, kept in the link under the family's own key with every other key kept.
-          const rule = event.target.closest ? event.target.closest('select[data-rule-choice]') : null;
-          if (rule) { location.hash = merged(rule.getAttribute('data-rule-choice'), rule.value === '{{{RuleScreenWords.LiveSlug}}}' ? null : rule.value); }
         });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
@@ -739,6 +736,14 @@ public sealed class SinglePageApp : IComponent
           if (hide) {
             const fold = hide.closest('details');
             if (fold) { fold.open = false; fold.querySelector('summary').scrollIntoView({ block: 'center' }); }
+            return;
+          }
+          // A card's tab: the rule it chooses kept in the link under the family's own key with every other key kept, the
+          // live rule as the key's absence, so the default returns to it.
+          const tab = event.target.closest('a[data-rule-tab]');
+          if (tab) {
+            event.preventDefault();
+            location.hash = merged(tab.getAttribute('data-rule-tab'), tab.getAttribute('data-value') === '{{{RuleScreenWords.LiveSlug}}}' ? null : tab.getAttribute('data-value'));
             return;
           }
           // A link to a place on this screen. Every screen's address opens "#/", so a link whose hash
@@ -2347,17 +2352,15 @@ public sealed class SinglePageApp : IComponent
             region.Append(marks.SetupTiles(tiles));
             region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night));
 
+            // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
+            // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
             foreach (var card in families)
             {
                 region.Append(Cards.Computed(
                     Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
-                    marks.FamilyCard(card) + Cards.Key(
-                        "How to read the card.",
-                        "Each row is one stock this setup lists tonight, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right, and the bar shows where the buy sits between them. Select a row to draw its plan just below the cards; report opens the stock's full page.",
-                        "A stock is listed once across every card, under the first setup it qualified for, and never while a trade for it is still open; the notes under the rows name what was held back and why. The reward to risk is a fact about the chart and not a chance of anything."),
-                    title: Escaped(card.Heading),
-                    lede: Escaped(card.Rule),
+                    marks.FamilyCard(card),
                     stamp: Cards.Night(night),
+                    id: "setup-" + card.Family,
                     region: "family"));
             }
 
@@ -2369,13 +2372,9 @@ public sealed class SinglePageApp : IComponent
             {
                 region.Append(Cards.Computed(
                     Invariant($"Rotation · {heavyweights.Eyebrow}"),
-                    marks.HeavyweightCard(heavyweights) + Cards.Key(
-                        "How to read the card.",
-                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the two leaders of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of its sector fund's at the rebalance that read it.",
-                        "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card, and a stock held here can be listed by a swing setup too: each card keeps its own one trade a stock."),
-                    title: Escaped(heavyweights.Heading),
-                    lede: Escaped(heavyweights.Rule),
+                    marks.HeavyweightCard(heavyweights),
                     stamp: Cards.Night(night),
+                    id: "setup-" + EquityBrief.Core.Families.HeavyweightRule.Name,
                     region: "heavyweights"));
             }
         }
@@ -2422,25 +2421,10 @@ public sealed class SinglePageApp : IComponent
 
         // "Close to a buy point", beneath the list on a night the swing filter listed: the members one gate
         // short, drawing the places the list leaves of the twenty, nearest to qualifying first. It recommends
-        // nothing, which its key says.
+        // nothing, which its key says. On a night the families drew the page's list each setup's card draws its own
+        // behind an expander instead.
         // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
-        // On a night the families drew the page's list it is one list across every setup, a row a stock and
-        // setup with the setup's label and the one gate it missed, the setups in the page's order.
-        // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-        if (families is not null && closeAcross is not null)
-        {
-            region.Append(Cards.Computed(
-                "Close to a buy point",
-                marks.CloseAcross(closeAcross, TonightDrawn) + Cards.Key(
-                    "How to read this list.",
-                    "Each row is a stock that passed every gate of one setup but one tonight, with nothing excluding it. It is not a buy point and recommends nothing: it is what to watch for tomorrow.",
-                    "A stock a single gate short under two setups has a row for each. The setups are drawn in the page's order."),
-                title: "Close to a buy point",
-                lede: "One list across every setup: each row passed every gate of its setup but one.",
-                stamp: Cards.Night(night),
-                region: "close"));
-        }
-        else if (byFilter && close is not null)
+        if (families is null && byFilter && close is not null)
         {
             region.Append(Cards.Computed(
                 "Close to a buy point",
@@ -2543,17 +2527,15 @@ public sealed class SinglePageApp : IComponent
         region.Append(marks.SetupTiles(tiles));
         region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word));
 
+        // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
+        // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
         foreach (var card in families)
         {
             region.Append(Cards.Computed(
                 Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
-                marks.FamilyCard(card) + Cards.Key(
-                    "How to read the card.",
-                    $"Each row is one stock this setup lists tonight among the {Escaped(universe.Possessive)} members, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right, and the bar shows where the buy sits between them; report opens the stock's full page.",
-                    $"The rule runs on provisional settings until its freeze, read on the {Escaped(universe.Possessive)} own members alone, and its record starts at the freeze. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes under the rows name what was held back and on which index's list."),
-                title: Escaped(card.Heading),
-                lede: Escaped(card.Rule),
+                marks.FamilyCard(card),
                 stamp: Cards.Night(night),
+                id: "setup-" + card.Family,
                 region: "family"));
         }
 
@@ -2561,13 +2543,9 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 Invariant($"Rotation · {heavyweights.Eyebrow}"),
-                marks.HeavyweightCard(heavyweights) + Cards.Key(
-                    "How to read the card.",
-                    $"Each row is a stock the {Escaped(universe.Possessive)} sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index.",
-                    "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card."),
-                title: Escaped(heavyweights.Heading),
-                lede: Escaped(heavyweights.Rule),
+                marks.HeavyweightCard(heavyweights),
                 stamp: Cards.Night(night),
+                id: "setup-" + EquityBrief.Core.Families.HeavyweightRule.Name,
                 region: "heavyweights"));
         }
 

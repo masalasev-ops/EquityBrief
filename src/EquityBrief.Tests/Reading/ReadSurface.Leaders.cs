@@ -50,7 +50,7 @@ public partial class ReadSurface
             [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name],
             Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.DoesNotContain("data-family=\"leader\"", page, StringComparison.Ordinal);
-        Assert.DoesNotContain("also a sector leader", FamilyRowOf(FamilyCardOf(page, SetupFamilies.Pullback), "F2"), StringComparison.Ordinal);
+        Assert.DoesNotContain("also a sector leader", PickRowOf(page, "F2"), StringComparison.Ordinal);
         Assert.Equal(["0"], Strings(store, $"SELECT COUNT(*) FROM family_pick WHERE session_date = '{TheSwitch}' AND family = 'leader';"));
     }
 }

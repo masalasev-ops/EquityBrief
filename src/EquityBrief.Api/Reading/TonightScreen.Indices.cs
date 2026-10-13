@@ -108,7 +108,8 @@ public static partial class TonightScreen
                 listed,
                 notes,
                 listed.Length > 0 ? null : IndexEmpty(universe, night, settings, own, [.. results.Where(result => result.Family == family.Name)]),
-                HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade)));
+                HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade),
+                Passes: Passes(own)));
         }
 
         return cards;

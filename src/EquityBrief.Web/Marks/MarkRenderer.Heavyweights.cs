@@ -17,7 +17,19 @@ public sealed record HeavyweightHoldingCell(
     double? Average200,
     bool Under,
     DecisionCardView? Card = null,
-    string? NoLead = null);
+    string? NoLead = null,
+    double? SinceBought = null,
+    EquityBrief.Core.Families.HeavyweightStanding? Standing = null);
+
+// The four tiles a heavyweights card opens on: its holdings, the sectors holding one of the eleven, its return since its
+// last rebalance beside the equal-weighted return of the funds of the sectors it holds over the same sessions, and the
+// sessions to its next rebalance, each none where it cannot be read.
+public sealed record HeavyweightTilesView(int Holdings, int Sectors, int Of, double? BookSince, double? FundsSince, IReadOnlyList<string> Funds, int? SessionsToNext);
+
+// One sector on a heavyweights card: its name, its fund and the fund's return over the look-back to the night, and for a
+// sector holding none, why, read off the book's own rows of its last rebalance. The card's holdings are drawn under the
+// sector each was bought in.
+public sealed record HeavyweightSectorView(string Sector, string? Fund, double? FundReturn, string? Reason);
 
 // A holding the book ended, as the card names it: the stock, the session it ended on and why.
 public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, string Reason);
@@ -44,7 +56,9 @@ public sealed record HeavyweightCardView(
     bool SweepFoundNone = false,
     string? Waits = null,
     IReadOnlyDictionary<string, string>? Says = null,
-    RuleView? RuleChoice = null);
+    RuleView? RuleChoice = null,
+    HeavyweightTilesView? Tiles = null,
+    IReadOnlyList<HeavyweightSectorView>? Sectors = null);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -70,47 +84,45 @@ public sealed partial class MarkRenderer
     // What each column of the sector heavyweights' card holds, in the order the columns are drawn.
     public static IReadOnlyList<(string Heading, string Says)> HeavyweightHeadings { get; } =
     [
-        ("#", "The holding's place on the card, the sectors in alphabetical order."),
+        ("#", "The holding's place on the card, the sectors in alphabetical order. The session it was bought on is under the pointer."),
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
-        (SectorHeading, "The sector the stock was bought as the leader of."),
-        ("Held since", "The session the book bought it on, at that session's close."),
-        (LeadHeading, "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it."),
-        ("Close against its 200-day", "Tonight's close beside its 200-day average, which the trend gate read at the rebalance. A close under it sells nothing on its own."),
-        ("Plan", "Held while it leads: no stop and no target. It is sold at the close of a later month's rebalance where it no longer leads, or at its last close as a member."),
+        (LeadHeading, "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it, as a bar."),
+        ("Against its 200-day", "Tonight's close above or below its 200-day average, in per cent of the average."),
+        ("Since bought", "Its return from its buy to tonight's close, in per cent of the buy."),
+        ("Tonight", "Still leading, lost its lead or below its 200-day, read off tonight's closes by the rule's own functions. Information only: the book sells at a rebalance, never on this."),
     ];
 
-    // The sector heavyweights' card: its standing and the night's count in a line, the holdings one to a row, what
-    // the last rebalance bought and what ended, and the next rebalance.
+    // How a heavyweights card is read, written once for every heavyweights card on every index and opened from its
+    // header's "?", where each card once repeated its key.
+    public const string HeavyweightCardGuide =
+        "Each row is a stock the book holds at tonight's close, bought at the close of a month's rebalance as one of the leaders of its sector's largest companies, grouped under its sector beside the sector's fund and its return over the look-back to tonight, the S&P 500's funds on the S&P 400 and 600. It has no stop and no target: it is held while it leads and sold at the close of a later rebalance where the rule would not buy it, or at its last close as a member of the index. The tiles count its holdings and the sectors holding one, its return since the last rebalance beside the funds' of the sectors it holds, and the sessions to the next. A sector holding nothing says why its last rebalance bought nothing. Tonight's standing is read off tonight's closes and sells nothing. A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card.";
+
+    // The sector heavyweights' card: its header, the rule's tabs and chips, a chosen book's band, the four tiles, its
+    // holdings grouped by sector under each fund's return with why an empty sector holds none, what the last rebalance
+    // bought and what ended, and the next rebalance.
     // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
     public string HeavyweightCard(HeavyweightCardView card)
     {
         var body = new StringBuilder();
         var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
+        var (pill, pillClass, pillTitle) = Pill(card.LiveSince, card.RuleChoice);
 
         body.Append(Invariant, $"<section class=\"family-card heavyweight-card\" data-family=\"{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-holdings=\"{card.Holdings.Count}\" data-state=\"{(card.LiveSince is null ? "provisional" : "live")}\" ");
         body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-last-rebalance=\"{(card.LastRebalance is { } last ? DayOf(last) : "none")}\" data-next-rebalance=\"{(card.NextRebalance is { } next ? DayOf(next) : "none")}\" data-look-back=\"{card.LookBack}\">");
-
-        // The rule's standing, the night's count and the variants kept in books of their own, in one line.
-        body.Append("<p class=\"family-state\">");
-        body.Append(card.LiveSince is { } live
-            ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
-            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}</b>");
-        body.Append(Invariant, $" · {Count(card.Holdings.Count, "holding")} tonight · held while leading");
-        body.Append(card.LiveSince is null ? string.Empty : Formatted($" · {Count(card.Variants, "variant")} kept in books of their own"));
-        body.Append(card.LastRebalance is { } read ? Formatted($" · last rebalance {DayOf(read)}") : " · no rebalance read yet");
-        body.Append(card.NextRebalance is { } coming ? Formatted($" · next rebalance <b class=\"next-rebalance\">{DayOf(coming)}</b>") : " · next rebalance past the exchange calendar's table");
-        body.Append("</p>");
+        body.Append(CardHead(EquityBrief.Core.Families.HeavyweightRule.Name, card.Heading, pill, pillClass, pillTitle, Count(card.Holdings.Count, "holding") + " tonight", HeavyweightCardGuide));
         body.Append(SweepFoundNoneLine(card.SweepFoundNone));
 
-        // The selector the swing cards carry, and a registered variant's own book drawn under the same band with its
-        // words, the clauses the live rule's lack marked.
+        // The tabs the swing cards carry, and a registered variant's own book drawn under the same band, with what it
+        // shares with the live book, adds and drops.
         // see: A variant's picks are shown on its card when chosen and its results only under its tests
         if (card.RuleChoice is { } rule)
         {
             body.Append(Invariant, $"<div class=\"heavyweight-rule\" data-rule=\"{Escaped(rule.Chosen.Slug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");
-            body.Append(RuleChoice(EquityBrief.Core.Families.HeavyweightRule.Name, rule));
+            body.Append(RuleTabs(EquityBrief.Core.Families.HeavyweightRule.Name, rule));
+            body.Append(RuleChipsLine(rule));
 
             if (variant is not null)
             {
@@ -123,7 +135,7 @@ public sealed partial class MarkRenderer
                     body.Append(Invariant, $"<p class=\"variant-untested\" data-adjusted=\"{(untested.Adjusted is { } p ? p.ToString("R", Invariant) : "none")}\">{Escaped(untested.Line)}</p>");
                 }
 
-                body.Append(RuleWordsLine(rule.Parts));
+                body.Append(ShareLine(variant.Share, "holdings"));
             }
 
             body.Append("</div>");
@@ -134,34 +146,58 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<p class=\"family-note heavyweight-waits\">{Escaped(waits)}</p>");
         }
 
+        body.Append(HeavyweightTiles(card));
+
         if (card.Holdings.Count == 0)
         {
             body.Append(Invariant, $"<p class=\"degraded family-empty\" data-holdings=\"0\">{Escaped(card.Empty ?? "The sector heavyweights hold nothing tonight.")}</p>");
         }
-        else
+
+        // The sectors once a rebalance has been read, each holding none saying why; before it, the line above alone.
+        if (card.Holdings.Count > 0 || (card.Sectors is { Count: > 0 } && card.LastRebalance is not null))
         {
-            body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table heavyweight-table\" data-rows=\"{card.Holdings.Count}\"><thead><tr>");
+            body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table heavyweight-table\" data-rows=\"{card.Holdings.Count}\"><thead><tr>");
 
             foreach (var (heading, says) in HeavyweightHeadings)
             {
                 body.Append(TippedHeading(heading, card.Says?.GetValueOrDefault(heading) ?? says, heading switch
                 {
                     "#" => "place",
-                    LeadHeading => "r",
+                    LeadHeading or "Against its 200-day" or "Since bought" => "r",
                     _ => null,
                 }));
             }
 
             body.Append("</tr></thead><tbody>");
 
-            foreach (var (holding, at) in card.Holdings.Select((holding, at) => (holding, at)))
-            {
-                body.Append(HeavyweightRow(holding, at + 1, card.LookBack));
+            var place = 0;
+            var top = card.Holdings.Select(holding => Math.Abs(holding.Lead ?? 0)).DefaultIfEmpty(0).Max();
 
-                // The card of the night the holding was bought, in place beneath its row.
-                if (holding.Card is { } decision)
+            foreach (var sector in card.Sectors ?? [.. card.Holdings.Select(holding => holding.Sector).Distinct(StringComparer.Ordinal).Select(name => new HeavyweightSectorView(name, null, null, null))])
+            {
+                HeavyweightHoldingCell[] held = [.. card.Holdings.Where(holding => holding.Sector == sector.Sector)];
+
+                body.Append(Invariant, $"<tr class=\"hw-sector\" data-sector=\"{Escaped(sector.Sector)}\" data-holdings=\"{held.Length}\"><th scope=\"rowgroup\" colspan=\"{HeavyweightHeadings.Count}\">{Escaped(sector.Sector)}");
+                body.Append(sector.Fund is { } fund
+                    ? Formatted($" <span class=\"hw-fund\" data-fund=\"{Escaped(fund)}\" data-return=\"{(sector.FundReturn is { } fundReturn ? fundReturn.ToString("R", Invariant) : "none")}\">{Escaped(fund)} {(sector.FundReturn is { } over ? SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>")} over {card.LookBack} sessions</span>")
+                    : string.Empty);
+                body.Append("</th></tr>");
+
+                if (held.Length == 0)
                 {
-                    body.Append(CardRow(decision, HeavyweightHeadings.Count));
+                    body.Append(Invariant, $"<tr class=\"hw-empty\" data-sector=\"{Escaped(sector.Sector)}\"><td colspan=\"{HeavyweightHeadings.Count}\" class=\"degraded\">{Escaped(sector.Reason ?? "It holds nothing tonight.")}</td></tr>");
+                }
+
+                foreach (var holding in held)
+                {
+                    place++;
+                    body.Append(HeavyweightRow(holding, place, card.LookBack, top));
+
+                    // The card of the night the holding was bought, in place beneath its row.
+                    if (holding.Card is { } decision)
+                    {
+                        body.Append(CardRow(decision, HeavyweightHeadings.Count));
+                    }
                 }
             }
 
@@ -188,24 +224,54 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // One holding as a row of the card.
-    string HeavyweightRow(HeavyweightHoldingCell holding, int place, int lookBack)
+    // The four tiles a heavyweights card opens on.
+    static string HeavyweightTiles(HeavyweightCardView card)
+    {
+        if (card.Tiles is not { } tiles)
+        {
+            return string.Empty;
+        }
+
+        static string Percent(double? figure) =>
+            figure is { } held ? SignedFigure(held * 100, 1, Formatted($"{Unsigned(held * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>";
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"hw-tiles\" data-holdings=\"{tiles.Holdings}\" data-sectors=\"{tiles.Sectors}\" data-of=\"{tiles.Of}\" data-book-since=\"{(tiles.BookSince is { } book ? book.ToString("R", Invariant) : "none")}\" data-funds-since=\"{(tiles.FundsSince is { } funds ? funds.ToString("R", Invariant) : "none")}\" data-sessions-to-next=\"{(tiles.SessionsToNext is { } next ? next.ToString(Invariant) : "none")}\">");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{tiles.Holdings}</b><span>{(tiles.Holdings == 1 ? "holding" : "holdings")}</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{tiles.Sectors} of {tiles.Of}</b><span>sectors holding one</span></div>");
+        body.Append(card.LastRebalance is { } last
+            ? Formatted($"<div class=\"hw-tile\" title=\"{Escaped(tiles.Funds.Count == 0 ? "no fund held" : "the funds: " + string.Join(", ", tiles.Funds))}\"><b>{Percent(tiles.BookSince)}</b><span>since the last rebalance of {DayOf(last)}, its funds {Percent(tiles.FundsSince)}</span></div>")
+            : "<div class=\"hw-tile\"><b>none</b><span>no rebalance read yet</span></div>");
+        body.Append(Invariant, $"<div class=\"hw-tile\"><b>{(tiles.SessionsToNext is { } sessions ? sessions.ToString(Invariant) : "none")}</b><span>{(tiles.SessionsToNext is null ? "next rebalance past the exchange calendar's table" : card.NextRebalance is { } coming ? Formatted($"{(tiles.SessionsToNext == 1 ? "session" : "sessions")} to the next rebalance, {DayOf(coming)}") : "sessions to the next rebalance")}</span></div>");
+        body.Append("</div>");
+
+        return body.ToString();
+    }
+
+    // One holding as a row of the card: its lead at the last rebalance as a bar against the card's largest, its close
+    // against its 200-day average and its return since bought in per cent, and tonight's standing as a pill, the session
+    // it was bought on under the pointer.
+    string HeavyweightRow(HeavyweightHoldingCell holding, int place, int lookBack, double top)
     {
         var cells = new StringBuilder();
+        var standing = holding.Standing;
 
-        cells.Append(Invariant, $"<tr data-ticker=\"{Escaped(holding.Ticker)}\" data-sector=\"{Escaped(holding.Sector)}\" data-held-since=\"{DayOf(holding.HeldSince)}\" ");
-        cells.Append(Invariant, $"data-lead=\"{(holding.Lead is { } stored ? stored.ToString("R", Invariant) : "none")}\" data-close=\"{(holding.Close is { } close ? close.ToString(Invariant) : "none")}\" data-average=\"{(holding.Average200 is { } average ? average.ToString("R", Invariant) : "none")}\">");
+        cells.Append(Invariant, $"<tr data-ticker=\"{Escaped(holding.Ticker)}\" data-sector=\"{Escaped(holding.Sector)}\" data-held-since=\"{DayOf(holding.HeldSince)}\" title=\"held since {DayOf(holding.HeldSince)}\" ");
+        cells.Append(Invariant, $"data-lead=\"{(holding.Lead is { } stored ? stored.ToString("R", Invariant) : "none")}\" data-close=\"{(holding.Close is { } close ? close.ToString(Invariant) : "none")}\" data-average=\"{(holding.Average200 is { } average ? average.ToString("R", Invariant) : "none")}\" ");
+        cells.Append(Invariant, $"data-since-bought=\"{(holding.SinceBought is { } since ? since.ToString("R", Invariant) : "none")}\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\">");
         cells.Append(Invariant, $"<td class=\"place\">{place}</td>");
         cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(holding.Ticker)}\">{Escaped(holding.Ticker)}</a>{(holding.Card is { } decision ? CardToggle(decision) : string.Empty)}{(holding.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-        cells.Append(Invariant, $"<td class=\"setup\">{Escaped(holding.Sector)}</td>");
-        cells.Append(Invariant, $"<td>{DayOf(holding.HeldSince)}</td>");
         cells.Append(holding.Lead is { } lead
-            ? Formatted($"<td class=\"r num heavyweight-lead\">{SignedTenth(lead * 100)} points over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at {DayOf(on)}") : string.Empty)}</td>")
+            ? Formatted($"<td class=\"r num heavyweight-lead\" title=\"over {lookBack} sessions{(holding.LeadOn is { } on ? Formatted($", at the rebalance of {DayOf(on)}") : string.Empty)}\"><span class=\"hw-bar\"><span class=\"hw-fill {(lead >= 0 ? "gain" : "loss")}\" style=\"width:{(top > 0 ? Math.Abs(lead) / top * 100 : 0).ToString("0.#", Invariant)}%\"></span></span> {SignedTenth(lead * 100)} points</td>")
             : Formatted($"<td class=\"r num heavyweight-lead\"><span class=\"degraded\">{Escaped(holding.NoLead ?? "not read")}</span></td>"));
-        cells.Append(holding.Close is { } shut && holding.Average200 is { } line
-            ? Formatted($"<td class=\"heavyweight-average\" data-under=\"{Flag(holding.Under)}\">{Figures.Price(shut)}, {(holding.Under ? "under" : "at or above")} its 200-day average of {line.ToString("#,##0.00", Invariant)}</td>")
-            : "<td class=\"heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>");
-        cells.Append("<td class=\"heavyweight-plan\">held while leading</td></tr>");
+        cells.Append(standing?.OverAverage is { } over
+            ? Formatted($"<td class=\"r num heavyweight-average\" data-under=\"{Flag(holding.Under)}\">{SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
+            : "<td class=\"r num heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>");
+        cells.Append(holding.SinceBought is { } bought
+            ? Formatted($"<td class=\"r num heavyweight-since\">{SignedFigure(bought * 100, 1, Formatted($"{Unsigned(bought * 100, 1):+0.0;-0.0;0.0}%"))}</td>")
+            : "<td class=\"r num heavyweight-since\"><span class=\"degraded\">not read</span></td>");
+        cells.Append(Invariant, $"<td class=\"heavyweight-standing\"><span class=\"hw-pill\" data-standing=\"{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}\" title=\"information only: the book sells at a rebalance, never on this\">{Escaped(standing?.Word ?? EquityBrief.Core.Families.HeavyweightStandings.NotRead)}</span></td></tr>");
 
         return cells.ToString();
     }

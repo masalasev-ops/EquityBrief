@@ -588,8 +588,8 @@ public sealed record IndexTradeRow(string Index, string Family, string Ticker, D
 
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
 // size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought
-// on, none where its book stored none.
-public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null);
+// on, none where its book stored none, and its growth carried to the night, none where the book carried it to another.
+public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null, double? Growth = null);
 
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
@@ -605,11 +605,12 @@ public sealed record HeavyweightHoldingRow(
     decimal? ExitClose,
     string? Reason,
     double? Result,
-    double? CutReturn);
+    double? CutReturn,
+    double? Growth = null);
 
 // One of a sector's largest companies as the book read it at a rebalance: its place by value, its value, its
-// return over the look-back, the sector's, its lead over the sector's, whether it passed the trend gate and
-// whether the rule bought it as the sector's leader.
+// return over the look-back, the sector's, its lead over the sector's, whether it passed the trend gate,
+// whether the rule bought it as the sector's leader, and its beta, none where the book read none.
 public sealed record HeavyweightReadRow(
     DateOnly Session,
     string Sector,
@@ -621,7 +622,12 @@ public sealed record HeavyweightReadRow(
     double? SectorReturn,
     double? Lead,
     bool Trend,
-    bool Leader);
+    bool Leader,
+    double? Beta = null);
+
+// A stock's or a fund's closes a heavyweights card reads tonight: tonight's, the close a look-back before it, and the
+// close of the last rebalance, each none where the store holds none.
+public sealed record StandingCloses(decimal? Now, decimal? Back, decimal? AtRebalance);
 
 // A holding's close on a night beside its 200-session average there, each none where the store holds none.
 public sealed record HeavyweightCloseRow(string Ticker, decimal? Close, double? Average200);
@@ -4062,7 +4068,8 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
                CASE WHEN ended_on <= $on THEN cost END,
-               lead
+               lead,
+               CASE WHEN through = $on THEN growth END
         FROM index_heavyweight_holding
         WHERE index_code = $index AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;
@@ -4082,7 +4089,8 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN result END,
                CASE WHEN ended_on <= $on THEN cut_return END,
                CASE WHEN ended_on <= $on THEN cost END,
-               lead
+               lead,
+               CASE WHEN through = $on THEN growth END
         FROM index_heavyweight_rule_holding
         WHERE candidate = $candidate AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;
@@ -4133,7 +4141,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
-                reader.IsDBNull(11) ? null : reader.GetDouble(11)));
+                reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                reader.IsDBNull(12) ? null : reader.GetDouble(12)));
         }
 
         return rows;
@@ -4347,7 +4356,8 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN exit_close END,
                CASE WHEN ended_on <= $on THEN reason END,
                CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               CASE WHEN through = $on THEN growth END
         FROM heavyweight_holding
         WHERE entered_on <= $on
         ORDER BY entered_on, sector, ticker;
@@ -4364,14 +4374,15 @@ public sealed partial class ReadApi : IComponent
                CASE WHEN ended_on <= $on THEN exit_close END,
                CASE WHEN ended_on <= $on THEN reason END,
                CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               CASE WHEN through = $on THEN growth END
         FROM heavyweight_rule_holding
         WHERE candidate = $candidate AND entered_on <= $on
         ORDER BY entered_on, sector, ticker;
     ";
 
     const string HeavyweightRuleReadOn = @"
-        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader
+        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta
         FROM heavyweight_rule_night
         WHERE candidate = $candidate AND session_date = (SELECT MAX(session_date) FROM heavyweight_rule_night WHERE candidate = $candidate AND session_date <= $on)
         ORDER BY sector, place;
@@ -4414,7 +4425,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
-                reader.IsDBNull(9) ? null : reader.GetDouble(9)));
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                reader.IsDBNull(10) ? null : reader.GetDouble(10)));
         }
 
         return rows;
@@ -4422,7 +4434,7 @@ public sealed partial class ReadApi : IComponent
 
     // The book's reading at its last rebalance on or before a night, a sector at a time in order of value.
     const string HeavyweightReadOn = @"
-        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader
+        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader, beta
         FROM heavyweight_night
         WHERE session_date = (SELECT MAX(session_date) FROM heavyweight_night WHERE session_date <= $on)
         ORDER BY sector, place;
@@ -4460,7 +4472,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(7) ? null : reader.GetDouble(7),
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.GetInt32(9) == 1,
-                reader.GetInt32(10) == 1));
+                reader.GetInt32(10) == 1,
+                reader.IsDBNull(11) ? null : reader.GetDouble(11)));
         }
 
         return rows;
