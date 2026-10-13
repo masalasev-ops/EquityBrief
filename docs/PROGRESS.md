@@ -44138,3 +44138,55 @@ Plan:       `BUILD_PLAN.md`'s 19.4 gains the line and its done condition the cla
 Verified:   `tools/ci.ps1` green over main as 19.1's entry records, the checks reading these documents run filtered over
             the tree carrying this entry with 19.2's gates.
 Carried:    nothing new.
+
+### 19.2 - colour, the header, the menu and the top of Tonight: gains green and losses red, a hue a setup family, the index tabs and the menu, Tonight's tiles and buy points, and the chart of what is behind a stock   2026-10-13
+
+Built:      the palette: green for support, a buy and a gain, red for a stop, a loss and a failure, orange for resistance
+            and a sale, amber for a wait; each family's hue a mark with a tint behind ink, and the status pills. Every
+            signed figure on every page and in the export is drawn in the gain's or the loss's class by its sign. The
+            header holds one line, the brand, three index tabs and a menu whose button carries the lane's word, with Loop
+            and its badge, Ledger, and Paper trading at `#/paper`. A night not yet run folds into the date line at the
+            minute most of the newest seven nights started. Every page names a member's sector by its newest company
+            fetch's GICS sector, and every page lists the families in Tonight's order. Tonight opens on a tile a setup and
+            one table of buy points across every setup, a selected row drawing its plan and its card beneath it; the run
+            time, harness verdict, spend, prose counts and reason totals moved to the Run page. On the 19.2 ruling,
+            migration 92's `ledger_reading`, every member's readings written a night by the ledger's night step, and the
+            chart of what is behind a stock on each pick's card and its page: its percentile among its index's members
+            under seven headings, and each heading's push from the score at the means where the score passed. The
+            decisions, section 15's rows and Figure 15.3 with its key, SCHEMA, the guide and the roster, the prior text in
+            `CHANGELOG.md`. The header's tabs narrow the Universe decision rather than supersede it, since each page keeps
+            its selector. The remedy `tools/remedies/2026-10-13-19.2-the-ledger-readings-store.txt` migrates to 92.
+Measured:   read-only over the scratch copy of the live store on the branch's build: nineteen routes on all three
+            indices, a name's page and its export, scanned with no signed figure outside its own class; the header on one
+            line at 390 and 1440 px in both palettes; the date line at 19:30 ET, most of the newest seven nights having
+            started at 23:30Z; the chart reading "not read", the copy holding no `ledger_reading` row before a night.
+Tests:      seventeen more: the palette's floors, the header, the badge on both sides of one, the date line, the tiles
+            and the selected row, the sectors, the family order, the moved operations, the headings, the percentiles and
+            the pushes by hand, the fixture's readings by hand, and the signed figure reader and its scan. About thirty
+            markup assertions changed for the classes and the moves. Derived expectation `behind-it.json`.
+Claims:     nine more: the readings store, three marks, Tonight's setups and buy points, the date line's night and the
+            chart on the card and on the page; five moved from 15.7 to 15.10 with the operations.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, each filtered to 19.2's
+            seventeen tests, the S&P 500 card test, the two score chart tests and the ledger night test, 21. M1 the gain
+            and loss classes swapped: predicted red at the signed scan alone; so, 1 of 21. M2 the push drawn where the
+            score did not pass: predicted red at the score's rank test alone; so. M3 a push not taken from the mean:
+            predicted red at the push sum and the rank test; red there and at the S&P 500 card test, which reads the
+            push list too, 3. M4 a tie counted whole: predicted red at the percentile test and the fixture's chart; red
+            at the percentile test and the three chart tests, the fixture's green. That test read a store holding no
+            readings, the membership and bars alone, so its loop read nothing; it now reads the night's replay, its three
+            members stated, and M4 run again is red at 5 of 21. M5 the date line by the newest start alone, M6 the badge
+            counting answered proposals, M7 the operations drawn on Tonight too, M8 the Ledger's families in the store's
+            order, M9 the sector from the membership snapshot, M10 the menu without the lane's word, M11 a tile with a
+            held-back pick reading "listing tonight": each predicted red at its own test alone; so, 1 of 21 each. M12 the
+            selected row ignoring the link's name: predicted red at the tiles test; it survived, no test naming a row on
+            the S&P 400 or 600, so the card test of those indices now names S3 and a stock no row holds, and M12 run
+            again is red there alone, 1 of 22. M13 the pullback's hue on the gain's green: predicted red at the palette
+            test alone; so, 1 of 22. M14 the night step writing no readings: predicted red at the ledger night test and
+            the fixture's chart; so, 2 of 22. Each reverted before anything was committed, the 22 passing over the
+            reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451; in
+            progress, 19.2; next, 19.3, every setup card built one way.
+Carried:    the chart read back on the served pages after the first night past the remedy, and the ledger step's added
+            time read off that night's run log against its 49 seconds of 2026-10-09; the sign-offs of phases 16, 17 and 18.
