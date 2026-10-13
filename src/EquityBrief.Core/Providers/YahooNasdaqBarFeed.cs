@@ -51,12 +51,15 @@ public sealed class YahooNasdaqBarFeed(HttpClient yahoo, HttpClient nasdaq, Prov
         return SubstituteBars.YahooChart(body).LastOrDefault(bar => bar.Session == session);
     }
 
+    // The history over the week to the session: asked for the session alone, the table answers that the date is less
+    // than the date it starts from and holds no row.
     public async Task<DayRange?> RangeAsync(string ticker, DateOnly session, CancellationToken cancellation = default)
     {
+        var from = session.AddDays(-7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var day = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var history = await GetAsync(
             nasdaq,
-            $"api/quote/{Uri.EscapeDataString(ticker)}/historical?assetclass=stocks&fromdate={day}&todate={day}&limit=5",
+            $"api/quote/{Uri.EscapeDataString(ticker)}/historical?assetclass=stocks&fromdate={from}&todate={day}&limit=10",
             "Nasdaq's history",
             cancellation);
 

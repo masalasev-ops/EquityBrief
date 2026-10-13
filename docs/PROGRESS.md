@@ -44036,22 +44036,26 @@ Tests:      five more: each capture read as sent, the provider's own row refused
             on LUMN and on each check at its edge, half a cent passing and a hundredth past it refused, and at the
             provider's adjustment; a member's impossible row stored from the sources over the fixture's file; one whose
             sources disagree left without the session; twenty asked, the twenty-first named past the cap, one source's
-            failure stopping no other and a file every member reads asking nothing. Three changed: the fetcher's and the
-            night's test of a member's unreadable row, which now finishes the night and names the member, and the count
-            of shipped files permitted a client, 22 to 23.
+            failure stopping no other and a file every member reads asking nothing. And one more over the live feed
+            through a constructed handler answering the captures: Nasdaq's history asked for the week to the session,
+            since asked for the session's day alone it answers that the date is less than the date it starts from and
+            holds no row, as a probe of LUMN's session found after the gates first ran, the quote read where the history
+            holds no row, an older session read from the history with no quote asked, and a class of shares asked of
+            Yahoo with a hyphen. Three changed: the fetcher's and the night's test of a member's unreadable row, which
+            now finishes the night and names the member, and the count of shipped files permitted a client, 22 to 23.
 Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the 16
             fetcher, substitute and night tests. M1 Nasdaq's check ignored: predicted red at the rule test and the
             disagreeing sources test. M2 the cap removed: predicted red at the cap test alone. M3 a refused member stopping
             the night again: predicted red at every test reading a refused member. M4 a substitute stored as `bulk`:
             predicted red at the store test alone. M5 Nasdaq asked where Yahoo answered no bar: predicted red at the cap
             test alone. Results: each red where predicted and nowhere else. M1 2 of 16, M2 1 of 16, M3 5 of 16, M4 1 of
-            16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 6fcecc5a: all six
-            steps, 0 warnings, 0 errors, 2259 of 2259 tests ran with none failed in 17 minutes 54 seconds, migrations 0
-            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
-            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed. The run over 4659e15e
-            stopped at the suite on the count of shipped files permitted a client, 22 against the 23 this correction
-            makes.
+            16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree. M6, for
+            the history's span, stated before its run: Nasdaq's history asked for the session's day alone, predicted red
+            at the live feed's test alone; red there alone, 1 of 17, and reverted.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL. The run over
+            4659e15e stopped at the suite on the count of shipped files permitted a client, 22 against the 23 this
+            correction makes; the runs over 6fcecc5a were green, 2259 of 2259 tests and 1268 claims passing, before the
+            history's span was found.
 Carried:    the night of 2026-10-12 run to its end from main after the merge, LUMN's row asked of the sources; the
             night's report requests left queued and its drain and labeller stopped, written by a drain started at 16:30Z
             on 2026-10-13; and the night queuing its requests and starting neither the drain nor the labeller, with the

@@ -71,6 +71,48 @@ public class SubstituteBarTests
         Assert.Empty(SubstituteBars.NasdaqHistory("""{"data":null,"message":"no data","status":{"rCode":200}}"""));
     }
 
+    // Answers each request with what the function gives for its address, and keeps every address asked.
+    sealed class Answering(Func<Uri, string> answer) : HttpMessageHandler
+    {
+        public List<Uri> Asked { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Asked.Add(request.RequestUri!);
+
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(answer(request.RequestUri!)) });
+        }
+    }
+
+    [Fact]
+    public async Task TheLiveFeedAsksTheWeekToTheSessionAndReadsTheQuoteWhereTheHistoryHoldsNoRow()
+    {
+        // Nasdaq's history asked for one day alone answers that the date is less than the date it starts from and holds
+        // no row, as it did for LUMN's session asked so, so it is asked for the week to the session.
+        var yahoo = new Answering(_ => Captured("substitute-yahoo-LUMN.json"));
+        var nasdaq = new Answering(uri => uri.AbsolutePath.EndsWith("/historical", StringComparison.Ordinal)
+            ? Captured("substitute-nasdaq-history-LUMN.json")
+            : Captured("substitute-nasdaq-info-LUMN.json"));
+        var feed = new YahooNasdaqBarFeed(
+            new HttpClient(yahoo) { BaseAddress = new Uri(YahooNasdaqBarFeed.YahooAddress) },
+            new HttpClient(nasdaq) { BaseAddress = new Uri(YahooNasdaqBarFeed.NasdaqAddress) });
+
+        Assert.Equal(new DayBar(Lumn, 5.25m, 5.28m, 4.99m, 5.05m, 11781343), await feed.BarAsync("LUMN", Lumn));
+        Assert.Equal(new DayRange(Lumn, 5.28m, 4.99m, 5.05m), await feed.RangeAsync("LUMN", Lumn));
+        Assert.Equal(3, feed.Requests);
+        Assert.Equal("/api/quote/LUMN/historical?assetclass=stocks&fromdate=2026-10-05&todate=2026-10-12&limit=10", nasdaq.Asked[0].PathAndQuery);
+        Assert.Equal("/api/quote/LUMN/info?assetclass=stocks", nasdaq.Asked[1].PathAndQuery);
+
+        // An older session the history holds is read from it, and the quote is not asked.
+        Assert.Equal(new DayRange(new DateOnly(2026, 10, 8), 5.88m, 5.465m, 5.56m), await feed.RangeAsync("LUMN", new DateOnly(2026, 10, 8)));
+        Assert.Equal(3, nasdaq.Asked.Count);
+
+        // Yahoo names a class of shares with a hyphen where the store writes a dot.
+        await feed.BarAsync("BRK.B", Lumn);
+
+        Assert.Equal("/v8/finance/chart/BRK-B", yahoo.Asked[1].AbsolutePath);
+    }
+
     // LUMN's refused row as the provider's file stated it: open 5.25, close and adjusted close 5.05.
     static readonly UnreadableRow Refused = new("LUMN", "LUMN on 2026-10-12 adjusts to low 5.05, open 5.25, high 5.05, close 5.05", 5.25m, 5.05m, 5.05m);
 
