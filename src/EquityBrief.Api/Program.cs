@@ -1338,7 +1338,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     // What the queue holds for each listed name, from the times the queue page states, so a
     // row and the selected name say a report is queued or being written and when.
-    // see: The queue page states when each request will be written
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
     var (queued, times, _) = await QueueRead(read, clock);
     var states = QueueTimes.States(queued, times, clock.SessionZone);
     IReadOnlyList<EquityBrief.Web.Marks.ListingCell> rows = [.. listed.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
@@ -2160,9 +2160,12 @@ app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, Sing
 // store and writes nothing: the presses that write it are the two routes above. When each
 // request will be written is worked out from the queue, the passes that ran to their end,
 // the peak windows the worker's prices state and the instant the page is drawn at, and
-// stated in New York's time with UTC beside it.
-// see: The queue page states when each request will be written
-app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clock) =>
+// marked in New York's time with UTC beneath the pointer. What settled is drawn a row a
+// stock and New York day over the window to the page's own day, or over every day where
+// `all` asks for them, beside the passes no request names with what they cost.
+// see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+// see: The queue page draws settled requests a row a stock and New York day over fourteen days, and the passes no request names a row a day
+app.MapGet("/screens/queue", async (string? all, ReadApi read, SinglePageApp page, IClock clock) =>
 {
     var (rows, times, estimate) = await QueueRead(read, clock);
     var stop = await read.DrainStoppedAsync();
@@ -2183,8 +2186,10 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
                     times[at].Basis.ToString(),
                     times[at].Starts?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
                     times[at].Ends?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
-                    QueueTimes.Words(times[at], row, clock.SessionZone)))),
+                    QueueTimes.Words(times[at], row, clock.SessionZone)),
+                QueueTimes.Marked(row.AskedAt, clock.SessionZone))),
         ],
+        QueueScreen.Drawn(rows, await read.PaidCallSpendsAsync(), clock.SessionZone, clock.UtcNow, all is { Length: > 0 }),
         new QueueEstimate(
             estimate.Count,
             estimate.Median is { } median ? QueueTimes.Minutes(median) : null,
@@ -2193,7 +2198,7 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
             ? null
             : new QueueStop(
                 stop.StartedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
-                QueueTimes.Stated(stop.StartedAt, clock.SessionZone),
+                QueueTimes.Marked(stop.StartedAt, clock.SessionZone),
                 stop.Error)),
         "text/html; charset=utf-8");
 });

@@ -25,6 +25,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - ARCHITECTURE.html - the Queue's settled days, its reports written by hand, its time form and section 17's window
+Authorised by: The queue page draws settled requests a row a stock and New York day over fourteen days, and the passes no request names a row a day
+Was:
+> 15.15 Route: `#/queue`, the fifth entry in the masthead.
+> 15.15 Reads: the request store, and the run log for the pass a claimed request is being written under and for the newest drain that stopped on an error.
+> 15.15 Settled row: what each request came to, with the reason where there is one
+> 15.15 When each will be written row: ... in New York's time with the offset named and UTC beside it; ... (see: The queue page states when each request will be written)
+> 15.7 The report's state row: ... (see: The queue page states when each request will be written)
+Now:
+> The route gains `#/queue?all=1` drawing every day; the reads gain the answered paid calls of the passes no request names; the Settled row is a row a stock and New York day over the fourteen New York days to the page's own with the older behind a link; a Written by hand row draws those passes a row a New York day with their reports and cost; each instant on the queue page is in New York's time marked ET with UTC beneath the pointer; both citations name The queue page states when each request will be written in New York's time with UTC beneath the pointer; and section 17 gains the Queue window row of 14 New York days.
+Why: 19.6 builds the Queue on the operator's brief and plan of 2026-10-12.
+
+### 2026-10-13 - .claude/rules/checks.md - read-surface and fixture-expectations hold the Queue
+Authorised by: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+Was:
+> read-surface: ... a store holding none saying it cannot estimate, each instant in New York's time with its offset on both sides of the change of 2026-11-01 and UTC beside it; ... and the record's count in one line |
+> fixture-expectations: ... none on tonight's lists and each fund's return not read |
+Now:
+> read-surface: ... each instant in New York's time on both sides of the change of 2026-11-01, from 19.6 marked ET with UTC beneath the pointer; ... and the record's count in one line; and from 19.6 the queue page's settled requests a row a stock and New York day [the passes no request names a row a day, and every instant marked ET with UTC beneath the pointer, read back off the route] |
+> fixture-expectations: ... each fund's return not read; and from 19.6 the fixture's research pass run from the worker's command drawn on the queue page as the one report written by hand on its New York day [at the cost research-record.json works by hand, behind the window's link] |
+Why: 19.6's assertions, rostered where the checks that run them are.
+
 ### 2026-10-13 - RUNBOOK.md - the off-peak run builds main's own commit whatever branch the checkout is on
 Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
 Was:

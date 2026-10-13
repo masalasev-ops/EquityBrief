@@ -205,6 +205,10 @@ form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--
 .lane-waits{font:12.5px var(--sans);color:var(--soft);margin:0 0 14px}
 .queue-part{margin-block:22px}
 .queue-table td,.queue-table th{padding:6px 10px;text-align:left;white-space:nowrap}
+.queue-table th.num,.queue-table td.num{text-align:right}
+/* An instant on the queue page holds its time in UTC beneath the pointer, which the dotted line says is there. */
+.queue time[title]{text-decoration:underline dotted;text-decoration-thickness:1px;text-underline-offset:3px;cursor:help}
+.queue-older{font:13px var(--sans);margin:-8px 0 22px}
 form.ask[method='post']{display:inline-block;margin:0 0 0 8px}
 /* The two small controls outrank the rule every posted form's button takes, and state every property that rule states, so neither is drawn at that button's size. */
 form.ask[method='post'] button,form.withdraw-control[method='post'] button{font:600 11.5px var(--sans);color:var(--soft);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:2px 8px;min-height:0;cursor:pointer}

@@ -36,7 +36,7 @@ public sealed record PassEstimate(TimeSpan? Median, int Count, TimeSpan? Longest
 // being written and every older request outstanding. A pass is expected to take the median of
 // the passes the store holds, and where it holds none nothing behind the first request is given
 // a time, because a time with nothing under it would read as a promise.
-// see: The queue page states when each request will be written
+// see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
 public static class QueueTimes
 {
     public static PassEstimate Estimate(IReadOnlyList<TimeSpan> passes)
@@ -135,8 +135,8 @@ public static class QueueTimes
     static DateTimeOffset Latest(DateTimeOffset start, TimeSpan median, DateTimeOffset now) =>
         start + median > now ? start + median : now;
 
-    // An instant as the page states it: the date and time in New York with the offset that
-    // applies on that date, and the time in UTC beside it.
+    // An instant as tonight's rows and the selected name's region state it: the date and time in
+    // New York with the offset that applies on that date, and the time in UTC beside it.
     public static string Stated(DateTimeOffset instant, TimeZoneInfo zone)
     {
         var local = TimeZoneInfo.ConvertTime(instant, zone);
@@ -146,11 +146,24 @@ public static class QueueTimes
             + instant.UtcDateTime.ToString("HH:mm", CultureInfo.InvariantCulture) + " UTC";
     }
 
-    // What the page says of a request's time, each instant in New York's time with its offset
-    // and in UTC beside it.
+    // An instant as the queue page draws it: the date and time in New York marked ET, with the
+    // date and time in UTC beneath the pointer and the instant whole on the element.
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+    public static string Marked(DateTimeOffset instant, TimeZoneInfo zone)
+    {
+        var local = TimeZoneInfo.ConvertTime(instant, zone);
+        var utc = instant.UtcDateTime;
+
+        return "<time datetime=\"" + utc.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)
+            + "\" title=\"" + utc.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " UTC\">"
+            + local.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + " ET</time>";
+    }
+
+    // What the queue page says of a request's time, as markup, each instant marked as above. The
+    // words around the instants are the code's own and carry nothing markup reads.
     public static string Words(RequestTime time, RequestRow row, TimeZoneInfo zone)
     {
-        string At(DateTimeOffset instant) => Stated(instant, zone);
+        string At(DateTimeOffset instant) => Marked(instant, zone);
 
         var ends = time.Ends is { } end ? ", and is expected to end about " + At(end) : string.Empty;
 

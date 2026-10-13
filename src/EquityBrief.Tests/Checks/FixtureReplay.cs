@@ -265,17 +265,20 @@ public class FixtureReplay
     // expectations construct that name's sections from version one over the replayed
     // store, and a pass that had written them first would collide with every one. The
     // lane and the option are the comparison's: the same evidence asked with every
-    // section paid, or every section local, reads recordings of its own.
+    // section paid, or every section local, reads recordings of its own. The run is the
+    // replay's own name, or the one a pass started by hand carries where a reader of
+    // those asks for it.
     internal static async Task<TemporaryStore> ResearchedAsync(
         IReadOnlyList<string>? lane = null,
         bool paidForLocal = false,
         RecordedLocalModelFeed? local = null,
         RecordedResearchModelFeed? paid = null,
-        int retries = ClaimChecker.Retries)
+        int retries = ClaimChecker.Retries,
+        string runId = "replay-research")
     {
         var store = await ReplayedForResearchAsync();
 
-        await Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), lane, local, paid, retries: retries).RunAsync(ResearchName, "replay-research", new ResearchPassRequest(PaidForLocal: paidForLocal));
+        await Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), lane, local, paid, retries: retries).RunAsync(ResearchName, runId, new ResearchPassRequest(PaidForLocal: paidForLocal));
 
         return store;
     }

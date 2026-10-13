@@ -690,6 +690,7 @@ public class PinnedConstants
             new("Dividend step", "0.20", Core.Cards.CardHitsReading.LargestStep, "CardHitsReading.LargestStep"),
             new("Near a level", "1", (decimal)Api.Reading.UniverseScreen.NearLevel, "UniverseScreen.NearLevel"),
             new("Correction notice age", "30", Web.App.SinglePageApp.CorrectionAgeDays, "SinglePageApp.CorrectionAgeDays"),
+            new("Queue window", "14", Api.Reading.QueueScreen.Window, "QueueScreen.Window"),
         ];
     }
 

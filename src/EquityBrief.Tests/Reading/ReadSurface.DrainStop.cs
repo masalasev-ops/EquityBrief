@@ -106,7 +106,7 @@ public partial class ReadSurface
         var stated = await QueueAt("2026-10-03T01:00:00Z");
 
         Assert.Contains(
-            "<p class=\"drain-stopped\" data-started-at=\"2026-10-03T00:26:14Z\">The drain that started at 2026-10-02 20:26 New York (UTC-04:00), 00:26 UTC stopped on an error: SqliteException: SQLite Error 5: 'database is locked'.; what is queued waits for the next drain, which a press or the next night starts.</p>",
+            "<p class=\"drain-stopped\" data-started-at=\"2026-10-03T00:26:14Z\">The drain that started at <time datetime=\"2026-10-03T00:26:14Z\" title=\"2026-10-03 00:26 UTC\">2026-10-02 20:26 ET</time> stopped on an error: SqliteException: SQLite Error 5: 'database is locked'.; what is queued waits for the next drain, which a press or the next night starts.</p>",
             stated,
             StringComparison.Ordinal);
         Assert.Single(System.Text.RegularExpressions.Regex.Matches(stated, "class=\"drain-stopped\""));
