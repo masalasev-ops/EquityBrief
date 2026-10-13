@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # What the scheduler calls at 16:30Z every day. Runs the work the night leaves queued from a clean copy of the
-# committed code, as tools/nightly builds a night: the main checkout's own HEAD, read with no fetch, exported whole
-# with `git archive` into the data root's folder of nights, one folder a commit, built once in Release and reused
-# where a night built that commit already; the data root and the secrets file are the checkout's, each named by
-# absolute path, so the copy never finds, creates or writes a store of its own. A checkout off main, or holding a
-# commit origin/main does not have, is refused before any worker exists.
+# committed code, as tools/nightly builds a night: main's own commit, read from the main branch with no fetch
+# whatever branch the checkout is on, exported whole with `git archive` into the data root's folder of nights, one
+# folder a commit, built once in Release and reused where a night built that commit already; the data root and the
+# secrets file are the checkout's, each named by absolute path, so the copy never finds, creates or writes a store
+# of its own. A main holding a commit origin/main does not have is refused before any worker exists; a checkout on
+# a branch is not, since the run builds a commit and never the working tree.
 #
 # The worker then labels the newest night's list, and then drains the report requests the night queued, each a run
 # of its own whose calls and spend are on its own rows; the drain waits out any peak window it starts in, as every
@@ -40,23 +41,27 @@ refuse() {
 }
 
 branch="$(git symbolic-ref --short -q HEAD || true)"
+commit="$(git rev-parse --verify -q 'refs/heads/main^{commit}' || true)"
 
-if [ "$branch" != "main" ]; then
-    refuse "the checkout is on '${branch:-no branch}' and not on main, so no build was made from it"
+if [ -z "$commit" ]; then
+    refuse "the checkout holds no main branch, so no build was made"
 fi
 
-commit="$(git rev-parse HEAD)"
 short="${commit:0:12}"
 note="built from $short"
 
+if [ "$branch" != "main" ]; then
+    note="$note, main's own commit while the checkout is on '${branch:-no branch}'"
+fi
+
 if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
-    ahead="$(git rev-list --count origin/main..HEAD)"
+    ahead="$(git rev-list --count "origin/main..$commit")"
 
     if [ "$ahead" != 0 ]; then
-        refuse "the checkout holds $ahead commit(s) origin/main does not have, so no build was made from it"
+        refuse "main holds $ahead commit(s) origin/main does not have, so no build was made from it"
     fi
 
-    behind="$(git rev-list --count HEAD..origin/main)"
+    behind="$(git rev-list --count "$commit..origin/main")"
 
     if [ "$behind" != 0 ]; then
         note="$note, $behind commit(s) behind origin/main"

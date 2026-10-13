@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // 2026-10-02, the store's copy last, which waits for no labeller since the night starts none.
 // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
 // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
-// see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+// see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
 public partial class NightlyRun
 {
     [Fact]

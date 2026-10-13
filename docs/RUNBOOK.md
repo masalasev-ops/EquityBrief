@@ -876,13 +876,13 @@ Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.monthly.plis
 
 ### The off-peak run
 
-The night queues its six report requests and stops: it starts no drain and no labeller (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z). The off-peak run does both, every day at 16:30 UTC, from a clean copy of main's own commit as the night is built:
+The night queues its six report requests and stops: it starts no drain and no labeller (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit). The off-peak run does both, every day at 16:30 UTC, from a clean copy of main's own commit as the night is built:
 
 ```
 tools/offpeak.ps1
 ```
 
-It labels the newest night's list, as `label-news` run by hand does, and then drains the queue, as `drain` run by hand does, each a run of its own with its calls and spend on its own rows; a labeller that stops leaves the drain to run, and the drain waits out any peak window it starts in. `--check` prints what it would build and run and runs nothing. A checkout off main, or holding a commit origin/main does not have, is refused before any worker exists. Nothing is merged to main while its labeller or its drain is writing, as for a night.
+It labels the newest night's list, as `label-news` run by hand does, and then drains the queue, as `drain` run by hand does, each a run of its own with its calls and spend on its own rows; a labeller that stops leaves the drain to run, and the drain waits out any peak window it starts in. `--check` prints what it would build and run and runs nothing. It builds main's own commit whatever branch the checkout is on, its line naming the branch where the checkout is on one, so a session at work on a branch at 16:30Z neither stops it nor has its branch built; a main holding a commit origin/main does not have is refused before any worker exists. Nothing is merged to main while its labeller or its drain is writing, as for a night.
 
 **Scheduling it.** Every day at 16:30 UTC, the start boundary pinned in UTC as the night's is, its output kept in `data/offpeak.log`:
 
