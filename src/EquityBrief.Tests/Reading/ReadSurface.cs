@@ -5120,7 +5120,9 @@ public partial class ReadSurface
     {
         using var store = await FixtureExpectations.WithListings();
 
-        var sector = Rows(store, "SELECT sector FROM membership WHERE ticker = 'AAPL' AND \"left\" IS NULL;").Single()[0];
+        FiledSectors(store);
+
+        var sector = FiledSectorOf(store, "AAPL");
 
         // The span the provider listed before it re-dated a member, and a name with no bars
         // listed under two join dates, which is stale on every night.

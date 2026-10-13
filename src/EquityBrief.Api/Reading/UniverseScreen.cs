@@ -31,7 +31,7 @@ public static class UniverseScreen
     // value standing in for an absent one is the class this store has been
     // bitten by twice, and a sector filter is exactly where it would bite: a
     // name with no sector must not answer yes to a filter for some sector.
-    public const string SectorNotOnFile = "not on file";
+    public const string SectorNotOnFile = "sector not filed";
 
     // The window the listing strip is drawn over, which section 15.8 states as
     // sixty sessions. The same figure the level window uses, and for the same

@@ -72,6 +72,9 @@ public partial class ReadSurface
     public async Task EachRowTheUniverseScreenDrawsCarriesItsOwnYearFromTheStore()
     {
         using var store = await FixtureExpectations.WithListings();
+
+        FiledSectors(store);
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 

@@ -335,7 +335,10 @@ public partial class ReadSurface
 
         var night = NightIn(store);
         var earlier = SessionWithoutAnEvening(store, "MSFT", night);
-        var sector = Text(store, "SELECT sector FROM membership WHERE ticker = 'MSFT' ORDER BY observed_at DESC LIMIT 1;");
+
+        FiledSectors(store);
+
+        var sector = FiledSectorOf(store, "MSFT");
 
         // MSFT leaves the index on the newest night, its moves stored as the annotator stores them
         // for a name it reads no membership row for; KEYS joins on it. An evening before it is

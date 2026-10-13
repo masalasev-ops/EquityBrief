@@ -1965,7 +1965,7 @@ public sealed class SinglePageApp : IComponent
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\">"));
                 body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
                 body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
-                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "not on file")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
+                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
