@@ -44511,5 +44511,11 @@ Mutated:    the rule, stated before the run: one mutation a property the correct
             red at the script's test, the branch refused for its own commit. Results: each red at the script's test, 1
             of 1, M18 at the branch's run refused as ahead for its own commit, which M18 built from and counted, and M19
             the same. Each reverted before anything was committed, the 1 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, f0ab8b02: all six
+            steps, 0 warnings, 0 errors, 2315 of 2315 tests ran with none failed in 19 minutes 59 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1303 claims, 1303 passing and none unexamined, 43 checks on the roster run and passed.
+Run:        the off-peak run by hand from main's e4f57b98 at 16:33Z: the labeller reached none, the S&P 500's list of
+            2026-10-12 listing nothing; the drain wrote DAVE by 16:42Z and PBI by 16:51Z, 16 sections each, 32 model calls
+            and 0.15 dollars in all.
 Carried:    nothing new.
