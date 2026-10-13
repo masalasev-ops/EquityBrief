@@ -44160,7 +44160,8 @@ Measured:   read-only over the scratch copy of the live store on the branch's bu
             indices, a name's page and its export, scanned with no signed figure outside its own class; the header on one
             line at 390 and 1440 px in both palettes; the date line at 19:30 ET, most of the newest seven nights having
             started at 23:30Z; the chart reading "not read", the copy holding no `ledger_reading` row before a night.
-Tests:      seventeen more: the palette's floors, the header, the badge on both sides of one, the date line, the tiles
+Tests:      seventeen new, two of them in the place of the phone masthead's test and the night header's harness test,
+            so fifteen more: the palette's floors, the header, the badge on both sides of one, the date line, the tiles
             and the selected row, the sectors, the family order, the moved operations, the headings, the percentiles and
             the pushes by hand, the fixture's readings by hand, and the signed figure reader and its scan. About thirty
             markup assertions changed for the classes and the moves. Derived expectation `behind-it.json`.

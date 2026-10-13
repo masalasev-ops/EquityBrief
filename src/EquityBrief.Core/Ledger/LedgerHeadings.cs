@@ -66,7 +66,7 @@ public static class LedgerHeadings
     // the catalogue's order, the stock's and each member's alike.
     public static IReadOnlyList<double?> Percentiles(IReadOnlyList<double?> stock, IReadOnlyList<IReadOnlyList<double?>> members) =>
     [
-        .. All.Select(heading =>
+        .. All.Select<LedgerHeading, double?>(heading =>
         {
             var places = heading.Readings
                 .Where(column => !Market.Contains(column))
@@ -75,7 +75,7 @@ public static class LedgerHeadings
                 .OfType<double>()
                 .ToArray();
 
-            return places.Length == 0 ? (double?)null : places.Average();
+            return places.Length == 0 ? null : places.Average();
         }),
     ];
 
