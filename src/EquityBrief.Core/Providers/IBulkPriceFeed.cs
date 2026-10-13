@@ -65,5 +65,6 @@ public interface IBulkPriceFeed
     IReadOnlyList<UnreadableRow> Unreadable => [];
 }
 
-// A bulk row the reader refused, and why.
-public sealed record UnreadableRow(string Ticker, string Reason);
+// A bulk row the reader refused, and why, with the open, the close and the adjusted close it stated where each is a
+// number, which a second source's bar for the session is checked against.
+public sealed record UnreadableRow(string Ticker, string Reason, decimal? Open = null, decimal? Close = null, decimal? AdjustedClose = null);

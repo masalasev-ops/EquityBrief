@@ -1363,6 +1363,34 @@
       "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json",
       "fetchedAt": "2026-10-12T03:09:55Z",
       "trimmedTo": "the entity taxonomy whole, one concept, and of its 543 us-gaap concepts NetIncomeLoss alone, its newest four of 152 facts, from a payload of 3.2 megabytes. Every key and nesting level kept is the archive's. Kept as a filer of two share classes whose facts hold no share count at all: the archive's facts carry only figures filed with no dimension, and a filer of more than one class states its cover's count by class, so its entity taxonomy holds the public float alone while its net income is there. Of seven filers of two classes asked the same morning, Alphabet, Watsco, Lennar and Brown-Forman held no count, Berkshire Hathaway's last was for 2011-04-29, Comcast's for 2009-12-31, and Fox's one count was of one share on 2019-03-18, its first filing's; so the valuation reading of such a filer is none rather than a value read off one class."
+    },
+    {
+      "file": "substitute-eodhd-LUMN.json",
+      "endpoint": "eod/LUMN.US",
+      "query": "eod/LUMN.US?from=2026-10-08&to=2026-10-12&fmt=json",
+      "fetchedAt": "2026-10-12T23:48:47Z",
+      "trimmedTo": "nothing. The provider's per-ticker answer for LUMN's three sessions to 2026-10-12, asked after that night's fetch stopped on LUMN's row of the bulk file: its 2026-10-12 opens at 5.25 above a high of 5.05, which equals its low and its close, the same impossible row the bulk file carried, so asking the provider again could not repair it."
+    },
+    {
+      "file": "substitute-yahoo-LUMN.json",
+      "endpoint": "v8/finance/chart/LUMN",
+      "query": "https://query1.finance.yahoo.com/v8/finance/chart/LUMN?period1=1791331200&period2=1791892800&interval=1d",
+      "fetchedAt": "2026-10-12T23:48:41Z",
+      "trimmedTo": "nothing. Yahoo's daily chart for LUMN as sent, keyless, asked with a browser's name: four sessions to 2026-10-12 under `timestamp`, each the instant of its open, and each price in `indicators.quote[0]` written as the nearest single-precision figure, 5.28000020980835 for a high of 5.28. Its 2026-10-12 opens at 5.25 and closes at 5.05 as the provider's row does, with a high of 5.28 and a low of 4.99."
+    },
+    {
+      "file": "substitute-nasdaq-info-LUMN.json",
+      "endpoint": "api/quote/LUMN/info",
+      "query": "https://api.nasdaq.com/api/quote/LUMN/info?assetclass=stocks",
+      "fetchedAt": "2026-10-12T23:48:45Z",
+      "trimmedTo": "nothing. Nasdaq's quote for LUMN as sent after the close, keyless, asked with a browser's name: the session it last closed under `secondaryData`, written Closed at Oct 12, 2026 4:00 PM ET, at a last sale of $5.05, and that session's range under `keyStats.dayrange`, written 4.99 - 5.28, which agrees with Yahoo's high and low."
+    },
+    {
+      "file": "substitute-nasdaq-history-LUMN.json",
+      "endpoint": "api/quote/LUMN/historical",
+      "query": "https://api.nasdaq.com/api/quote/LUMN/historical?assetclass=stocks&fromdate=2026-10-07&todate=2026-10-12&limit=10",
+      "fetchedAt": "2026-10-12T23:48:47Z",
+      "trimmedTo": "nothing. Nasdaq's historical table for LUMN as sent the evening of 2026-10-12: three sessions to 2026-10-09 and none for 2026-10-12, which the table had not posted yet, so on a session's own evening the check reads the quote instead. Its 2026-10-08 low is $5.465, the provider's own figure, where Yahoo writes 5.47."
     }
   ]
 }

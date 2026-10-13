@@ -105,7 +105,7 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
             }
             catch (FormatException failure) when (unreadable is not null && TickerOf(entry) is { } named)
             {
-                unreadable.Add(new UnreadableRow(named, failure.Message));
+                unreadable.Add(new UnreadableRow(named, failure.Message, Stated(entry, "open"), Stated(entry, "close"), Stated(entry, "adjusted_close")));
                 refused++;
 
                 continue;
@@ -171,6 +171,12 @@ public sealed class RecordedBulkPriceFeed(string response) : IBulkPriceFeed
     static string? TickerOf(JsonElement entry) =>
         entry.TryGetProperty(Code, out var code) && code.ValueKind is JsonValueKind.String
             ? code.GetString()
+            : null;
+
+    // A price a refused row states, where it is a number, read from its text and never through double.
+    static decimal? Stated(JsonElement entry, string name) =>
+        entry.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.Number && value.TryGetDecimal(out var price)
+            ? price
             : null;
 
     const string Code = "code";

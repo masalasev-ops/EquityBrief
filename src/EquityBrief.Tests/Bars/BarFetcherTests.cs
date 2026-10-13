@@ -256,7 +256,7 @@ public class BarFetcherTests
     }
 
     [Fact]
-    public async Task AFractionalVolumeOutsideTheIndexIsStoredPastAndOneOnAMemberRefusesByName()
+    public async Task AFractionalVolumeOutsideTheIndexIsStoredPastAndOneOnAMemberIsSkippedAndNamed()
     {
         // Outside the index: the fixture's own file with one extra row, a fund
         // the index does not hold carrying the captured fractional volume. The
@@ -275,9 +275,11 @@ public class BarFetcherTests
             Assert.Equal(["EWG"], [.. feed.Unreadable.Select(row => row.Ticker)]);
         }
 
-        // On a member: the same shape on AAPL's own row. Refused before
-        // anything is stored, with the ticker and the reason, rather than AAPL
-        // quietly holding no bar tonight.
+        // On a member: the same shape on AAPL's own row. AAPL is stored nothing
+        // for the session while every other member is stored, and the fetch's
+        // outcome and its row name it with the reason, rather than AAPL quietly
+        // holding no bar tonight or the night stopping for every member.
+        // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
         var aaplVolume = System.Text.RegularExpressions.Regex.Match(
             fixture, @"""code"":\s*""AAPL""[^}]*?""volume"":\s*(?<volume>\d+)").Groups["volume"].Value;
 
@@ -290,14 +292,29 @@ public class BarFetcherTests
 
         using (var store = await WithAYearStored())
         {
-            var before = TickersOn(store, "2026-09-08");
+            var outcome = await Fetcher(store, new RecordedBulkPriceFeed(withMember)).RunAsync(Index, "run-member");
 
-            var refusal = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => Fetcher(store, new RecordedBulkPriceFeed(withMember)).RunAsync(Index, "run-member"));
+            var refused = Assert.Single(outcome.Refused!);
 
-            Assert.Contains("current member row(s) the reader refused", refusal.Message, StringComparison.Ordinal);
-            Assert.Contains($"AAPL carries a volume of {aaplVolume}.5", refusal.Message, StringComparison.Ordinal);
-            Assert.Equal(before, TickersOn(store, "2026-09-08"));
+            Assert.Equal(("AAPL", new DateOnly(2026, 9, 8), false), (refused.Ticker, refused.Session, refused.Stored));
+            Assert.Contains($"AAPL carries a volume of {aaplVolume}.5", refused.Reason, StringComparison.Ordinal);
+            Assert.Equal("no second source was handed to this night", refused.Why);
+            Assert.Equal(0, outcome.SubstituteRequests);
+            Assert.Equal(["KEYS", "MSFT", "NFLX"], TickersOn(store, "2026-09-08"));
+            Assert.Empty(outcome.Unaccounted);
+
+            using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT outcome, network_requests, detail FROM run_log WHERE run_id = 'run-member' AND stage = 'fetch';";
+
+            using var reader = command.ExecuteReader();
+
+            Assert.True(reader.Read());
+            Assert.Equal("ok", reader.GetString(0));
+            Assert.Equal(1L, reader.GetInt64(1));
+            Assert.Contains("\"refused\":[{\"ticker\":\"AAPL\",\"session\":\"2026-09-08\",\"stored\":false,\"why\":\"no second source was handed to this night\"", reader.GetString(2), StringComparison.Ordinal);
         }
     }
 
