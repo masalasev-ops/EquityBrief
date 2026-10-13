@@ -111,7 +111,7 @@ public sealed partial class MarkRenderer
 
     // The table of every account, grouped by family in the one order, each row its test years verdict and its record since
     // registration side by side, the verdict's years opening beneath it.
-    public string PaperTable(IReadOnlyList<PaperAccountView> accounts, bool walked)
+    public string PaperTable(IReadOnlyList<PaperAccountView> accounts, bool walked, string universe = "500")
     {
         var html = new StringBuilder();
 
@@ -128,7 +128,7 @@ public sealed partial class MarkRenderer
         {
             foreach (var account in family)
             {
-                html.Append(PaperRow(account, walked));
+                html.Append(PaperRow(account, walked, universe));
             }
         }
 
@@ -137,7 +137,9 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
-    string PaperRow(PaperAccountView account, bool walked)
+    // An account's row; its link opens its trade log on Past picks on the same index, a live or provisional account's the
+    // lists' trades under its setup.
+    string PaperRow(PaperAccountView account, bool walked, string universe)
     {
         var walk = account.Walk;
         var row = new StringBuilder();
@@ -149,7 +151,11 @@ public sealed partial class MarkRenderer
             ? "<td class=\"paper-name\">"
             : Formatted($"<td class=\"paper-name\"><span class=\"fam-tag\" data-family=\"{Escaped(account.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(account.Family)}\"></span>{Escaped(FamilyName(account.Family))}</span> "));
         row.Append(Invariant, $"<span class=\"status-pill {(account.Standing == PaperAccountView.You ? "variant" : account.Standing)}\">{Escaped(account.Name)}</span>");
-        row.Append(Invariant, $"<a class=\"paper-log\" href=\"#/picks?account={Uri.EscapeDataString(account.Key)}\" title=\"{Escaped(account.Words)}\">trade log</a></td>");
+        var log = account.Head
+            ? Formatted($"#/picks?universe={Uri.EscapeDataString(universe)}&amp;setup={Uri.EscapeDataString(account.Family)}")
+            : Formatted($"#/picks?universe={Uri.EscapeDataString(universe)}&amp;account={Uri.EscapeDataString(account.Key)}");
+
+        row.Append(Invariant, $"<a class=\"paper-log\" href=\"{log}\" title=\"{Escaped(account.Words)}\">trade log</a></td>");
 
         row.Append("<td class=\"paper-verdict\">");
         row.Append(Invariant, $"<span class=\"verdict-word\" data-rank=\"{RuleVerdict.Rank(account.Verdict)}\">{Escaped(account.Verdict)}</span>");
@@ -161,7 +167,9 @@ public sealed partial class MarkRenderer
 
         if (account.Years.Count > 0)
         {
-            row.Append(Invariant, $"<details class=\"paper-years\"><summary>{account.Years.Count} test year(s), against {Escaped(account.Against ?? "its benchmark")}</summary><table><tr><th>Year</th><th class=\"r\">This rule</th><th class=\"r\">{(account.Head ? "Its benchmark" : "The live rule")}</th></tr>");
+            var against = account.Head ? "its benchmark" : account.Against == EquityBrief.Core.Cards.RuleRows.ProvisionalRule ? "the provisional rule" : "the live rule";
+
+            row.Append(Invariant, $"<details class=\"paper-years\"><summary>{account.Years.Count} test year(s), against {against}</summary><table><tr><th>Year</th><th class=\"r\">This rule</th><th class=\"r\">{Capitalised(against)}</th></tr>");
 
             foreach (var year in account.Years)
             {
@@ -174,15 +182,19 @@ public sealed partial class MarkRenderer
         row.Append("</td><td class=\"paper-since\">");
         row.Append(Invariant, $"{account.Trades} trade(s)");
         row.Append(walk is { } shown ? Formatted($", {shown.Skipped} skipped, {shown.Uncosted} uncosted") : string.Empty);
-        row.Append(account.Since is { } since ? Formatted($", from {DayOf(since)}") : string.Empty);
+        row.Append(account.Since is { } since ? Formatted($", from <span class=\"day\">{DayOf(since)}</span>") : string.Empty);
         row.Append(account.Standing == PaperAccountView.You
             ? string.Empty
             : account.TooFew is { } few ? Formatted($"<span class=\"too-few\" data-too-few=\"{Escaped(few)}\">{Escaped(few)}</span>") : "<span class=\"too-few met\">its count is met</span>");
         row.Append("</td>");
 
-        if (walk is null || !walked)
+        if (!walked)
         {
             row.Append("<td class=\"r degraded\" colspan=\"3\">set your account to walk it</td>");
+        }
+        else if (walk is null)
+        {
+            row.Append("<td class=\"r degraded\" colspan=\"3\" data-walk=\"none\">no trade to walk yet</td>");
         }
         else
         {

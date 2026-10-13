@@ -33,11 +33,15 @@ public partial class FixtureExpectations
         var (opens, newest) = (read.Opens, read.Newest);
 
         // The provisional pullback earns between half a risk and a risk on every session's trade over its benchmark. The
-        // first variant earns a risk more on each, the second exactly what the provisional rule earns, and the third reads
-        // the analysts' estimates, which the history keeps only from 2026-10-03.
+        // first variant earns more on each, half a risk, a risk or a risk and a half by its block of 63 sessions in turn,
+        // so every block is above it by a different amount; the second exactly what the provisional rule earns; the third
+        // a quarter of a risk more in its first seven blocks and a quarter less in the two after, every block's
+        // difference the same size; and the fourth reads the analysts' estimates, which the history keeps only from
+        // 2026-10-03.
         var head = new RuleUnderTest("pullback", "provisional", RuleTests.Provisional, "the provisional pullback", LoopProcedures.Risks, 0, RuleUnits(opens, newest, at => 0.5 + (0.25 * (at % 3))));
-        var richer = new RuleUnderTest("pullback", "the richer variant", RuleTests.Variant, "a risk more", LoopProcedures.Risks, 0, [.. head.Trades!.Select(one => (one.Entry, one.Edge + 1))]);
+        var richer = new RuleUnderTest("pullback", "the richer variant", RuleTests.Variant, "more each block", LoopProcedures.Risks, 0, [.. head.Trades!.Select(one => (one.Entry, one.Edge + 1 + (0.5 * ((((one.Entry - opens) / 63) % 3) - 1))))]);
         var same = new RuleUnderTest("pullback", "the same variant", RuleTests.Variant, "the same trades", LoopProcedures.Risks, 0, head.Trades);
+        var mixed = new RuleUnderTest("pullback", "the mixed variant", RuleTests.Variant, "a quarter either way", LoopProcedures.Risks, 0, [.. head.Trades!.Select(one => (one.Entry, one.Edge + ((one.Entry - opens) / 63 < 7 ? 0.25 : -0.25)))]);
         var estimates = new RuleUnderTest("pullback", "the estimates variant", RuleTests.Variant, "estimates raised", LoopProcedures.Risks, 0, Why: RuleTests.Estimates);
 
         // The drift's provisional rule cannot be walked, so its variant names why; the breakout holds a variant alone.
@@ -45,7 +49,7 @@ public partial class FixtureExpectations
         var orphan = new RuleUnderTest("drift", "the drift variant", RuleTests.Variant, "a drift variant", LoopProcedures.Risks, 0, head.Trades);
         var alone = new RuleUnderTest("breakout", "the breakout variant", RuleTests.Variant, "a breakout variant", LoopProcedures.Risks, 0, head.Trades);
 
-        var tested = RuleTests.Judge(read, [head, richer, same, estimates, unwalked, orphan, alone]);
+        var tested = RuleTests.Judge(read, [head, richer, same, mixed, estimates, unwalked, orphan, alone]);
 
         RuleTested Of(RuleUnderTest rule) => tested.Single(one => one.Rule == rule);
 
@@ -74,16 +78,21 @@ public partial class FixtureExpectations
         Assert.Equal(TestVerdict.Passed, TestVerdict.Of(provisional.Passed, provisional.Why, provisional.Verdict.Adjusted, provisional.Verdict.Gate, provisional.Verdict.Stable, provisional.Verdict.Trimmed, provisional.Verdict.Counts));
 
         // The variants against the provisional rule, read together: their adjusted p-values are the step-down's over the
-        // two walked, each at or above what it reads alone. The richer one passes; the one earning the same holds a
-        // difference of nothing in every block, so every arrangement reaches it and it reads within luck.
-        var evidences = new[] { RuleTests.Against(read, richer, head), RuleTests.Against(read, same, head) };
+        // three walked. Alone, the richer one's every block positive is the one arrangement of 512 reaching it; together,
+        // the arrangement turning the mixed one's two negative blocks positive gives that one blocks all of one size, a
+        // statistic no scatter bounds, so it reaches the richer one's too: two in 512, still under the bar, and it
+        // passes. The one earning the same holds a difference of nothing in every block, so every arrangement reaches it
+        // and it reads within luck.
+        var evidences = new[] { RuleTests.Against(read, richer, head), RuleTests.Against(read, same, head), RuleTests.Against(read, mixed, head) };
         var together = LoopJudge.Judge(evidences, opens, newest, 0);
         var apart = LoopJudge.Judge([evidences[0]], opens, newest, 0)[0];
 
         Assert.Equal("provisional", Of(richer).Against);
         Assert.Equal(together[0].Adjusted, Of(richer).Verdict!.Adjusted);
         Assert.Equal(together[1].Adjusted, Of(same).Verdict!.Adjusted);
-        Assert.True(Of(richer).Verdict!.Adjusted >= apart.Adjusted);
+        Assert.Equal(together[2].Adjusted, Of(mixed).Verdict!.Adjusted);
+        Assert.Equal(1.0 / 512, apart.Adjusted!.Value, 12);
+        Assert.Equal(2.0 / 512, Of(richer).Verdict!.Adjusted!.Value, 12);
         Assert.True(Of(richer).Passed);
         Assert.Equal(1.0, Of(same).Verdict!.Adjusted);
         Assert.False(Of(same).Verdict!.Gate);
@@ -113,6 +122,7 @@ public partial class FixtureExpectations
                 "pullback|provisional|provisional|its benchmark|1|1",
                 "pullback|the richer variant|variant|provisional|1|1",
                 "pullback|the same variant|variant|provisional|0|0",
+                FormattableString.Invariant($"pullback|the mixed variant|variant|provisional|{(Of(mixed).Verdict!.Gate ? 1 : 0)}|{(Of(mixed).Passed ? 1 : 0)}"),
                 "pullback|the estimates variant|variant|provisional|null|0",
                 "drift|provisional|provisional|its benchmark|null|0",
                 "drift|the drift variant|variant|provisional|null|0",
@@ -123,9 +133,9 @@ public partial class FixtureExpectations
             [RuleTests.Estimates, RuleTests.NearestBands],
             Query(store, "SELECT why FROM loop_rule WHERE rule IN ('the estimates variant', 'provisional') AND why IS NOT NULL ORDER BY rowid;"));
 
-        // A year row a test year for each rule walked and none for one that was not: three each for the three walked.
+        // A year row a test year for each rule walked and none for one that was not: three each for the four walked.
         Assert.Equal(
-            ["pullback|provisional|3", "pullback|the richer variant|3", "pullback|the same variant|3"],
+            ["pullback|provisional|3", "pullback|the richer variant|3", "pullback|the same variant|3", "pullback|the mixed variant|3"],
             Query(store, "SELECT family || '|' || rule || '|' || COUNT(*) FROM loop_rule_year GROUP BY family, rule ORDER BY MIN(rowid);"));
         // Worked by hand: the edges run half a risk, three quarters and a risk, 2.25 every three sessions. 2022's 260
         // sessions hold 86 runs of three and two more, 194.75; 2023's open on the third of a run, a risk and then 86 runs
@@ -135,7 +145,7 @@ public partial class FixtureExpectations
             ["2022|1|260|194.75|260|0.0", "2023|1|260|195.0|260|0.0", "2024|0|50|37.75|50|0.0"],
             Query(store, "SELECT year || '|' || complete || '|' || units || '|' || total || '|' || compared_units || '|' || compared_total FROM loop_rule_year WHERE rule = 'provisional' ORDER BY year;"));
         Assert.Equal(
-            ["loop-rules|ok|16"],
+            ["loop-rules|ok|20"],
             Query(store, "SELECT stage || '|' || outcome || '|' || rows_written FROM run_log WHERE run_id = 'loop-rules-MID-20261013T120000Z';"));
     }
 

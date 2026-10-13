@@ -192,7 +192,8 @@ public partial class ReadSurface
         Assert.Contains("<tr data-year=\"2025\" data-complete=\"true\"><td>2025</td>", live, StringComparison.Ordinal);
         Assert.Contains("<span class=\"too-few\" data-too-few=\"too few trades (2 of 300)\">too few trades (2 of 300)</span>", variant, StringComparison.Ordinal);
         Assert.DoesNotContain("too few", Regex.Match(variant, "<td class=\"paper-verdict\">.*?</td>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
-        Assert.Contains($"href=\"#/picks?account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
+        Assert.Contains($"href=\"#/picks?universe=500&account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
+        Assert.Contains("href=\"#/picks?universe=500&setup=breakout\"", live, StringComparison.Ordinal);
 
         // The chart draws the heads and yours by default and no variant; the breakout chosen in the hash adds the
         // variant's line dashed, each line with a key whose press the shell's script toggles.

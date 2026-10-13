@@ -71,7 +71,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperTable(accounts, settings is not null)
+            marks.PaperTable(accounts, settings is not null, reading.Word)
                 + Invariant($"<p class=\"paper-adopted\">{Escaped(MarkRenderer.AdoptedLine)}</p>")
                 + Invariant($"<p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p>"),
             title: "Every account",
@@ -116,7 +116,7 @@ public sealed partial class SinglePageApp
         var heading = "Past picks: " + reading.Name;
 
         region.Append(Invariant($"<section class=\"picks\" data-universe=\"{reading.Word}\" data-account=\"{Escaped(account.Key)}\" data-trades=\"{trades.Count}\">"));
-        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Invariant($"{Escaped(account.Standing == PaperAccountView.You ? "Your trades" : FamilyLabel(account.Family) + " · " + account.Name)}'s trades")));
+        region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + FamilyLabel(account.Family) + " · " + account.Name)));
         region.Append(AccountSelector(accounts, account.Key));
         region.Append(Cards.Computed(
             "Trade log",

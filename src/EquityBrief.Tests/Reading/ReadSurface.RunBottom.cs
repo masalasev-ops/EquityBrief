@@ -134,9 +134,12 @@ public partial class ReadSurface
         Assert.DoesNotContain("DDQ", elsewhere, StringComparison.Ordinal);
         Assert.DoesNotContain("shadow_reasons", page, StringComparison.Ordinal);
 
+        // From 19.4 Past picks names each registered rule in its account selector alone, its own trades drawn only when
+        // its account is chosen; the selector is read apart and the rest of the page names no version.
+        // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
         foreach (var route in new[] { "/screens/tonight/2026-09-16", "/screens/universe", "/screens/picks", "/screens/name/BBQ", "/screens/name/DDQ" })
         {
-            var body = WebUtility.HtmlDecode(await (await client.GetAsync(route)).Content.ReadAsStringAsync());
+            var body = Regex.Replace(WebUtility.HtmlDecode(await (await client.GetAsync(route)).Content.ReadAsStringAsync()), "<label class=\"account-pick\".*?</label>", string.Empty, RegexOptions.Singleline);
 
             Assert.DoesNotContain(TheSwingFamily.NearestBandsName, body, StringComparison.Ordinal);
             Assert.DoesNotContain("compare-picture", body, StringComparison.Ordinal);
