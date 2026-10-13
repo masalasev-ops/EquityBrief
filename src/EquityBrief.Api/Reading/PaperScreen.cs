@@ -81,6 +81,11 @@ public static class PaperScreen
 
     static string Stamp(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
+    // The words an account names the version it counts by, saying where its start was carried back before the registration
+    // by a replay that reproduced every trade.
+    public static string CountedWords(CandidateRow standing, DateOnly start) =>
+        VersionWords(standing) + (start < FamilyRecords.FirstSession(standing.RegisteredAt) ? ", carried back by a replay that reproduced every trade" : string.Empty);
+
     // Where a registered rule's account starts: where the Run page's record of the rule counts from, its standing
     // registration's first session, or the session a replay under its version found it counting from where that replay
     // reproduced every trade. The S&P 400's and 600's records read no replay.
@@ -96,9 +101,16 @@ public static class PaperScreen
             ? VersionWords(listed)
             : BeforeRegistration;
 
-    // An account's trades split at its start: those it counts, bought on or after it, and those it leaves out, each named by
-    // the version that listed it.
-    public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
+    // A registered rule's account's trades split at its start: those it counts, bought on or after it, and those it leaves
+    // out, each named by the version that listed it.
+    public static PaperAccountSource Started(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, CandidateRow standing, IReadOnlyList<FamilyReplayRow> replays, IReadOnlyList<CandidateRow> lineage)
+    {
+        var start = StartOf(standing, replays);
+
+        return Split(account, trades, start, CountedWords(standing, start), lineage);
+    }
+
+    static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
         account with
         {
             Trades = [.. trades.Where(one => one.Trade.Bought >= start)],
@@ -164,7 +176,7 @@ public static class PaperScreen
             var registrations = RuleScreen.Registrations(family, large, indexName, register);
 
             accounts.Add(live is not null
-                ? Started(head, trades, StartOf(live, replayed), VersionWords(live), [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
+                ? Started(head, trades, live, replayed, [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
                 : head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.Bought) : null, Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in variants)
@@ -181,7 +193,7 @@ public static class PaperScreen
                     null,
                     row.Candidate);
 
-                accounts.Add(Started(variant, Of(rows.Where(variant.Keeps)), StartOf(row, replayed), VersionWords(row), [.. registrations.Where(one => one.Candidate == row.Candidate)]));
+                accounts.Add(Started(variant, Of(rows.Where(variant.Keeps)), row, replayed, [.. registrations.Where(one => one.Candidate == row.Candidate)]));
             }
         }
 

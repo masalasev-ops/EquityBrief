@@ -338,6 +338,10 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, []));
         Assert.Equal(new DateOnly(2026, 9, 21), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), true, "reproduced", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
         Assert.Equal(new DateOnly(2026, 9, 29), PaperScreen.StartOf(standing, [new EquityBrief.Core.Candidates.FamilyReplayRow(ProvisionalBreakout, "v", new DateOnly(2026, 9, 21), false, "differs", new DateTimeOffset(2026, 9, 29, 13, 0, 0, TimeSpan.Zero))]));
+
+        // An account whose start a replay carried back names the registration it counts and says the replay carried it.
+        Assert.Equal("the version registered 2026-09-29, code v, carried back by a replay that reproduced every trade", PaperScreen.CountedWords(standing, new DateOnly(2026, 9, 21)));
+        Assert.Equal("the version registered 2026-09-29, code v", PaperScreen.CountedWords(standing, new DateOnly(2026, 9, 29)));
     }
 
     [Fact]
