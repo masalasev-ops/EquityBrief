@@ -44349,10 +44349,11 @@ Measured:   the 19.4 remedy from main's clean copy outside the night, 11:48 to 1
             503; none on tonight's lists, the pullback passing none on 2026-10-12 and the drift's one pass held back by
             an open trade; the S&P 600's tiles hold its 2 pullback picks; 32 members one gate short; "app" finds 4. At
             390 the tiles stood one a row, about 1600 px before the table; two a row here, about 1000.
-Tests:      eleven new, ten read-surface and the fixture's: the near-level chips at one typical move, a hundredth past it
-            and inside a band; the search; each column's sort both ways; the rows a page with every chip keeping the
-            other keys; the members one gate short by hand; the tiles over a constructed store; the dry-up's tick; the
-            S&P 400's tiles; the phone's cards and tiles; a correction's notice on both sides of its thirtieth day. The
+Tests:      twelve new, ten read-surface, the fixture's and Figure 15.4's key: the near-level chips at one typical move, a
+            hundredth past it and inside a band; the search; each column's sort both ways; the rows a page with every
+            chip keeping the other keys; the members one gate short by hand; the tiles over a constructed store; the
+            dry-up's tick; the S&P 400's tiles; the phone's cards and tiles; a correction's notice on both sides of its
+            thirtieth day; the figure's key naming every part it draws in the architecture and the guide. The
             strip's, the headings' and the swing columns' assertions moved with the table. Derived expectation
             `universe-screen.json`.
 Claims:     eight more, 1303: Universe's tiles in the strip's place and its eight rows beside them, the Run page's
@@ -44371,7 +44372,12 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             tonight's lists, the funds' returns, the sort links keeping the other keys and the S&P 400's chip saying it
             cannot read one gate short. Each reverted before anything was committed, the twelve cases passing over the
             reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, e7fe4f24: all six
+            steps, 0 warnings, 0 errors, 2306 of 2306 tests ran with none failed in 18 minutes 45 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1303 claims, 1303 passing and none unexamined, 43 checks on the roster run and passed. The checkpoint script
+            over b1d3a163 stopped at the near-miss rule's readers, which Universe's one gate short chip now joins,
+            repaired at e7fe4f24.
 Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
             PR 452, 19.3 as PR 453, 19.4 as PR 454 with its remedy run; in progress, 19.5; next, 19.6, the Queue.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
