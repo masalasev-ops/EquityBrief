@@ -44310,7 +44310,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             default, M11 You before the variants in the selector: each predicted red at the page test; so, 1 each.
             Not mutated: the fund's difference, the uncosted count, the not-testable reasons' words and the settings
             kept from the store. Each reverted before anything was committed, the nine passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 90de5219: all six
+            steps, 0 warnings, 0 errors, 2293 of 2293 tests ran with none failed in 17 minutes 10 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 56 tables,
+            1295 claims, 1295 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
             PR 452, 19.3 as PR 453; in progress, 19.4; next, 19.5, Universe.
 Carried:    the remedy after the merge, `migrate` to 93 and `loop-rules` for 2026-10 on each index from main's clean copy
