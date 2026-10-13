@@ -101,6 +101,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_reading` | WalkForwardTester | none | none |
 | `loop_model` | WalkForwardTester | none | none |
 | `loop_reference` | WalkForwardTester | none | none |
+| `loop_rule` | WalkForwardTester | none | none |
+| `loop_rule_year` | WalkForwardTester | none | none |
 | `loop_decision` | ReadApi | none | none |
 | `loop_applied` | LoopApply | none | none |
 | `provisional_setting` | LoopApply | none | none |
@@ -1336,7 +1338,7 @@ Grain: one row per index, rule, stock and night a rule whose list no other table
 
 Primary key: `index_code`, `rule`, `ticker`, `session_date`.
 
-**The rule cards stage writes and ends them, and is its own deleter: a night run again removes its own picks and clears the ends it wrote at its close, which the walk writes again** (see: A variant's picks are shown on its card when chosen and its results only under its tests).
+**The rule cards stage writes and ends them, and is its own deleter: a night run again removes its own picks and clears the ends it wrote at its close, which the walk writes again** (see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight).
 
 ### forming_row
 Grain: one row per index, night, breakout rule and place a member forming a breakout under the rule stands at.
@@ -1643,6 +1645,56 @@ Grain: one row per run, family and trade of the rule today over the run's test y
 Primary key: `run_id`, `index_code`, `family`, `place`.
 
 **Written once by the walk-forward tester with its run**, from 17.9, a family's trades read from the first of its proposals carrying them, since every proposal of a family is tested against the same rule. The live alarm reads the newest run's on each index as the family's reference (see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running).
+
+### loop_rule
+Grain: one row per per-rule test run, index, family and rule.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, naming the verb `loop-rules`, the index and its start |
+| `month` | TEXT | the month the run is for, as `yyyy-MM` |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | `pullback`, `breakout`, `drift`, `fundamentals` or `heavyweight` |
+| `rule` | TEXT | the register's name for a registered rule, or `provisional` for a family's provisional rule on an index |
+| `standing` | TEXT | `live`, `provisional` or `variant`, constrained in the table |
+| `words` | TEXT | the rule in words, as its registration or its provisional setting states it |
+| `against` | TEXT | what it was read against: `its benchmark` for a live or provisional rule, the live or provisional rule's name for a variant |
+| `unit` | TEXT | `risks` for a swing family, `points` for a book |
+| `units` | INTEGER | its trades, or its book's months, over the test years; null where it is not testable |
+| `blocks` | INTEGER | the blocks of 63 sessions the gate read; null where it is not testable |
+| `adjusted` | REAL | its adjusted p-value, a variant's step-down corrected across its family's variants on the index; null under the block floor and where it is not testable |
+| `gate` | INTEGER | 1 where the adjusted p-value is at or under the bar; null where it is not testable |
+| `stable` | INTEGER | 1 where the stability screen held; null where it is not testable |
+| `counted` | INTEGER | the complete test years the screen counted; null where it is not testable |
+| `better` | INTEGER | of those, the years its total stood above what it was read against; null where it is not testable |
+| `trimmed` | REAL | its total less what it was read against's with the five largest results left out of each side; null where neither side holds one or it is not testable |
+| `counts` | INTEGER | 1 where its units reach the count its family is judged on; null where it is not testable |
+| `passed` | INTEGER | 1 where all four parts held |
+| `why` | TEXT | why the history cannot walk it, naming the reading it lacks; null where it was walked |
+
+Primary key: `run_id`, `index_code`, `family`, `rule`.
+
+**Written once by the walk-forward tester's per-rule test with its run log row**, from 19.4, in one transaction under the drain's lock, and never updated, so a later run for the same month stands beside it and paper trading reads the newest on each index. Every figure is a statistic and stored as the double it is. It adopts and retires nothing (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
+
+### loop_rule_year
+Grain: one row per per-rule test run, index, family, rule and test year.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run |
+| `index_code` | TEXT | as `loop_rule` carries it |
+| `family` | TEXT | as `loop_rule` carries it |
+| `rule` | TEXT | as `loop_rule` carries it |
+| `year` | INTEGER | the test year |
+| `complete` | INTEGER | 1 where a later year holds the newest session |
+| `units` | INTEGER | the rule's trades, or its book's months, entered in the year with a result |
+| `total` | REAL | its total edge after costs over them |
+| `compared_units` | INTEGER | the same for what it was read against: a variant's live or provisional rule's, and for a live or provisional rule its own units read against its benchmark, each at an edge of nothing |
+| `compared_total` | REAL | that side's total edge after costs |
+
+Primary key: `run_id`, `index_code`, `family`, `rule`, `year`.
+
+**Written once by the walk-forward tester's per-rule test with its run**, a row a test year for each rule it walked and none for a rule it could not, so paper trading's test years read each year as the run read it (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
 
 ### loop_decision
 Grain: one row per word the operator gave on a proposal of a run, or on a restore.

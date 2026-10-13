@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // funnels, a variant's own picks and the earnings window are each worked by hand.
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 // see: The forming list advises and never lists a stock
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public partial class FixtureExpectations
 {
     // The rows 17.2's cards add that this check reaches: section 17's two rows and section 18's two.

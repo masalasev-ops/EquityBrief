@@ -77,7 +77,7 @@ public sealed record FormingListView(IReadOnlyList<FormingRowView> Rows, int For
 // funnel, the stretch line, the forming list, whether the night evaluated the rule, the line an index with no variant
 // carries, and, for a book registered before its family's freeze, how the tester judged its design with the adjusted p
 // it stored.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public sealed record RuleView(
     RuleChoiceView Chosen,
     IReadOnlyList<RuleChoiceView> Choices,
@@ -394,7 +394,7 @@ public sealed partial class MarkRenderer
     // named by their place among tonight's buy points or a chosen variant's own picks, the notes, the funnel as one bar,
     // and the breakouts forming and the stocks one gate short behind expanders; a card listing nothing says so in one line.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     public string FamilyCard(FamilyCardView card)
     {
         var body = new StringBuilder();

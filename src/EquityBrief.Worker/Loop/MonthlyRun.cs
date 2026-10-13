@@ -65,13 +65,14 @@ public sealed class MonthlyRun(IClock clock, string databaseFile, string dataRoo
     public static IReadOnlyList<string> Indices { get; } = [IndexFamilies.LargeIndex, "MID", "SML"];
 
     // The steps' names in the order they run: the facts, the indices' history written again together, each index's
-    // check, each index's tester run, and the report.
+    // check, each index's tester run, each index's per-rule test, and the report.
     public static IReadOnlyList<string> StepNames { get; } =
     [
         "facts",
         "history",
         .. Indices.Select(index => "check-" + index),
         .. Indices.Select(index => "test-" + index),
+        .. Indices.Select(index => "rules-" + index),
         "report",
     ];
 

@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Cards;
 // The words a rule's rows carry that the night's stage writes and the pages read: the rule a family's list is drawn by
 // on an index no freeze has registered a rule on, where a row came from, and the funnel's form, each gate with how many
 // members passed it and every gate before it.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public static class RuleRows
 {
     public const string ProvisionalRule = "provisional";

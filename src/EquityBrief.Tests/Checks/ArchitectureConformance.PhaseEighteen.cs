@@ -40,8 +40,9 @@ public partial class ArchitectureConformance
     // The rows the document gains after phase 18's report, named beside the pair and never counted in it, which phase 19's
     // own report counts: 19.1's part of the card's rule on the S&P 400's and 600's variant reading no market check,
     // 19.2's store of every member's readings, its three marks, Tonight's top, the date line's night, the chart of what is
-    // behind a stock and the rows it moves from Tonight to the Run page under their new keys, and 19.3's parts of the setup
-    // cards and the heavyweights card.
+    // behind a stock and the rows it moves from Tonight to the Run page under their new keys, 19.3's parts of the setup
+    // cards and the heavyweights card, and 19.4's two stores of the per-rule test, section 18's rule it cannot walk, paper
+    // trading's rows and the trade log's two.
     internal static string[] AfterPhaseEighteen =>
     [
         .. Reading.ReadSurface.MarketOffRows,
@@ -49,6 +50,10 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.ColourAndTopRows,
         .. Reading.ReadSurface.MovedToTheRunPageRows,
         .. Reading.ReadSurface.SetupCardRows,
+        CheckReach.Key(Scope.StoresTable, "Rule tests"),
+        CheckReach.Key(Scope.StoresTable, "Rule test years"),
+        .. FixtureExpectations.RuleTestClaims,
+        .. Reading.ReadSurface.PaperRows,
     ];
 
     // The rows the document loses after phase 18's report: 19.2's night header parts and reason totals on Tonight, which

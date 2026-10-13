@@ -124,6 +124,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Loop applications"),
             CheckReach.Key(Scope.StoresTable, "Provisional settings"),
             CheckReach.Key(Scope.StoresTable, "Alarm periods"),
+            // 19.4, the per-rule test's rows and its year rows.
+            CheckReach.Key(Scope.StoresTable, "Rule tests"),
+            CheckReach.Key(Scope.StoresTable, "Rule test years"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

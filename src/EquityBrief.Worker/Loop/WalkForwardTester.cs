@@ -57,6 +57,9 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopReading, Touch.Insert),
             new StoreTouch(Store.LoopModel, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopReference, Touch.Insert),
+            new StoreTouch(Store.LoopRule, Touch.Insert),
+            new StoreTouch(Store.LoopRuleYear, Touch.Insert),
+            new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.ShapeProposal, Touch.Read),
@@ -309,6 +312,243 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             : FormattableString.Invariant($"{Verb}: run {runId}, {tested.Count(one => one.Passed)} of {tested.Count} proposal(s) passed, for {runMonth}"));
 
         return 0;
+    }
+
+    // The verb the monthly per-rule test runs under.
+    public const string RulesVerb = "loop-rules";
+
+    const string ReadRegister = @"
+        SELECT id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence
+        FROM candidate_register ORDER BY id;
+    ";
+
+    const string InsertRule = @"
+        INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why)
+        VALUES ($run_id, $month, $index_code, $family, $rule, $standing, $words, $against, $unit, $units, $blocks, $adjusted, $gate, $stable, $counted, $better, $trimmed, $counts, $passed, $why);
+    ";
+
+    const string InsertRuleYear = @"
+        INSERT INTO loop_rule_year (run_id, index_code, family, rule, year, complete, units, total, compared_units, compared_total)
+        VALUES ($run_id, $index_code, $family, $rule, $year, $complete, $units, $total, $compared_units, $compared_total);
+    ";
+
+    // The monthly per-rule test on an index for a month: every family rule standing on the index when the run begins
+    // walked at its own settings over the history and judged, each variant against its live or provisional rule and each
+    // of those against its benchmark, written whole; with print, printed and nothing written. It adopts and retires
+    // nothing.
+    // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+    public async Task<int> RulesAsync(string index, string? month, CancellationToken cancellation = default, bool print = false)
+    {
+        if (!Indices.Contains(index, StringComparer.Ordinal))
+        {
+            output.WriteLine($"{RulesVerb}: name an index with '--index', GSPC, MID or SML");
+
+            return 2;
+        }
+
+        if (month is not null && !DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
+        {
+            output.WriteLine($"{RulesVerb}: '--month' takes a month as yyyy-MM, not '{month}'");
+
+            return 2;
+        }
+
+        if (NightLock.Holder(dataRoot) is { } holder)
+        {
+            output.WriteLine($"{RulesVerb}: the night holds the store ({holder}); run it once the night has finished");
+
+            return 2;
+        }
+
+        if (SweepRunner.InTheNightsWindow(clock.UtcNow, Expected))
+        {
+            output.WriteLine(FormattableString.Invariant($"{RulesVerb}: a run started now would reach the night's window, which begins at {SweepRunner.PauseFrom:hh\\:mm} UTC on a weekday; run it after the night"));
+
+            return 2;
+        }
+
+        var started = clock.UtcNow;
+        var runMonth = month ?? FormattableString.Invariant($"{started:yyyy-MM}");
+        var history = new SweepHistory(databaseFile);
+        var through = await history.NewestSessionAsync(cancellation);
+        var large = index == LargeIndex;
+        var inputs = large
+            ? await history.ReadAsync(through, output.WriteLine, cancellation)
+            : await history.ReadAsync(through, output.WriteLine, cancellation, index: index, asItStood: true);
+
+        if (inputs.Names.Count == 0)
+        {
+            output.WriteLine($"{RulesVerb}: the store holds no member of the {DecisionCards.NameOf(index)}; pull them first with 'history-pull --members --index {index}', then their history");
+
+            return 2;
+        }
+
+        var read = await ReadAsync(index, history, through, inputs, cancellation);
+
+        if (read.Folds.Count == 0)
+        {
+            output.WriteLine(FormattableString.Invariant($"{RulesVerb}: the history ends {through:yyyy-MM-dd}, before the first test year, {LoopFolds.FirstTestYear}"));
+
+            return 2;
+        }
+
+        var market = await history.MarketAsync(through, cancellation);
+        (string, FilterSettings, LargePullback)? filter = null;
+        IdeaReplay? pullbacks = null;
+
+        if (large && await OpenVersionAsync(databaseFile, cancellation) is { } open)
+        {
+            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, market, output.WriteLine);
+
+            filter = (open.Version, open.Settings, new LargePullback(replay.Series, candidates));
+            pullbacks = replay;
+        }
+
+        var rules = RuleTests.Walk(new RuleTestInputs(
+            read,
+            Core.Candidates.ShadowColumn.StandingAt(await RegisterAsync(databaseFile, cancellation), started),
+            await StandingAsync(databaseFile, index, cancellation),
+            market,
+            await HeavyweightLay.ReadAsync(read, history, through, output.WriteLine, cancellation),
+            await LoopReadings.ReadAsync(read, databaseFile, through, cancellation),
+            await StoredTreesAsync(databaseFile, cancellation),
+            filter,
+            output.WriteLine,
+            pullbacks));
+        var tested = RuleTests.Judge(read, rules);
+        var runId = FormattableString.Invariant($"{RulesVerb}-{index}-{started:yyyyMMddTHHmmssZ}");
+
+        if (!print)
+        {
+            await WriteRulesAsync(runId, runMonth, index, through, started, read.Folds.Count, tested, cancellation);
+        }
+
+        foreach (var one in tested)
+        {
+            output.WriteLine(RuleLine(one));
+        }
+
+        output.WriteLine(print
+            ? FormattableString.Invariant($"{RulesVerb}: {RulesDetail(tested, index, runMonth, through, read.Folds.Count)}, printed and not written")
+            : FormattableString.Invariant($"{RulesVerb}: run {runId}, {RulesDetail(tested, index, runMonth, through, read.Folds.Count)}"));
+
+        return 0;
+    }
+
+    static string RulesDetail(IReadOnlyList<RuleTested> tested, string index, string month, DateOnly through, int folds) =>
+        FormattableString.Invariant($"{tested.Count(one => one.Passed)} of {tested.Count} rule(s) passed on the {DecisionCards.NameOf(index)} for {month} and {tested.Count(one => one.Why is not null)} not testable, through {through:yyyy-MM-dd}, over {folds} fold(s)");
+
+    // A rule's line for the console.
+    public static string RuleLine(RuleTested one) =>
+        one.Why is { } why
+            ? $"{one.Rule.Family}, {one.Rule.Rule}: not testable, {why}"
+            : FormattableString.Invariant($"{one.Rule.Family}, {one.Rule.Rule}: {(one.Passed ? "passed" : "did not pass")} against {one.Against}; {(one.Verdict!.Adjusted is { } p ? FormattableString.Invariant($"adjusted p {p:0.####} against {LoopGate.Bar:0.####}") : FormattableString.Invariant($"{one.Verdict.Blocks} block(s), under the floor of {EquityBrief.Core.Returns.Blocks.Floor}"))}; better in {one.Verdict.Better} of {one.Verdict.Counted} counted year(s); {one.Verdict.Units} {one.Rule.Unit} unit(s){(one.Verdict.Counts ? string.Empty : ", short of the count")}");
+
+    // The register's rows, which the per-rule test reads the rules standing when its run began off.
+    static async Task<IReadOnlyList<Core.Candidates.RegisterRow>> RegisterAsync(string databaseFile, CancellationToken cancellation)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReadRegister;
+
+        var rows = new List<Core.Candidates.RegisterRow>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add(new Core.Candidates.RegisterRow(
+                reader.GetInt64(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.GetString(6),
+                reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                DateTimeOffset.Parse(reader.GetString(9), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                reader.IsDBNull(10) ? null : reader.GetString(10)));
+        }
+
+        return rows;
+    }
+
+    // The per-rule test's rows, each rule's and each of its test years', with its run log row, in one transaction under
+    // the drain's lock.
+    public async Task WriteRulesAsync(string runId, string month, string index, DateOnly through, DateTimeOffset started, int folds, IReadOnlyList<RuleTested> tested, CancellationToken cancellation = default)
+    {
+        using var held = await DrainLock.AcquireAsync(dataRoot, () => (pause ?? Task.Delay)(Poll, cancellation), cancellation);
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = connection.BeginTransaction();
+        var years = 0;
+
+        static object Or(object? value) => value ?? DBNull.Value;
+
+        foreach (var one in tested)
+        {
+            var verdict = one.Verdict;
+
+            await ExecuteAsync(connection, transaction, InsertRule,
+            [
+                ("$run_id", runId),
+                ("$month", month),
+                ("$index_code", index),
+                ("$family", one.Rule.Family),
+                ("$rule", one.Rule.Rule),
+                ("$standing", one.Rule.Standing),
+                ("$words", one.Rule.Words),
+                ("$against", one.Against),
+                ("$unit", one.Rule.Unit),
+                ("$units", Or(verdict?.Units)),
+                ("$blocks", Or(verdict?.Blocks)),
+                ("$adjusted", Or(verdict?.Adjusted)),
+                ("$gate", Or(verdict is null ? null : verdict.Gate ? 1 : 0)),
+                ("$stable", Or(verdict is null ? null : verdict.Stable ? 1 : 0)),
+                ("$counted", Or(verdict?.Counted)),
+                ("$better", Or(verdict?.Better)),
+                ("$trimmed", Or(verdict?.Trimmed)),
+                ("$counts", Or(verdict is null ? null : verdict.Counts ? 1 : 0)),
+                ("$passed", one.Passed ? 1 : 0),
+                ("$why", Or(one.Why)),
+            ], cancellation);
+
+            foreach (var year in one.Evidence?.Years ?? [])
+            {
+                years++;
+
+                await ExecuteAsync(connection, transaction, InsertRuleYear,
+                [
+                    ("$run_id", runId),
+                    ("$index_code", index),
+                    ("$family", one.Rule.Family),
+                    ("$rule", one.Rule.Rule),
+                    ("$year", year.Year),
+                    ("$complete", year.Complete ? 1 : 0),
+                    ("$units", year.ProposedUnits),
+                    ("$total", year.ProposedTotal),
+                    ("$compared_units", year.CurrentUnits),
+                    ("$compared_total", year.CurrentTotal),
+                ], cancellation);
+            }
+        }
+
+        await ExecuteAsync(connection, transaction, AppendRun,
+        [
+            ("$run_id", runId),
+            ("$stage", RulesVerb),
+            ("$started_at", started.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
+            ("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)),
+            ("$rows_written", tested.Count + years),
+            ("$detail", RulesDetail(tested, index, month, through, folds)),
+        ], cancellation);
+
+        await transaction.CommitAsync(cancellation);
     }
 
     // The swing filter's open version and its settings, none before a version is opened.

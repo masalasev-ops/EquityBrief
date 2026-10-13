@@ -4,7 +4,7 @@ namespace EquityBrief.Web.Marks;
 
 // The words a card's selector, band, stretch line and forming list carry, held once so the read surface that chooses
 // a rule and the renderer that draws it state the same sentence.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: The forming list advises and never lists a stock
 public static class RuleScreenWords
 {

@@ -362,10 +362,11 @@ public partial class ArchitectureConformance
         // the checklist's item on the newest monthly run, 1268 from 19.1, the card's rule row's part on the variant
         // reading no market check, and 1277 from 19.2, its store of every member's readings, three marks, Tonight's two
         // rows and its date line's part, the card's and the stock's page's chart, the five rows moving from Tonight to
-        // the Run page under new keys less the five they leave, and 1283 from 19.3, seventeen parts of the setup cards and
-        // the heavyweights card less the eleven they retire.
+        // the Run page under new keys less the five they leave, 1283 from 19.3, seventeen parts of the setup cards and
+        // the heavyweights card less the eleven they retire, and 1295 from 19.4, its two stores, section 18's rule the
+        // per-rule test cannot walk, paper trading's seven rows and the trade log's two.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1283),
+            (789, 853, 6, 4, 855, 876, 1295),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

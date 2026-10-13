@@ -25,6 +25,49 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - ARCHITECTURE.html - the per-rule test, paper trading and the trade log, and the variant's results decision repointed
+Authorised by: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+Was:
+> Walk-forward tester row: reads ... filter versions, shape proposals, loop models | writes loop runs, loop proposals, loop tests, loop findings, loop readings, loop models, loop references, run log | ... refuses to start in the night's window or while a night holds the store (see: ...) (see: ...) (see: A search run inside a fold reads the family floors in proportion to the years it learns on)
+> Monthly run row: ... each index's point-in-time check by the setup ledger and each index's tester run by the walk-forward tester with its engines inside it, and then the month's report ... holds the drain's lock while a step runs but for the history's and the testers', which take it themselves as they write; ...
+> The read and write matrix's Walk-forward tester row: no read of the candidate register.
+> 13.16: ... each index's tester run, the autopsy, winners against losers and the learned score inside it; and the month's report under the data root, ... the history's and the testers' steps take that lock themselves as they write, and the run leaves it to them.
+> 15.2: ... with its return since bought, the book's since its last rebalance and its funds' (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+> 15.17's Every trade row: ...; a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted
+> Section 18's monthly run that fails: ... or a tester run that does not finish among them, writes its row with why ...
+> Six citations of: A variant's picks are shown on its card when chosen and its results only under its tests
+Now:
+> The tester reads the candidate register and writes rule tests and rule test years, its row ending on the per-rule test, the loop-rules verb; the monthly run runs each index's per-rule test after every tester run, its steps taking the drain's lock themselves; 13.12 gains a paragraph on the per-rule test and 13.16 names the step; 15.2 names each paper account's walk among the core's figures; 15.17's key says the lists' trades appear here, a registered variant's own being its account's trade log, and gains the trade log's account and an account's trade log; 15.21 Paper trading is new; section 16 gains the two stores; section 18 names a per-rule test that does not finish and gains a rule the per-rule test cannot walk; and every citation names: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
+Why: 19.4 builds the monthly per-rule test and paper trading on the operator's rulings R7, R8 and R11 of 2026-10-12, and the variant's results move from its tests alone to paper trading beside its verdict.
+
+### 2026-10-13 - SCHEMA.md - the per-rule test's two stores and the variant's results decision repointed
+Authorised by: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+Was:
+> The ownership summary ended the loop's rows at loop_reference, and one citation named: A variant's picks are shown on its card when chosen and its results only under its tests
+Now:
+> loop_rule and loop_rule_year, each inserted by the walk-forward tester alone, with their sections after loop_reference; and the citation names: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
+Why: migration 93 creates the per-rule test's stores, empty, copying and dropping nothing.
+
+### 2026-10-13 - RUNBOOK.md - the loop-rules verb, the monthly run's three per-rule steps and paper trading
+Authorised by: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+Was:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again beside the standing one, each index's point-in-time check, each index's tester run and the month's report, a step at a time ...
+> ... `check-GSPC`, `check-MID` and `check-SML`, `test-GSPC`, `test-MID` and `test-SML`, and `report`. ... a point-in-time check naming a difference or a tester run that does not finish. ... the history's and the testers' steps take that lock themselves for each chunk they write.
+> One citation named: A variant's picks are shown on its card when chosen and its results only under its tests
+Now:
+> The tester's section gains the loop-rules verb with its three command lines and what it reads and writes; the monthly run names each index's per-rule test, its steps `rules-GSPC`, `rules-MID` and `rules-SML`, a per-rule test that does not finish, and the per-rule tests' steps taking the lock themselves; the account section gains Paper trading; and the citation names the decision that supersedes it.
+Why: the verb and the steps the operator runs and reads, written where the runbook shows the tester and the monthly run.
+
+### 2026-10-13 - .claude/rules/checks.md - read-surface and fixture-expectations hold paper trading and the per-rule test
+Authorised by: A paper account draws its test years verdict and its record since registration apart, and never merges them
+Was:
+> read-surface: ... and a row a table opens held inside the box the table scrolls in |
+> fixture-expectations: ... and the heavyweights holding nothing in none of the eleven sectors |
+Now:
+> read-surface: ... and a row a table opens held inside the box the table scrolls in; and from 19.4 paper trading's accounts walked by hand a session at a time, [each round trip in its order, the page and a variant's trade log read back over a constructed store, the lists' selector and the settings in no byte of the store, no run log row and no export] |
+> fixture-expectations: ... and the heavyweights holding nothing in none of the eleven sectors; and from 19.4 the monthly per-rule test worked by hand over a constructed ledger, [the run written whole, the monthly run's three per-rule steps, the verdict's words and the record's label at its edges]; and the fixture's whole night drawing each family's one account holding no trade, not tested yet and too few of its count |
+Why: 19.4's assertions, rostered where the checks that run them are.
+
 ### 2026-10-13 - .claude/rules/checks.md - read-surface and fixture-expectations hold every setup card built one way
 Authorised by: Live picks are drawn once in tonight's buy points, and a setup's card names them by their place
 Was:

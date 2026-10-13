@@ -44255,3 +44255,39 @@ Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4
             PR 452; in progress, 19.3; next, 19.4, paper trading and the per-rule test.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
             of phases 16, 17 and 18.
+
+### 19.4 - paper trading, Past picks as each account's trade log, and the monthly per-rule test   2026-10-13
+
+Built:      the walk-forward tester's per-rule test, the `loop-rules` verb, run by the monthly run's `rules-GSPC`,
+            `rules-MID` and `rules-SML` after its tests: every rule standing on an index walked at its own settings and
+            hooks over the test years, a live or provisional rule against its benchmark unit for unit and each variant
+            against it with its family's variants read together by the step-down, at the proposals' bar and screens; a
+            rule the history cannot walk kept with the reading it lacks; written to `loop_rule` and `loop_rule_year`,
+            migration 93, adopting nothing. The pullback's candidates are read once a run for every walk of them. Paper
+            trading at `#/paper`: the account's settings, each account walked by the core's one function when the page
+            is read, its trades sized by the card's sizing with exits before entries, a skip under the cash counted, its
+            round trip as its table stores it, else the member readings' cost, else the published table at the value the
+            member reader reads from its buy session's bar, an open position marked by its closes' ratio; a chart of the
+            heads with a chosen family's variants dashed and keys toggling each line; a table grouped in the one family
+            order by verdict and return, the test years verdict and the record since registration side by side. Past
+            picks gains the account selector, each family's verdict beside the lists and each variant's or your trade log
+            with its open trades so far at tonight's close and a running total, not evidence yet. Three decisions, one
+            superseding the variant's results under its tests with 32 citations repointed; 13.12, 13.16, 15.2, 15.17,
+            15.21, 16 and 18, SCHEMA, the RUNBOOK, the guide and the roster, the prior text in `CHANGELOG.md`.
+Measured:   the per-rule test in print mode over the scratch copy of the live store, nothing written: the S&P 600 10
+            rules in 919 seconds, the S&P 500 30 rules in 913, three not testable, MEASURE; 19.0 estimated about 11
+            minutes for the three with a bound of about 21, which reading the candidates, about ten minutes an index,
+            puts out of reach. Its first S&P 600 run read every head's test years as none counted: a head read against an
+            empty side counted no year, corrected here by pairing each unit with its benchmark at nothing, the S&P 500's
+            heads then counting 3 and 4 of 4. No rule passes on either index.
+Tests:      TESTS.
+Claims:     twelve more, 1295: the two stores, section 18's rule the per-rule test cannot walk, paper trading's seven rows
+            and the trade log's two; 15.17's key reworded under its own key.
+Pins:       none move.
+Mutated:    MUTATED.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
+            PR 452, 19.3 as PR 453; in progress, 19.4; next, 19.5, Universe.
+Carried:    the remedy after the merge, `migrate` to 93 and `loop-rules` for 2026-10 on each index from main's clean copy
+            outside the night, with its times; the 19.2 chart's read back and the ledger step's time after the first
+            night past 19.2's remedy; the sign-offs of phases 16, 17 and 18.

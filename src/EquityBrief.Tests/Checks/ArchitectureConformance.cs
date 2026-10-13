@@ -1422,7 +1422,8 @@ public partial class ArchitectureConformance
         // 188 at 19.2: the family tag, the setup tile and what is behind it among the marks, Tonight's setups and buy
         // points, and the card's chart, the reason totals moving from Tonight to the Run page.
         // 187 at 19.3: the list of stocks close to a buy point across the setups taken out, each card drawing its own.
-        Assert.Equal(187, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 196 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
+        Assert.Equal(196, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1556,7 +1557,8 @@ public partial class ArchitectureConformance
         // night not yet run and the swing readings' part on the chart, the night header's four parts and the reason totals
         // moving to the Run page.
         // 597 at 19.3: seventeen parts of the setup cards and the heavyweights card less the eleven they retire.
-        Assert.Equal(597, inDocument.Length);
+        // 606 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
+        Assert.Equal(606, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

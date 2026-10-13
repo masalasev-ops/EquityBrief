@@ -1,0 +1,294 @@
+using System.Net;
+using System.Text.RegularExpressions;
+using EquityBrief.Api.Reading;
+using EquityBrief.Core.Cards;
+using EquityBrief.Core.Loop;
+using EquityBrief.Core.Readings;
+using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
+using EquityBrief.Worker.Candidates;
+
+namespace EquityBrief.Tests.Reading;
+
+// read-surface, 19.4: paper trading and each account's trade log. An account is walked by hand a session at a time, a
+// skip, an uncosted trade and an open position through a split among it; each round trip is read in its order; and the
+// page and the trade log are read back off the rendered markup over a constructed store, the test years verdict and the
+// record since registration apart, with the account's settings in no byte of the store or the run log.
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+// see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+public partial class ReadSurface
+{
+    // The rows 19.4 adds that this check reaches: paper trading's seven and the trade log's two.
+    internal static readonly string[] PaperRows =
+    [
+        .. new[] { "Your account", "The chart", "The chart's key", "Every account", "An account's test years verdict", "An account's record since registration", "The lines beneath" }
+            .Select(row => CheckReach.Key("15.21 Paper trading", row)),
+        CheckReach.Key("15.17 Past picks", "The trade log's account"),
+        CheckReach.Key("15.17 Past picks", "An account's trade log"),
+    ];
+
+    static readonly DateOnly[] PaperSessions = [new(2026, 10, 5), new(2026, 10, 6), new(2026, 10, 7), new(2026, 10, 8), new(2026, 10, 9)];
+
+    [Fact]
+    public void AnAccountIsWalkedASessionAtATimeWithASkipAnUncostedTradeAndAnOpenPositionThroughASplit()
+    {
+        // An account of 10,000 risking a tenth a trade with no cap below the whole account.
+        var account = new AccountSettings(10_000m, 10m, 1m);
+        var (d1, d2, d3, d4, d5) = (PaperSessions[0], PaperSessions[1], PaperSessions[2], PaperSessions[3], PaperSessions[4]);
+
+        // AA bought on d1 at 50 over a stop at 40 paying 0.10 a share round trip, sold on d3 at 60; BB bought the same
+        // session second at 20 over a stop at 19; CC bought on d2 at 10 over a stop at 5 with no cost read, still open,
+        // its closes stored after a two-for-one split as the store rescales them, 5 on d2.
+        PaperTrade[] trades =
+        [
+            new("AA", d1, 50m, 40m, d3, 60m, 0.10m, 1),
+            new("BB", d1, 20m, 19m, null, null, 0.02m, 2),
+            new("CC", d2, 10m, 5m, null, null, null, 1),
+        ];
+        var closes = new Dictionary<(string, DateOnly), decimal>
+        {
+            [("AA", d1)] = 50m, [("AA", d2)] = 52m, [("AA", d3)] = 55m,
+            [("CC", d2)] = 5m, [("CC", d3)] = 5.25m, [("CC", d4)] = 5.5m, [("CC", d5)] = 6m,
+        };
+        var funds = new Dictionary<DateOnly, decimal> { [d1] = 400m, [d5] = 420m };
+
+        var walk = PaperAccount.Walk(account, trades, PaperSessions, (ticker, session) => closes.TryGetValue((ticker, session), out var close) ? close : null, session => funds.TryGetValue(session, out var close) ? close : null);
+
+        // d1: AA's risk buys a tenth of 10,000 over 10 a share, 100 shares, its cap 200; 5,000 and half its round trip,
+        // 5, leave 4,995. BB's risk then buys 999.5 over 1, 999, capped at 9,995 over 20, 499: 9,980 is over the free cash
+        // and it is skipped. The value is 4,995 and AA at its close, 5,000: 9,995.
+        Assert.Equal([100L, 0L, 199L], walk.Trades.Select(one => one.Shares));
+        Assert.Equal([null, PaperAccount.UnderTheCash, null], walk.Trades.Select(one => one.Skipped));
+        Assert.Equal(9_995m, walk.Values[0].Value);
+
+        // d2: CC's risk buys 999.5 over 5, 199 shares at 1,990 with no cost, leaving 3,005; AA marked at 52 over 50, 5,200,
+        // and CC at its buy, 1,990: 10,195.
+        Assert.Equal(10_195m, walk.Values[1].Value);
+
+        // d3: AA sold first at 60 less half its round trip, 5,995, to 9,000; CC marked by its closes' ratio, 5.25 over 5,
+        // 2,089.5: 11,089.5. d4 and d5 mark CC at 5.5 and 6 over 5, 2,189 and 2,388, the split moving nothing.
+        Assert.Equal([9_995m, 10_195m, 11_089.5m, 11_189m, 11_388m], walk.Values.Select(one => one.Value));
+
+        // Two taken, one skipped, one of the taken with no cost read; a return of 0.1388 on the size, its worst drop the
+        // 5 under the start on d1, and the fund's 0.05 over the same sessions.
+        Assert.Equal((2, 1, 1), (walk.Taken, walk.Skipped, walk.Uncosted));
+        Assert.Equal(0.1388, walk.Return!.Value, 12);
+        Assert.Equal(0.0005, walk.WorstDrop!.Value, 12);
+        Assert.Equal(0.05, walk.FundReturn!.Value, 12);
+        Assert.Equal(0.0888, walk.Difference!.Value, 12);
+        Assert.Equal(d1, walk.MarkedFrom);
+        Assert.Equal([-0.0005, 0.0195, 0.10895, 0.1189, 0.1388], walk.Returns.Select(one => Math.Round(one.Return, 6)));
+
+        // A fund whose series starts after the first session is named from where it starts and read for no return.
+        var later = PaperAccount.Walk(account, trades, PaperSessions, (ticker, session) => closes.TryGetValue((ticker, session), out var close) ? close : null, session => session >= d3 ? 410m : null);
+
+        Assert.Null(later.FundReturn);
+        Assert.Equal(d3, later.FundFrom);
+
+        // A position whose close is not yet read stands at its cost, and the walk marks from the first session it reads
+        // every one.
+        var unread = PaperAccount.Walk(account, trades, PaperSessions, (ticker, session) => ticker == "CC" && session == d3 ? null : closes.TryGetValue((ticker, session), out var close) ? close : null);
+
+        Assert.Equal(d4, unread.MarkedFrom);
+    }
+
+    [Fact]
+    public void ATradesRoundTripIsReadInItsOrderAndItsSaleFromItsResult()
+    {
+        // Stored in risks: 0.05 of a 10 risk, 0.5 a share. As a fraction of the buy: 0.002 of 100, 0.2. The member
+        // readings' cost: 0.144 per cent of 50, 0.072. Before the readings were kept, the published table at the company's
+        // value, $1.5 billion in the $1 to 2 billion band at a price of 50 in the top price band, 0.129 per cent each side:
+        // 0.0645. A company valued at none reads the same band. No bar on the buy session: none.
+        Assert.Equal(0.5m, PaperAccount.RoundTripOf(50m, 40m, 0.05, null, null, true, null));
+        Assert.Equal(0.2m, PaperAccount.RoundTripOf(100m, null, null, 0.002, null, true, null));
+        Assert.Equal(0.072m, PaperAccount.RoundTripOf(50m, 40m, null, null, 0.144, true, null));
+        Assert.Equal(0.0645m, PaperAccount.RoundTripOf(50m, 40m, null, null, null, true, 1_500_000_000m));
+        Assert.Equal(TradeCost.RoundTrip(null, 50m, 50m), PaperAccount.RoundTripOf(50m, 40m, null, null, null, true, null));
+        Assert.Null(PaperAccount.RoundTripOf(50m, 40m, null, null, null, false, 1_500_000_000m));
+
+        // A swing trade's sale is its buy and its result's risks over the stop's distance: 2 risks of 10 from 50 is 70; a
+        // holding's its buy grown by its result, 0.05 on 100 is 105; an open trade has none.
+        Assert.Equal(70m, PaperAccount.SaleOf(50m, 40m, PaperSessions[2], 2, false));
+        Assert.Equal(105m, PaperAccount.SaleOf(100m, null, PaperSessions[2], 0.05, true));
+        Assert.Null(PaperAccount.SaleOf(50m, 40m, null, null, false));
+    }
+
+    [Fact]
+    public async Task PaperTradingAndATradeLogDrawEachAccountsVerdictAndItsRecordApartAndTheSettingsInNoStoreByte()
+    {
+        using var store = await FamilyPagesStore();
+
+        // The breakout's live rule and one variant registered on 2026-01-02; the variant keeps three trades of its own:
+        // T7 ended at -0.5 risks and T1 at 1 on 2026-09-29 and 30, and T6 bought on 2026-10-01, open, at 100 over a stop at
+        // 97. T6 split two for one since, so the store holds its closes rescaled, 50 on its buy session and 51.5 on the
+        // night: three per cent on three at risk, a risk so far, where its buy against tonight's close would read -16.
+        RegisteredRule(store, 201, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 202, TheSetupFamilies.Breakouts[^2], "2026-01-02T12:00:00Z");
+        Kept(store, ProvisionalBreakout, "breakout", "T7", "2026-09-28", "2026-09-29", -0.5, 0.0);
+        Kept(store, ProvisionalBreakout, "breakout", "T1", "2026-09-28", "2026-09-30", 1.0, 0.2);
+        Kept(store, ProvisionalBreakout, "breakout", "T6", "2026-10-01", null, null, null);
+
+        foreach (var (ticker, session, close) in new[] { ("T7", "2026-09-28", "100"), ("T1", "2026-09-28", "100"), ("T6", "2026-10-01", "50"), ("T6", TheSwitch, "51.5") })
+        {
+            PickBar(store, ticker, session, close);
+        }
+
+        // The newest per-rule test on the S&P 500: the live breakout passed against its benchmark, and the variant read
+        // within luck against it.
+        store.Execute(
+            "INSERT INTO loop_rule (run_id, month, index_code, family, rule, standing, words, against, unit, units, blocks, adjusted, gate, stable, counted, better, trimmed, counts, passed, why) VALUES " +
+            $"('loop-rules-GSPC-20261003T120000Z', '2026-10', 'GSPC', 'breakout', '{LiveBreakout}', 'live', 'the live breakout', 'its benchmark', 'risks', 420, 9, 0.001, 1, 1, 3, 3, 4.5, 1, 1, NULL), " +
+            $"('loop-rules-GSPC-20261003T120000Z', '2026-10', 'GSPC', 'breakout', '{ProvisionalBreakout}', 'variant', 'the variant', '{LiveBreakout}', 'risks', 380, 9, 0.3, 0, 1, 3, 2, 1.0, 1, 0, NULL);");
+        store.Execute(
+            "INSERT INTO loop_rule_year (run_id, index_code, family, rule, year, complete, units, total, compared_units, compared_total) VALUES " +
+            $"('loop-rules-GSPC-20261003T120000Z', 'GSPC', 'breakout', '{LiveBreakout}', 2025, 1, 140, 12.5, 140, 0);");
+
+        // Settings no store row holds, written to their own file.
+        AccountFile.Write(store.Root, new AccountSettings(98_765.43m, 1.37m, 0.23m));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+        var variantKey = RunScreen.Slug(ProvisionalBreakout);
+
+        // The form holds the settings, and the page walks the accounts from them.
+        Assert.Contains($"<section class=\"paper\" data-universe=\"500\" data-night=\"{TheSwitch}\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-walked=\"true\"", page, StringComparison.Ordinal);
+        Assert.Contains("value=\"98765.43\"", page, StringComparison.Ordinal);
+
+        // Every account in the one family order: the pullback's live list and its two standing variants, none tested yet;
+        // within the breakout the live rule that passed before the variant within luck; the drift's, the fundamentals-first
+        // family's provisional list and the heavyweights' book; and the operator's own last, its verdict saying the test
+        // does not read it.
+        var rows = Regex.Matches(page, "<tr data-account=\"([^\"]+)\" data-family=\"([^\"]+)\" data-standing=\"([^\"]+)\" data-verdict=\"([^\"]+)\"").Select(match => (Key: match.Groups[1].Value, Family: match.Groups[2].Value, Standing: match.Groups[3].Value, Verdict: match.Groups[4].Value)).ToArray();
+
+        Assert.Equal(["pullback", "breakout", "drift", "fundamentals", "heavyweight", "you"], rows.Select(row => row.Family).Distinct());
+        Assert.Equal(
+            [("list-pullback", "live"), (RunScreen.Slug("the swing filter with one-session arrival, from version 1"), "variant"), (RunScreen.Slug("the swing filter with the market gate off, from version 1"), "variant")],
+            rows.Where(row => row.Family == "pullback").Select(row => (row.Key, row.Standing)).OrderBy(row => row.Standing, StringComparer.Ordinal).ThenBy(row => row.Key, StringComparer.Ordinal));
+        Assert.All(rows.Where(row => row.Family == "pullback"), row => Assert.Equal(RuleVerdict.NotTested, row.Verdict));
+
+        // Holding one verdict, the pullback's accounts stand by their return, the variants holding no trade at nothing
+        // above the live list, whose open trades have paid half their round trips.
+        double[] returns = [.. rows.Where(row => row.Family == "pullback").Select(row => double.Parse(Regex.Match(AccountRowOf(page, row.Key), "data-return=\"([^\"]+)\"").Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture))];
+
+        Assert.Equal(returns.OrderByDescending(one => one), returns);
+        Assert.Equal("list-pullback", rows.Last(row => row.Family == "pullback").Key);
+        Assert.True(returns[^1] < 0);
+        Assert.Equal(
+            [("list-breakout", "breakout", "live", RuleVerdict.Passed), (variantKey, "breakout", "variant", RuleVerdict.WithinLuck)],
+            rows.Where(row => row.Family == "breakout"));
+        Assert.Equal(("list-fundamentals", "provisional"), rows.Where(row => row.Family == "fundamentals").Select(row => (row.Key, row.Standing)).Single());
+        Assert.Equal(("you", "you", "you", RuleVerdict.Yours), rows[^1]);
+
+        // The live rule's verdict carries that it was chosen on these years and its test year behind a press; the
+        // variant's record since registration is too few, 2 of 300, beside its figures and never in its verdict's cell.
+        var live = AccountRowOf(page, "list-breakout");
+        var variant = AccountRowOf(page, variantKey);
+
+        Assert.Contains(RuleVerdict.Chosen, live, StringComparison.Ordinal);
+        Assert.Contains("<tr data-year=\"2025\" data-complete=\"true\"><td>2025</td>", live, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"too-few\" data-too-few=\"too few trades (2 of 300)\">too few trades (2 of 300)</span>", variant, StringComparison.Ordinal);
+        Assert.DoesNotContain("too few", Regex.Match(variant, "<td class=\"paper-verdict\">.*?</td>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+        Assert.Contains($"href=\"#/picks?account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
+
+        // The chart draws the heads and yours by default and no variant; the breakout chosen in the hash adds the
+        // variant's line dashed, each line with a key whose press the shell's script toggles.
+        Assert.DoesNotContain("data-standing=\"variant\" d=", page, StringComparison.Ordinal);
+
+        var chosen = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?family=breakout"));
+
+        Assert.Contains($"<path class=\"paper-line dashed\" data-account=\"{variantKey}\" data-family=\"breakout\" data-standing=\"variant\"", chosen, StringComparison.Ordinal);
+        Assert.Contains($"<button type=\"button\" class=\"paper-key\" data-line=\"{variantKey}\"", chosen, StringComparison.Ordinal);
+        Assert.Contains(".paper-key[data-line]", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+
+        // The two lines beneath the table.
+        Assert.Contains(MarkRenderer.AdoptedLine, page, StringComparison.Ordinal);
+        Assert.Contains(MarkRenderer.EntryPriceLine, page, StringComparison.Ordinal);
+
+        // The variant's trade log: its verdict and its label apart, its trades newest first, the open one's result so far
+        // at tonight's close, and the running total of the two ended, half a risk, not evidence yet.
+        var log = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/picks?account={Uri.EscapeDataString(variantKey)}"));
+
+        Assert.Contains($"<div class=\"paper-log-head\" data-account=\"{variantKey}\" data-family=\"breakout\" data-trades=\"3\">", log, StringComparison.Ordinal);
+        Assert.Contains($"<span data-verdict=\"{RuleVerdict.WithinLuck}\">{RuleVerdict.WithinLuck}</span>", log, StringComparison.Ordinal);
+        Assert.Contains("too few trades (2 of 300)", log, StringComparison.Ordinal);
+        Assert.Equal(["T6", "T1", "T7"], Regex.Matches(log, "<tr data-ticker=\"([^\"]+)\" data-bought=").Select(match => match.Groups[1].Value));
+        Assert.Matches("<tr data-ticker=\"T6\" data-bought=\"2026-10-01\" data-open=\"true\">.*?<span class=\"gain\">\\+1\\.00</span> risks <span class=\"degraded\">so far</span>", log);
+        Assert.Contains("<figure class=\"paper-running\" data-total=\"0.5\" data-ended=\"2\">", log, StringComparison.Ordinal);
+        Assert.Contains(", not evidence yet", log, StringComparison.Ordinal);
+        Assert.Contains(MarkRenderer.EntryPriceLine, log, StringComparison.Ordinal);
+
+        // The lists' view: the selector with the lists first, the variants after them in the one family order, the
+        // pullback's two before the breakout's, and You last; and each family's verdict beside the lists' trades.
+        var lists = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks"));
+        var options = Regex.Matches(lists, "<select data-merge-key=\"account\".*?</select>", RegexOptions.Singleline).Single().Value;
+
+        Assert.Equal(
+            ["", RunScreen.Slug("the swing filter with the market gate off, from version 1"), RunScreen.Slug("the swing filter with one-session arrival, from version 1"), variantKey, "you"],
+            Regex.Matches(options, "<option value=\"([^\"]*)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains($"<li data-family=\"breakout\" data-verdict=\"{RuleVerdict.Passed}\">", lists, StringComparison.Ordinal);
+
+        // The settings are in no byte of the store, no run log row and no exported report.
+        Assert.DoesNotContain("98765", await client.GetStringAsync("/exports/name/T6"), StringComparison.Ordinal);
+
+        using (var file = new FileStream(store.DatabaseFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+        using (var bytes = new MemoryStream())
+        {
+            await file.CopyToAsync(bytes);
+
+            Assert.DoesNotContain("98765", System.Text.Encoding.Latin1.GetString(bytes.ToArray()), StringComparison.Ordinal);
+        }
+
+        Assert.Empty(Strings(store, "SELECT detail FROM run_log WHERE detail LIKE '%98765%';"));
+    }
+
+    [Fact]
+    public async Task ATradeBoughtBeforeTheMemberReadingsIsValuedAsTheMemberReaderValuesItAndOneWithNoBarIsUncosted()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // OLD bought on 2026-10-01 at a close of 40, before the member readings were kept: its newest fetch on that night
+        // filed 50,000,000 shares for the quarter to 2026-06-30 on 2026-08-01, stated against a close of 40 on 2026-09-30
+        // that the store holds at 40 still. Its value is 50,000,000 times 40, $2 billion, the top value band, at a price
+        // of 40 in the top price band: 0.072 per cent each side, 0.0288 a share round trip on a buy and sale at 40. NEW
+        // bought on 2026-10-07 reads its member reading's cost; NONE bought on a session its bar is not held for reads
+        // nothing.
+        store.Execute(
+            "INSERT INTO reported_quarter (ticker, fetched_at, session_date, period_end, filing_date, shares, basis_session, basis_close) VALUES " +
+            "('OLD', '2026-09-30T23:00:00Z', '2026-09-30', '2026-06-30', '2026-08-01', '50000000', '2026-09-30', '40');");
+        store.Execute(
+            "INSERT INTO member_reading (index_code, session_date, ticker, close, dollar_volume, company_value, cost, cost_double) VALUES " +
+            "('GSPC', '2026-10-07', 'NEW', '20', '1', '3000000000', 0.144, 0.288);");
+        PickBar(store, "OLD", "2026-09-30", "40");
+        PickBar(store, "OLD", "2026-10-01", "40");
+        PickBar(store, "NEW", "2026-10-07", "20");
+
+        var read = new ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 8, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates));
+        var costs = await read.MemberCostsAsync("GSPC", [("OLD", new DateOnly(2026, 10, 1)), ("NEW", new DateOnly(2026, 10, 7)), ("NONE", new DateOnly(2026, 10, 7))]);
+        var closes = await read.ClosesAsync(["OLD", "NEW", "NONE"], new DateOnly(2026, 9, 1));
+
+        Assert.Equal((null, 2_000_000_000m), costs[("OLD", new DateOnly(2026, 10, 1))]);
+        Assert.Equal((0.144, 3_000_000_000m), costs[("NEW", new DateOnly(2026, 10, 7))]);
+        Assert.False(costs.ContainsKey(("NONE", new DateOnly(2026, 10, 7))));
+
+        Assert.Equal(0.0288m, PaperAccount.RoundTripOf(40m, 35m, null, null, null, closes.ContainsKey(("OLD", new DateOnly(2026, 10, 1))), costs[("OLD", new DateOnly(2026, 10, 1))].Value));
+        Assert.Equal(0.0288m, PaperAccount.RoundTripOf(20m, 18m, null, null, 0.144, true, null));
+        Assert.Null(PaperAccount.RoundTripOf(30m, 28m, null, null, null, closes.ContainsKey(("NONE", new DateOnly(2026, 10, 7))), null));
+    }
+
+    // An account's row of the paper accounts' table, from its opening tag to the next account's or the table's end, since
+    // a row holds its test years' own table.
+    static string AccountRowOf(string page, string account)
+    {
+        var at = page.IndexOf($"<tr data-account=\"{account}\"", StringComparison.Ordinal);
+
+        Assert.True(at >= 0, $"no row for the account {account}");
+
+        var next = page.IndexOf("<tr data-account=", at + 1, StringComparison.Ordinal);
+
+        return page[at..(next > 0 ? next : page.IndexOf("</tbody>", at, StringComparison.Ordinal))];
+    }
+}

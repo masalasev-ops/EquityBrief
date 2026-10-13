@@ -1080,7 +1080,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         var indexCardContext = await CardContextAsync(read, store);
         // Each card drawn by the rule the link chooses for it, the provisional rule or the live rule where it names none,
         // with its funnel, its stretch line and, under the breakout card, the breakouts forming.
-        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
         var indexCards = RuleScreen.WithRules(
             CardScreen.WithCards(
                 TonightScreen.WithSweepLines(
@@ -1143,7 +1143,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 
         // The card's selector, as the S&P 500's: the provisional or live rule first and each registered variant after
         // it, a chosen variant's own book drawn under the band.
-        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
         var (indexHeavyweightChoice, indexHeavyweightVariant) = RuleScreen.Heavyweights(
             reading.Name,
             false,
@@ -1390,7 +1390,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     var cardContext = await CardContextAsync(read, store);
     // Each card drawn by the rule the link chooses for it, the live rule where it names none, with its funnel, its
     // stretch line and, under a breakout card, the breakouts forming.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     var cards = onThePage is null || gates is null
         ? null
         : RuleScreen.WithRules(
@@ -1456,7 +1456,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     // market check read.
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
     // The card drawn by the rule its selector chooses, a registered variant's own book under the band where one is.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     var (heavyweightChoice, heavyweightVariant) = RuleScreen.Heavyweights(
         reading.Name,
         true,
@@ -1623,6 +1623,51 @@ app.MapGet("/screens/account", (SinglePageApp page, StoreLocation store) =>
         page.AccountRegion(held?.Size, held?.RiskPercent, held?.PositionCap, EquityBrief.Core.Cards.AccountSettings.ProposedCap),
         "text/html; charset=utf-8");
 });
+
+// Paper trading, section 15.21: every account on the index the link names, walked from the account settings by the
+// core's one function as the page is read, with each one's test years verdict beside its record since registration.
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, StoreLocation store) =>
+{
+    var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
+    var night = await read.NewestNightAsync();
+    var held = EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
+    var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, held) : null;
+    var family = request.Query[PaperScreen.FamilyQuery].FirstOrDefault();
+
+    return Results.Content(
+        page.PaperRegion(
+            marks,
+            reading,
+            night,
+            paper?.Views ?? [],
+            family is { } named && EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) ? named : null,
+            held is { } settings ? (settings.Size, settings.RiskPercent, settings.PositionCap) : null,
+            EquityBrief.Core.Cards.AccountSettings.ProposedCap),
+        "text/html; charset=utf-8");
+});
+
+// An index's paper accounts as of a night: its stored trades in one shape, each costed, walked and judged.
+async Task<PaperAccounts> PaperAccountsAsync(ReadApi read, UniverseChoice reading, DateOnly night, EquityBrief.Core.Cards.AccountSettings? settings)
+{
+    var large = reading == Universes.Large;
+    var rows = await read.PaperRowsAsync(reading.Code);
+    var cells = large ? PicksScreen.Cells(await read.PicksAsync(night), night) : [];
+    var provisional = large ? null : await read.IndexNightAsync(reading.Code, night) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
+    var sources = PaperScreen.Accounts(large, reading.Name, night, await read.RegisteredCandidatesAsync(), provisional, rows, cells, PaperScreen.Yours(await read.TakenTradesAsync(), reading.Code));
+    (string Ticker, DateOnly Session)[] bought = [.. sources.SelectMany(account => account.Trades.Select(one => (one.Trade.Ticker, one.Trade.Bought))).Distinct()];
+    var from = sources.Select(account => account.Since).OfType<DateOnly>().Concat(bought.Select(one => one.Session)).DefaultIfEmpty(night).Min();
+    var closes = await read.ClosesAsync([.. bought.Select(one => one.Ticker).Distinct(StringComparer.Ordinal)], from);
+
+    sources = PaperScreen.Costed(sources, rows, await read.MemberCostsAsync(reading.Code, bought), closes);
+
+    var fund = await read.FundClosesAsync(PaperScreen.Fund(reading.Code), from);
+    var (tests, years) = await read.RuleTestsAsync(reading.Code);
+
+    decimal? Close(string ticker, DateOnly session) => closes.TryGetValue((ticker, session), out var close) ? close : null;
+
+    return new PaperAccounts(sources, PaperScreen.Views(sources, tests, years, settings, await read.SessionsFromAsync(from), night, Close, session => fund.TryGetValue(session, out var close) ? close : null), Close);
+}
 
 app.MapPost(SinglePageApp.AccountPostRoute, async (HttpRequest request, StoreLocation store) =>
 {
@@ -1860,7 +1905,7 @@ app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 // The Past picks screen, section 15.17: every trade the live list recommended from the swing filter's
 // first night, as of the newest night, under the status filter the hash carries.
 // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
-app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page, StoreLocation store) =>
 {
     var night = await read.NewestNightAsync();
 
@@ -1869,6 +1914,23 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PicksRoute) : string.Empty;
+
+    // Each paper account's trade log, chosen in the link: a variant's own trades or yours, with its verdict and its
+    // record's label beside them; the page's lists where the link names none, with each family's verdict beside them.
+    // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+    var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) : null;
+    var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
+
+    if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount && !view.Head) is { } chosenAccount)
+    {
+        var source = accounts.Sources.First(one => one.Key == chosenAccount.Key);
+
+        return Results.Content(
+            page.AccountLogRegion(marks, reading, night, accounts.Views, chosenAccount, PaperScreen.Log(source, chosenAccount.Walk, logged, accounts.Close)),
+            "text/html; charset=utf-8");
+    }
+
+    selector += paper is null ? string.Empty : SinglePageApp.AccountSelector(paper.Views, null) + SinglePageApp.ListsVerdicts(paper.Views);
 
     if (reading != Universes.Large)
     {

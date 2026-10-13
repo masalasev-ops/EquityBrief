@@ -359,6 +359,41 @@ span[data-last-asked-at]::before{content:none}
 .sel-unwritten{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)}
 #selected{scroll-margin-top:84px}
 
+/* paper trading: each account's line in its family's mark, a variant's dashed and the operator's in ink */
+.paper-families{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px;font-size:13px}
+.paper-families a{padding:3px 10px;border:1px solid var(--hair);border-radius:999px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.paper-families a[aria-current='true']{border-color:var(--ink);font-weight:600}
+.paper-chart{margin:0}
+.paper-chart svg,.paper-running svg{width:100%;height:auto;display:block}
+.paper-zero{stroke:var(--hair-2);stroke-width:1}
+.paper-axis{font-size:11px;fill:var(--soft);font-variant-numeric:tabular-nums}
+.paper-line{fill:none;stroke:var(--ink);stroke-width:1.8;stroke-linejoin:round}
+.paper-line.dashed{stroke-dasharray:5 4;stroke-width:1.4}
+.paper-line[data-family='pullback']{stroke:var(--fam-pullback)} .paper-line[data-family='breakout']{stroke:var(--fam-breakout)} .paper-line[data-family='drift']{stroke:var(--fam-drift)}
+.paper-line[data-family='fundamentals']{stroke:var(--fam-fundamentals)} .paper-line[data-family='heavyweight']{stroke:var(--fam-heavyweight)}
+.paper-keys{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.paper-key{display:inline-flex;align-items:center;gap:6px;font:12px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:2px 10px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.paper-key[aria-pressed='false']{opacity:.45;text-decoration:line-through}
+.paper-key-mark{display:inline-block;width:16px;height:0;border-top:2.5px solid var(--ink);flex:none}
+.paper-key-mark[data-standing='variant']{border-top-style:dashed}
+.paper-key-mark[data-family='pullback']{border-top-color:var(--fam-pullback)} .paper-key-mark[data-family='breakout']{border-top-color:var(--fam-breakout)} .paper-key-mark[data-family='drift']{border-top-color:var(--fam-drift)}
+.paper-key-mark[data-family='fundamentals']{border-top-color:var(--fam-fundamentals)} .paper-key-mark[data-family='heavyweight']{border-top-color:var(--fam-heavyweight)}
+.paper-table td{vertical-align:top}
+.paper-table .paper-name{white-space:normal;min-width:180px}
+.paper-table .paper-log{display:block;font-size:12px;margin-top:4px}
+.paper-table .verdict-word{display:block;font-weight:600}
+.paper-table .verdict-chosen,.too-few{display:block;font-size:12px;color:var(--soft)}
+.too-few.met{color:var(--ink-2)}
+.paper-years summary{font-size:12px;color:var(--ink-2);cursor:pointer}
+.paper-years table{font-size:12px;margin-top:4px}
+.paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
+.paper-heads li{margin:3px 0}
+.account-pick{display:inline-flex;align-items:center;gap:6px;margin:8px 12px 8px 0;max-width:100%}
+.account-pick select{max-width:min(100%,520px)}
+.paper-running{margin:0 0 12px;max-width:420px}
+.paper-running figcaption{font-size:12.5px;color:var(--ink-2)}
+
 /* universe */
 .sector-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;margin:0}
 .sector-strip .sector{padding:8px 10px;border-left:1px solid var(--hair);font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}

@@ -26,7 +26,7 @@ public sealed record FormingRow(string Rule, int Place, string Ticker, decimal C
 // The selector's choices on a card, the band and the words of the rule chosen, its picks where it is a variant, its
 // funnel, its stretch line and its forming list, read for the rule the link names or the live rule where it names
 // none.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: The forming list advises and never lists a stock
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public static class RuleScreen
@@ -109,6 +109,16 @@ public static class RuleScreen
     // The live or provisional rule's tab: live where a freeze registered one, provisional otherwise, as the card's pill
     // reads, on the S&P 500 as on the S&P 400 and 600.
     static string LiveTab(CandidateRow? live) => live is not null ? "Live" : "Provisional";
+
+    // A family's rules standing on an index past a night as its card names them: its live rule where one stands, and each
+    // variant with its tab's words, numbered by its first registration, which paper trading names its accounts by.
+    public static (CandidateRow? Live, IReadOnlyList<(CandidateRow Row, string Tab)> Variants) Accounts(string family, bool large, string indexName, IReadOnlyList<CandidateRow> register, DateOnly night, IndexRuleSettings? provisional = null)
+    {
+        var (live, variants) = LiveAndVariants(Standing(family, large, indexName, register, night));
+        var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(family, provisional) : [];
+
+        return (live, [.. variants.Select((row, at) => (row, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row)))))]);
+    }
 
     // A chosen rule's chips, each marked where a chosen variant differs from the live rule on it, and the live rule's
     // settings a variant states none of drawn as without them.
@@ -288,7 +298,7 @@ public static class RuleScreen
     // where no freeze registered one, then each variant by the number of its first registration, and the rule the link
     // chooses under the family's own key, the live rule where it names none or one that does not stand; with the chosen
     // variant's name, whose own book the card is then drawn from.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null, IndexRuleSettings? provisional = null)
     {
         var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);

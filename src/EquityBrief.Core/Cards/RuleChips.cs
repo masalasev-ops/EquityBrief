@@ -27,7 +27,7 @@ public enum RuleKind
 // its night stored for a rule no registration states, through one table of short words a kind of rule; and the chips a
 // variant differs from its live or provisional rule by, which its tab is named by. It reads parameters and computes no
 // reading.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public static class RuleChips
 {
     // The value a registration states for a setting that is off, as a ceiling no reading reaches.

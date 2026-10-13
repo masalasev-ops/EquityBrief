@@ -94,6 +94,8 @@ public enum Store
     LoopReading,
     LoopModel,
     LoopReference,
+    LoopRule,
+    LoopRuleYear,
     LoopDecision,
     LoopApplied,
     ProvisionalSetting,
