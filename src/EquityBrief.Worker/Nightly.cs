@@ -741,7 +741,7 @@ public static class Nightly
             // the night's deadline, which bounds the arithmetic. A night run again for an earlier
             // session asks for nothing, since its list is not tonight's.
             // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
-            // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+            // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
             new("report", async () =>
             {
                 var started = clock.UtcNow;
@@ -1024,7 +1024,7 @@ public static class Nightly
 
     // What the night's report and labeller rows say on a night whose list is tonight's: the requests wait for the
     // off-peak run, which starts the labeller and then the drain at 16:30Z, and the night starts neither.
-    // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+    // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
     public const string QueuedForTheOffPeakRun = "The requests wait for the off-peak run, which starts the drain at 16:30Z; the night starts none.";
 
     public const string LabelledByTheOffPeakRun = "No labeller was started: the off-peak run labels tonight's list at 16:30Z.";

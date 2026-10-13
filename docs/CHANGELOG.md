@@ -25,6 +25,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - RUNBOOK.md - the off-peak run builds main's own commit whatever branch the checkout is on
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+Was:
+> The off-peak run: ... (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z) ... `--check` prints what it would build and run and runs nothing. A checkout off main, or holding a commit origin/main does not have, is refused before any worker exists. Nothing is merged to main while its labeller or its drain is writing, as for a night.
+Now:
+> The citation names the decision that supersedes it, and the run builds main's own commit whatever branch the checkout is on, its line naming the branch, so a session at work on a branch at 16:30Z neither stops it nor has its branch built; a main holding a commit origin/main does not have is refused before any worker exists.
+Why: the first scheduled run, on 2026-10-13, was refused because the checkout was on a session's branch at 16:30Z, and the operator ruled that the run build main's commit anyway.
+
+### 2026-10-13 - CLAUDE.md - the off-peak decision cited by the name that supersedes it
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+Was:
+> The nightly hard rule: ... (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z) ...
+Now:
+> It cites (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit), and nothing else in the rule changed.
+Why: the decision the rule cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-13 - ARCHITECTURE.html - the off-peak decision cited by the name that supersedes it
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+Was:
+> Section 14's request step and its note: ... (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z) ...
+Now:
+> Each cites (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit), and nothing else in either passage changed.
+Why: the decision the two passages cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-13 - .claude/rules/checks.md - nightly-run holds the off-peak run built from main's own commit
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+Was:
+> nightly-run: ... while the off-peak run's script, in its check mode over temporary repositories, builds the checkout's own commit into the night's folder of copies, reuses a copy built already, and refuses a checkout off main or ahead of origin/main before any worker exists; ...
+Now:
+> nightly-run: ... while the off-peak run's script, in its check mode over temporary repositories, builds main's own commit into the night's folder of copies, reuses a copy built already, builds main's commit and not the branch's where the checkout is on a branch holding a commit of its own, naming the branch, and refuses a main ahead of origin/main before any worker exists, from a checkout on main and from one on a branch; ...
+Why: the assertion the 11.4 correction of 2026-10-13 changed, rostered where the check that runs it is.
+
 ### 2026-10-13 - ARCHITECTURE.html - the 19.2 correction: one bar with the index menu, the cap in each heading, Tonight's top without its night and watch list cards, the buy points' line and the phone's date
 Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
 Was:

@@ -44487,3 +44487,35 @@ Queue:      done, 19.0 to 19.5 as PRs 446 to 455 with the corrections between; i
             19.3 and 19.4; next, 19.6, the Queue, on the operator's word.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
             of phases 16, 17 and 18.
+
+### 11.4 - correction: the off-peak run builds main's own commit whatever branch the checkout is on   2026-10-13
+
+Corrects:   the off-peak run from the 11.4 correction of 2026-10-12 (73fe3163), which built the checkout's own commit and
+            refused a checkout off main. Its first scheduled run, at 16:30Z on 2026-10-13, was refused because the
+            checkout was on a session's branch for the 19.2 correction, and the labeller and the two reports the night of
+            2026-10-12 queued, PBI and DAVE, waited for a run by hand from main, made at 16:33Z.
+Ruled:      by the operator on 2026-10-13, choosing "Build main's commit anyway (Recommended)" over a try every half
+            hour until 22:00Z and over leaving the refusal to be answered by hand. The decision is superseded by one
+            naming main's own commit (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit).
+Built:      `tools/offpeak` reads the commit from the main branch and not from the checkout's HEAD, names the branch on
+            its line where the checkout is on one, and refuses only a main holding a commit origin/main lacks, or a
+            checkout with no main. Every citation of the superseded decision in the code, the tests and the specs moved
+            to its successor, section 14's request step and the harness's three keys for it among them; the runbook's
+            section on the off-peak run; the roster's nightly-run row; the prior text in `CHANGELOG.md`.
+Tests:      one rewritten: the off-peak script in its check mode over temporary repositories, now on a branch holding a
+            commit of its own building main's commit and naming the branch, and refusing a main ahead of origin/main from
+            main and from a branch.
+Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the
+            off-peak script's test, 1 test. M18 the commit read from the checkout's HEAD again: predicted red at the
+            script's test, the branch's commit built. M19 the count ahead read against the checkout's HEAD: predicted
+            red at the script's test, the branch refused for its own commit. Results: each red at the script's test, 1
+            of 1, M18 at the branch's run refused as ahead for its own commit, which M18 built from and counted, and M19
+            the same. Each reverted before anything was committed, the 1 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, f0ab8b02: all six
+            steps, 0 warnings, 0 errors, 2315 of 2315 tests ran with none failed in 19 minutes 59 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1303 claims, 1303 passing and none unexamined, 43 checks on the roster run and passed.
+Run:        the off-peak run by hand from main's e4f57b98 at 16:33Z: the labeller reached none, the S&P 500's list of
+            2026-10-12 listing nothing; the drain wrote DAVE by 16:42Z and PBI by 16:51Z, 16 sections each, 32 model calls
+            and 0.15 dollars in all.
+Carried:    nothing new.
