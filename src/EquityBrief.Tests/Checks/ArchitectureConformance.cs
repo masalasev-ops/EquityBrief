@@ -1423,7 +1423,9 @@ public partial class ArchitectureConformance
         // points, and the card's chart, the reason totals moving from Tonight to the Run page.
         // 187 at 19.3: the list of stocks close to a buy point across the setups taken out, each card drawing its own.
         // 196 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
-        Assert.Equal(196, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 205 at 19.5: Universe's tiles in the sector strip's place, its search, sorting, rows a page, two chips, readings'
+        // bars, phone cards and corrections, and the Run page's corrections.
+        Assert.Equal(205, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1558,7 +1560,9 @@ public partial class ArchitectureConformance
         // moving to the Run page.
         // 597 at 19.3: seventeen parts of the setup cards and the heavyweights card less the eleven they retire.
         // 606 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
-        Assert.Equal(606, inDocument.Length);
+        // 612 at 19.5: Universe's tiles and its eight rows beside them and the Run page's corrections, less the sector
+        // strip's four parts.
+        Assert.Equal(612, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1671,7 +1675,8 @@ public partial class ArchitectureConformance
         // the night's state's part on a night not yet run, and the swing readings' part on the chart beneath them.
         // 518 at 19.3: a family's card's five parts for its four taken out, its rule's seven for its two, and the
         // heavyweights card's five for its two, less the three parts of the list across the setups.
-        Assert.Equal(518, checkedElements);
+        // 514 at 19.5: the sector strip's four parts, the tiles in its place one claim.
+        Assert.Equal(514, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

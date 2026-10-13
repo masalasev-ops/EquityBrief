@@ -249,22 +249,6 @@ internal static class Scope
             Verdict.Pass,
             "the plan column and its tables are composed for the selected row, so checking a plan needs no navigation",
             ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = new Scoped(
-            Verdict.Pass,
-            "one line per sector, the lines summing to the index",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = new Scoped(
-            Verdict.Pass,
-            "the count is per sector rather than over the index, asserted over constructed rows where one sector holds more than another",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, names")] = new Scoped(
-            Verdict.Pass,
-            "each line carries its sector's name count",
-            ByReadSurface),
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend")] = new Scoped(
-            Verdict.Pass,
-            "each line carries its uptrend count beside its name count",
-            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = new Scoped(
             Verdict.Pass,
             "one row per index member, counted off the markup",
@@ -303,7 +287,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, sector")] = new Scoped(
             Verdict.Pass,
-            "the sector cell carries the sector the membership row holds",
+            "the sector cell carries the GICS sector the newest company fetch files, and sector not filed where it files none",
             ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, close")] = new Scoped(
             Verdict.Pass,
@@ -3575,6 +3559,32 @@ internal static class Scope
             Verdict.Pass, "the selector read off the rendered page with the lists first, the variants in the one family order and You last, each family's verdict and label beside the lists' trades and the entry line beneath them", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "An account's trade log")] = new Scoped(
             Verdict.Pass, "a variant's log read off the rendered page with its verdict and its label apart, each trade newest first, an open one's result so far at tonight's close worked by hand through a split, a skipped one saying why, and the running total labelled not evidence yet", ByReadSurface),
+        // 19.5, Universe: its tiles, search, sorting, rows a page, chips, readings' bars, phone cards and the corrections'
+        // fold, with section 17's two rows they read.
+        [CheckReach.Key("15.8 Universe", "Sector tiles")] = new Scoped(
+            Verdict.Pass, "each tile's members, uptrend count, count on tonight's lists and fund return read back off the rendered page against counts worked by hand over a constructed store, a member filing no sector in no tile and named beneath, the S&P 400's tiles saying the trend is not read, and each tile's link filtering the table to its sector", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Search")] = new Scoped(
+            Verdict.Pass, "a ticker's opening letters and a part of a company's name each keeping the rows worked by hand, a ticker's middle letters keeping none, and the shell's script putting the box's words in the link with the page back to the first", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Sorting")] = new Scoped(
+            Verdict.Pass, "each column's sort worked by hand both ways over constructed rows with a row holding no value last either way, and each heading's link turning the sorted column the other way read off the rendered table", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Rows a page")] = new Scoped(
+            Verdict.Pass, "fifty, a hundred and every row a page read back off the rendered page over a constructed store of more rows than a page, each chip keeping the other keys", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Near a level")] = new Scoped(
+            Verdict.Pass, "each chip worked by hand over constructed rows at one typical move from the band's edge and a hundredth past it, a close inside the band kept", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "One gate short")] = new Scoped(
+            Verdict.Pass, "the members one gate short worked by hand from constructed gate rows and family answers, the first in the one family order taken and an excluded member left out, the chip keeping them and the tag naming the setup and the gate read off the rendered row, and the S&P 400's page saying it cannot read it", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The readings' bars")] = new Scoped(
+            Verdict.Pass, "the strength's bar filled to its place, the dry-up's ticked at the open filter version's ceiling and the tightness's carrying no tick, read back off the rendered table against the store", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "On a phone")] = new Scoped(
+            Verdict.Pass, "the stylesheet's rule under the phone's width drawing a row as a card of its name, close, trend and distance picture with every other column and the headings hidden and the sector tiles two a row, read off the rule", ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "Corrections")] = new Scoped(
+            Verdict.Pass, "the notice drawn on the thirtieth day after the newest session it affects and the linking line on the thirty-first, read off the rendered page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Corrections")] = new Scoped(
+            Verdict.Pass, "the folded region drawn with its sessions on the thirty-first day and none on the thirtieth, read off the Run region", ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Near a level")] = new Scoped(
+            Verdict.Pass, "the near-level chips worked by hand at the edge and a hundredth past it on both sides; the figure read off the document against the constant", ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Correction notice age")] = new Scoped(
+            Verdict.Pass, "the notice and its fold on both sides of the thirtieth day; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator")] = new Scoped(
             Verdict.Pass, "the tabs read back off the rendered card over a constructed store, the live rule's first and each variant's words worked by hand from its registration, every registered variant of the S&P 500's families differing from its live rule on a chip, and each kind of rule's short words worked by hand against its settings", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the chosen rule's settings as chips with its sentence a click away")] = new Scoped(
@@ -5625,10 +5635,6 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Selected name, the plan column")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Selected name, the level summary")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "Selected name, whichever row is selected")] = "5.8",
-        [CheckReach.Key("15.8 Universe", "Sector strip, one line per sector")] = "5.1",
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list")] = "5.4",
-        [CheckReach.Key("15.8 Universe", "Sector strip, names")] = "5.1",
-        [CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
         [CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it")] = "5.8",
@@ -5775,6 +5781,19 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", "The lines beneath")] = "19.4",
         [CheckReach.Key("15.17 Past picks", "The trade log's account")] = "19.4",
         [CheckReach.Key("15.17 Past picks", "An account's trade log")] = "19.4",
+
+        // 19.5's: Universe's tiles, search, sorting, rows a page, chips, readings' bars, phone cards and corrections, and
+        // the Run page's fold.
+        [CheckReach.Key("15.8 Universe", "Sector tiles")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "Search")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "Sorting")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "Rows a page")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "Near a level")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "One gate short")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "The readings' bars")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "On a phone")] = "19.5",
+        [CheckReach.Key("15.8 Universe", "Corrections")] = "19.5",
+        [CheckReach.Key("15.10 Run", "Corrections")] = "19.5",
 
         // Phase 9's rows, placed at the checkpoints that draw them so each reads
         // as out of scope rather than unexamined until it lands. The request
@@ -6434,8 +6453,6 @@ internal static class Scope
             ["drawn as it was listed", "one row per name that fired", "ordered by how many fired then by the plan's reward to risk"],
         [CheckReach.Key("15.7 Tonight", "Selected name")] =
             ["the plan column", "the level summary", "whichever row is selected"],
-        [CheckReach.Key("15.8 Universe", "Sector strip")] =
-            ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
         [CheckReach.Key("15.8 Universe", "The table")] =
             ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "relative strength", "the pullback from the recent high in typical days", "the volume while it came down", "the tightness of the range", "the evening last on the list", "each ticker a link to its own page that draws its year line while the pointer is over it", "each column heading saying what its column holds while the pointer is over it"],
         [CheckReach.Key("15.9 Name", "Prices may be out of date")] =
@@ -7254,6 +7271,9 @@ internal static class Scope
         // 18.2's two, which the plan names as the eight quarters, the twelve and the pull of the dividends' history.
         ["Report windows"] = "18.2",
         ["Dividend history run"] = "18.2",
+        // 19.5's correction notice's age, which the plan names as R16 and not by the row's name; its near-level row the
+        // plan names.
+        ["Correction notice age"] = "19.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

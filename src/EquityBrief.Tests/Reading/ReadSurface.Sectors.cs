@@ -46,12 +46,15 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        // On the Universe page MSFT is drawn as sector not filed, in a line of its own and in no sector's.
+        // On the Universe page MSFT is drawn as sector not filed, in a line of its own and in no sector's tile, from 19.5.
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/universe"));
 
         Assert.Contains("data-ticker=\"MSFT\" data-sector=\"sector not filed\"", page, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"AAPL\" data-sector=\"Communication Services\"", page, StringComparison.Ordinal);
-        Assert.Contains($"<div class=\"sector\" data-sector=\"{UniverseScreen.SectorNotOnFile}\" data-names=\"1\"", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"oneline\" data-not-filed=\"1\">1 member files no sector and is counted in none.</p>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain($"class=\"sector-tile\" data-sector=\"{UniverseScreen.SectorNotOnFile}\"", page, StringComparison.Ordinal);
+        Assert.Contains("class=\"sector-tile\" data-sector=\"Communication Services\" data-names=\"2\"", page, StringComparison.Ordinal);
+        Assert.Contains("class=\"sector-tile\" data-sector=\"Information Technology\" data-names=\"1\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-sector=\"Technology\"", page, StringComparison.Ordinal);
     }
 }

@@ -1,0 +1,13 @@
+{
+ "stage": "universe-screen",
+ "derivation": "derived",
+ "derivedFrom": "section 15.8's rows on the sector tiles, the decision that every page names a member's sector by the GICS sector its company fetch files, companies.json's sectors and setup-cards.json's night, not a run. The fixture's night of 2026-09-08 stores each member's company from the fundamentals answer its quarters step reads, whose General section files AAPL, KEYS and MSFT under Information Technology and NFLX under Communication Services, as companies.json derives, so the page draws two tiles, Communication Services first by its name, with one member and three, and no member filing no sector. Every member's trigger fails on the night, as setup-cards.json derives, so the families pass no stock and tonight's lists hold none, and each tile counts none on them. A tile's fund is the sector's fund the sector heavyweights read, XLC and XLK; the fixture captures no daily series of either for its night, so the night stores no close of them and each tile reads its fund's return as not read. The suite reads the night's company rows, the families' passes and the stored fund closes the derivation rests on and reads each tile back off the page the whole night draws, its uptrend count read off the stored ladder rows, which no expectation states for the night. It names the company rows the derivation rests on, which the replay the other checks read writes.",
+ "tables": ["company"],
+ "universeNight": "2026-09-08",
+ "tiles": [
+  { "sector": "Communication Services", "members": 1, "listed": 0, "fund": "XLC" },
+  { "sector": "Information Technology", "members": 3, "listed": 0, "fund": "XLK" }
+ ],
+ "notFiled": 0,
+ "fundReturn": "none"
+}

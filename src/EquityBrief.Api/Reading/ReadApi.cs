@@ -727,7 +727,11 @@ public sealed record UniverseRow(
     string? Industry = null,
     // The day the name's newest researched section was written, and null for a name
     // holding none.
-    DateOnly? Researched = null);
+    DateOnly? Researched = null,
+    // From 19.5 the nearest support band's low edge and the nearest resistance band's
+    // high edge, the far side of each from the price, null where no band is marked.
+    decimal? SupportFloor = null,
+    decimal? ResistanceCeiling = null);
 
 // A current member as the masthead's search offers it: its ticker, its company's name, and
 // the day its newest researched section was written, null where it holds none.
@@ -4933,8 +4937,8 @@ public sealed partial class ReadApi : IComponent
     {
         await using var connection = Open();
 
-        var support = new Dictionary<string, decimal>(StringComparer.Ordinal);
-        var resistance = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        var support = new Dictionary<string, (decimal Edge, decimal Far)>(StringComparer.Ordinal);
+        var resistance = new Dictionary<string, (decimal Edge, decimal Far)>(StringComparer.Ordinal);
 
         await using (var bands = connection.CreateCommand())
         {
@@ -4946,26 +4950,26 @@ public sealed partial class ReadApi : IComponent
             while (await marked.ReadAsync())
             {
                 var name = marked.GetString(0);
+                var low = Money.FromStorage(marked.GetString(2));
+                var high = Money.FromStorage(marked.GetString(3));
 
                 // The nearest support is the highest of them and the nearest
                 // resistance the lowest, which is the rule the builder marked
                 // them by, applied here to the prices rather than to their text.
+                // Each keeps its far edge too, from 19.5, so a close inside the
+                // band can be read as near it.
                 if (string.Equals(marked.GetString(1), LevelSeries.Support, StringComparison.Ordinal))
                 {
-                    var edge = Money.FromStorage(marked.GetString(3));
-
-                    if (!support.TryGetValue(name, out var held) || edge > held)
+                    if (!support.TryGetValue(name, out var held) || high > held.Edge)
                     {
-                        support[name] = edge;
+                        support[name] = (high, low);
                     }
                 }
                 else
                 {
-                    var edge = Money.FromStorage(marked.GetString(2));
-
-                    if (!resistance.TryGetValue(name, out var held) || edge < held)
+                    if (!resistance.TryGetValue(name, out var held) || low < held.Edge)
                     {
-                        resistance[name] = edge;
+                        resistance[name] = (low, high);
                     }
                 }
             }
@@ -4993,12 +4997,14 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(1) ? null : reader.GetString(1),
                 reader.IsDBNull(2) ? null : Money.FromStorage(reader.GetString(2)),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
-                support.TryGetValue(ticker, out var below) ? below : null,
-                resistance.TryGetValue(ticker, out var above) ? above : null,
+                support.TryGetValue(ticker, out var below) ? below.Edge : null,
+                resistance.TryGetValue(ticker, out var above) ? above.Edge : null,
                 reader.IsDBNull(4) ? null : reader.GetDouble(4),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.IsDBNull(7) ? null : Day(reader.GetString(7))));
+                reader.IsDBNull(7) ? null : Day(reader.GetString(7)),
+                support.TryGetValue(ticker, out var supportBand) ? supportBand.Far : null,
+                resistance.TryGetValue(ticker, out var resistanceBand) ? resistanceBand.Far : null));
         }
 
         return rows;

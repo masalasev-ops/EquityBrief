@@ -44319,3 +44319,66 @@ Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4
 Carried:    the remedy after the merge, `migrate` to 93 and `loop-rules` for 2026-10 on each index from main's clean copy
             outside the night, with its times; the 19.2 chart's read back and the ledger step's time after the first
             night past 19.2's remedy; the sign-offs of phases 16, 17 and 18.
+
+### 19.5 - Universe: a tile a GICS sector, the search, every column sorting, the rows a page, the near-level and one gate short chips, the readings' bars, a card a row on a phone, and an old correction's notice folded onto the Run page   2026-10-13
+
+Built:      the universe's sector tiles in the strip's place, a tile a GICS sector the newest company fetch files with
+            its members, its uptrend share as a bar or that the trend is not read on the S&P 400 and 600, its count on
+            tonight's lists and its sector fund's return over the live heavyweights look-back, a press filtering the
+            table and a second lifting it, the members filing no sector named in one line beneath; a search box on a
+            ticker's opening letters or any part of a company's name, kept in the link by the shell's script; every
+            column but the strip sorting on its heading's press and turning on the next, a row holding no value last;
+            fifty, a hundred or every row a page; chips for a close within one typical move of its nearest band's edge,
+            a close inside the band counting, and for a member one gate short of a setup, the first such setup in the one
+            family order tagged beside its name in the setup's tint with the gate it missed, the S&P 400 and 600 saying
+            their nights store only the first part each member failed; the strength's bar, the pullback in moves, the
+            dry-up's bar ticked at the night's filter ceiling and the tightness's with none; under 560 px each row a card
+            of its name, close, trend and distance picture and the tiles two a row; a reading guide in the key's place;
+            and a correction notice past thirty days by the newest session it affects folded onto the Run page's foot,
+            Universe drawing one line linking it. One decision; 15.8, 15.10, section 17's two rows and Figure 15.4 with
+            its key; SCHEMA, the guide and the roster, the prior text in `CHANGELOG.md`. No migration and no remedy.
+Measured:   the 19.4 remedy from main's clean copy outside the night, 11:48 to 12:31Z: `migrate` to 93, then `loop-rules`
+            for 2026-10, the S&P 500's 30 rules in 15 minutes 5 seconds with three not testable, the S&P 400's 8 in 11
+            minutes 9 seconds and the S&P 600's 10 in 16 minutes 38 seconds, 42 minutes 52 seconds for the three against
+            19.4's 42 minutes in print mode on the copy; no rule passed and no row made a model call or a request.
+            Universe read back on the branch's Release build from a scratch folder over the live store, since the
+            scratch copy earlier checkpoints read was gone from the temporary folder, writing nothing but the read
+            surface's row on the run log at each start, as 5152's does: the S&P 500 and 400, near support, one gate
+            short, sorted by close, a search and a sector pressed, at 1440 and a true 390 px in both palettes, no page
+            wider than its screen. The S&P 500's tiles hold 501 members and the line beneath the 2 filing no sector,
+            503; none on tonight's lists, the pullback passing none on 2026-10-12 and the drift's one pass held back by
+            an open trade; the S&P 600's tiles hold its 2 pullback picks; 32 members one gate short; "app" finds 4. At
+            390 the tiles stood one a row, about 1600 px before the table; two a row here, about 1000.
+Tests:      twelve new, ten read-surface, the fixture's and Figure 15.4's key: the near-level chips at one typical move, a
+            hundredth past it and inside a band; the search; each column's sort both ways; the rows a page with every
+            chip keeping the other keys; the members one gate short by hand; the tiles over a constructed store; the
+            dry-up's tick; the S&P 400's tiles; the phone's cards and tiles; a correction's notice on both sides of its
+            thirtieth day; the figure's key naming every part it draws in the architecture and the guide. The
+            strip's, the headings' and the swing columns' assertions moved with the table. Derived expectation
+            `universe-screen.json`.
+Claims:     eight more, 1303: Universe's tiles in the strip's place and its eight rows beside them, the Run page's
+            corrections and section 17's two rows, less the strip's four parts.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, each filtered to the test it
+            was predicted red at. M1 a close one typical move from its support's edge not near, M2 a close inside its
+            band not near: each predicted red at the near-level test; so. M3 the search on any part of a ticker:
+            predicted red at the search test; so. M4 a row holding no value sorted first: predicted red at the sort test;
+            so. M5 the families out of the one order, M6 a member an exclusion keeps off counted one gate short: each
+            predicted red at the one gate short test; so. M7 the members filing no sector given a tile: predicted red at
+            the S&P 400's tiles; so. M8 a notice folded on its thirtieth day: predicted red at that case alone; so, 1 of
+            2. M9 every row a page read as fifty, M12 a chip's link dropping the rows a page: each predicted red at the
+            rows a page test; so. M10 the dry-up's ceiling not handed to the table: predicted red at the bars test; so.
+            M11 the tiles one a row on a phone: predicted red at the phone test; so. Not mutated: the tiles' counts on
+            tonight's lists, the funds' returns, the sort links keeping the other keys and the S&P 400's chip saying it
+            cannot read one gate short. Each reverted before anything was committed, the twelve cases passing over the
+            reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, e7fe4f24: all six
+            steps, 0 warnings, 0 errors, 2306 of 2306 tests ran with none failed in 18 minutes 45 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1303 claims, 1303 passing and none unexamined, 43 checks on the roster run and passed. The checkpoint script
+            over b1d3a163 stopped at the near-miss rule's readers, which Universe's one gate short chip now joins,
+            repaired at e7fe4f24.
+Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
+            PR 452, 19.3 as PR 453, 19.4 as PR 454 with its remedy run; in progress, 19.5; next, 19.6, the Queue.
+Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
+            of phases 16, 17 and 18.
