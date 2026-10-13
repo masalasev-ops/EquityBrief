@@ -59,40 +59,37 @@ public partial class ReadSurface
 
         // The card: the third of the page's families, two picks, on provisional settings.
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"drift\" data-place=\"3\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 3 of {families} · After a strong report</div><h2>Earnings drift</h2>"), page, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 3 of {families} · After a strong report</div>"), page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"fam-swatch\" data-family=\"drift\"></span>Earnings drift</span>", card, StringComparison.Ordinal);
         // Its rule in words, written from the settings it froze at: 3 sessions to buy, a reaction of 0.5 typical moves
-        // on twice the volume and a target at 2.5 times the risk.
-        Assert.Contains("<p class=\"lede\">A company beats its estimate and the stock closes up at least 0.5 typical moves on 2 times its usual volume. Bought within 3 sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", page, StringComparison.Ordinal);
+        // on twice the volume and a target at 2.5 times the risk, a click away beneath its chips.
+        Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical moves on 2 times its usual volume. Bought within 3 sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", card, StringComparison.Ordinal);
 
-        Assert.Equal(
-            [("E1", "6"), ("E2", "7")],
-            Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"drift\".*?<td class=\"place\" data-place=\"(\\d+)\">\\2</td>", RegexOptions.Singleline)
-                .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
+        // Its picks named by their place among the buy points, E1 sixth and E2 seventh.
+        Assert.Equal(["E1", "E2"], Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Contains("<td class=\"place\" data-place=\"6\">6</td>", PickRowOf(page, "E1"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"place\" data-place=\"7\">7</td>", PickRowOf(page, "E2"), StringComparison.Ordinal);
 
-        // E1's trade, where its buy sits and its reward to risk, as its trade gate stored it.
-        var first = FamilyRowOf(card, "E1");
+        // E1's trade and its reward to risk, as its trade gate stored it, on its buy point's row.
+        var first = PickRowOf(page, "E1");
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"104\">104.00</td><td class=\"r num plan-stop\" data-stop=\"100.5\">100.50</td><td class=\"r num plan-target\" data-target=\"108\">108.00</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"stt\" data-along=\"0.467\" title=\"the buy sits 47% of the way from the stop to the target\"><span class=\"stt-mark\" style=\"left:46.7%\"></span></span>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"1.1429\">1.14</td>", first, StringComparison.Ordinal);
 
-        // Why each is listed, in the figures its gates stored.
-        Assert.Contains("<td class=\"why-tonight\">Beat its estimate by 12.5% in its report of 2026-09-28, and closed up 1.4 typical moves on the reaction on volume 2.10 times its average, 3 sessions ago. It holds above that session's low of 100.50.</td>", first, StringComparison.Ordinal);
+        var second = PickRowOf(page, "E2");
 
-        var second = FamilyRowOf(card, "E2");
-
-        Assert.Contains("<td class=\"why-tonight\">Beat its estimate by 5.0% in its report of 2026-10-02, and closed up 1.0 typical moves on the reaction on volume 1.50 times its average, which was tonight. It holds above that session's low of 100.50.</td>", second, StringComparison.Ordinal);
         Assert.Contains("data-target=\"109.25\">109.25</td>", second, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"stt\" data-along=\"0.286\"", second, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"2.5\">2.50</td>", second, StringComparison.Ordinal);
 
         // Read back against the store in both directions.
+        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
+
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND family = 'drift' AND state = 'listed' ORDER BY place;"),
-            Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+            Regex.Matches(points, "<tr data-ticker=\"([^\"]+)\" data-family=\"drift\"").Select(match => match.Groups[1].Value));
         Assert.Equal(
             Strings(store, $"SELECT entry || '|' || stop || '|' || target FROM family_result WHERE session_date = '{TheSwitch}' AND family = 'drift' ORDER BY place;"),
-            Regex.Matches(card, "data-buy=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-stop\" data-stop=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-target\" data-target=\"([^\"]+)\"")
+            Regex.Matches(points, "<tr data-ticker=\"[^\"]+\" data-family=\"drift\".*?data-buy=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-stop\" data-stop=\"([^\"]+)\">[^<]*</td><td class=\"r num plan-target\" data-target=\"([^\"]+)\"", RegexOptions.Singleline)
                 .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}"));
     }
 }

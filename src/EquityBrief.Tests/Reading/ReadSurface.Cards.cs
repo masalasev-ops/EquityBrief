@@ -131,7 +131,7 @@ public partial class ReadSurface
         var points = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))), "<table class=\"list-table buy-points\".*?</table>"));
 
         Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
-        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"7\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
+        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"9\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
 
         // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
         // link naming a stock no row holds selects the first.
@@ -210,19 +210,36 @@ public partial class ReadSurface
         foreach (var index in stored.GroupBy(card => card.Index))
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf(index.Key, night)));
+            var open = new List<string>();
 
             foreach (var card in index)
             {
                 var control = Regex.Matches(page, $"<button type=\"button\" class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"{card.Id}\"");
                 var row = Regex.Match(page, $"<tr class=\"card-row\" id=\"{card.Id}\" hidden><td colspan=\"\\d+\">(.*?)</td></tr>", RegexOptions.Singleline);
 
-                Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s card.");
-                Assert.True(row.Success, $"The {index.Key} page draws no card row for {card.Ticker}.");
-                Assert.True(control[0].Index < row.Index, $"{card.Ticker}'s card row stands before the control opening it.");
+                // From 19.3 the buy point selected, the first where the link names none, draws its card open in its plan's
+                // row beneath it with no control; every other card stands hidden beneath its row with its control in it.
+                var plan = Regex.Match(page, $"<tr class=\"plan-row\" data-plan-for=\"{Regex.Escape(card.Ticker)}\"><td colspan=\"\\d+\">(.*?)(?=<tr data-ticker=|</tbody>)", RegexOptions.Singleline);
+                string body;
+
+                if (plan.Success && plan.Groups[1].Value.Contains($"<div class=\"decision-card\" data-index=\"{card.Index}\" data-family=\"{card.Family}\" data-ticker=\"{card.Ticker}\"", StringComparison.Ordinal))
+                {
+                    Assert.True(control.Count == 0, $"The {index.Key} page draws a control for {card.Ticker}'s card, open in its plan's row.");
+                    Assert.False(row.Success, $"The {index.Key} page draws {card.Ticker}'s card twice.");
+                    open.Add(card.Id);
+                    body = plan.Groups[1].Value;
+                }
+                else
+                {
+                    Assert.True(control.Count == 1, $"The {index.Key} page draws {control.Count} controls for {card.Ticker}'s card.");
+                    Assert.True(row.Success, $"The {index.Key} page draws no card row for {card.Ticker}.");
+                    Assert.True(control[0].Index < row.Index, $"{card.Ticker}'s card row stands before the control opening it.");
+                    body = row.Groups[1].Value;
+                }
 
                 // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
                 // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+                var drawn = Regex.Matches(body, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
                     .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 
@@ -230,12 +247,13 @@ public partial class ReadSurface
                 Assert.StartsWith($"6|", drawn[^1], StringComparison.Ordinal);
                 Assert.Contains($"|{EquityBrief.Core.Cards.CardLines.ConcentrationName}|", drawn[^1], StringComparison.Ordinal);
 
-                rows[card.Ticker] = row.Groups[1].Value;
+                rows[card.Ticker] = body;
             }
 
             Assert.Equal(
-                index.Select(card => card.Id).Order(StringComparer.Ordinal),
+                index.Select(card => card.Id).Where(id => !open.Contains(id)).Order(StringComparer.Ordinal),
                 Regex.Matches(page, "<tr class=\"card-row\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal));
+            Assert.True(open.Count <= 1, $"The {index.Key} page opens {open.Count} cards.");
         }
 
         foreach (var card in stored)

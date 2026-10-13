@@ -95,7 +95,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TonightOpensOnTheMarketLineAndDrawsOneListOfStocksCloseToABuyPointAcrossEverySetup()
+    public async Task TonightOpensOnTheMarketLineAndEachSetupsCardDrawsItsStocksCloseToABuyPointBehindAnExpander()
     {
         using var store = await FamilyPagesStore();
         using var host = new Host(store.Root);
@@ -125,22 +125,26 @@ public partial class ReadSurface
         // listed trade before the night with no outcome decided by it.
         Assert.Equal(["7"], Strings(store, $"SELECT COUNT(*) FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'listed';"));
 
-        // The one list across the setups, in the page's order: the pullback's row and then the breakout's,
-        // each with its setup's label and the gate it missed.
-        var close = Assert.Single(Blocks(page, "<table class=\"list-table close-across\".*?</table>"));
+        // From 19.3 each setup's own stocks one gate short stand behind its card's expander, the list across the setups
+        // gone: the pullback's N1, which missed its trade, and the breakout's K3, which missed its volume, the gate's own
+        // words under the pointer.
+        static string CloseOf(string page, string family) =>
+            Assert.Single(Blocks(Assert.Single(Blocks(page, $"<section class=\"family-card\" data-family=\"{family}\".*?</section>")), "<details class=\"expander close-rows\".*?</details>"));
 
-        Assert.Equal(
-            [("N1", "pullback", "Pullback", "trade"), ("K3", "breakout", "Breakout", "volume")],
-            Regex.Matches(close, "<tr data-ticker=\"([^\"]+)\" data-family=\"([^\"]+)\" data-gate=\"([^\"]+)\">.*?<td class=\"setup\" data-setup=\"[^\"]+\">([^<]+)</td>", RegexOptions.Singleline)
-                .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[4].Value, match.Groups[3].Value)));
-        Assert.Contains("<td class=\"missed-gate\"><b>volume</b>: the volume against its average</td>", close, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"list-count\" data-shown=\"2\" data-close=\"2\">Showing 2 of 2 close to a buy point</p>", page, StringComparison.Ordinal);
+        var pullbackClose = CloseOf(page, "pullback");
+        var breakoutClose = CloseOf(page, "breakout");
 
-        // And the other way: every member the breakout stored as one gate short with nothing excluding it
-        // is a row of the list.
+        Assert.Equal(["N1|trade"], Regex.Matches(pullbackClose, "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+        Assert.Equal(["K3|volume"], Regex.Matches(breakoutClose, "<tr data-ticker=\"([^\"]+)\" data-gate=\"([^\"]+)\">").Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}"));
+        Assert.Contains("<td class=\"missed-gate\" title=\"the volume against its average\"><b>volume</b></td>", breakoutClose, StringComparison.Ordinal);
+        Assert.Contains("<summary>One gate short of a buy point: 1</summary>", breakoutClose, StringComparison.Ordinal);
+        Assert.DoesNotContain("close-across", page, StringComparison.Ordinal);
+
+        // And the other way: every member the breakout stored as one gate short with nothing excluding it is a row of its
+        // card's expander.
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_result WHERE session_date = '{TheSwitch}' AND passed = 0 AND missed = 1 AND exclusions = '[]' ORDER BY ticker;"),
-            Regex.Matches(close, "<tr data-ticker=\"([^\"]+)\" data-family=\"breakout\"").Select(match => match.Groups[1].Value));
+            Regex.Matches(breakoutClose, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         // A night the market check closed says so on the line, with both figures, and lists nothing.
         using var closed = new TemporaryStore().Migrated();
@@ -239,12 +243,27 @@ public partial class ReadSurface
 
         // F2 selected: its row marked, and straight after it a row drawing its plan and its card, before F3's row.
         var chosen = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=F2")), "<table class=\"list-table buy-points\".*?</table>"));
-        var row = Regex.Match(chosen, "<tr data-ticker=\"F2\" data-family=\"pullback\"[^>]* class=\"sel\" aria-selected=\"true\">.*?</tr><tr class=\"plan-row\" data-plan-for=\"F2\"><td colspan=\"7\">(.*?)</td></tr><tr data-ticker=\"F3\"", RegexOptions.Singleline);
+        var row = Regex.Match(chosen, "<tr data-ticker=\"F2\" data-family=\"pullback\"[^>]* class=\"sel\" aria-selected=\"true\">.*?</tr><tr class=\"plan-row\" data-plan-for=\"F2\"><td colspan=\"9\">(.*?)</td></tr><tr data-ticker=\"F3\"", RegexOptions.Singleline);
 
         Assert.True(row.Success, "F2's row is not followed by its plan's row before F3's.");
         Assert.StartsWith("<section class=\"selected-name\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"pullback\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(chosen, "class=\"plan-row\""));
+
+        // From 19.3 every other pick's card stands hidden beneath its row with its control in the row, the cards of the
+        // night's seven picks less F2's, open in its plan's row; and no setup's card draws a pick's row of its own.
+        var stored = Strings(store, $"SELECT index_code || '-' || family || '-' || ticker FROM decision_card WHERE session_date = '{TheSwitch}' AND ticker <> 'F2' ORDER BY ticker;");
+
+        Assert.Equal(6, stored.Count);
+        Assert.Equal(
+            Regex.Matches(chosen, "<tr class=\"card-row\" id=\"([^\"]+)\" hidden>").Select(match => match.Groups[1].Value),
+            Regex.Matches(chosen, "class=\"card-toggle\" aria-expanded=\"false\" aria-controls=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(6, Regex.Matches(chosen, "<tr class=\"card-row\"").Count);
+        Assert.DoesNotContain("family-table", page, StringComparison.Ordinal);
+        Assert.Equal(
+            ["pullback F1,F2,F3,F4,F5", "breakout K1,K2"],
+            Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\".*?<p class=\"card-picks\" data-picks=\"\\d+\">(.*?)</p>", RegexOptions.Singleline)
+                .Select(match => $"{match.Groups[1].Value} {string.Join(",", Regex.Matches(match.Groups[2].Value, "data-ticker=\"([^\"]+)\"").Select(one => one.Groups[1].Value))}"));
     }
 
     [Fact]

@@ -906,6 +906,7 @@ static async Task<HeavyweightCardView> WithStandingAsync(
     Func<string, string?> reason,
     bool designB = false)
 {
+    var largeFunds = universe != Universes.Large;
     var funds = await read.FundStandingClosesAsync([.. EquityBrief.Core.Families.GicsSectors.Funds.Values], night, card.LookBack, card.LastRebalance);
     var held = card.Holdings.Select(holding => holding.Ticker).ToArray();
     var sectors = fundReturn || designB ? new Dictionary<string, string?>(StringComparer.Ordinal) : await read.MemberSectorsAsync(universe.Code, night);
@@ -918,7 +919,7 @@ static async Task<HeavyweightCardView> WithStandingAsync(
             ? EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(sector, out var fund) && funds.TryGetValue(fund, out var closes) ? EquityBrief.Core.Families.HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null
             : EquityBrief.Core.Families.HeavyweightStandings.MembersMean(sectors.Where(member => member.Value == sector).Select(member => stocks.TryGetValue(member.Key, out var closes) ? EquityBrief.Core.Families.HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null));
 
-    return TonightScreen.WithStanding(card, night, stocks, funds, growth, SectorReturn, reason, designB);
+    return TonightScreen.WithStanding(card, night, stocks, funds, growth, SectorReturn, reason, designB, largeFunds);
 }
 
 // Each open holding's growth carried to the night, the newest buy of a stock taking it.

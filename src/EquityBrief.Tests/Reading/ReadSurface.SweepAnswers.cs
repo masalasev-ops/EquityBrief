@@ -41,8 +41,9 @@ public partial class ReadSurface
         var breakout = FamilyCardOf(page, BreakoutRule.Name);
 
         // The breakout's card alone draws the line, beneath its standing, and still lists M1.
-        Assert.Contains("<b class=\"provisional\">Provisional: not yet frozen</b> · 1 pick tonight · 0 variants scoring in the background</p>" + SweepLineDrawn, breakout, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", breakout, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", breakout, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, breakout, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M1\"", breakout, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(page, Regex.Escape(SweepLineDrawn)));
         Assert.DoesNotContain(SweepLineDrawn, FamilyCardOf(page, SetupFamilies.Pullback), StringComparison.Ordinal);
         Assert.DoesNotContain(SweepLineDrawn, FamilyCardOf(page, DriftRule.Name), StringComparison.Ordinal);
@@ -82,7 +83,8 @@ public partial class ReadSurface
 
         var card = await Card();
 
-        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-09-25</b> · 5 picks tonight · 2 variants scoring in the background</p>" + SweepLineDrawn, card, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"status-pill live\" title=\"live since 2026-09-25\">Live</span> <span class=\"fam-count\">5 picks tonight</span>", card, StringComparison.Ordinal);
+        Assert.Contains("</details></header>" + SweepLineDrawn, card, StringComparison.Ordinal);
         Assert.Contains("data-picks=\"5\"", card, StringComparison.Ordinal);
     }
 }

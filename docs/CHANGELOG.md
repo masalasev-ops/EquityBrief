@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - docs/SCHEMA.md - the read surface reads the sector funds' closes for a heavyweights card
+Authorised by: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+Was:
+> and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; nothing else reads the table: it is apart
+Now:
+> and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; from 19.3 the read surface reads each sector fund's closes for a heavyweights card's sectors and tiles when the page is read (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read), and nothing else reads the table: it is apart
+Why: 19.3's heavyweights card draws each sector fund's return over the look-back, a holding's standing tonight and the funds' return since the last rebalance, read off the funds' closes when the page is read.
+
 ### 2026-10-13 - .claude/rules/checks.md - read-surface, fixture-expectations, nightly-run and architecture-conformance state what 19.2's tests assert
 Authorised by: A figure that rose or fell is drawn green or red with its sign on every page
 Was:

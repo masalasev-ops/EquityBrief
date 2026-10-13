@@ -459,7 +459,7 @@ p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .funnel-bar .rule-funnel{list-style:none;margin:0;padding:0;display:grid;gap:3px}
 .funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
 .funnel-bar .fb-bar{height:8px;background:var(--hair);border-radius:2px;overflow:hidden}
-.funnel-bar .fb-fill{display:block;height:100%;background:var(--stat)}
+.funnel-bar .fb-fill{display:block;height:100%;background:var(--s3)}
 .funnel-bar li.largest-drop .fb-name{font-weight:600;color:var(--ink)}
 .funnel-bar li.largest-drop .fb-fill{background:var(--warn)}
 .funnel-bar .fb-count{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}

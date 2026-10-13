@@ -46,21 +46,30 @@ public partial class ReadSurface
         var page = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
         Assert.Contains($"data-rule=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\"", page, StringComparison.Ordinal);
-        Assert.Contains($"<select data-rule-choice=\"heavyweight\" aria-label=\"The rule this card is drawn by\"><option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{live}</option><option value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\">Variant 1: {bothExits}</option>", page, StringComparison.Ordinal);
+        Assert.Contains($"<nav class=\"rule-tabs\" data-rule-choice=\"heavyweight\" aria-label=\"The rule this card is drawn by\"><a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{live}\" aria-current=\"true\">Live</a><a class=\"rule-tab\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\">V1 · sold on either exit</a>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("variant-band", page, StringComparison.Ordinal);
 
         // The variant chosen in the link: its own book, H5 and not H3, under the band naming it.
         var chosen = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?heavyweight={RunScreen.Slug(bothExits)}")));
 
         Assert.Contains($"data-rule=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\"", chosen, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{RunScreen.Slug(bothExits)}\" selected data-variant=\"1\">Variant 1: {bothExits}</option>", chosen, StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RunScreen.Slug(bothExits)}\" data-variant=\"1\" title=\"{bothExits}\" aria-current=\"true\">V1 · sold on either exit</a>", chosen, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"variant-band\" role=\"status\" data-variant=\"1\">{RuleScreenWords.Band(1)}</p>", chosen, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"H5\"", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("<tr data-ticker=\"H3\"", chosen, StringComparison.Ordinal);
 
-        // Its words with the clause the live rule's lack marked, its exit on either; the live rule's card marks none.
+        // Its words with the clause the live rule's lack marked and its exit's chip marked, on either; the live rule's
+        // card marks none. Beside the holdings the card draws by default, the page's book at the live setting, read off the
+        // store, it shares none of them and adds H5.
         Assert.Contains("<mark class=\"differs\">", chosen, StringComparison.Ordinal);
+        Assert.Contains("<li class=\"rule-chip differs\">sold on either exit</li>", chosen, StringComparison.Ordinal);
         Assert.DoesNotContain("<mark class=\"differs\">", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("rule-chip differs", page, StringComparison.Ordinal);
+
+        var pageBook = Strings(store, $"SELECT ticker FROM heavyweight_holding WHERE entered_on <= '{TheSwitch}' AND (ended_on IS NULL OR ended_on > '{TheSwitch}') ORDER BY sector, ticker;");
+
+        Assert.DoesNotContain("H5", pageBook);
+        Assert.Contains($"<p class=\"rule-share\" data-shared=\"\" data-added=\"H5\" data-dropped=\"{string.Join(",", pageBook)}\">Beside the live rule's holdings tonight: shares none · adds H5 · drops {(pageBook.Count == 0 ? "none" : string.Join(", ", pageBook))}.</p>", chosen, StringComparison.Ordinal);
 
         // A link naming no standing rule returns to the live rule.
         var unknown = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}?heavyweight=no-such-rule")));
@@ -78,10 +87,10 @@ public partial class ReadSurface
 
         var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
 
-        Assert.Contains("<select data-rule-choice=\"heavyweight\"", card, StringComparison.Ordinal);
-        Assert.Single(System.Text.RegularExpressions.Regex.Matches(card, "<option "));
-        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{RuleScreen.ProvisionalChoice}</option>", card, StringComparison.Ordinal);
-        Assert.Contains($"<span class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<nav class=\"rule-tabs\" data-rule-choice=\"heavyweight\"", card, StringComparison.Ordinal);
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(card, "<a class=\"rule-tab"));
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"heavyweight\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" aria-current=\"true\">Provisional</a>", card, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</p>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("variant-band", card, StringComparison.Ordinal);
     }
 }

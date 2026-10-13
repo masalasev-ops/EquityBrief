@@ -116,7 +116,8 @@ public static partial class TonightScreen
         IReadOnlyDictionary<string, double?> growth,
         Func<string, double?> sectorReturn,
         Func<string, string?> reason,
-        bool designB = false)
+        bool designB = false,
+        bool largeFunds = false)
     {
         static double? Of(decimal? price) => price is { } held ? Statistic.FromPrice(held) : null;
 
@@ -147,9 +148,12 @@ public static partial class TonightScreen
                 .Select(sector =>
                 {
                     var fund = GicsSectors.Funds.GetValueOrDefault(sector);
-                    HeavyweightHoldingCell[] held = [.. holdings.Where(holding => holding.Sector == sector)];
 
-                    return new HeavyweightSectorView(sector, fund, FundReturn(fund), held, held.Length == 0 ? reason(sector) : null);
+                    return new HeavyweightSectorView(
+                        sector,
+                        fund is null ? null : largeFunds ? fund + ", the S&P 500's fund," : fund,
+                        FundReturn(fund),
+                        holdings.Any(holding => holding.Sector == sector) ? null : reason(sector));
                 }),
         ];
 

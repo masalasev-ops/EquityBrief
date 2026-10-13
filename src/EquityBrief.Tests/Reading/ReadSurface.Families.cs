@@ -133,13 +133,15 @@ public partial class ReadSurface
     static string FamilyCardOf(string page, string family) =>
         Assert.Single(Blocks(page, $"<section class=\"family-card\" data-family=\"{family}\".*?</section>"));
 
-    static string FamilyRowOf(string card, string ticker)
+    // A pick's row off tonight's buy points, where from 19.3 every setup's live picks are drawn and no card draws its own.
+    static string PickRowOf(string page, string ticker)
     {
-        var at = card.IndexOf($"<tr data-ticker=\"{ticker}\"", StringComparison.Ordinal);
+        var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
+        var at = points.IndexOf($"<tr data-ticker=\"{ticker}\"", StringComparison.Ordinal);
 
-        Assert.True(at >= 0, $"no row for {ticker} on the card");
+        Assert.True(at >= 0, $"no buy point row for {ticker}");
 
-        return card[at..card.IndexOf("</tr>", at, StringComparison.Ordinal)];
+        return points[at..points.IndexOf("</tr>", at, StringComparison.Ordinal)];
     }
 
     [Fact]
@@ -157,48 +159,46 @@ public partial class ReadSurface
         var families = SetupFamilies.InPageOrder.Count;
 
         Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-09-25</b> · 5 picks tonight · 2 variants scoring in the background</p>", card, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 1 of {families} · Pullback in an uptrend</div><h2>Pullbacks to support</h2>"), page, StringComparison.Ordinal);
+
+        // From 19.3 its header: the setup's word in its tint, its standing as a pill with the day it went live under the
+        // pointer, tonight's count and the guide every setup card is read by; and a tab the live rule and each variant.
+        Assert.Contains("<header class=\"fam-head\" data-family=\"pullback\"><span class=\"fam-tag\" data-family=\"pullback\"><span class=\"fam-swatch\" data-family=\"pullback\"></span>Pullbacks to support</span> <span class=\"status-pill live\" title=\"live since 2026-09-25\">Live</span> <span class=\"fam-count\">5 picks tonight</span><details class=\"guide\">", card, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"guide-b\">{EquityBrief.Web.Marks.MarkRenderer.SetupCardGuide}</p>", card, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(card, "<a class=\"rule-tab").Count);
+        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 1 of {families} · Pullback in an uptrend</div>"), page, StringComparison.Ordinal);
         // Its rule in words, written from the settings of the version its night ran under, the version every row is
         // stored under here: strength 0.5, depth 1 to 5, dry-up 1.5, reward to risk 1.5, stop 0.5 to 4, 15 sessions
-        // clear of a report and 3 to arrive.
-        Assert.Contains("<p class=\"lede\">A stock stronger than 50% of the members, in an uptrend, falls 1 to 5 typical moves into a support band on volume under 1.5 times its average and turns back up within 3 sessions, with no report due in the next 15. Stop 0.5 to 4 typical moves below, target at the next band above and at least 1.5 times the risk.</p>", page, StringComparison.Ordinal);
+        // clear of a report and 3 to arrive, a click away beneath its chips.
+        Assert.Contains("<details class=\"rule-sentence\"><summary>The rule in a sentence</summary><p class=\"rule-words\">A stock stronger than 50% of the members, in an uptrend, falls 1 to 5 typical moves into a support band on volume under 1.5 times its average and turns back up within 3 sessions, with no report due in the next 15. Stop 0.5 to 4 typical moves below, target at the next band above and at least 1.5 times the risk.</p></details>", card, StringComparison.Ordinal);
         Assert.Equal(SetupFamilies.InPageOrder.Count, Regex.Matches(page, "data-card=\"family\"").Count);
 
-        // The picks, in the page's order, numbered by their place: F1 to F5, and no row for the two past
-        // five, the one held back or the one that failed a gate.
+        // The picks, named by their place among the buy points above, F1 to F5, and no name for the two past five, the
+        // one held back or the one that failed a gate; the card draws no row of a pick of its own.
         Assert.Equal(
-            [("F1", "1"), ("F2", "2"), ("F3", "3"), ("F4", "4"), ("F5", "5")],
-            Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\" data-family=\"pullback\".*?<td class=\"place\" data-place=\"(\\d+)\">\\2</td>", RegexOptions.Singleline)
-                .Select(match => (match.Groups[1].Value, match.Groups[2].Value)));
-        Assert.All(new[] { "F6", "F7", "HELD", "N1" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\"", card, StringComparison.Ordinal));
-        Assert.Equal(FamilyHeadingsDrawn, Regex.Matches(card, "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+            ["F1", "F2", "F3", "F4", "F5"],
+            Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.All(new[] { "F6", "F7", "HELD", "N1" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\"", Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), StringComparison.Ordinal));
+        Assert.DoesNotContain("variant-table", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-selects=", card, StringComparison.Ordinal);
+        Assert.Equal(BuyPointHeadingsDrawn, Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
-        // F1's trade: bought at 100, stopped at 96, won at 110. The buy sits 4 of the 14 from the stop to the
-        // target, 0.286 of the way, and the reward to risk is the 3 its trade gate stored.
-        var first = FamilyRowOf(card, "F1");
+        // F1's trade on its buy point's row: bought at 100, stopped at 96, won at 110, the reward to risk the 3 its
+        // trade gate stored.
+        var first = PickRowOf(page, "F1");
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"100\">100.00</td><td class=\"r num plan-stop\" data-stop=\"96\">96.00</td><td class=\"r num plan-target\" data-target=\"110\">110.00</td>", first, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"stt\" data-along=\"0.286\" title=\"the buy sits 29% of the way from the stop to the target\"><span class=\"stt-mark\" style=\"left:28.6%\"></span></span>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"3\">3.00</td>", first, StringComparison.Ordinal);
-
-        // Why it is listed, in the figures its gates stored: a depth of 2.3456 typical moves drawn to a
-        // tenth, the band's edges as prices, the dry-up to a hundredth, and the session its trigger arrived on.
-        Assert.Contains("<td class=\"why-tonight\">Fell 2.3 typical moves into its support band at 95.50 to 97.25 on volume 0.80 times its average, and turned up on 2026-10-01.</td>", first, StringComparison.Ordinal);
 
         // The state its reported quarters gave it, and its stories of the thirty days before: two positive
         // and one negative. F2 holds no reading and no label, and its row says so.
         Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">+2</span> <span class=\"nn loss\">-1</span></td>", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
+        Assert.Contains("data-reward-to-risk=\"2.75\">2.75</td>", PickRowOf(page, "F2"), StringComparison.Ordinal);
 
-        // The key under the card says how to read it.
-        Assert.Contains("<b>How to read the card.</b> Each row is one stock this setup lists tonight, bought at the evening's close.", page, StringComparison.Ordinal);
-
-        // A row whose gates stored no depth, band or dry-up says only what they stored: it turned up tonight.
-        Assert.Contains("<td class=\"why-tonight\">Fell into a support band, and turned up tonight.</td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
-        Assert.Contains("data-reward-to-risk=\"2.75\">2.75</td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
+        // The key the card repeated is gone, its guide in its place.
+        Assert.DoesNotContain("<b>How to read the card.</b>", page, StringComparison.Ordinal);
 
         // The row selects as a list's row does, and carries the control asking for a report it does not hold.
         Assert.Contains($"data-selects=\"F1\" data-select-href=\"#/night/{TheSwitch}?name=F1\"", first, StringComparison.Ordinal);
@@ -219,11 +219,11 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-list=\"listed\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-card=\"still-open\"", page, StringComparison.Ordinal);
 
-        // Read back against the store in both directions: the rows drawn are the stocks the page's list
-        // holds as listed, in their places, and no other.
+        // Read back against the store in both directions: the picks named are the stocks the page's list holds as
+        // listed, in their places, and no other.
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'listed' ORDER BY place;"),
-            Regex.Matches(card, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+            Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         // The night before, which the families did not draw, is drawn as it was listed: the one list, and no card.
         var before = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}"));
@@ -232,7 +232,7 @@ public partial class ReadSurface
         Assert.DoesNotContain("class=\"family-card\"", before, StringComparison.Ordinal);
     }
 
-    static readonly string[] FamilyHeadingsDrawn = ["#", "Stock", "Business", "Buy", "Stop", "Target", "Stop to target", "Reward to risk", "Why tonight", "News, 30 days"];
+    static readonly string[] BuyPointHeadingsDrawn = ["Setup", "#", "Stock", "Business", "Buy", "Stop", "Target", "Reward to risk", "News, 30 days"];
 
     [Fact]
     public async Task AFamilyNoFreezeHasRegisteredIsMarkedProvisionalAndACardListingNothingSaysWhy()
@@ -246,7 +246,7 @@ public partial class ReadSurface
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
             Assert.Contains("data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\"", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"family-state\"><b class=\"provisional\">Provisional: not yet frozen</b> · 5 picks tonight · 0 variants scoring in the background</p>", card, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">5 picks tonight</span>", card, StringComparison.Ordinal);
             Assert.Equal("Provisional: not yet frozen", SetupFamilies.ProvisionalStatus);
             Assert.Equal("provisional: not yet frozen; its record starts at the freeze", SetupFamilies.Provisional);
         }
@@ -268,8 +268,8 @@ public partial class ReadSurface
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
             Assert.Contains("data-picks=\"0\"", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">The market check closed every list tonight: 40.0% of the members closed above their 200-day average, below its floor of 50%.</p>", card, StringComparison.Ordinal);
-            Assert.DoesNotContain("<table", card, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">The market check closed every list tonight: 40.0% of the members closed above their 200-day average, below its floor of 50%", card, StringComparison.Ordinal);
+            Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
         }
 
         // A night the market is open and no stock passes: T1 fails its trend gate, S1 its setup, G1 its
@@ -288,6 +288,7 @@ public partial class ReadSurface
 
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
+            Assert.Contains("<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">Nothing tonight", card, StringComparison.Ordinal);
             Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: 3 passed the trend and strength gate, 2 the setup, 1 the trigger and 0 the trade, and none of those past the exclusions.</p>", card, StringComparison.Ordinal);
         }
     }

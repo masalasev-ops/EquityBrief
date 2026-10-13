@@ -94,7 +94,7 @@ public static class RuleScreen
         return new RuleView(
             chosen,
             choices,
-            Parts(words, liveWords),
+            Parts(words, chosen.Live ? words : liveWords),
             own is null ? null : [.. own.Select(pick => new VariantPickView(pick.Place, pick.Ticker, pick.Entry, pick.Stop, pick.Target, pick.RewardToRisk, pick.Why))],
             row?.Gates is { } gates ? Funnel(gates) : null,
             row is { Evaluated: true, Stretch: { } stretch } && card.Family != HeavyweightRule.Name ? new StretchLineView(stretch, row.Mark, row.Flagged, row.Completed ?? 0, row.Sessions ?? 0) : null,
@@ -102,7 +102,8 @@ public static class RuleScreen
             row?.Evaluated ?? false,
             large || variants.Length > 0 ? null : NoVariantLine(indexName),
             Chips: ChipViews(liveChips, chosen.Live ? liveChips : ChipsOf(chosenRow!), !chosen.Live),
-            Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]));
+            Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]),
+            Words: words);
     }
 
     // The live or provisional rule's tab: live where a freeze registered one or on the S&P 500, provisional otherwise.
@@ -188,6 +189,10 @@ public static class RuleScreen
             }
         }
 
+        // The change an approval set on the family where the night read it at one, which no dial states.
+        IReadOnlyList<RuleChip> WithApproved(IReadOnlyList<RuleChip> chips) =>
+            settings.Approved is { } approved && approved.TryGetValue(family, out var change) ? [.. chips, new RuleChip("hooks", change)] : chips;
+
         switch (family)
         {
             case SetupFamilies.Pullback:
@@ -196,7 +201,7 @@ public static class RuleScreen
                     p[key] = value;
                 }
 
-                return RuleChips.Of(RuleKind.IndexPullback, p);
+                return WithApproved(RuleChips.Of(RuleKind.IndexPullback, p));
 
             case BreakoutRule.Name:
                 Set(IndexBreakoutCandidate.HighSessionsParameter, Dial(settings.Breakout, "high"));
@@ -204,7 +209,7 @@ public static class RuleScreen
                 Set(IndexBreakoutCandidate.RangeCeilingParameter, Dial(settings.Breakout, "ceiling"));
                 Set(IndexBreakoutCandidate.StopMovesParameter, Dial(settings.Breakout, "stop"));
 
-                return RuleChips.Of(RuleKind.IndexBreakout, p);
+                return WithApproved(RuleChips.Of(RuleKind.IndexBreakout, p));
 
             case DriftRule.Name:
                 Set(IndexDriftCandidate.WindowSessionsParameter, Dial(settings.Drift, "window"));
@@ -212,7 +217,7 @@ public static class RuleScreen
                 Set(IndexDriftCandidate.VolumeMultipleParameter, Dial(settings.Drift, "volume"));
                 Set(IndexDriftCandidate.TargetMultipleParameter, Dial(settings.Drift, "target"));
 
-                return RuleChips.Of(RuleKind.IndexDrift, p);
+                return WithApproved(RuleChips.Of(RuleKind.IndexDrift, p));
 
             case HeavyweightRule.Name:
                 p.Remove(IndexRuleCandidate.LargeBreadthParameter);
@@ -308,7 +313,8 @@ public static class RuleScreen
                 true,
                 large || variants.Length > 0 ? null : NoVariantLine(indexName),
                 untested,
-                ChipViews(liveChips, chosenRow is null ? liveChips : ChipsOf(chosenRow), chosenRow is not null)),
+                ChipViews(liveChips, chosenRow is null ? liveChips : ChipsOf(chosenRow), chosenRow is not null),
+                Words: words),
             chosenRow?.Candidate);
     }
 

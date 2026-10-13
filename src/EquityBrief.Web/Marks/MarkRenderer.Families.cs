@@ -90,7 +90,8 @@ public sealed record RuleView(
     string? NoVariantLine,
     UntestedLineView? Untested = null,
     IReadOnlyList<RuleChipView>? Chips = null,
-    RuleShareView? Share = null);
+    RuleShareView? Share = null,
+    string? Words = null);
 
 // The line beside a book registered before its family's freeze: the line itself and the adjusted p it states, as the
 // tester's newest run stored it.
@@ -360,69 +361,6 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // What each column of the shared list of stocks close to a buy point holds.
-    public static IReadOnlyList<(string Heading, string Says)> CloseAcrossHeadings { get; } =
-    [
-        ("#", "The row's place in this list, the setups in the page's order."),
-        ("Stock", "The ticker opens the stock's page, with the company beneath."),
-        ("Setup", "The setup the stock is a single gate short of."),
-        ("The gate it missed", "The one gate of that setup the stock did not pass tonight, in the gate's own words."),
-    ];
-
-    // The shared list of stocks close to a buy point: one row a stock and setup, each passing every gate of
-    // that setup but one with nothing excluding it, the first of them drawn and the count of all stated.
-    public string CloseAcross(IReadOnlyList<CloseToBuyCell> rows, int drawn)
-    {
-        var body = new StringBuilder();
-        var shown = rows.Take(drawn).ToArray();
-
-        body.Append(Invariant, $"<p class=\"list-count\" data-shown=\"{shown.Length}\" data-close=\"{rows.Count}\">Showing {shown.Length} of {rows.Count} close to a buy point</p>");
-
-        if (shown.Length == 0)
-        {
-            body.Append("<p class=\"degraded\" data-close=\"none\">No stock is a single gate short of a buy point under any setup tonight.</p>");
-
-            return body.ToString();
-        }
-
-        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table close-across\" data-rows=\"{shown.Length}\"><thead><tr>");
-
-        foreach (var (heading, says) in CloseAcrossHeadings)
-        {
-            body.Append(TippedHeading(heading, says, heading == "#" ? "place" : null));
-        }
-
-        body.Append("</tr></thead><tbody>");
-
-        foreach (var (row, at) in shown.Select((row, at) => (row, at)))
-        {
-            body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(row.Family)}\" data-gate=\"{Escaped(row.Gate)}\">");
-            body.Append(Invariant, $"<td class=\"place\">{at + 1}</td>");
-            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
-            body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\">{Escaped(row.Setup)}</td>");
-            body.Append(Invariant, $"<td class=\"missed-gate\"><b>{Escaped(row.Gate)}</b>: {Escaped(row.Words)}</td></tr>");
-        }
-
-        body.Append("</tbody></table></div>");
-
-        return body.ToString();
-    }
-
-    // What each column of a family's card holds, in the order the columns are drawn.
-    public static IReadOnlyList<(string Heading, string Says)> FamilyHeadings { get; } =
-    [
-        ("#", "The stock's place down the page, counted from one across every card."),
-        ("Stock", "The ticker selects the row and draws its plan and levels beneath the cards. Beside it, report opens the stock's written report, or not written opens its page where no report is written yet, and the company is named beneath. A label names another setup the stock also qualified under tonight."),
-        ("Business", "The state the company's reported quarters gave it on the night, with what its numbers say under the pointer. It removes no stock from a card."),
-        ("Buy", "The price the plan buys at, which is the evening's close."),
-        ("Stop", "The price a close beneath ends the trade at a loss, or the first level of a stop that trails the price."),
-        ("Target", "The price a close at or above ends the trade at a gain. A setup that trails its stop names none."),
-        ("Stop to target", "Where the buy sits between the stop, on the left, and the target, on the right. The nearer the mark is to the left, the less the plan risks against what it stands to gain."),
-        ("Reward to risk", "How far the target sits above the buy against how far the stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything."),
-        ("Why tonight", "What the stock did that made its setup list it on this evening, in the figures the night stored."),
-        ("News, 30 days", NewsSays),
-    ];
-
     // The one line a card draws under its standing while its family's recorded sweep found no setting that passed the
     // floors, and nothing otherwise; the card still lists its picks.
     // see: No family on any index is set aside or hidden by a test result without the operator's word
@@ -594,7 +532,9 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("<details class=\"rule-sentence\"><summary>The rule in a sentence</summary>");
-        body.Append(RuleWordsLine(rule.Parts));
+        body.Append(rule.Words is { } words && !rule.Parts.Any(part => part.Differs)
+            ? $"<p class=\"rule-words\">{WithSignedFigures(words)}</p>"
+            : RuleWordsLine(rule.Parts));
         body.Append("</details>");
 
         return body.ToString();
@@ -820,17 +760,13 @@ public sealed partial class MarkRenderer
 
     static string Count(int count, string noun) => Formatted($"{count} {noun}{(count == 1 ? string.Empty : "s")}");
 
-    // One pick as a row of its family's card. The row selects as a row of the list does, and its name cell
-    // carries what a list row's does: the report it holds or the control asking for one, what the queue
-    // holds for it, the company and a suspect series.
-    string FamilyRow(string family, FamilyPickCell pick)
+    // A pick's name cell as tonight's buy points draw it, carrying what a list row's does: the other setups it qualified
+    // under, its card's control where its card is not drawn open, the report it holds or the control asking for one, what
+    // the queue holds for it, the company and a suspect series.
+    string PickNameCell(FamilyPickCell pick, bool toggle)
     {
         var row = pick.Row;
         var cells = new StringBuilder();
-
-        cells.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(family)}\" data-also=\"{Escaped(string.Join(",", pick.Also))}\" ");
-        cells.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">");
-        cells.Append(Invariant, $"<td class=\"place\" data-place=\"{pick.Place}\">{pick.Place}</td>");
 
         cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
 
@@ -839,7 +775,7 @@ public sealed partial class MarkRenderer
             cells.Append(Invariant, $" <span class=\"also-family\" data-also=\"{Escaped(also)}\">also {Escaped(Article(also))}</span>");
         }
 
-        if (pick.Card is { } decision)
+        if (toggle && pick.Card is { } decision)
         {
             cells.Append(CardToggle(decision));
         }
@@ -877,29 +813,20 @@ public sealed partial class MarkRenderer
             ? $" <span class=\"prices-suspect\" data-last-asked-at=\"{Escaped(suspect.LastAskedAt)}\" title=\"last tried {Escaped(suspect.LastAskedAt)}, because {Escaped(suspect.Reason)}\">prices may not reflect a dividend or split</span></td>"
             : "</td>");
 
-        cells.Append(row.Business is null
-            ? "<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>"
-            : $"<td class=\"business-cell\">{BusinessWord(row.Business)}</td>");
-
-        cells.Append(PriceCell("buy", pick.Buy, null));
-        cells.Append(PriceCell("stop", pick.Stop, null));
-        cells.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
-        cells.Append(Invariant, $"<td class=\"stop-to-target\">{StopToTarget(pick)}</td>");
-
-        cells.Append(pick.RewardToRisk is { } ratio
-            ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
-            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>");
-
-        cells.Append(Invariant, $"<td class=\"why-tonight\">{Escaped(pick.Why)}</td>");
-
-        cells.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
-            ? StoryCounts(positive, negative)
-            : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>");
-
-        cells.Append("</tr>");
-
         return cells.ToString();
     }
+
+    // A pick's business state as its night stored it, with what its numbers say under the pointer.
+    static string PickBusinessCell(FamilyPickCell pick) =>
+        pick.Row.Business is null
+            ? "<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>"
+            : $"<td class=\"business-cell\">{BusinessWord(pick.Row.Business)}</td>";
+
+    // A pick's stories over the thirty days before the night as the labeller counted them.
+    static string PickNewsCell(FamilyPickCell pick) =>
+        pick.Row.NewsPositive is { } positive && pick.Row.NewsNegative is { } negative
+            ? StoryCounts(positive, negative)
+            : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>";
 
     // A label's family with its article, as "also a sector leader" reads.
     static string Article(string label) =>
@@ -909,23 +836,4 @@ public sealed partial class MarkRenderer
         price is { } stated
             ? Formatted($"<td class=\"r num plan-{kind}\" data-{kind}=\"{stated.ToString(Invariant)}\">{Figures.Price(stated)}</td>")
             : $"<td class=\"r num plan-{kind}\" data-{kind}=\"none\">{(instead is null ? "<span class=\"degraded\">none</span>" : Escaped(instead))}</td>";
-
-    // Where the buy sits between the stop and the target, as a mark on a bar whose left end is the stop and
-    // whose right end is the target. A plan that trails its stop has no right end, and says so.
-    static string StopToTarget(FamilyPickCell pick)
-    {
-        if (pick.Buy is not { } buy || pick.Stop is not { } stop)
-        {
-            return "<span class=\"degraded\" data-along=\"none\">no plan stored</span>";
-        }
-
-        if (pick.Target is not { } target || target <= stop)
-        {
-            return "<span class=\"stt trailing\" data-along=\"none\" title=\"the stop trails the price, and the plan names no target\"><span class=\"stt-stop\"></span><span class=\"stt-open\">no fixed target</span></span>";
-        }
-
-        var along = Math.Clamp((PlotValue(buy) - PlotValue(stop)) / (PlotValue(target) - PlotValue(stop)), 0, 1);
-
-        return Formatted($"<span class=\"stt\" data-along=\"{along:0.###}\" title=\"the buy sits {along * 100:0}% of the way from the stop to the target\"><span class=\"stt-mark\" style=\"left:{along * 100:0.#}%\"></span></span>");
-    }
 }

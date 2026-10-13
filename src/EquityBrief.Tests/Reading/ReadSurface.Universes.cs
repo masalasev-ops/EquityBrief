@@ -106,13 +106,14 @@ public partial class ReadSurface
 
         // Every card provisional, the fundamentals-first family's among them from 17.8, each rule written from the
         // settings the night stored, the breakout's listing M1.
-        Assert.Equal(5, Regex.Matches(page, "<b class=\"provisional\">Provisional: not yet frozen</b>").Count);
+        Assert.Equal(5, Regex.Matches(page, "<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span>").Count);
 
         var breakout = FamilyCardOf(page, "breakout");
 
-        Assert.Contains($"<p class=\"lede\">{MidBreakoutWords}</p>", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", breakout, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"co\">Mid One</span>", breakout, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", breakout, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Contains("<span class=\"co\">Mid One</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
+        Assert.Equal(["M1"], Regex.Matches(Assert.Single(Blocks(breakout, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         // The pullback passed M3 and holds it back for its trade on the S&P 500's list, naming that list.
         var pullback = FamilyCardOf(page, "pullback");
@@ -128,17 +129,14 @@ public partial class ReadSurface
 
         // The heavyweights' card names its design and the sector comparison its index reads, against the 400's fund.
         Assert.Contains(
-            "<p class=\"lede\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the S&P 400 by value, the 2 whose 251-session returns beat their sector's members' mean in the S&P 400 by the most, where they beat it at all, " +
+            "<p class=\"rule-words\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the S&P 400 by value, the 2 whose 251-session returns beat their sector's members' mean in the S&P 400 by the most, where they beat it at all, " +
             "their close above their 50-day average and that above their 200-day, their beta against IJH at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it. " +
             "Design (a): a sector's return is its members' mean within the S&P 400, since no sector fund is read at the index's level. Unlike the S&P 500's rules,",
             page,
             StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\"", page, StringComparison.Ordinal);
         Assert.Contains("The rebalance of 2026-10-02 bought M2.", page, StringComparison.Ordinal);
-        Assert.Contains(
-            "Each row is a stock the S&P 400's sector heavyweights hold at tonight's close, bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, as one of the leaders of its sector's largest members of the index. It has no stop and no target: it is held while it leads, and sold at the close of a later month's rebalance where the rule would no longer buy it, or at its last close as a member of the index.",
-            page,
-            StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"guide-b\">{EquityBrief.Web.Marks.MarkRenderer.HeavyweightCardGuide}</p>", page, StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", page, StringComparison.Ordinal);
 
         // The S&P 600's families read no night, and its page says so under its own heading.
@@ -164,11 +162,11 @@ public partial class ReadSurface
 
         var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
 
-        Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\" data-lead=\"0.0412\"", card, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+4.1</span> points over 251 sessions, at 2026-10-02</td>", card, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"M3\" data-sector=\"Energy\" data-held-since=\"2026-09-01\" data-lead=\"none\"", card, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\" title=\"held since 2026-10-02\" data-lead=\"0.0412\"", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\" title=\"over 251 sessions, at the rebalance of 2026-10-02\"><span class=\"hw-bar\"><span class=\"hw-fill gain\" style=\"width:100%\"></span></span> <span class=\"gain\">+4.1</span> points</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"M3\" data-sector=\"Energy\" data-held-since=\"2026-09-01\" title=\"held since 2026-09-01\" data-lead=\"none\"", card, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"degraded\">bought before its book stored a lead</span></td>", card, StringComparison.Ordinal);
-        Assert.DoesNotContain("not read", card, StringComparison.Ordinal);
+        Assert.All(Regex.Matches(card, "<td class=\"r num heavyweight-lead\".*?</td>").Select(match => match.Value), lead => Assert.DoesNotContain("not read", lead, StringComparison.Ordinal));
 
         // The column's key names the comparison design (a) reads on the index, its sector's members' mean, and no fund.
         Assert.Contains(
@@ -189,7 +187,7 @@ public partial class ReadSurface
 
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-            Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+            Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
         }
 
         // Its reading stored for the night, improving: its row draws the state as the S&P 500's rows draw theirs.
@@ -202,7 +200,7 @@ public partial class ReadSurface
 
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-            Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+            Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", PickRowOf(page, "M1"), StringComparison.Ordinal);
         }
     }
 
@@ -221,8 +219,8 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", FamilyRowOf(FamilyCardOf(page, "drift"), "M2"), StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", FamilyRowOf(FamilyCardOf(page, "breakout"), "M1"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\"><span class=\"degraded\">not stored</span></td>", PickRowOf(page, "M2"), StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", PickRowOf(page, "M1"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -234,7 +232,14 @@ public partial class ReadSurface
 
         var before = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        Assert.Contains($"<p class=\"lede\">{MidBreakoutWords}</p>", before, StringComparison.Ordinal);
+        static string[] Chips(string page) =>
+            [.. Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, "breakout"), "<ul class=\"rule-chips\".*?</ul>")), "<li class=\"rule-chip\">([^<]*)</li>").Select(match => match.Groups[1].Value)];
+
+        Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", before, StringComparison.Ordinal);
+
+        // From 19.3 its chips are the settings the night stored, read as a registration would state them: the four dials,
+        // the floor at one times, the lowest close, the profit gate and its own breadth.
+        Assert.Equal(["126-session high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth"], Chips(before));
 
         // The breakout's high widened to 251 sessions on twice the volume with no range ceiling, and the S&P 400's
         // dollar volume floor raised to $20,000,000, as a night run under those settings stores them.
@@ -246,10 +251,11 @@ public partial class ReadSurface
 
         Assert.DoesNotContain(MidBreakoutWords, after, StringComparison.Ordinal);
         Assert.Contains(
-            "<p class=\"lede\">A stock closes above its highest price of the 251 sessions before on 2 times its average volume. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target. " +
+            "<p class=\"rule-words\">A stock closes above its highest price of the 251 sessions before on 2 times its average volume. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target. " +
             "Unlike the S&P 500's rules, a stock is read only at $5 or more and trading at least $20,000,000 a day over 50 sessions,",
             after,
             StringComparison.Ordinal);
+        Assert.Equal(["251-session high", "volume 2 times", "any range", "stop 1.5 moves", "dollar floor 1 times", "close at least $5", "the profit gate", "market check on its own breadth"], Chips(after));
     }
 
     [Fact]

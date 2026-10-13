@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Cards;
 using EquityBrief.Tests.Harness;
@@ -55,9 +56,16 @@ public partial class ReadSurface
 
         // The card says which rule drew it, the selector offers both with the variant chosen, and the band stands.
         Assert.Contains($"data-family=\"breakout\" data-place=\"2\" data-of=\"3\" data-picks=\"2\" data-state=\"live\" data-live-since=\"2026-01-02\" data-variants=\"1\" data-rule=\"{slug}\" data-variant=\"1\"", card, StringComparison.Ordinal);
-        Assert.Contains("<select data-rule-choice=\"breakout\"", card, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\">{LiveBreakout}</option>", card, StringComparison.Ordinal);
-        Assert.Contains($"<option value=\"{slug}\" selected data-variant=\"1\">Variant 1: {NeighbourBreakout}</option>", card, StringComparison.Ordinal);
+        Assert.Contains("<nav class=\"rule-tabs\" data-rule-choice=\"breakout\"", card, StringComparison.Ordinal);
+        Assert.Contains($"<a class=\"rule-tab\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{LiveBreakout}\">Live</a>", card, StringComparison.Ordinal);
+
+        // From 19.3 the variant's tab names the one setting it differs from the live rule on, its 251-session high where
+        // the live rule reads 126, its full name under the pointer; and its chip of it marked.
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{slug}\" data-variant=\"1\" title=\"{NeighbourBreakout}\" aria-current=\"true\">V1 · 251-session high</a>", card, StringComparison.Ordinal);
+        Assert.Equal(["251-session high"], Regex.Matches(card, "<li class=\"rule-chip differs\">([^<]*)</li>").Select(match => match.Groups[1].Value));
+        Assert.Equal(
+            ["251-session high", "volume 1.5 times", "ranges at 0.85", "stop 1.5 moves"],
+            Regex.Matches(card, "<li class=\"rule-chip(?: differs)?\">([^<]*)</li>").Select(match => match.Groups[1].Value));
         Assert.Contains($"<p class=\"variant-band\" role=\"status\" data-variant=\"1\">{RuleScreenWords.Band(1)}</p>", card, StringComparison.Ordinal);
 
         // Its words with the clause the live rule's lack marked: the 251-session high, where the live rule reads 126.
@@ -65,10 +73,17 @@ public partial class ReadSurface
         Assert.Contains("251", Marked(card).Single(), StringComparison.Ordinal);
         Assert.DoesNotContain("126", Marked(card).Single(), StringComparison.Ordinal);
 
-        // Its own pick, K3, which the live rule does not list, and none of the live rule's rows.
+        // Its own pick, K3, which the live rule does not list, and none of the live rule's rows: beside the live rule's
+        // passes tonight, K1 and K2, it shares none, adds K3 and drops both.
         Assert.Contains("<tr data-ticker=\"K3\" data-variant-pick=\"true\">", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"K1\"", card, StringComparison.Ordinal);
-        Assert.Contains("<ol class=\"rule-funnel\" data-gates=\"5\"><li data-gate=\"market\" data-passed=\"10\">", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-share\" data-shared=\"\" data-added=\"K3\" data-dropped=\"K1,K2\">Beside the live rule's passes tonight: shares none · adds K3 · drops K1, K2.</p>", card, StringComparison.Ordinal);
+
+        // Its funnel as one bar, the gate stopping the most of those reaching it marked and named: of the 10 the market
+        // passed, 3 made a new high, 7 stopped there, where the volume, the tightening and the trade stopped 1, 1 and 0.
+        Assert.Contains("<div class=\"funnel-bar\" data-gates=\"5\" data-largest-drop=\"new high\"><ol class=\"rule-funnel\"><li data-gate=\"market\" data-passed=\"10\">", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-gate=\"new high\" data-passed=\"3\" class=\"largest-drop\">", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"new high\">Most stopped at the new high gate: 7 of the 10 reaching it.</p>", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"stretch-line\" data-stretch=\"0\" data-mark=\"none\" data-flagged=\"false\" data-completed=\"2\" data-sessions=\"4\">Listed tonight, so its empty stretch is nothing; no mark yet: 2 of 30 stretches completed over 4 of 504 sessions.</p>", card, StringComparison.Ordinal);
 
         // The default is the live rule: no band, the live rule's rows, its own funnel and its stretch against its mark.
@@ -91,8 +106,8 @@ public partial class ReadSurface
         // merges the keys the link holds, the index among them.
         var shell = await client.GetStringAsync("/");
 
-        Assert.Contains("select[data-rule-choice]", shell, StringComparison.Ordinal);
-        Assert.Contains("location.hash = merged(rule.getAttribute('data-rule-choice'), rule.value === 'live' ? null : rule.value)", shell, StringComparison.Ordinal);
+        Assert.Contains("event.target.closest('a[data-rule-tab]')", shell, StringComparison.Ordinal);
+        Assert.Contains("location.hash = merged(tab.getAttribute('data-rule-tab'), tab.getAttribute('data-value') === 'live' ? null : tab.getAttribute('data-value'))", shell, StringComparison.Ordinal);
         Assert.Contains("if (value === null) { params.delete(key); } else { params.set(key, value); }", shell, StringComparison.Ordinal);
         Assert.Contains("location.hash = mergedInto(pick)", shell, StringComparison.Ordinal);
     }
@@ -134,20 +149,21 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
         var card = Section(page, "breakout");
 
-        Assert.Contains("<select data-rule-choice=\"breakout\"", card, StringComparison.Ordinal);
-        Assert.Single(System.Text.RegularExpressions.Regex.Matches(card, "<option "));
-        Assert.Contains($"<option value=\"{RuleScreenWords.LiveSlug}\" selected data-variant=\"none\">{RuleScreen.ProvisionalChoice}</option>", card, StringComparison.Ordinal);
-        Assert.Contains($"<span class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<nav class=\"rule-tabs\" data-rule-choice=\"breakout\"", card, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(card, "<a class=\"rule-tab"));
+        Assert.Contains($"<a class=\"rule-tab current\" href=\"#\" data-rule-tab=\"breakout\" data-value=\"{RuleScreenWords.LiveSlug}\" data-variant=\"none\" title=\"{RuleScreen.ProvisionalChoice}\" aria-current=\"true\">Provisional</a>", card, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"no-variant\" data-no-variant=\"true\">{RuleScreen.NoVariantLine("S&P 400")}</p>", card, StringComparison.Ordinal);
 
         // Its funnel, stored under the reasons a member fails each part, is drawn as the parts: the market passed by 3 and
-        // the interest cover by 1, and no line naming the market check closed.
-        Assert.Contains("<li data-gate=\"market\" data-passed=\"3\">market: <b>3</b></li>", card, StringComparison.Ordinal);
-        Assert.Contains("<li data-gate=\"interest cover\" data-passed=\"1\">interest cover: <b>1</b></li>", card, StringComparison.Ordinal);
+        // the interest cover by 1, the setup stopping 2 of the 3 reaching it, and no line naming the market check closed.
+        Assert.Contains("<li data-gate=\"market\" data-passed=\"3\"><span class=\"fb-name\">market</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<li data-gate=\"interest cover\" data-passed=\"1\"><span class=\"fb-name\">interest cover</span>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"setup\">Most stopped at the setup gate: 2 of the 3 reaching it.</p>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("the market check closed:", card, StringComparison.Ordinal);
 
-        // The breakouts forming under it: M3 half a move under its high, the volume needed against tonight's, the
-        // gates it still fails and its report inside the window, under the closing line.
-        Assert.Contains("<section class=\"forming\" data-forming=\"1\" data-drawn=\"1\" data-market-open=\"true\">", card, StringComparison.Ordinal);
+        // The breakouts forming under it, behind an expander: M3 half a move under its high, the volume needed against
+        // tonight's, the gates it still fails and its report inside the window, under the closing line.
+        Assert.Contains("<details class=\"expander forming\" data-forming=\"1\" data-drawn=\"1\" data-market-open=\"true\"><summary>Breakouts forming: 1</summary>", card, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M3\" data-forming-row=\"true\" data-high=\"50.5\" data-volume-needed=\"1500000\">", card, StringComparison.Ordinal);
         Assert.Contains("<td>new high, volume</td><td>2026-10-20</td>", card, StringComparison.Ordinal);
         Assert.Contains(RuleScreenWords.FormingClosingLine, card, StringComparison.Ordinal);
