@@ -96,8 +96,96 @@ public partial class ReadSurface
             var headline = Regex.Match(run, "class=\"night-status\" data-state=\"([^\"]+)\"").Groups[1].Value;
             var notice = Regex.Match(tonight, "class=\"night-notice\" data-state=\"([^\"]+)\"").Groups[1].Value;
 
-            Assert.Equal((state, state), (headline, notice));
+            // From 19.2 a night not yet run draws no notice on tonight's page, its date line saying when it starts.
+            Assert.Equal((state, state == NightStates.NotYet ? string.Empty : state), (headline, notice));
         }
+    }
+
+    // 19.2: the night's usual start, read off the newest seven nights' own run ids, the minute the most of them started at,
+    // the newest among a tie, a later try's, a queued request's and another run's ids read as no night.
+    // see: The date line names tonight's night by the start the most of the newest seven nights share
+    [Fact]
+    public void TheNightsUsualStartIsTheMinuteTheMostOfTheNewestSevenNightsStartedAt()
+    {
+        string Night(string day, string time) => $"night-{day}T{time}Z";
+
+        // Six nights at 23:00 UTC, seconds apart, and the newest run again by hand at 01:30: 23:00.
+        string[] nights =
+        [
+            Night("20261006", "230004"), Night("20261007", "230011"), Night("20261008", "230002"), Night("20261009", "230003"),
+            Night("20261010", "230007"), Night("20261012", "230016"), Night("20261013", "013029"),
+            "night-20261012T230016Z-try-3", "night-20261009T230003Z-queue-ZD", "read-api-20261013T020000.1234567Z", "night-2026101",
+        ];
+
+        Assert.Equal(new TimeOnly(23, 0), NightTime.Usual(nights));
+        Assert.Null(NightTime.StartOf("night-20261012T230016Z-try-3"));
+        Assert.Equal(new DateTimeOffset(2026, 10, 13, 1, 30, 29, TimeSpan.Zero), NightTime.StartOf(Night("20261013", "013029")));
+
+        // The newest seven alone are read: an eighth, older, at 01:30 breaks no tie, and of three and three a tie goes
+        // to the newer minute.
+        Assert.Equal(new TimeOnly(23, 0), NightTime.Usual([.. nights, Night("20261001", "013000")]));
+        Assert.Equal(
+            new TimeOnly(1, 30),
+            NightTime.Usual([Night("20261001", "230000"), Night("20261002", "230000"), Night("20261003", "230000"), Night("20261004", "013000"), Night("20261005", "013000"), Night("20261006", "013000")]));
+        Assert.Null(NightTime.Usual([]));
+
+        // Tonight's start for a session: 23:00 UTC is 19:00 in New York in daylight time and 18:00 after the change of
+        // 2026-11-01, on the session's day; a minute before the close, 15:00 UTC, falls on the day after.
+        var york = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+
+        Assert.Equal(new DateTimeOffset(2026, 10, 12, 23, 0, 0, TimeSpan.Zero), NightTime.On(new DateOnly(2026, 10, 12), new TimeOnly(23, 0), york));
+        Assert.Equal(new DateTimeOffset(2026, 11, 2, 23, 0, 0, TimeSpan.Zero), NightTime.On(new DateOnly(2026, 11, 2), new TimeOnly(23, 0), york));
+        Assert.Equal(new DateTimeOffset(2026, 10, 13, 15, 0, 0, TimeSpan.Zero), NightTime.On(new DateOnly(2026, 10, 12), new TimeOnly(15, 0), york));
+    }
+
+    // 19.2: a night not yet run draws no notice on tonight's page and its date line says when it starts, in New York's
+    // time with UTC beneath the pointer; a run log holding no night says nothing of when; every other state keeps its
+    // notice and no such words.
+    // see: The date line names tonight's night by the start the most of the newest seven nights share
+    [Fact]
+    public async Task ANightNotYetRunFoldsIntoTheDateLineWithTheTimeItStarts()
+    {
+        // Tonight's page over the fixture's listed night, asked for on the next weekday the exchange trades, at an instant
+        // given, the run log's nights replaced by five at 23:00 UTC before it where they are kept.
+        async Task<string> TonightAt(TimeOnly at, bool nights)
+        {
+            using var store = await FixtureExpectations.WithListings();
+            var listed = DateOnly.ParseExact(NightIn(store), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var next = Enumerable.Range(1, 7).Select(listed.AddDays).First(day => day.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday) && day != new DateOnly(2026, 9, 7));
+
+            store.Execute("DELETE FROM run_log WHERE run_id LIKE 'night-%';");
+
+            if (nights)
+            {
+                foreach (var back in Enumerable.Range(1, 5))
+                {
+                    var day = listed.AddDays(-back);
+
+                    store.Execute(FormattableString.Invariant($"INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES ('night-{day:yyyyMMdd}T230005Z', 'close', '{day:yyyy-MM-dd}T23:40:00Z', '{day:yyyy-MM-dd}T23:41:00Z', 'ok', 0, 0, 0, '0', '');"));
+                }
+            }
+
+            var instant = new DateTimeOffset(next.ToDateTime(at), TimeSpan.Zero);
+
+            using var host = new PassHost(store.Root) { Clock = FixedClock.At(instant, SessionZones.UnitedStates) };
+            using var client = host.CreateClient();
+
+            return WebUtility.HtmlDecode(await client.GetStringAsync("/screens/tonight"));
+        }
+
+        // Nights before it at 23:00 UTC, asked at 22:00 UTC before the next night: no notice, and the date line saying
+        // tonight's night starts at 19:00 in New York with 23:00 UTC beneath the pointer.
+        var due = await TonightAt(new TimeOnly(22, 0), nights: true);
+
+        Assert.DoesNotContain("class=\"night-notice\"", due, StringComparison.Ordinal);
+        Assert.Matches(@"computed after the close · tonight's night runs at <time class=""night-due"" datetime=""\d{4}-\d{2}-\d{2}T23:00Z"" title=""23:00 UTC"">19:00 ET</time>", due);
+
+        // No night in the run log: no notice and no time.
+        var unknown = await TonightAt(new TimeOnly(22, 0), nights: false);
+
+        Assert.DoesNotContain("class=\"night-notice\"", unknown, StringComparison.Ordinal);
+        Assert.DoesNotContain("night-due", unknown, StringComparison.Ordinal);
+        Assert.Contains("computed after the close", unknown, StringComparison.Ordinal);
     }
 
     [Fact]

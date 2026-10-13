@@ -938,7 +938,12 @@ app.MapGet("/screens/tonight/{night?}", async (
     // was asked for or with none for the night the clock is in, whose list may not be drawn yet.
     // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
     var about = NoticeSession(night, dated, clock);
-    var notice = page.NightNotice(marks, NightFrom(await read.RunLogAsync(about), about, clock, store));
+    var aboutNight = NightFrom(await read.RunLogAsync(about), about, clock, store);
+    var notice = page.NightNotice(marks, aboutNight);
+
+    // A night not yet run draws no notice, and the date line says when it starts.
+    // see: The date line names tonight's night by the start the most of the newest seven nights share
+    var due = SinglePageApp.NightDue(aboutNight, EquityBrief.Core.Time.NightTime.Usual(await read.NightRunIdsAsync()), clock.SessionZone);
 
     // The index the page reads, chosen under Universe and kept in the link, the S&P 500 where it names none.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
@@ -960,7 +965,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         if (indexNight is null)
         {
             return Results.Content(
-                notice + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null),
+                notice + page.IndexTonightRegion(marks, dated, reading, selector, indexHeld, null, [], null, due: due),
                 "text/html; charset=utf-8");
         }
 
@@ -1072,7 +1077,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     },
                     boughtCards,
                     indexCardContext),
-                indexNight.Fault is null ? null : TonightScreen.NotComputed(reading)),
+                indexNight.Fault is null ? null : TonightScreen.NotComputed(reading),
+                due),
             "text/html; charset=utf-8");
     }
 
@@ -1374,7 +1380,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             line: line,
             closeAcross: closeAcross,
             heavyweights: heavyweights,
-            selector: selector),
+            selector: selector,
+            due: due),
         "text/html; charset=utf-8");
 });
 

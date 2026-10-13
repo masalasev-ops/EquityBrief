@@ -3,6 +3,7 @@ using System.Text;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Core.Time;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
@@ -246,9 +247,26 @@ public sealed class SinglePageApp : IComponent
     // where it was left unfinished; nothing on a day the exchange did not trade.
     // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
     public string NightNotice(MarkRenderer marks, NightView night) =>
-        night.State == NightStates.NoSession
+        night.State is NightStates.NoSession or NightStates.NotYet
             ? string.Empty
             : "<section class=\"night-notice-box\">" + marks.NightNotice(night) + NightPress(night) + "</section>";
+
+    // The date line's words for a night not yet run, in place of the notice it drew: when tonight's night starts, in New
+    // York's time with UTC beneath the pointer, read off the start the newest nights share; none for a night in any other
+    // state, or where the run log holds no night to read the start off.
+    // see: The date line names tonight's night by the start the most of the newest seven nights share
+    public static string NightDue(NightView night, TimeOnly? usual, TimeZoneInfo zone)
+    {
+        if (night.State != NightStates.NotYet || usual is not { } minute)
+        {
+            return string.Empty;
+        }
+
+        var starts = NightTime.On(night.Session, minute, zone);
+        var local = TimeZoneInfo.ConvertTime(starts, zone);
+
+        return Invariant($" · tonight's night runs at <time class=\"night-due\" datetime=\"{starts.UtcDateTime:yyyy-MM-dd'T'HH:mm'Z'}\" title=\"{starts.UtcDateTime:HH:mm} UTC\">{local:HH:mm} ET</time>");
+    }
 
     public const string PassHeader = "X-EquityBrief-Pass";
     public const string PassHeaderValue = "name-page";
@@ -2197,7 +2215,8 @@ public sealed class SinglePageApp : IComponent
         MarketLineView? line = null,
         IReadOnlyList<CloseToBuyCell>? closeAcross = null,
         HeavyweightCardView? heavyweights = null,
-        string selector = "")
+        string selector = "",
+        string due = "")
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2214,7 +2233,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
 
         region.Append(selector);
 
@@ -2418,7 +2437,8 @@ public sealed class SinglePageApp : IComponent
         MarketLineView? line,
         IReadOnlyList<FamilyCardView> families,
         HeavyweightCardView? heavyweights,
-        string? notComputed = null)
+        string? notComputed = null,
+        string due = "")
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Name;
@@ -2429,7 +2449,7 @@ public sealed class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
 
         region.Append(selector);
 
