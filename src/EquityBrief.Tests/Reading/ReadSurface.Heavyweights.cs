@@ -153,6 +153,21 @@ public partial class ReadSurface
         Assert.Contains($"data-ticker=\"X3\"", card, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"hw-pill\" data-standing=\"{EquityBrief.Core.Families.HeavyweightStandings.BelowItsAverage}\"", card[card.IndexOf("<tr data-ticker=\"X3\"", StringComparison.Ordinal)..], StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"Y3\" data-sector=\"Financials\" data-held-since=\"2026-09-01\" title=\"held since 2026-09-01\" data-lead=\"none\" data-close=\"none\" data-average=\"none\"", card, StringComparison.Ordinal);
+
+        // From the 19.3 correction of 2026-10-13 the holdings first: the table holds the three sectors holding a stock and
+        // no other, and the eight holding none follow behind one expander counting them, a line each with why, in the
+        // sectors' order.
+        var table = Assert.Single(Blocks(card, "<table class=\"list-table heavyweight-table\".*?</table>"));
+        var empties = Assert.Single(Blocks(card, "<details class=\"hw-empties\".*?</details>"));
+
+        Assert.Equal(3, Regex.Matches(table, "<tr class=\"hw-sector\"").Count);
+        Assert.DoesNotContain("hw-empty", table, StringComparison.Ordinal);
+        Assert.True(card.IndexOf("</table>", StringComparison.Ordinal) < card.IndexOf("<details class=\"hw-empties\"", StringComparison.Ordinal));
+        Assert.StartsWith("<details class=\"hw-empties\" data-empty=\"8\"><summary>8 sectors with no holding</summary><ul class=\"hw-empty-list\">", empties, StringComparison.Ordinal);
+        Assert.Equal(
+            [.. EquityBrief.Core.Families.GicsSectors.Eleven.Where(sector => sector is not ("Energy" or "Financials") && !table.Contains($"data-sector=\"{sector}\"", StringComparison.Ordinal))],
+            Regex.Matches(empties, "<li class=\"hw-empty\" data-sector=\"([^\"]+)\"><b>").Select(match => match.Groups[1].Value));
+        Assert.All(Regex.Matches(empties, "<li class=\"hw-empty\".*?</li>").Select(match => match.Value), line => Assert.Matches("<span class=\"hw-why\">[^<]+</span></li>$", line));
         Assert.Contains("<span class=\"degraded\">not read</span></td><td class=\"r num heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>", card, StringComparison.Ordinal);
 
         // What the last rebalance bought, and what was sold at it or since, in the order sold, each with why.

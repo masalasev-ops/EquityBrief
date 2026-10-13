@@ -177,7 +177,7 @@ public partial class ReadSurface
         // night. PF was one gate short and PG was passed on an evening the reasons listed, so neither is a
         // trade the list recommended.
         Assert.Contains($"<section class=\"picks\" data-night=\"{PicksNewest}\" data-universe=\"500\" data-trades=\"5\" data-shown=\"5\" data-status=\"all\">", page, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500\"><span class=\"m-screen\">Past picks: S&P 500</span>", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Past picks: S&P 500 large cap\"><span class=\"m-screen\">Past picks: S&P 500 large cap</span>", page, StringComparison.Ordinal);
         Assert.Contains($"Every trade the S&P 500's lists recommended, as of the close of {PicksNewest}", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PF\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"PG\"", page, StringComparison.Ordinal);
@@ -304,11 +304,10 @@ public partial class ReadSurface
         Assert.Contains("<a class=\"chip\" data-filter=\"status\" data-value=\"stopped\" aria-pressed=\"true\"", stopped, StringComparison.Ordinal);
         Assert.Contains("Showing 1 of 5 trades", stopped, StringComparison.Ordinal);
 
-        // The masthead offers the screen between the universe and the researched names, and the shell asks
-        // for it with the hash's filter.
+        // The bar offers the screen first under its Records menu, and the shell asks for it with the hash's filter.
         var shell = await client.GetStringAsync("/");
 
-        Assert.Contains($"<a href=\"{SinglePageApp.UniverseRoute}\" data-view=\"universe\">Universe</a><a href=\"{SinglePageApp.PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{SinglePageApp.ResearchedRoute}\" data-view=\"researched\">Researched</a>", shell, StringComparison.Ordinal);
+        Assert.Contains($"<button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Records</button><div class=\"m-drop\"><a href=\"{SinglePageApp.PicksRoute}\" data-view=\"picks\">Past picks</a>", shell, StringComparison.Ordinal);
         Assert.Contains("const picks = await fetch('/screens/picks' + (query ? '?' + query : ''));", shell, StringComparison.Ordinal);
     }
 

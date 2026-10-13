@@ -74,7 +74,7 @@ public partial class ReadSurface
         // The card: the second of the page's families, two picks, on provisional settings, in the ruling's words.
         var families = SetupFamilies.InPageOrder.Count;
 
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"breakout\" data-place=\"2\" data-of=\"{families}\" data-picks=\"2\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
         Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">2 picks tonight</span>", card, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 2 of {families} · Breakout from a base</div>"), page, StringComparison.Ordinal);
         Assert.Contains("<span class=\"fam-swatch\" data-family=\"breakout\"></span>Breakouts to a new high</span>", card, StringComparison.Ordinal);
@@ -143,7 +143,11 @@ public partial class ReadSurface
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), BreakoutRule.Name);
 
             Assert.Contains("data-picks=\"0\"", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: of 3 members, 2 passed the new high gate, 1 of those the volume gate, 0 of those the tightened gate and 0 of those the trade gate.</p>", card, StringComparison.Ordinal);
+            // Why it lists nothing is said once: by the funnel where the night stored one, and by the night's sentence, behind
+            // the fold, where it stored none.
+            Assert.Equal(
+                !card.Contains("class=\"funnel-bar\"", StringComparison.Ordinal),
+                card.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: of 3 members, 2 passed the new high gate, 1 of those the volume gate, 0 of those the tightened gate and 0 of those the trade gate.</p>", StringComparison.Ordinal));
             Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
             Assert.DoesNotContain("variant-table", card, StringComparison.Ordinal);
         }

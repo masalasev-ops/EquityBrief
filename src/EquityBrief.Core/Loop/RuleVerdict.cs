@@ -60,6 +60,16 @@ public static class RuleVerdict
             ? months < LoopScreens.BookMonths ? FormattableString.Invariant($"too few months ({months} of {LoopScreens.BookMonths})") : null
             : trades < LoopScreens.SwingTrades ? FormattableString.Invariant($"too few trades ({trades} of {LoopScreens.SwingTrades})") : null;
 
+    // The record since registration's count in one line: a swing rule's trades and those decided against the test's count
+    // of trades, a book's holdings and its months against the test's count of months, and your own trades and those
+    // decided alone.
+    public static string CountLine(bool book, int trades, int decided, int months, bool yours) =>
+        yours
+            ? FormattableString.Invariant($"{trades} {(trades == 1 ? "trade" : "trades")} · {decided} decided")
+            : book
+                ? FormattableString.Invariant($"{trades} {(trades == 1 ? "holding" : "holdings")} · {months} of {LoopScreens.BookMonths} months")
+                : FormattableString.Invariant($"{trades} {(trades == 1 ? "trade" : "trades")} · {decided} decided of {LoopScreens.SwingTrades}");
+
     // The whole calendar months from a record's first session to the newest, which a book's label counts.
     public static int MonthsBetween(DateOnly from, DateOnly to) =>
         Math.Max(0, ((to.Year * 12) + to.Month) - ((from.Year * 12) + from.Month) - (to.Day < from.Day ? 1 : 0));

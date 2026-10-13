@@ -153,8 +153,12 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<p class=\"degraded family-empty\" data-holdings=\"0\">{Escaped(card.Empty ?? "The sector heavyweights hold nothing tonight.")}</p>");
         }
 
-        // The sectors once a rebalance has been read, each holding none saying why; before it, the line above alone.
-        if (card.Holdings.Count > 0 || (card.Sectors is { Count: > 0 } && card.LastRebalance is not null))
+        // The sectors holding a stock first, a table of their holdings; then, once a rebalance has been read, the sectors
+        // holding none behind one expander, a line each with its fund's return and why; before it, the line above alone.
+        var sectors = card.Sectors ?? [.. card.Holdings.Select(holding => holding.Sector).Distinct(StringComparer.Ordinal).Select(name => new HeavyweightSectorView(name, null, null, null))];
+        HeavyweightSectorView[] empties = card.LastRebalance is null ? [] : [.. sectors.Where(sector => card.Holdings.All(holding => holding.Sector != sector.Sector))];
+
+        if (card.Holdings.Count > 0)
         {
             body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table heavyweight-table\" data-rows=\"{card.Holdings.Count}\"><thead><tr>");
 
@@ -173,20 +177,13 @@ public sealed partial class MarkRenderer
             var place = 0;
             var top = card.Holdings.Select(holding => Math.Abs(holding.Lead ?? 0)).DefaultIfEmpty(0).Max();
 
-            foreach (var sector in card.Sectors ?? [.. card.Holdings.Select(holding => holding.Sector).Distinct(StringComparer.Ordinal).Select(name => new HeavyweightSectorView(name, null, null, null))])
+            foreach (var sector in sectors.Where(sector => card.Holdings.Any(holding => holding.Sector == sector.Sector)))
             {
                 HeavyweightHoldingCell[] held = [.. card.Holdings.Where(holding => holding.Sector == sector.Sector)];
 
                 body.Append(Invariant, $"<tr class=\"hw-sector\" data-sector=\"{Escaped(sector.Sector)}\" data-holdings=\"{held.Length}\"><th scope=\"rowgroup\" colspan=\"{HeavyweightHeadings.Count}\">{Escaped(sector.Sector)}");
-                body.Append(sector.Fund is { } fund
-                    ? Formatted($" <span class=\"hw-fund\" data-fund=\"{Escaped(fund)}\" data-return=\"{(sector.FundReturn is { } fundReturn ? fundReturn.ToString("R", Invariant) : "none")}\">{Escaped(fund)} {(sector.FundReturn is { } over ? SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>")} over {card.LookBack} sessions</span>")
-                    : string.Empty);
+                body.Append(FundReturnSpan(sector, card.LookBack));
                 body.Append("</th></tr>");
-
-                if (held.Length == 0)
-                {
-                    body.Append(Invariant, $"<tr class=\"hw-empty\" data-sector=\"{Escaped(sector.Sector)}\"><td colspan=\"{HeavyweightHeadings.Count}\" class=\"degraded\">{Escaped(sector.Reason ?? "It holds nothing tonight.")}</td></tr>");
-                }
 
                 foreach (var holding in held)
                 {
@@ -202,6 +199,18 @@ public sealed partial class MarkRenderer
             }
 
             body.Append("</tbody></table></div>");
+        }
+
+        if (empties.Length > 0)
+        {
+            body.Append(Invariant, $"<details class=\"hw-empties\" data-empty=\"{empties.Length}\"><summary>{Count(empties.Length, "sector")} with no holding</summary><ul class=\"hw-empty-list\">");
+
+            foreach (var sector in empties)
+            {
+                body.Append(Invariant, $"<li class=\"hw-empty\" data-sector=\"{Escaped(sector.Sector)}\"><b>{Escaped(sector.Sector)}</b>{FundReturnSpan(sector, card.LookBack)} <span class=\"hw-why\">{Escaped(sector.Reason ?? "It holds nothing tonight.")}</span></li>");
+            }
+
+            body.Append("</ul></details>");
         }
 
         if (card.LastRebalance is { } rebalance)
@@ -223,6 +232,13 @@ public sealed partial class MarkRenderer
 
         return body.ToString();
     }
+
+    // A sector's fund and its return over the card's look-back, signed in the gain's or the loss's hue, none where the
+    // sector names no fund.
+    static string FundReturnSpan(HeavyweightSectorView sector, int lookBack) =>
+        sector.Fund is { } fund
+            ? Formatted($" <span class=\"hw-fund\" data-fund=\"{Escaped(fund)}\" data-return=\"{(sector.FundReturn is { } fundReturn ? fundReturn.ToString("R", Invariant) : "none")}\">{Escaped(fund)} {(sector.FundReturn is { } over ? SignedFigure(over * 100, 1, Formatted($"{Unsigned(over * 100, 1):+0.0;-0.0;0.0}%")) : "<span class=\"degraded\">not read</span>")} over {lookBack} sessions</span>")
+            : string.Empty;
 
     // The four tiles a heavyweights card opens on.
     static string HeavyweightTiles(HeavyweightCardView card)

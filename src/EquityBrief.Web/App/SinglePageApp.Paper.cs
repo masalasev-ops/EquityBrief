@@ -22,24 +22,36 @@ public sealed partial class SinglePageApp
         IReadOnlyList<PaperAccountView> accounts,
         string? chosen,
         (decimal Size, decimal Risk, decimal Cap)? settings,
-        decimal proposedCap)
+        decimal proposedCap,
+        string selector = "",
+        (decimal Size, decimal Risk, decimal Cap)? example = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
-        var heading = "Paper trading: " + reading.Name;
+        var heading = "Paper trading: " + reading.Titled;
+        var walked = settings ?? example;
 
-        region.Append(Invariant($"<section class=\"paper\" data-universe=\"{reading.Word}\" data-night=\"{drawn}\" data-accounts=\"{accounts.Count}\" data-family=\"{Escaped(chosen ?? "none")}\" data-walked=\"{(settings is null ? "false" : "true")}\">"));
+        region.Append(Invariant($"<section class=\"paper\" data-universe=\"{reading.Word}\" data-night=\"{drawn}\" data-accounts=\"{accounts.Count}\" data-family=\"{Escaped(chosen ?? "none")}\" data-walked=\"{(walked is null ? "false" : "true")}\" data-example=\"{(settings is null && example is not null ? "true" : "false")}\">"));
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
             night is null ? "No night is stored yet" : Invariant($"Every rule's paper account on the {Escaped(reading.Name)}, as of the close of {drawn}")));
+        region.Append(selector);
+
+        // Until the operator saves an account, every account is walked on the example and the page says so at its top.
+        if (settings is null && example is { } shown)
+        {
+            region.Append(Invariant($"<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: {shown.Size:#,0} dollars, {shown.Risk:0.##} per cent of it a trade and at most {shown.Cap * 100:0.##} per cent of it in one position. Save your own below and every account is walked on yours.</p>"));
+        }
 
         region.Append(Cards.Computed(
             "Account",
             AccountForm(settings?.Size, settings?.Risk, settings?.Cap, proposedCap),
             title: "Your account",
             lede: settings is null
-                ? "Set the three to walk the accounts: each trade is sized from them as a pick's card sizes its plan."
+                ? example is null
+                    ? "Set the three to walk the accounts: each trade is sized from them as a pick's card sizes its plan."
+                    : "Save the three to walk every account on yours, each trade sized as a pick's card sizes its plan; until then each is walked on the example above."
                 : "Every account is walked from these, each trade sized as a pick's card sizes its plan.",
             region: "account"));
 
@@ -63,7 +75,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            Guide(PaperGuide) + choices + (settings is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, chosen)),
+            Guide(PaperGuide) + choices + (walked is null ? "<p class=\"degraded\" data-paper-chart=\"unset\">Set your account above to draw the accounts.</p>" : marks.PaperChart(accounts, chosen)),
             title: "Each account since its record began",
             lede: "In per cent of the account's size, open positions at each session's close.",
             stamp: Cards.Night(night),
@@ -71,7 +83,7 @@ public sealed partial class SinglePageApp
 
         region.Append(Cards.Computed(
             "Paper trading",
-            marks.PaperTable(accounts, settings is not null, reading.Word)
+            marks.PaperTable(accounts, walked is not null, reading.Word)
                 + Invariant($"<p class=\"paper-adopted\">{Escaped(MarkRenderer.AdoptedLine)}</p>")
                 + Invariant($"<p class=\"paper-entry\">{Escaped(MarkRenderer.EntryPriceLine)}</p>"),
             title: "Every account",
@@ -113,7 +125,7 @@ public sealed partial class SinglePageApp
     public string AccountLogRegion(MarkRenderer marks, UniverseChoice reading, DateOnly? night, IReadOnlyList<PaperAccountView> accounts, PaperAccountView account, IReadOnlyList<PaperTradeView> trades)
     {
         var region = new StringBuilder();
-        var heading = "Past picks: " + reading.Name;
+        var heading = "Past picks: " + reading.Titled;
 
         region.Append(Invariant($"<section class=\"picks\" data-universe=\"{reading.Word}\" data-account=\"{Escaped(account.Key)}\" data-trades=\"{trades.Count}\">"));
         region.Append(Cards.Masthead(heading, $"<span class=\"m-screen\">{Escaped(heading)}</span>", Escaped(account.Standing == PaperAccountView.You ? "Your trades on the " + reading.Name : "The trades of " + FamilyLabel(account.Family) + " · " + account.Name)));

@@ -329,9 +329,9 @@ public partial class ReadSurface
         var rules = Regex.Matches(css, @"(?m)^[^{}]*\bselect\b[^{}]*\{([^}]*)\}").Select(rule => rule.Value.Trim()).ToArray();
         var widened = rules.Where(rule => Regex.IsMatch(rule, @"[{;]\s*(?:min-)?width:")).ToArray();
 
-        // Stated in advance: the rule holding every select and the looks of the universe's picker and the run page's
-        // comparison, three.
-        Assert.Equal(3, rules.Length);
+        // Stated in advance: the rule holding every select and the looks of the universe's picker, the run page's comparison
+        // and from the 19.2 correction of 2026-10-13 the bar's index menu, four.
+        Assert.Equal(4, rules.Length);
         Assert.True(widened.Length == 0, $"A rule gives a select a width of its own: {string.Join("; ", widened)}.");
     }
 }

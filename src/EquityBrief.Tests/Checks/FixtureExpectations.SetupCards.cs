@@ -67,7 +67,7 @@ public partial class FixtureExpectations
                 }
             }
 
-            var parts = new List<string> { "Nothing tonight" };
+            var parts = new List<string> { "nothing tonight" };
 
             if (largest is { } drop)
             {
@@ -103,14 +103,14 @@ public partial class FixtureExpectations
             {
                 var row = rows.Single(stored => stored[0] == family);
 
-                Assert.Contains($"<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))}</p>", card, StringComparison.Ordinal);
-                Assert.Contains("<div class=\"funnel-bar\" data-gates=\"9\" data-largest-drop=\"setup\">", card, StringComparison.Ordinal);
+                Assert.Contains($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{Line(row[1], int.Parse(row[2], System.Globalization.CultureInfo.InvariantCulture))}</span>", card, StringComparison.Ordinal);
+                Assert.Contains("<div class=\"funnel-bar\" data-gates=\"9\" data-largest-drop=\"setup\" data-market-row=\"false\">", card, StringComparison.Ordinal);
                 Assert.Contains("<nav class=\"rule-tabs\"", card, StringComparison.Ordinal);
             }
             else
             {
                 // One tab, the provisional rule's, as its pill reads with no freeze registered, and no funnel.
-                Assert.Contains($"<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{expected.GetProperty("unruledLine").GetString()}</p>", card, StringComparison.Ordinal);
+                Assert.Contains($"<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">{expected.GetProperty("unruledLine").GetString()}</span>", card, StringComparison.Ordinal);
                 Assert.Contains("<span class=\"status-pill provisional\"", card, StringComparison.Ordinal);
                 Assert.Equal(["Provisional"], Regex.Matches(card, "<a class=\"rule-tab[^>]*>([^<]*)</a>").Select(match => match.Groups[1].Value));
                 Assert.DoesNotContain("funnel-bar", card, StringComparison.Ordinal);

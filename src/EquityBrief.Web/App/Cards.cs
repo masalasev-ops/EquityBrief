@@ -108,16 +108,18 @@ public static class Cards
 
     public static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    // The Universe selector a page opens with: the three indices, each with how many members it holds, the one the
-    // page reads selected, and the choice kept in the page's link under the route given.
+    // The index menu a page reading an index draws, which the shell sets in its bar: the three indices, each with the
+    // size of company it holds and how many members it holds, the one the page reads selected, and the choice kept in
+    // the page's link under the route given.
     // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    // see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
     public static string Universe(UniverseChoice chosen, IReadOnlyDictionary<string, int> members, string route) =>
-        $"<label class=\"universe-pick\" data-universe=\"{chosen.Word}\"><span class=\"universe-lbl\">Universe</span> <select data-universe-route=\"{Escaped(route)}\" aria-label=\"Universe\">"
+        $"<label class=\"universe-pick\" data-universe=\"{chosen.Word}\"><span class=\"universe-lbl\">Index</span> <select data-universe-route=\"{Escaped(route)}\" aria-label=\"Index\">"
         + string.Concat(Universes.Offered.Select(choice =>
         {
             var count = members.TryGetValue(choice.Code, out var held) ? held : 0;
 
-            return $"<option value=\"{choice.Word}\" data-members=\"{count.ToString(CultureInfo.InvariantCulture)}\"{(choice == chosen ? " selected" : string.Empty)}>{Escaped(choice.Name)} · {count.ToString(CultureInfo.InvariantCulture)} members</option>";
+            return $"<option value=\"{choice.Word}\" data-members=\"{count.ToString(CultureInfo.InvariantCulture)}\"{(choice == chosen ? " selected" : string.Empty)}>{Escaped(choice.Name)} · {Escaped(choice.Cap)} · {count.ToString(CultureInfo.InvariantCulture)} members</option>";
         }))
         + "</select></label>";
 
@@ -141,7 +143,7 @@ public static class Cards
 
         return $"<span class=\"night-picker\" data-route=\"{route}\" data-night=\"{Day(night)}\">"
             + Move("earlier", "The night before", "&#8249;", before)
-            + $"<details class=\"np-cal\"><summary class=\"np-date\" aria-label=\"Choose a night to view\">{Day(night)}</summary>"
+            + $"<details class=\"np-cal\"><summary class=\"np-date\" aria-label=\"Choose a night to view\"><span class=\"np-full\">{Day(night)}</span><span class=\"np-short\">{night.ToString("MMM d", CultureInfo.InvariantCulture)}</span></summary>"
             + $"<div class=\"np-months\">{Months(night, held, route, query)}</div></details>"
             + Move("later", "The night after", "&#8250;", after)
             + (after is null ? string.Empty : $"<a class=\"np-newest\" href=\"{newest}\">newest</a>")

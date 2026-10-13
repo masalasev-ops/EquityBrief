@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
@@ -180,11 +181,20 @@ public static partial class TonightScreen
         };
     }
 
-    // Why a sector the S&P 500's book, or one of its registered books, bought nothing in holds nothing, read off the
-    // book's own rows of its last rebalance: none of its largest companies beat the sector's return, its leaders failed
-    // the trend gate, their beta sat under one, or what it bought was sold since.
+    // Why a sector the S&P 500's book, or one of its registered books, bought nothing in holds nothing, in words a reader
+    // needs no rule to follow, read off the book's own rows of its last rebalance: none of its largest companies beat the
+    // sector's return, naming the closest; none of those that beat it was in an uptrend, naming the strongest; those that
+    // were moved less than the market, naming the strongest and its beta; or what it bought was sold since, naming it.
+    // Each closes on the next rebalance where the card knows it.
     // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
-    public static string? EmptySectorReason(string sector, IReadOnlyList<HeavyweightReadRow> read, bool fundReturn, bool highBeta)
+    public static string? EmptySectorReason(
+        string sector,
+        IReadOnlyList<HeavyweightReadRow> read,
+        bool fundReturn,
+        bool highBeta,
+        int lookBack = HeavyweightRule.LookBack,
+        IReadOnlyList<HeavyweightHoldingRow>? holdings = null,
+        DateOnly? next = null)
     {
         var rows = read.Where(row => row.Sector == sector).ToArray();
 
@@ -193,17 +203,53 @@ public static partial class TonightScreen
             return read.Count == 0 ? "No rebalance has been read yet." : "Its last rebalance read none of its companies.";
         }
 
-        var on = rows[0].Session.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-        var leading = rows.Where(row => row.Lead > 0).ToArray();
-        var trending = leading.Where(row => row.Trend).ToArray();
+        static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        static string Points(double lead) => string.Create(CultureInfo.InvariantCulture, $"{Math.Abs(lead) * 100:0.0} points");
 
-        return leading.Length == 0
-            ? $"None of its largest companies beat {(fundReturn ? "its fund" : "its members' mean")} at the rebalance of {on}."
-            : trending.Length == 0
-                ? $"Its leaders failed the trend gate at the rebalance of {on}."
-                : highBeta && trending.All(row => row.Beta is not { } beta || beta < HeavyweightRule.BetaFloor)
-                    ? $"Its leaders' beta sat under one at the rebalance of {on}."
-                    : $"What its rebalance of {on} bought has been sold since.";
+        var on = Day(rows[0].Session);
+        var against = !fundReturn ? "its members' average" : GicsSectors.Funds.TryGetValue(sector, out var fund) ? fund : "its fund";
+        var over = string.Create(CultureInfo.InvariantCulture, $"over the {lookBack} sessions to the {on} rebalance");
+        var uptrend = "in an uptrend, the close above the 50-day average and that above the 200-day";
+        var leading = rows.Where(row => row.Lead > 0).OrderByDescending(row => row.Lead).ThenBy(row => row.Ticker, StringComparer.Ordinal).ToArray();
+        var trending = leading.Where(row => row.Trend).ToArray();
+        var after = next is { } nextOn ? $" Next rebalance {Day(nextOn)}." : string.Empty;
+
+        if (leading.Length == 0)
+        {
+            var closest = rows.Where(row => row.Lead is not null).OrderByDescending(row => row.Lead).ThenBy(row => row.Ticker, StringComparer.Ordinal).FirstOrDefault();
+
+            return $"Nothing held: none of its {rows.Length} largest companies beat {against} {over}"
+                + (closest is { Lead: { } behind } ? behind == 0 ? $"; the closest, {closest.Ticker}, matched it." : $"; the closest, {closest.Ticker}, trailed it by {Points(behind)}." : ".")
+                + after;
+        }
+
+        if (trending.Length == 0)
+        {
+            return (leading.Length == 1
+                ? $"Nothing held: only {leading[0].Ticker} beat {against} {over}, by {Points(leading[0].Lead!.Value)}, and it was not {uptrend}, which the rule requires."
+                : string.Create(CultureInfo.InvariantCulture, $"Nothing held: {leading.Length} of its {rows.Length} largest beat {against} {over}, led by {leading[0].Ticker} by {Points(leading[0].Lead!.Value)}, but none was {uptrend}, which the rule requires."))
+                + after;
+        }
+
+        if (highBeta && trending.All(row => row.Beta is not { } beta || beta < HeavyweightRule.BetaFloor))
+        {
+            var strongest = trending[0];
+            var moves = strongest.Beta is { } its
+                ? string.Create(CultureInfo.InvariantCulture, $"its beta was {its:0.00}, so it moves about {its * 100:0}% as much as the market")
+                : "its beta could not be read";
+
+            return (trending.Length == 1
+                ? $"Nothing held: {strongest.Ticker} beat {against} {over}, by {Points(strongest.Lead!.Value)}, and was {uptrend}, but {moves}, and the rule buys only stocks that move at least as much as the market, a beta of 1 or more."
+                : string.Create(CultureInfo.InvariantCulture, $"Nothing held: {trending.Length} beat {against} {over} and were {uptrend}, the strongest {strongest.Ticker} by {Points(strongest.Lead!.Value)}, but {moves}, the others less, and the rule buys only stocks that move at least as much as the market, a beta of 1 or more."))
+                + after;
+        }
+
+        var sold = (holdings ?? []).Where(holding => holding.Sector == sector && holding.EnteredOn == rows[0].Session && holding.EndedOn is not null).OrderBy(holding => holding.Ticker, StringComparer.Ordinal).ToArray();
+
+        return (sold.Length == 0
+            ? $"Nothing held: what the {on} rebalance bought here has been sold since."
+            : $"Nothing held: the {on} rebalance bought {string.Join(" and ", sold.Select(holding => holding.Ticker))}, sold since on {string.Join(" and ", sold.Select(holding => Day(holding.EndedOn!.Value)).Distinct(StringComparer.Ordinal))}.")
+            + after;
     }
 
     // The stocks a book holds open at the night's close, in the order of their sectors and then by ticker, which a chosen

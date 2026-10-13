@@ -25,6 +25,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - ARCHITECTURE.html - the 19.2 correction: one bar with the index menu, the cap in each heading, Tonight's top without its night and watch list cards, the buy points' line and the phone's date
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> 15.3: From 19.2 every screen opens on one header line at every width: the brand, the screen's title, three index tabs and a menu button. The menu holds the links to the screens, the Loop and the Ledger among them, the search, the palette's toggle and the report generation lane's switch, standing inline at a wide width and in a panel beneath its button at a narrower one, where the button carries the lane's word so its state stays shown. ... (see: The header's three tabs choose the index every page reads, beside the selector each page opens on)
+> 15.6: Every page reads one index at a time, chosen under Universe at its top: Tonight, Past picks, Run, Universe and Researched each open with a selector ... From 19.2 the header's three tabs choose the same, keeping the choice in the hash (see: The header's three tabs choose the index every page reads, beside the selector each page opens on).
+> 15.7 Night header row: ... From 19.2 what the night cost and how long it took and how the code is checked stand on the Run page beneath how the night went; the header links it
+> 15.7 Watch list row: one line above the list saying how many names the operator watches, with a link to the watch list page (section 15.16)
+> 15.7 The market line row: ... the stocks close to a buy point; and the trades still open linking to Past picks (see: ...)
+> 15.7 Tonight's buy points row: ... and a row so opened is held inside the box the table scrolls in (see: ...)
+> Figure 15.3: its header part drawing "EquityBrief  Tonight", three index tabs and "Menu  Paid", its date line alone and its market line in one line; its key's parts 1, 2, 3 and 5 as the header with the tabs and the lane's word on the button, the date line, the market line and the table alone.
+> 15.15 Which lane would write one: the two words at the head of every page, the choice that is not offered drawn beside the one that is and what it waits on stated here
+Now:
+> Every screen opens on one bar: the brand, the four screens read most, two menus each opening its links beneath its name, the search, the index menu a page reading an index draws and the palette's toggle, the screen drawn a pill, the links in a panel beneath a button reading Menu on a narrower screen while the index menu stays in the bar; the title and the date line beneath it, a phone's date line the night's short date between its arrows. Each choice of the index menu and each heading name the index's size of company. A night the families drew draws no night header and its watch list's line stands beneath the market line with the link to what ran tonight; a night no setup lists a buy point draws one line in the table's place. Figure 15.3 and its key draw and name the bar, the title and the market line's second line. The lane's two words stand under the bar's Research menu as the model that writes reports.
+Why: the operator read phase 19's screens on 2026-10-13 and ruled one way of choosing the index, the selector kept in a top-level bar of links, the index named with its cap, Tonight's top said once, and a phone's header on two lines.
+
+### 2026-10-13 - ARCHITECTURE.html - the 19.3 correction: a card listing nothing folded to one line, the funnel's open market row left out, and the heavyweights' empty sectors after their holdings in words
+Authorised by: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+Was:
+> 15.7 A family's card row: ... Each is read off the ledger's readings the night stored for the member and is none where it stored none (see: ...)
+> 15.7 The sector heavyweights' card row: ... the S&amp;P 500's funds named so on the S&amp;P 400 and 600; each empty sector with why its book bought nothing there; that reason read off the book's rows of its last rebalance ...
+Now:
+> A card listing nothing with no variant chosen folds to one line holding its name and its standing's pill and the line naming the gate that stopped the most and its empty stretch, every other part behind it and said once there, the card opening where it lists a pick or a variant is chosen; its funnel leaves out the market check's row while the check is open. The heavyweights' empty sectors stand after the holdings behind one expander counting them, a line each with its fund's return and the reason in words naming the stock closest to being bought, the figure it missed by and the next rebalance.
+Why: the operator found the empty cards and the empty sectors' words meant nothing to a reader on 2026-10-13, and asked for the empty card in one line and the holdings first.
+
+### 2026-10-13 - ARCHITECTURE.html - the 19.4 correction: paper trading walked on an example account until one is saved, the figures behind each verdict and the record's count in one line
+Authorised by: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+Was:
+> 15.21 Your account row: ... where none is kept a line asking for them before any account is walked (see: ...)
+> 15.21 An account's test years verdict row: ... each test year behind a press with its units and total beside what it was read against (see: ...)
+> 15.21 An account's record since registration row: ... too few trades or too few months with its count against the test's until the count is met; ...
+Now:
+> Every account is walked on an example account the page names at its top until the operator saves one, held in the code alone and written nowhere; beneath each verdict its adjusted p against the bar and each test year as a pair of bars; the record's trades and those decided against the test's count in one line.
+Why: the operator asked on 2026-10-13 for the chart and the table on a first visit, for figures that tell two rules reading within luck apart, and for the record's count against three hundred.
+
+### 2026-10-13 - .claude/rules/checks.md - read-surface holds the corrections of 2026-10-13
+Authorised by: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+Was:
+> read-surface: ... and from 19.2 the header on one line with the index tabs and a menu whose button carries the lane's word, ...
+> read-surface: ... and a correction's notice on both sides of its thirtieth day with the Run page's fold |
+Now:
+> read-surface: ... and from 19.2 the header on one line with a menu, from the 19.2 correction of 2026-10-13 a bar of the four screens read most and two menus beside the index menu the page draws with a button reading Menu alone, ...
+> read-surface: ... with the Run page's fold; and from the 19.2, 19.3 and 19.4 corrections of 2026-10-13 [the cap in each heading and choice, the bar, Tonight's top, the phone's date line, the folded card, the heavyweights' empty sectors in words, the kept place, and paper trading on the example account with each verdict's figures and the record's count] |
+Why: the corrections' assertions, rostered where the check that runs them is.
+
 ### 2026-10-13 - ARCHITECTURE.html - Universe's tiles, search, sorting, rows a page, chips, readings' bars, phone cards and corrections, the Run page's fold and section 17's two rows
 Authorised by: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
 Was:

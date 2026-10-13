@@ -296,18 +296,45 @@ public sealed partial class SinglePageApp : IComponent
         return (tiles, points);
     }
 
-    // Tonight's buy points as a card of their own, the table across every setup with its key.
-    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "") =>
-        Cards.Computed(
-            "Buy points",
-            marks.BuyPoints(points, selected, plan, query) + Cards.Key(
-                "How to read the table.",
-                "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
-                "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
-            title: "Tonight's buy points",
-            lede: Invariant($"{points.Count} across every setup tonight."),
-            stamp: Cards.Night(night),
-            region: "buy-points");
+    // A setup's card under its place and words, or, where it lists nothing and no variant is chosen, folded to its one
+    // line with no heading of its own.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    static string SetupCard(MarkRenderer marks, FamilyCardView card, DateOnly night) =>
+        MarkRenderer.Folded(card)
+            ? Invariant($"<section class=\"card folded\" id=\"setup-{Escaped(card.Family)}\" data-card=\"family\"><div class=\"card-b\">{marks.FamilyCard(card)}</div></section>")
+            : Cards.Computed(
+                Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
+                marks.FamilyCard(card),
+                stamp: Cards.Night(night),
+                id: "setup-" + card.Family,
+                region: "family");
+
+    // A card of one line with its reading guide behind its "?".
+    static string LineCard(string region, string line, string guide) =>
+        Invariant($"<section class=\"card folded\" data-card=\"{Escaped(region)}\"><div class=\"card-b\"><div class=\"card-one-line\">{line}<details class=\"guide\"><summary title=\"How to read this\" aria-label=\"How to read this\">?</summary><p class=\"guide-b\">{Escaped(guide)}</p></details></div></div></section>");
+
+    // How tonight's buy points are read, written once for the table and for the line drawn in its place.
+    public const string BuyPointsGuide =
+        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
+
+    // Tonight's buy points as a card of their own, the table across every setup with its key; on a night no setup lists
+    // one, a line saying so with how many members stand one gate short, its guide behind its "?".
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "", int? oneShort = null) =>
+        points.Count == 0
+            ? LineCard(
+                "buy-points",
+                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is { } shortOf ? Invariant($" · {shortOf} one gate short") : string.Empty)}</p>"),
+                BuyPointsGuide)
+            : Cards.Computed(
+                "Buy points",
+                marks.BuyPoints(points, selected, plan, query) + Cards.Key(
+                    "How to read the table.",
+                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
+                    "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
+                title: "Tonight's buy points",
+                lede: Invariant($"{points.Count} across every setup tonight."),
+                stamp: Cards.Night(night),
+                region: "buy-points");
 
     // The date line's words for a night not yet run, in place of the notice it drew: when tonight's night starts, in New
     // York's time with UTC beneath the pointer, read off the start the newest nights share; none for a night in any other
@@ -365,22 +392,27 @@ public sealed partial class SinglePageApp : IComponent
 
     public string LaneSwitch(string lane) =>
         $$$"""
-        <div class="lane" id="lane" data-lane="{{{Escaped(lane)}}}"><span class="lane-lbl">Report generation</span><span class="lane-opts">
-        <span class="lane-opt" data-choice="local" data-offered="false" aria-disabled="true" title="{{{Escaped(LaneWaitsOn)}}}">Local</span>
-        <span class="lane-opt{{{(lane == PaidLane ? " on" : string.Empty)}}}" data-choice="paid" data-offered="true">Paid</span>
+        <div class="lane" id="lane" data-lane="{{{Escaped(lane)}}}"><span class="lane-lbl">Reports written by</span><span class="lane-opts">
+        <span class="lane-opt" data-choice="local" data-offered="false" aria-disabled="true" title="{{{Escaped(LaneWaitsOn)}}}">Local model</span>
+        <span class="lane-opt{{{(lane == PaidLane ? " on" : string.Empty)}}}" data-choice="paid" data-offered="true">Paid model</span>
         </span></div>
         """;
 
-    // The lane's word on the menu button, so the lane's state stays shown while the switch sits in the closed menu.
-    public static string LaneWord(string lane) => lane == LocalLane ? "Local" : "Paid";
+    // The bar's two menus, each a name opening its links beneath it: the research the queue writes and the records the
+    // nights and the loop keep, the report lane's switch at the foot of the research.
+    // see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+    static string MenuGroup(string key, string name, string links) =>
+        $"<div class=\"m-group\" data-group=\"{key}\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">{name}</button><div class=\"m-drop\">{links}</div></div>";
 
-    // The three indices as tabs beside the screen's title, each keeping the index in the link as the selector did, its
-    // full name for a reader and the short one on a phone; the shell's script points each at the screen it is on.
-    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
-    public static string IndexTabs() =>
-        "<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">"
-        + string.Concat(Universes.Offered.Select(choice =>
-            $"<a href=\"#/?{Universes.Query}={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{Escaped(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{Escaped(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>"))
+    // The bar's links: the four screens read most, then the two menus.
+    string Nav(string lane) =>
+        "<nav class=\"m-nav\" aria-label=\"Screens\">"
+        + "<a href=\"#/\" data-view=\"tonight\">Tonight</a>"
+        + $"<a href=\"{UniverseRoute}\" data-view=\"universe\">Universe</a>"
+        + $"<a href=\"{PaperRoute}\" data-view=\"paper\">Paper trading</a>"
+        + $"<a href=\"{LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
+        + MenuGroup("research", "Research", $"<a href=\"{ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{WatchRoute}\" data-view=\"watch\">Watch list</a>" + LaneSwitch(lane))
+        + MenuGroup("records", "Records", $"<a href=\"{PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{RunRoute}\" data-view=\"run\">Run</a><a href=\"{LedgerRoute}\" data-view=\"ledger\">Ledger</a>")
         + "</nav>";
 
     public string Shell(string title, string lane = PaidLane) =>
@@ -399,15 +431,22 @@ public sealed partial class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div>{{{IndexTabs()}}}<button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu<span class="m-lane-word" id="lane-word" data-lane="{{{Escaped(lane)}}}">{{{Escaped(LaneWord(lane))}}}</span></button><div class="m-panel" id="menu"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a><a href="{{{LoopRoute}}}" data-view="loop">Loop<span class="m-badge" id="loop-badge" data-put="0" hidden></span></a><a href="{{{LedgerRoute}}}" data-view="ledger">Ledger</a><a href="{{{PaperRoute}}}" data-view="paper">Paper trading</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a><div class="m-panel" id="menu">{{{Nav(lane)}}}<form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><button type="button" class="theme" id="theme">Dark palette</button></div><div class="m-index" id="index-slot"></div><button type="button" class="m-menu" id="menu-button" aria-expanded="false" aria-controls="menu">Menu</button></div></header>
+        <div class="wrap page-head" id="identity"></div>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
         const identity = document.getElementById('identity');
-        const brand = identity.innerHTML;
         const scrolls = { };
         let fresh = false;
         let drawing = false;
+        // A press redrawing the screen to change one card keeps that card where it stood in the window: what finds the
+        // card again after the redraw and how far down the window it stood, read by a redraw within ten seconds of it.
+        let keptPlace = null;
+        function keepPlace(control, find) {
+          const card = control.closest('section.card');
+          keptPlace = card ? { find: find, top: card.getBoundingClientRect().top, at: Date.now() } : null;
+        }
         try { history.scrollRestoration = 'manual'; } catch (error) { }
         addEventListener('scroll', () => { if (!drawing) { scrolls[location.hash] = scrollY; } }, { passive: true });
         async function show() {
@@ -482,20 +521,20 @@ public sealed partial class SinglePageApp : IComponent
           }
           settle(view, hash, new URLSearchParams(query));
         }
-        // The masthead's words, the screen's own markers and the scroll, once a screen is in.
+        // The screen's title and date line beneath the bar, the screen's own markers and the scroll, once a screen is in.
         function settle(view, hash, query) {
           const head = screen.querySelector('.screen-mast');
-          identity.innerHTML = brand + (head ? head.innerHTML : '');
+          identity.innerHTML = head ? head.innerHTML : '';
           for (const link of document.querySelectorAll('.m-nav a')) {
             if (link.dataset.view === view) { link.setAttribute('aria-current', 'page'); } else { link.removeAttribute('aria-current'); }
           }
-          // Each index tab opens the screen it is on for its index, the chosen one marked, the S&P 500 where the link names none.
-          const onPath = hash.indexOf('?') < 0 ? hash : hash.slice(0, hash.indexOf('?'));
-          const chosenIndex = query.get('{{{Universes.Query}}}') || '{{{Universes.Large.Word}}}';
-          for (const tab of document.querySelectorAll('#tabs a')) {
-            tab.setAttribute('href', (onPath || '#/') + '?{{{Universes.Query}}}=' + tab.dataset.universe);
-            if (tab.dataset.universe === chosenIndex) { tab.setAttribute('aria-current', 'page'); } else { tab.removeAttribute('aria-current'); }
+          // A menu holding the screen drawn is marked as the screen's own link is.
+          for (const group of document.querySelectorAll('.m-group')) {
+            group.classList.toggle('current', group.querySelector('a[aria-current="page"]') !== null);
           }
+          // The index menu a screen reading an index draws stands in the bar, and a screen reading none leaves its place empty.
+          const pick = screen.querySelector('label.universe-pick');
+          document.getElementById('index-slot').replaceChildren(...(pick ? [pick] : []));
           closeMenu();
           loopBadge();
           const named = head ? head.getAttribute('data-title') : null;
@@ -508,10 +547,14 @@ public sealed partial class SinglePageApp : IComponent
           const asked = query.get('reason');
           const reasonRow = asked ? screen.querySelector('.records-table tr[data-reason="' + CSS.escape(asked) + '"]') : null;
           if (reasonRow) { reasonRow.classList.add('hl'); }
-          if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
+          const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;
+          const placedCard = placed ? placed.closest('section.card') : null;
+          if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }
+          else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }
           else if (query.get('name') && document.getElementById('selected')) { document.getElementById('selected').scrollIntoView({ block: 'start' }); }
           else if (reasonRow) { reasonRow.scrollIntoView({ block: 'center' }); }
           else { scrollTo(0, 0); }
+          keptPlace = null;
           fresh = false;
           drawing = false;
           paintTheme();
@@ -655,6 +698,8 @@ public sealed partial class SinglePageApp : IComponent
           const cut = hash.indexOf('?');
           const params = new URLSearchParams(cut < 0 ? '' : hash.slice(cut + 1));
           params.delete('page');
+          const searched = form.closest('section.card[data-card]');
+          if (searched) { keepPlace(form, 'section.card[data-card="' + CSS.escape(searched.getAttribute('data-card')) + '"]'); }
           fresh = true;
           location.hash = (cut < 0 ? hash : hash.slice(0, cut)) + (params.toString() ? '?' + params.toString() : '');
         });
@@ -762,9 +807,14 @@ public sealed partial class SinglePageApp : IComponent
           const tab = event.target.closest('a[data-rule-tab]');
           if (tab) {
             event.preventDefault();
+            keepPlace(tab, 'a[data-rule-tab="' + CSS.escape(tab.getAttribute('data-rule-tab')) + '"]');
             location.hash = merged(tab.getAttribute('data-rule-tab'), tab.getAttribute('data-value') === '{{{RuleScreenWords.LiveSlug}}}' ? null : tab.getAttribute('data-value'));
             return;
           }
+          // A chip, a sector's tile or a column's heading keeps its card where it stood, found again by the card's mark.
+          const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');
+          const keeperCard = keeper ? keeper.closest('section.card[data-card]') : null;
+          if (keeperCard) { keepPlace(keeper, 'section.card[data-card="' + CSS.escape(keeperCard.getAttribute('data-card')) + '"]'); }
           // A link to a place on this screen. Every screen's address opens "#/", so a link whose hash
           // does not is a place rather than a screen, and is scrolled to rather than taken as an
           // address, which would draw a screen of that name that does not exist. It lands below the
@@ -823,7 +873,23 @@ public sealed partial class SinglePageApp : IComponent
         // the report generation lane, and a screen drawn closes it; on a wide one the panel stands in the line.
         const menuButton = document.getElementById('menu-button');
         const menuPanel = document.getElementById('menu');
-        function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuPanel.classList.remove('open'); }
+        function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuPanel.classList.remove('open'); closeGroups(null); }
+        // A menu on the bar opens its links beneath its name, and closes on a second press, on a press anywhere else and
+        // as a screen is drawn.
+        function closeGroups(kept) {
+          for (const group of document.querySelectorAll('.m-group.open')) {
+            if (group !== kept) { group.classList.remove('open'); group.querySelector('.m-group-btn').setAttribute('aria-expanded', 'false'); }
+          }
+        }
+        document.addEventListener('click', (event) => {
+          const named = event.target.closest('.m-group-btn');
+          if (!named) { if (!event.target.closest('.m-drop')) { closeGroups(null); } return; }
+          const group = named.closest('.m-group');
+          const open = !group.classList.contains('open');
+          closeGroups(group);
+          group.classList.toggle('open', open);
+          named.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
         menuButton.addEventListener('click', () => {
           const open = menuButton.getAttribute('aria-expanded') !== 'true';
           menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -1969,7 +2035,7 @@ public sealed partial class SinglePageApp : IComponent
         UniverseView? view = null)
     {
         var reading = universe ?? Universes.Large;
-        var heading = "The universe: " + reading.Name;
+        var heading = "The universe: " + reading.Titled;
         var state = view?.State ?? new UniverseState();
         IReadOnlyList<UniverseCell> shown = view?.Kept ?? [.. rows
             .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
@@ -2063,7 +2129,7 @@ public sealed partial class SinglePageApp : IComponent
     public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "")
     {
         var reading = universe ?? Universes.Large;
-        var heading = "Researched: " + reading.Name;
+        var heading = "Researched: " + reading.Titled;
         var body = new StringBuilder();
 
         if (rows.Count == 0)
@@ -2329,7 +2395,7 @@ public sealed partial class SinglePageApp : IComponent
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
-        var heading = "Tonight: " + Universes.Large.Name;
+        var heading = "Tonight: " + Universes.Large.Titled;
 
         // A night whose readings of the reported quarters are stored draws its names state first, and one
         // before them in the filter's own order, so the card says which it drew.
@@ -2342,25 +2408,33 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
 
         region.Append(selector);
 
-        region.Append(Cards.Computed(
-            Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
-            marks.NightHeader(night, index, fired, market, byFilter ? listed : null)
-                + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, what it cost and how the code is checked</a></p>"),
-            stamp: Cards.Night(night),
-            region: "night"));
+        // A night before the families drew the page keeps its night card and its watch list card; on a night they drew
+        // it, the tiles carry the passes, the market line the breadth, the link to what ran and the watch list's line.
+        if (families is null)
+        {
+            region.Append(Cards.Computed(
+                Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
+                marks.NightHeader(night, index, fired, market, byFilter ? listed : null)
+                    + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, what it cost and how the code is checked</a></p>"),
+                stamp: Cards.Night(night),
+                region: "night"));
+        }
 
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
 
-        region.Append(Cards.Computed(
-            "Watch list",
-            WatchLine(watching),
-            title: "Shown every evening",
-            lede: "These names appear whether or not they are on the list.",
-            region: "watch"));
+        if (families is null)
+        {
+            region.Append(Cards.Computed(
+                "Watch list",
+                WatchLine(watching),
+                title: "Shown every evening",
+                lede: "These names appear whether or not they are on the list.",
+                region: "watch"));
+        }
 
         // On a night the families drew the page's list, one card a family in the page's order, each with
         // its rule in a sentence, whether it is live or provisional, its picks and the notes on what it
@@ -2373,7 +2447,7 @@ public sealed partial class SinglePageApp : IComponent
             // see: The market check closes every swing family's list together, and the sector heavyweights read none
             if (line is not null)
             {
-                region.Append(marks.MarketLine(line));
+                region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching }));
             }
 
             // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, the row selected
@@ -2385,18 +2459,13 @@ public sealed partial class SinglePageApp : IComponent
                 : string.Empty;
 
             region.Append(marks.SetupTiles(tiles));
-            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night));
+            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night, oneShort: line is { CloseRead: true } read ? read.Close : null));
 
             // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
             // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
             foreach (var card in families)
             {
-                region.Append(Cards.Computed(
-                    Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
-                    marks.FamilyCard(card),
-                    stamp: Cards.Night(night),
-                    id: "setup-" + card.Family,
-                    region: "family"));
+                region.Append(SetupCard(marks, card, night));
             }
 
             // The sector heavyweights' card after the swing families', its holdings, its last rebalance and its
@@ -2528,7 +2597,7 @@ public sealed partial class SinglePageApp : IComponent
         string? selectedTicker = null)
     {
         var region = new StringBuilder();
-        var heading = "Tonight: " + universe.Name;
+        var heading = "Tonight: " + universe.Titled;
         var query = "?" + Universes.Query + "=" + universe.Word;
 
         region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
@@ -2536,7 +2605,7 @@ public sealed partial class SinglePageApp : IComponent
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + due + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}, computed after the close{due}</span>") + Cards.NightPicker(night, held, NightRoute, "#/" + query, query)));
 
         region.Append(selector);
 
@@ -2551,7 +2620,7 @@ public sealed partial class SinglePageApp : IComponent
         // A night whose part failed opens on the words its cards carry in place of a market line it did not read.
         region.Append(notComputed is { } said
             ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
-            : marks.MarketLine(line));
+            : marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}{query}") }));
 
         // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, the row
         // selected, the first where the link names none, drawing its pick's card beneath it, and every row's link keeping
@@ -2560,18 +2629,13 @@ public sealed partial class SinglePageApp : IComponent
         var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
 
         region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word));
+        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null));
 
         // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
         // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
         foreach (var card in families)
         {
-            region.Append(Cards.Computed(
-                Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
-                marks.FamilyCard(card),
-                stamp: Cards.Night(night),
-                id: "setup-" + card.Family,
-                region: "family"));
+            region.Append(SetupCard(marks, card, night));
         }
 
         if (heavyweights is not null)
@@ -2679,14 +2743,14 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? oldCorrections = null)
     {
         var region = new StringBuilder();
-        var heading = "Run evidence: " + Universes.Large.Name;
+        var heading = "Run evidence: " + Universes.Large.Titled;
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{Universes.Large.Word}\" data-stages=\"{stages.Count}\">"));
 
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}") + Cards.NightPicker(night, held ?? [], RunRoute, RunRoute)));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}</span>") + Cards.NightPicker(night, held ?? [], RunRoute, RunRoute)));
 
         region.Append(selector);
 
@@ -3163,7 +3227,7 @@ public sealed partial class SinglePageApp : IComponent
         };
 
         var region = new StringBuilder();
-        var heading = "Setup ledger: " + reading.Name;
+        var heading = "Setup ledger: " + reading.Titled;
         var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).OrderBy(EquityBrief.Core.Families.SetupFamilies.OrderOf).ToArray();
 
         region.Append(Invariant($"<section class=\"ledger\" data-universe=\"{reading.Word}\" data-families=\"{families.Length}\" data-family=\"{Escaped(family ?? "none")}\">"));
@@ -3270,7 +3334,7 @@ public sealed partial class SinglePageApp : IComponent
         };
 
         var region = new StringBuilder();
-        var heading = "Loop: " + reading.Name;
+        var heading = "Loop: " + reading.Titled;
 
         region.Append(Invariant($"<section class=\"loop\" data-universe=\"{reading.Word}\" data-month=\"{Escaped(run?.Month ?? "none")}\" data-run=\"{Escaped(run?.RunId ?? "none")}\" data-proposals=\"{proposals.Count}\">"));
         region.Append(Cards.Masthead(
@@ -3460,7 +3524,7 @@ public sealed partial class SinglePageApp : IComponent
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : "all";
-        var heading = "Past picks: " + Universes.Large.Name;
+        var heading = "Past picks: " + Universes.Large.Titled;
 
         region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{Universes.Large.Word}\" data-trades=\"{summary.Listed}\" data-shown=\"{shown.Count}\" data-status=\"{lit}\">"));
         region.Append(Cards.Masthead(
@@ -3547,14 +3611,14 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<(string Family, string Rule, int Stretch, int Mark)>? pastTheirMark = null)
     {
         var region = new StringBuilder();
-        var heading = "Run evidence: " + universe.Name;
+        var heading = "Run evidence: " + universe.Titled;
         var query = "?" + Universes.Query + "=" + universe.Word;
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-stages=\"none\">"));
         region.Append(Cards.Masthead(
             heading,
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
-            Invariant($"Night of {night:yyyy-MM-dd}") + Cards.NightPicker(night, held, RunRoute, RunRoute + query, query)));
+            Invariant($"<span class=\"asof-words\">Night of {night:yyyy-MM-dd}</span>") + Cards.NightPicker(night, held, RunRoute, RunRoute + query, query)));
         region.Append(selector);
 
         var body = new StringBuilder();
@@ -3638,7 +3702,7 @@ public sealed partial class SinglePageApp : IComponent
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
-        var heading = "Past picks: " + universe.Name;
+        var heading = "Past picks: " + universe.Titled;
         var open = trades.Count(trade => trade.EndedOn is null);
 
         region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-universe=\"{universe.Word}\" data-trades=\"{trades.Count}\" data-shown=\"{trades.Count}\" data-status=\"all\">"));

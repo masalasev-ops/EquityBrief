@@ -1497,7 +1497,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             dated,
             Growths(heavyweightHoldings.Where(holding => holding.EndedOn is null).Select(holding => (holding.Ticker, holding.EnteredOn, holding.Growth))),
             heavyweightSettings.FundReturn,
-            sector => TonightScreen.EmptySectorReason(sector, heavyweightRead, heavyweightSettings.FundReturn, heavyweightSettings.HighBeta));
+            sector => TonightScreen.EmptySectorReason(sector, heavyweightRead, heavyweightSettings.FundReturn, heavyweightSettings.HighBeta, heavyweightSettings.LookBack, heavyweightHoldings, heavyweights.NextRebalance));
     }
     var line = cards is null
         ? null
@@ -1632,8 +1632,10 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
     var reading = Universes.Of(request.Query[Universes.Query].FirstOrDefault());
     var night = await read.NewestNightAsync();
     var held = EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot);
-    var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, held) : null;
+    var walkedOn = held ?? EquityBrief.Core.Cards.AccountSettings.Example;
+    var paper = night is { } on ? await PaperAccountsAsync(read, reading, on, walkedOn) : null;
     var family = request.Query[PaperScreen.FamilyQuery].FirstOrDefault();
+    var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.PaperRoute) : string.Empty;
 
     return Results.Content(
         page.PaperRegion(
@@ -1643,7 +1645,9 @@ app.MapGet("/screens/paper", async (HttpRequest request, ReadApi read, MarkRende
             paper?.Views ?? [],
             family is { } named && EquityBrief.Core.Families.SetupFamilies.Order.Contains(named) ? named : null,
             held is { } settings ? (settings.Size, settings.RiskPercent, settings.PositionCap) : null,
-            EquityBrief.Core.Cards.AccountSettings.ProposedCap),
+            EquityBrief.Core.Cards.AccountSettings.ProposedCap,
+            selector,
+            held is null ? (walkedOn.Size, walkedOn.RiskPercent, walkedOn.PositionCap) : null),
         "text/html; charset=utf-8");
 });
 
@@ -1967,7 +1971,7 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     // Each paper account's trade log, chosen in the link: a variant's own trades or yours, with its verdict and its
     // record's label beside them; the page's lists where the link names none, with each family's verdict beside them.
     // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
-    var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot)) : null;
+    var paper = night is { } walkedOn ? await PaperAccountsAsync(read, reading, walkedOn, EquityBrief.Core.Cards.AccountFile.Read(store.DataRoot) ?? EquityBrief.Core.Cards.AccountSettings.Example) : null;
     var askedAccount = request.Query[PaperScreen.AccountQuery].FirstOrDefault();
 
     if (paper is { } accounts && night is { } logged && accounts.Views.FirstOrDefault(view => view.Key == askedAccount && !view.Head) is { } chosenAccount)

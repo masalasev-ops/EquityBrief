@@ -248,6 +248,7 @@ public static class PaperScreen
                 ? PaperAccount.Walk(held, [.. account.Trades.Select(one => one.Trade)], [.. sessions.Where(session => session >= from && session <= night)], close, fund)
                 : null;
             var ended = account.Trades.Count(one => one.Trade.Ended is not null);
+            var months = account.Since is { } first ? RuleVerdict.MonthsBetween(first, night) : 0;
 
             return new PaperAccountView(
                 account.Key,
@@ -264,8 +265,10 @@ public static class PaperScreen
                 walked,
                 account.Trades.Count,
                 ended,
-                account.Standing == PaperAccountView.You ? null : RuleVerdict.TooFew(account.Book, ended, account.Since is { } since ? RuleVerdict.MonthsBetween(since, night) : 0),
-                account.Since);
+                account.Standing == PaperAccountView.You ? null : RuleVerdict.TooFew(account.Book, ended, months),
+                account.Since,
+                test?.Adjusted,
+                RuleVerdict.CountLine(account.Book, account.Trades.Count, ended, months, account.Standing == PaperAccountView.You));
         });
 
         return

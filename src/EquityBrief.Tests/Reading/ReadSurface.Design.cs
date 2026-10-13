@@ -568,15 +568,15 @@ public partial class ReadSurface
         return document[start..(end < 0 ? document.Length : end)];
     }
 
-    // 19.2: the header holds one line at every width: the brand and the screen's title, the three index tabs keeping the
-    // index in the link, and the menu, whose panel holds the links, the search, the palette's toggle and the report lane,
-    // standing in the line on a wide screen and dropping beneath its button on a narrower one, the button carrying the
-    // lane's word so its state stays shown. The account page's old address opens paper trading, and the menu holds the
-    // Loop page with its badge and the Ledger page. Where at 18.1's correction of 2026-10-11 the phone's masthead was one
-    // column whose links wrapped, the links now sit in the panel.
-    // see: The header's three tabs choose the index every page reads, beside the selector each page opens on
+    // The 19.2 correction of 2026-10-13: every screen opens on one bar, the brand, the four screens read most with the
+    // Loop's badge, the Research and Records menus each opening its links beneath its name with the lane's switch at the
+    // foot of Research, then the search, the index menu the page draws set in the bar by the shell, and the palette's
+    // toggle; on a narrower screen the links, the search and the toggle drop into a panel beneath a button reading Menu
+    // alone, the index menu staying in the bar. The three tabs and the lane's word on the button are gone. The account
+    // page's old address opens paper trading. The screen's title and date line stand beneath the bar.
+    // see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
     [Fact]
-    public async Task TheHeaderHoldsOneLineWithTheIndexTabsAndAMenuCarryingTheLanesWord()
+    public async Task TheBarHoldsTheFourScreensReadMostTwoMenusAndTheIndexMenuThePageDraws()
     {
         using var store = new TemporaryStore().Migrated();
         using var host = new Host(store.Root);
@@ -584,33 +584,71 @@ public partial class ReadSurface
 
         var shell = await client.GetStringAsync("/");
 
-        // The three tabs, each with its full name for a reader and its short word on a phone, keeping the index in the link.
-        Assert.Contains("<nav class=\"m-tabs\" id=\"tabs\" aria-label=\"Index\">", shell, StringComparison.Ordinal);
+        // The four screens read most in the bar, then the two menus with their links, in that order.
+        Assert.Contains(
+            $"<nav class=\"m-nav\" aria-label=\"Screens\"><a href=\"#/\" data-view=\"tonight\">Tonight</a><a href=\"{SinglePageApp.UniverseRoute}\" data-view=\"universe\">Universe</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a><a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a>"
+                + $"<div class=\"m-group\" data-group=\"research\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Research</button><div class=\"m-drop\"><a href=\"{SinglePageApp.ResearchedRoute}\" data-view=\"researched\">Researched</a><a href=\"{SinglePageApp.QueueRoute}\" data-view=\"queue\">Queue</a><a href=\"{SinglePageApp.WatchRoute}\" data-view=\"watch\">Watch list</a><div class=\"lane\" id=\"lane\"",
+            shell,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            $"<div class=\"m-group\" data-group=\"records\"><button type=\"button\" class=\"m-group-btn\" aria-expanded=\"false\">Records</button><div class=\"m-drop\"><a href=\"{SinglePageApp.PicksRoute}\" data-view=\"picks\">Past picks</a><a href=\"{SinglePageApp.RunRoute}\" data-view=\"run\">Run</a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a></div></div></nav>",
+            shell,
+            StringComparison.Ordinal);
 
-        foreach (var choice in Universes.Offered)
-        {
-            Assert.Contains(
-                $"<a href=\"#/?universe={choice.Word}\" data-universe=\"{choice.Word}\" aria-label=\"{WebUtility.HtmlEncode(choice.Name)}\"><span class=\"t-full\" aria-hidden=\"true\">{WebUtility.HtmlEncode(choice.Name)}</span><span class=\"t-short\" aria-hidden=\"true\">{choice.Word}</span></a>",
-                shell,
-                StringComparison.Ordinal);
-        }
-
-        // The menu's button carries the lane's word, and its panel holds the search, the links, the lane and the palette.
-        Assert.Contains("<button type=\"button\" class=\"m-menu\" id=\"menu-button\" aria-expanded=\"false\" aria-controls=\"menu\">Menu<span class=\"m-lane-word\" id=\"lane-word\" data-lane=\"paid\">Paid</span></button><div class=\"m-panel\" id=\"menu\"><form class=\"m-search\" id=\"search\"", shell, StringComparison.Ordinal);
-        Assert.Matches(new Regex("<div class=\"m-panel\" id=\"menu\">.*<nav class=\"m-nav\".*<div class=\"lane\" id=\"lane\".*<button type=\"button\" class=\"theme\" id=\"theme\">Dark palette</button></div></div></header>", RegexOptions.Singleline), shell);
-        Assert.Contains($"<a href=\"{SinglePageApp.LoopRoute}\" data-view=\"loop\">Loop<span class=\"m-badge\" id=\"loop-badge\" data-put=\"0\" hidden></span></a><a href=\"{SinglePageApp.LedgerRoute}\" data-view=\"ledger\">Ledger</a><a href=\"{SinglePageApp.PaperRoute}\" data-view=\"paper\">Paper trading</a></nav>", shell, StringComparison.Ordinal);
+        // Then the search and the toggle in the panel, the index menu's place in the bar, and a button reading Menu alone;
+        // the title beneath the bar. No tab, and no lane's word on the button.
+        Assert.Contains("</nav><form class=\"m-search\" id=\"search\" role=\"search\">", shell, StringComparison.Ordinal);
+        Assert.Contains("<button type=\"button\" class=\"theme\" id=\"theme\">Dark palette</button></div><div class=\"m-index\" id=\"index-slot\"></div><button type=\"button\" class=\"m-menu\" id=\"menu-button\" aria-expanded=\"false\" aria-controls=\"menu\">Menu</button></div></header>", shell, StringComparison.Ordinal);
+        Assert.Contains("</header>\n<div class=\"wrap page-head\" id=\"identity\"></div>", shell.Replace("\r\n", "\n", StringComparison.Ordinal), StringComparison.Ordinal);
+        Assert.DoesNotContain("m-tabs", shell, StringComparison.Ordinal);
+        Assert.DoesNotContain("lane-word", shell, StringComparison.Ordinal);
+        Assert.Single(Regex.Matches(shell, "data-view=\"paper\""));
         Assert.DoesNotContain("data-view=\"account\"", shell, StringComparison.Ordinal);
         Assert.Contains($"path === '{SinglePageApp.PaperRoute}' || path === '{SinglePageApp.AccountRoute}'", shell, StringComparison.Ordinal);
 
-        // One line at every width; the panel in the line on a wide screen and beneath its button below that; the tabs'
-        // short words on a phone. The script points each tab at the screen it is on and closes the menu as a screen is drawn.
+        // The shell sets the index menu a screen draws in the bar and leaves the place empty for a screen drawing none,
+        // marks the menu holding the screen drawn, opens a menu on its name and closes it on a press elsewhere or a screen.
+        Assert.Contains("const pick = screen.querySelector('label.universe-pick');", shell, StringComparison.Ordinal);
+        Assert.Contains("document.getElementById('index-slot').replaceChildren(...(pick ? [pick] : []));", shell, StringComparison.Ordinal);
+        Assert.Contains("group.classList.toggle('current', group.querySelector('a[aria-current=\"page\"]') !== null);", shell, StringComparison.Ordinal);
+        Assert.Contains("identity.innerHTML = head ? head.innerHTML : '';", shell, StringComparison.Ordinal);
+        Assert.Contains("function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuPanel.classList.remove('open'); closeGroups(null); }", shell, StringComparison.Ordinal);
+        Assert.Contains("const named = event.target.closest('.m-group-btn');", shell, StringComparison.Ordinal);
+
+        // One bar at every width; the links inline on a wide screen and in the panel beneath the button below that, the
+        // index menu staying in the bar; the screen drawn a pill.
         Assert.Contains(".mast .wrap{position:relative;display:flex;flex-wrap:nowrap;", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("@media (max-width:1499px){\n .m-menu{display:inline-flex}\n .m-panel{display:none;position:absolute;", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".m-panel{display:contents}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:1279px){\n .m-menu{display:inline-flex}\n .m-index{margin-left:auto}\n .m-panel{display:none;position:absolute;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(" .m-panel.open{display:flex}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("@media (max-width:480px){ .m-tabs .t-full{display:none} .m-tabs .t-short{display:inline}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".m-nav>a[aria-current='page'],.m-group.current .m-group-btn{background:var(--hair);", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".m-group.open .m-drop{display:flex}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.DoesNotContain(".mast .wrap{grid-template-columns", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("tab.setAttribute('href', (onPath || '#/') + '?universe=' + tab.dataset.universe);", shell, StringComparison.Ordinal);
-        Assert.Contains("closeMenu();", shell, StringComparison.Ordinal);
+    }
+
+    // The 19.2 correction of 2026-10-13: each index named with the size of company it holds, in each page's heading and in
+    // each choice of the index menu the page draws, which every page reading an index draws, Paper trading among them.
+    // see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+    [Fact]
+    public async Task EachHeadingAndEachChoiceOfTheIndexMenuNameTheIndexsSizeOfCompany()
+    {
+        Assert.Equal(["S&P 500 large cap", "S&P 400 mid cap", "S&P 600 small cap"], Universes.Offered.Select(choice => choice.Titled));
+
+        var menu = Cards.Universe(Universes.Mid, new Dictionary<string, int> { ["GSPC"] = 503, ["MID"] = 400, ["SML"] = 602 }, SinglePageApp.PaperRoute);
+
+        Assert.Equal(
+            ["S&P 500 · large cap · 503 members", "S&P 400 · mid cap · 400 members", "S&P 600 · small cap · 602 members"],
+            Regex.Matches(WebUtility.HtmlDecode(menu), "<option[^>]*>([^<]*)</option>").Select(match => match.Groups[1].Value));
+        Assert.Contains("<label class=\"universe-pick\" data-universe=\"400\"><span class=\"universe-lbl\">Index</span> <select data-universe-route=\"#/paper\" aria-label=\"Index\">", menu, StringComparison.Ordinal);
+
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var paper = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper?universe=600"));
+
+        Assert.Contains("data-title=\"Paper trading: S&P 600 small cap\"", paper, StringComparison.Ordinal);
+        Assert.Contains("<label class=\"universe-pick\" data-universe=\"600\">", paper, StringComparison.Ordinal);
     }
 
     // 19.2: the Loop's badge counts the proposals each index's newest run puts to the operator that hold no word yet, one a
@@ -707,9 +745,9 @@ public partial class ReadSurface
         var page = await client.GetStringAsync($"/screens/name/{name}");
 
         // Each screen opens with the line the masthead carries, naming what it is and the index it reads.
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&amp;P 500\">", tonight, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"The universe: S&amp;P 500\">", universe, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Run evidence: S&amp;P 500\">", run, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&amp;P 500 large cap\">", tonight, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"The universe: S&amp;P 500 large cap\">", universe, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Run evidence: S&amp;P 500 large cap\">", run, StringComparison.Ordinal);
         Assert.Contains($"<div class=\"screen-mast\" data-title=\"{name}\"><span class=\"m-tk\">{name}</span>", page, StringComparison.Ordinal);
         Assert.Contains("the last stored price", page, StringComparison.Ordinal);
 
