@@ -346,6 +346,9 @@ public partial class ReadSurface
 
         // Those are the name, the close, the trend and the distance columns, in the table's own heading order.
         Assert.Equal(["Name", "Close", "Trend", "Distance"], new[] { 0, 2, 3, 4 }.Select(at => MarkRenderer.UniverseHeadings[at].Heading));
+
+        // The sector tiles stand two a row.
+        Assert.Contains(".sector-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}", block, StringComparison.Ordinal);
     }
 
     [Theory]

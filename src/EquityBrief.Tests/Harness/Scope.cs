@@ -3576,7 +3576,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The readings' bars")] = new Scoped(
             Verdict.Pass, "the strength's bar filled to its place, the dry-up's ticked at the open filter version's ceiling and the tightness's carrying no tick, read back off the rendered table against the store", ByReadSurface),
         [CheckReach.Key("15.8 Universe", "On a phone")] = new Scoped(
-            Verdict.Pass, "the stylesheet's rule under the phone's width drawing a row as a card of its name, close, trend and distance picture with every other column and the headings hidden, read off the rule", ByReadSurface),
+            Verdict.Pass, "the stylesheet's rule under the phone's width drawing a row as a card of its name, close, trend and distance picture with every other column and the headings hidden and the sector tiles two a row, read off the rule", ByReadSurface),
         [CheckReach.Key("15.8 Universe", "Corrections")] = new Scoped(
             Verdict.Pass, "the notice drawn on the thirtieth day after the newest session it affects and the linking line on the thirty-first, read off the rendered page", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Corrections")] = new Scoped(

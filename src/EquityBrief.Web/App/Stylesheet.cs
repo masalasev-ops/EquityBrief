@@ -1039,6 +1039,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  .universe-table td:nth-child(3){display:block;text-align:right}
  .universe-table td:nth-child(4){display:block;grid-column:1/-1;color:var(--ink-2);font-size:12.5px}
  .universe-table td:nth-child(5){display:block;grid-column:1/-1}
+ .sector-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media print{ .mast,.export,form[method='post']{display:none} .card{box-shadow:none;break-inside:avoid} }
 """;
