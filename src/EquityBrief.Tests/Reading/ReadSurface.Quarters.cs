@@ -99,6 +99,9 @@ public partial class ReadSurface
         "4 of the 8 quarters a range needs carry a multiple, so the valuation position is not read.",
     ];
 
+    // The sentences as a page draws them from 19.2, the one figure written with its sign in the gain's green.
+    static IReadOnlyList<string> ImprovingDrawn => [.. ImprovingSentences.Select(sentence => sentence.Replace("+5.0%", "<span class=\"gain\">+5.0</span>%", StringComparison.Ordinal))];
+
     [Fact]
     public async Task TonightsListDrawsImprovingBusinessesFirstFromTheFirstNightItsReadingsAreStoredAndTheFiltersOwnOrderBefore()
     {
@@ -131,7 +134,7 @@ public partial class ReadSurface
         // What the numbers say, inside the word: Q4's sentences word for word, and Q3's saying it holds none.
         var says = Regex.Match(RowOf(list, "Q4"), "<span class=\"says\" role=\"tooltip\">(.*?)</span></span>").Groups[1].Value;
 
-        Assert.Equal(string.Join(" ", ImprovingSentences), says);
+        Assert.Equal(string.Join(" ", ImprovingDrawn), says);
         Assert.Contains("<span class=\"says\" role=\"tooltip\">No reported quarter is stored for it yet, so nothing is read.</span>", RowOf(list, "Q3"), StringComparison.Ordinal);
 
         // Shown while the word is under the pointer or holds focus, and hidden otherwise.
@@ -174,8 +177,8 @@ public partial class ReadSurface
 
         Assert.StartsWith($"<section class=\"numbers-say\" data-state=\"{FundamentalState.Improving}\" data-read-from=\"2026-06-30\"><h4 class=\"says-heading\">What the numbers say: improving, read from sales and operating margin alone</h4>", block, StringComparison.Ordinal);
         Assert.Contains("<p class=\"read-from\">Read from the quarter to 2026-06-30.</p>", block, StringComparison.Ordinal);
-        Assert.Equal(ImprovingSentences, SaidIn(block));
-        Assert.All(SaidIn(block), sentence => Assert.NotNull(NumbersSay.PatternOf(sentence)));
+        Assert.Equal(ImprovingDrawn, SaidIn(block));
+        Assert.All(SaidIn(block), sentence => Assert.NotNull(NumbersSay.PatternOf(Regex.Replace(sentence, "</?span[^>]*>", string.Empty))));
 
         Assert.Equal(
             ["2026-06-30|2026-07-30|2026-07-25", "2026-03-31|2026-04-30|2026-04-25", "2025-12-31|not filed|2026-01-25", "2025-09-30|2025-10-30|2025-10-25"],

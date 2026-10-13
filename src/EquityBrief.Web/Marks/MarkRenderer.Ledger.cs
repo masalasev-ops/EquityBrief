@@ -25,8 +25,8 @@ public sealed partial class MarkRenderer
         value is not { } held
             ? "<span class=\"degraded\">none</span>"
             : family == HeavyweightRule.Name
-                ? Formatted($"{(held * 100).ToString("+0.0;-0.0;0.0", Invariant)}%")
-                : Formatted($"{held.ToString("+0.00;-0.00;0.00", Invariant)} &#215;");
+                ? SignedTenth(held * 100) + "%"
+                : SignedTwo(held) + " &#215;";
 
     public string LedgerYears(string family, IReadOnlyList<LedgerYear> years)
     {

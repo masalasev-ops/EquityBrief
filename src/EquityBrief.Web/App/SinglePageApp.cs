@@ -211,7 +211,7 @@ public sealed class SinglePageApp : IComponent
         if (quote is { } quoted)
         {
             var sign = quoted.Change is { } moved ? Math.Sign(moved) : 0;
-            var hue = sign > 0 ? " up" : sign < 0 ? " down" : string.Empty;
+            var hue = sign > 0 ? " gain" : sign < 0 ? " loss" : string.Empty;
             var change = quoted.Change is { } amount
                 ? Invariant($"<span class=\"m-chg{hue}\" data-change=\"{amount.ToString(CultureInfo.InvariantCulture)}\">{amount.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}{(quoted.ChangePercent is { } percent ? Invariant($" ({percent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%)") : string.Empty)}</span>")
                 : string.Empty;
@@ -221,7 +221,7 @@ public sealed class SinglePageApp : IComponent
 
         return (bars.Count > 0 ? Invariant($"<span class=\"m-px\">{bars[^1].Close.ToString(CultureInfo.InvariantCulture)}</span>") : string.Empty)
             + (mast?.DayChangePct is { } day
-                ? Invariant($"<span class=\"m-chg\">{day.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
+                ? Invariant($"<span class=\"m-chg {MarkRenderer.Hue(day)}\">{(Math.Round(day, 2) == 0 ? 0 : day).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
                 : string.Empty);
     }
 
@@ -1684,7 +1684,7 @@ public sealed class SinglePageApp : IComponent
 
             analystBody.Append(analysts.Consensus.Count > 0 ? marks.ConsensusTable(analysts, report.Currency) : "<p class=\"degraded\" data-absent=\"consensus\">The newest fetch kept no estimate trend for it, so no consensus is drawn.</p>");
             analystBody.Append(analysts.Target is { } target
-                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? Invariant($", {against:+0.0;-0.0;0.0}% on the price drawn") : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
+                ? Invariant($"<p class=\"analyst-target\" data-target=\"{target}\">The analysts' mean target is {Figures.Price(target)}{(analysts.TargetAgainstPrice is { } against ? ", " + MarkRenderer.SignedFigure(against, 1, Invariant($"{(Math.Round(against, 1) == 0 ? 0 : against):+0.0;-0.0;0.0}%")) + " on the price drawn" : string.Empty)}{(analysts.MeanRating is { } mean ? Invariant($", and their mean rating {mean:0.00} on the provider's scale from one, a strong sell, to five, a strong buy") : string.Empty)}, as fetched on {Cards.Day(analysts.FetchedOn)}.</p>")
                 : "<p class=\"degraded\" data-absent=\"target\">No fetch kept the analysts' mean target.</p>");
             analystBody.Append("<div class=\"sub\">The consensus over the last 90 days</div><div class=\"fig\">").Append(marks.EstimateTrend(analysts)).Append("</div>");
             analystBody.Append("<div class=\"sub\">Ratings by month</div><div class=\"fig\">").Append(marks.RatingBars(analysts)).Append("</div>");
@@ -3086,7 +3086,7 @@ public sealed class SinglePageApp : IComponent
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\"><td class=\"num\">{at + 1}</td>"));
                 body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
                 body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
-                body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num\">{change:+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num {MarkRenderer.Hue(change)}\">{(Math.Round(change, 2) == 0 ? 0 : change):+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
                 body.Append(row.RewardToRisk is { } ratio ? Invariant($"<td class=\"r num\">{ratio:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td class=\"{(one.Listed ? "listed" : "stopped")}\" data-filter=\"{Escaped(one.Filter)}\">{Escaped(one.Filter)}</td>"));
@@ -3458,7 +3458,7 @@ public sealed class SinglePageApp : IComponent
             "Past picks",
             marks.PicksCounts(summary) + Cards.Key(
                 "How to read it.",
-                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so -1 is a full stop-out and +2 a target twice as far away as the stop."),
+                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so <span class=\"loss\">-1</span> is a full stop-out and <span class=\"gain\">+2</span> a target twice as far away as the stop."),
                 "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
             title: "How the list's picks have done",
             lede: Invariant($"Every name the live list recommended from the swing filter's first night, each followed from the close it was listed at to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),

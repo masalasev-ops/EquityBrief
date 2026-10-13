@@ -308,7 +308,7 @@ public partial class ReadSurface
         // Each heading states where its readings stood at the last session: 50 + 39 % 10 is 59,
         // and 39 / 25 is 1.56, whose gap to a signal of 1.2 is the 0.36 the bars hold.
         Assert.Contains(">Relative strength over 14 sessions (rsi14): 59 at the last session drawn</text>", strength, StringComparison.Ordinal);
-        Assert.Contains(">Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed): the line 1.56, its signal line 1.2 and the gap 0.36 at the last session drawn</text>", convergence, StringComparison.Ordinal);
+        Assert.Contains(">Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed): the line <tspan class=\"gain\">+1.56</tspan>, its signal line <tspan class=\"gain\">+1.2</tspan> and the gap <tspan class=\"gain\">+0.36</tspan> at the last session drawn</text>", convergence, StringComparison.Ordinal);
 
         // Relative strength's two edges are drawn and named with its balanced rule, at the
         // heights 70, 30 and 50 take on an axis running 0 to 100: the plot's top edge plus its

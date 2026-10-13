@@ -189,7 +189,7 @@ public partial class ReadSurface
         // The state its reported quarters gave it, and its stories of the thirty days before: two positive
         // and one negative. F2 holds no reading and no label, and its row says so.
         Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", first, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np\">+2</span> <span class=\"nn\">-1</span></td>", first, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"news-counts\" data-positive=\"2\" data-negative=\"1\"><span class=\"np gain\">+2</span> <span class=\"nn loss\">-1</span></td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>", FamilyRowOf(card, "F2"), StringComparison.Ordinal);
 

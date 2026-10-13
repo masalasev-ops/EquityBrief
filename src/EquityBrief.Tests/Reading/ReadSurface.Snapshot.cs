@@ -23,13 +23,13 @@ public partial class ReadSurface
 
         return
         [
-            .. Regex.Matches(snapshot.Groups[1].Value, "<div><dt>([^<]*)</dt><dd(?: class=\"degraded\")? data-([A-Za-z]+)=\"([^\"]*)\">(?:<b>([^<]*)</b>(?:<small>([^<]*)</small>)?|not filed)</dd></div>")
+            .. Regex.Matches(snapshot.Groups[1].Value, "<div><dt>([^<]*)</dt><dd(?: class=\"degraded\")? data-([A-Za-z]+)=\"([^\"]*)\">(?:<b>([^<]*)</b>(?:<small>((?:[^<]|<span class=\"(?:gain|loss|flat)\">[^<]*</span>)*)</small>)?|not filed)</dd></div>")
                 .Select(row => (
                     WebUtility.HtmlDecode(row.Groups[1].Value),
                     row.Groups[2].Value,
                     row.Groups[3].Value,
                     WebUtility.HtmlDecode(row.Groups[4].Value),
-                    row.Groups[5].Success ? WebUtility.HtmlDecode(row.Groups[5].Value) : null)),
+                    row.Groups[5].Success ? WebUtility.HtmlDecode(Regex.Replace(row.Groups[5].Value, "</?span[^>]*>", string.Empty)) : null)),
         ];
     }
 

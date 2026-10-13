@@ -353,8 +353,8 @@ public partial class ReadSurface
 
         Assert.Contains("<p class=\"card-rank\" data-rank=\"83\">The learned score, which passed the walk-forward tester on this index, places it at hundredth 83 of the setups it learned on here.</p>", part, StringComparison.Ordinal);
         Assert.Contains("<dd data-similar=\"250\" data-distance=\"0.125\">250 of the rule's 3,120 finished setups on this index, the nearest on close_over_twenty, liquidity by their places among them, a median distance of 0.125</dd>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-mean=\"0.2\" data-low=\"0.1\" data-high=\"0.3\">a mean +0.20 of the risk against the same plan on every member that session, before costs, ninety per cent between +0.10 and +0.30</dd>", part, StringComparison.Ordinal);
-        Assert.Contains("<dd data-rule-mean=\"0.05\">a mean +0.05 over every one of them</dd>", part, StringComparison.Ordinal);
+        Assert.Contains("<dd data-mean=\"0.2\" data-low=\"0.1\" data-high=\"0.3\">a mean <span class=\"gain\">+0.20</span> of the risk against the same plan on every member that session, before costs, ninety per cent between <span class=\"gain\">+0.10</span> and <span class=\"gain\">+0.30</span></dd>", part, StringComparison.Ordinal);
+        Assert.Contains("<dd data-rule-mean=\"0.05\">a mean <span class=\"gain\">+0.05</span> over every one of them</dd>", part, StringComparison.Ordinal);
         Assert.DoesNotContain(CardSimilar.NotValidated, part, StringComparison.Ordinal);
         Assert.DoesNotContain(CardSimilar.NotDistinguishable, part, StringComparison.Ordinal);
     }

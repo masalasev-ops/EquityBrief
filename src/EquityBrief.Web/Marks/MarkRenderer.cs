@@ -1252,8 +1252,28 @@ public sealed partial class MarkRenderer : IComponent
     // A figure to a tenth, as the tables and the chart's labels draw percentages.
     static string Tenth(double value) => Unsigned(value, 1).ToString("0.0", Invariant);
 
-    // The hue a change is drawn in: the rise's above nought, the fall's below it, and ink at it.
-    static string Hue(double change) => Unsigned(change, 2) > 0 ? "up" : Unsigned(change, 2) < 0 ? "down" : "flat";
+    // The one class pair every page draws a signed figure with, from 19.2: the gain's green above nought and the loss's
+    // red below it at the places the figure is written to, and flat, in ink and written with no sign, at it.
+    // see: A figure that rose or fell is drawn green or red with its sign on every page
+    public static string Hue(double change, int places = 2) => Unsigned(change, places) > 0 ? "gain" : Unsigned(change, places) < 0 ? "loss" : "flat";
+
+    // A signed figure as drawn: its words in the class its sign gives at the places it is written to.
+    public static string SignedFigure(double figure, int places, string words) => Formatted($"<span class=\"{Hue(figure, places)}\">{words}</span>");
+
+    // A figure to two places with its sign written, in the class its sign gives.
+    static string SignedTwo(double figure) => SignedFigure(figure, 2, Unsigned(figure, 2).ToString("+0.00;-0.00;0.00", Invariant));
+
+    // A figure to a tenth with its sign written, in the class its sign gives.
+    static string SignedTenth(double figure) => SignedFigure(figure, 1, Unsigned(figure, 1).ToString("+0.0;-0.0;0.0", Invariant));
+
+    // A row's positive and negative stories of the thirty days before the night, the positive with its plus in the
+    // gain's green and the negative with its minus in the loss's red, and a count of none written with no sign.
+    static string StoryCounts(int positive, int negative) =>
+        Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\">")
+        + (positive > 0 ? Formatted($"<span class=\"np gain\">+{positive}</span>") : "<span class=\"np flat\">0</span>")
+        + " "
+        + (negative > 0 ? Formatted($"<span class=\"nn loss\">-{negative}</span>") : "<span class=\"nn flat\">0</span>")
+        + "</td>";
 
     // A count with its noun, the noun's singular for one: "1 report", "2 reports".
     static string Counted(long count, string one, string many) => count.ToString(Invariant) + " " + (count == 1 ? one : many);
@@ -1853,10 +1873,20 @@ public sealed partial class MarkRenderer : IComponent
             svg.Append(Invariant, $"<g class=\"pane\" data-pane=\"{Escaped(pane.Key)}\" data-neutral=\"{Number(neutral)}\">");
 
             // The heading: what the pane reads and each reading's value at the last session
-            // drawn, then what the pane means in words.
+            // drawn, then what the pane means in words. From 19.2 the convergence pane's readings,
+            // above nought where the move strengthens and below it where it weakens, are written
+            // with their sign in the gain's green or the loss's red.
             var last = members
                 .Where(reading => reading.Values.Count > 0 && reading.Values[^1] is not null)
-                .Select(reading => (ReadingPart(reading.Name) + " " + Number(reading.Values[^1]!.Value)).Trim())
+                .Select(reading =>
+                {
+                    var value = reading.Values[^1]!.Value;
+                    var figure = pane.Key == "convergence"
+                        ? Formatted($"<tspan class=\"{Hue(value)}\">{Unsigned(value, 2).ToString("+0.##;-0.##;0", Invariant)}</tspan>")
+                        : Escaped(Number(value));
+
+                    return (Escaped(ReadingPart(reading.Name)) + " " + figure).Trim();
+                })
                 .ToArray();
             var stood = last.Length switch
             {
@@ -1865,7 +1895,7 @@ public sealed partial class MarkRenderer : IComponent
                 _ => string.Join(", ", last[..^1]) + " and " + last[^1] + " at the last session drawn",
             };
 
-            svg.Append(Invariant, $"<text class=\"m-pane-h\" x=\"{Margin}\" y=\"{top + 14}\">{Escaped(TitleOf(pane.Key))}: {Escaped(stood)}</text>");
+            svg.Append(Invariant, $"<text class=\"m-pane-h\" x=\"{Margin}\" y=\"{top + 14}\">{Escaped(TitleOf(pane.Key))}: {stood}</text>");
 
             var line = top + PaneTitle + 10;
 
@@ -3308,7 +3338,7 @@ public sealed partial class MarkRenderer : IComponent
             if (!oneGateShort)
             {
                 list.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
-                    ? Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\"><span class=\"np\">+{positive}</span> <span class=\"nn\">-{negative}</span></td>")
+                    ? StoryCounts(positive, negative)
                     : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>");
             }
 
@@ -5608,7 +5638,7 @@ public sealed partial class MarkRenderer : IComponent
             {
                 table.Append(Formatted($"<td class=\"below-high\" data-below-high=\"{Number(read.BelowHighPct)}\" data-year-high=\"{read.YearHigh.ToString(Invariant)}\" data-bars=\"{read.Bars}\">{Number(read.BelowHighPct)}% below {Figures.Price(read.YearHigh)}, the high of {read.Bars} bars</td>"));
                 table.Append(read.ReturnPct is { } back
-                    ? Formatted($"<td class=\"peer-return\" data-return=\"{Number(back)}\" data-bars=\"{read.Bars}\">{back.ToString("+0.##;-0.##;0", Invariant)}%</td>")
+                    ? Formatted($"<td class=\"peer-return {Hue(back)}\" data-return=\"{Number(back)}\" data-bars=\"{read.Bars}\">{Unsigned(back, 2).ToString("+0.##;-0.##;0", Invariant)}%</td>")
                     : Formatted($"<td class=\"peer-return\" data-return=\"\" data-bars=\"{read.Bars}\"><span class=\"degraded\">not available, {read.Bars} bars</span></td>"));
             }
             else
@@ -5877,9 +5907,9 @@ public sealed partial class MarkRenderer : IComponent
         days is { } value ? value.ToString("0.##", CultureInfo.InvariantCulture) : "none";
 
     // A day's change as an attribute, and as the words a reader takes it from.
-    // The sign is always drawn, because the sign is the only channel the
-    // direction has: hue is spoken for by support and resistance, and a change
-    // written without its sign is a magnitude.
+    // The sign is always drawn, and from 19.2 the gain's green or the loss's red
+    // beside it, since a change written without its sign is a magnitude and a
+    // hue alone is no channel a reader can always see.
     static string Change(double? change) =>
         change is { } value ? value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : "none";
 
@@ -5891,7 +5921,7 @@ public sealed partial class MarkRenderer : IComponent
     // collapsed into a change of exactly 0.00.
     static string ChangeReads(double? change, decimal? close) =>
         change is { } value
-            ? Formatted($"{value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}%")
+            ? SignedFigure(value, 2, Change2(value))
             : close is null
                 ? "<span class=\"degraded\" data-absence=\"no-bar\">no bar for this session</span>"
                 : "<span class=\"degraded\" data-absence=\"no-earlier-close\">no earlier close stored</span>";
@@ -5934,7 +5964,7 @@ public sealed partial class MarkRenderer : IComponent
     // A column heading carrying what its column holds, which the stylesheet shows while the pointer is over
     // the heading or it has the focus. The words the heading shows are its name unless it is drawn short.
     static string TippedHeading(string heading, string says, string? classes = null, string? shown = null) =>
-        Formatted($"<th class=\"{(classes is null ? string.Empty : classes + " ")}tipped\" tabindex=\"0\" data-heading=\"{Escaped(heading)}\"><span class=\"th-t\">{Escaped(shown ?? heading)}</span><span class=\"head-tip\" role=\"tooltip\">{Escaped(says)}</span></th>");
+        Formatted($"<th class=\"{(classes is null ? string.Empty : classes + " ")}tipped\" tabindex=\"0\" data-heading=\"{Escaped(heading)}\"><span class=\"th-t\">{Escaped(shown ?? heading)}</span><span class=\"head-tip\" role=\"tooltip\">{WithSignedFigures(says)}</span></th>");
 
     // What each of the universe table's columns holds, in the order the columns are drawn, said in the
     // column's heading so a reader learns how to read a column without leaving the table. The windows
@@ -6350,7 +6380,7 @@ public sealed partial class MarkRenderer : IComponent
 
         string ReturnCell(double? value, double? place, int sessions) =>
             value is { } made
-                ? Formatted($"{made:+0.00;-0.00;0.00}% over {sessions} sessions") +
+                ? SignedTwo(made) + Formatted($"% over {sessions} sessions") +
                     (place is { } share ? Formatted($", above {share * 100:0.0}% of the other members' returns") : ", with no other member's return to place it among")
                 : Formatted($"<span class=\"degraded\">not available, {view.Bars} bars</span>");
 
@@ -6499,7 +6529,7 @@ public sealed partial class MarkRenderer : IComponent
             "peer-surprise",
             Formatted($"Their mean earnings surprise over the {MemberReadings.PeerSessions} sessions before the night, each weighted by its company's value"),
             Whole(view.PeerSurprise),
-            view.PeerSurprise is { } surprise ? Formatted($"{surprise:+0.0;-0.0;0.0}%")
+            view.PeerSurprise is { } surprise ? SignedFigure(surprise, 1, Formatted($"{Unsigned(surprise, 1):+0.0;-0.0;0.0}%"))
                 : view.Industry is null ? Short("not read: no industry filed") : Short("none: no S&amp;P 500 member of its industry reported a surprise in them"));
 
         // The analysts' rating counts as context, as the newest fetch filed them and dated by it; no rule reads them.
@@ -6724,7 +6754,16 @@ public sealed partial class MarkRenderer : IComponent
         business is null
             ? string.Empty
             : $" <span class=\"business\" tabindex=\"0\" data-state=\"{Escaped(business.State)}\">{Escaped(business.State)}"
-                + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(Escaped))}</span></span>";
+                + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(WithSignedFigures))}</span></span>";
+
+    // A sentence the code wrote, escaped, each figure in it written with its sign drawn in the gain's green or the loss's
+    // red by that sign, from 19.2.
+    // see: A figure that rose or fell is drawn green or red with its sign on every page
+    static string WithSignedFigures(string sentence) =>
+        Regex.Replace(
+            Escaped(sentence),
+            @"(?<![\w.,/:&;-])([+\-−])(\d+(?:[.,]\d+)*)",
+            figure => Formatted($"<span class=\"{(figure.Groups[1].Value == "+" ? "gain" : "loss")}\">{figure.Value}</span>"));
 
     // "What the numbers say", the block a name's numbers open with: the heading carrying the state, the
     // quarter the readings were read from, one sentence per reading, and folded beneath them the quarters
@@ -6746,7 +6785,7 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var sentence in view.Sentences)
         {
-            block.Append(Invariant, $"<li>{Escaped(sentence)}</li>");
+            block.Append(Invariant, $"<li>{WithSignedFigures(sentence)}</li>");
         }
 
         block.Append("</ul>");
@@ -6829,7 +6868,7 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(row.Status == PickStatus.Open
                 ? "<td class=\"r res open\" data-result=\"open\">open</td>"
                 : row.Result is { } result
-                    ? Formatted($"<td class=\"r res\" data-result=\"{result.ToString("R", Invariant)}\">{result.ToString("+0.00;-0.00;0.00", Invariant)} &#215;</td>")
+                    ? Formatted($"<td class=\"r res {Hue(result)}\" data-result=\"{result.ToString("R", Invariant)}\">{Unsigned(result, 2).ToString("+0.00;-0.00;0.00", Invariant)} &#215;</td>")
                     : "<td class=\"r res\" data-result=\"none\"><span class=\"degraded\">none</span></td>");
             table.Append("</tr>");
         }
@@ -6912,7 +6951,7 @@ public sealed partial class MarkRenderer : IComponent
         counts.Append("<dl class=\"three\">");
         counts.Append(Invariant, $"<div><dt>Reached target first</dt><dd>{share.ToString("0.0", Invariant)}%</dd><small>{summary.Target} of the {summary.Decided} decided at the target or the stop</small></div>");
         counts.Append(Invariant, $"<div><dt>Needed to break even</dt><dd>{(summary.BreakEven is { } needed ? needed.ToString("0.0", Invariant) + "%" : "none")}</dd><small>the mean of each decided trade's own bar</small></div>");
-        counts.Append(Invariant, $"<div><dt>Average result</dt><dd>{(summary.AverageResult is { } average ? average.ToString("+0.00;-0.00;0.00", Invariant) + " &#215; risk" : "none")}</dd><small>per finished trade</small></div>");
+        counts.Append(Invariant, $"<div><dt>Average result</dt><dd>{(summary.AverageResult is { } average ? SignedFigure(average, 2, Unsigned(average, 2).ToString("+0.00;-0.00;0.00", Invariant) + " &#215; risk") : "none")}</dd><small>per finished trade</small></div>");
         counts.Append("</dl></div>");
 
         return counts.ToString();

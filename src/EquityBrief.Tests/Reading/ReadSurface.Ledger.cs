@@ -77,15 +77,15 @@ public partial class ReadSurface
         Assert.Contains("data-card=\"ledger-pullback\"", page, StringComparison.Ordinal);
         Assert.Contains("data-card=\"ledger-heavyweight\"", page, StringComparison.Ordinal);
         Assert.Contains("<tr data-year=\"2026\" data-setups=\"40\" data-live-passes=\"10\" data-picked=\"4\" data-settled=\"30\"><td class=\"num\">2026</td><td class=\"r num\">40</td><td class=\"r num\">25%</td><td class=\"r num\">50% of 8</td><td class=\"r num\">30</td>", page, StringComparison.Ordinal);
-        Assert.Contains("data-result-mean=\"0.4\">+0.40 ×</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.4\"><span class=\"gain\">+0.40</span> ×</td>", page, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"degraded\">none written by a night</span></td>", page, StringComparison.Ordinal);
 
         // The heavyweights' year read as a share of the buy, 0.12 as 12.0 per cent.
-        Assert.Contains("data-result-mean=\"0.12\">+12.0%</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.12\"><span class=\"gain\">+12.0</span>%</td>", page, StringComparison.Ordinal);
 
         // The deciles of the pullback's newest year holding settled setups, 2026's, nine cut points, the fourth at 0.25.
         Assert.Contains("<table class=\"ledger-deciles\" data-family=\"pullback\" data-year=\"2026\" data-settled=\"30\">", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\">+0.25 ×</td>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\"><span class=\"gain\">+0.25</span> ×</td>", page, StringComparison.Ordinal);
         Assert.Equal(2 * LedgerSummaries.CutPoints, page.Split("data-cut=\"", StringSplitOptions.None).Length - 1);
         Assert.Contains("<b>Setups a year.</b>", page, StringComparison.Ordinal);
         Assert.Contains("<b>The deciles.</b>", page, StringComparison.Ordinal);

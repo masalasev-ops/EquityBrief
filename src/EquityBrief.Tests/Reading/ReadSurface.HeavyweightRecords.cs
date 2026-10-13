@@ -82,10 +82,10 @@ public partial class ReadSurface
 
         // The cells a reader reads: the family's heading, the rule marked live, and the edge in points of the buy.
         Assert.Contains(
-            $"<td class=\"setup\">{SetupFamilies.SectorHeavyweights.Heading}</td><td>{live} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">4</td><td class=\"r num\">2</td><td class=\"r num\">-1.0 points</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.0125</td>",
+            $"<td class=\"setup\">{SetupFamilies.SectorHeavyweights.Heading}</td><td>{live} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">4</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"loss\">-1.0</span> points</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.0125</td>",
             rows[0],
             StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">+2.0 points</td><td class=\"r num\">2 of 8</td>", rows[2], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\"><span class=\"gain\">+2.0</span> points</td><td class=\"r num\">2 of 8</td>", rows[2], StringComparison.Ordinal);
 
         // The same counts the store gives, by each rule's own rows alone.
         Assert.Equal(["4", "2"], [.. Strings(store, $"SELECT COUNT(*) FROM heavyweight_rule_holding WHERE entered_on <= '{TheSwitch}' GROUP BY candidate ORDER BY COUNT(*) DESC;")]);

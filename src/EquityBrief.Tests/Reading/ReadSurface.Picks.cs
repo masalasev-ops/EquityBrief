@@ -389,7 +389,7 @@ public partial class ReadSurface
         Assert.Contains("<dl class=\"counts\" data-listed=\"270\" data-nights=\"60\" data-open=\"0\" data-finished=\"270\" data-target=\"100\" data-stopped=\"150\" data-time=\"20\" data-missing=\"0\">", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Reached target first</dt><dd>40.0%</dd><small>100 of the 250 decided at the target or the stop</small></div>", page, StringComparison.Ordinal);
         Assert.Contains("<div><dt>Needed to break even</dt><dd>31.0%</dd><small>the mean of each decided trade's own bar</small></div>", page, StringComparison.Ordinal);
-        Assert.Contains("<div><dt>Average result</dt><dd>+0.20 × risk</dd><small>per finished trade</small></div>", page, StringComparison.Ordinal);
+        Assert.Contains("<div><dt>Average result</dt><dd><span class=\"gain\">+0.20 × risk</span></dd><small>per finished trade</small></div>", page, StringComparison.Ordinal);
 
         // The bar over 620: the 100 at 620 × 100/270, 229.63, the 150 at 620 × 150/270, 344.44, the 20 after
         // them, and the line at 31% of the 574.07 the decided trades fill, 177.96.

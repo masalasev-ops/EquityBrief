@@ -135,13 +135,13 @@ public partial class ReadSurface
 
         Assert.StartsWith("<tr data-ticker=\"F1\" data-sector=\"Energy\" data-held-since=\"2026-10-01\" data-lead=\"0.123\" data-close=\"100\" data-average=\"90.5\">", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"setup\">Energy</td><td>2026-10-01</td>", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+12.3 points over 251 sessions, at 2026-10-01</td>", f1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+12.3</span> points over 251 sessions, at 2026-10-01</td>", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"heavyweight-average\" data-under=\"false\">100.00, at or above its 200-day average of 90.50</td>", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"heavyweight-plan\">held while leading</td>", f1, StringComparison.Ordinal);
 
         // X3 closes under its average, and Y3, whose rebalance stored no row for it and which stores no bar tonight, says
         // so in both cells.
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+5.0 points over 251 sessions, at 2026-10-01</td><td class=\"heavyweight-average\" data-under=\"true\">30.00, under its 200-day average of 35.25</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+5.0</span> points over 251 sessions, at 2026-10-01</td><td class=\"heavyweight-average\" data-under=\"true\">30.00, under its 200-day average of 35.25</td>", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"Y3\" data-sector=\"Financials\" data-held-since=\"2026-09-01\" data-lead=\"none\" data-close=\"none\" data-average=\"none\">", card, StringComparison.Ordinal);
         Assert.Contains("<span class=\"degraded\">not read</span></td><td class=\"heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>", card, StringComparison.Ordinal);
 
@@ -302,8 +302,8 @@ public partial class ReadSurface
             StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", picks, StringComparison.Ordinal);
 
-        Assert.Contains("<td>2026-09-01 at 40.00</td><td>2026-10-01 at 42.00</td><td>no longer the leader</td><td class=\"r num\">+5.0%</td><td class=\"r num\">+2.0%</td><td class=\"r num\">+3.0 points</td>", table, StringComparison.Ordinal);
-        Assert.Contains("<td>2026-09-01 at 50.00</td><td>2026-10-02 at 48.00</td><td>a close under its 200-day average</td><td class=\"r num\">-4.0%</td><td class=\"r num\">+1.0%</td><td class=\"r num\">-5.0 points</td>", table, StringComparison.Ordinal);
+        Assert.Contains("<td>2026-09-01 at 40.00</td><td>2026-10-01 at 42.00</td><td>no longer the leader</td><td class=\"r num\"><span class=\"gain\">+5.0</span>%</td><td class=\"r num\"><span class=\"gain\">+2.0</span>%</td><td class=\"r num\"><span class=\"gain\">+3.0</span> points</td>", table, StringComparison.Ordinal);
+        Assert.Contains("<td>2026-09-01 at 50.00</td><td>2026-10-02 at 48.00</td><td>a close under its 200-day average</td><td class=\"r num\"><span class=\"loss\">-4.0</span>%</td><td class=\"r num\"><span class=\"gain\">+1.0</span>%</td><td class=\"r num\"><span class=\"loss\">-5.0</span> points</td>", table, StringComparison.Ordinal);
 
         // Y3, sold after the night, is held on it, with neither figure yet.
         Assert.Contains("data-ticker=\"Y3\" data-bought=\"2026-09-01\" data-sold=\"open\" data-result=\"none\" data-cut=\"none\" data-edge=\"none\">", table, StringComparison.Ordinal);

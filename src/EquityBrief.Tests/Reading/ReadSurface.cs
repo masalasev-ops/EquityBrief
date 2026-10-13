@@ -4379,10 +4379,10 @@ public partial class ReadSurface
                 list,
                 StringComparison.Ordinal);
 
-            // And in words, with its sign, because the sign is the only channel
-            // the direction has: the two hues belong to support and resistance
-            // and a day's change is not allowed either of them.
-            Assert.Contains($">{reads}%</td>", list, StringComparison.Ordinal);
+            // And in words, with its sign, which from 19.2 stands in the gain's
+            // green or the loss's red beside it, so the direction is never in the
+            // hue alone.
+            Assert.Contains($"<span class=\"{MarkRenderer.Hue(change)}\">{reads}%</span></td>", list, StringComparison.Ordinal);
 
             // The trend state in a word, which is the ladder's own label.
             var ladder = await api.LadderAsync(row.Ticker);

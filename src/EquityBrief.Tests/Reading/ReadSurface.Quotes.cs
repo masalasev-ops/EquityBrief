@@ -74,7 +74,7 @@ public partial class ReadSurface
             var page = await client.GetStringAsync($"/screens/name/{name}");
 
             Assert.Contains(
-                "<span class=\"m-price\" data-live=\"yes\"><span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"231.40\">231.40</span><span class=\"m-chg up\" data-change=\"1.50\">+1.50 (+0.65%)</span></span>",
+                "<span class=\"m-price\" data-live=\"yes\"><span class=\"pill live\">LIVE</span><span class=\"m-px\" data-price=\"231.40\">231.40</span><span class=\"m-chg gain\" data-change=\"1.50\">+1.50 (+0.65%)</span></span>",
                 page,
                 StringComparison.Ordinal);
             Assert.Contains(
@@ -308,13 +308,13 @@ public partial class ReadSurface
         Assert.Equal(0.9081, double.Parse(bar.Groups[1].Value, CultureInfo.InvariantCulture), 4);
         Assert.Equal("109", bar.Groups[2].Value);
         Assert.Contains("high <span data-high=\"217.78\">217.78</span> on 2026-09-15; low <span data-low=\"150.00\">150.00</span> on 2026-01-05; at the last close", tiles, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"v down\" data-from-high=\"", tiles, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v loss\" data-from-high=\"", tiles, StringComparison.Ordinal);
 
         // A quote past the year's high is held at the line's end, and its distance from the high is a rise.
         var past = marks.LeadTiles(new TilesView(null, null, null, EquityBrief.Core.Tiles.NameTiles.High(230m, 217.78m, high, 150.00m, low), 230m, Live: true));
 
         Assert.Contains("<circle class=\"rb-dot\" cx=\"120\"", past, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"v up\" data-from-high=\"", past, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"v gain\" data-from-high=\"", past, StringComparison.Ordinal);
         Assert.Contains("; at the quote</span>", past, StringComparison.Ordinal);
 
         // A name whose year's high and low are not stored draws no bar and says so, as each tile with nothing stored does.

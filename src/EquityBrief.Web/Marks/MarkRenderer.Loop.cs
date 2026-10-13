@@ -22,8 +22,8 @@ public sealed partial class MarkRenderer
         value is not { } held
             ? "<span class=\"degraded\">none</span>"
             : unit == LoopPoints
-                ? Formatted($"{(held * 100).ToString("+0.00;-0.00;0.00", Invariant)} points")
-                : Formatted($"{held.ToString("+0.00;-0.00;0.00", Invariant)} risks");
+                ? SignedTwo(held * 100) + " points"
+                : SignedTwo(held) + " risks";
 
     static string LoopUnits(string unit, int count) =>
         unit == LoopPoints ? Formatted($"{count} month(s)") : Formatted($"{count} trade(s)");
@@ -68,12 +68,13 @@ public sealed partial class MarkRenderer
         foreach (var spread in spreads)
         {
             var deciles = string.Join(" ", spread.Deciles.Select(decile => Figure(decile, "+0.00;-0.00;0.00")));
+            var drawn = string.Join(" ", spread.Deciles.Select(decile => decile is { } tenth ? SignedTwo(tenth) : "none"));
 
             html.Append(Invariant, $"<tr data-reading=\"{Escaped(spread.Reading)}\" data-units=\"{spread.Units}\" data-winners=\"{spread.Winners}\" data-losers=\"{spread.Losers}\">");
             html.Append(Invariant, $"<td>{Escaped(spread.Reading)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{spread.Units}: {spread.Winners} won, {spread.Losers} did not</td>");
             html.Append(Invariant, $"<td class=\"r num\">{Figure(spread.WinnersMedian, "0.####")}</td><td class=\"r num\">{Figure(spread.LosersMedian, "0.####")}</td>");
-            html.Append(Invariant, $"<td class=\"num\" data-deciles=\"{Escaped(deciles)}\">{Escaped(deciles)}</td></tr>");
+            html.Append(Invariant, $"<td class=\"num\" data-deciles=\"{Escaped(deciles)}\">{drawn}</td></tr>");
         }
 
         html.Append("</tbody></table></div></details>");
@@ -294,8 +295,8 @@ public sealed partial class MarkRenderer
             var book = family.Key == EquityBrief.Core.Families.HeavyweightRule.Name;
 
             string Figure(double? value) => value is not { } held ? "none" : book
-                ? (held * 100).ToString("+0.00;-0.00;0.00", Invariant) + " points"
-                : held.ToString("+0.00;-0.00;0.00", Invariant) + " risks";
+                ? SignedTwo(held * 100) + " points"
+                : SignedTwo(held) + " risks";
 
             html.Append(Invariant, $"<div class=\"loop-alarm\" data-family=\"{Escaped(family.Key)}\" data-flagged=\"{(newest.Flagged ? 1 : 0)}\" data-periods=\"{periods.Length}\">");
             html.Append(newest.Flagged

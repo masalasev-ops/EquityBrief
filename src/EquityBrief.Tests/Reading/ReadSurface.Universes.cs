@@ -123,7 +123,7 @@ public partial class ReadSurface
         // The drift carries its line of evidence and says how far the S&P 400's members got.
         var drift = FamilyCardOf(page, "drift");
 
-        Assert.Contains("<p class=\"family-note\">Published evidence finds this drift gone outside microcaps (Martineau 2022), and the 14.8 test measured -0.222 on the 1,500.</p>", drift, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"family-note\">Published evidence finds this drift gone outside microcaps (Martineau 2022), and the 14.8 test measured <span class=\"loss\">-0.222</span> on the 1,500.</p>", drift, StringComparison.Ordinal);
         Assert.Contains("No stock passed this setup tonight: of the 3 S&P 400 members read, 2 no setup, 1 the price under $5.", drift, StringComparison.Ordinal);
 
         // The heavyweights' card names its design and the sector comparison its index reads, against the 400's fund.
@@ -165,7 +165,7 @@ public partial class ReadSurface
         var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400")));
 
         Assert.Contains("<tr data-ticker=\"M2\" data-sector=\"Energy\" data-held-since=\"2026-10-02\" data-lead=\"0.0412\"", card, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+4.1 points over 251 sessions, at 2026-10-02</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"gain\">+4.1</span> points over 251 sessions, at 2026-10-02</td>", card, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M3\" data-sector=\"Energy\" data-held-since=\"2026-09-01\" data-lead=\"none\"", card, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num heavyweight-lead\"><span class=\"degraded\">bought before its book stored a lead</span></td>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("not read", card, StringComparison.Ordinal);
@@ -270,7 +270,7 @@ public partial class ReadSurface
             Regex.Matches(picks, "<tr data-ticker=\"([^\"]+)\" data-index=\"S&P 400\" data-family=\"([^\"]+)\" data-listed=\"[^\"]+\" data-ended=\"([^\"]+)\" data-result=\"([^\"]+)\" data-cost=\"[^\"]+\" data-after-cost=\"([^\"]+)\">")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value, match.Groups[5].Value)));
         Assert.Contains("<td class=\"setup\" data-setup=\"pullback\">Pullback · S&P 400</td>", picks, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">+2.00</td><td class=\"r num\">+0.02</td><td class=\"r num\">+1.98</td>", picks, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\"><span class=\"gain\">+2.00</span></td><td class=\"r num\">0.02</td><td class=\"r num\"><span class=\"gain\">+1.98</span></td>", picks, StringComparison.Ordinal);
         Assert.Contains("Showing 2 of 2 S&P 400 trades, 1 open", picks, StringComparison.Ordinal);
         Assert.Contains(
             "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector among the S&P 400's members, or at its last close as a member.",

@@ -28,7 +28,7 @@ public partial class ReadSurface
     }
 
     static string PeerCellOf(string row, string cell) =>
-        Regex.Match(row, $"<td class=\"{cell}\"([^>]*)>(.*?)</td>", RegexOptions.Singleline) is { Success: true } found
+        Regex.Match(row, $"<td class=\"{cell}(?: (?:gain|loss|flat))?\"([^>]*)>(.*?)</td>", RegexOptions.Singleline) is { Success: true } found
             ? found.Value
             : throw new InvalidOperationException($"no {cell} cell in {row}");
 

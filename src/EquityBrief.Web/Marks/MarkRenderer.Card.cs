@@ -380,8 +380,8 @@ public sealed partial class MarkRenderer
 
         body.Append("<dl class=\"card-figures\">");
         body.Append(Formatted($"<dt>Matched</dt><dd data-similar=\"{count}\" data-distance=\"{(similar.Distance ?? 0).ToString("R", Invariant)}\">{count:N0} of the rule's {similar.RuleSetups ?? 0:N0} finished setups on this index, the nearest on {Escaped(string.Join(", ", similar.Readings ?? []))} by their places among them, a median distance of {(similar.Distance ?? 0).ToString("0.000", Invariant)}</dd>"));
-        body.Append(Formatted($"<dt>Their edge</dt><dd data-mean=\"{mean.ToString("R", Invariant)}\" data-low=\"{low.ToString("R", Invariant)}\" data-high=\"{high.ToString("R", Invariant)}\">a mean {mean.ToString("+0.00;-0.00;0.00", Invariant)} of the risk against the same plan on every member that session, before costs, ninety per cent between {low.ToString("+0.00;-0.00;0.00", Invariant)} and {high.ToString("+0.00;-0.00;0.00", Invariant)}</dd>"));
-        body.Append(Formatted($"<dt>The rule's</dt><dd data-rule-mean=\"{ruleMean.ToString("R", Invariant)}\">a mean {ruleMean.ToString("+0.00;-0.00;0.00", Invariant)} over every one of them</dd>"));
+        body.Append(Formatted($"<dt>Their edge</dt><dd data-mean=\"{mean.ToString("R", Invariant)}\" data-low=\"{low.ToString("R", Invariant)}\" data-high=\"{high.ToString("R", Invariant)}\">a mean {SignedTwo(mean)} of the risk against the same plan on every member that session, before costs, ninety per cent between {SignedTwo(low)} and {SignedTwo(high)}</dd>"));
+        body.Append(Formatted($"<dt>The rule's</dt><dd data-rule-mean=\"{ruleMean.ToString("R", Invariant)}\">a mean {SignedTwo(ruleMean)} over every one of them</dd>"));
         body.Append("</dl>");
 
         if (!similar.Distinguishable)

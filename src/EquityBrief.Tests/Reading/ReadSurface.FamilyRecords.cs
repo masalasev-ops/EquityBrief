@@ -109,7 +109,7 @@ public partial class ReadSurface
         // trades, the decided ones, the edge to the thousandth, the whole blocks against the eight the first look
         // reads, and the level.
         Assert.Contains(
-            $"<td>{LiveBreakout} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\">0.100</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>",
+            $"<td>{LiveBreakout} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>",
             rows[0],
             StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">none yet</td><td class=\"r num\">0 of 8</td><td class=\"r num\">0.05</td>", rows[2], StringComparison.Ordinal);

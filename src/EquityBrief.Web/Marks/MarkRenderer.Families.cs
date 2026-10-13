@@ -193,7 +193,7 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("stop", row.Stop, null));
             body.Append(PriceCell("target", row.Target, row.Trailing ? "trailing" : null));
             body.Append(row.EndedOn is { } ended ? Formatted($"<td>ended {DayOf(ended)}</td>") : "<td><b>open</b></td>");
-            body.Append(Invariant, $"<td class=\"r num\">{Multiple(row.Result)}</td><td class=\"r num\">{Multiple(row.Cost)}</td><td class=\"r num\">{Multiple(row.AfterCost)}</td></tr>");
+            body.Append(Invariant, $"<td class=\"r num\">{Multiple(row.Result)}</td><td class=\"r num\">{(row.Cost is { } cost ? Unsigned(cost, 2).ToString("0.00", Invariant) : "<span class=\"degraded\">none yet</span>")}</td><td class=\"r num\">{Multiple(row.AfterCost)}</td></tr>");
         }
 
         body.Append("</tbody></table></div>");
@@ -202,7 +202,7 @@ public sealed partial class MarkRenderer
     }
 
     static string Multiple(double? value) =>
-        value is { } stated ? stated.ToString("+0.00;-0.00;0.00", Invariant) : "<span class=\"degraded\">none yet</span>";
+        value is { } stated ? SignedTwo(stated) : "<span class=\"degraded\">none yet</span>";
 
     // The run page's setups, one row a family in the page's order.
     public string FamilyRun(IReadOnlyList<FamilyRunRow> rows)
@@ -284,7 +284,7 @@ public sealed partial class MarkRenderer
 
             body.Append("</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? Formatted($"{shown * 100:+0.0;-0.0;0.0} points") : shown.ToString("0.000", Invariant))}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? SignedTenth(shown * 100) + " points" : SignedFigure(shown, 3, Unsigned(shown, 3).ToString("+0.000;-0.000;0.000", Invariant)))}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Level.ToString("0.####", Invariant)}</td></tr>");
         }
@@ -455,7 +455,7 @@ public sealed partial class MarkRenderer
 
                 foreach (var note in card.Notes)
                 {
-                    body.Append(Invariant, $"<p class=\"family-note\">{Escaped(note)}</p>");
+                    body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
                 }
 
                 body.Append("</section>");
@@ -500,7 +500,7 @@ public sealed partial class MarkRenderer
 
         foreach (var note in card.Notes)
         {
-            body.Append(Invariant, $"<p class=\"family-note\">{Escaped(note)}</p>");
+            body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
         }
 
         // The live rule's funnel, stretch line and forming list, beneath its picks and notes.
@@ -765,7 +765,7 @@ public sealed partial class MarkRenderer
         cells.Append(Invariant, $"<td class=\"why-tonight\">{Escaped(pick.Why)}</td>");
 
         cells.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
-            ? Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\"><span class=\"np\">+{positive}</span> <span class=\"nn\">-{negative}</span></td>")
+            ? StoryCounts(positive, negative)
             : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>");
 
         cells.Append("</tr>");

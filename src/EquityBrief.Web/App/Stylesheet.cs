@@ -234,6 +234,7 @@ main{padding-block:8px 64px}
 .fam-edge{border-left:4px solid var(--s3)}
 /* a signed figure: a rise in the green and a fall in the red, on every page, its sign always written beside it */
 .gain{color:var(--up)} .loss{color:var(--down)}
+svg .gain{fill:var(--up)} svg .loss{fill:var(--down)}
 .key{margin-top:12px;background:var(--page);border:1px solid var(--hair);border-radius:6px;padding:10px 14px;font-size:13px;line-height:1.55;color:var(--soft)}
 .key b{color:var(--ink);font-weight:600}
 .key p{margin:0}
@@ -429,7 +430,7 @@ span[data-last-asked-at]::before{content:none}
 .news-tab[value="all"]:checked~.news-rows .news-row:not([data-tabs~="all"]),.news-tab[value="positive"]:checked~.news-rows .news-row:not([data-tabs~="positive"]),.news-tab[value="negative"]:checked~.news-rows .news-row:not([data-tabs~="negative"]),.news-tab[value="neutral"]:checked~.news-rows .news-row:not([data-tabs~="neutral"]),.news-tab[value="opinion"]:checked~.news-rows .news-row:not([data-tabs~="opinion"]),.news-tab[value="unlabelled"]:checked~.news-rows .news-row:not([data-tabs~="unlabelled"]){display:none}
 .news-model{margin:8px 0 0;font-size:11.5px;color:var(--soft)}
 .list-table td.news-counts{white-space:nowrap;font-variant-numeric:tabular-nums}
-.list-table .np,.list-table .nn{color:var(--ink);font-weight:600}
+.list-table .np,.list-table .nn{font-weight:600}
 .family-state{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
 .family-state .provisional{font-weight:600;color:var(--ink)}
 .family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
@@ -599,8 +600,7 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .range-bar{display:block;margin:4px 0 2px}
 .range-bar .rb-track{stroke:var(--s2);stroke-width:4;stroke-linecap:round}
 .range-bar .rb-dot{fill:var(--ink);stroke:var(--surface);stroke-width:2}
-.name .up,.m-price .up{color:var(--up)}
-.name .down,.m-price .down{color:var(--down)}
+.lead-tile .v.gain{color:var(--up)} .lead-tile .v.loss{color:var(--down)}
 .name .card{border-top-width:1px;border-top-color:var(--hair);border-left:4px solid var(--accent)}
 .name .card.spined{border-left-color:var(--research)}
 .name .card.spined.fund{border-left-color:var(--s3)}
@@ -639,7 +639,7 @@ main .name,.exported .name{max-width:1000px;margin-inline:auto}
 .ml-gross,.ml-operating,.ml-net,.et-0,.et-1,.yl-yield,.yl-ten,.mb-line{fill:none;stroke-linejoin:round;stroke-width:2}
 .ml-gross{stroke:var(--s3)} .ml-operating{stroke:var(--ink-2)} .ml-net{stroke:var(--ink)}
 .ml-gross-dot,.lg-swatch.ml-gross{fill:var(--s3);stroke:none} .ml-operating-dot,.lg-swatch.ml-operating{fill:var(--ink-2);stroke:none} .ml-net-dot,.lg-swatch.ml-net{fill:var(--ink);stroke:none}
-.sb-bar{fill:var(--s3)} .name .sb-up{fill:var(--up)} .name .sb-down{fill:var(--down)} .sb-change{font-size:11px;font-weight:600}
+.sb-bar{fill:var(--s3)} .sb-change{font-size:11px;font-weight:600}
 .et-0{stroke:var(--ink)} .et-1{stroke:var(--s3)} .et-0-dot,.lg-swatch.et-0{fill:var(--ink);stroke:none} .et-1-dot,.lg-swatch.et-1{fill:var(--s3);stroke:none}
 .name .rt-strong-buy{fill:var(--up)} .name .rt-buy{fill:var(--up);fill-opacity:.5} .rt-hold{fill:var(--s2)} .name .rt-sell{fill:var(--down);fill-opacity:.5} .name .rt-strong-sell{fill:var(--down)}
 .m-dash{fill:none;stroke:var(--dash-ink);stroke-width:1.3;stroke-dasharray:4 3}
