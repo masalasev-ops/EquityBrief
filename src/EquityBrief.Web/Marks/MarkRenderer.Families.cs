@@ -38,7 +38,8 @@ public sealed record FamilyCardView(
     IReadOnlyList<string> Notes,
     string? Empty,
     bool SweepFoundNone = false,
-    RuleView? RuleChoice = null);
+    RuleView? RuleChoice = null,
+    int HeldBack = 0);
 
 // One choice on a card's selector: the rule's name as the register holds it, the slug the link keeps it under, its
 // variant number by its first registration or none for the live rule.

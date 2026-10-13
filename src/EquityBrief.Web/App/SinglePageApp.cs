@@ -251,6 +251,64 @@ public sealed class SinglePageApp : IComponent
             ? string.Empty
             : "<section class=\"night-notice-box\">" + marks.NightNotice(night) + NightPress(night) + "</section>";
 
+    // Tonight's top on a night the families drew the page's list: a tile a setup in the one family order with tonight's
+    // count and its state, and one table of tonight's buy points across every setup, each family's picks in its own order.
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    public static (IReadOnlyList<SetupTileView> Tiles, IReadOnlyList<BuyPointView> Points) TopOf(
+        IReadOnlyList<FamilyCardView> families,
+        HeavyweightCardView? heavyweights,
+        bool marketOpen,
+        DateOnly night)
+    {
+        var tiles = new List<SetupTileView>();
+        var points = new List<BuyPointView>();
+
+        static string HeldBack(int held) => Invariant($"{held} held back by a trade still open");
+
+        foreach (var card in families.OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family)))
+        {
+            var forming = card.RuleChoice?.Forming?.Forming ?? 0;
+            var state = card.Picks.Count > 0
+                ? card.HeldBack > 0 ? HeldBack(card.HeldBack) : "listing tonight"
+                : !marketOpen ? "the market check closed"
+                : card.HeldBack > 0 ? HeldBack(card.HeldBack)
+                : forming > 0 ? Invariant($"{forming} forming")
+                : "nothing tonight";
+
+            tiles.Add(new SetupTileView(card.Family, card.Label, card.Picks.Count, card.Picks.Count == 1 ? "pick" : "picks", state));
+            points.AddRange(card.Picks.Select(pick => new BuyPointView(card.Family, card.Label, pick)));
+        }
+
+        if (heavyweights is not null)
+        {
+            var until = heavyweights.NextRebalance is { } next ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, next) : null;
+
+            tiles.Add(new SetupTileView(
+                EquityBrief.Core.Families.HeavyweightRule.Name,
+                "Sector heavyweights",
+                heavyweights.Holdings.Count,
+                heavyweights.Holdings.Count == 1 ? "holding" : "holdings",
+                heavyweights.LastRebalance == night ? "rebalanced tonight"
+                    : until is { } sessions ? Invariant($"rebalance in {sessions} {(sessions == 1 ? "session" : "sessions")}")
+                    : "its next rebalance not read"));
+        }
+
+        return (tiles, points);
+    }
+
+    // Tonight's buy points as a card of their own, the table across every setup with its key.
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night) =>
+        Cards.Computed(
+            "Buy points",
+            marks.BuyPoints(points, selected, plan) + Cards.Key(
+                "How to read the table.",
+                "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
+                "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
+            title: "Tonight's buy points",
+            lede: Invariant($"{points.Count} across every setup tonight."),
+            stamp: Cards.Night(night),
+            region: "buy-points");
+
     // The date line's words for a night not yet run, in place of the notice it drew: when tonight's night starts, in New
     // York's time with UTC beneath the pointer, read off the start the newest nights share; none for a night in any other
     // state, or where the run log holds no night to read the start off.
@@ -738,6 +796,16 @@ public sealed class SinglePageApp : IComponent
           const open = menuButton.getAttribute('aria-expanded') !== 'true';
           menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
           menuPanel.classList.toggle('open', open);
+        });
+        // A setup's tile at the top of tonight's page brings its card into view, the sector heavyweights' by their own card.
+        screen.addEventListener('click', (event) => {
+          const tile = event.target.closest('.setup-tile[data-card]');
+          if (!tile) { return; }
+          const family = tile.getAttribute('data-card');
+          const card = family === '{{{EquityBrief.Core.Families.HeavyweightRule.Name}}}'
+            ? screen.querySelector('section.card[data-card="heavyweights"]')
+            : (screen.querySelector('section.family-card[data-family="' + CSS.escape(family) + '"]') || { closest: () => null }).closest('section.card');
+          if (card) { card.scrollIntoView({ block: 'start' }); }
         });
         // The Loop's badge: the proposals put to the operator that hold no decision, read off the surface on every screen
         // drawn and shown at one or more.
@@ -2267,6 +2335,17 @@ public sealed class SinglePageApp : IComponent
                 region.Append(marks.MarketLine(line));
             }
 
+            // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, the row selected
+            // drawing its plan and its card beneath it.
+            // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+            var (tiles, points) = TopOf(families, heavyweights, line?.Open ?? true, night);
+            var plan = selectedName.Length > 0 && selectedTicker is { } planned
+                ? selectedName + SelectedLinks(planned, rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == planned))
+                : string.Empty;
+
+            region.Append(marks.SetupTiles(tiles));
+            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night));
+
             foreach (var card in families)
             {
                 region.Append(Cards.Computed(
@@ -2376,9 +2455,12 @@ public sealed class SinglePageApp : IComponent
 
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
-        // plan beneath the list, on the same page, and brings it into view.
-        // see: Selecting a row draws its plan beneath the list and is no navigation
-        if (selectedName.Length > 0 && selectedTicker is { } chosen)
+        // plan beneath the list, on the same page, and brings it into view. On a night the families drew the list, a buy
+        // point's plan is drawn beneath its row in the table instead, and this region draws any other name selected.
+        // see: Selecting a row draws its plan and its card beneath the row and is no navigation
+        var inTheTable = families is not null && selectedTicker is { } asked && families.Any(card => card.Picks.Any(pick => pick.Row.Ticker == asked));
+
+        if (!inTheTable && selectedName.Length > 0 && selectedTicker is { } chosen)
         {
             var picked = rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == chosen);
             var name = picked?.Distance?.Name;
@@ -2397,7 +2479,7 @@ public sealed class SinglePageApp : IComponent
                 id: "selected",
                 region: "selected"));
         }
-        else
+        else if (!inTheTable)
         {
             region.Append(selectedName);
         }
@@ -2465,6 +2547,12 @@ public sealed class SinglePageApp : IComponent
         region.Append(notComputed is { } said
             ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
             : marks.MarketLine(line));
+
+        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup.
+        var (tiles, points) = TopOf(families, heavyweights, line.Open, night);
+
+        region.Append(marks.SetupTiles(tiles));
+        region.Append(BuyPointsCard(marks, points, null, string.Empty, night));
 
         foreach (var card in families)
         {

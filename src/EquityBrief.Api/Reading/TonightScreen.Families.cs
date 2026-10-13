@@ -124,7 +124,8 @@ public static partial class TonightScreen
                 variants,
                 listed,
                 Notes(family, own, listedUnder),
-                listed.Length > 0 ? null : Empty(family, own, rule, [.. (results ?? []).Where(result => result.Family == family.Name)])));
+                listed.Length > 0 ? null : Empty(family, own, rule, [.. (results ?? []).Where(result => result.Family == family.Name)]),
+                HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade)));
         }
 
         return cards;

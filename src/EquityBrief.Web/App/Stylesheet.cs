@@ -344,6 +344,15 @@ span[data-last-asked-at]::before{content:none}
 .why-it-is-here .reason .reason-name{font-weight:700}
 .oneline{margin:14px 0 0;font-size:13.5px;color:var(--ink-2);max-width:70ch}
 .watch-list .watched{display:inline-block;margin:4px 8px 0 0}
+/* tonight's top: a tile a setup in its tint and edge with tonight's count and its state, then one table of tonight's buy
+   points, each row tagged with its setup and the row selected drawing its plan and its card in a row beneath it */
+.setup-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:16px 0 0}
+.setup-tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-left-width:4px;border-radius:8px;padding:10px 12px;cursor:pointer}
+.setup-tile .tile-count{font:600 26px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.setup-tile .tile-counted{font-size:12.5px;color:var(--ink-2)}
+.setup-tile .tile-state{font-size:12.5px;color:var(--ink-2)}
+.buy-points td.setup{white-space:nowrap}
+.buy-points tr.plan-row>td{white-space:normal;background:var(--plot);padding:12px}
 .selwrap{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}
 .sel-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .sel-unwritten{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)}
