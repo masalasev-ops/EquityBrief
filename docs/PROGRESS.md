@@ -44052,7 +44052,10 @@ Mutated:    the rule, stated before the run: one mutation a property the correct
             16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree. M6, for
             the history's span, stated before its run: Nasdaq's history asked for the session's day alone, predicted red
             at the live feed's test alone; red there alone, 1 of 17, and reverted.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL. The run over
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 4790d9e6: all six
+            steps, 0 warnings, 0 errors, 2260 of 2260 tests ran with none failed in 15 minutes 12 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
+            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed. The run over
             4659e15e stopped at the suite on the count of shipped files permitted a client, 22 against the 23 this
             correction makes; the runs over 6fcecc5a were green, 2259 of 2259 tests and 1268 claims passing, before the
             history's span was found.
