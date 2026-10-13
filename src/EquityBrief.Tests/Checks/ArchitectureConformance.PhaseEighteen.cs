@@ -37,9 +37,10 @@ public partial class ArchitectureConformance
         ("18.5", [], []),
     ];
 
-    // The rows the document gains after phase 18's report, named beside the pair and never counted in it: 19.1's part of
-    // the card's rule on the S&P 400's and 600's variant reading no market check, which phase 19's own report counts.
-    internal static string[] AfterPhaseEighteen => [.. Reading.ReadSurface.MarketOffRows];
+    // The rows the document gains after phase 18's report, named beside the pair and never counted in it, which phase 19's
+    // own report counts: 19.1's part of the card's rule on the S&P 400's and 600's variant reading no market check, and
+    // 19.2's store of every member's readings.
+    internal static string[] AfterPhaseEighteen => [.. Reading.ReadSurface.MarketOffRows, CheckReach.Key(Scope.StoresTable, "Ledger readings")];
 
     // How many more rows each part of phase 18 landed than its count in the plan, a negative figure where it landed fewer,
     // and what it landed. The corrections, counted one, landed the chart averages' step, catalogue and matrix rows, store

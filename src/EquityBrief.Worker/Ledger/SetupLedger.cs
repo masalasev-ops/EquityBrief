@@ -70,6 +70,7 @@ public sealed class SetupLedger : IComponent
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LedgerReading, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -141,6 +142,14 @@ public sealed class SetupLedger : IComponent
     const string ClearTheNightsRows = "DELETE FROM setup_night WHERE index_code = $index AND session_date = $night AND source = $source;";
 
     const string StoredHistory = "SELECT DISTINCT session_date FROM setup_night WHERE index_code = $index AND source = $source;";
+
+    const string ClearTheNightsReadings = "DELETE FROM ledger_reading WHERE index_code = $index AND session_date = $night;";
+
+    const string InsertReadings = "INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ($index, $session, $ticker, $readings, $pin);";
+
+    // A member's readings as stored: the catalogue's in its order as a list in the invariant form, null where none.
+    public static string ReadingsText(IReadOnlyList<double?> readings) =>
+        "[" + string.Join(",", readings.Select(reading => reading is { } value && double.IsFinite(value) ? value.ToString("R", CultureInfo.InvariantCulture) : "null")) + "]";
 
     // The night's own setups alone: a history setup is settled by the build that wrote it, which reads its members as
     // they stood, where the night reads the members on the night and the bar store's year.
@@ -400,6 +409,29 @@ public sealed class SetupLedger : IComponent
                 }
 
                 closed = await SettleAsync(connection, transaction, index, open, inputs, closes, rebalances, cancellation);
+
+                // Every member's readings on the night, read as its setups read theirs, which the chart of what is behind a
+                // stock reads for its percentiles among the members and its push on the learned score.
+                // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+                await ExecuteAsync(connection, transaction, ClearTheNightsReadings, [("$index", index), ("$night", Stamp(night))], cancellation);
+
+                for (var name = 0; name < inputs.Series.Length; name++)
+                {
+                    var bar = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
+
+                    if (bar < 0)
+                    {
+                        continue;
+                    }
+
+                    var readings = LedgerSetups.Readings(index, name, inputs.Series[name], closes[name], bar, inputs.Sessions[inputs.At], inputs.Members, inputs.Calendar, inputs.At, market, context);
+
+                    await ExecuteAsync(connection, transaction, InsertReadings,
+                    [
+                        ("$index", index), ("$session", Stamp(night)), ("$ticker", inputs.Series[name].Name.Ticker),
+                        ("$readings", ReadingsText(readings)), ("$pin", LedgerReadings.Version),
+                    ], cancellation);
+                }
             }
 
             await transaction.CommitAsync(cancellation);

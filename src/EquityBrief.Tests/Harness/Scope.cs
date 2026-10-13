@@ -3180,6 +3180,10 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        [CheckReach.Key(StoresTable, "Ledger readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(LimitsTable, "Setup ledger's loose gates")] = new Scoped(
             Verdict.Pass,
             "each loose gate worked by hand on both sides of its threshold and at it, the floors at $5 and half the index's floor on both sides, and the figures read off the document against the constants",
@@ -5336,6 +5340,8 @@ internal static class Scope
         ["Setup nights"] = "17.3",
         // 17.3's Ledger page's summary, which the setup ledger refreshes.
         ["Ledger summaries"] = "17.3",
+        // 19.2's every member's readings a night, which the chart of what is behind a stock reads.
+        ["Ledger readings"] = "19.2",
         // 17.3's three, the SEC's facts as first filed, each ask for them and each day of the archive's index read.
         ["Filed facts"] = "17.3",
         ["Facts pulls"] = "17.3",
