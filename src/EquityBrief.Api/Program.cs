@@ -1406,16 +1406,11 @@ app.MapGet("/screens/tonight/{night?}", async (
             dated,
             universe.Count,
             TonightScreen.Fired(listings),
-            await read.NightDurationAsync(dated),
             rows,
             (await read.WatchedAsync()).Count,
             selected,
-            RunScreen.Harness(PhaseReport(builder, checkout)),
             selection?.Ticker,
             records,
-            RunScreen.Tracks(TonightScreen.Totals(listings)),
-            TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
-            TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
             TonightScreen.WrittenBeforeTheCorrection(listings),
             RunScreen.Market(market),
             ruleView,
@@ -2062,6 +2057,7 @@ app.MapGet("/screens/run/{night?}", async (
     // for, and a record over one evening would be a statement about that
     // evening wearing the clothes of a verdict.
     var everyListing = await read.ListingsAsync();
+    var nightListings = await read.ListingsAsync(dated);
     var returns = await read.ForwardReturnsAsync();
     var log = await read.RunLogAsync(dated);
 
@@ -2198,7 +2194,14 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.FamilyReplaysAsync()),
             familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
             storeCopy: storeCopy,
-            selector: selector),
+            selector: selector,
+            // From 19.2 the night's operations and its reason totals, which Tonight drew before.
+            duration: await read.NightDurationAsync(dated),
+            spend: TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
+            prose: TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
+            totals: RunScreen.Tracks(TonightScreen.Totals(nightListings)),
+            fired: TonightScreen.Fired(nightListings),
+            listedByFilter: await read.ListRuleAsync(dated) == ListRules.Filter),
         "text/html; charset=utf-8");
 });
 

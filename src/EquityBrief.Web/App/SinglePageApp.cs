@@ -2268,16 +2268,11 @@ public sealed class SinglePageApp : IComponent
         DateOnly night,
         int index,
         int fired,
-        string? duration,
         IReadOnlyList<ListingCell> rows,
         int watching,
         string selectedName,
-        HarnessCounts? harness,
         string? selectedTicker = null,
         IReadOnlyList<ReasonRecord>? records = null,
-        IReadOnlyList<ReasonTrackRow>? totals = null,
-        NightSpend? spend = null,
-        NightProse? prose = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         MarketView? market = null,
         ListRuleView? rule = null,
@@ -2313,8 +2308,8 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
-            marks.NightHeader(night, index, fired, duration, harness, spend, prose, market, byFilter ? listed : null)
-                + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, and what it cost</a></p>"),
+            marks.NightHeader(night, index, fired, market, byFilter ? listed : null)
+                + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, what it cost and how the code is checked</a></p>"),
             stamp: Cards.Night(night),
             region: "night"));
 
@@ -2490,22 +2485,6 @@ public sealed class SinglePageApp : IComponent
             region.Append(selectedName);
         }
 
-        // The reason totals, 15.7's last region, drawn beneath the list because
-        // it is a statement about the evening rather than about a name in it.
-        if (totals is not null)
-        {
-            region.Append(Cards.Computed(
-                "Reason totals",
-                marks.ReasonTotals(totals, fired) + Cards.Key(
-                    "One long bar.",
-                    "Most of tonight's fired names carry the same reason, so the evening is one thing happening to many names. Several short bars mean different things happened to a few names each.",
-                    "These are tonight's counts. How a reason's setups have ended over time is on the run page, read against the base rate."),
-                title: byFilter ? "Which reasons fired tonight, as context" : "Which reasons put tonight's names on the list",
-                lede: Invariant($"How many of tonight's {fired} fired names carry each reason."),
-                stamp: Cards.Night(night),
-                region: "totals"));
-        }
-
         region.Append("</section>");
 
         return region.ToString();
@@ -2673,7 +2652,13 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
         IReadOnlyList<FamilyRecordRow>? familyRecords = null,
         StoreCopyRead? storeCopy = null,
-        string selector = "")
+        string selector = "",
+        string? duration = null,
+        NightSpend? spend = null,
+        NightProse? prose = null,
+        IReadOnlyList<ReasonTrackRow>? totals = null,
+        int fired = 0,
+        bool listedByFilter = true)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Name;
@@ -2692,18 +2677,16 @@ public sealed class SinglePageApp : IComponent
 
         // How last night went: its state from its own run log rows and its tries, the four headline figures,
         // the time its steps took, and the press running the rest of a night left unfinished, above
-        // everything else.
+        // everything else; and from 19.2, beneath them, how long it took, the harness verdict, what research
+        // spent and the prose counts, which Tonight drew in its header before.
         // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
-        if (how is { } went)
-        {
-            region.Append(Cards.Computed(
-                "Last night",
-                marks.NightStatus(went) + NightPress(went),
-                title: "How last night went",
-                lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
-                stamp: Cards.Night(night),
-                region: "night"));
-        }
+        region.Append(Cards.Computed(
+            "Last night",
+            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness, spend, prose),
+            title: "How last night went",
+            lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
+            stamp: Cards.Night(night),
+            region: "night"));
 
         // The market and the funnel side by side, each a picture with its words beneath.
         region.Append("<div class=\"run-pair\">");
@@ -2876,6 +2859,23 @@ public sealed class SinglePageApp : IComponent
         region.Append(Folded);
 
         region.Append(Fold("records", "The old list's reasons, kept as context"));
+
+        // The reason totals, which Tonight drew beneath its list until 19.2: a statement about the evening rather than
+        // about a name in it.
+        if (totals is not null)
+        {
+            region.Append(Cards.Computed(
+                "Reason totals",
+                marks.ReasonTotals(totals, fired) + Cards.Key(
+                    "One long bar.",
+                    "Most of the night's fired names carry the same reason, so the evening is one thing happening to many names. Several short bars mean different things happened to a few names each.",
+                    "These are the night's counts. How a reason's setups have ended over time is beneath, read against the base rate."),
+                title: listedByFilter ? "Which reasons fired on the night, as context" : "Which reasons put the night's names on the list",
+                lede: Invariant($"How many of the night's {fired} fired names carry each reason."),
+                stamp: Cards.Night(night),
+                region: "totals"));
+        }
+
         region.Append(Cards.Computed(
             "Reason records",
             marks.ReasonRecords(records, tracks, baseRates, nights) + Cards.Key(

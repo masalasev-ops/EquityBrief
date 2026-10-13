@@ -5203,10 +5203,10 @@ public sealed partial class MarkRenderer : IComponent
     // The night header, section 15.7's first region.
     //
     // The fired count is the headline, because it is the market's mood and it is
-    // the one number the twenty drawn rows cannot tell you. The quantities phase
-    // 6 supplies are absent and say so rather than being drawn as zero, which
-    // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null, int? listed = null, string indexName = "S&P 500")
+    // the one number the twenty drawn rows cannot tell you. From 19.2 what the
+    // night cost and how the build is checked stand on the Run page, drawn by
+    // the night's operations beneath.
+    public string NightHeader(DateOnly night, int index, int fired, MarketView? market = null, int? listed = null, string indexName = "S&P 500")
     {
         var header = new StringBuilder();
 
@@ -5229,13 +5229,24 @@ public sealed partial class MarkRenderer : IComponent
 
         header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} {Escaped(indexName)} members fired on {night:yyyy-MM-dd}{(listed is null ? string.Empty : ", as context")}</p>");
         header.Append(BreadthLine(market, indexName));
+        header.Append("</div></div></header>");
+
+        return header.ToString();
+    }
+
+    // The night's operations on the Run page, from 19.2: how long it took, the harness verdict, what research spent and
+    // the reports carrying fresh prose against reused. The quantities phase 6 supplies are absent and say so rather
+    // than being drawn as zero, which would read as a night that spent nothing because it did nothing.
+    public string NightOps(DateOnly night, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null)
+    {
+        var header = new StringBuilder();
+
+        header.Append(Invariant, $"<div class=\"night-ops\" data-night=\"{night:yyyy-MM-dd}\">");
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
 
-        // The harness verdict, which section 15.7 states in this header and
-        // which stood only on the run page until 5.8. It is the same four
-        // counts from the same report, drawn here in one line rather than in a
-        // region of its own: this header answers how the evening went, and
-        // whether the build that produced it is checked is part of that answer.
+        // The harness verdict: the same four counts the run page's own region
+        // draws from the same report, in one line beside how the night went,
+        // since whether the build that produced it is checked is part of that.
         //
         // Four counts and no total, for the reason the run page's own region
         // gives: out of scope is counted apart from unexamined and only one of
@@ -5266,7 +5277,7 @@ public sealed partial class MarkRenderer : IComponent
         }
         else
         {
-            header.Append("<p class=\"degraded\" data-spend=\"absent\">what research spent is not read on this page</p>");
+            header.Append("<p class=\"degraded\" data-spend=\"absent\">what research spent is not read for this night</p>");
         }
 
         // Reports carrying fresh prose against reused, from 6.8, which is where a pass
@@ -5284,10 +5295,10 @@ public sealed partial class MarkRenderer : IComponent
         }
         else
         {
-            header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused is not read on this page</p>");
+            header.Append("<p class=\"degraded\" data-prose=\"absent\">fresh prose against reused is not read for this night</p>");
         }
 
-        header.Append("</div></div></header>");
+        header.Append("</div>");
 
         return header.ToString();
     }

@@ -307,9 +307,16 @@ public partial class ReadSurface
 
         Assert.Contains("These names appear whether or not they are on the list.", words, StringComparison.Ordinal);
         Assert.Contains("Every name here passed the swing filter's five gates at a price its own chart made significant, and its gates say whether it pulled back to support or broke out; the reasons beside it are context.", words, StringComparison.Ordinal);
-        Assert.Contains("Which reasons fired tonight, as context", words, StringComparison.Ordinal);
-        Assert.Contains("Most of tonight's fired names carry the same reason, so the evening is one thing happening to many names.", words, StringComparison.Ordinal);
-        Assert.Contains("every name that fired tonight is a setup nothing has scored yet", words, StringComparison.Ordinal);
+        // From 19.2 the reason totals stand on the Run page, as context, and no sentence of it describes the reasons
+        // choosing the list either.
+        var drawn = await client.GetStringAsync($"/screens/run/{TheSwitch}");
+        var run = WebUtility.HtmlDecode(drawn);
+
+        Assert.DoesNotContain(SentencesOf(drawn), ArchitectureConformance.DescribesTheReasonsChoosing);
+        Assert.Contains("Which reasons fired on the night, as context", run, StringComparison.Ordinal);
+        Assert.Contains("Most of the night's fired names carry the same reason, so the evening is one thing happening to many names.", run, StringComparison.Ordinal);
+        Assert.Contains("every name that fired tonight is a setup nothing has scored yet", run, StringComparison.Ordinal);
+        Assert.DoesNotContain("Which reasons", words, StringComparison.Ordinal);
 
         // The name page's word for a reason means what section 3's row says it means.
         var vocabulary = Assert.Single(ArchitectureTables.In(File.ReadAllText(Repository.Architecture)), table => table.Heading == "3. Vocabulary");
@@ -323,10 +330,10 @@ public partial class ReadSurface
         // first night is not drawn.
         store.Execute("DELETE FROM list_rule WHERE rule = 'filter';");
 
-        var before = await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}");
+        var before = await client.GetStringAsync($"/screens/run/{BeforeTheSwitch}");
 
         Assert.Contains(SentencesOf(before), ArchitectureConformance.DescribesTheReasonsChoosing);
-        Assert.Contains("Which reasons put tonight's names on the list", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
+        Assert.Contains("Which reasons put the night's names on the list", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
     }
 
     // A page's words as sentences, read as section 12.9's scan reads the architecture: scripts, styles and

@@ -715,9 +715,9 @@ public partial class ReadSurface
 
         var screens = new[]
         {
-            (tonight, new[] { "night", "watch", "list", "selected", "totals" }),
+            (tonight, new[] { "night", "watch", "list", "selected" }),
             (universe, new[] { "sectors", "index" }),
-            (run, new[] { "operational", "records", "shadow", "stale", "harness" }),
+            (run, new[] { "night", "operational", "totals", "records", "shadow", "stale", "harness" }),
             (page, new[] { "how-to-read", "chart", "how-it-got-here", "levels", "plan", "rules", "sources" }),
         };
 

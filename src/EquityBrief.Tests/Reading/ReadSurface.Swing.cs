@@ -243,13 +243,13 @@ public partial class ReadSurface
         var view = new MarketView(new DateOnly(2026, 9, 8), 5, 2, 1, null, 2, 2, null, 0, null);
         var marks = new MarkRenderer();
 
-        var header = WebUtility.HtmlDecode(marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, null, null, market: view));
+        var header = WebUtility.HtmlDecode(marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, market: view));
         var region = WebUtility.HtmlDecode(marks.MarketReading(view));
 
         Assert.Contains("breadth: not available, 2 of the 5 members hold a close and a 200-day average, fewer than half", header, StringComparison.Ordinal);
         Assert.Contains("not available: 2 of the 5 members hold a close and a 200-day average, fewer than half", region, StringComparison.Ordinal);
         Assert.Contains("data-breadth=\"none\"", region, StringComparison.Ordinal);
-        Assert.Contains("breadth: no market reading is stored for this night", marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0, null, null), StringComparison.Ordinal);
+        Assert.Contains("breadth: no market reading is stored for this night", marks.NightHeader(new DateOnly(2026, 9, 8), 5, 0), StringComparison.Ordinal);
     }
 
     [Fact]
