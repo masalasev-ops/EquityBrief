@@ -9,7 +9,7 @@ namespace EquityBrief.Web.Marks;
 // is never the only channel.
 // see: The headline carries no figure and is written last from the accepted claims, and code writes it where none is accepted
 // see: Four tiles under the headline are worked by code from stored figures at the price the page draws
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public sealed partial class MarkRenderer
 {
     public string Lead(string ticker, HeadlineView? headline, TilesView? tiles)

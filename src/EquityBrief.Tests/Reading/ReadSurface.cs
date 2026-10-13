@@ -122,6 +122,9 @@ public partial class ReadSurface
             // 19.1, the card's rule row's part on the S&P 400's and 600's variant reading no market check.
             .. MarketOffRows,
 
+            // 19.2, the three marks, Tonight's top, the date line's night and the chart of what is behind a stock.
+            .. ColourAndTopRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
@@ -302,7 +305,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Fact strip, the averages"),
             CheckReach.Key("15.9 Name", "Fact strip, momentum and the typical daily move"),
             CheckReach.Key("15.4 The two surfaces", "The app, selection"),
-            CheckReach.Key("15.7 Tonight", "Night header, the harness verdict"),
+            CheckReach.Key("15.10 Run", "How last night went, the harness verdict"),
             CheckReach.Key("15.7 Tonight", "The list, day change"),
             CheckReach.Key("15.7 Tonight", "The list, trend state in a word"),
             CheckReach.Key("15.7 Tonight", "The list, the distance row mark"),
@@ -420,7 +423,7 @@ public partial class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved"),
             CheckReach.Key("15.7 Tonight", "Night header, names in the index"),
             CheckReach.Key("15.7 Tonight", "Night header, names that fired"),
-            CheckReach.Key("15.7 Tonight", "Night header, run duration"),
+            CheckReach.Key("15.10 Run", "How last night went, how long the night took"),
             CheckReach.Key("15.7 Tonight", "An evening before the switch, one row per name that fired"),
             CheckReach.Key("15.7 Tonight", "An evening before the switch, ordered by how many fired then by the plan's reward to risk"),
             CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none"),
@@ -480,7 +483,7 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Harness, failed"),
             CheckReach.Key("15.10 Run", "Harness, unexamined"),
             CheckReach.Key("15.7 Tonight", "Reasons, per row"),
-            CheckReach.Key("15.7 Tonight", "Reason totals"),
+            CheckReach.Key("15.10 Run", "Reason totals"),
             CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars"),
 
             // 6.3, the third part of that region. The refusals are drawn from the
@@ -508,7 +511,7 @@ public partial class ReadSurface
             // written sections, what each research state offers
             // and the cost beside it, the page's half of section 18's cloud model row
             // and of its two local lane rows, and tonight's fresh prose against reused.
-            CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
+            CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
             CheckReach.Key("15.9 Name", "The short version"),
             CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks"),
             CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed"),
@@ -521,7 +524,7 @@ public partial class ReadSurface
 
             // 6.7, what research spent in tonight's header, and research paused on the
             // name page, which is the page's half of section 18's spend cap row.
-            CheckReach.Key("15.7 Tonight", "Night header, spend"),
+            CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
             CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes"),
             CheckReach.Key(Scope.FailureTable, "Spend cap reached, the name says research is paused and when it resumes"),
 
@@ -1103,7 +1106,7 @@ public partial class ReadSurface
 
         // Neutral ink. The two hues belong to support and resistance, and a
         // volume band is a magnitude.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         Assert.DoesNotContain("green", profile, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("orange", profile, StringComparison.OrdinalIgnoreCase);
     }
@@ -1183,7 +1186,7 @@ public partial class ReadSurface
     public void SupportAndResistanceAreTheOnlyTwoHuesAndTheImmediateBandIsStronger()
     {
         // The one place in the system those hues appear.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         var svg = new MarkRenderer().LevelChart("TEST", Wide(), null, Shading());
 
         var fills = Regex.Matches(svg, "class=\"level-band\" data-role=\"([a-z]+)\"[^/]*fill=\"([^\"]+)\" fill-opacity=\"([0-9.]+)\"")
@@ -1205,7 +1208,7 @@ public partial class ReadSurface
         // drew every support band in the resistance hue and left the suite
         // green. Green is a level below the price and orange is one above it, so
         // the mapping is the claim rather than the palette.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         Assert.All(fills, fill => Assert.Contains(
             "--" + fill.Role,
             fill.Hue,

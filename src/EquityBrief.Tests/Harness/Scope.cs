@@ -151,9 +151,9 @@ internal static class Scope
             Verdict.Pass,
             "the hash is split into a path and a query before anything routes, so the selection is a link the server is given",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "How last night went, the harness verdict")] = new Scoped(
             Verdict.Pass,
-            "the four verdict counts are drawn in the header, separately, and a machine with no report says so",
+            "the four verdict counts are drawn with the night's operations, separately, and a machine with no report says so, read off the Run page and on no line of Tonight from 19.2",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = new Scoped(
             Verdict.Pass,
@@ -163,9 +163,9 @@ internal static class Scope
             Verdict.Pass,
             "the fired count is over the whole index rather than over the drawn rows",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "How last night went, how long the night took")] = new Scoped(
             Verdict.Pass,
-            "the night's duration is drawn from the run log, and a night the log does not carry says so",
+            "the night's duration is drawn from the run log on the Run page, and a night the log does not carry says so",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "An evening before the switch, one row per name that fired")] = new Scoped(
             Verdict.Pass,
@@ -2277,9 +2277,9 @@ internal static class Scope
             Verdict.Pass,
             "each reason on a drawn row is named with the values the store holds for it and the reason's own record beside it, in the dashed not-yet-measured state carrying its count against the minimum over the fixture, and over constructed records as the share, the count and the bar together where the verdict was not withheld and as the count against the named floor where it was",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Reason totals")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Reason totals")] = new Scoped(
             Verdict.Pass,
-            "each reason's count of tonight's fired names as a bar out of the fired count with the count written on it, counted per reason off the stored listings, and no won or lost segment because nothing has scored tonight",
+            "each reason's count of the night's fired names as a bar out of the fired count with the count written on it, counted per reason off the stored listings and read off the Run page, no won or lost segment because nothing has scored on the night, and Tonight drawing none of it from 19.2",
             ByReadSurface),
                         [CheckReach.Key("15.10 Run", "Stale and failed, names carrying yesterday's bars")] = new Scoped(
             Verdict.Pass,
@@ -2854,9 +2854,9 @@ internal static class Scope
             Verdict.Pass,
             "at the day cap the page draws the pause line and every accepted section under the date the store holds, and no control, since a press would be refused",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused")] = new Scoped(
             Verdict.Pass,
-            "the header counts the names with a section accepted on the night against those whose accepted sections all predate it, over the names with any accepted section as of the night, against counts of the test's own and figures stated in advance over rows either side of the night and in every status, and the tonight route draws it",
+            "the night's operations count the names with a section accepted on the night against those whose accepted sections all predate it, over the names with any accepted section as of the night, against counts of the test's own and figures stated in advance over rows either side of the night and in every status, and the run route draws it where the tonight route draws none",
             ByReadSurface),
         // 6.7, the spend cap and the paid lane. The component, the run log's row it
         // makes true, section 17's cap, section 18's row about reaching it in its two
@@ -3184,6 +3184,40 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        // 19.2's three marks, Tonight's top, the date line's night, the chart of what is behind a stock on its card and
+        // its page, and the night's operations and reason totals the Run page draws in Tonight's place.
+        [CheckReach.Key("15.5 The mark vocabulary", "Family tag")] = new Scoped(
+            Verdict.Pass,
+            "each family's tag read off Tonight's tiles and buy points with its word in ink on its tint and its swatch, and each family's hue at its floors as a mark and its tint holding ink in both palettes by the palette check",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Setup tile")] = new Scoped(
+            Verdict.Pass,
+            "each tile's count and state worked by hand over a constructed night, a setup listing five with one held back, one listing two, one listing none on an open market and the heavyweights' sessions to their next rebalance counted from the card's own date",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "What is behind it")] = new Scoped(
+            Verdict.Pass,
+            "the percentiles worked by hand over constructed members, the pushes summing with the score at the means exactly to the score, no push on an index whose score has not passed and why where its text cannot be read, read off the card and the stock's page",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Tonight's setups")] = new Scoped(
+            Verdict.Pass,
+            "a tile a setup in the one family order read off the rendered page with each count and state worked by hand and read back against the stored picks",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Tonight's buy points")] = new Scoped(
+            Verdict.Pass,
+            "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table, and a selected row followed by its plan and its pick's card before the next row, the first row selected where the link names none",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer")] = new Scoped(
+            Verdict.Pass,
+            "the usual start worked by hand over constructed run ids, the most of the newest seven nights' first tries with a tie to the newest, and a night not yet run drawn with no notice and its time on the date line in New York's time with UTC beneath the pointer",
+            ByReadSurface),
+        [CheckReach.Key("15.18 The decision card", "What is behind it")] = new Scoped(
+            Verdict.Pass,
+            "each pick's card on the S&P 500 and the S&P 400 draws the chart from the stored readings, its push where the breakout's score passed and none on a family with no score or a stock holding no readings, read off the rendered card rows",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, the chart of what is behind the stock beneath them")] = new Scoped(
+            Verdict.Pass,
+            "the stock's page draws the chart once beneath its swing readings, its readings view before the score passed and its push after, read off the rendered page",
+            ByReadSurface),
         [CheckReach.Key(LimitsTable, "Setup ledger's loose gates")] = new Scoped(
             Verdict.Pass,
             "each loose gate worked by hand on both sides of its threshold and at it, the floors at $5 and half the index's floor on both sides, and the figures read off the document against the constants",
@@ -4519,9 +4553,9 @@ internal static class Scope
             Verdict.Pass,
             "a name page over a store whose run log reaches a cap draws one line saying research is paused, naming the cap and the instant it resumes in the words the cap refuses a call with, read back off the markup, and draws none below the cap",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps")] = new Scoped(
             Verdict.Pass,
-            "the header states what research spent on the night's UTC day and in its month to that day beside both caps, each read back off the markup against sums of the run log by a query of the test's own, over rows either side of both edges",
+            "the night's operations state what research spent on the night's UTC day and in its month to that day beside both caps, each read back off the markup against sums of the run log by a query of the test's own, over rows either side of both edges",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes")] = new Scoped(
             Verdict.Pass,
@@ -5340,8 +5374,6 @@ internal static class Scope
         ["Setup nights"] = "17.3",
         // 17.3's Ledger page's summary, which the setup ledger refreshes.
         ["Ledger summaries"] = "17.3",
-        // 19.2's every member's readings a night, which the chart of what is behind a stock reads.
-        ["Ledger readings"] = "19.2",
         // 17.3's three, the SEC's facts as first filed, each ask for them and each day of the archive's index read.
         ["Filed facts"] = "17.3",
         ["Facts pulls"] = "17.3",
@@ -5522,10 +5554,6 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Reason track, unresolved")] = "5.6",
         [CheckReach.Key("15.7 Tonight", "Night header, names in the index")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Night header, names that fired")] = "5.4",
-        [CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused")] = "6.8",
-        [CheckReach.Key("15.7 Tonight", "Night header, spend")] = "6.7",
-        [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = "5.4",
-        [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "An evening before the switch, one row per name that fired")] = "5.4",
         // 10.1 changed the tiebreak to the plan's reward to risk and drew it on the row.
         [CheckReach.Key("15.7 Tonight", "An evening before the switch, ordered by how many fired then by the plan's reward to risk")] = "10.1",
@@ -5652,7 +5680,22 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Watch list")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Reasons, per row")] = "5.6",
-        [CheckReach.Key("15.7 Tonight", "Reason totals")] = "5.6",
+
+        // 19.2's: the three marks, Tonight's top and the date line's night, the chart of what is behind a stock, and the
+        // night's operations and reason totals the Run page draws in Tonight's place.
+        [CheckReach.Key("15.5 The mark vocabulary", "Family tag")] = "19.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Setup tile")] = "19.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "What is behind it")] = "19.2",
+        [CheckReach.Key("15.7 Tonight", "Tonight's setups")] = "19.2",
+        [CheckReach.Key("15.7 Tonight", "Tonight's buy points")] = "19.2",
+        [CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer")] = "19.2",
+        [CheckReach.Key("15.18 The decision card", "What is behind it")] = "19.2",
+        [CheckReach.Key("15.9 Name", "Swing readings, the chart of what is behind the stock beneath them")] = "19.2",
+        [CheckReach.Key("15.10 Run", "How last night went, how long the night took")] = "19.2",
+        [CheckReach.Key("15.10 Run", "How last night went, the harness verdict")] = "19.2",
+        [CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps")] = "19.2",
+        [CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused")] = "19.2",
+        [CheckReach.Key("15.10 Run", "Reason totals")] = "19.2",
 
         // Phase 9's rows, placed at the checkpoints that draw them so each reads
         // as out of scope rather than unexamined until it lands. The request
@@ -6115,7 +6158,7 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] =
             ["setups resolved as a win", "resolved as a loss", "unresolved"],
         [CheckReach.Key("15.7 Tonight", "Night header")] =
-            ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
+            ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
             ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split", "each column heading saying what its column holds while the pointer is over it", "the positive and negative stories of the thirty days before the night as the name page's bar counts them"],
         // 5.8's watch list page, each row's parts as the row states them.
@@ -6367,15 +6410,15 @@ internal static class Scope
             ["each gate's setting held and proposed with its median count and the list's under each against their bands", "every gate no value in its range brings inside its band named as a finding", "beside it the non-empty blocks approving one of its moves on the Loop page would restart"],
         // 12.1. The name page's readings and the run page's market row, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Swing readings")] =
-            ["the return over 63 sessions and over 126 sessions with each one's place among the members' returns", "the highest high of the last 20 sessions and how far the close sits below it in typical days' moves", "the median volume of the sessions since that high against the fifty-day average", "the mean true range of the last ten sessions against the last fifty", "a key saying how to read it"],
+            ["the return over 63 sessions and over 126 sessions with each one's place among the members' returns", "the highest high of the last 20 sessions and how far the close sits below it in typical days' moves", "the median volume of the sessions since that high against the fifty-day average", "the mean true range of the last ten sessions against the last fifty", "a key saying how to read it", "the chart of what is behind the stock beneath them"],
         [CheckReach.Key("15.10 Run", "Market reading")] =
             ["the night's breadth with how many members it was counted over", "the share above the 50-day average beside it as context", "the index's median volume against its fifty-day average"],
         // The 12.3 correction that opens the Run page on its pictures, each of its first three regions read as
         // the parts its row states.
         [CheckReach.Key("15.10 Run", "How last night went")] =
-            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "the commit the night was built from", "each index's members beside the time to the close on a night that read more than one index"],
+            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "the commit the night was built from", "each index's members beside the time to the close on a night that read more than one index", "how long the night took", "the harness verdict", "what research spent on the night's day and in its month against their caps", "the reports carrying fresh prose against reused"],
         [CheckReach.Key("15.7 Tonight", "The night's state")] =
-            ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished", "a refusal before its first step with its reason"],
+            ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished", "a refusal before its first step with its reason", "a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer"],
         // 12.7's correction: the nine parts close to a buy point enumerates, and the line a closed market draws
         // and the key, which its row states outside the enumerations.
         [CheckReach.Key("15.7 Tonight", "Close to a buy point")] =

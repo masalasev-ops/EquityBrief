@@ -7,7 +7,7 @@ namespace EquityBrief.Web.App;
 // Every colour is a token, and the comment at its head is the rule each token is held to.
 // The marks draw with the tokens' names rather than with values, so both palettes restyle
 // every picture without a mark knowing which one is showing.
-// see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+// see: Green means support or a gain and red a stop or a loss, with orange for resistance
 // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
 // see: Not yet measured is drawn as a dashed outline, never as a pale value
 public static class Stylesheet

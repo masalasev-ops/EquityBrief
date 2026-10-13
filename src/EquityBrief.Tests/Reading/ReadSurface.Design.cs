@@ -574,7 +574,7 @@ public partial class ReadSurface
     // lane's word so its state stays shown. The account page's old address opens paper trading, and the menu holds the
     // Loop page with its badge and the Ledger page. Where at 18.1's correction of 2026-10-11 the phone's masthead was one
     // column whose links wrapped, the links now sit in the panel.
-    // see: Every page reads one index at a time chosen under Universe, and every figure names its index
+    // see: The header's three tabs choose the index every page reads, beside the selector each page opens on
     [Fact]
     public async Task TheHeaderHoldsOneLineWithTheIndexTabsAndAMenuCarryingTheLanesWord()
     {

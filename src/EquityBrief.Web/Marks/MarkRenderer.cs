@@ -1797,7 +1797,7 @@ public sealed partial class MarkRenderer : IComponent
     // Support is green and resistance is orange, and this is the one place in
     // the whole system those two hues are used. Every other mark is neutral ink
     // or one hue in steps.
-    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+    // see: Green means support or a gain and red a stop or a loss, with orange for resistance
     const string SupportHue = "var(--support, #2f7d4f)";
     const string ResistanceHue = "var(--resistance, #b5651d)";
 
@@ -2482,7 +2482,7 @@ public sealed partial class MarkRenderer : IComponent
         // behind it and is cited by section rather than by name, because the
         // architecture states it once with its reasoning and a decision would be
         // a second place holding one fact.
-        // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+        // see: Green means support or a gain and red a stop or a loss, with orange for resistance
         for (var line = 0; line < lines.Count; line++)
         {
             var average = lines[line];
@@ -2543,7 +2543,7 @@ public sealed partial class MarkRenderer : IComponent
             // neutral ink. Green and orange belong to support and resistance on
             // every screen and section 15.6 names a candle as the case it
             // forbids them in.
-            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+            // see: Green means support or a gain and red a stop or a loss, with orange for resistance
             var rising = bar.Close > bar.Open;
             var fill = rising ? "none" : "var(--ink, #1c1c1c)";
 
@@ -3311,7 +3311,7 @@ public sealed partial class MarkRenderer : IComponent
             // two hues are support's and resistance's and a day is not allowed
             // either of them, so the direction is the sign on the number and
             // nothing else carries it.
-            // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+            // see: Green means support or a gain and red a stop or a loss, with orange for resistance
             list.Append(Invariant, $"<td class=\"day-change\">{ChangeReads(row.DayChangePct, row.Close)}</td>");
 
             // The trend state in a word, read off the ladder row rather than
@@ -3515,7 +3515,7 @@ public sealed partial class MarkRenderer : IComponent
     // Hue is not a channel here at all. The three states are one ink at two
     // steps plus an outline, and each row carries its counts in words on its own
     // title, so a reader who cannot separate two greys loses nothing.
-    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+    // see: Green means support or a gain and red a stop or a loss, with orange for resistance
     public string ReasonTrack(IReadOnlyList<ReasonTrackRow> rows)
     {
         const int Row = 18;
@@ -5800,7 +5800,7 @@ public sealed partial class MarkRenderer : IComponent
     //
     // The two hues are the ones support and resistance own everywhere else, and
     // nothing else on this mark uses them
-    // (see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else).
+    // (see: Green means support or a gain and red a stop or a loss, with orange for resistance).
     //
     // A name with neither edge draws a rule and says so. An absence drawn as a
     // shape at one end is a shape a reader will read.
@@ -6673,7 +6673,7 @@ public sealed partial class MarkRenderer : IComponent
     // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
     // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
     // and no dot, each saying why.
-    // see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else
+    // see: Green means support or a gain and red a stop or a loss, with orange for resistance
     // see: Marks are defined once and every screen draws from that list
     public string TradeLine(PickCell pick)
     {
@@ -7169,7 +7169,7 @@ public sealed partial class MarkRenderer : IComponent
     // The kind of status a night's state is drawn as: blue for a night that finished or is running,
     // violet for one that is waiting, red for a failure alone, and the page's own ink for a day with no
     // session. Green and orange are the levels' and never a status.
-    // see: Status is drawn in blues with violet for a wait and red for a failure alone
+    // see: Status is drawn in blues with amber for a wait and red for a failure alone
     public static string NightTone(string state) => state switch
     {
         NightStates.Finished or NightStates.Running => "ok",
@@ -7879,7 +7879,7 @@ public sealed partial class MarkRenderer : IComponent
     // Anything to worry about, section 15.10's tenth region: each item of the checklist in plain words, held,
     // turned red with its reason where it failed, or a dashed outline where the night stored nothing it could
     // be read from, and the four counts of the last phase report beneath.
-    // see: Status is drawn in blues with violet for a wait and red for a failure alone
+    // see: Status is drawn in blues with amber for a wait and red for a failure alone
     public string WorryRegion(IReadOnlyList<WorryItem> items, HarnessCounts? harness)
     {
         var region = new StringBuilder();

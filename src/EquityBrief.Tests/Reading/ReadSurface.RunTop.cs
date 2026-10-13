@@ -18,7 +18,7 @@ namespace EquityBrief.Tests.Reading;
 // rows, and every table the page drew before read back inside a section folded shut beneath them.
 // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 // see: The market on the Run page is named in one word by a stated rule that moves no gate
-// see: Status is drawn in blues with violet for a wait and red for a failure alone
+// see: Status is drawn in blues with amber for a wait and red for a failure alone
 public partial class ReadSurface
 {
     // The claims the 12.3 correction that opens the Run page on its pictures adds, which this check reaches and

@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 // holding it and off the page, the surface and the plot where neither sets one; the kinds the name page draws a band's
 // role, a change and a caution in read so on their own fill too; a rise and a fall are drawn by the name page's rules
 // alone; and no rule drawing either names the failure's hue.
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public partial class ReadSurface
 {
     static readonly string[] Grounds = ["--page", "--surface", "--plot"];

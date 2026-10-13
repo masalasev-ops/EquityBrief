@@ -162,6 +162,30 @@ public partial class ReadSurface
         Assert.Contains("<b class=\"market-closed\">The lists are closed</b>: the S&P 500's breadth: 40.0% of its members closed above their 200-day average, below its floor of 50%.", shut, StringComparison.Ordinal);
     }
 
+    // The rows 19.2 adds that this check reaches: the three marks, Tonight's top and the date line's night, and the chart
+    // of what is behind a stock on its card and its page.
+    internal static readonly string[] ColourAndTopRows =
+    [
+        CheckReach.Key("15.5 The mark vocabulary", "Family tag"),
+        CheckReach.Key("15.5 The mark vocabulary", "Setup tile"),
+        CheckReach.Key("15.5 The mark vocabulary", "What is behind it"),
+        CheckReach.Key("15.7 Tonight", "Tonight's setups"),
+        CheckReach.Key("15.7 Tonight", "Tonight's buy points"),
+        CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer"),
+        CheckReach.Key("15.18 The decision card", "What is behind it"),
+        CheckReach.Key("15.9 Name", "Swing readings, the chart of what is behind the stock beneath them"),
+    ];
+
+    // The rows 19.2 moves from Tonight to the Run page under their new keys, reached where the old ones were.
+    internal static readonly string[] MovedToTheRunPageRows =
+    [
+        CheckReach.Key("15.10 Run", "How last night went, how long the night took"),
+        CheckReach.Key("15.10 Run", "How last night went, the harness verdict"),
+        CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
+        CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
+        CheckReach.Key("15.10 Run", "Reason totals"),
+    ];
+
     // 19.2: Tonight opens on a tile a setup in the one family order and one table of tonight's buy points across every
     // setup, each tile's count and state worked by hand off the night the lister drew, and a row selected drawing its plan
     // and its pick's card in a row beneath it.

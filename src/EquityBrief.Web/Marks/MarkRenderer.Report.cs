@@ -36,7 +36,7 @@ public sealed record ValuationView(
 // axis, and a row above it naming what it draws where it draws two series or more; each degrades by saying what it has.
 // A change is drawn in the rise or the fall hue by its sign with the sign always written, on the name page alone.
 // see: Marks are defined once and every screen draws from that list
-// see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone
+// see: A figure that rose or fell is drawn green or red with its sign on every page
 public sealed partial class MarkRenderer
 {
     const double ChartWide = 640;

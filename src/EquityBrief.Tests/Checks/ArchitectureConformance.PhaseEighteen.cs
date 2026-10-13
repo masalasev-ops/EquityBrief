@@ -39,8 +39,26 @@ public partial class ArchitectureConformance
 
     // The rows the document gains after phase 18's report, named beside the pair and never counted in it, which phase 19's
     // own report counts: 19.1's part of the card's rule on the S&P 400's and 600's variant reading no market check, and
-    // 19.2's store of every member's readings.
-    internal static string[] AfterPhaseEighteen => [.. Reading.ReadSurface.MarketOffRows, CheckReach.Key(Scope.StoresTable, "Ledger readings")];
+    // 19.2's store of every member's readings, its three marks, Tonight's top, the date line's night, the chart of what is
+    // behind a stock and the rows it moves from Tonight to the Run page under their new keys.
+    internal static string[] AfterPhaseEighteen =>
+    [
+        .. Reading.ReadSurface.MarketOffRows,
+        CheckReach.Key(Scope.StoresTable, "Ledger readings"),
+        .. Reading.ReadSurface.ColourAndTopRows,
+        .. Reading.ReadSurface.MovedToTheRunPageRows,
+    ];
+
+    // The rows the document loses after phase 18's report: 19.2's night header parts and reason totals on Tonight, which
+    // the Run page draws from it under the keys above.
+    internal static string[] TakenOutAfterPhaseEighteen =>
+    [
+        CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
+        CheckReach.Key("15.7 Tonight", "Night header, spend"),
+        CheckReach.Key("15.7 Tonight", "Night header, run duration"),
+        CheckReach.Key("15.7 Tonight", "Night header, the harness verdict"),
+        CheckReach.Key("15.7 Tonight", "Reason totals"),
+    ];
 
     // How many more rows each part of phase 18 landed than its count in the plan, a negative figure where it landed fewer,
     // and what it landed. The corrections, counted one, landed the chart averages' step, catalogue and matrix rows, store
@@ -98,7 +116,7 @@ public partial class ArchitectureConformance
         // The rows the lists the rest of the harness reads name, the same rows: what phase 17's report names after it, less
         // what phase 18's own report names after it, and what it takes out.
         Assert.Equal(AfterPhaseSeventeen.Except(AfterPhaseEighteen, StringComparer.Ordinal).Order(StringComparer.Ordinal), landed.SelectMany(part => part.Added).Order(StringComparer.Ordinal));
-        Assert.Equal(TakenOutAfterPhaseSeventeen.Order(StringComparer.Ordinal), landed.SelectMany(part => part.Taken).Order(StringComparer.Ordinal));
+        Assert.Equal(TakenOutAfterPhaseSeventeen.Except(TakenOutAfterPhaseEighteen, StringComparer.Ordinal).Order(StringComparer.Ordinal), landed.SelectMany(part => part.Taken).Order(StringComparer.Ordinal));
 
         var rows = landed.SelectMany(part => part.Added).ToArray();
         var actual = before + rows.Length - landed.Sum(part => part.Taken.Length);
@@ -111,7 +129,7 @@ public partial class ArchitectureConformance
         // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood before
         // it and the rows after its report, none out of scope and none unexamined.
         var report = Report();
-        var total = actual + AfterPhaseEighteen.Length;
+        var total = actual + AfterPhaseEighteen.Length - TakenOutAfterPhaseEighteen.Length;
 
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
         Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));

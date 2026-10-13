@@ -109,6 +109,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
         CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
         CheckReach.Key("15.9 Name", "Dates and sources"),
+        .. TakenOutAfterPhaseEighteen,
     ];
 
     [Fact]

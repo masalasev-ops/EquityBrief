@@ -25,6 +25,60 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - .claude/rules/checks.md - read-surface holds thirty-eight marks
+Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+Was:
+> read-surface: ... each of the thirty-five marks is asserted over a full input and over the input it degrades on ...
+Now:
+> read-surface: ... each of the thirty-eight marks is asserted over a full input and over the input it degrades on ...
+Why: 19.2 adds the family tag, the setup tile and the chart of what is behind a stock to section 15.5.
+
+### 2026-10-13 - docs/ARCHITECTURE.html - section 15 draws 19.2's header, three marks, Tonight's top, the chart of what is behind a stock, and the night's operations and reason totals on the Run page
+Authorised by: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+Was:
+> 15.3: ... <code>#/picks</code>, <code>#/researched</code>, <code>#/name/&lt;ticker&gt;</code>, ... (no paragraph on the header)
+> 15.5: <p>Thirty-five marks. ... Each mark takes stored values and returns an SVG string, ...
+> 15.7 Night header: names in the index, names the swing filter listed, names that fired, the night's breadth with the share above the 50-day average beside it as context, reports carrying fresh prose against reused, spend, run duration, and the harness verdict. The count the swing filter listed is the headline ...; before the switch the fired count was the headline
+> 15.7 The night's state: ...; a refusal before its first step with its reason (see: ...
+> 15.7 Reason totals: each reason's count of tonight's fired names drawn as a bar out of the fired count with the count on it, which says whether the evening is one thing happening to many names or many things happening to a few
+> 15.9 Swing readings: ..., and a key saying how to read it
+> 15.9 Member readings: ..., and a key saying how to read it
+> 15.10 How last night went: ...; each index's members beside the time to the close on a night that read more than one index (see: ...
+> 15.13: Any name is found from a search box in the masthead of every screen, ... and the Universe item ending (see: Every page reads one index at a time chosen under Universe, and every figure names its index).
+> 15.18: the table of a rule standing at an approved change and the score's part
+Now:
+> 15.3: the routes add <code>#/paper</code>, which <code>#/account</code> still opens, and a paragraph on the one header line, its tabs and its menu with the Loop's badge.
+> 15.5: Thirty-eight marks, each returning its markup, a picture as an SVG string and a family's tag and a setup's tile as the elements they are; with rows for the family tag, the setup tile and what is behind it.
+> 15.7 Night header: its first four parts, what the night cost and how long it took and how the code is checked standing on the Run page from 19.2; the night's state gaining a night not yet run drawn on the date line; rows for Tonight's setups and Tonight's buy points; the reason totals row taken out.
+> 15.9 Swing readings and Member readings: the chart of what is behind the stock beneath them.
+> 15.10 How last night went: the parts moved from Tonight's header; and a Reason totals row before the reason records.
+> 15.13: the search in the header's menu, and the header's tabs choosing the index as the selector does.
+> 15.18: a row for what is behind it beneath the record and the score's part.
+Why: the operator's phase 19 plan for 19.2 and the ruling of 2026-10-13 adding the chart of what is behind a stock; the night's operations and the reason totals move from Tonight to the Run page as the plan states.
+
+### 2026-10-13 - docs/BUILD_PLAN.md - 19.2 narrows the Universe decision to the header's tabs rather than superseding it
+Corrects: 19.2's text named a supersession of the Universe decision, which a source every S&P 400 and 600 rule's version pins cites, so repointing its citations would move those versions for the words of a comment; found while repointing them.
+Was:
+> Writes the decisions superseding the support and resistance hues', the rise and fall's, the status hues', the selected row's and the index chosen under Universe's, with the citations repointed; the family hue's, the sector's and the night time's decisions;
+Now:
+> Writes the decisions superseding the support and resistance hues', the rise and fall's, the status hues' and the selected row's, with the citations repointed; the decision narrowing the index chosen under Universe's to the header's tabs, which supersedes it not, since every page still opens on its selector and a source the S&P 400's and 600's rules pin cites it; the family hue's, the sector's and the night time's decisions;
+Why: while every page still opens on the selector that decision built it is true as written, so a decision narrowing it states the tabs without moving a rule's version.
+
+### 2026-10-13 - docs/ARCHITECTURE.html - section 15.6's colours, the night status mark and the Run page's status sentence follow the green and the red of 19.2
+Decision: Green means support or a gain and red a stop or a loss, with orange for resistance
+Was:
+> 15.6: <h4>Support and resistance own two hues, which also rule the name page's parts that buy and sell</h4> <p>Green means a level below the price, orange means a level above it, on every screen and in every mark. ... Nothing else is allowed those two hues, and in particular a day's price change is not: a green day and a support band would then be the same colour meaning two things, and a reader cannot hold that. Text in either is drawn in its ink form. (see: Support and resistance own two hues, which also rule the name page's parts that buy and sell and nothing else)</p> <h4>A rise and a fall have hues of their own, on the name page alone</h4> <p>On the name page and its exported file a figure that rose is drawn in indigo and one that fell in plum, each with its sign always written beside it, and a caution in amber with the word written beside it. The rise and the fall are drawn by the name page's rules alone, because they sit close to the Run page's status blue and waiting violet, and the failure's red marks no rise or fall. (see: A figure that rose or fell is drawn in a hue of its own on the name page and its export alone)</p> <h4>Hue is never the only channel</h4> <p>Every band carries its role in words as well as its colour, every change its sign and every caution its word. ...
+> 15.6: ... the level, rise, fall and caution inks read so on their own fills as well.
+> 15.6: <h4>Status is drawn in blues, a wait in violet and a failure in red</h4> <p>... a night not run yet, which is waiting, in violet; and a night that stopped, was left unfinished or never ran in red, which means a failure and nothing else, never a fall in price. ... (see: Status is drawn in blues with violet for a wait and red for a failure alone)</p>
+> 15.6: ... the two hues for a level below and above the price and the parts that buy and sell, the rise, the fall and the caution, ... the status blues, violet and red, and four steps of one neutral for more or less.
+> 15.5 Night status: ... a clock in violet is a night not run yet or waiting to try again ... (see: Status is drawn in blues with violet for a wait and red for a failure alone).
+> 15.10: Status is drawn in blues, a wait in violet and a failure in red, because green and orange are the levels' (see: Status is drawn in blues with violet for a wait and red for a failure alone).
+Now:
+> 15.6: <h4>Green is support and a gain, red a stop and a loss, orange resistance</h4> with the level hues, the gain, the stop, the loss and the caution as the decision states them; <h4>A figure that rose or fell is green or red with its sign, on every page</h4>; <h4>Each setup family has a hue of its own, drawn as a mark</h4>; hue is never the only channel, every family carrying its name; the gain, loss and caution inks on their own fills and ink on each family's tint; the status's wait in amber; and the stylesheet's tokens naming the gain's green, the loss's red, the caution's amber, the status blues, amber and red and each family's hue and tint.
+> 15.5 Night status: a clock in amber is a night not run yet or waiting to try again (see: Status is drawn in blues with amber for a wait and red for a failure alone).
+> 15.10: Status is drawn in blues, a wait in amber and a failure in red, each state named in its words beside its hue (see: Status is drawn in blues with amber for a wait and red for a failure alone).
+Why: the operator's ruling R2 of 2026-10-12 with phase 19's plan, and R3's family hues, built at 19.2.
+
 ### 2026-10-13 - docs/BUILD_PLAN.md - 19.2's push view is in typical moves, from a setup at the means to the stock's score
 Corrects: 19.2's text named the push view's unit as risks, where the learned score is fitted on each setup's edge in typical moves, found while building the chart against the score's own arithmetic.
 Was:

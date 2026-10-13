@@ -353,10 +353,12 @@ public partial class ArchitectureConformance
         // picture and the reactions' old place, and 1266 from 18.4, section 17's two rows, section 18's three, the
         // headline as its four parts where it was one, the risks' two columns, the calendar and the sources as their
         // sixteen and the calendar timeline as its eight, less the dates and sources, 1267 from the 17.10 correction,
-        // the checklist's item on the newest monthly run, and 1268 from 19.1, the card's rule row's part on the variant
-        // reading no market check.
+        // the checklist's item on the newest monthly run, 1268 from 19.1, the card's rule row's part on the variant
+        // reading no market check, and 1277 from 19.2, its store of every member's readings, three marks, Tonight's two
+        // rows and its date line's part, the card's and the stock's page's chart, the five rows moving from Tonight to
+        // the Run page under new keys less the five they leave.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1268),
+            (789, 853, 6, 4, 855, 876, 1277),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
