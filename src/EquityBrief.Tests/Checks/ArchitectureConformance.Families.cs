@@ -366,9 +366,10 @@ public partial class ArchitectureConformance
         // the heavyweights card less the eleven they retire, and 1295 from 19.4, its two stores, section 18's rule the
         // per-rule test cannot walk, paper trading's seven rows and the trade log's two, and 1303 from 19.5, Universe's
         // tiles and its eight rows beside them, the Run page's corrections and section 17's two rows, less the sector
-        // strip's four parts, and 1305 from 19.6, the Queue's reports written by hand and section 17's window.
+        // strip's four parts, and 1305 from 19.6, the Queue's reports written by hand and section 17's window, and 1306
+        // from the second 19.4 correction of 2026-10-13, paper trading's start and the version an account counts.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1305),
+            (789, 853, 6, 4, 855, 876, 1306),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

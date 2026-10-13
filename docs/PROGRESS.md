@@ -44585,7 +44585,8 @@ Measured:   read from the branch's build over the live store, read-only but the 
 Tests:      one new: a variant registered again, its walk, return, worst drop and counts worked by hand over trades
             either side of it, the earlier two folded in its log by the version that listed each, the live account
             leaving none out, the start at a reproducing replay's session and not a differing one's, and the stored
-            trades and registrations read the same after the pages. The paper page test's log link and selector moved.
+            trades and registrations read the same after the pages. The paper page test's log link and selector moved,
+            and the stated counts with the row: 207 screen rows, 614 due points.
 Claims:     one more, 1306: 15.21's start and version row.
 Pins:       none move.
 Mutated:    the rule, stated before the runs: one mutation a property the correction adds, each filtered to the paper

@@ -3553,12 +3553,14 @@ internal static class Scope
             Verdict.Pass, "each verdict worked by hand from constructed test rows on both sides of each screen, not testable and not tested yet among them, the head's chosen label and yours, and the test years read back off the page", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "An account's record since registration")] = new Scoped(
             Verdict.Pass, "each account walked by hand with a skip and an uncosted trade, its label at 299 and 300 trades and at 35 and 36 months, and its return, worst drop and fund difference read back off the page beside its verdict and never in it", ByReadSurface),
+        [CheckReach.Key("15.21 Paper trading", "An account's start and the version it counts")] = new Scoped(
+            Verdict.Pass, "a variant registered again read off the rendered row from its new registration's first session with its version and the two earlier trades it leaves out, its walk worked by hand over the trades after it alone, the live account leaving none out, and the start carried to a reproducing replay's session with the words saying so", ByReadSurface),
         [CheckReach.Key("15.21 Paper trading", "The lines beneath")] = new Scoped(
             Verdict.Pass, "both lines read off the rendered page beneath the table", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The trade log's account")] = new Scoped(
-            Verdict.Pass, "the selector read off the rendered page with the lists first, the variants in the one family order and You last, each family's verdict and label beside the lists' trades and the entry line beneath them", ByReadSurface),
+            Verdict.Pass, "the selector read off the rendered page with the lists first, each family's live or provisional account before its variants in the one family order and You last, each family's verdict and label beside the lists' trades and the entry line beneath them", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "An account's trade log")] = new Scoped(
-            Verdict.Pass, "a variant's log read off the rendered page with its verdict and its label apart, each trade newest first, an open one's result so far at tonight's close worked by hand through a split, a skipped one saying why, and the running total labelled not evidence yet", ByReadSurface),
+            Verdict.Pass, "a variant's log read off the rendered page with its verdict and its label apart, each trade newest first, an open one's result so far at tonight's close worked by hand through a split, a skipped one saying why, and the running total labelled not evidence yet, and a variant registered again folding its earlier version's trades beneath with the version that listed each", ByReadSurface),
         // 19.5, Universe: its tiles, search, sorting, rows a page, chips, readings' bars, phone cards and the corrections'
         // fold, with section 17's two rows they read.
         [CheckReach.Key("15.8 Universe", "Sector tiles")] = new Scoped(
@@ -5783,6 +5785,7 @@ internal static class Scope
         [CheckReach.Key("15.21 Paper trading", "Every account")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "An account's test years verdict")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "An account's record since registration")] = "19.4",
+        [CheckReach.Key("15.21 Paper trading", "An account's start and the version it counts")] = "19.4",
         [CheckReach.Key("15.21 Paper trading", "The lines beneath")] = "19.4",
         [CheckReach.Key("15.17 Past picks", "The trade log's account")] = "19.4",
         [CheckReach.Key("15.17 Past picks", "An account's trade log")] = "19.4",
