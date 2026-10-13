@@ -104,6 +104,8 @@ public class PinnedConstants
         [
             new(Calls, "0", 0, Zero),
             new("Per-name network calls in the nightly run", "0", 0, Zero),
+            new("Per-name network calls in the nightly run", "20", Core.Providers.SubstituteBars.Most, "SubstituteBars.Most"),
+            new("Per-name network calls in the nightly run", "0.005", Core.Providers.SubstituteBars.Tolerance, "SubstituteBars.Tolerance"),
             new(Clock, "40", (decimal)RetryPolicy.WallClock.TotalMinutes, "RetryPolicy.WallClock in minutes"),
             new(Clock, "503", null, Measured, () => Recorded("503")),
             new(Clock, "580", null, Measured, () => Recorded("580")),

@@ -44005,3 +44005,48 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 57c3c16
             `DoneConditionProducible`, `FigureFits`, `ObligationReconciles`, `PinnedConstants`, `RecordAppendOnly`,
             `StatedCounts` and `TwoPlatform`, 159 of 159 passed.
 Carried:    the sign-offs of phases 16, 17 and 18.
+
+### 2.1 - correction: a member's row the provider's day file refuses is skipped, and its bar asked of Yahoo with Nasdaq's check once every file is read, where one impossible row stopped the night for every member on every try   2026-10-12
+
+Corrects:   the fetch's refusal of a current member's unreadable row, from the 2.1 correction e14eeff3. The night of
+            2026-10-12 stopped at its fetch at 23:00Z and again at 23:15Z on one row: LUMN opening at 5.25 above a high
+            of 5.05, its high, low and close all 5.05. The provider's per-ticker endpoint served the same row when asked
+            after, so each try would have stopped the same way; the operator had the night stopped at 23:28Z.
+Ruled:      by the operator on 2026-10-12. For the second source, "Yahoo, Nasdaq cross-check (Recommended)"; for a member
+            the sources cannot fix, "I need you to design a fallback calls for all the stocks that have such failure for
+            the night and while the design should be to skip the stock and carry on, at the end all the failed stock are
+            to be consolidated and the fallback call to be used to fix those"; and "It should work for any stock". The
+            decision is written (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read).
+            For the reports, "Off-peak drain at 16:30Z (Recommended)": the night queues its report requests and stops,
+            starting neither the drain nor the labeller, and a scheduled run writes them at 16:30Z; carried below.
+Built:      the fetch stores nothing from a file for a member whose row the reader refused and keeps the row's reason,
+            open, close and adjusted close; once every file is read it asks the refused members of every session
+            together, in session and then ticker order, at most 20 a night, of Yahoo's daily chart and, where Yahoo
+            answers a bar, of Nasdaq's dated history and then its quote naming the session it last closed. The bar is
+            stored under the source `substitute` where it could have traded, its open and close stand within half a
+            cent of the provider's and its high, low and close within half a cent of Nasdaq's; otherwise the member is
+            left without the session as a member the file carries nothing for is. The fetch's row names every refused
+            member with whether its bar was stored and why, and counts the sources' requests beside the bulk file's.
+            The sources' one file, `YahooNasdaqBarFeed`, is the twenty-third permitted a client, each request tried
+            twice at most and each try bounded by 20 seconds. CLAUDE.md's hard rule names the eighth carve-out; the
+            catalogue row, section 14's note, section 17's per-name row and section 18's unreadable row, SCHEMA's bar
+            source and the roster's nightly-cost row, the prior text in `CHANGELOG.md`. The answers each source sent for
+            LUMN on that evening are captured in the fixture and declared in its manifest.
+Tests:      five more: each capture read as sent, the provider's own row refused by the reader; the rule worked by hand
+            on LUMN and on each check at its edge, half a cent passing and a hundredth past it refused, and at the
+            provider's adjustment; a member's impossible row stored from the sources over the fixture's file; one whose
+            sources disagree left without the session; twenty asked, the twenty-first named past the cap, one source's
+            failure stopping no other and a file every member reads asking nothing. Two changed: the fetcher's and the
+            night's test of a member's unreadable row, which now finishes the night and names the member.
+Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the 16
+            fetcher, substitute and night tests. M1 Nasdaq's check ignored: predicted red at the rule test and the
+            disagreeing sources test. M2 the cap removed: predicted red at the cap test alone. M3 a refused member stopping
+            the night again: predicted red at every test reading a refused member. M4 a substitute stored as `bulk`:
+            predicted red at the store test alone. M5 Nasdaq asked where Yahoo answered no bar: predicted red at the cap
+            test alone. Results: each red where predicted and nowhere else. M1 2 of 16, M2 1 of 16, M3 5 of 16, M4 1 of
+            16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Carried:    the night of 2026-10-12 run to its end from main after the merge, LUMN's row asked of the sources; the
+            night's report requests left queued and its drain and labeller stopped, written by a drain started at 16:30Z
+            on 2026-10-13; and the night queuing its requests and starting neither the drain nor the labeller, with the
+            scheduled run at 16:30Z that starts both, as the operator ruled, built next.

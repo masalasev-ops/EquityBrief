@@ -158,6 +158,9 @@ public enum Feed
     Quote,
     // The Treasury's daily par yield curve for a year, keyless and free, asked once a night after the close.
     TreasuryYield,
+    // Yahoo's daily chart and Nasdaq's quote, keyless and free, asked by the bar fetcher alone for a member whose row the
+    // provider's day file refused.
+    SubstituteBar,
 }
 
 public readonly record struct StoreTouch(Store Store, Touch Touch);

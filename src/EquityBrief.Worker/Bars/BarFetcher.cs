@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Providers;
@@ -34,7 +35,15 @@ public sealed record FetchOutcome(
     // the night's stdout alone until the phase 5 sign-off, which a scheduled
     // task discards.
     int NotTraded = 0,
-    int Unreadable = 0);
+    int Unreadable = 0,
+    // The current members whose row a file refused, each with what the second sources made of it, and the requests
+    // they cost, which are not the provider's.
+    IReadOnlyList<RefusedMember>? Refused = null,
+    int SubstituteRequests = 0);
+
+// A current member whose row the provider's file refused for a session, why, and whether the second sources' bar was
+// stored in its place, with why not where it was not.
+public sealed record RefusedMember(string Ticker, DateOnly Session, string Reason, bool Stored, string Why);
 
 // The nightly bar fetch. One bulk request, stored for current members only,
 // then the sessions that have fallen out of the retention window are dropped.
@@ -59,7 +68,7 @@ public sealed class BarFetcher : IComponent
             new StoreTouch(Store.KeptBar, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.BulkPrice]);
+        Feeds: [Feed.BulkPrice, Feed.SubstituteBar]);
 
     public const string Stage = "fetch";
     public const string Source = "bulk";
@@ -72,12 +81,16 @@ public sealed class BarFetcher : IComponent
     readonly IBulkPriceFeed feed;
     readonly IClock clock;
     readonly string databaseFile;
+    readonly ISubstituteBarFeed? substitutes;
 
-    public BarFetcher(IBulkPriceFeed feed, IClock clock, string databaseFile)
+    // The second sources, where the night was handed them. A fetcher handed none leaves every refused member without
+    // the session and says so.
+    public BarFetcher(IBulkPriceFeed feed, IClock clock, string databaseFile, ISubstituteBarFeed? substitutes = null)
     {
         this.feed = feed;
         this.clock = clock;
         this.databaseFile = databaseFile;
+        this.substitutes = substitutes;
     }
 
     // The names a night stores bars for: every name that has not left by
@@ -196,14 +209,16 @@ public sealed class BarFetcher : IComponent
 
         var caughtUp = new List<BulkBar[]>();
         var caughtUpShort = new SortedDictionary<DateOnly, IReadOnlyList<string>>();
+        var refused = new List<(UnreadableRow Row, DateOnly Session)>();
         var notTradedFrom = feed.NotSessions.Count;
         var unreadableFrom = feed.Unreadable.Count;
 
         foreach (var day in missed)
         {
-            var (dayWanted, dayMissing) = await AcceptedAsync(day, members, missedSession: true, cancellationToken);
+            var (dayWanted, dayMissing, dayRefused) = await AcceptedAsync(day, members, missedSession: true, cancellationToken);
 
             caughtUp.Add(dayWanted);
+            refused.AddRange(dayRefused.Select(row => (row, day)));
 
             if (dayMissing.Length > 0)
             {
@@ -214,7 +229,12 @@ public sealed class BarFetcher : IComponent
         // Tonight's, through the same checks. One request, counted by the feed
         // rather than asserted by the caller, because a caller that looped would
         // still report one.
-        var (wanted, missing) = await AcceptedAsync(session, members, missedSession: false, cancellationToken);
+        var (wanted, missing, refusedTonight) = await AcceptedAsync(session, members, missedSession: false, cancellationToken);
+
+        refused.AddRange(refusedTonight.Select(row => (row, session)));
+
+        // Every refused member of every file, once every file is read, asked of the second sources together.
+        var (substituted, judged, substituteRequests) = await SubstituteAsync(refused, cancellationToken);
 
         // Every session in one transaction, the missed ones first, so a night
         // that stops partway stores none of them rather than a series with the
@@ -223,7 +243,12 @@ public sealed class BarFetcher : IComponent
 
         foreach (var row in caughtUp.SelectMany(day => day).Concat(wanted))
         {
-            await StoreAsync(connection, row, started);
+            await StoreAsync(connection, row, started, Source);
+        }
+
+        foreach (var row in substituted)
+        {
+            await StoreAsync(connection, row, started, SubstituteBars.Source);
         }
 
         var stored = await CountAsync(connection);
@@ -268,11 +293,75 @@ public sealed class BarFetcher : IComponent
             missed,
             caughtUpShort,
             feed.NotSessions.Count - notTradedFrom,
-            feed.Unreadable.Count - unreadableFrom);
+            feed.Unreadable.Count - unreadableFrom - refused.Count,
+            judged,
+            substituteRequests);
 
         await AppendAsync(connection, runId, started, outcome);
 
         return outcome;
+    }
+
+    // Every refused member of every file the fetch read, consolidated once the files are read and asked of the second
+    // sources in session and then ticker order, at most `SubstituteBars.Most` of them. The second sources' bar is
+    // stored where every check holds; a member past the most, one neither source answers for the session, one whose
+    // bar fails a check and one a source cannot be read for is left without the session, as a member the file carries
+    // nothing for is, which the gap machinery reads, and each is named on the step's row with why. Nasdaq is asked only
+    // where Yahoo answered a bar.
+    // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+    async Task<(List<BulkBar> Stored, List<RefusedMember> Judged, int Requests)> SubstituteAsync(
+        IReadOnlyList<(UnreadableRow Row, DateOnly Session)> refused,
+        CancellationToken cancellation)
+    {
+        var stored = new List<BulkBar>();
+        var judged = new List<RefusedMember>();
+        var from = substitutes?.Requests ?? 0;
+        var asked = 0;
+
+        var consolidated = refused
+            .GroupBy(one => (one.Row.Ticker, one.Session))
+            .Select(group => group.First())
+            .OrderBy(one => one.Session)
+            .ThenBy(one => one.Row.Ticker, StringComparer.Ordinal);
+
+        foreach (var (row, session) in consolidated)
+        {
+            if (substitutes is null)
+            {
+                judged.Add(new RefusedMember(row.Ticker, session, row.Reason, false, "no second source was handed to this night"));
+
+                continue;
+            }
+
+            if (asked == SubstituteBars.Most)
+            {
+                judged.Add(new RefusedMember(row.Ticker, session, row.Reason, false, $"past the {SubstituteBars.Most} members a night asks the second sources for"));
+
+                continue;
+            }
+
+            asked++;
+
+            try
+            {
+                var bar = await substitutes.BarAsync(row.Ticker, session, cancellation);
+                var range = bar is null ? null : await substitutes.RangeAsync(row.Ticker, session, cancellation);
+                var (substitute, why) = SubstituteBars.Judge(row, session, bar, range);
+
+                if (substitute is not null)
+                {
+                    stored.Add(new BulkBar(row.Ticker, substitute));
+                }
+
+                judged.Add(new RefusedMember(row.Ticker, session, row.Reason, substitute is not null, why));
+            }
+            catch (Exception failure) when (!cancellation.IsCancellationRequested)
+            {
+                judged.Add(new RefusedMember(row.Ticker, session, row.Reason, false, "the second sources could not be read: " + failure.Message));
+            }
+        }
+
+        return (stored, judged, (substitutes?.Requests ?? 0) - from);
     }
 
     // One session's file, read and checked before anything is stored.
@@ -280,7 +369,7 @@ public sealed class BarFetcher : IComponent
     // The feed's two accumulating lists are read from where they stood before
     // this call, so a night that fetches several sessions judges each against
     // its own rows rather than against every file it has read.
-    async Task<(BulkBar[] Wanted, string[] Missing)> AcceptedAsync(
+    async Task<(BulkBar[] Wanted, string[] Missing, UnreadableRow[] Refused)> AcceptedAsync(
         DateOnly day,
         HashSet<string> members,
         bool missedSession,
@@ -310,31 +399,24 @@ public sealed class BarFetcher : IComponent
             .OrderBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
 
-        // A current member whose row the reader refused, named before anything
-        // is stored.
+        // A current member whose row the reader refused, kept with its reason and
+        // the prices it stated, and stored nothing for from this file.
         //
         // The reader passes over a row it cannot read rather than refusing the
         // file, because the file is the whole exchange and a fund's fractional
         // volume is not this index's business: two of the first four days
         // fetched at index size carried six such rows, and each refused the
-        // night for every name with a message that named nothing. What a row
-        // passed over must never do is leave a member quietly without tonight's
-        // bar, which is what this refuses, with the ticker and the reason.
+        // night for every name with a message that named nothing. A member's
+        // row passed over is never left quietly: the fetch asks the second
+        // sources for it once every file is read, and names it on its row
+        // whether their bar was stored or not, so one member's impossible row
+        // stops no other member's night.
+        // see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
         var refusedMembers = feed.Unreadable
             .Skip(unreadableFrom)
             .Where(row => members.Contains(row.Ticker))
             .OrderBy(row => row.Ticker, StringComparer.Ordinal)
             .ToArray();
-
-        if (refusedMembers.Length > 0)
-        {
-            throw new InvalidOperationException(
-                "The bulk file for " + named +
-                $" carries {refusedMembers.Length} current member row(s) the reader refused: " +
-                string.Join("; ", refusedMembers.Take(FirstNamed).Select(row => row.Reason)) +
-                ". A member's bar that cannot be read is refused rather than skipped, because a " +
-                "member with no bar tonight would read as a shorter history.");
-        }
 
         // Every current member accounted for, before anything is stored.
         //
@@ -352,6 +434,7 @@ public sealed class BarFetcher : IComponent
         var accounted = wanted
             .Select(row => row.Ticker)
             .Concat(feed.NotSessions.Skip(notSessionsFrom))
+            .Concat(refusedMembers.Select(row => row.Ticker))
             .ToHashSet(StringComparer.Ordinal);
 
         var missing = members.Where(member => !accounted.Contains(member))
@@ -383,8 +466,11 @@ public sealed class BarFetcher : IComponent
                 (missedSession ? " If the exchange was closed that day, the closure table is missing it." : string.Empty));
         }
 
-        return (wanted, missing);
+        return (wanted, missing, refusedMembers);
     }
+
+    // A reason quotes a price and a source's name, so an apostrophe is written as itself.
+    static readonly JsonSerializerOptions Relaxed = new() { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     static string Quoted(DateOnly day) =>
         "\"" + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "\"";
@@ -457,7 +543,7 @@ public sealed class BarFetcher : IComponent
         return Convert.ToInt32(await command.ExecuteScalarAsync());
     }
 
-    static async Task StoreAsync(SqliteConnection connection, BulkBar row, DateTimeOffset observed)
+    static async Task StoreAsync(SqliteConnection connection, BulkBar row, DateTimeOffset observed, string source)
     {
         await using var command = connection.CreateCommand();
 
@@ -469,7 +555,7 @@ public sealed class BarFetcher : IComponent
         command.Parameters.AddWithValue("$low", Money.ToStorage(row.Bar.Low));
         command.Parameters.AddWithValue("$close", Money.ToStorage(row.Bar.Close));
         command.Parameters.AddWithValue("$volume", row.Bar.Volume);
-        command.Parameters.AddWithValue("$source", Source);
+        command.Parameters.AddWithValue("$source", source);
         command.Parameters.AddWithValue("$observed_at", observed.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$raw_close", Money.ToStorage(row.Bar.RawClose));
 
@@ -491,7 +577,7 @@ public sealed class BarFetcher : IComponent
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
         command.Parameters.AddWithValue("$rows_written", outcome.RowsWritten);
-        command.Parameters.AddWithValue("$network_requests", outcome.Requests);
+        command.Parameters.AddWithValue("$network_requests", outcome.Requests + outcome.SubstituteRequests);
         // Everything the night's fetch line says, on the row a person reads the
         // next morning. The line goes to stdout, which a scheduled task
         // discards, and until the phase 5 sign-off the counts of rows passed
@@ -509,7 +595,19 @@ public sealed class BarFetcher : IComponent
             "\"caughtUpShort\":{" +
             string.Join(",", (outcome.CaughtUpShort ?? new Dictionary<DateOnly, IReadOnlyList<string>>())
                 .Select(entry => Quoted(entry.Key) + ":" + Named(entry.Value))) +
-            "}}");
+            "}," +
+            $"\"substituteRequests\":{outcome.SubstituteRequests},\"refused\":" +
+            JsonSerializer.Serialize(
+                (outcome.Refused ?? []).Select(one => new
+                {
+                    ticker = one.Ticker,
+                    session = one.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    stored = one.Stored,
+                    why = one.Why,
+                    reason = one.Reason,
+                }),
+                Relaxed) +
+            "}");
 
         await command.ExecuteNonQueryAsync();
     }

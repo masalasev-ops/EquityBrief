@@ -25,6 +25,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - CLAUDE.md - the nightly hard rule names an eighth carve-out, the fetch's ask of Yahoo and Nasdaq for a member whose row the provider's day file refused
+Decision: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+Was:
+> ... Any component that adds a per-name call to the nightly path is a defect, not a feature. Seven carve-outs are named rather than left to be discovered, ... free, from the SEC rather than the provider and bounded by its own limit, on the operator's ruling of 2026-10-09. (see: The nightly run is arithmetic only) ... (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit)
+Now:
+> ... Eight carve-outs are named rather than left to be discovered, ... on the operator's ruling of 2026-10-09, and the fetch's ask of Yahoo and Nasdaq for each member whose row the provider's day file refused, once every file is read and at most twenty members a night, free, keyless and neither the provider's, so it follows the provider's faults rather than the index, on the operator's ruling of 2026-10-12. (see: The nightly run is arithmetic only) ... (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read)
+Why: the night of 2026-10-12 stopped at its fetch on every try on one impossible row, LUMN's, and the operator ruled that a refused member is skipped and its bar asked of a free second source once every file is read.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - the bar fetcher's catalogue row, section 14's note, the per-name row of section 17 and section 18's unreadable row skip a refused member and ask the second sources for it
+Decision: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+Was:
+> Bar fetcher reads: bulk price feed, membership, bar store | stores the day's bars for current members, refuses to store a series with a gap (see: Bars are never interpolated), ...
+> 14's note: The arithmetic, being steps 1 to 23, calls no model and makes no per-name network request. Step 24 ...
+> 17, Per-name network calls in the nightly run: 0 in the steady state, ... (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night)
+> 18, A feed answers with a row the reader cannot read: ... a row for a current member refuses the night before anything is stored, naming the ticker and what arrived (see: A feed is unavailable when it does not answer, and wrong when it answers with something else) | the run log carries the step that stopped and the member and the reason; the banner gives the data date
+Now:
+> Bar fetcher reads: bulk price feed, substitute bar feed, membership, bar store | stores the day's bars for current members, stores nothing from a file for a member whose row the reader refused and, once every file is read, asks the substitute bar feed for those members, storing Yahoo's bar where Nasdaq's check holds and naming each on its row (see: ...), refuses to store a series with a gap (see: Bars are never interpolated), ...
+> 14's note: The arithmetic, being steps 1 to 23, calls no model and makes no per-name network request but one: the fetch is carved out of the second by name for each member whose row the provider's day file refused, which it asks Yahoo and Nasdaq for once every file is read, free and neither the provider's, at most twenty a night, so the provider's faults set its asks rather than the index (see: ...). Step 24 ...
+> 17, Per-name network calls in the nightly run: ... (see: ...); and the fetch's ask of Yahoo and Nasdaq for each member whose row the provider's day file refused, at most 20 members a night, a bar stored only where its prices stand within 0.005 dollars of the ones they are checked against (see: ...)
+> 18, A feed answers with a row the reader cannot read: ... a row for a current member is stored nothing for from that file and, once every file is read, asked of Yahoo with Nasdaq's check, the bar stored only where every check holds and the member otherwise left without the session as a member the file carries nothing for is (see: ...) (see: ...) | the fetch's row names each refused member with the reason, whether the second sources' bar was stored and why; the banner gives the data date
+Why: the operator's ruling of 2026-10-12, after LUMN's impossible row stopped that night's fetch on every try.
+
+### 2026-10-12 - docs/SCHEMA.md - the bar's source names `substitute`
+Decision: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+Was:
+> | `source` | TEXT | which endpoint delivered it |
+Now:
+> | `source` | TEXT | which endpoint delivered it, and `substitute` where the bar is Yahoo's, checked against Nasdaq, in place of a row the provider's day file refused (see: ...) |
+Why: a bar written from the second sources says so where it is stored.
+
+### 2026-10-12 - .claude/rules/checks.md - nightly-cost states the eighth carve-out
+Decision: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
+Was:
+> ... and is refused beside another run by hand with nothing asked, over a constructed store |
+Now:
+> ... and is refused beside another run by hand with nothing asked, over a constructed store; and from the 2.1 correction of 2026-10-12 the eighth carve-out, the fetch's ask of Yahoo and Nasdaq for each member whose row the provider's day file refused, is carved by name to the bar fetcher, and the one file holding its two clients is among the shipped files that may hold a client |
+Why: the roster names what each check asserts, and nightly-cost now holds the carve-out by name.
+
 ### 2026-10-12 - docs/BUILD_PLAN.md - phase 19's rulings say the Linux test that failed on 2aec8d18 was fixed before the plan
 Corrects: the plan carried the fix as owed before phase 17's sign-off, where the 1.3 correction of 2026-10-09 had fixed it in PR 413; found reading the failed run's log and the record before writing the fix.
 Was:

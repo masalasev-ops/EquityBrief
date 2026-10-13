@@ -165,6 +165,7 @@ internal static class ComponentVocabulary
         ["identifier mapping feed"] = Feed.IdentifierMapping,
         ["quote feed"] = Feed.Quote,
         ["Treasury yield feed"] = Feed.TreasuryYield,
+        ["substitute bar feed"] = Feed.SubstituteBar,
     };
 
     // Prose that names a store under a name the mechanical rule does not reach.

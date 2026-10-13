@@ -215,7 +215,7 @@ Grain: one row per ticker per session.
 | `session_date` | TEXT | date |
 | `open`, `high`, `low`, `close` | TEXT | decimal in code, and one adjusted price set |
 | `volume` | INTEGER | |
-| `source` | TEXT | which endpoint delivered it |
+| `source` | TEXT | which endpoint delivered it, and `substitute` where the bar is Yahoo's, checked against Nasdaq, in place of a row the provider's day file refused (see: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read) |
 | `observed_at` | TEXT | UTC instant |
 | `raw_close` | TEXT | decimal in code, the provider's unadjusted close |
 

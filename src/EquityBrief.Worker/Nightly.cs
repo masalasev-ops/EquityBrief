@@ -249,12 +249,15 @@ public static class Nightly
             // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
             new("fetch", async () =>
             {
-                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
+                var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile, feeds.Substitutes)
                     .RunAsync(indexCode, runId, night.Token, wider);
                 var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
+                var refused = outcome.Refused ?? [];
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
+                    $"{refused.Count} member row(s) the reader refused, {refused.Count(one => one.Stored)} stored from the second sources " +
+                    $"over {outcome.SubstituteRequests} request(s), " +
                     FormattableString.Invariant($"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, ") +
                     $"{outcome.NotTraded} row(s) listed and not traded, " +
                     $"{outcome.Unreadable} row(s) outside the index the reader refused, " +
