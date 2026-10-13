@@ -912,12 +912,10 @@ static async Task<HeavyweightCardView> WithStandingAsync(
     var sectors = fundReturn || designB ? new Dictionary<string, string?>(StringComparer.Ordinal) : await read.MemberSectorsAsync(universe.Code, night);
     var stocks = await read.StockStandingClosesAsync([.. held.Concat(sectors.Keys).Distinct(StringComparer.Ordinal)], night, card.LookBack, card.LastRebalance);
 
-    static double? Of(decimal? price) => price is { } stated ? EquityBrief.Core.Prices.Statistic.FromPrice(stated) : null;
-
     double? SectorReturn(string sector) =>
         fundReturn
-            ? EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(sector, out var fund) && funds.TryGetValue(fund, out var closes) ? EquityBrief.Core.Families.HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null
-            : EquityBrief.Core.Families.HeavyweightStandings.MembersMean(sectors.Where(member => member.Value == sector).Select(member => stocks.TryGetValue(member.Key, out var closes) ? EquityBrief.Core.Families.HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null));
+            ? EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(sector, out var fund) && funds.TryGetValue(fund, out var closes) ? TonightScreen.ReturnOf(closes) : null
+            : EquityBrief.Core.Families.HeavyweightStandings.MembersMean(sectors.Where(member => member.Value == sector).Select(member => stocks.TryGetValue(member.Key, out var closes) ? TonightScreen.ReturnOf(closes) : null));
 
     return TonightScreen.WithStanding(card, night, stocks, funds, growth, SectorReturn, reason, designB, largeFunds);
 }

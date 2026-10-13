@@ -456,7 +456,7 @@ public sealed partial class MarkRenderer
     // The live rule's picks named by their place among tonight's buy points, each selecting its row there.
     static string PicksByPlace(IReadOnlyList<FamilyPickCell> picks) =>
         Formatted($"<p class=\"card-picks\" data-picks=\"{picks.Count}\">Tonight's picks, drawn in the buy points above: ")
-        + string.Join(", ", picks.Select(pick => Formatted($"<a class=\"card-pick\" data-ticker=\"{Escaped(pick.Row.Ticker)}\" href=\"#/night/{pick.Row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(pick.Row.Ticker)}\">{Escaped(pick.Row.Ticker)}</a>")))
+        + string.Join(", ", picks.Select(pick => Formatted($"<a class=\"card-pick\" data-ticker=\"{Escaped(pick.Row.Ticker)}\" href=\"#/night/{DayOf(pick.Row.SessionDate)}?name={Uri.EscapeDataString(pick.Row.Ticker)}\">{Escaped(pick.Row.Ticker)}</a>")))
         + ".</p>";
 
     // A card listing nothing tonight in one line: why it lists nothing, the gate that stopped the most of the members

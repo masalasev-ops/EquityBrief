@@ -103,6 +103,10 @@ public static partial class TonightScreen
     // alone.
     public const string StoresNoSectorReading = "This book stores no reading for a sector it bought nothing in.";
 
+    // A stock's or a fund's return over the look-back to tonight off its closes, none where either is not stored.
+    public static double? ReturnOf(StandingCloses closes) =>
+        HeavyweightStandings.Return(closes.Now is { } now ? Statistic.FromPrice(now) : null, closes.Back is { } back ? Statistic.FromPrice(back) : null);
+
     // A heavyweights card with its standing tonight: each holding's return since bought off its own book's growth carried
     // to the night and its standing off tonight's closes by the rule's own functions, design (b)'s read for no design of
     // its own; the eleven sectors in order with each fund's return over the look-back and why a sector holding nothing
@@ -119,8 +123,6 @@ public static partial class TonightScreen
         bool designB = false,
         bool largeFunds = false)
     {
-        static double? Of(decimal? price) => price is { } held ? Statistic.FromPrice(held) : null;
-
         HeavyweightHoldingCell[] holdings =
         [
             .. card.Holdings.Select(holding =>
@@ -128,7 +130,7 @@ public static partial class TonightScreen
                 var closes = stocks.GetValueOrDefault(holding.Ticker) ?? new StandingCloses(null, null, null);
                 var standing = designB
                     ? new HeavyweightStanding(null, null, null, closes.Now is { } shut && holding.Average200 is { } line && line > 0 ? (Statistic.FromPrice(shut) / line) - 1.0 : null, HeavyweightStandings.NotForThisDesign)
-                    : HeavyweightStandings.Of(Of(closes.Now), Of(closes.Back), holding.Average200, sectorReturn(holding.Sector));
+                    : HeavyweightStandings.Of(closes.Now is { } now ? Statistic.FromPrice(now) : null, closes.Back is { } back ? Statistic.FromPrice(back) : null, holding.Average200, sectorReturn(holding.Sector));
 
                 return holding with
                 {
@@ -139,7 +141,11 @@ public static partial class TonightScreen
         ];
 
         double? FundReturn(string? fund) =>
-            fund is not null && funds.TryGetValue(fund, out var closes) ? HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null;
+            fund is not null && funds.TryGetValue(fund, out var closes) ? ReturnOf(closes) : null;
+
+        // A close tonight and at the last rebalance, as the tiles' returns since it read them.
+        static (double?, double?) SinceRebalance(StandingCloses closes) =>
+            (closes.Now is { } now ? Statistic.FromPrice(now) : null, closes.AtRebalance is { } then ? Statistic.FromPrice(then) : null);
 
         HeavyweightSectorView[] sectors =
         [
@@ -167,8 +173,8 @@ public static partial class TonightScreen
                 holdings.Length,
                 GicsSectors.Eleven.Count(sector => holdings.Any(holding => holding.Sector == sector)),
                 GicsSectors.Eleven.Count,
-                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(holdings.Select(holding => stocks.GetValueOrDefault(holding.Ticker) is { } closes ? (Of(closes.Now), Of(closes.AtRebalance)) : (null, null))),
-                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(heldFunds.Select(fund => funds.GetValueOrDefault(fund) is { } closes ? (Of(closes.Now), Of(closes.AtRebalance)) : (null, null))),
+                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(holdings.Select(holding => stocks.GetValueOrDefault(holding.Ticker) is { } closes ? SinceRebalance(closes) : (null, null))),
+                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(heldFunds.Select(fund => funds.GetValueOrDefault(fund) is { } closes ? SinceRebalance(closes) : (null, null))),
                 heldFunds,
                 card.NextRebalance is { } next ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, next) : null),
         };

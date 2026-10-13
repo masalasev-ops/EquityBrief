@@ -18,7 +18,7 @@ public partial class FixtureExpectations
         var expected = Expected("setup-cards");
 
         Assert.Equal("derived", expected.GetProperty("derivation").GetString());
-        Assert.Empty(expected.GetProperty("tables").EnumerateArray());
+        Assert.Equal(["gate_result"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
 
         var night = expected.GetProperty("night").GetString()!;
         string[] cards = [.. expected.GetProperty("cards").EnumerateArray().Select(card => card.GetString()!)];
@@ -28,6 +28,16 @@ public partial class FixtureExpectations
         using var held = store;
 
         Assert.Equal(0, code);
+
+        // The derivation's ground: every S&P 500 member's stored gate result on the night fails its trigger, which reads
+        // its arrival off gate rows stored for the sessions before the night and finds none.
+        var triggers = Query(store, $"SELECT ticker || '|' || gates FROM gate_result WHERE session_date = '{night}' ORDER BY ticker;")
+            .Select(row => row.Split('|', 2))
+            .Select(row => (Ticker: row[0], Passed: JsonDocument.Parse(row[1]).RootElement.GetProperty("gates").EnumerateArray().Single(gate => gate.GetProperty("gate").GetString() == "trigger").GetProperty("passed").GetBoolean()))
+            .ToArray();
+
+        Assert.Equal(4, triggers.Length);
+        Assert.All(triggers, member => Assert.False(member.Passed, $"{member.Ticker} passed its trigger on the fixture's first filter night."));
 
         // The S&P 500's rule nights the whole night stored: the families whose rule stands on the index, each with its
         // funnel and its completed stretches.
@@ -79,6 +89,7 @@ public partial class FixtureExpectations
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{night}"));
 
+        Assert.Contains($"<p class=\"market-line\" data-index=\"{expected.GetProperty("indexDrawn").GetString()}\" data-open=\"true\"", page, StringComparison.Ordinal);
         Assert.Equal(cards, Regex.Matches(page, "<section class=\"family-card[^\"]*\" data-family=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         foreach (var family in cards.Where(family => family != Core.Families.HeavyweightRule.Name))
