@@ -44046,7 +44046,12 @@ Mutated:    the rule, stated before the run: one mutation a property the correct
             predicted red at the store test alone. M5 Nasdaq asked where Yahoo answered no bar: predicted red at the cap
             test alone. Results: each red where predicted and nowhere else. M1 2 of 16, M2 1 of 16, M3 5 of 16, M4 1 of
             16, M5 1 of 16. Each reverted before anything was committed, the 16 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 6fcecc5a: all six
+            steps, 0 warnings, 0 errors, 2259 of 2259 tests ran with none failed in 17 minutes 54 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
+            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed. The run over 4659e15e
+            stopped at the suite on the count of shipped files permitted a client, 22 against the 23 this correction
+            makes.
 Carried:    the night of 2026-10-12 run to its end from main after the merge, LUMN's row asked of the sources; the
             night's report requests left queued and its drain and labeller stopped, written by a drain started at 16:30Z
             on 2026-10-13; and the night queuing its requests and starting neither the drain nor the labeller, with the
