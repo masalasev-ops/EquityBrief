@@ -34,7 +34,7 @@ public partial class ReadSurface
             [RequestDrain.FromNight] = "by the night for six names taken in turn across the three indices' pages",
         };
 
-        var page = WebUtility.HtmlDecode(new SinglePageApp().QueueRegion([]));
+        var page = WebUtility.HtmlDecode(QueuePage([]));
         var paragraph = WebUtility.HtmlDecode(Regex.Match(File.ReadAllText(Repository.Architecture), "<p>A request is asked for [^<]*").Value);
 
         Assert.True(admitted.Length >= 3, $"Read {admitted.Length} askers off the store's check, expected at least 3.");

@@ -1425,7 +1425,8 @@ public partial class ArchitectureConformance
         // 196 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
         // 205 at 19.5: Universe's tiles in the sector strip's place, its search, sorting, rows a page, two chips, readings'
         // bars, phone cards and corrections, and the Run page's corrections.
-        Assert.Equal(205, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 206 at 19.6: the Queue's reports written by hand.
+        Assert.Equal(206, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1562,7 +1563,8 @@ public partial class ArchitectureConformance
         // 606 at 19.4: paper trading's seven rows and the trade log's two on Past picks.
         // 612 at 19.5: Universe's tiles and its eight rows beside them and the Run page's corrections, less the sector
         // strip's four parts.
-        Assert.Equal(612, inDocument.Length);
+        // 613 at 19.6: the Queue's reports written by hand.
+        Assert.Equal(613, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

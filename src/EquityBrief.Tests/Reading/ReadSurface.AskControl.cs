@@ -231,7 +231,7 @@ public partial class ReadSurface
             [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
             SinglePageApp.TonightDrawn,
             []);
-        var queue = new SinglePageApp().QueueRegion([Queued("ZZZZ", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding)]);
+        var queue = QueuePage([Queued("ZZZZ", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding)]);
 
         // The selected name's region draws the asking control too, read from where its card
         // opens, since the row above it carries the same control.

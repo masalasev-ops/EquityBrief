@@ -1,0 +1,15 @@
+{
+ "stage": "queue-screen",
+ "derivation": "derived",
+ "derivedFrom": "section 15.15's rows on what settled and on the reports written by hand, section 17's row on the queue window, the decision that the queue page draws settled requests a row a stock and New York day over fourteen days and the passes no request names a row a day, the decision that the queue page states each instant in New York's time with UTC beneath the pointer, and research-record.json's spend, not a run. The fixture's research pass for KEYS is the pass a person starts from the worker's command, with no request beneath it: run here under the name a pass started at the fixture's research instant carries, 21:10 UTC on 2026-09-08, which is 17:10 on 2026-09-08 in New York under daylight time, it is the one report written by hand that day. Its paid calls are its own sections' and its theme's, which research-record.json works by hand from the recordings' token counts as 0.045164076 and 0.002664936, so the day's cost is their sum, 0.047829012, which the run page's money form states as $0.05. The fixture asks for no report on its night, as night-request.json derives, so nothing settled is drawn. The page is read on the day the suite runs, which is past the fourteen New York days from 2026-09-08, so the window draws no row of either table and its link names the one older row, and every day draws the pass's row. The suite reads the pass's paid calls off the run log and reads both pages back off the route.",
+ "tables": ["run_log"],
+ "ticker": "KEYS",
+ "run": "research-20260908T211000Z-KEYS",
+ "day": "2026-09-08",
+ "reports": 1,
+ "parts": ["0.045164076", "0.002664936"],
+ "cost": "0.047829012",
+ "stated": "$0.05",
+ "settled": 0,
+ "olderInWindow": 1
+}

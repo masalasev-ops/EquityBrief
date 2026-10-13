@@ -71,7 +71,8 @@ public sealed record ResearchedCell(string Ticker, string? Name, string? Sector,
 
 // One request, as the queue screen draws it. The instant is carried as the store
 // spells it, because a press to take one out names the request rather than the
-// name: a name may have been asked for before and settled since.
+// name: a name may have been asked for before and settled since. Beside it, the
+// instant as the read surface marked it for the page, where it did.
 public sealed record QueuedCell(
     string Ticker,
     string AskedAt,
@@ -81,11 +82,12 @@ public sealed record QueuedCell(
     string? SettledAt,
     string? RunId,
     string? Reason,
-    QueuedTime? Time = null);
+    QueuedTime? Time = null,
+    string? Asked = null);
 
 // When one request's pass will start or started and will end or ended, as the read surface
 // worked it out: what it rests on, the two instants in UTC as the store spells an instant,
-// and the words the page states them in.
+// and the words the page states them in, as markup with each instant marked.
 public sealed record QueuedTime(string Basis, string? Starts, string? Ends, string Words);
 
 // What the queue page's times rest on: how many passes that ran to their end the store
@@ -93,7 +95,7 @@ public sealed record QueuedTime(string Basis, string? Starts, string? Ends, stri
 public sealed record QueueEstimate(int Passes, string? Minutes, string? LongestMinutes = null);
 
 // A drain that stopped on an error and no pass has started since: the instant it started as the store spells one,
-// the words the page states that instant in, and the error it stopped on.
+// that instant as the read surface marked it for the page, and the error it stopped on.
 public sealed record QueueStop(string StartedAt, string Words, string Error);
 
 // The shell the browser loads once, and the routes it answers.
@@ -501,7 +503,7 @@ public sealed partial class SinglePageApp : IComponent
             screen.innerHTML = await watch.text();
           } else if (path === '{{{QueueRoute}}}') {
             view = 'queue';
-            const queued = await fetch('/screens/queue');
+            const queued = await fetch('/screens/queue' + (query ? '?' + query : ''));
             screen.innerHTML = await queued.text();
           } else if (path === '{{{PaperRoute}}}' || path === '{{{AccountRoute}}}') {
             view = 'paper';
@@ -2175,21 +2177,17 @@ public sealed partial class SinglePageApp : IComponent
     // written now, and what came of the rest.
     //
     // Three regions over one ordered read, split by state rather than by three reads, so
-    // a request that moved between them cannot be drawn twice or missed by both. Nothing
-    // here starts a pass: the press that wrote a request started the worker's drain, and a
-    // drain that could not be started leaves a request outstanding rather than losing it.
+    // a request that moved between them cannot be drawn twice or missed by both, the
+    // settled ones a row a stock and New York day as the read surface grouped them, and
+    // beneath them the passes no request names. Nothing here starts a pass: the press that
+    // wrote a request started the worker's drain, and a drain that could not be started
+    // leaves a request outstanding rather than losing it.
     // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueEstimate? estimate = null, QueueStop? stopped = null)
+    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueDays days, QueueEstimate? estimate = null, QueueStop? stopped = null)
     {
         var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
         var writing = rows.Where(row => row.State == Writing).ToArray();
-
-        // Newest first, because a settled request is read to find out what came of the
-        // one just asked for, and oldest first is the order the worker takes them in.
-        var settled = rows
-            .Where(row => row.State != Outstanding && row.State != Writing)
-            .Reverse()
-            .ToArray();
+        var settled = rows.Count - outstanding.Length - writing.Length;
 
         var body = new StringBuilder();
 
@@ -2201,15 +2199,16 @@ public sealed partial class SinglePageApp : IComponent
         // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
         if (stopped is not null)
         {
-            body.Append(Invariant($"<p class=\"drain-stopped\" data-started-at=\"{Escaped(stopped.StartedAt)}\">The drain that started at {Escaped(stopped.Words)} stopped on an error: {Escaped(stopped.Error)}; what is queued waits for the next drain, which a press or the next night starts.</p>"));
+            body.Append(Invariant($"<p class=\"drain-stopped\" data-started-at=\"{Escaped(stopped.StartedAt)}\">The drain that started at {stopped.Words} stopped on an error: {Escaped(stopped.Error)}; what is queued waits for the next drain, which a press or the next night starts.</p>"));
         }
 
         // What every time on the page rests on, stated once above them.
+        // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
         if (estimate is not null)
         {
             body.Append(estimate.Minutes is { } minutes
-                ? Invariant($"<p class=\"queue-estimate\" data-passes=\"{estimate.Passes}\" data-median-minutes=\"{minutes}\" data-longest-minutes=\"{estimate.LongestMinutes}\">Times are New York's with the offset named and UTC beside them. A pass is expected to take {minutes} minutes, the median of the {estimate.Passes} {(estimate.Passes == 1 ? "pass" : "passes")} the store holds that ran to their end, and a pass starts only where the longest of them, {estimate.LongestMinutes} minutes, would end before the next peak window opens.</p>")
-                : Invariant($"<p class=\"queue-estimate\" data-passes=\"0\">Times are New York's with the offset named and UTC beside them. The store holds no pass that ran to its end, so it cannot estimate how long one takes, and no request behind another is given a time.</p>"));
+                ? Invariant($"<p class=\"queue-estimate\" data-passes=\"{estimate.Passes}\" data-median-minutes=\"{minutes}\" data-longest-minutes=\"{estimate.LongestMinutes}\">{QueueTimesLine} A pass is expected to take {minutes} minutes, the median of the {estimate.Passes} {(estimate.Passes == 1 ? "pass" : "passes")} the store holds that ran to their end, and a pass starts only where the longest of them, {estimate.LongestMinutes} minutes, would end before the next peak window opens.</p>")
+                : Invariant($"<p class=\"queue-estimate\" data-passes=\"0\">{QueueTimesLine} The store holds no pass that ran to its end, so it cannot estimate how long one takes, and no request behind another is given a time.</p>"));
         }
 
         body.Append(Invariant($"<div class=\"queue-part\" data-region=\"outstanding\" data-rows=\"{outstanding.Length}\">"));
@@ -2264,43 +2263,21 @@ public sealed partial class SinglePageApp : IComponent
 
         body.Append("</div>");
 
-        body.Append(Invariant($"<div class=\"queue-part\" data-region=\"settled\" data-rows=\"{settled.Length}\">"));
-        body.Append("<h3>Settled</h3>");
-
-        if (settled.Length == 0)
-        {
-            body.Append("<p class=\"degraded\" data-settled=\"none\">No request has been settled yet.</p>");
-        }
-        else
-        {
-            body.Append("<p class=\"lede\">Newest first. Nothing is removed: what was asked for and what came of it are both kept.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Came to</th><th>Why</th></tr></thead><tbody>");
-
-            foreach (var row in settled)
-            {
-                body.Append(Row(row));
-                body.Append(When(row));
-                body.Append(Invariant($"<td class=\"q-state\">{Escaped(row.State)}</td>"));
-                body.Append(Invariant($"<td>{Escaped(row.Reason ?? string.Empty)}</td></tr>"));
-            }
-
-            body.Append("</tbody></table></div>");
-        }
-
-        body.Append("</div>");
+        body.Append(SettledDays(days));
+        body.Append(ByHandDays(days));
 
         body.Append(Cards.Key(
             "What is listed.",
             "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for six names taken in turn across the three indices' pages, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
             "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
 
-        return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled.Length}\">")
+        return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled}\">")
             + Cards.Masthead(
                 "Queue",
                 "<span class=\"m-screen\">Report queue</span>",
                 rows.Count == 0
                     ? "No report has been asked for yet"
-                    : Invariant($"{outstanding.Length} outstanding, {writing.Length} being written, {settled.Length} settled"))
+                    : Invariant($"{outstanding.Length} outstanding, {writing.Length} being written, {settled} settled"))
             + Cards.Computed(
                 "Queue",
                 body.ToString(),
@@ -2310,21 +2287,26 @@ public sealed partial class SinglePageApp : IComponent
             + "</section>";
     }
 
+    // What every time on the queue page is drawn in, stated once above them.
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+    public const string QueueTimesLine = "Times are New York's, marked ET, with UTC beneath the pointer.";
+
     // When a request's pass will start or started and will end or ended, with what that rests
     // on and both instants on the cell, so a reader of the markup reads the instants the words
-    // state. A request drawn with no time says so rather than leaving the cell empty.
-    // see: The queue page states when each request will be written
+    // state. The words arrive as markup, each instant marked by the read surface, and a
+    // request drawn with no time says so rather than leaving the cell empty.
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
     static string When(QueuedCell row) =>
         row.Time is { } time
-            ? Invariant($"<td class=\"q-when\" data-basis=\"{Escaped(time.Basis)}\" data-starts=\"{Escaped(time.Starts ?? string.Empty)}\" data-ends=\"{Escaped(time.Ends ?? string.Empty)}\">{Escaped(time.Words)}</td>")
+            ? Invariant($"<td class=\"q-when\" data-basis=\"{Escaped(time.Basis)}\" data-starts=\"{Escaped(time.Starts ?? string.Empty)}\" data-ends=\"{Escaped(time.Ends ?? string.Empty)}\">{time.Words}</td>")
             : "<td class=\"q-when\" data-basis=\"none\">no time is stated</td>";
 
-    // The four cells every region shares, so a request reads the same way whichever
-    // region it is in.
+    // The four cells the two waiting regions share, so a request reads the same way in
+    // either, the instant it was asked at marked where the read surface marked it.
     static string Row(QueuedCell row) =>
         Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-asked-at=\"{Escaped(row.AskedAt)}\" data-state=\"{Escaped(row.State)}\">")
         + Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>")
-        + Invariant($"<td>{Escaped(row.AskedAt)}</td><td>{Escaped(row.AskedFrom)}</td><td>{Escaped(row.Lane)}</td>");
+        + Invariant($"<td>{row.Asked ?? Escaped(row.AskedAt)}</td><td>{Escaped(row.AskedFrom)}</td><td>{Escaped(row.Lane)}</td>");
 
     // What the selected name's region offers to open, in the words of what it opens: the
     // report, with the day it was written, where the name holds one, and the name's page
@@ -2339,7 +2321,7 @@ public sealed partial class SinglePageApp : IComponent
         // What the queue holds for the name, where it holds a request nobody has settled: said
         // in place of the line saying none is written and the control asking for one, since
         // what the reader would ask for is already asked.
-        // see: The queue page states when each request will be written
+        // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
         if (picked?.Queue is { } queued)
         {
             var opens = picked.ResearchedOn is { } written

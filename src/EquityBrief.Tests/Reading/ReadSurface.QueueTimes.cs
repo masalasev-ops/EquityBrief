@@ -106,17 +106,26 @@ public partial class ReadSurface
     {
         // The same UTC hour on the Monday before 2026-11-01 and the Monday after it: four in the
         // morning UTC is midnight in New York under daylight time and eleven the evening before
-        // under standard time.
+        // under standard time. Tonight's rows and the selected name's region state it so.
         Assert.Equal("2026-10-26 00:00 New York (UTC-04:00), 04:00 UTC", QueueTimes.Stated(UtcAt("2026-10-26T04:00:00Z"), NewYork));
         Assert.Equal("2026-11-01 23:00 New York (UTC-05:00), 04:00 UTC", QueueTimes.Stated(UtcAt("2026-11-02T04:00:00Z"), NewYork));
+    }
 
-        // And a request asked at peak on each side starts when the window ends, stated in the
-        // offset that applies on its date.
+    // 19.6: the queue page draws the same instants in New York's time marked ET, with UTC's date and time beneath the
+    // pointer and the instant whole on the element, the date in UTC the day after New York's under standard time.
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+    [Fact]
+    public void AnInstantOnTheQueuePageIsNewYorksTimeWithUtcBeneathThePointerOnBothSidesOfTheChange()
+    {
+        Assert.Equal("<time datetime=\"2026-10-26T04:00:00Z\" title=\"2026-10-26 04:00 UTC\">2026-10-26 00:00 ET</time>", QueueTimes.Marked(UtcAt("2026-10-26T04:00:00Z"), NewYork));
+        Assert.Equal("<time datetime=\"2026-11-02T04:00:00Z\" title=\"2026-11-02 04:00 UTC\">2026-11-01 23:00 ET</time>", QueueTimes.Marked(UtcAt("2026-11-02T04:00:00Z"), NewYork));
+
+        // And a request asked at peak on each side starts when the window ends, in the time that applies on its date.
         var before = Assert.Single(TimesAt("2026-10-26T02:00:00Z", [Request("KEYS", "2026-10-26T01:59:00Z", ResearchRequests.Outstanding)], TwoPasses));
         var after = Assert.Single(TimesAt("2026-11-02T02:00:00Z", [Request("KEYS", "2026-11-02T01:59:00Z", ResearchRequests.Outstanding)], TwoPasses));
 
-        Assert.StartsWith("starts 2026-10-26 00:00 New York (UTC-04:00), 04:00 UTC, when the peak window ends", QueueTimes.Words(before, Request("KEYS", "2026-10-26T01:59:00Z", ResearchRequests.Outstanding), NewYork), StringComparison.Ordinal);
-        Assert.StartsWith("starts 2026-11-01 23:00 New York (UTC-05:00), 04:00 UTC, when the peak window ends", QueueTimes.Words(after, Request("KEYS", "2026-11-02T01:59:00Z", ResearchRequests.Outstanding), NewYork), StringComparison.Ordinal);
+        Assert.StartsWith("starts <time datetime=\"2026-10-26T04:00:00Z\" title=\"2026-10-26 04:00 UTC\">2026-10-26 00:00 ET</time>, when the peak window ends", QueueTimes.Words(before, Request("KEYS", "2026-10-26T01:59:00Z", ResearchRequests.Outstanding), NewYork), StringComparison.Ordinal);
+        Assert.StartsWith("starts <time datetime=\"2026-11-02T04:00:00Z\" title=\"2026-11-02 04:00 UTC\">2026-11-01 23:00 ET</time>, when the peak window ends", QueueTimes.Words(after, Request("KEYS", "2026-11-02T01:59:00Z", ResearchRequests.Outstanding), NewYork), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -154,7 +163,7 @@ public partial class ReadSurface
         // starts at 04:15 and ends at 04:30; DGX was written at 10:04 the day before.
         (string Basis, string Starts, string Ends) Cell(string ticker)
         {
-            var row = Regex.Match(page, $"<tr data-ticker=\"{ticker}\"[^>]*>.*?<td class=\"q-when\" data-basis=\"([^\"]*)\" data-starts=\"([^\"]*)\" data-ends=\"([^\"]*)\">([^<]*)</td>", RegexOptions.Singleline);
+            var row = Regex.Match(page, $"<tr data-ticker=\"{ticker}\"[^>]*>.*?<td class=\"q-when\" data-basis=\"([^\"]*)\" data-starts=\"([^\"]*)\" data-ends=\"([^\"]*)\">(.*?)</td>", RegexOptions.Singleline);
 
             Assert.True(row.Success, $"no time is drawn for {ticker}");
 
@@ -164,13 +173,20 @@ public partial class ReadSurface
         Assert.Equal(("Started", "2026-09-21T00:35:00Z", "2026-09-21T00:50:00Z"), Cell("KEYS"));
         Assert.Equal(("Estimated", "2026-09-21T04:00:00Z", "2026-09-21T04:15:00Z"), Cell("AAPL"));
         Assert.Equal(("Estimated", "2026-09-21T04:15:00Z", "2026-09-21T04:30:00Z"), Cell("MSFT"));
-        Assert.Equal(("Settled", string.Empty, "2026-09-20T10:04:00Z"), Cell("DGX"));
 
-        // And the words a reader reads, in New York's time with UTC beside it.
-        Assert.Contains("started 2026-09-20 20:35 New York (UTC-04:00), 00:35 UTC, and is expected to end about 2026-09-20 20:50 New York (UTC-04:00), 00:50 UTC", page, StringComparison.Ordinal);
-        Assert.Contains("starts about 2026-09-21 00:00 New York (UTC-04:00), 04:00 UTC, after the 1 request ahead of it", page, StringComparison.Ordinal);
-        Assert.Contains("starts about 2026-09-21 00:15 New York (UTC-04:00), 04:15 UTC, after the 2 requests ahead of it", page, StringComparison.Ordinal);
-        Assert.Contains("written 2026-09-20 06:04 New York (UTC-04:00), 10:04 UTC", page, StringComparison.Ordinal);
+        // And the words a reader reads, in New York's time with UTC beneath the pointer, the instant each request was
+        // asked at among them, and DGX's settled row drawn with the instant it was written at.
+        string At(string utc, string newYork) => $"<time datetime=\"{utc}\" title=\"{utc[..10]} {utc[11..16]} UTC\">{newYork} ET</time>";
+
+        Assert.Contains($"started {At("2026-09-21T00:35:00Z", "2026-09-20 20:35")}, and is expected to end about {At("2026-09-21T00:50:00Z", "2026-09-20 20:50")}", page, StringComparison.Ordinal);
+        Assert.Contains($"starts about {At("2026-09-21T04:00:00Z", "2026-09-21 00:00")}, after the 1 request ahead of it", page, StringComparison.Ordinal);
+        Assert.Contains($"starts about {At("2026-09-21T04:15:00Z", "2026-09-21 00:15")}, after the 2 requests ahead of it", page, StringComparison.Ordinal);
+        Assert.Contains($"<td>{At("2026-09-21T00:31:00Z", "2026-09-20 20:31")}</td><td>name</td>", page, StringComparison.Ordinal);
+        Assert.Matches($"<tr data-ticker=\"DGX\"[^>]*data-state=\"written\"[^>]*>.*?<td class=\"q-when\">{Regex.Escape(At("2026-09-20T10:04:00Z", "2026-09-20 06:04"))}</td>", page);
+
+        // No instant on the page is drawn in any other form.
+        Assert.DoesNotContain("New York (UTC", page, StringComparison.Ordinal);
+        Assert.DoesNotMatch(@">\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ<", page);
     }
 
     [Fact]

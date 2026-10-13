@@ -45,6 +45,18 @@ public partial class ReadSurface
     static QueuedCell Queued(string ticker, string askedAt, string state, string? reason = null) =>
         new(ticker, askedAt, ResearchRequests.FromList, ResearchRequests.Paid, state, null, null, reason);
 
+    // The queue region over the cells, its settled days grouped by the read surface's own function over every day, so a
+    // region test reads what the route draws.
+    static string QueuePage(IReadOnlyList<QueuedCell> held) =>
+        new SinglePageApp().QueueRegion(
+            held,
+            EquityBrief.Api.Reading.QueueScreen.Drawn(
+                [.. held.Select(cell => new RequestRow(cell.Ticker, UtcAt(cell.AskedAt), cell.AskedFrom, cell.Lane, cell.State, cell.SettledAt is { } at ? UtcAt(at) : null, cell.RunId, cell.Reason))],
+                [],
+                NewYork,
+                UtcAt("2026-09-21T00:00:00Z"),
+                all: true));
+
     [Fact]
     public void TheQueueScreenPutsEveryRequestInTheRegionItsStatePutsItIn()
     {
@@ -60,7 +72,7 @@ public partial class ReadSurface
             Queued("TSLA", "2026-09-20T15:00:00Z", ResearchRequests.Withdrawn, "taken out of the queue before it was written"),
         ];
 
-        var markup = new SinglePageApp().QueueRegion(held);
+        var markup = QueuePage(held);
         var drawn = DrawnRequests(markup);
 
         // Forwards: every request the store holds is on the page, in the region its state
@@ -110,7 +122,7 @@ public partial class ReadSurface
             Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
         ];
 
-        var markup = new SinglePageApp().QueueRegion(held);
+        var markup = QueuePage(held);
 
         var controls = Regex
             .Matches(markup, "<form class=\"withdraw-control\"[^>]*data-takes=\"(?<ticker>[^\"]+)\"[^>]*data-asked-at=\"(?<asked>[^\"]+)\"")
@@ -224,7 +236,7 @@ public partial class ReadSurface
         // choice drawn as refused with no reason beside it is a page refusing without
         // saying why. Read off the queue screen, which is where a reader is deciding
         // whether to ask for a report.
-        var markup = new SinglePageApp().QueueRegion([]);
+        var markup = QueuePage([]);
 
         var line = Assert.Single(Regex.Matches(markup, "<p class=\"lane-waits\"[^>]*>(?<said>[^<]+)</p>").Select(found => found.Groups["said"].Value));
 
@@ -377,7 +389,7 @@ public partial class ReadSurface
             Queued("INCY", "2026-09-20T13:00:00Z", ResearchRequests.Written),
         ];
 
-        var drawn = DrawnRequests(new SinglePageApp().QueueRegion(held))
+        var drawn = DrawnRequests(QueuePage(held))
             .Where(row => row.Region == "settled")
             .Select(row => row.Ticker);
 

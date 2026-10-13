@@ -831,7 +831,7 @@ public sealed record ListingCell(
     // What the queue holds for the name, where it holds a request nobody has settled: queued
     // with the instant it will start, or being written since the instant its pass started.
     // Null for a name the queue holds nothing waiting for.
-    // see: The queue page states when each request will be written
+    // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
     QueueState? Queue = null,
     // Where the swing filter drew the row: its rank and the gates that decided it.
     FilterRow? Filter = null,
@@ -3298,7 +3298,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // What the queue holds for the name, beside the report it holds or in place of the
             // control asking for one, so a name already queued or being written says when.
-            // see: The queue page states when each request will be written
+            // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
             if (row.Queue is { } queued)
             {
                 list.Append(Invariant, $"<span class=\"report-state\" data-report-state=\"{Escaped(queued.State)}\" data-at=\"{Escaped(queued.At ?? string.Empty)}\">{Escaped(queued.Words)}</span>");

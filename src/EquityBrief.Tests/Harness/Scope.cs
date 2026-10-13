@@ -973,7 +973,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.15 Queue", "Settled")] = new Scoped(
             Verdict.Pass,
-            "what each request came to is drawn with the reason where there is one, a withdrawn request among them, because nothing is deleted and what was asked for is still read",
+            "what each request came to is drawn with the reason where there is one, a withdrawn request among them, because nothing is deleted and what was asked for is still read, and from 19.6 a row a stock and New York day with its newest request's outcome and how many were asked, worked by hand over constructed requests across midnight in New York, on the window's first day and the day before it behind the link, and read back off the route",
             ByReadSurface),
         [CheckReach.Key("15.15 Queue", "Take it out")] = new Scoped(
             Verdict.Pass,
@@ -981,7 +981,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.15 Queue", "When each will be written")] = new Scoped(
             Verdict.Pass,
-            "every request drawn carries when its pass starts or started and ends or ended, read back off the page against a computation of the test's own: now, the end of a peak window, and after the requests ahead of it on the median of the finished passes, which names how many, with a store holding none saying it cannot estimate, in New York's time with its offset on both sides of the change of 2026-11-01 and UTC beside it",
+            "every request drawn carries when its pass starts or started and ends or ended, read back off the page against a computation of the test's own: now, the end of a peak window, and after the requests ahead of it on the median of the finished passes, which names how many, with a store holding none saying it cannot estimate, and from 19.6 each instant in New York's time marked ET on both sides of the change of 2026-11-01 with UTC beneath the pointer, the instants asked at and settled at among them and no instant on the page in another form",
             ByReadSurface),
         // The 9.2 correction of 2026-10-03, a drain that stops on an error, as the four parts its row states.
         [CheckReach.Key("15.15 Queue", "A drain that stopped, the newest drain that stopped on an error outside a pass")] = new Scoped(
@@ -3585,6 +3585,11 @@ internal static class Scope
             Verdict.Pass, "the near-level chips worked by hand at the edge and a hundredth past it on both sides; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key(LimitsTable, "Correction notice age")] = new Scoped(
             Verdict.Pass, "the notice and its fold on both sides of the thirtieth day; the figure read off the document against the constant", ByReadSurface),
+        // 19.6, the Queue: its reports written by hand and section 17's window.
+        [CheckReach.Key("15.15 Queue", "Written by hand")] = new Scoped(
+            Verdict.Pass, "the passes no request names worked by hand a New York day each with their reports and cost, a pass a settled request names, one a request being written is under and a theme's run left out and a trial's call kept out of the cost, read back off the route over a constructed store and off the fixture's pass run by hand", ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Queue window")] = new Scoped(
+            Verdict.Pass, "a stock asked on the window's first New York day drawn and one asked the day before it behind the link, the link drawing both; the figure read off the document against the constant", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator")] = new Scoped(
             Verdict.Pass, "the tabs read back off the rendered card over a constructed store, the live rule's first and each variant's words worked by hand from its registration, every registered variant of the S&P 500's families differing from its live rule on a chip, and each kind of rule's short words worked by hand against its settings", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the chosen rule's settings as chips with its sentence a click away")] = new Scoped(
@@ -5795,6 +5800,9 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Corrections")] = "19.5",
         [CheckReach.Key("15.10 Run", "Corrections")] = "19.5",
 
+        // 19.6's: the Queue's reports written by hand.
+        [CheckReach.Key("15.15 Queue", "Written by hand")] = "19.6",
+
         // Phase 9's rows, placed at the checkpoints that draw them so each reads
         // as out of scope rather than unexamined until it lands. The request
         // store they rest on is declared at 9.2 with the components that write
@@ -7274,6 +7282,8 @@ internal static class Scope
         // 19.5's correction notice's age, which the plan names as R16 and not by the row's name; its near-level row the
         // plan names.
         ["Correction notice age"] = "19.5",
+        // 19.6's window, which the plan names as the Queue's window.
+        ["Queue window"] = "19.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

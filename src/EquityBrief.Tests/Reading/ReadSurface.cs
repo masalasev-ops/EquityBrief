@@ -136,6 +136,9 @@ public partial class ReadSurface
             // section 17 rows they read.
             .. UniverseRows,
 
+            // 19.6, the Queue's passes written by hand and section 17's window.
+            .. QueueDayRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
