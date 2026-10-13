@@ -1120,7 +1120,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     boughtCards,
                     indexCardContext),
                 indexNight.Fault is null ? null : TonightScreen.NotComputed(reading),
-                due),
+                due,
+                request.Query["name"].FirstOrDefault()),
             "text/html; charset=utf-8");
     }
 

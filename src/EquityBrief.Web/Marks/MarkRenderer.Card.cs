@@ -128,7 +128,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<li class=\"card-line\" data-line=\"{line.Number}\" data-verdict=\"{Escaped(line.Verdict)}\">");
             body.Append(Invariant, $"<span class=\"card-mark\" data-verdict=\"{Escaped(line.Verdict)}\">{Escaped(line.Verdict)}</span> ");
             body.Append(Invariant, $"<b class=\"card-name\">{Escaped(line.Name)}</b> ");
-            body.Append(Invariant, $"<span class=\"card-words\">{Escaped(line.Words)}</span></li>");
+            body.Append(Invariant, $"<span class=\"card-words\">{WithSignedFigures(line.Words)}</span></li>");
         }
 
         body.Append("</ol>");
@@ -431,13 +431,13 @@ public sealed partial class MarkRenderer
             ? Formatted($"<dt>Won</dt><dd data-won=\"{won.ToString("R", Invariant)}\">{won:0%} ended at their target</dd>")
             : "<dt>Won</dt><dd data-won=\"none\">none read: the rule sets no target, so a trade has no win</dd>");
         body.Append(record.Average is { } average
-            ? Formatted($"<dt>Average result</dt><dd data-average=\"{average.ToString("R", Invariant)}\">{(percent ? average.ToString("0.00", Invariant) + "%" : average.ToString("0.00", Invariant) + " of the risk")} after each trade's cost</dd>")
+            ? Formatted($"<dt>Average result</dt><dd data-average=\"{average.ToString("R", Invariant)}\">{SignedTwo(average)}{(percent ? "%" : " of the risk")} after each trade's cost</dd>")
             : "<dt>Average result</dt><dd data-average=\"none\">none</dd>");
         body.Append(record.MedianSessions is { } median
             ? Formatted($"<dt>Held</dt><dd data-median=\"{median}\" data-held=\"{record.HeldSessions?.ToString(Invariant) ?? "none"}\">a median {median} sessions, {EquityBrief.Core.Cards.CardLines.Share(record.HeldShare)} ended by {record.HeldSessions?.ToString(Invariant) ?? "none"}</dd>")
             : "<dt>Held</dt><dd data-median=\"none\">none</dd>");
         body.Append(record.WorstClose is { } worst
-            ? Formatted($"<dt>Worst close</dt><dd data-worst=\"{worst.ToString("R", Invariant)}\">a median {(percent ? worst.ToString("0.00", Invariant) + "%" : worst.ToString("0.00", Invariant) + " of the risk")} from the buy before the end</dd>")
+            ? Formatted($"<dt>Worst close</dt><dd data-worst=\"{worst.ToString("R", Invariant)}\">a median {SignedTwo(worst)}{(percent ? "%" : " of the risk")} from the buy before the end</dd>")
             : "<dt>Worst close</dt><dd data-worst=\"none\">none</dd>");
         body.Append("</dl>");
         body.Append(Invariant, $"<p class=\"card-caution\">{Escaped(RecordReadsHigh)}</p>");

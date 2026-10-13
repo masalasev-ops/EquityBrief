@@ -32,14 +32,14 @@ public sealed partial class MarkRenderer
     public string LoopRule(string family, string? current) =>
         current is null
             ? $"<p class=\"degraded\" data-loop-rule=\"none\" data-family=\"{Escaped(family)}\">No procedure was tested for this family in this run, so no rule is read here.</p>"
-            : $"<p class=\"loop-rule\" data-family=\"{Escaped(family)}\" data-rule=\"{Escaped(current)}\"><b>The rule today.</b> {Escaped(Capitalised(current))}</p>";
+            : $"<p class=\"loop-rule\" data-family=\"{Escaped(family)}\" data-rule=\"{Escaped(current)}\"><b>The rule today.</b> {WithSignedFigures(Capitalised(current))}</p>";
 
     // What the autopsy read of a family's finished trades in the run, a line a figure, none where it read none.
     public string LoopFindings(string family, IReadOnlyList<LoopFindingRow> findings) =>
         findings.Count == 0
             ? string.Empty
             : $"<div class=\"loop-findings\" data-family=\"{Escaped(family)}\" data-figures=\"{findings.Count}\"><p><b>What the rule's finished trades did.</b></p><ul>"
-                + string.Concat(findings.Select(finding => $"<li data-figure=\"{Escaped(finding.Figure)}\" data-value=\"{(finding.Value is { } value ? value.ToString("R", Invariant) : "none")}\" data-trades=\"{finding.Trades}\">{Escaped(Capitalised(finding.Words))}.</li>"))
+                + string.Concat(findings.Select(finding => $"<li data-figure=\"{Escaped(finding.Figure)}\" data-value=\"{(finding.Value is { } value ? value.ToString("R", Invariant) : "none")}\" data-trades=\"{finding.Trades}\">{WithSignedFigures(Capitalised(finding.Words))}.</li>"))
                 + "</ul></div>";
 
     // Each reading's spread over a family's finished listings in the run, in a section folded shut, a row a reading;
@@ -100,7 +100,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<div class=\"loop-score\" data-family=\"{Escaped(family)}\" data-validated=\"{(validated ? 1 : 0)}\" data-hash=\"{Escaped(model?.Hash ?? "none")}\">");
         html.Append(model is { } held
-            ? Formatted($"<p class=\"loop-model\" data-setups=\"{held.Setups}\"><b>The learned score.</b> {Escaped(Capitalised(held.Words))}; {Escaped(held.Hash)}, fitted on the setups that ended before {held.LearnedBefore.ToString("yyyy-MM-dd", Invariant)}.</p>")
+            ? Formatted($"<p class=\"loop-model\" data-setups=\"{held.Setups}\"><b>The learned score.</b> {WithSignedFigures(Capitalised(held.Words))}; {Escaped(held.Hash)}, fitted on the setups that ended before {held.LearnedBefore.ToString("yyyy-MM-dd", Invariant)}.</p>")
             : "<p class=\"loop-model degraded\" data-setups=\"none\"><b>The learned score.</b> No score was fitted on all finished data in this run: too few of the ledger's finished setups held every reading it weighs.</p>");
 
         if (!validated)
@@ -368,12 +368,12 @@ public sealed partial class MarkRenderer
         html.Append(Invariant, $"<div class=\"loop-proposal\" data-family=\"{Escaped(proposal.Family)}\" data-proposal=\"{Escaped(proposal.Proposal)}\" data-passed=\"{(proposal.Passed ? 1 : 0)}\" data-years=\"{years.Count}\">");
         html.Append(Invariant, $"<h4 class=\"loop-name\">{Escaped(Capitalised(proposal.Proposal))}: {(proposal.Passed ? "passed the tester" : "did not pass the tester")}</h4>");
         html.Append(proposal.Words is { } words
-            ? $"<p class=\"loop-change\" data-words=\"{Escaped(words)}\"><b>Proposed, run on all finished data.</b> {Escaped(Capitalised(words))}</p>"
+            ? $"<p class=\"loop-change\" data-words=\"{Escaped(words)}\"><b>Proposed, run on all finished data.</b> {WithSignedFigures(Capitalised(words))}</p>"
             : "<p class=\"loop-change degraded\" data-words=\"none\"><b>No change.</b> The procedure run on all finished data chose no setting that met the floors, so it proposes nothing; its test years below are what it chose year by year.</p>");
 
         if (proposal.Finding is { } finding)
         {
-            html.Append($"<p class=\"loop-finding\" data-finding=\"{Escaped(finding)}\"><b>Why.</b> {Escaped(Capitalised(finding))}.</p>");
+            html.Append($"<p class=\"loop-finding\" data-finding=\"{Escaped(finding)}\"><b>Why.</b> {WithSignedFigures(Capitalised(finding))}.</p>");
         }
 
         var gate = proposal.Adjusted is { } p
@@ -400,7 +400,7 @@ public sealed partial class MarkRenderer
             html.Append(Invariant, $"<tr data-year=\"{year.Year}\" data-complete=\"{(year.Complete ? 1 : 0)}\" data-current-units=\"{year.CurrentUnits}\" data-proposed-units=\"{year.ProposedUnits}\" data-current-total=\"{year.CurrentTotal.ToString("R", Invariant)}\" data-proposed-total=\"{year.ProposedTotal.ToString("R", Invariant)}\">");
             html.Append(Invariant, $"<td class=\"num\">{year.Year}{(year.Complete ? string.Empty : " to date")}</td>");
             html.Append(year.Chosen is { } chosen
-                ? $"<td data-chosen=\"{Escaped(chosen)}\">{Escaped(Capitalised(chosen))}</td>"
+                ? $"<td data-chosen=\"{Escaped(chosen)}\">{WithSignedFigures(Capitalised(chosen))}</td>"
                 : "<td data-chosen=\"none\" class=\"degraded\">no setting met the floors on the years before, so the year reads the rule today</td>");
             html.Append(Invariant, $"<td class=\"r num\">{LoopFigure(proposal.Unit, year.CurrentTotal)} over {LoopUnits(proposal.Unit, year.CurrentUnits)}</td>");
             html.Append(Invariant, $"<td class=\"r num\">{LoopFigure(proposal.Unit, year.ProposedTotal)} over {LoopUnits(proposal.Unit, year.ProposedUnits)}</td>");

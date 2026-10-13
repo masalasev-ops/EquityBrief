@@ -1,0 +1,7 @@
+# The remedy of 19.2 (colour, the header, the menu, the top of Tonight and the chart of what is behind a stock), as its
+# PROGRESS entry prints it: the migration adds migration 92's store of every member's ledger readings a night, empty,
+# copying and dropping nothing, which the ledger's night step fills from the first night after the merge; until that
+# night every heading of a stock's chart says not read. No rule's version moves, so nothing is registered again. No
+# request to the provider and no model call. Run from main after the merge and before the night, when no night is
+# running, and restart the read surface after it.
+migrate

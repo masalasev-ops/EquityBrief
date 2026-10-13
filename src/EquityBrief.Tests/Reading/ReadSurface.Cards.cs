@@ -126,6 +126,13 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, IndexNight);
 
+        // From 19.2 the S&P 600's buy points select their first row where the link names none, drawing S1's card beneath
+        // it, and each row's link keeps the index.
+        var points = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
+        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"7\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
+
         // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
         Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", rows["M1"], StringComparison.Ordinal);
@@ -137,7 +144,8 @@ public partial class ReadSurface
 
         Assert.True(record.Success, "M1's card draws no record.");
         Assert.StartsWith($"<h5>The record of the breakout on the S&P 400</h5><p class=\"card-caution\">{MarkRenderer.RecordIsTheRules}</p>", record.Groups[1].Value, StringComparison.Ordinal);
-        Assert.Contains("<dd data-average=\"0.21\">0.21 of the risk after each trade's cost</dd>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<dd data-average=\"0.21\"><span class=\"gain\">+0.21</span> of the risk after each trade's cost</dd>", record.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains("<dd data-worst=\"-0.4\">a median <span class=\"loss\">-0.40</span> of the risk from the buy before the end</dd>", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<dd data-won=\"none\">none read: the rule sets no target, so a trade has no win</dd>", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<dd data-median=\"12\" data-held=\"", record.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"card-caution\">{MarkRenderer.RecordReadsHigh}</p>", record.Groups[1].Value, StringComparison.Ordinal);
@@ -196,8 +204,8 @@ public partial class ReadSurface
 
                 // The lines the night stored, in their order, and after them the sixth, which Tonight works out from the
                 // operator's open trades where it draws the card.
-                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">([^<]*)</span></li>")
-                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{match.Groups[4].Value}")
+                var drawn = Regex.Matches(row.Groups[1].Value, "<li class=\"card-line\" data-line=\"(\\d+)\" data-verdict=\"([a-z]+)\"><span class=\"card-mark\" data-verdict=\"\\2\">\\2</span> <b class=\"card-name\">([^<]*)</b> <span class=\"card-words\">(.*?)</span></li>")
+                    .Select(match => $"{match.Groups[1].Value}|{match.Groups[2].Value}|{match.Groups[3].Value}|{CardWords(match.Groups[4].Value)}")
                     .ToArray();
 
                 Assert.Equal(card.Lines.Select(line => $"{line.Number}|{line.Verdict}|{line.Name}|{line.Words}"), drawn[..^1]);
@@ -224,11 +232,16 @@ public partial class ReadSurface
                 Regex.Matches(named, "<section class=\"(?:card[^\"]*|absent)\" id=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Take(3));
             Assert.Equal(
                 card.Lines.Select(line => line.Words),
-                Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">([^<]*)</span>").Select(match => match.Groups[1].Value));
+                Regex.Matches(top.Groups[1].Value, "<span class=\"card-words\">(.*?)</span></li>").Select(match => CardWords(match.Groups[1].Value)));
         }
 
         return rows;
     }
+
+    // A card line's words as stored, read off the markup with each signed figure's gain or loss span taken off and no
+    // other markup, so a line drawing anything but the pair beside its words fails.
+    static string CardWords(string drawn) =>
+        Regex.Replace(drawn, "<span class=\"(?:gain|loss)\">([^<]*)</span>", "$1");
 
     // The cards the night stored, each line read off the stored lines by the test's own reading.
     static IReadOnlyList<StoredCard> StoredCards(TemporaryStore store)

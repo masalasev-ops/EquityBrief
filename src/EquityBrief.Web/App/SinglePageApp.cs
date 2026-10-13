@@ -297,10 +297,10 @@ public sealed class SinglePageApp : IComponent
     }
 
     // Tonight's buy points as a card of their own, the table across every setup with its key.
-    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night) =>
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "") =>
         Cards.Computed(
             "Buy points",
-            marks.BuyPoints(points, selected, plan) + Cards.Key(
+            marks.BuyPoints(points, selected, plan, query) + Cards.Key(
                 "How to read the table.",
                 "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
                 "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
@@ -2505,13 +2505,14 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<FamilyCardView> families,
         HeavyweightCardView? heavyweights,
         string? notComputed = null,
-        string due = "")
+        string due = "",
+        string? selectedTicker = null)
     {
         var region = new StringBuilder();
         var heading = "Tonight: " + universe.Name;
         var query = "?" + Universes.Query + "=" + universe.Word;
 
-        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"none\">"));
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-universe=\"{universe.Word}\" data-index-code=\"{Escaped(universe.Code)}\" data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
         region.Append(Cards.Masthead(
             heading,
@@ -2533,11 +2534,14 @@ public sealed class SinglePageApp : IComponent
             ? $"<p class=\"degraded\" data-index-night=\"not-computed\">{Escaped(said)}</p>"
             : marks.MarketLine(line));
 
-        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup.
+        // Tonight's top, as the S&P 500's: a tile a setup and one table of the index's buy points across every setup, the row
+        // selected, the first where the link names none, drawing its pick's card beneath it, and every row's link keeping
+        // the index.
         var (tiles, points) = TopOf(families, heavyweights, line.Open, night);
+        var chosen = points.Any(point => point.Pick.Row.Ticker == selectedTicker) ? selectedTicker : points.FirstOrDefault()?.Pick.Row.Ticker;
 
         region.Append(marks.SetupTiles(tiles));
-        region.Append(BuyPointsCard(marks, points, null, string.Empty, night));
+        region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word));
 
         foreach (var card in families)
         {

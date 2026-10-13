@@ -47,8 +47,9 @@ public sealed partial class MarkRenderer
     }
 
     // Tonight's buy points across every setup, in the one family order and each setup's own order, each row tagged with
-    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card.
-    public string BuyPoints(IReadOnlyList<BuyPointView> points, string? selected, string plan)
+    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card. The
+    // query given follows each row's link, so a page reading one index selects a row on it.
+    public string BuyPoints(IReadOnlyList<BuyPointView> points, string? selected, string plan, string query = "")
     {
         if (points.Count == 0)
         {
@@ -78,7 +79,7 @@ public sealed partial class MarkRenderer
             var chosen = string.Equals(row.Ticker, selected, StringComparison.Ordinal);
 
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(point.Family)}\" data-selects=\"{Escaped(row.Ticker)}\" ");
-            body.Append(Invariant, $"data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(chosen ? " class=\"sel\" aria-selected=\"true\"" : string.Empty)}>");
+            body.Append(Invariant, $"data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}{Escaped(query)}\"{(chosen ? " class=\"sel\" aria-selected=\"true\"" : string.Empty)}>");
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
             body.Append(Invariant, $"<td class=\"place\" data-place=\"{number}\">{number}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");

@@ -103,9 +103,15 @@ public partial class ReadSurface
             }
         }
 
-        // The S&P 400's and 600's nights: their Tonight, their Past picks and their Run pages.
+        // The S&P 400's and 600's nights with the night's cards written, the S&P 400's breakout carrying a record whose
+        // worst close fell below its buy: their Tonight, their Past picks and their Run pages.
         using (var universes = UniversesStore())
         {
+            universes.Execute(
+                "INSERT INTO rule_record (index_code, family, rule, settings, recorded_at, first_session, last_session, membership, unit, trades, won, average, median_sessions, ended_by, worst_close) VALUES " +
+                "('MID', 'breakout', 'the breakout at high=126', 'high=126', '2026-10-02T12:00:00Z', '2019-01-02', '2026-10-01', 'as it stood', 'risks', 400, NULL, 0.21, 12, '[100,100,100,100]', -0.4);");
+            await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), universes.DatabaseFile).RunAsync("cards");
+
             using var host = new Host(universes.Root);
             using var client = host.CreateClient();
 
@@ -118,9 +124,12 @@ public partial class ReadSurface
             }
         }
 
-        // The families' night: Tonight's cards and Past picks' results, a trailing breakout's among them.
+        // The families' night with the night's cards written: Tonight's cards and Past picks' results, a trailing breakout's
+        // among them.
         using (var families = await FamilyPagesStore())
         {
+            await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), families.DatabaseFile).RunAsync("cards");
+
             using var host = new Host(families.Root);
             using var client = host.CreateClient();
 

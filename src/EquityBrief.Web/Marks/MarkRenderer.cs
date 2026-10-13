@@ -6512,7 +6512,7 @@ public sealed partial class MarkRenderer : IComponent
             view.Industry is { } industry ? Escaped(industry) : Short("none filed before the night"));
 
         string Industry(double? figure, string unread) =>
-            figure is { } read ? Formatted($"{read * 100:+0.00;-0.00;0.00}%")
+            figure is { } read ? SignedFigure(read * 100, 2, Formatted($"{Unsigned(read * 100, 2):+0.00;-0.00;0.00}%"))
                 : view.Industry is null ? Short("not read: no industry filed") : Short(unread);
 
         Row(

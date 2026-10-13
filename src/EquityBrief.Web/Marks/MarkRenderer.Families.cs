@@ -546,7 +546,7 @@ public sealed partial class MarkRenderer
 
     // The chosen rule's words in clauses, each the live rule's words lack marked.
     static string RuleWordsLine(IReadOnlyList<RulePartView> parts) =>
-        "<p class=\"rule-words\">" + string.Join(", ", parts.Select(part => part.Differs ? $"<mark class=\"differs\">{Escaped(part.Text)}</mark>" : Escaped(part.Text))) + ".</p>";
+        "<p class=\"rule-words\">" + string.Join(", ", parts.Select(part => part.Differs ? $"<mark class=\"differs\">{WithSignedFigures(part.Text)}</mark>" : WithSignedFigures(part.Text))) + ".</p>";
 
     // A variant's own picks, drawn under the band: each with its plan and the figures that listed it.
     static string VariantPicks(IReadOnlyList<VariantPickView> picks)

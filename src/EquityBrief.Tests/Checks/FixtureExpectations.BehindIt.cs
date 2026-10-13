@@ -92,4 +92,70 @@ public partial class FixtureExpectations
         Assert.Null(LedgerHeadings.Pushes(model, ReadingsOf(("return_quarter", 0.12), ("rsi", 65))));
         Assert.Null(model.Score(ReadingsOf(("return_quarter", 0.12), ("rsi", 65))));
     }
+
+    [Fact]
+    public async Task TheFixturesNightStoresEveryMembersReadingsAndEachNamesChartPlacesItAmongThemByHand()
+    {
+        // The expectation names the table the ledger's night step writes and says what it derives, the headings in the
+        // core table's order and every member's readings in the catalogue's.
+        var expected = Expected("behind-it");
+
+        Assert.Equal("derived", expected.GetProperty("derivation").GetString());
+        Assert.Equal(["ledger_reading"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
+        Assert.Equal(LedgerHeadings.All.Select(heading => heading.Name), expected.GetProperty("headings").EnumerateArray().Select(heading => heading.GetString()!));
+        Assert.Equal(LedgerReadings.Count, expected.GetProperty("readingsAMember").GetInt32());
+        Assert.StartsWith("none:", expected.GetProperty("pushes").GetString(), StringComparison.Ordinal);
+
+        using var store = await Replayed();
+
+        // One row for every S&P 500 member holding a bar on the night, each holding every reading of the catalogue.
+        var night = Query(store, "SELECT MAX(session_date) FROM ledger_reading;").Single();
+        var stored = Query(store, $"SELECT ticker || '|' || readings FROM ledger_reading WHERE index_code = 'GSPC' AND session_date = '{night}' ORDER BY ticker;")
+            .Select(row => row.Split('|', 2))
+            .ToDictionary(row => row[0], row => System.Text.Json.JsonSerializer.Deserialize<double?[]>(row[1])!, StringComparer.Ordinal);
+        var holding = Query(store, $"SELECT DISTINCT b.ticker FROM bar b JOIN membership m ON m.ticker = b.ticker AND m.index_code = 'GSPC' WHERE b.session_date = '{night}' ORDER BY b.ticker;");
+
+        Assert.Equal(holding, stored.Keys);
+        Assert.All(stored.Values, readings => Assert.Equal(LedgerReadings.Count, readings.Length));
+
+        // Each name's place under each heading by the test's own arithmetic: on each reading of the heading no market
+        // series gives that the name holds, the share of the members holding it under its value and half the share level
+        // with it, its own among them; the heading the mean of those places, or not read where it holds none.
+        string Place(string ticker, LedgerHeading heading)
+        {
+            var places = new List<double>();
+
+            foreach (var column in heading.Readings.Where(column => !LedgerHeadings.Market.Contains(column)))
+            {
+                var at = LedgerReadings.IndexOf(column);
+
+                if (stored[ticker][at] is not { } own)
+                {
+                    continue;
+                }
+
+                var held = stored.Values.Where(readings => readings[at] is not null).Select(readings => readings[at]!.Value).ToArray();
+
+                places.Add((held.Count(value => value < own) + (0.5 * held.Count(value => value == own))) / held.Length);
+            }
+
+            return places.Count == 0 ? "none" : places.Average().ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        using var host = new Reading.ReadSurface.Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var ticker in stored.Keys)
+        {
+            var page = System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
+            var chart = System.Text.RegularExpressions.Regex.Match(page, "<section class=\"behind-it\".*?</section>", System.Text.RegularExpressions.RegexOptions.Singleline).Value;
+
+            Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", chart, StringComparison.Ordinal);
+
+            foreach (var heading in LedgerHeadings.All)
+            {
+                Assert.Contains($"<li data-heading=\"{heading.Name}\" data-percentile=\"{Place(ticker, heading)}\">", chart, StringComparison.Ordinal);
+            }
+        }
+    }
 }

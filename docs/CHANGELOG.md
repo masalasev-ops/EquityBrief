@@ -25,6 +25,28 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - .claude/rules/checks.md - read-surface, fixture-expectations, nightly-run and architecture-conformance state what 19.2's tests assert
+Authorised by: A figure that rose or fell is drawn green or red with its sign on every page
+Was:
+> read-surface: ... and chosen in the link marking the clause naming the check off |
+> fixture-expectations: ... and the six variants the remedy registers each the provisional setting with its moves, its words ending on the market check off |
+> nightly-run: ... the larger of half a per cent rounded up and ten, ... and one ten short written |
+> architecture-conformance: ... the parts after the first three the regions section 4 names in its order and the guide's picture naming each as the architecture's does, neither figure's text holding any night's figure |
+Now:
+> each row continues with what 19.2's tests assert: read-surface the header, the Loop's badge, the date line's night, Tonight's tiles and buy points, the families' order, the filed sector, the chart of what is behind a stock, the night's operations and reason totals on the Run page, the family hues and every signed figure in the green or the red; fixture-expectations the chart's heading table, its percentiles and its pushes; nightly-run the ledger's night step storing every member's readings; architecture-conformance Tonight's top's figure's key.
+Why: each roster row says what its check asserts, and 19.2's tests extend four of them.
+
+### 2026-10-13 - docs/ARCHITECTURE.html - the read API's computations gain the chart's arithmetic and the night's usual start, the card's figure its eighth part, and section 15.7 Tonight's top's figure
+Authorised by: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+Was:
+> Read API's catalogue row: ... and the arithmetic over stored figures the name page alone draws, from the latest quarter's lines to each tranche's share with its risk and reward to risk and each move's cause in its stated order, each by one function in the core ...
+> Figure 15.2: <title>A pick's card, its seven parts numbered</title> ... the operator's own record beside the rule's picks on the same nights, and the Taken press, each numbered as the key beneath names it, ... <figcaption>Figure 15.2. A pick's card and its seven parts, ...</figcaption>, its key ending on part 7, the Taken press.
+Now:
+> Read API's catalogue row: ... each move's cause in its stated order, and from 19.2 a stock's percentile under each heading among its index's members with each heading's push on a learned score, and the minute the newest seven nights' first tries most share, each by one function in the core ...
+> Figure 15.2: the card's eight parts, the eighth what is behind the stock, drawn and keyed.
+> Section 15.7: Figure 15.3, Tonight's top and its six parts in the order the page draws them, with its key.
+Why: the operator's phase 19 plan names a figure of Tonight's top with its key at 19.2, and the ruling of 2026-10-13 adds the chart to every pick's card.
+
 ### 2026-10-13 - .claude/rules/checks.md - read-surface holds thirty-eight marks
 Authorised by: Each setup family has a hue of its own drawn as a mark and a tint beside its word
 Was:

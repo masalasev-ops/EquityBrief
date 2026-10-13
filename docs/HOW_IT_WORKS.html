@@ -496,11 +496,11 @@
 <!-- 7 -->
 <h2 id="card">7. How to read a pick's card</h2>
 <p class="asks">A stock is on tonight's list. What does its card tell me before I buy?</p>
-<p>Each pick on Tonight has a card, opened beneath its row. It gathers what a decision on that one trade needs into seven parts, every figure in them worked out by the tool from stored prices and filings, never by a model. The picture below is a card with its figures blanked out as n.n and nn%, so it shows what each part says rather than any one night's numbers.</p>
+<p>Each pick on Tonight has a card, opened beneath its row. It gathers what a decision on that one trade needs into eight parts, every figure in them worked out by the tool from stored prices and filings, never by a model. The picture below is a card with its figures blanked out as n.n and nn%, so it shows what each part says rather than any one night's numbers.</p>
 <figure>
-<svg viewBox="0 0 700 600" role="img" aria-labelledby="f-card">
-<title id="f-card">A pick's card, its seven parts numbered</title>
-<rect x="40" y="8" width="652" height="584" rx="6" fill="var(--panel)" stroke="var(--rule)" stroke-width="1"/>
+<svg viewBox="0 0 700 680" role="img" aria-labelledby="f-card">
+<title id="f-card">A pick's card, its eight parts numbered</title>
+<rect x="40" y="8" width="652" height="664" rx="6" fill="var(--panel)" stroke="var(--rule)" stroke-width="1"/>
 <text x="56" y="32" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">XYZ, the pullback on the S&amp;P 500, the night of yyyy-mm-dd</text>
 <g data-part="1">
 <circle cx="20" cy="58" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
@@ -560,6 +560,14 @@
 <text x="140" y="551.5" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">fill nn.nn, optional, for yyyy-mm-dd</text>
 <text x="56" y="580" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">provisional: the plan's buy until the next session's open is stored</text>
 </g>
+<line x1="56" y1="594" x2="676" y2="594" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="8">
+<circle cx="20" cy="618" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="622.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">8</text>
+<text x="56" y="622" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">What is behind it</text>
+<text x="56" y="640" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Momentum nn, valuation not read, analyst sentiment nn: hundredths of the index's members</text>
+<text x="56" y="658" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Each heading's push on the learned score, +n.nn or -n.nn, drawn only where it passed the tester</text>
+</g>
 </svg>
 <figcaption>A pick's card, its figures blanked out, each part numbered as the list below explains it.</figcaption>
 </figure>
@@ -571,6 +579,7 @@
   <li data-part="5"><b>What could jolt the price before the trade ends.</b> How far the stock moved on its past results days compared with this trade's stop, when its next dividend comes off the price, and the Federal Reserve decisions and inflation reports due in the meantime.</li>
   <li data-part="6"><b>Your own trades of this rule.</b> How the trades you took from it went, and beneath them how the rule's own picks on those same days went at the plan's price, so a gap between the two is your choices and your buying prices rather than the market of those weeks.</li>
   <li data-part="7"><b>The button you press when you buy.</b> It records the trade, at the price you paid if you enter it; until the next day's opening price is stored the card assumes the plan's price, and then that opening price.</li>
+  <li data-part="8"><b>What is behind the stock.</b> Its readings grouped under seven headings, from momentum to the quality of its earnings, each a bar of where it stands among the other members of its index that night, and a heading with nothing stored saying so. Where the learned score has passed its test on the index, each heading also shows how far it pushes the score up, in green, or down, in red, from a setup sitting at the averages to this one. It describes the stock; it is not the stock's chance.</li>
 </ol>
 <div class="why">
   <p><b>Why a card and not a verdict.</b> Each part is a fact you can check, and the card removes no pick and reorders none. Whether to buy stays your decision, made with the facts that bear on it in one place.</p>
@@ -855,7 +864,7 @@
   <li data-part="27"><b>Sources.</b> Every document the written sections rely on, any figure two sources state differently, and what the code worked out itself rather than read from a document.</li>
   <li data-part="28"><b>Where the research stands.</b> Whether the written sections are current, what writing them has cost, and the button that asks for a new report.</li>
 </ol>
-<p><b>The colours.</b> Down the left edge of each section from How to read the page on runs a coloured rule saying what kind of section it is: green for the decision card and the plan, the parts about buying; amber, with the word Caution above it, for the risks, drawn dashed in the picture above; a muted plum for a part a language model wrote; and grey for the rest. A written part and a part taken from a company's filing each carry a column at the left saying the day it was written or filed, since either may be weeks old. Inside the plan the rows where it buys are marked green and the rows where it sells orange. In the tables a figure that rose is written in indigo and one that fell in plum, each with its plus or minus sign, so the sign says it to a reader who cannot tell the two colours apart.</p>
+<p><b>The colours.</b> Down the left edge of each section from How to read the page on runs a coloured rule saying what kind of section it is: green for the decision card and the plan, the parts about buying; amber, with the word Caution above it, for the risks, drawn dashed in the picture above; a muted plum for a part a language model wrote; and grey for the rest. A written part and a part taken from a company's filing each carry a column at the left saying the day it was written or filed, since either may be weeks old. Inside the plan the rows where it buys are marked green, the rows where it sells orange and the stop red. A figure that rose is written in green and one that fell in red, on this page and every other, each with its plus or minus sign, so the sign says it to a reader who cannot tell the two colours apart.</p>
 <p><b>Where the figures come from.</b> The price, the zones and the plan come from the stock's daily prices, which the tool stores every night. The company's results come from what it filed with the SEC and from the data provider's copy of the same quarters; where the two state a line of the latest quarter differently by more than rounding, the sources list both, the filing's first, and the page draws the provider's, since every quarter it reads comes from that one source. The analysts' figures are the data provider's, labelled as theirs and dated by when they were fetched, and the government's ten-year bond yield is read each night from the Treasury.</p>
 <p><b>What the numbers say.</b> Under the latest quarter, a plain sentence for each of four readings of the company's reported quarters, written by code from a fixed pattern, says whether sales and the operating margin are growing on a year before, how the company has done against analysts' estimates, whether its profits are backed by cash and where its price sits in its own range of earnings multiples. The heading gives the company's state, improving, steady or deteriorating, and says it is read from sales and operating margin alone, so a business can read improving beside profits that ran ahead of its cash.</p>
 <p><b>Looking back.</b> A stock's usual move on a results day is the middle of its moves over every report since 2018, a fall and a rise of the same size counted alike, and the long view's monthly prices reach back to 2018 too, adjusted the way the chart's prices are. How it got here takes each move's cause from the written research where there is some, otherwise from the stories published during the move as the news labeller read them, otherwise from the results and filings that fell inside it, and says so where it found none. The news is labelled by a paid model you choose, and the page names which one wrote the labels.</p>
@@ -1267,8 +1276,102 @@
 </figure>
 <div class="key">
   <p><b>How to read it.</b> Tonight and the universe are for finding stocks. Tonight opens on a line about the market, whether it left the lists open and how many stocks the setups list, then a card for each setup, and beneath the cards one list across the setups of the stocks one gate short of a buy point, there to be watched and never counted as picks. A report is for reading one. The run page is the evidence behind everything else, and Past picks is the record of every trade the list recommended, which you can filter by setup; a breakout's trade has no target and is drawn with its result in multiples of its risk. A stock holds one open trade at a time across every setup: while a trade the list recommended is still open, a night a setup passes the stock again is shown as a note on that setup's card and marked on Past picks rather than counted as a second trade. The run page draws each setup with the day its rule went live, its variants and how far each rule's record has come toward its first checkpoint, and compares tonight's list with what each version of the pullback's rule running in the background would have picked: those picks are shown there and nowhere else, and how their trades turn out stays hidden until the version's checkpoint, so no version is kept or dropped on a lucky month. The breakout's and the drift's rules each show their trades and the edge of those already decided as they come in, while what the edge means waits for the checkpoint. The queue page lists every report asked for, the one being written and what came of the rest, with when each will start and end, and says so where the drain that writes them stopped on an error, until a later drain starts a report; the watch list holds up to twenty stocks you choose to follow, each as it stands on the newest night. A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart, and tonight's page and the run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
-  <p><b>What to take from it.</b> On every screen, green means a level below the price and orange means a level above it. Nothing else uses those two colours.</p>
+  <p><b>What to take from it.</b> On every screen green means a level below the price, a buy or a gain; red means a stop, a loss or something that failed; orange means a level above the price or a sale; and amber means take care or wait. Each setup has a colour of its own too, drawn as the edge of its tile and the small square beside its name and never as the colour of words, and its name always stands beside it.</p>
 </div>
+<p><b>The top of tonight's page.</b> Every page opens on one line: the tool's name, the page's title, three tabs choosing the index the page reads, and a menu holding the other pages, the search, the light and dark switch and the report lane's switch. Tonight then shows the date and, before the night has run, when it will; whether the market left the lists open; a tile for each setup with tonight's count; and one table of every buy point across the setups. Pick a row and its plan and its card open just beneath it. The time the night took, what research cost and how the code is checked moved to the run page.</p>
+<figure>
+<svg viewBox="0 0 700 560" role="img" aria-labelledby="f-top">
+<title id="f-top">Tonight's top, its parts numbered</title>
+<rect x="40" y="8" width="652" height="544" rx="6" fill="var(--panel)" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="1">
+<circle cx="20" cy="34" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="38.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">1</text>
+<text x="56" y="38" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">EquityBrief  Tonight</text>
+<rect x="250" y="22" width="78" height="24" rx="4" fill="none" stroke="var(--store)" stroke-width="1.4"/>
+<text x="289" y="38" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">S&amp;P 500</text>
+<rect x="334" y="22" width="78" height="24" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<text x="373" y="38" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">S&amp;P 400</text>
+<rect x="418" y="22" width="78" height="24" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<text x="457" y="38" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">S&amp;P 600</text>
+<rect x="580" y="22" width="96" height="24" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<text x="628" y="38" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Menu  Paid</text>
+</g>
+<line x1="56" y1="58" x2="676" y2="58" stroke="var(--rule)" stroke-width="1"/>
+<g data-part="2">
+<circle cx="20" cy="78" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="82.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">2</text>
+<text x="56" y="82" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Night of yyyy-mm-dd, computed after the close  ·  tonight's night runs at hh:mm ET</text>
+</g>
+<g data-part="3">
+<circle cx="20" cy="112" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="116.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">3</text>
+<text x="56" y="116" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">The lists are open: the breadth nn.n% at or above its floor  ·  n buy points across n setups</text>
+</g>
+<g data-part="4">
+<circle cx="20" cy="164" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="168.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">4</text>
+<rect x="56" y="136" width="118" height="58" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<rect x="56" y="136" width="4" height="58" fill="var(--store)"/>
+<text x="66" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">Pullback</text>
+<text x="66" y="170" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n picks</text>
+<text x="66" y="186" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="10">listing tonight</text>
+<rect x="180" y="136" width="118" height="58" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<rect x="180" y="136" width="4" height="58" fill="var(--store)"/>
+<text x="190" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">Breakout</text>
+<text x="190" y="170" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n picks</text>
+<text x="190" y="186" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="10">n held back</text>
+<rect x="304" y="136" width="118" height="58" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<rect x="304" y="136" width="4" height="58" fill="var(--store)"/>
+<text x="314" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">Drift</text>
+<text x="314" y="170" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n picks</text>
+<text x="314" y="186" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="10">nothing tonight</text>
+<rect x="428" y="136" width="118" height="58" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<rect x="428" y="136" width="4" height="58" fill="var(--store)"/>
+<text x="438" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">Business-first</text>
+<text x="438" y="170" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n picks</text>
+<text x="438" y="186" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="10">n forming</text>
+<rect x="552" y="136" width="124" height="58" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<rect x="552" y="136" width="4" height="58" fill="var(--store)"/>
+<text x="562" y="152" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">Heavyweights</text>
+<text x="562" y="170" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">n holdings</text>
+<text x="562" y="186" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="10">rebalance in n sessions</text>
+</g>
+<g data-part="5">
+<circle cx="20" cy="244" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="248.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">5</text>
+<text x="56" y="222" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">Tonight's buy points</text>
+<text x="56" y="244" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Setup          #     Stock     Buy        Stop       Target     Reward to risk</text>
+<line x1="56" y1="252" x2="676" y2="252" stroke="var(--rule)" stroke-width="1"/>
+<text x="56" y="270" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Pullback       n     XYZ       nn.nn      nn.nn      nn.nn      n.nn</text>
+<text x="56" y="290" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">Pullback       n     ABC       nn.nn      nn.nn      nn.nn      n.nn</text>
+</g>
+<g data-part="6">
+<circle cx="20" cy="352" r="11" fill="none" stroke="var(--store)" stroke-width="1.6"/>
+<text x="20" y="356.5" text-anchor="middle" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">6</text>
+<rect x="56" y="302" width="620" height="200" rx="4" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<text x="68" y="324" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600">ABC selected: its plan and its card, in a row beneath its own</text>
+<text x="68" y="346" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">The plan column and the level summary</text>
+<text x="68" y="366" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">The card's checklist, the rule's record under the rule's heading and the setups like the pick</text>
+<text x="68" y="392" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="600">What is behind it</text>
+<text x="68" y="412" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Momentum                 nn of the index's members</text>
+<rect x="320" y="403" width="200" height="10" rx="2" fill="none" stroke="var(--rule)" stroke-width="1"/>
+<text x="68" y="432" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Valuation                 not read</text>
+<text x="68" y="458" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">Each heading's push on the learned score, drawn only where it passed the tester on the index</text>
+<line x1="420" y1="468" x2="420" y2="490" stroke="var(--ink)" stroke-width="1"/>
+<rect x="420" y="472" width="60" height="12" fill="none" stroke="var(--store)" stroke-width="1.2"/>
+<text x="490" y="482" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11">+n.nn</text>
+</g>
+</svg>
+<figcaption>Tonight's top, its figures blanked out, each part numbered as the list below explains it.</figcaption>
+</figure>
+<ol class="parts">
+  <li data-part="1"><b>One line across the top.</b> The tool's name, the page's title, three tabs choosing the S&amp;P index the page reads, and the menu, whose button says which report lane is on and whose panel holds the other pages, the Loop with a count of the changes waiting for your word, the search and the switches.</li>
+  <li data-part="2"><b>The date.</b> The evening the page shows, and before tonight's run has started, the time it will start, read off when the last several nights started.</li>
+  <li data-part="3"><b>The market line.</b> Whether the market left the lists open, how many stocks passed a setup and how many buy points there are tonight.</li>
+  <li data-part="4"><b>A tile for each setup.</b> Tonight's count and a word on why, listing, held back by a trade still open, forming or nothing tonight, or for the heavyweights how many sessions until they next rebalance. Press one to jump to that setup's card.</li>
+  <li data-part="5"><b>Every buy point in one table.</b> Each row tagged with its setup, numbered from the top, with the price to buy at, the stop, the target and how much it could gain against what it risks.</li>
+  <li data-part="6"><b>The row you pick.</b> Its plan and its card open in a row just beneath it, the card ending on what is behind the stock; the first row is picked until you choose another.</li>
+</ol>
 
 <!-- 12 -->
 <h2 id="why">12. Why these choices: sources</h2>
