@@ -3,7 +3,7 @@ namespace EquityBrief.Core.News;
 // The words the news labeller's rows carry, held where the worker that writes them and the read surface that
 // draws them both reach: the labeller's run and stage names, a label row's two outcomes, the six stops a run
 // names, and the window it reads. The worker's labeller states each as its own, by these.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 public static class NewsLabelling
 {
     // The labeller's own run, and the stage the night records starting it under.

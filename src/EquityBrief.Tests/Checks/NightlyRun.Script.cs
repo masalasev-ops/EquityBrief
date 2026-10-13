@@ -26,6 +26,7 @@ public partial class NightlyRun
             File.Copy(Repository.Tool("nightly"), Path.Combine(Root, "tools", "nightly"));
             File.Copy(Repository.Tool("ledger-build"), Path.Combine(Root, "tools", "ledger-build"));
             File.Copy(Repository.Tool("monthly"), Path.Combine(Root, "tools", "monthly"));
+            File.Copy(Repository.Tool("offpeak"), Path.Combine(Root, "tools", "offpeak"));
 
             Run("init", "-q", "-b", "main");
             Run("config", "user.email", "suite@example.invalid");

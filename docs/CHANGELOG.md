@@ -25,6 +25,74 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-12 - CLAUDE.md - the night's reports and its labeller are set off by the off-peak run, the merge rule names that run, and the layout and commands name tools/offpeak
+Decision: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+Was:
+> ... paid passes the night sets off after its close whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23, 2026-10-01 and 2026-10-04, ... and the news labeller, a process of its own the night starts after its report request as it starts the drain, which labels the stored articles of the names on tonight's list ..., on the operator's ruling of 2026-09-29, ... (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own) ...
+> Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, the report pass and the news labeller the night starts included, or while the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit;
+> (no tools/offpeak in the layout or the commands table)
+Now:
+> ... paid passes the off-peak run sets off at 16:30Z, the night starting no drain, whose calls and requests sit on the drain's own runs and not on the night's, on the operator's rulings of 2026-09-23, 2026-10-01, 2026-10-04 and 2026-10-12, ... and the news labeller, a process of its own the off-peak run starts at 16:30Z before the drain, which labels the stored articles of the names on the newest night's list ..., on the operator's rulings of 2026-09-29 and 2026-10-12, ... (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own) (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z) ...
+> Nothing is merged to `main`, and the checkout is not fast-forwarded, while a night is running, or while the off-peak run's labeller or its drain, the setup ledger's history build or the monthly run is writing from a copy of the checkout's commit;
+> the layout's `offpeak  offpeak.ps1` lines and the commands table's "Run the off-peak run by hand" row
+Why: the operator's ruling of 2026-10-12 that the night queues its reports and stops, and a scheduled drain writes them at 16:30Z.
+
+### 2026-10-12 - docs/ARCHITECTURE.html - section 14's report, labeller and copy steps and its note, section 17's model calls row and section 18's labeller and drain rows state the off-peak run, and every citation of the labeller's decision names its successor
+Decision: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+Was:
+> 14, the report: ... and none on a night no page lists a stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The six reports a night are taken in turn across the three indices, one at a time in the page's order).
+> 14, the labeller: Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, ..., bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own).
+> 14, the copy: Start the store's copy as the labeller is started, a process of its own that waits until the night, the drain it started and the labeller have finished, ... and nothing else; a night run again for an earlier session starts one that waits for no labeller (see: ...).
+> 14's note: ... the night writes a row a name and starts one process, and the passes they lead to are the drain's own runs, ...
+> 17, Model calls in the nightly run: ... and the labeller the night starts after the close being a process of its own ...
+> 18, The labeller fails: ... | the night's own row says it started the labeller, and the labeller's row, where there is one, says why it stopped
+> 18, a drain that stops on an error: ... put back by the next drain, which a press or the next night starts
+> eleven citations of (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)
+Now:
+> 14, the report: ... and none on a night no page lists a stock, and leave them queued, starting no drain: the off-peak run starts the drain at 16:30Z, whose passes are its own runs ... (see: ...) (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z).
+> 14, the labeller: Start no news labeller, writing the night's row saying the off-peak run labels tonight's list at 16:30Z, a process of its own that labels the stored admitted articles of the names on the newest night's list, ..., bounded by its own time and month limits, the row saying on a night run again for an earlier session that its list is not tonight's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own).
+> 14, the copy: Start the store's copy, a process of its own that waits until the night has finished, ... and nothing else; it waits for no labeller and no drain, since the night starts neither (see: ...).
+> 14's note: ... the night writes a row a name and starts no process, and the passes they lead to are the drain's own runs, which the off-peak run starts at 16:30Z (see: ...)
+> 17: ... and the labeller the off-peak run starts being a process of its own ...
+> 18: ... | the night's own row says the off-peak run labels its list, and the labeller's row, where there is one, says why it stopped
+> 18: ... put back by the next drain, which a press or the off-peak run starts
+> eleven citations of (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own)
+Why: the operator's ruling of 2026-10-12; the labeller's decision is superseded by one naming the run that starts it.
+
+### 2026-10-12 - docs/BUILD_PLAN.md - two citations of the labeller's decision name its successor
+Decision: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
+Was:
+> (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own), twice
+Now:
+> (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own), twice
+Why: a citation names a decision that stands, and the decision it named is superseded.
+
+### 2026-10-12 - docs/RUNBOOK.md - the off-peak run, its scheduling, and the labeller and copy passages that named the night as their starter
+Decision: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+Was:
+> The night starts the labeller after its own report request, as a process of its own on the night's build, so every call and every dollar it makes sits on its own run and never the night's (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own).
+> ... so a labeller the night starts at half past one labels from four ...
+> The night's own row for the step, `label-news`, says it started the labeller and nothing else;
+> After it starts the labeller, the night starts the copy as a process of its own. It waits while the night holds its lock, for the labeller until its last row or the latest instant a labeller started with it could end, its time limit counted over the hours outside the news profile's peak windows, and ten minutes more, and for the drain, whose lock it then holds while it copies, so a press that asks for a report meanwhile waits a minute for it.
+> | nothing for a limit: what was left waits for the next night. ...
+> (no section on the off-peak run)
+Now:
+> The off-peak run starts the labeller at 16:30Z before the drain, over the newest night's list, as a process of its own on main's clean build, ... (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own); the night starts none.
+> ... so a labeller started by hand at half past one labels from four ...
+> The night's own row for the step, `label-news`, says the off-peak run labels its list and nothing else;
+> After its labeller row, the night starts the copy as a process of its own. It waits while the night holds its lock, and for the drain, whose lock it then holds while it copies, so a press that asks for a report meanwhile waits a minute for it; it waits for no labeller, since the night starts none, and a copy started by hand with `--after-labeller` still waits for a labeller until ...
+> | nothing for a limit: what was left waits for the next off-peak run. ...
+> ### The off-peak run, with tools/offpeak, its Windows task at 16:30 UTC and its macOS agent
+Why: the operator's ruling of 2026-10-12.
+
+### 2026-10-12 - .claude/rules/checks.md - nightly-run states that the night starts no labeller and no drain, and the off-peak run's script in its check mode
+Decision: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z
+Was:
+> and the night starts the news labeller once after its own request, with no model call on its row, and starts none for a night run again for an earlier session or a night handed nothing to start one with, saying so on its row; and the night starts the store's copy as the last row it writes, waiting for the labeller where the night started one and for none on a night run again for an earlier session, and starts none where it was handed nothing to start one with, saying so on its row;
+Now:
+> and from the 11.4 and 12.6 corrections of 2026-10-12 the night starts no news labeller and no drain, its labeller row after its own request saying the off-peak run labels tonight's list, with no model call on it, a night run again for an earlier session saying its list is not tonight's, and the night's own source asking its launcher for neither, while the off-peak run's script, in its check mode over temporary repositories, builds the checkout's own commit into the night's folder of copies, reuses a copy built already, and refuses a checkout off main or ahead of origin/main before any worker exists; and the night starts the store's copy as the last row it writes, waiting for no labeller, and starts none where it was handed nothing to start one with, saying so on its row;
+Why: the roster names what each check asserts.
+
 ### 2026-10-12 - CLAUDE.md - the nightly hard rule names an eighth carve-out, the fetch's ask of Yahoo and Nasdaq for a member whose row the provider's day file refused
 Decision: A member's day bar the provider sends impossible is skipped and asked of Yahoo with Nasdaq's check once every file is read
 Was:

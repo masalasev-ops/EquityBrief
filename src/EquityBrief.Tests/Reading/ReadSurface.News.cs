@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // a constructed store whose counts are worked by hand; and from the 18.4 correction of 2026-10-11 the articles
 // holding no label under a tab of their own after opinion.
 // see: The news labels alone name the model that wrote them
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 public partial class ReadSurface
 {
     internal static readonly string[] NewsSurfaceClaims =

@@ -1506,7 +1506,7 @@ static IConfiguration Configuration() => WorkerConfiguration.Build();
 // the newest night's list, labelled by the news job's profile through the spend cap, every call and every dollar
 // on this run's own rows. A refusal at the settings or a model that does not answer stops it before any call,
 // written as its own row where the store is there to hold it.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 static async Task<int> LabelNews(string[] args)
 {
     var configuration = Configuration();
