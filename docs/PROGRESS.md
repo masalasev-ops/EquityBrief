@@ -44422,7 +44422,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
             predicted red at Tonight's top test; so. M6 the members one gate short not handed to the line: predicted red
             at the line's test; so. M7 the phone's short date never shown: predicted red at the phone test; so. Each
             reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 2808ed96: all six
+            steps, 0 warnings, 0 errors, 2315 of 2315 tests ran with none failed in 17 minutes 35 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1303 claims, 1303 passing and none unexamined, 43 checks on the roster run and passed.
 
 ### 19.3 - correction: a card listing nothing folded to one line, the heavyweights' holdings first with their empty sectors in plain words, and a press keeping its card where it stood   2026-10-13
 
@@ -44456,7 +44459,8 @@ Mutated:    M8 no card folded: predicted red at the empty card tests; so, the 2 
             so. M11 the empty sectors in the holdings' table: predicted red at the heavyweights card test; so, at the
             second filter, the first naming no test of the card. M12 the weakest stock named in the beta case: predicted
             red at the words test; so. M13 the redraw ignoring the kept place: predicted red at the shell's test; so.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 2808ed96, as the
+            19.2 correction's entry records: 2315 of 2315 tests, 1303 claims passing and none unexamined.
 
 ### 19.4 - correction: paper trading walked on an example account until one is saved, each verdict's figures beside its words, and the record's count in one line   2026-10-13
 
@@ -44477,7 +44481,8 @@ Tests:      two new: the example walked and written nowhere, then the operator's
 Mutated:    M14 no example where none is saved: predicted red at the example test; so. M15 the compared bar drawn from
             this rule's total, M17 the adjusted p not drawn: each predicted red at the paper page test; so. M16 trades
             counted as decided: predicted red at the count test and the paper page test; so, 2.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 2808ed96, as the
+            19.2 correction's entry records: 2315 of 2315 tests, 1303 claims passing and none unexamined.
 Queue:      done, 19.0 to 19.5 as PRs 446 to 455 with the corrections between; in progress, these corrections of 19.2,
             19.3 and 19.4; next, 19.6, the Queue, on the operator's word.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
