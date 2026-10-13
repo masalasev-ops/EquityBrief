@@ -246,7 +246,7 @@ Grain: one row per ticker and session the fetcher dropped as it fell out of the 
 
 Primary key: `ticker`, `session_date`.
 
-**The fetcher writes it in the transaction that drops the bars, and nothing updates or deletes it.** A session already kept is left as it was. No night reads it: it is a setup's path, replayed from the anchor the setup stores (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor).
+**The fetcher writes it in the transaction that drops the bars, and nothing updates or deletes it.** A session already kept is left as it was. No night reads it: it is a setup's path, replayed from the anchor the setup stores (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor). From 19.3 the read surface reads a heavyweight holding's close a look-back before the night from it where the store's year holds one session fewer, only where no refetch has written the stock's year again since the session was kept (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
 
 ### market_bar
 Grain: one row per series per session a night stored.

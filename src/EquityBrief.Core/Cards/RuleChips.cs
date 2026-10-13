@@ -80,7 +80,7 @@ public static class RuleChips
                 Add(BreakoutCandidate.HighSessionsParameter, At(BreakoutCandidate.HighSessionsParameter) is { } sessions ? Invariant($"{Number(sessions)}-session high") : null);
                 Add(BreakoutCandidate.VolumeMultipleParameter, At(BreakoutCandidate.VolumeMultipleParameter) is { } volume ? Invariant($"volume {Number(volume)} times") : null);
                 Add(BreakoutCandidate.RangeCeilingParameter, At(BreakoutCandidate.RangeCeilingParameter) is { } ceiling ? ceiling == 0 || Off(ceiling) ? "any range" : Invariant($"ranges at {Number(ceiling)}") : null);
-                Add(BreakoutCandidate.StopMovesParameter, At(BreakoutCandidate.StopMovesParameter) is { } stop ? Invariant($"stop {Number(stop)} moves") : null);
+                Add(BreakoutCandidate.StopMovesParameter, At(BreakoutCandidate.StopMovesParameter) is { } stop ? "stop " + Moves(stop) : null);
                 Add(IndexBreakoutCandidate.NearnessParameter, At(IndexBreakoutCandidate.NearnessParameter) is > 0 and var near ? Invariant($"within {Number(near)} of the year's high") : null);
                 Add(IndexBreakoutCandidate.RecencyParameter, At(IndexBreakoutCandidate.RecencyParameter) switch
                 {
@@ -94,10 +94,10 @@ public static class RuleChips
             case RuleKind.Drift:
             case RuleKind.IndexDrift:
                 Add(DriftCandidate.WindowSessionsParameter, At(DriftCandidate.WindowSessionsParameter) is { } within ? Invariant($"within {Number(within)} sessions") : null);
-                Add(DriftCandidate.ReactionMovesParameter, At(DriftCandidate.ReactionMovesParameter) is { } reaction ? Invariant($"up {Number(reaction)} moves") : null);
+                Add(DriftCandidate.ReactionMovesParameter, At(DriftCandidate.ReactionMovesParameter) is { } reaction ? "up " + Moves(reaction) : null);
                 Add(DriftCandidate.VolumeMultipleParameter, At(DriftCandidate.VolumeMultipleParameter) is { } multiple ? Invariant($"volume {Number(multiple)} times") : null);
                 Add("target", (At(DriftCandidate.TargetRiskMultipleParameter) ?? At(IndexDriftCandidate.TargetMultipleParameter)) is { } target ? Invariant($"target {Number(target)} times the risk") : null);
-                Add("stopFloor", (At(DriftCandidate.StopFloorMovesParameter) ?? At(IndexDriftCandidate.StopFloorParameter)) is > 0 and var floor ? Invariant($"stop at least {Number(floor)} moves") : null);
+                Add("stopFloor", (At(DriftCandidate.StopFloorMovesParameter) ?? At(IndexDriftCandidate.StopFloorParameter)) is > 0 and var floor ? "stop at least " + Moves(floor) : null);
                 Add(IndexDriftCandidate.WideWindowParameter, At(IndexDriftCandidate.WideWindowParameter) is > 0 and var wide ? Invariant($"window {Number(wide)} sessions") : null);
                 Add(IndexDriftCandidate.PeersParameter, At(IndexDriftCandidate.PeersParameter) == 1 ? "peers beat first" : null);
                 break;
@@ -244,6 +244,8 @@ public static class RuleChips
     static string Percent(double share) => (share * 100).ToString("0.#", CultureInfo.InvariantCulture) + "%";
 
     static string Count(double count, string noun) => Invariant($"{Number(count)} {noun}{(count == 1 ? string.Empty : "s")}");
+
+    static string Moves(double count) => Count(count, "move");
 
     static string Invariant(FormattableString text) => FormattableString.Invariant(text);
 }

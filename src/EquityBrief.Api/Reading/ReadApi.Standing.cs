@@ -9,11 +9,20 @@ namespace EquityBrief.Api.Reading;
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 public sealed partial class ReadApi
 {
+    // A stock's closes on its own bars, and before the store's year on the sessions the fetcher kept as it dropped them,
+    // each kept session read only where no refetch has written the stock's year again since it was kept, so the two stand
+    // on one basis.
     const string StockStandingClosesOn = @"
         SELECT ticker, session_date, close, back FROM (
             SELECT ticker, session_date, close, ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY session_date DESC) AS back
-            FROM bar
-            WHERE session_date <= $on AND ticker IN (SELECT value FROM json_each($names)))
+            FROM (
+                SELECT ticker, session_date, close FROM bar
+                WHERE session_date <= $on AND ticker IN (SELECT value FROM json_each($names))
+                UNION ALL
+                SELECT k.ticker, k.session_date, k.close FROM kept_bar k
+                WHERE k.session_date <= $on AND k.ticker IN (SELECT value FROM json_each($names))
+                  AND NOT EXISTS (SELECT 1 FROM bar b WHERE b.ticker = k.ticker AND b.session_date = k.session_date)
+                  AND NOT EXISTS (SELECT 1 FROM bar b WHERE b.ticker = k.ticker AND b.session_date <= k.kept_on AND b.observed_at > date(k.kept_on, '+1 day') || 'T23:59:59Z')))
         WHERE back = 1 OR back = $back OR session_date = $rebalance;";
 
     const string FundStandingClosesOn = @"

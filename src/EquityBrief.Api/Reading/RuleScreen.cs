@@ -152,7 +152,8 @@ public static class RuleScreen
         }
     }
 
-    static RuleKind? KindOf(CandidateEvaluator evaluator) => evaluator switch
+    // The kind of rule an evaluator's registrations are, whose table of short words its chips are written by.
+    public static RuleKind? KindOf(CandidateEvaluator evaluator) => evaluator switch
     {
         IndexPullbackCandidate => RuleKind.IndexPullback,
         IndexBreakoutCandidate => RuleKind.IndexBreakout,

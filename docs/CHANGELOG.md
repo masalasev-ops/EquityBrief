@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - docs/SCHEMA.md - the read surface reads a holding's close a look-back before the night from the kept bars
+Authorised by: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+Was:
+> A session already kept is left as it was. No night reads it: it is a setup's path, replayed from the anchor the setup stores (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor).
+Now:
+> A session already kept is left as it was. No night reads it: it is a setup's path, replayed from the anchor the setup stores (see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor). From 19.3 the read surface reads a heavyweight holding's close a look-back before the night from it where the store's year holds one session fewer, only where no refetch has written the stock's year again since the session was kept (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read).
+Why: the store keeps 251 sessions on most nights, one short of a 251-session look-back's first close, so the standing read off the store's year alone would read nothing; a refetch since the drop puts the year on another basis, and then the standing reads nothing.
+
 ### 2026-10-13 - docs/SCHEMA.md - the read surface reads the sector funds' closes for a heavyweights card
 Authorised by: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 Was:
