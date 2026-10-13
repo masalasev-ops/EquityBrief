@@ -44554,7 +44554,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             the fixture's expectation; so. M9 the shell dropping the link's query: predicted red at the route test; so.
             Not mutated: the settled time's cell and the empty window's lines. Each reverted before anything was
             committed, the eleven queue cases passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 55dacfeb: all six
+            steps, 0 warnings, 0 errors, 2320 of 2320 tests ran with none failed in 17 minutes 35 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1305 claims, 1305 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      done, 19.0 to 19.5 as PRs 446 to 449 and 452 to 455, the screens' corrections as PR 456, the 11.4
             correction as PR 457; in progress, 19.6; next, 19.7, the remaining screens.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
