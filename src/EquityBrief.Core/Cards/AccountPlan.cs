@@ -11,6 +11,11 @@ public sealed record AccountSettings(decimal Size, decimal RiskPercent, decimal 
     // The position cap the page proposes where none is set, a fifth of the account.
     public const decimal ProposedCap = 0.2m;
 
+    // The account paper trading walks every account on until the operator saves one, named on the page as an example:
+    // a hundred thousand dollars, one per cent of it a trade and a fifth of it at most in one position. Held here alone
+    // and never written, so the file under the data root holds only what the operator saved.
+    public static AccountSettings Example { get; } = new(100_000m, 1m, ProposedCap);
+
     // Settings the page can keep: each above nothing, the risk under the whole account and the cap no more than it.
     public static string? Refusal(decimal size, decimal riskPercent, decimal positionCap) =>
         size <= 0m ? "The account's size must be above nothing."

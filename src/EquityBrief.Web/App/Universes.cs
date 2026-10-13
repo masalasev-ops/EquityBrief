@@ -2,10 +2,13 @@ using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Web.App;
 
-// One index a page reads: the word its link keeps, its code in the store and its name.
-public sealed record UniverseChoice(string Word, string Code, string Name)
+// One index a page reads: the word its link keeps, its code in the store, its name and the size of company it holds.
+public sealed record UniverseChoice(string Word, string Code, string Name, string Cap)
 {
     public string Possessive => Name + "'s";
+
+    // The name with the size of company it holds, which a page's heading and the bar's index menu draw.
+    public string Titled => Name + " " + Cap;
 }
 
 // The three indices a page reads one at a time, in the order the Universe selector offers them, the S&P 500 first and
@@ -16,11 +19,11 @@ public static class Universes
     // The query the choice is kept under in a page's link.
     public const string Query = "universe";
 
-    public static UniverseChoice Large { get; } = new("500", "GSPC", "S&P 500");
+    public static UniverseChoice Large { get; } = new("500", "GSPC", "S&P 500", "large cap");
 
-    public static UniverseChoice Mid { get; } = new("400", FundHoldings.MidCapIndex, "S&P 400");
+    public static UniverseChoice Mid { get; } = new("400", FundHoldings.MidCapIndex, "S&P 400", "mid cap");
 
-    public static UniverseChoice Small { get; } = new("600", FundHoldings.SmallCapIndex, "S&P 600");
+    public static UniverseChoice Small { get; } = new("600", FundHoldings.SmallCapIndex, "S&P 600", "small cap");
 
     public static IReadOnlyList<UniverseChoice> Offered { get; } = [Large, Mid, Small];
 

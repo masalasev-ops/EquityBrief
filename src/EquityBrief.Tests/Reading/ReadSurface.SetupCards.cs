@@ -189,46 +189,72 @@ public partial class ReadSurface
     {
         // Under the floors: no usual stretch yet, the completed stretches against the thirty the mark waits for.
         Assert.Contains(
-            "<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">Nothing tonight · most stopped at the volume gate (8 of 9) · no usual stretch yet (29 of 30)</p>",
+            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · most stopped at the volume gate (8 of 9) · no usual stretch yet (29 of 30)</span>",
             EmptyCard(new StretchLineView(14, null, false, 29, 600)),
             StringComparison.Ordinal);
 
         // At the floors: the empty stretch against its usual longest, and past it flagged.
         Assert.Contains(
-            "<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">Nothing tonight · most stopped at the volume gate (8 of 9) · empty 14 nights, its usual longest 48</p>",
+            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · most stopped at the volume gate (8 of 9) · empty 14 nights, its usual longest 48</span>",
             EmptyCard(new StretchLineView(14, 48, false, 30, 600)),
             StringComparison.Ordinal);
         Assert.Contains(
-            "<p class=\"family-empty-line flagged\" data-picks=\"0\" data-flagged=\"true\">Nothing tonight · most stopped at the volume gate (8 of 9) · empty 49 nights, its usual longest 48</p>",
+            "<span class=\"family-empty-line flagged\" data-picks=\"0\" data-flagged=\"true\">nothing tonight · most stopped at the volume gate (8 of 9) · empty 49 nights, its usual longest 48</span>",
             EmptyCard(new StretchLineView(49, 48, true, 30, 600)),
             StringComparison.Ordinal);
-        Assert.Contains("· empty 1 night, its usual longest 48</p>", EmptyCard(new StretchLineView(1, 48, false, 30, 600)), StringComparison.Ordinal);
+        Assert.Contains("· empty 1 night, its usual longest 48</span>", EmptyCard(new StretchLineView(1, 48, false, 30, 600)), StringComparison.Ordinal);
 
-        // A card listing nothing names no pick and draws no stretch line of its own, the one line carrying it.
+        // A card listing nothing folds to its one line, its name, its pill and the line in the summary of a fold that opens
+        // on a press, the rest behind it; it names no pick and draws no stretch line of its own, and says why it lists
+        // nothing once: neither the sentence repeating its funnel nor the funnel's own line beneath the bars is drawn.
         var card = EmptyCard(new StretchLineView(14, 48, false, 30, 600));
 
+        Assert.Contains("data-folded=\"true\"><details class=\"fam-fold\"><summary class=\"fam-line\"><span class=\"fam-tag\" data-family=\"breakout\">", card, StringComparison.Ordinal);
+        Assert.Matches("<summary class=\"fam-line\">.*<span class=\"status-pill live\"[^>]*>Live</span> <span class=\"family-empty-line\"[^>]*>nothing tonight[^<]*</span></summary><div class=\"fam-fold-b\">", card);
+        Assert.EndsWith("</div></details></section>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("<details class=\"fam-fold\" open", card, StringComparison.Ordinal);
         Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
         Assert.DoesNotContain("stretch-line", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight.</p>", card, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">Most stopped at the volume gate: 8 of the 9 reaching it.</p>", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("degraded family-empty", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("funnel-drop", card, StringComparison.Ordinal);
 
-        // A night the market check closed: the line opens on the check's own words and names no gate from the funnel, which
-        // holds no count before its first gate, and the funnel marks the first gate as passing no member, never saying no
-        // gate stopped one.
+        // The funnel leaves out the market check's row while the check is open, since it then passes every member read.
+        Assert.Contains("data-market-row=\"false\"><ol class=\"rule-funnel\"><li data-gate=\"new high\"", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("<li data-gate=\"market\"", card, StringComparison.Ordinal);
+
+        // A night the market check closed: the line says the check closed, its breadth and floor standing in the market line
+        // above, and names no gate from the funnel, which holds no count before its first gate, and the funnel draws the
+        // market's row as passing no member.
         var shut = EmptyCard(
             new StretchLineView(18, 58, false, 30, 600),
             "The market check closed every list of the S&P 400 tonight: the S&P 400's breadth was 43.8% of its members closing above their 200-day average, below its floor of 45%.",
             [("market", 0), ("setup", 0), ("floors", 0)]);
 
         Assert.Contains(
-            "<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">The market check closed every list of the S&amp;P 400 tonight: the S&amp;P 400's breadth was 43.8% of its members closing above their 200-day average, below its floor of 45% · empty 18 nights, its usual longest 58</p>",
+            "<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed · empty 18 nights, its usual longest 58</span>",
             shut,
             StringComparison.Ordinal);
         Assert.DoesNotContain("degraded family-empty", shut, StringComparison.Ordinal);
-        Assert.Contains("data-largest-drop=\"market\"", shut, StringComparison.Ordinal);
+        Assert.Contains("data-largest-drop=\"market\" data-market-row=\"true\"", shut, StringComparison.Ordinal);
         Assert.Contains("<li data-gate=\"market\" data-passed=\"0\" class=\"largest-drop\">", shut, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"market\">The market gate passed no member tonight, so none reached a later one.</p>", shut, StringComparison.Ordinal);
         Assert.DoesNotContain("No gate stopped", shut, StringComparison.Ordinal);
+    }
+
+    // A card with a pick, or with a variant chosen, is drawn open under its header and its full card, never folded; its
+    // funnel says beneath the bars which gate stopped the most, the one place the card says it.
+    [Fact]
+    public void ACardWithAPickOrAVariantChosenOpensWithItsFunnelsLineAndIsNeverFolded()
+    {
+        var live = new RuleChoiceView("the live breakout rule", RuleScreenWords.LiveSlug, null, true, "Live");
+        var variant = new RuleChoiceView("the breakout rule at a volume of 1.25 times", "v1", 1, false, "V1 · volume 1.25 times");
+        IReadOnlyList<(string Gate, int Passed)> funnel = [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)];
+        var chosen = new RuleView(variant, [live, variant], [new RulePartView("A stock closes above its high", false)], [], funnel, new StretchLineView(1, 48, false, 30, 600), null, true, null);
+        var card = new MarkRenderer().FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 1, [], [], "No stock passed this setup tonight.", RuleChoice: chosen));
+
+        Assert.False(MarkRenderer.Folded(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 1, [], [], null, RuleChoice: chosen)));
+        Assert.Contains("data-folded=\"false\"><header class=\"fam-head\"", card, StringComparison.Ordinal);
+        Assert.DoesNotContain("fam-fold", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">Most stopped at the volume gate: 8 of the 9 reaching it.</p>", card, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -288,26 +314,45 @@ public partial class ReadSurface
     {
         var on = new DateOnly(2026, 10, 1);
 
-        HeavyweightReadRow Row(string sector, double? lead, bool trend, double? beta) =>
-            new(on, sector, 1, sector[..2].ToUpperInvariant() + "1", "CIK 1", 1000m, 0.2, 0.1, lead, trend, false, beta);
+        HeavyweightReadRow Row(string sector, double? lead, bool trend, double? beta, string? ticker = null) =>
+            new(on, sector, 1, ticker ?? sector[..2].ToUpperInvariant() + "1", "CIK 1", 1000m, 0.2, 0.1, lead, trend, false, beta);
 
         IReadOnlyList<HeavyweightReadRow> read =
         [
             Row("Energy", 0, true, 1.2),
-            Row("Energy", -0.01, true, 1.2),
+            Row("Energy", -0.01, true, 1.2, "EN2"),
             Row("Utilities", 0.02, false, 1.2),
             Row("Materials", 0.02, true, 0.99),
             Row("Industrials", 0.02, true, 1.0),
             Row("Real Estate", 0.02, true, null),
+            Row("Financials", 0.33, false, 1.3, "FI1"),
+            Row("Financials", 0.25, false, 1.4, "FI2"),
+            Row("Financials", -0.02, true, 1.1, "FI3"),
+            Row("Communication Services", 0.649, true, 0.49, "WB1"),
+            Row("Communication Services", 0.4, true, 0.8, "WB2"),
+            Row("Communication Services", 0.44, false, 1.34, "GO1"),
+            Row("Consumer Staples", -0.017, true, 1.0, "CS1"),
+            Row("Consumer Staples", -0.05, true, 1.0, "CS2"),
         ];
 
-        Assert.Equal("None of its largest companies beat its fund at the rebalance of 2026-10-01.", TonightScreen.EmptySectorReason("Energy", read, fundReturn: true, highBeta: true));
-        Assert.Equal("None of its largest companies beat its members' mean at the rebalance of 2026-10-01.", TonightScreen.EmptySectorReason("Energy", read, fundReturn: false, highBeta: true));
-        Assert.Equal("Its leaders failed the trend gate at the rebalance of 2026-10-01.", TonightScreen.EmptySectorReason("Utilities", read, fundReturn: true, highBeta: true));
-        Assert.Equal("Its leaders' beta sat under one at the rebalance of 2026-10-01.", TonightScreen.EmptySectorReason("Materials", read, fundReturn: true, highBeta: true));
-        Assert.Equal("Its leaders' beta sat under one at the rebalance of 2026-10-01.", TonightScreen.EmptySectorReason("Real Estate", read, fundReturn: true, highBeta: true));
-        Assert.Equal("What its rebalance of 2026-10-01 bought has been sold since.", TonightScreen.EmptySectorReason("Industrials", read, fundReturn: true, highBeta: true));
-        Assert.Equal("What its rebalance of 2026-10-01 bought has been sold since.", TonightScreen.EmptySectorReason("Materials", read, fundReturn: true, highBeta: false));
+        // In words a reader needs no rule to follow, each naming the stock closest to being bought and the figure it missed
+        // by, worked by hand: none beating the fund, the closest matching it or trailing it; one beating it out of an uptrend
+        // and several; one in an uptrend moving less than the market and several, the strongest named; a beta not read;
+        // and what the rebalance bought sold since, named where the book's holdings are handed in.
+        Assert.Equal("Nothing held: none of its 2 largest companies beat XLE over the 251 sessions to the 2026-10-01 rebalance; the closest, EN1, matched it.", TonightScreen.EmptySectorReason("Energy", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: none of its 2 largest companies beat its members' average over the 251 sessions to the 2026-10-01 rebalance; the closest, EN1, matched it.", TonightScreen.EmptySectorReason("Energy", read, fundReturn: false, highBeta: true));
+        Assert.Equal("Nothing held: none of its 2 largest companies beat XLP over the 251 sessions to the 2026-10-01 rebalance; the closest, CS1, trailed it by 1.7 points.", TonightScreen.EmptySectorReason("Consumer Staples", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: only UT1 beat XLU over the 251 sessions to the 2026-10-01 rebalance, by 2.0 points, and it was not in an uptrend, the close above the 50-day average and that above the 200-day, which the rule requires.", TonightScreen.EmptySectorReason("Utilities", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: 2 of its 3 largest beat XLF over the 251 sessions to the 2026-10-01 rebalance, led by FI1 by 33.0 points, but none was in an uptrend, the close above the 50-day average and that above the 200-day, which the rule requires.", TonightScreen.EmptySectorReason("Financials", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: MA1 beat XLB over the 251 sessions to the 2026-10-01 rebalance, by 2.0 points, and was in an uptrend, the close above the 50-day average and that above the 200-day, but its beta was 0.99, so it moves about 99% as much as the market, and the rule buys only stocks that move at least as much as the market, a beta of 1 or more.", TonightScreen.EmptySectorReason("Materials", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: 2 beat XLC over the 251 sessions to the 2026-10-01 rebalance and were in an uptrend, the close above the 50-day average and that above the 200-day, the strongest WB1 by 64.9 points, but its beta was 0.49, so it moves about 49% as much as the market, the others less, and the rule buys only stocks that move at least as much as the market, a beta of 1 or more.", TonightScreen.EmptySectorReason("Communication Services", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: RE1 beat XLRE over the 251 sessions to the 2026-10-01 rebalance, by 2.0 points, and was in an uptrend, the close above the 50-day average and that above the 200-day, but its beta could not be read, and the rule buys only stocks that move at least as much as the market, a beta of 1 or more.", TonightScreen.EmptySectorReason("Real Estate", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: what the 2026-10-01 rebalance bought here has been sold since.", TonightScreen.EmptySectorReason("Industrials", read, fundReturn: true, highBeta: true));
+        Assert.Equal("Nothing held: what the 2026-10-01 rebalance bought here has been sold since.", TonightScreen.EmptySectorReason("Materials", read, fundReturn: true, highBeta: false));
+        Assert.Equal(
+            "Nothing held: the 2026-10-01 rebalance bought IN1, sold since on 2026-10-05. Next rebalance 2026-11-02.",
+            TonightScreen.EmptySectorReason("Industrials", read, fundReturn: true, highBeta: true, holdings: [new HeavyweightHoldingRow("IN1", on, "Industrials", "IN One", 10m, new DateOnly(2026, 10, 5), 9m, "no longer leading", -0.1, 0.0)], next: new DateOnly(2026, 11, 2)));
+        Assert.Equal("Nothing held: only UT1 beat XLU over the 126 sessions to the 2026-10-01 rebalance, by 2.0 points, and it was not in an uptrend, the close above the 50-day average and that above the 200-day, which the rule requires.", TonightScreen.EmptySectorReason("Utilities", read, fundReturn: true, highBeta: true, lookBack: 126));
         Assert.Equal("Its last rebalance read none of its companies.", TonightScreen.EmptySectorReason("Health Care", read, fundReturn: true, highBeta: true));
         Assert.Equal("No rebalance has been read yet.", TonightScreen.EmptySectorReason("Energy", [], fundReturn: true, highBeta: true));
         Assert.Equal("This book stores no reading for a sector it bought nothing in.", TonightScreen.StoresNoSectorReading);

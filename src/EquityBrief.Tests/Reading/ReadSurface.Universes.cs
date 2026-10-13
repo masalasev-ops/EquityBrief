@@ -86,10 +86,11 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=400"));
 
-        // The heading and the selector: the three indices each with its members on the night, the S&P 400 chosen.
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 400\"><span class=\"m-screen\">Tonight: S&P 400</span>", page, StringComparison.Ordinal);
+        // The heading with the index's size of company, and the selector: the three indices each with its size of company
+        // and its members on the night, the S&P 400 chosen.
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 400 mid cap\"><span class=\"m-screen\">Tonight: S&P 400 mid cap</span>", page, StringComparison.Ordinal);
         Assert.Equal(
-            [("500", "2", "S&P 500 · 2 members", false), ("400", "3", "S&P 400 · 3 members", true), ("600", "2", "S&P 600 · 2 members", false)],
+            [("500", "2", "S&P 500 · large cap · 2 members", false), ("400", "3", "S&P 400 · mid cap · 3 members", true), ("600", "2", "S&P 600 · small cap · 2 members", false)],
             Regex.Matches(Assert.Single(Blocks(page, "<label class=\"universe-pick\" data-universe=\"400\">.*?</label>")), "<option value=\"([^\"]+)\" data-members=\"([^\"]+)\"( selected)?>([^<]+)</option>")
                 .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[4].Value, match.Groups[3].Success)));
         Assert.Contains($"<section class=\"tonight\" data-night=\"{IndexNight}\" data-universe=\"400\" data-index-code=\"MID\"", page, StringComparison.Ordinal);
@@ -142,9 +143,9 @@ public partial class ReadSurface
         // The S&P 600's families read no night, and its page says so under its own heading.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{IndexNight}?universe=600"));
 
-        Assert.Contains("data-title=\"Tonight: S&P 600\"", small, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"Tonight: S&P 600 small cap\"", small, StringComparison.Ordinal);
         Assert.Contains($"The S&P 600's families read nothing for {IndexNight}: no night of theirs is stored for it.", small, StringComparison.Ordinal);
-        Assert.Contains("<option value=\"600\" data-members=\"2\" selected>S&P 600 · 2 members</option>", small, StringComparison.Ordinal);
+        Assert.Contains("<option value=\"600\" data-members=\"2\" selected>S&P 600 · small cap · 2 members</option>", small, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -269,7 +270,7 @@ public partial class ReadSurface
         // and after its cost.
         var picks = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/picks?universe=400"));
 
-        Assert.Contains("data-title=\"Past picks: S&P 400\"", picks, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"Past picks: S&P 400 mid cap\"", picks, StringComparison.Ordinal);
         Assert.Contains("<label class=\"universe-pick\" data-universe=\"400\">", picks, StringComparison.Ordinal);
         Assert.Equal(
             [("M1", "breakout", "open", "none", "none"), ("M3", "pullback", "2026-10-01", "2", "1.98")],
@@ -287,7 +288,7 @@ public partial class ReadSurface
         // Run: the S&P 400's own night read off its rows.
         var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{IndexNight}?universe=400"));
 
-        Assert.Contains("data-title=\"Run evidence: S&P 400\"", run, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"Run evidence: S&P 400 mid cap\"", run, StringComparison.Ordinal);
         Assert.Contains($"<li>3 S&P 400 members read on {IndexNight}</li>", run, StringComparison.Ordinal);
         Assert.Contains("<li>2 of 3 S&P 400 members passed a setup, 1 listed and 1 held back by a trade still open on any index's list</li>", run, StringComparison.Ordinal);
         Assert.Contains("<li>1 S&P 400 trade(s) kept tonight and 0 ended</li>", run, StringComparison.Ordinal);
@@ -296,16 +297,16 @@ public partial class ReadSurface
         // Universe: the S&P 600's two members and no other.
         var universe = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/universe?universe=600"));
 
-        Assert.Contains("data-title=\"The universe: S&P 600\"", universe, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"The universe: S&P 600 small cap\"", universe, StringComparison.Ordinal);
         Assert.Contains("<section class=\"universe\" data-universe=\"600\" data-names=\"2\"", universe, StringComparison.Ordinal);
 
         // Researched: the S&P 400's researched member alone, and the S&P 500's alone where it is chosen.
         var mid = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/researched?universe=400"));
         var large = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/researched"));
 
-        Assert.Contains("data-title=\"Researched: S&P 400\"", mid, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"Researched: S&P 400 mid cap\"", mid, StringComparison.Ordinal);
         Assert.Equal(["M1"], Regex.Matches(mid, "<tr data-ticker=\"([^\"]+)\" data-written").Select(match => match.Groups[1].Value));
-        Assert.Contains("data-title=\"Researched: S&P 500\"", large, StringComparison.Ordinal);
+        Assert.Contains("data-title=\"Researched: S&P 500 large cap\"", large, StringComparison.Ordinal);
         Assert.Equal(["AAA"], Regex.Matches(large, "<tr data-ticker=\"([^\"]+)\" data-written").Select(match => match.Groups[1].Value));
     }
 
@@ -323,7 +324,7 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
 
         Assert.Contains("on the S&P 400's list is still open, so it is not listed. One stock, one trade.", FamilyCardOf(page, "pullback"), StringComparison.Ordinal);
-        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 500\">", page, StringComparison.Ordinal);
+        Assert.Contains("<div class=\"screen-mast\" data-title=\"Tonight: S&P 500 large cap\">", page, StringComparison.Ordinal);
         Assert.Contains("<option value=\"500\" data-members=\"", page, StringComparison.Ordinal);
     }
 

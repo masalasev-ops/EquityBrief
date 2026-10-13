@@ -116,7 +116,9 @@ public sealed record MarketLineView(
     int? Passed = null,
     int? Members = null,
     bool CloseRead = true,
-    string? Universe = null);
+    string? Universe = null,
+    string? RunHref = null,
+    int? Watching = null);
 
 // One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's
 // word and label, the gate it missed, and that gate's own words.
@@ -358,6 +360,26 @@ public sealed partial class MarkRenderer
         body.Append(line.CloseRead ? Formatted($"{line.Close} close to a buy point · ") : string.Empty);
         body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");
 
+        // Beneath it, what ran tonight and the watch list in one line, where the page hands them in.
+        var links = new List<string>();
+
+        if (line.RunHref is { } run)
+        {
+            links.Add(Formatted($"<a class=\"market-run\" href=\"{Escaped(run)}\">What ran tonight</a>"));
+        }
+
+        if (line.Watching is { } watching)
+        {
+            links.Add(watching == 0
+                ? Formatted($"<span class=\"market-watch\" data-watching=\"0\">none watched · <a href=\"#/watch\">open the watch list</a></span>")
+                : Formatted($"<span class=\"market-watch\" data-watching=\"{watching}\">{watching} watched · <a href=\"#/watch\">open the watch list</a></span>"));
+        }
+
+        if (links.Count > 0)
+        {
+            body.Append("<p class=\"market-links\">" + string.Join(" · ", links) + "</p>");
+        }
+
         return body.ToString();
     }
 
@@ -390,9 +412,13 @@ public sealed partial class MarkRenderer
                 ? ("Live", "live", FormattableString.Invariant($"live since {since:yyyy-MM-dd}"))
                 : ("Provisional", "provisional", EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus);
 
+    // Whether a card draws folded to one line: it lists nothing tonight and no variant is chosen on it.
+    public static bool Folded(FamilyCardView card) => card.Picks.Count == 0 && card.RuleChoice is not { Chosen.Live: false };
+
     // One family's card: its header, the rule's tabs and chips with its sentence a click away, the live rule's picks
     // named by their place among tonight's buy points or a chosen variant's own picks, the notes, the funnel as one bar,
-    // and the breakouts forming and the stocks one gate short behind expanders; a card listing nothing says so in one line.
+    // and the breakouts forming and the stocks one gate short behind expanders. A card listing nothing with no variant
+    // chosen folds to one line, its name, its standing and why it lists nothing, every other part behind it.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     public string FamilyCard(FamilyCardView card)
@@ -402,11 +428,26 @@ public sealed partial class MarkRenderer
         var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
         var (pill, pillClass, pillTitle) = Pill(card.LiveSince, card.RuleChoice);
         var count = variant is null ? Count(card.Picks.Count, "pick") + " tonight" : Count(variant.Picks?.Count ?? 0, "pick") + " tonight under this variant";
+        var folded = Folded(card);
 
         body.Append(Invariant, $"<section class=\"family-card\" data-family=\"{Escaped(card.Family)}\" data-place=\"{card.Place}\" data-of=\"{card.Of}\" data-picks=\"{card.Picks.Count}\" ");
         body.Append(Invariant, $"data-state=\"{(provisional ? "provisional" : "live")}\" data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
-        body.Append(Invariant, $"data-rule=\"{Escaped(card.RuleChoice?.Chosen.Slug ?? RuleScreenWords.LiveSlug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");
-        body.Append(CardHead(card.Family, card.Heading, pill, pillClass, pillTitle, count, SetupCardGuide));
+        body.Append(Invariant, $"data-rule=\"{Escaped(card.RuleChoice?.Chosen.Slug ?? RuleScreenWords.LiveSlug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\" data-folded=\"{Flag(folded)}\">");
+
+        if (folded)
+        {
+            body.Append("<details class=\"fam-fold\"><summary class=\"fam-line\">");
+            body.Append(Invariant, $"<span class=\"fam-tag\" data-family=\"{Escaped(card.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(card.Family)}\"></span>{Escaped(card.Heading)}</span>");
+            body.Append(Invariant, $" <span class=\"status-pill {pillClass}\"{(pillTitle is null ? string.Empty : Formatted($" title=\"{Escaped(pillTitle)}\""))}>{Escaped(pill)}</span> ");
+            body.Append(EmptyLine(card));
+            body.Append("</summary><div class=\"fam-fold-b\">");
+            body.Append(Invariant, $"<details class=\"guide\"><summary title=\"How to read this card\" aria-label=\"How to read this card\">?</summary><p class=\"guide-b\">{Escaped(SetupCardGuide)}</p></details>");
+        }
+        else
+        {
+            body.Append(CardHead(card.Family, card.Heading, pill, pillClass, pillTitle, count, SetupCardGuide));
+        }
+
         body.Append(SweepFoundNoneLine(card.SweepFoundNone));
 
         if (card.RuleChoice is { } rule)
@@ -421,11 +462,7 @@ public sealed partial class MarkRenderer
             body.Append(ShareLine(variant.Share, "picks"));
             body.Append(VariantPicks(card.Family, variant.Picks ?? [], card.Numbers));
         }
-        else if (card.Picks.Count == 0)
-        {
-            body.Append(EmptyLine(card));
-        }
-        else
+        else if (card.Picks.Count > 0)
         {
             body.Append(PicksByPlace(card.Picks));
         }
@@ -435,9 +472,16 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
         }
 
+        // Why a folded card lists nothing where its funnel does not say it, as when the night did not evaluate the rule.
+        if (folded && card.RuleChoice?.Funnel is not { Count: > 0 } && card.Empty is { } why && !why.StartsWith("The market check closed", StringComparison.Ordinal))
+        {
+            body.Append(Invariant, $"<p class=\"degraded family-empty\" data-picks=\"0\">{Escaped(why)}</p>");
+        }
+
         if (card.RuleChoice is { } drawn)
         {
-            body.Append(FunnelBar(drawn));
+            // A folded card's line already names the gate that stopped the most, so its funnel draws the bars alone.
+            body.Append(FunnelBar(drawn, said: !folded));
 
             if (variant is not null || card.Picks.Count > 0)
             {
@@ -448,7 +492,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(CloseRows(card.Family, card.Close ?? [], card.Numbers));
-        body.Append("</section>");
+        body.Append(folded ? "</div></details></section>" : "</section>");
 
         return body.ToString();
     }
@@ -464,7 +508,13 @@ public sealed partial class MarkRenderer
     // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     static string EmptyLine(FamilyCardView card)
     {
-        var parts = new List<string> { card.Empty is { } empty && empty.StartsWith("The market check closed", StringComparison.Ordinal) ? empty.TrimEnd('.') : "Nothing tonight" };
+        // Where the market check closed the list the line says so, its breadth and floor standing in the market line above.
+        var parts = new List<string> { "nothing tonight" };
+
+        if (card.Empty is { } empty && empty.StartsWith("The market check closed", StringComparison.Ordinal))
+        {
+            parts.Add("the market check closed");
+        }
 
         if (card.RuleChoice?.Funnel is { Count: > 0 } funnel && EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel) is { } drop)
         {
@@ -480,8 +530,7 @@ public sealed partial class MarkRenderer
 
         var flagged = card.RuleChoice?.Stretch is { Flagged: true };
 
-        return Formatted($"<p class=\"family-empty-line{(flagged ? " flagged" : string.Empty)}\" data-picks=\"0\" data-flagged=\"{Flag(flagged)}\">{Escaped(string.Join(" · ", parts))}</p>")
-            + (card.Empty is { } why && !why.StartsWith("The market check closed", StringComparison.Ordinal) ? Formatted($"<p class=\"degraded family-empty\" data-picks=\"0\">{Escaped(why)}</p>") : string.Empty);
+        return Formatted($"<span class=\"family-empty-line{(flagged ? " flagged" : string.Empty)}\" data-picks=\"0\" data-flagged=\"{Flag(flagged)}\">{Escaped(string.Join(" · ", parts))}</span>");
     }
 
     // The card's tabs: the live or provisional rule first, then each variant by its number and the settings it differs
@@ -651,7 +700,9 @@ public sealed partial class MarkRenderer
     // The rule's funnel as one bar: each gate's segment as wide as the members reaching it against those reaching the
     // first, its count written on it, and the gate that stopped the most of those reaching it marked and named; a first
     // gate passing no member, as a closed market check, is the one marked, since the funnel holds no count before it.
-    static string FunnelBar(RuleView rule)
+    // A rule's funnel as one bar a gate, the gate that stopped the most marked and, where the card does not say it
+    // already, named beneath; the market check's row left out while it is open, since it then passes every member read.
+    static string FunnelBar(RuleView rule, bool said = true)
     {
         if (rule.Funnel is not { Count: > 0 } funnel)
         {
@@ -661,13 +712,19 @@ public sealed partial class MarkRenderer
         var top = Math.Max(1, funnel[0].Passed);
         var drop = EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel);
         var shut = funnel[0].Passed == 0 ? funnel[0].Gate : null;
+        var openMarket = funnel[0].Gate == EquityBrief.Core.Families.FamilyRule.Market && funnel[0].Passed > 0;
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"funnel-bar\" data-gates=\"{funnel.Count}\" data-largest-drop=\"{Escaped(drop?.Gate ?? shut ?? "none")}\">");
+        body.Append(Invariant, $"<div class=\"funnel-bar\" data-gates=\"{funnel.Count}\" data-largest-drop=\"{Escaped(drop?.Gate ?? shut ?? "none")}\" data-market-row=\"{Flag(!openMarket)}\">");
         body.Append("<ol class=\"rule-funnel\">");
 
         foreach (var ((gate, passed), at) in funnel.Select((step, at) => (step, at)))
         {
+            if (at == 0 && openMarket)
+            {
+                continue;
+            }
+
             var share = Math.Clamp(1.0 * passed / top, 0, 1);
             var marked = drop is not null ? drop.Gate == gate : shut is not null && at == 0;
 
@@ -675,11 +732,13 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</ol>");
-        body.Append(drop is not null
-            ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(drop.Gate)}\">Most stopped at the {Escaped(drop.Gate)} gate: {drop.Stopped} of the {drop.Reached} reaching it.</p>")
-            : shut is not null
-                ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(shut)}\">The {Escaped(shut)} gate passed no member tonight, so none reached a later one.</p>")
-                : "<p class=\"funnel-drop\" data-drop=\"none\">No gate stopped a member tonight.</p>");
+        body.Append(!said
+            ? string.Empty
+            : drop is not null
+                ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(drop.Gate)}\">Most stopped at the {Escaped(drop.Gate)} gate: {drop.Stopped} of the {drop.Reached} reaching it.</p>")
+                : shut is not null
+                    ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(shut)}\">The {Escaped(shut)} gate passed no member tonight, so none reached a later one.</p>")
+                    : "<p class=\"funnel-drop\" data-drop=\"none\">No gate stopped a member tonight.</p>");
         body.Append("</div>");
 
         return body.ToString();

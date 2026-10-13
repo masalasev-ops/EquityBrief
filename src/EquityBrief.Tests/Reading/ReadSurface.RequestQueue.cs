@@ -194,9 +194,12 @@ public partial class ReadSurface
         // see: Every part of a page states where it came from and as of when, and a written section when it was written rather than which model wrote it
         var lane = Assert.Single(Regex.Matches(shell, "<div class=\"lane\".*?</div>", RegexOptions.Singleline).Select(found => found.Value));
 
-        Assert.Contains("Report generation", lane, StringComparison.Ordinal);
-        Assert.Contains(">Local</span>", lane, StringComparison.Ordinal);
-        Assert.Contains(">Paid</span>", lane, StringComparison.Ordinal);
+        // From the 19.2 correction of 2026-10-13 it is labelled as the model that writes reports, under the bar's Research
+        // menu, its two words each naming a model by its lane.
+        Assert.Contains("<span class=\"lane-lbl\">Reports written by</span>", lane, StringComparison.Ordinal);
+        Assert.Contains(">Local model</span>", lane, StringComparison.Ordinal);
+        Assert.Contains(">Paid model</span>", lane, StringComparison.Ordinal);
+        Assert.Matches("<div class=\"m-group\" data-group=\"research\">.*<div class=\"lane\" id=\"lane\"", shell);
 
         Assert.All(
             new[] { "deepseek", "qwen", "gpt", "claude", "llama", "gemma", "mistral", "27b", "9b" },

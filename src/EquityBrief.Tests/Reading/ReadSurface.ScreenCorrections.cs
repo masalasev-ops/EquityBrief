@@ -1,0 +1,171 @@
+using System.Net;
+using System.Text.RegularExpressions;
+using EquityBrief.Core.Cards;
+using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
+using EquityBrief.Web.Marks;
+
+namespace EquityBrief.Tests.Reading;
+
+// read-surface, the corrections of 2026-10-13 to 19.2, 19.3 and 19.4, read back off the rendered page: Tonight's top on a
+// night the families drew it holding no night card and no watch list card, its market line carrying what ran and the
+// watch list's line, and its buy points one line where none lists; a phone's date line the night's short date; a press
+// that redraws the screen to change one card keeping that card where it stood, read off the shell's script; and paper
+// trading walking every account on the example account until the operator saves one, writing it nowhere.
+// see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members
+// see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+public partial class ReadSurface
+{
+    [Fact]
+    public async Task TonightOnAFamiliesNightDrawsNoNightCardNorWatchCardItsMarketLineCarryingWhatRanAndTheWatchList()
+    {
+        using var store = await FamilyPagesStore();
+
+        store.Execute("INSERT INTO watch_list (ticker, added_at) VALUES ('F1', '2026-09-01T12:00:00Z'), ('F2', '2026-09-01T12:00:00Z');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
+
+        // The tiles carry the passes and the market line the breadth, so neither card the night drew before the families
+        // stands; beneath the market line, what ran tonight and the watch list in one line.
+        Assert.DoesNotContain("data-card=\"night\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-card=\"watch\"", page, StringComparison.Ordinal);
+        Assert.Contains($"</span></p><p class=\"market-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}{TheSwitch}\">What ran tonight</a> · <span class=\"market-watch\" data-watching=\"2\">2 watched · <a href=\"{SinglePageApp.WatchRoute}\">open the watch list</a></span></p>", page, StringComparison.Ordinal);
+        Assert.True(page.IndexOf("<p class=\"market-links\">", StringComparison.Ordinal) < page.IndexOf("class=\"setup-tiles\"", StringComparison.Ordinal));
+
+        // The night drew buy points, so the table stands and no line in its place.
+        Assert.Contains("<table class=\"list-table buy-points\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("buy-points-none", page, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ANightNoSetupListsDrawsOneLineInTheBuyPointsPlaceWithTheMembersOneGateShortAndItsGuideBehindItsPress()
+    {
+        var night = new DateOnly(2026, 10, 12);
+        var line = new MarketLineView(true, 0.48, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600");
+        var region = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line, [], null);
+
+        Assert.Contains(
+            $"<section class=\"card folded\" data-card=\"buy-points\"><div class=\"card-b\"><div class=\"card-one-line\"><p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"32\">No buy points tonight · 32 one gate short</p><details class=\"guide\"><summary title=\"How to read this\" aria-label=\"How to read this\">?</summary><p class=\"guide-b\">{Cards.Escaped(SinglePageApp.BuyPointsGuide)}</p></details></div></div></section>",
+            region,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("list-table buy-points", region, StringComparison.Ordinal);
+
+        // The S&P 600's market line links what ran on its own Run page and draws no watch list, which is the S&P 500's.
+        Assert.Contains($"<p class=\"market-links\"><a class=\"market-run\" href=\"{SinglePageApp.RunRoute}2026-10-12?universe=600\">What ran tonight</a></p>", region, StringComparison.Ordinal);
+
+        // A night whose close to a buy point was not read says none.
+        var unread = new SinglePageApp().IndexTonightRegion(new MarkRenderer(), night, Universes.Small, string.Empty, [night], line with { CloseRead = false }, [], null);
+
+        Assert.Contains("<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"none\">No buy points tonight</p>", unread, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OnAPhoneTheTitleHoldsOneLineAndTheDateLineIsTheNightsShortDateBetweenItsArrows()
+    {
+        var picker = Cards.NightPicker(new DateOnly(2026, 10, 12), [new DateOnly(2026, 10, 9), new DateOnly(2026, 10, 12)], SinglePageApp.NightRoute, "#/");
+
+        Assert.Contains("<summary class=\"np-date\" aria-label=\"Choose a night to view\"><span class=\"np-full\">2026-10-12</span><span class=\"np-short\">Oct 12</span></summary>", picker, StringComparison.Ordinal);
+
+        var css = Stylesheet.Css;
+        var block = css[css.IndexOf("@media (max-width:560px){\n .page-head", StringComparison.Ordinal)..];
+
+        block = block[..(block.IndexOf("\n}", StringComparison.Ordinal) + 2)];
+
+        Assert.Contains(".night-picker .np-short{display:none}", css, StringComparison.Ordinal);
+        Assert.Contains(" .page-head .m-screen{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
+        Assert.Contains(" .page-head .asof-words{display:none}", block, StringComparison.Ordinal);
+        Assert.Contains(" .page-head .m-asof:not(:has(.night-picker)){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", block, StringComparison.Ordinal);
+        Assert.Contains(" .night-picker .np-full{display:none}", block, StringComparison.Ordinal);
+        Assert.Contains(" .night-picker .np-short{display:inline}", block, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TonightsDateLineWordsStandApartFromItsPickerSoAPhoneDrawsThePickerAlone()
+    {
+        using var store = await FamilyPagesStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
+
+        Assert.Contains($"<span class=\"m-asof\"><span class=\"asof-words\">Night of {TheSwitch}, computed after the close", page, StringComparison.Ordinal);
+        Assert.Contains("</span><span class=\"night-picker\"", page, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void APressRedrawingTheScreenToChangeOneCardKeepsThatCardWhereItStoodReadOffTheShellsScript()
+    {
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        // A tab finds its card again by the family it names; a chip, a sector's tile, a column's heading or the search box
+        // by its card's own mark; each keeps how far down the window the card stood.
+        Assert.Contains("function keepPlace(control, find) {", shell, StringComparison.Ordinal);
+        Assert.Contains("keptPlace = card ? { find: find, top: card.getBoundingClientRect().top, at: Date.now() } : null;", shell, StringComparison.Ordinal);
+        Assert.Contains("keepPlace(tab, 'a[data-rule-tab=\"' + CSS.escape(tab.getAttribute('data-rule-tab')) + '\"]');", shell, StringComparison.Ordinal);
+        Assert.Contains("const keeper = event.target.closest('a.chip[data-filter], a.sector-tile, a.sort');", shell, StringComparison.Ordinal);
+        Assert.Contains("if (keeperCard) { keepPlace(keeper, 'section.card[data-card=\"' + CSS.escape(keeperCard.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);
+        Assert.Contains("if (searched) { keepPlace(form, 'section.card[data-card=\"' + CSS.escape(searched.getAttribute('data-card')) + '\"]'); }", shell, StringComparison.Ordinal);
+
+        // The redraw puts the card back where it stood before any other place a screen is scrolled to, within ten seconds
+        // of the press, and forgets it after.
+        var placed = shell.IndexOf("if (placedCard) { scrollTo(0, placedCard.getBoundingClientRect().top + scrollY - keptPlace.top); }", StringComparison.Ordinal);
+
+        Assert.True(placed >= 0, "The redraw does not put the kept card back.");
+        Assert.Contains("const placed = keptPlace && Date.now() - keptPlace.at < 10000 ? screen.querySelector(keptPlace.find) : null;", shell, StringComparison.Ordinal);
+        Assert.True(placed < shell.IndexOf("else if (!fresh && scrolls[hash] != null) { scrollTo(0, scrolls[hash]); }", StringComparison.Ordinal));
+        Assert.True(shell.IndexOf("keptPlace = null;", placed, StringComparison.Ordinal) > placed);
+    }
+
+    [Fact]
+    public async Task PaperTradingWalksEveryAccountOnTheExampleUntilOneIsSavedAndWritesTheExampleNowhere()
+    {
+        Assert.Equal(new AccountSettings(100_000m, 1m, 0.2m), AccountSettings.Example);
+
+        using var store = await FamilyPagesStore();
+
+        var before = Directory.GetFiles(store.Root, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray();
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+
+        // No settings are kept, so the page names the example at its top, walks the accounts on it and draws the chart and
+        // the table, the form left empty for the operator's own.
+        Assert.Contains("data-walked=\"true\" data-example=\"true\">", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"notice paper-example\" data-example=\"true\"><b>Example account</b>: 100,000 dollars, 1 per cent of it a trade and at most 20 per cent of it in one position. Save your own below and every account is walked on yours.</p>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-paper-chart=\"unset\"", page, StringComparison.Ordinal);
+        Assert.Contains("class=\"paper-chart\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-walked=\"true\"><thead>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("set your account to walk it", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("value=\"100000\"", page, StringComparison.Ordinal);
+
+        // And it is written nowhere: no settings file, and no file under the data root the page's read did not find there,
+        // the store's own journal aside.
+        Assert.Null(AccountFile.Read(store.Root));
+        Assert.False(File.Exists(AccountFile.PathIn(store.Root)));
+        string[] written = [.. Directory.GetFiles(store.Root, "*", SearchOption.AllDirectories).Except(before).Where(path => !path.EndsWith("-journal", StringComparison.Ordinal) && !path.EndsWith("-wal", StringComparison.Ordinal) && !path.EndsWith("-shm", StringComparison.Ordinal))];
+
+        Assert.True(written.Length == 0, $"The page wrote under the data root: {string.Join(", ", written)}.");
+
+        // Once the operator saves an account, every account is walked on it and the example is named nowhere.
+        AccountFile.Write(store.Root, new AccountSettings(50_000m, 0.5m, 0.1m));
+
+        var saved = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/paper"));
+
+        Assert.Contains("data-walked=\"true\" data-example=\"false\">", saved, StringComparison.Ordinal);
+        Assert.DoesNotContain("paper-example", saved, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AnAccountsRecordCountsItsTradesAndThoseDecidedAgainstTheTestsCountInOneLine()
+    {
+        Assert.Equal("12 trades · 4 decided of 300", EquityBrief.Core.Loop.RuleVerdict.CountLine(false, 12, 4, 3, yours: false));
+        Assert.Equal("1 trade · 0 decided of 300", EquityBrief.Core.Loop.RuleVerdict.CountLine(false, 1, 0, 0, yours: false));
+        Assert.Equal("5 holdings · 2 of 36 months", EquityBrief.Core.Loop.RuleVerdict.CountLine(true, 5, 1, 2, yours: false));
+        Assert.Equal("3 trades · 1 decided", EquityBrief.Core.Loop.RuleVerdict.CountLine(false, 3, 1, 0, yours: true));
+    }
+}

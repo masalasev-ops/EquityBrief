@@ -19,16 +19,18 @@ public partial class ReadSurface
         CheckReach.Key("15.7 Tonight", "The fundamentals-first family's card"),
     ];
 
-    // The family's card from the card holding its heading and its rule to the next card the page draws.
+    // The family's card from the card holding its heading and its rule, open or folded to its one line, to the next card
+    // the page draws.
     static string FundamentalsCard(string page)
     {
-        const string Opens = "<section class=\"card\" id=\"setup-fundamentals\" data-card=\"family\">";
         var at = page.IndexOf("<section class=\"family-card\" data-family=\"fundamentals\"", StringComparison.Ordinal);
 
         Assert.True(at >= 0, "The page draws no fundamentals-first card.");
 
-        var start = page.LastIndexOf(Opens, at, StringComparison.Ordinal);
-        var end = page.IndexOf("<section class=\"card\"", at, StringComparison.Ordinal);
+        var start = page.LastIndexOf("<section class=\"card", at, StringComparison.Ordinal);
+        var end = page.IndexOf("<section class=\"card", at, StringComparison.Ordinal);
+
+        Assert.Matches("^<section class=\"card(?: folded)?\" id=\"setup-fundamentals\" data-card=\"family\">", page[start..]);
 
         return page[start..(end < 0 ? page.Length : end)];
     }

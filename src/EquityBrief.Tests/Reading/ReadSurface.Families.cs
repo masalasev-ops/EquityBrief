@@ -158,7 +158,7 @@ public partial class ReadSurface
         // registered, two variants standing beside it. Its heading and its rule in a sentence are the family's.
         var families = SetupFamilies.InPageOrder.Count;
 
-        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\" data-rule=\"live\" data-variant=\"none\">"), card, StringComparison.Ordinal);
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\" data-rule=\"live\" data-variant=\"none\" data-folded=\"false\">"), card, StringComparison.Ordinal);
 
         // From 19.3 its header: the setup's word in its tint, its standing as a pill with the day it went live under the
         // pointer, tonight's count and the guide every setup card is read by; and a tab the live rule and each variant.
@@ -268,7 +268,8 @@ public partial class ReadSurface
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
             Assert.Contains("data-picks=\"0\"", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">The market check closed every list tonight: 40.0% of the members closed above their 200-day average, below its floor of 50%", card, StringComparison.Ordinal);
+            // The card's one line says the check closed; the figures stand in the market line above the cards.
+            Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight · the market check closed", card, StringComparison.Ordinal);
             Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
         }
 
@@ -288,8 +289,13 @@ public partial class ReadSurface
 
             var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
 
-            Assert.Contains("<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">Nothing tonight", card, StringComparison.Ordinal);
-            Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: 3 passed the trend and strength gate, 2 the setup, 1 the trigger and 0 the trade, and none of those past the exclusions.</p>", card, StringComparison.Ordinal);
+            Assert.Contains("<span class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">nothing tonight", card, StringComparison.Ordinal);
+
+            // Why it lists nothing is said once: by the funnel where the night stored one, and by the sentence the night
+            // wrote, behind the fold, where it stored none.
+            Assert.Equal(
+                !card.Contains("class=\"funnel-bar\"", StringComparison.Ordinal),
+                card.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight: 3 passed the trend and strength gate, 2 the setup, 1 the trigger and 0 the trade, and none of those past the exclusions.</p>", StringComparison.Ordinal));
         }
     }
 }

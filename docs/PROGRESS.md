@@ -44382,3 +44382,103 @@ Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4
             PR 452, 19.3 as PR 453, 19.4 as PR 454 with its remedy run; in progress, 19.5; next, 19.6, the Queue.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
             of phases 16, 17 and 18.
+
+### 19.2 - correction: one bar of links with the index menu, each index named with its cap, Tonight's top saying each thing once, and a phone's header on two lines   2026-10-13
+
+Corrects:   19.2's header, whose three tabs and the selector each page opened on chose the index twice and whose menu
+            button read "Menu Paid"; each index named without the size of company it holds; Tonight's top, whose night
+            card, watch list card and empty buy points table repeated what the tiles and the market line say; and a
+            phone's header, which stood four lines at 390 px.
+Ruled:      by the operator on 2026-10-13, reading phase 19's screens: one way of choosing the index, the dropdown kept
+            and taken off the top of the page, and the top-level menu brought back with a few important links beside it,
+            on a bar like one the operator showed, with Tonight, Universe, Paper trading and the Loop on it and Research
+            and Records as menus ("yes that works perfect"); "it says menu and paid which is incorrect"; "append to the name
+            like midcap or large cap"; and the brief's items for Tonight's top and the phone. The decision is written
+            (see: The bar's index menu chooses the index every page reads, each choice naming its cap and its members),
+            the tabs' entry moved under Previously decided.
+Built:      one bar on every screen: the brand; Tonight, Universe, Paper trading and the Loop with its badge; Research,
+            holding Researched, the Queue, the Watch list and the switch naming the model that writes reports, and
+            Records, holding Past picks, Run and the Ledger, each opening beneath its name; then the search, the index
+            menu the page draws, which the shell sets in the bar, and the palette's toggle; the screen drawn a pill and
+            its menu marked; under 1280 px the links, the search and the toggle in a panel beneath a button reading Menu,
+            the index menu staying in the bar. The title and date line beneath the bar. Each heading and each choice of
+            the index menu name the index's cap; Paper trading draws the menu. On a night the families drew, no night
+            card and no watch list card: the market line gains what ran tonight and the watch list's line, and a night
+            no setup lists draws one line with the members one gate short, its guide behind "?". On a phone the date
+            line is the night's short date between its arrows and a page's other date line holds one line. 15.3, 15.6,
+            15.7, 15.15, Figure 15.3 and its key, the guide and the roster, the prior text in `CHANGELOG.md`.
+Measured:   read back on the branch's Release build from a scratch folder over the live store, writing nothing but the
+            read surface's row on the run log at each start: Tonight on all three indices, Paper trading, Universe and
+            the Queue at 1440 and a true 390 px in both palettes, no page wider than its screen; at 390 the bar 53 px,
+            the title one line of 21 px and the date line one of 20 to 23; the buy points line 55 px. The first draw of
+            the line stood 139 px tall: its class was a name the decision card already used, renamed here.
+Tests:      seven new or rewritten: the bar, the cap in each heading and choice, Tonight's top on a families night, the
+            buy points line, the phone's rules, the date line's words apart from its picker; and about twenty assertions
+            on headings, the select count and the lane's words moved with them.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, each filtered to the tests it
+            was predicted red at. M1 the heading without its cap, M2 the menu's choices without it: each predicted red at
+            the cap test and the S&P 400's Tonight; so, 2 each. M3 the index menu left out of the bar: predicted red at
+            the bar test; so. M4 the night card drawn on a families night, M5 the watch list's line dropped: each
+            predicted red at Tonight's top test; so. M6 the members one gate short not handed to the line: predicted red
+            at the line's test; so. M7 the phone's short date never shown: predicted red at the phone test; so. Each
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+
+### 19.3 - correction: a card listing nothing folded to one line, the heavyweights' holdings first with their empty sectors in plain words, and a press keeping its card where it stood   2026-10-13
+
+Corrects:   19.3's setup cards, whose empty card stood 420 to 515 px at 1440 saying why it listed nothing three times;
+            the heavyweights card, whose eight empty sectors stood among the holdings and said "Its leaders' beta sat under
+            one" naming no stock and no figure; and a card's tabs, which redrew the page at its top, as Universe's chips,
+            tiles and headings of 19.5 did.
+Ruled:      by the operator on 2026-10-13: "The words mean nothing meaningful"; "when i click on any of these variants the
+            entire screen refreshes and i loose where i was"; and the brief's items for the empty card and the heavyweights.
+Built:      a card listing nothing with no variant chosen folds to one line, its name, its pill and "nothing tonight ·
+            most stopped at the X gate (n of m) · empty n nights, its usual longest m", or that the market check closed;
+            a press opens its guide, tabs, chips, sentence, funnel, forming and one gate short. The sentence repeating the
+            funnel and the funnel's line beneath its bars stand on an open card alone, and the funnel leaves out the
+            market's row while the check is open. The heavyweights' table holds the sectors holding a stock; the rest
+            follow behind "n sectors with no holding", a line each with its fund's return and a reason naming the stock
+            closest to being bought, what it missed by and the next rebalance. A tab, a chip, a tile, a heading or the
+            search keeps its card where it stood in the window across the redraw. 15.7's rows, the guide and the roster,
+            the prior text in `CHANGELOG.md`.
+Measured:   on the same build: folded cards 51 px at 1440 against 419 to 515 before, and 97 to 121 at 390 against 608 to
+            877, each under a quarter; the S&P 400's fundamentals-first card stood 186 against 620 while its line restated
+            the market check's figures, 121 once it said the check closed, the figures standing in the market line. A
+            variant's tab and Universe's close heading pressed at 1440 and 390: the card 300 px and 200 px down the window
+            before the redraw and after. The October rebalance's empty sectors read off the live store's rows: WBD beat XLC
+            by 64.9 points in an uptrend with a beta of 0.49; C led XLF's seven by 33.0 points, none in an uptrend.
+Tests:      three new or rewritten: a card with a pick or a variant never folded, the empty sectors' words in every case
+            worked by hand, the shell keeping the place; and the empty card, the fixture's cards, the funnel and the
+            heavyweights card's table read in their new form.
+Mutated:    M8 no card folded: predicted red at the empty card tests; so, the 2 the filter took. M9 the market's row kept
+            while open: predicted red at the empty card, a variant's card and the S&P 400's card; so, 3, the fourth the
+            filter took a 19.1 test. M10 the funnel's line drawn on a folded card: predicted red at the empty card test;
+            so. M11 the empty sectors in the holdings' table: predicted red at the heavyweights card test; so, at the
+            second filter, the first naming no test of the card. M12 the weakest stock named in the beta case: predicted
+            red at the words test; so. M13 the redraw ignoring the kept place: predicted red at the shell's test; so.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+
+### 19.4 - correction: paper trading walked on an example account until one is saved, each verdict's figures beside its words, and the record's count in one line   2026-10-13
+
+Corrects:   19.4's paper trading, which drew no chart and no table until the operator saved an account, read "within
+            luck" for 27 of the S&P 500's 30 rules with nothing to tell them apart, and wrote "too few trades (n of 300)".
+Ruled:      by the operator on 2026-10-13, the brief's items for paper trading.
+Built:      with no account saved, every account walked on the example the core holds, a hundred thousand dollars with one
+            per cent a trade and a fifth at most in one position, named at the page's top and written nowhere, the form
+            left empty; beneath each verdict its adjusted p against the loop's bar and a pair of bars a test year on one
+            scale; the record's cell "n trades · d decided of 300", or a book's "n holdings · m of 36 months", with the
+            walk's skips and its first day beneath. 15.21's rows, the guide and the roster, the prior text in
+            `CHANGELOG.md`.
+Measured:   on the same build with no account file: the S&P 500's chart drawn with its three heads and 27 accounts'
+            year bars at 1440 and 390 in both palettes, no page wider than its screen, and no file under the data root
+            written.
+Tests:      two new: the example walked and written nowhere, then the operator's own; the count line by hand; and the
+            paper page reading the adjusted p and a year's bars.
+Mutated:    M14 no example where none is saved: predicted red at the example test; so. M15 the compared bar drawn from
+            this rule's total, M17 the adjusted p not drawn: each predicted red at the paper page test; so. M16 trades
+            counted as decided: predicted red at the count test and the paper page test; so, 2.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 to 19.5 as PRs 446 to 455 with the corrections between; in progress, these corrections of 19.2,
+            19.3 and 19.4; next, 19.6, the Queue, on the operator's word.
+Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
+            of phases 16, 17 and 18.

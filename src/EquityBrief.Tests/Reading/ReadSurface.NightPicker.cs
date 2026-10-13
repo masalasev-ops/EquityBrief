@@ -27,7 +27,7 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"night-picker\" data-route=\"#/night/\" data-night=\"2026-09-21\">", monday, StringComparison.Ordinal);
         Assert.Contains("data-move=\"earlier\" href=\"#/night/2026-09-18\"", monday, StringComparison.Ordinal);
         Assert.Contains("data-move=\"later\" href=\"#/night/2026-09-22\"", monday, StringComparison.Ordinal);
-        Assert.Contains("<summary class=\"np-date\" aria-label=\"Choose a night to view\">2026-09-21</summary>", monday, StringComparison.Ordinal);
+        Assert.Contains("<summary class=\"np-date\" aria-label=\"Choose a night to view\"><span class=\"np-full\">2026-09-21</span><span class=\"np-short\">Sep 21</span></summary>", monday, StringComparison.Ordinal);
         Assert.Contains("<a class=\"np-newest\" href=\"#/\">", monday, StringComparison.Ordinal);
 
         // The months, newest first, and where each opens in its first week.

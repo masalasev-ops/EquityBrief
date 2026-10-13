@@ -190,8 +190,15 @@ public partial class ReadSurface
 
         Assert.Contains(RuleVerdict.Chosen, live, StringComparison.Ordinal);
         Assert.Contains("<tr data-year=\"2025\" data-complete=\"true\"><td>2025</td>", live, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"too-few\" data-too-few=\"too few trades (2 of 300)\">too few trades (2 of 300)</span>", variant, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"paper-since\" data-too-few=\"too few trades (2 of 300)\"><span class=\"paper-count\">3 trades · 2 decided of 300</span>", variant, StringComparison.Ordinal);
         Assert.DoesNotContain("too few", Regex.Match(variant, "<td class=\"paper-verdict\">.*?</td>", RegexOptions.Singleline).Value, StringComparison.Ordinal);
+
+        // From the 19.4 correction of 2026-10-13 the figures behind each verdict's words: its adjusted p against the bar,
+        // and each test year as a pair of bars on one scale, the live rule's 12.5 risks over 2025 the whole half-width
+        // beside its benchmark's nothing.
+        Assert.Contains($"<span class=\"paper-p\" data-adjusted=\"0.001\" data-bar=\"{LoopGate.Bar.ToString("R", System.Globalization.CultureInfo.InvariantCulture)}\">adjusted p 0.001 against the bar {LoopGate.Bar.ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)}</span>", live, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"paper-p\" data-adjusted=\"0.3\"", variant, StringComparison.Ordinal);
+        Assert.Contains("<g data-year=\"2025\" data-total=\"12.5\" data-compared=\"0\"><title>2025: this rule made 12.5 risks over 140, its benchmark made 0.0 over 140</title><text class=\"yb-year\" x=\"0\" y=\"10\">2025</text><rect class=\"yb-this\" x=\"117\" y=\"2\" width=\"81\" height=\"5\"/><rect class=\"yb-that\" x=\"117\" y=\"7\" width=\"0\" height=\"5\"/></g>", live, StringComparison.Ordinal);
         Assert.Contains($"href=\"#/picks?universe=500&account={Uri.EscapeDataString(variantKey)}\"", variant, StringComparison.Ordinal);
         Assert.Contains("href=\"#/picks?universe=500&setup=breakout\"", live, StringComparison.Ordinal);
 

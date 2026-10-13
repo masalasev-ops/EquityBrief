@@ -10,7 +10,8 @@ public sealed record PaperYearView(int Year, bool Complete, int Units, double To
 // One paper account as paper trading and the trade log draw it: its key in the link, its family, its standing (live,
 // provisional, variant or the operator's own), its name and its rule's words, its test years verdict with what it was
 // read against, its unit and its test years, its walk where the account settings are set, its trades and those ended,
-// its record since registration's label until the count screen's minimum is met, and the day its record starts.
+// its record since registration's label until the count screen's minimum is met, the day its record starts, its adjusted
+// p in that test, and its record's count in one line.
 public sealed record PaperAccountView(
     string Key,
     string Family,
@@ -25,7 +26,9 @@ public sealed record PaperAccountView(
     int Trades,
     int Ended,
     string? TooFew,
-    DateOnly? Since)
+    DateOnly? Since,
+    double? Adjusted = null,
+    string? CountLine = null)
 {
     public const string Live = "live";
 
@@ -137,6 +140,50 @@ public sealed partial class MarkRenderer
         return html.ToString();
     }
 
+    // Each test year as a pair of bars from one zero line on one scale, this rule's total above and the compared side's
+    // beneath, the year beside them and both figures under the pointer.
+    static string YearBars(PaperAccountView account, string against)
+    {
+        const int Width = 200;
+        const int Label = 34;
+        const int Row = 14;
+        var top = account.Years.SelectMany(year => new[] { Math.Abs(year.Total), Math.Abs(year.ComparedTotal) }).DefaultIfEmpty(0).Max();
+        var axis = Label + ((Width - Label) / 2.0);
+        var half = ((Width - Label) / 2.0) - 2;
+        var height = account.Years.Count * Row;
+        var svg = new StringBuilder();
+
+        string Bar(double total, int y, string kind)
+        {
+            var length = top > 0 ? Math.Abs(total) / top * half : 0;
+            var x = total >= 0 ? axis : axis - length;
+
+            return FormattableString.Invariant($"<rect class=\"{kind}\" x=\"{x:0.#}\" y=\"{y}\" width=\"{length:0.#}\" height=\"5\"/>");
+        }
+
+        static string Made(double total) =>
+            total >= 0 ? FormattableString.Invariant($"made {total:0.0}") : FormattableString.Invariant($"lost {-total:0.0}");
+
+        svg.Append(Invariant, $"<svg class=\"paper-yearbars\" width=\"{Width}\" height=\"{height}\" viewBox=\"0 0 {Width} {height}\" role=\"img\" aria-label=\"Each test year's total, this rule's above and {Escaped(against)}'s beneath\">");
+        svg.Append(Invariant, $"<line class=\"yb-axis\" x1=\"{axis:0.#}\" y1=\"0\" x2=\"{axis:0.#}\" y2=\"{height}\"/>");
+
+        foreach (var (year, at) in account.Years.Select((year, at) => (year, at)))
+        {
+            var y = at * Row;
+
+            svg.Append(Invariant, $"<g data-year=\"{year.Year}\" data-total=\"{year.Total.ToString("R", Invariant)}\" data-compared=\"{year.ComparedTotal.ToString("R", Invariant)}\">");
+            svg.Append(Invariant, $"<title>{year.Year}: this rule {Made(year.Total)} {account.Unit} over {year.Units}, {Escaped(against)} {Made(year.ComparedTotal)} over {year.ComparedUnits}</title>");
+            svg.Append(Invariant, $"<text class=\"yb-year\" x=\"0\" y=\"{y + 10}\">{year.Year}</text>");
+            svg.Append(Bar(year.Total, y + 2, "yb-this"));
+            svg.Append(Bar(year.ComparedTotal, y + 7, "yb-that"));
+            svg.Append("</g>");
+        }
+
+        svg.Append("</svg>");
+
+        return svg.ToString();
+    }
+
     // An account's row; its link opens its trade log on Past picks on the same index, a live or provisional account's the
     // lists' trades under its setup.
     string PaperRow(PaperAccountView account, bool walked, string universe)
@@ -160,6 +207,13 @@ public sealed partial class MarkRenderer
         row.Append("<td class=\"paper-verdict\">");
         row.Append(Invariant, $"<span class=\"verdict-word\" data-rank=\"{RuleVerdict.Rank(account.Verdict)}\">{Escaped(account.Verdict)}</span>");
 
+        // The figures behind the word, so two rules reading the same word can be told apart: the adjusted p against the
+        // bar the test reads it at, and each test year's total beside the compared side's as a pair of bars.
+        if (account.Adjusted is { } adjusted)
+        {
+            row.Append(Invariant, $"<span class=\"paper-p\" data-adjusted=\"{adjusted.ToString("R", Invariant)}\" data-bar=\"{LoopGate.Bar.ToString("R", Invariant)}\">adjusted p {adjusted:0.000} against the bar {LoopGate.Bar:0.0000}</span>");
+        }
+
         if (account.Head && account.Years.Count > 0)
         {
             row.Append(Invariant, $"<span class=\"verdict-chosen\">{Escaped(RuleVerdict.Chosen)}</span>");
@@ -169,6 +223,7 @@ public sealed partial class MarkRenderer
         {
             var against = account.Head ? "its benchmark" : account.Against == EquityBrief.Core.Cards.RuleRows.ProvisionalRule ? "the provisional rule" : "the live rule";
 
+            row.Append(YearBars(account, against));
             row.Append(Invariant, $"<details class=\"paper-years\"><summary>{account.Years.Count} test year(s), against {against}</summary><table><tr><th>Year</th><th class=\"r\">This rule</th><th class=\"r\">{Capitalised(against)}</th></tr>");
 
             foreach (var year in account.Years)
@@ -179,13 +234,25 @@ public sealed partial class MarkRenderer
             row.Append("</table></details>");
         }
 
-        row.Append("</td><td class=\"paper-since\">");
-        row.Append(Invariant, $"{account.Trades} trade(s)");
-        row.Append(walk is { } shown ? Formatted($", {shown.Skipped} skipped, {shown.Uncosted} uncosted") : string.Empty);
-        row.Append(account.Since is { } since ? Formatted($", from <span class=\"day\">{DayOf(since)}</span>") : string.Empty);
-        row.Append(account.Standing == PaperAccountView.You
-            ? string.Empty
-            : account.TooFew is { } few ? Formatted($"<span class=\"too-few\" data-too-few=\"{Escaped(few)}\">{Escaped(few)}</span>") : "<span class=\"too-few met\">its count is met</span>");
+        // The record's count in one line against the test's, which says when it is too few to read, then what the walk
+        // skipped and when the record starts.
+        row.Append(Invariant, $"</td><td class=\"paper-since\" data-too-few=\"{Escaped(account.TooFew ?? "none")}\">");
+        row.Append(Invariant, $"<span class=\"paper-count\">{Escaped(account.CountLine ?? Formatted($"{account.Trades} trade(s)"))}</span>");
+
+        var detail = new List<string>();
+
+        if (walk is { } shown)
+        {
+            detail.Add(Formatted($"{shown.Skipped} skipped · {shown.Uncosted} uncosted"));
+        }
+
+        if (account.Since is { } since)
+        {
+            detail.Add(Formatted($"from <span class=\"day\">{DayOf(since)}</span>"));
+        }
+
+        row.Append(detail.Count > 0 ? "<span class=\"paper-walked\">" + string.Join(" · ", detail) + "</span>" : string.Empty);
+        row.Append(account.Standing != PaperAccountView.You && account.TooFew is null ? "<span class=\"too-few met\">its count is met</span>" : string.Empty);
         row.Append("</td>");
 
         if (!walked)
