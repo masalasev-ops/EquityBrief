@@ -44196,3 +44196,55 @@ Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4
             progress, 19.2; next, 19.3, every setup card built one way.
 Carried:    the chart read back on the served pages after the first night past the remedy, and the ledger step's added
             time read off that night's run log against its 49 seconds of 2026-10-09; the sign-offs of phases 16, 17 and 18.
+
+### 19.3 - every setup card built one way: its header and guide, tabs and chips, picks named by place, the funnel as a bar, one line where it lists nothing, its rows behind expanders, and the heavyweights card's tiles, sectors and standing tonight   2026-10-13
+
+Built:      every setup card on every index opens on a header in its family's tint with its standing as a pill, tonight's
+            count and a "?" guide written once for its kind of card. Tabs replace the selector, each variant named by
+            the settings it differs on through one table of short words a kind of rule in the core, with the rule's
+            settings as chips beneath and its sentence a click away; a chosen variant marks its differing chips and says
+            what it shares with the live rule's passes tonight, adds and drops, and draws its picks with the family's
+            three numbers read off the night's ledger readings. Live picks are drawn once, in the buy points, whose rows
+            gain the report's state, the business and the stories, every other pick's card hidden beneath its row; a
+            card names its picks by their place there. The funnel is one bar a gate with the largest drop named, a
+            first gate passing none named so; a card listing nothing says so in one line; the stocks one gate short and
+            the breakouts forming sit behind expanders, and the list across the setups is gone. The heavyweights card
+            gains four tiles, its holdings under each sector's fund, why each empty sector holds none, each holding's
+            return since bought and a standing pill read off tonight's closes by the rule's own functions, the close a
+            look-back before read from the kept bars where no refetch has written the year since. A row a table opens
+            is held inside the box the table scrolls in. Two decisions; 15.2, 15.5, 15.6 and 15.7, SCHEMA's market and
+            kept bars, the guide and the roster, the prior text in `CHANGELOG.md`. No migration and no remedy.
+Measured:   read-only over the scratch copy of the live store on the branch's build, Tonight on all three indices at 390
+            and 1440 px in both palettes, no page wider than its screen. By hand off the copy: AMD's lead 1.3473 over
+            its fund, still leading; CAT's close 799.37 under its average 800.76, below its 200-day; the S&P 500 book's
+            tiles 5 holdings, 3 of 11 sectors, 16 sessions to the next rebalance. The S&P 600's opened card ran 16 px
+            past its box at 390 and a closed market check's funnel said no gate stopped a member; both corrected here.
+Tests:      ten new, nine read-surface and the fixture's: the chips of every kind of rule and every S&P 500 variant
+            differing on one, the funnel's drop, the one line on both sides of its floors and on a closed market, the
+            three numbers, each empty sector's reason, the standing at its edges, the kept bars' guard, the tiles and
+            sectors by hand. About forty markup assertions moved with the cards. Derived expectation `setup-cards.json`.
+Claims:     six more: seventeen parts of the setup cards and the heavyweights card for eleven they retire, the selector,
+            the rows' place, the buy between its stop and target, the why in words, the key, a variant's picks in the
+            live rule's rows, the list across the setups' three and the heavyweights' sector cell and held while
+            leading, each still counted by the phase that landed it.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, each filtered to the 36 tests
+            of the cards, the families' pages, the heavyweights and the fixture's setup cards. M1 a breakout's volume
+            chip read off the range ceiling: predicted red at the chips by hand and the variant card; red there and at
+            every variant differing on a chip, 3 of 36. M2 a tab naming only what the variant lacks: predicted red at
+            six; so, 6. M3 the differing chips unmarked: predicted red at three; so. M4 shared and dropped swapped:
+            predicted red at two; so. M5 a tie in the funnel's fall to the later gate, M6 the line never flagged, M7
+            strength as a multiple, M10 a lead of nothing beating its fund, M11 the kept bars read past a refetch, M12 the
+            funds' tile read off the holdings, M13 an opened row bounded by the screen, M14 a first gate passing none
+            unmarked, M16 the stories cell dropped: each predicted red at its own test alone; so, 1 of 36 each. M8 the
+            picks not named by place: predicted red at three; red at seven, the three among them. M9 a lead of nothing
+            still leading: predicted red at the standing's edges; red there and at the tiles, 2. M15 the tab reading
+            Live on a provisional card: predicted red at the fixture's cards and the S&P 400's; red at five, those
+            among them. M17 the other picks' card rows not drawn: predicted red at the buy points test and the S&P 500
+            card test; red at the first, 1 of 36, the second standing outside the set. Each reverted before anything was
+            committed, the 36 passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
+            PR 452; in progress, 19.3; next, 19.4, paper trading and the per-rule test.
+Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
+            of phases 16, 17 and 18.
