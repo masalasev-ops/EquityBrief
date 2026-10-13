@@ -44036,8 +44036,9 @@ Tests:      five more: each capture read as sent, the provider's own row refused
             on LUMN and on each check at its edge, half a cent passing and a hundredth past it refused, and at the
             provider's adjustment; a member's impossible row stored from the sources over the fixture's file; one whose
             sources disagree left without the session; twenty asked, the twenty-first named past the cap, one source's
-            failure stopping no other and a file every member reads asking nothing. Two changed: the fetcher's and the
-            night's test of a member's unreadable row, which now finishes the night and names the member.
+            failure stopping no other and a file every member reads asking nothing. Three changed: the fetcher's and the
+            night's test of a member's unreadable row, which now finishes the night and names the member, and the count
+            of shipped files permitted a client, 22 to 23.
 Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the 16
             fetcher, substitute and night tests. M1 Nasdaq's check ignored: predicted red at the rule test and the
             disagreeing sources test. M2 the cap removed: predicted red at the cap test alone. M3 a refused member stopping

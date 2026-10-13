@@ -334,8 +334,10 @@ public class EodhdBulkPriceFeedTests
         // twenty until 18.1 added the delayed quote, one request a listing on
         // a name page's ask in the session, which no night asks, and twenty-one
         // until 18.2 added the Treasury's par yield table, one free request a
-        // night to the Treasury and none to the provider.
-        Assert.Equal(22, Checks.NightlyCost.MayHoldAClient.Length);
+        // night to the Treasury and none to the provider, and twenty-two until
+        // the 2.1 correction that skips a refused member added Yahoo's chart and
+        // Nasdaq's quote, asked by the fetch for that member alone.
+        Assert.Equal(23, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));
