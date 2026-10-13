@@ -7,10 +7,10 @@ namespace EquityBrief.Web.Marks;
 public sealed record BehindHeadingView(string Heading, double? Percentile, double? Push);
 
 // The chart of what is behind a stock: its index's name, each heading in the core table's order, and, where the learned
-// score has passed the tester on the index, the pushes' total, the score less the score of a setup at the means it
-// learned on, in the score's own unit; none where the push view is not drawn, with why where the score passed and its
-// stored text could not be read.
-public sealed record BehindItView(string Index, IReadOnlyList<BehindHeadingView> Headings, double? Total, string? Unread = null);
+// score has passed the tester on the index, the score of a setup at the means it learned on and the stock's score, which
+// the pushes take the one to the other, in the score's own unit; none where the push view is not drawn, with why where
+// the score passed and its stored text could not be read.
+public sealed record BehindItView(string Index, IReadOnlyList<BehindHeadingView> Headings, double? Centre = null, double? Score = null, string? Unread = null);
 
 // The chart of what is behind a stock, on a pick's card and on a stock's page: its readings view, always drawn, a bar a
 // heading of the stock's percentile among its index's members tonight, a heading with no stored reading drawn as not
@@ -25,7 +25,7 @@ public sealed partial class MarkRenderer
     public string BehindIt(BehindItView view)
     {
         var body = new StringBuilder();
-        var pushed = view.Total is not null;
+        var pushed = view.Centre is not null && view.Score is not null;
 
         body.Append(Invariant, $"<section class=\"behind-it\" data-index=\"{Escaped(view.Index)}\" data-push=\"{(pushed ? "drawn" : "none")}\"><h5>What is behind it</h5>");
         body.Append(Invariant, $"<p class=\"behind-lede\">Where the stock stands among the {Escaped(view.Index)}'s members tonight under each heading, in hundredths of the members, a reading the same for every member left out.</p>");
@@ -49,12 +49,12 @@ public sealed partial class MarkRenderer
 
         body.Append("</ul>");
 
-        if (view.Total is { } total)
+        if (view.Centre is { } centre && view.Score is { } score)
         {
             var largest = Math.Max(view.Headings.Max(heading => Math.Abs(heading.Push ?? 0)), 1e-9);
 
-            body.Append(Invariant, $"<p class=\"behind-lede\">Each heading's push on the learned score, which passed the walk-forward tester on this index: its weights times the stock's readings less their means over the setups it learned on, in typical moves.</p>");
-            body.Append(Invariant, $"<ul class=\"behind-push\" data-total=\"{total.ToString("R", Invariant)}\">");
+            body.Append(Invariant, $"<p class=\"behind-lede\">Each heading's push on the learned score, which passed the walk-forward tester on this index: its weights times the stock's readings less their means over the setups it learned on, in typical moves, the score's own unit.</p>");
+            body.Append(Invariant, $"<ul class=\"behind-push\" data-centre=\"{centre.ToString("R", Invariant)}\" data-score=\"{score.ToString("R", Invariant)}\">");
 
             foreach (var heading in view.Headings)
             {
@@ -68,7 +68,9 @@ public sealed partial class MarkRenderer
                 body.Append(Invariant, $"<b class=\"{BySign("bh-figure", push)}\">{push.ToString("+0.00;-0.00;0.00", Invariant)}</b></li>");
             }
 
-            body.Append(Invariant, $"</ul><p class=\"behind-total\">Together <b class=\"{BySign("bh-total", total)}\">{total.ToString("+0.00;-0.00;0.00", Invariant)}</b> typical moves against a setup at the means the score learned on. It is the score's reading, not this stock's chance.</p>");
+            var together = score - centre;
+
+            body.Append(Invariant, $"</ul><p class=\"behind-total\">A setup at the means the score learned on scores {centre.ToString("0.00", Invariant)}; the pushes together, <b class=\"{BySign("bh-total", together)}\">{together.ToString("+0.00;-0.00;0.00", Invariant)}</b>, take it to this stock's score of {score.ToString("0.00", Invariant)}. It is the score's reading, not this stock's chance.</p>");
         }
 
         if (view.Unread is { } why)

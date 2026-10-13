@@ -19,7 +19,7 @@ public sealed partial class MarkRenderer
     public static IReadOnlyList<(string Heading, string Says)> BuyPointHeadings { get; } =
     [
         ("Setup", "The setup that lists the stock tonight, in its hue."),
-        ("#", "The stock's place in its setup's own order."),
+        ("#", "The row's place in the table, counted from one across every setup, each setup's picks in its own order."),
         ("Stock", "The ticker selects the row and draws its plan and its card beneath it; the company is named beneath."),
         ("Buy", "The price the plan buys at, which is the evening's close."),
         ("Stop", "The price a close beneath ends the trade at a loss, or the first level of a stop that trails the price."),
@@ -71,7 +71,7 @@ public sealed partial class MarkRenderer
 
         body.Append("</tr></thead><tbody>");
 
-        foreach (var point in points)
+        foreach (var (point, number) in points.Select((point, at) => (point, at + 1)))
         {
             var pick = point.Pick;
             var row = pick.Row;
@@ -80,7 +80,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(point.Family)}\" data-selects=\"{Escaped(row.Ticker)}\" ");
             body.Append(Invariant, $"data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(chosen ? " class=\"sel\" aria-selected=\"true\"" : string.Empty)}>");
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
-            body.Append(Invariant, $"<td class=\"place\" data-place=\"{pick.Place}\">{pick.Place}</td>");
+            body.Append(Invariant, $"<td class=\"place\" data-place=\"{number}\">{number}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
             body.Append(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
             body.Append(PriceCell("buy", pick.Buy, null));

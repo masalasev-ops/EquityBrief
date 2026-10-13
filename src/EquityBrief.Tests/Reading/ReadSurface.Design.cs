@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Loop;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
@@ -610,6 +611,52 @@ public partial class ReadSurface
         Assert.DoesNotContain(".mast .wrap{grid-template-columns", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("tab.setAttribute('href', (onPath || '#/') + '?universe=' + tab.dataset.universe);", shell, StringComparison.Ordinal);
         Assert.Contains("closeMenu();", shell, StringComparison.Ordinal);
+    }
+
+    // 19.2: the Loop's badge counts the proposals each index's newest run puts to the operator that hold no word yet, one a
+    // family at most, worked by hand over a constructed store on both sides of one, and the shell's script shows it at one
+    // or more and hides it at none, read off the script since the suite has no browser to run it in.
+    [Fact]
+    public async Task TheLoopsBadgeCountsTheProposalsPutWithNoWordOnBothSidesOfOne()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string> Put() => await client.GetStringAsync(SinglePageApp.LoopPutRoute);
+
+        // No run: none put.
+        Assert.Equal("0", await Put());
+
+        // The S&P 600's October run puts its breakout's first passing proposal of two, and its drift's, which failed, none.
+        Run(store, SmallOctober, "SML", "2026-10");
+        Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", true, Exit(7));
+        Proposed(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 2", true, Exit(8));
+        Proposed(store, SmallOctober, "SML", "drift", "the autopsy's exit, ranked 1", false, Exit(7));
+
+        Assert.Equal("1", await Put());
+
+        // The S&P 500's October run puts its pullback's as well: two.
+        Run(store, LargeOctober, "GSPC", "2026-10");
+        Proposed(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", true, Condition("rsi", 60));
+
+        Assert.Equal("2", await Put());
+
+        // A word on the S&P 600's breakout leaves one, and a word on the S&P 500's pullback none; a word on the breakout's
+        // second proposal, which is not the one put, would have left the count as it was.
+        Decided(store, SmallOctober, "SML", "breakout", "the autopsy's exit, ranked 1", LoopDecisions.Approved);
+
+        Assert.Equal("1", await Put());
+
+        Decided(store, LargeOctober, "GSPC", "pullback", "winners against losers, ranked 1", LoopDecisions.Declined, "too young");
+
+        Assert.Equal("0", await Put());
+
+        var shell = await client.GetStringAsync("/");
+
+        Assert.Contains($"const answer = await fetch('{SinglePageApp.LoopPutRoute}');", shell, StringComparison.Ordinal);
+        Assert.Contains("badge.textContent = put > 0 ? String(put) : '';", shell, StringComparison.Ordinal);
+        Assert.Contains("badge.hidden = !(put > 0);", shell, StringComparison.Ordinal);
     }
 
     // The first cell of each row of section 4's table, as a reader reads it.

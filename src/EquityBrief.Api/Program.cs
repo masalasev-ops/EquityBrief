@@ -1859,7 +1859,7 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
     var selector = night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.LedgerRoute) : string.Empty;
     var years = await read.LedgerYearsAsync(reading.Code);
     var asked = request.Query["family"].FirstOrDefault();
-    var family = years.Any(year => year.Family == asked) ? asked : years.FirstOrDefault()?.Family;
+    var family = years.Any(year => year.Family == asked) ? asked : years.Select(year => year.Family).OrderBy(EquityBrief.Core.Families.SetupFamilies.OrderOf).FirstOrDefault();
     var settled = family is null ? [] : await read.LedgerSettledAsync(reading.Code, family, 12);
     EquityBrief.Core.Ledger.LedgerPath? path = null;
 

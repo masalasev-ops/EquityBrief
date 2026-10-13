@@ -3142,7 +3142,7 @@ public sealed class SinglePageApp : IComponent
 
         var region = new StringBuilder();
         var heading = "Setup ledger: " + reading.Name;
-        var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).ToArray();
+        var families = years.Select(year => year.Family).Distinct(StringComparer.Ordinal).OrderBy(EquityBrief.Core.Families.SetupFamilies.OrderOf).ToArray();
 
         region.Append(Invariant($"<section class=\"ledger\" data-universe=\"{reading.Word}\" data-families=\"{families.Length}\" data-family=\"{Escaped(family ?? "none")}\">"));
         region.Append(Cards.Masthead(
@@ -3164,7 +3164,7 @@ public sealed class SinglePageApp : IComponent
             return region.ToString();
         }
 
-        foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal))
+        foreach (var group in years.GroupBy(year => year.Family, StringComparer.Ordinal).OrderBy(group => EquityBrief.Core.Families.SetupFamilies.OrderOf(group.Key)))
         {
             var rows = group.OrderBy(year => year.Year).ToArray();
             var newest = rows.LastOrDefault(year => year.Settled > 0);
@@ -3207,8 +3207,10 @@ public sealed class SinglePageApp : IComponent
         return region.ToString();
     }
 
-    // The families the Loop page draws, in the page's order.
-    public static IReadOnlyList<string> LoopFamilies { get; } = ["pullback", "breakout", "drift", "heavyweight"];
+    // The families the Loop page draws, in the one order every page lists them in, the fundamentals-first family left out
+    // while the ledger holds none of its setups for the tester to read.
+    public static IReadOnlyList<string> LoopFamilies { get; } =
+        [.. EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name)];
 
     // How many proposals a run puts to the operator that hold no word of theirs yet: at most one a family, the one the
     // Loop page offers its presses on, read as the page reads it. The menu's badge counts them over each index's newest run.

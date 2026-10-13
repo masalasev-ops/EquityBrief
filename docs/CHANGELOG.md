@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - docs/BUILD_PLAN.md - 19.2's push view is in typical moves, from a setup at the means to the stock's score
+Corrects: 19.2's text named the push view's unit as risks, where the learned score is fitted on each setup's edge in typical moves, found while building the chart against the score's own arithmetic.
+Was:
+> each heading's share of the score, its weights times the stock's standardised readings summed by heading, in risks, green where it pushes up and red where it pushes down.
+Now:
+> each heading's share of the score, its weights times the stock's standardised readings summed by heading, in typical moves, the unit the score is learned in, green where it pushes up and red where it pushes down, the pushes taking the score of a setup at the means the score learned on to the stock's own.
+Why: a push is a weight times a reading standardised about its mean, so the pushes sum to the score less the score of a setup at the means, and only with that score beside them do they add up to the stock's own.
+
 ### 2026-10-13 - docs/ARCHITECTURE.html - section 15.7's list paragraph draws a buy point's plan and card beneath its row
 Decision: Selecting a row draws its plan and its card beneath the row and is no navigation
 Was:

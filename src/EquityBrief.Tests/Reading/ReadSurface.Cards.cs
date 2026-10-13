@@ -60,12 +60,14 @@ public partial class ReadSurface
 
         var rows = await CardsReadBack(client, stored, TheSwitch);
 
-        // K1's card pushes by its momentum alone, 0.2 times 1.05 less the mean of 1 over the spread of 0.1, the push its
-        // total; F1's, whose family has no score, and K2's, holding no readings, draw the readings alone, K2's none read.
+        // K1's card pushes by its momentum alone, 0.2 times 1.05 less the mean of 1 over the spread of 0.1, from a setup at
+        // the means scoring 2 to its own 2.1; F1's, whose family has no score, and K2's, holding no readings, draw the
+        // readings alone, K2's none read.
         var momentum = 0.2 * (1.05 - 1.0) / 0.1;
 
         Assert.Contains($"<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", rows["K1"], StringComparison.Ordinal);
-        Assert.Contains($"<ul class=\"behind-push\" data-total=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<li data-heading=\"Momentum\" data-push=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<ul class=\"behind-push\" data-centre=\"2\" data-score=\"{(0.2 / 0.1 * 1.05).ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.75\">", rows["K1"], StringComparison.Ordinal);
         Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["F1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.25\">", rows["F1"], StringComparison.Ordinal);

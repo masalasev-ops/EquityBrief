@@ -19,7 +19,8 @@ public static class BehindScreen
         return new BehindItView(
             indexName,
             [.. LedgerHeadings.All.Select((heading, at) => new BehindHeadingView(heading.Name, percentiles[at], pushes?[at]))],
-            pushes?.Sum(),
+            pushes is null ? null : LedgerHeadings.Centre(model!),
+            pushes is null ? null : model!.Score(own),
             passed ? unread : null);
     }
 }

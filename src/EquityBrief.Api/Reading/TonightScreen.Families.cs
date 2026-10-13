@@ -594,7 +594,7 @@ public static partial class TonightScreen
         IReadOnlyList<FamilyReplayRow>? replays = null) =>
     [
         .. FamilyRecordViews(register, trades, night, replays)
-            .OrderBy(record => SetupFamilies.PlaceOf(record.Family))
+            .OrderBy(record => SetupFamilies.OrderOf(record.Family))
             .ThenBy(record => record.View.Live ? 0 : 1)
             .ThenBy(record => record.View.Candidate, StringComparer.Ordinal)
             .Select(record => new FamilyRecordRow(
@@ -642,7 +642,7 @@ public static partial class TonightScreen
         var listed = own.FirstOrDefault(pick => pick.State == FamilyList.Listed);
         var held = new List<string>();
 
-        foreach (var pick in own.Where(pick => pick.State is FamilyList.OpenTrade or FamilyList.PastFive).OrderBy(pick => SetupFamilies.PlaceOf(pick.Family)))
+        foreach (var pick in own.Where(pick => pick.State is FamilyList.OpenTrade or FamilyList.PastFive).OrderBy(pick => SetupFamilies.OrderOf(pick.Family)))
         {
             var heading = SetupFamilies.Named(pick.Family)?.Heading ?? pick.Family;
 

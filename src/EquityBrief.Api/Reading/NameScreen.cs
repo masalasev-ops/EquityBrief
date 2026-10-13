@@ -1330,7 +1330,7 @@ public static partial class NameScreen
         // last close otherwise, which the tiles are worked at.
         var live = night is null && quoteSession is { IsOpen: true } ? quote : null;
         var cards = (decisionCards ?? [])
-            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.PlaceOf(card.Family))
+            .OrderBy(card => EquityBrief.Core.Families.SetupFamilies.OrderOf(card.Family))
             .Select(card => CardScreen.View(card, cardContext))
             .FirstOrDefault();
         decimal? shownPrice = live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null);

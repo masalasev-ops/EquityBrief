@@ -258,16 +258,20 @@ public partial class ReadSurface
         Assert.Contains("data-validated=\"1\"", loop, StringComparison.Ordinal);
 
         // Now the score passed, the push view: momentum alone pushes, 0.2 times AAA's close over its average less the mean
-        // of 1, over the spread of 0.1, and the pushes sum to the score less the score at the means, 2 x 1.0945 - 2.
+        // of 1, over the spread of 0.1; a setup at the means scores 0.2 over 0.1 times 1, 2, and AAA scores 2 x 1.0945,
+        // which the drawn pushes added to the 2 make exactly.
         var passedChart = ScoreBehind(named);
         var momentum = 0.2 * ((110 / 100.5) - 1.0) / 0.1;
+        var pushes = Regex.Matches(passedChart, "<li data-heading=\"[^\"]+\" data-push=\"([^\"]+)\">").Select(push => double.Parse(push.Groups[1].Value, CultureInfo.InvariantCulture)).ToArray();
 
         Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", passedChart, StringComparison.Ordinal);
         Assert.Contains($"<li data-heading=\"Momentum\" data-push=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", passedChart, StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Valuation\" data-push=\"0\">", passedChart, StringComparison.Ordinal);
-        Assert.Contains($"<ul class=\"behind-push\" data-total=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", passedChart, StringComparison.Ordinal);
-        Assert.Equal(ScoreOfTheCloseOverTwenty().Score([.. Enumerable.Range(0, LedgerReadings.Count).Select(at => at == LedgerReadings.IndexOf("close_over_twenty") ? 110 / 100.5 : (double?)null)])!.Value - LedgerHeadings.Centre(ScoreOfTheCloseOverTwenty()), momentum, 12);
+        Assert.Contains($"<ul class=\"behind-push\" data-centre=\"2\" data-score=\"{(0.2 / 0.1 * (110 / 100.5)).ToString("R", CultureInfo.InvariantCulture)}\">", passedChart, StringComparison.Ordinal);
+        Assert.Equal(7, pushes.Length);
+        Assert.Equal(0.2 / 0.1 * (110 / 100.5), 2 + pushes.Sum(), 12);
         Assert.Contains($"<b class=\"bh-figure gain\">+{momentum.ToString("0.00", CultureInfo.InvariantCulture)}</b>", passedChart, StringComparison.Ordinal);
+        Assert.Contains($"A setup at the means the score learned on scores 2.00; the pushes together, <b class=\"bh-total gain\">+{momentum.ToString("0.00", CultureInfo.InvariantCulture)}</b>, take it to this stock's score of {(0.2 / 0.1 * (110 / 100.5)).ToString("0.00", CultureInfo.InvariantCulture)}.", passedChart, StringComparison.Ordinal);
         Assert.Contains("<span data-ticker=\"AAA\" data-rank=\"59\">AAA, hundredth 59</span>", loop, StringComparison.Ordinal);
         Assert.DoesNotContain(CardSimilar.NotValidated, loop, StringComparison.Ordinal);
     }

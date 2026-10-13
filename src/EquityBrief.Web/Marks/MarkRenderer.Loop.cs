@@ -287,7 +287,7 @@ public sealed partial class MarkRenderer
 
         var html = new StringBuilder();
 
-        foreach (var family in decided.Alarms.GroupBy(one => one.Family))
+        foreach (var family in decided.Alarms.GroupBy(one => one.Family).OrderBy(family => EquityBrief.Core.Families.SetupFamilies.OrderOf(family.Key)))
         {
             var periods = family.OrderByDescending(one => one.Period).ToArray();
             var newest = periods[0];
