@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Reading;
 // not tonight's list; the link reopens the same choice and the default returns to the live rule; the stretch line and the
 // funnel are drawn from the rule's row; the S&P 400's selector lists the provisional rule alone with the line saying no
 // variant is registered before its freeze; and the live rules past their mark stand on the Run pages.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public partial class ReadSurface
 {

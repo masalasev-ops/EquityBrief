@@ -105,6 +105,7 @@ internal static class PhaseReport
         "15.18 The decision card",
         "15.19 The setup ledger",
         "15.20 The Loop page",
+        "15.21 Paper trading",
         "15.11 How a reason's record is displayed",
         "16. Data stores and the read and write matrix",
         "Read and write matrix",

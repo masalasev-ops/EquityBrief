@@ -536,7 +536,7 @@ public static class Nightly
                 // stretch against its mark, the picks a variant keeps where no other table does, and the members forming a
                 // breakout under each breakout rule. A failure in an index's part is named on the stage's row, and the
                 // step goes on.
-                // see: A variant's picks are shown on its card when chosen and its results only under its tests
+                // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
                 // see: The forming list advises and never lists a stock
                 var ruleCards = await new RuleCards(clock, store.DatabaseFile, forming).RunAsync(runId, register, standingAt, night.Token);
 

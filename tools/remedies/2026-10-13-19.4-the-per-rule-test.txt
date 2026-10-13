@@ -1,0 +1,11 @@
+# The remedy of 19.4 (paper trading, Past picks as each account's trade log, and the monthly per-rule test), as its
+# PROGRESS entry prints it: the migration adds migration 93's two stores of the per-rule test, empty, copying and
+# dropping nothing; then the per-rule test runs for October on each index, so every paper account carries a verdict
+# before the first monthly run that writes one. Each run reads the history and the register, writes its rows under
+# the drain's lock and adopts and retires nothing; over the scratch copy they took about 15, 15 and 11 minutes. No rule's
+# version moves, so nothing is registered again. No request to the provider and no model call. Run from main after the
+# merge and before the night, when no night is running, and restart the read surface after it.
+migrate
+loop-rules --index GSPC --month 2026-10
+loop-rules --index MID --month 2026-10
+loop-rules --index SML --month 2026-10

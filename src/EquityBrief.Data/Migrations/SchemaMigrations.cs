@@ -713,7 +713,53 @@ public static class SchemaMigrations
         new Migration(90, "add family_pick.exit", AddFamilyPickExit),
         new Migration(91, "rebuild loop_model with its kind", LoopModelKinds),
         new Migration(92, "create ledger_reading", CreateLedgerReadings),
+        new Migration(93, "create loop_rule and loop_rule_year", CreateLoopRules),
     ];
+
+    // The monthly per-rule test's results, written once by the walk-forward tester: a row a run, index, family and rule,
+    // each variant read against its live or provisional rule and each live or provisional rule against its own
+    // benchmark, a rule the history cannot walk stored with why and no figure; and a row a test year beside it with each
+    // side's units and total. Both created empty, nothing copied and nothing dropped.
+    // see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+    const string CreateLoopRules = @"
+        CREATE TABLE loop_rule (
+            run_id         TEXT    NOT NULL,
+            month          TEXT    NOT NULL,
+            index_code     TEXT    NOT NULL,
+            family         TEXT    NOT NULL,
+            rule           TEXT    NOT NULL,
+            standing       TEXT    NOT NULL CHECK (standing IN ('live', 'provisional', 'variant')),
+            words          TEXT    NOT NULL,
+            against        TEXT    NOT NULL,
+            unit           TEXT    NOT NULL,
+            units          INTEGER,
+            blocks         INTEGER,
+            adjusted       REAL,
+            gate           INTEGER,
+            stable         INTEGER,
+            counted        INTEGER,
+            better         INTEGER,
+            trimmed        REAL,
+            counts         INTEGER,
+            passed         INTEGER NOT NULL,
+            why            TEXT,
+            PRIMARY KEY (run_id, index_code, family, rule)
+        ) STRICT;
+
+        CREATE TABLE loop_rule_year (
+            run_id          TEXT    NOT NULL,
+            index_code      TEXT    NOT NULL,
+            family          TEXT    NOT NULL,
+            rule            TEXT    NOT NULL,
+            year            INTEGER NOT NULL,
+            complete        INTEGER NOT NULL,
+            units           INTEGER NOT NULL,
+            total           REAL    NOT NULL,
+            compared_units  INTEGER NOT NULL,
+            compared_total  REAL    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, rule, year)
+        ) STRICT;
+    ";
 
     // Every member's ledger readings on a night, a row a member an index a night, written by the setup ledger's night
     // step, which the chart of what is behind a stock reads for its percentiles among the members and its push. The
@@ -1296,7 +1342,7 @@ public static class SchemaMigrations
     // history; one row a pick of a rule whose list no other table keeps, the swing filter's variants, with its plan,
     // the figures that listed it and its end as the walk ends it; and one row a member forming a breakout under a
     // breakout rule on a night, at most the stated rows a rule with the whole count on each.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     // see: The forming list advises and never lists a stock
     // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
     const string CreateRuleCards = @"

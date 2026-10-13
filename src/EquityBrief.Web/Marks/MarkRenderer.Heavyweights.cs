@@ -117,7 +117,7 @@ public sealed partial class MarkRenderer
 
         // The tabs the swing cards carry, and a registered variant's own book drawn under the same band, with what it
         // shares with the live book, adds and drops.
-        // see: A variant's picks are shown on its card when chosen and its results only under its tests
+        // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
         if (card.RuleChoice is { } rule)
         {
             body.Append(Invariant, $"<div class=\"heavyweight-rule\" data-rule=\"{Escaped(rule.Chosen.Slug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");

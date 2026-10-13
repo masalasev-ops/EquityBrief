@@ -111,7 +111,7 @@ public sealed record QueueStop(string StartedAt, string Words, string Error);
 // section 15.9 lists, because the profile is drawn against the chart's own price
 // axis and a second request would be a second axis. The other four screens
 // arrive with the data behind them, and this file is where they are added.
-public sealed class SinglePageApp : IComponent
+public sealed partial class SinglePageApp : IComponent
 {
     // It reads the read API and touches no store, which is its catalogue row
     // and its blank matrix cells.
@@ -466,8 +466,8 @@ public sealed class SinglePageApp : IComponent
             screen.innerHTML = await queued.text();
           } else if (path === '{{{PaperRoute}}}' || path === '{{{AccountRoute}}}') {
             view = 'paper';
-            const account = await fetch('/screens/account');
-            screen.innerHTML = await account.text();
+            const paper = await fetch('/screens/paper' + (query ? '?' + query : ''));
+            screen.innerHTML = await paper.text();
           } else {
             // An unknown route resolves to tonight with a line saying what was asked for,
             // rather than to a blank page.
@@ -638,6 +638,9 @@ public sealed class SinglePageApp : IComponent
           if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
           const universe = event.target.closest ? event.target.closest('select[data-universe-route]') : null;
           if (universe) { location.hash = universe.getAttribute('data-universe-route') + '?{{{Universes.Query}}}=' + encodeURIComponent(universe.value); }
+          // A choice kept in the link under its own key with every other key kept, its first choice the key's absence.
+          const kept = event.target.closest ? event.target.closest('select[data-merge-key]') : null;
+          if (kept) { fresh = true; location.hash = merged(kept.getAttribute('data-merge-key'), kept.value === '' ? null : kept.value); }
         });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
@@ -757,6 +760,14 @@ public sealed class SinglePageApp : IComponent
             const place = document.getElementById(decodeURIComponent(jump.getAttribute('href').slice(1)));
             const mast = document.querySelector('.mast');
             if (place) { scrollTo({ top: place.getBoundingClientRect().top + scrollY - (mast ? mast.offsetHeight : 0) - 12 }); }
+            return;
+          }
+          // A paper account's key hides or shows its line on the chart, in the browser alone.
+          const paperKey = event.target.closest('.paper-key[data-line]');
+          if (paperKey) {
+            const shown = paperKey.getAttribute('aria-pressed') !== 'true';
+            paperKey.setAttribute('aria-pressed', shown ? 'true' : 'false');
+            for (const line of screen.querySelectorAll('.paper-chart path[data-account="' + CSS.escape(paperKey.getAttribute('data-line')) + '"]')) { line.style.display = shown ? '' : 'none'; }
             return;
           }
           if (event.target.closest('#theme')) {
@@ -3372,14 +3383,11 @@ public sealed class SinglePageApp : IComponent
             region: "your-trades");
     }
 
-    public string AccountRegion(decimal? size, decimal? riskPercent, decimal? positionCap, decimal proposedCap)
+    // The account's three settings as a form, with the line saying where they are kept, which the account's page and
+    // paper trading both open with.
+    // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
+    public static string AccountForm(decimal? size, decimal? riskPercent, decimal? positionCap, decimal proposedCap)
     {
-        var region = new StringBuilder();
-        var set = size is not null;
-
-        region.Append(Invariant($"<section class=\"account\" data-set=\"{(set ? "true" : "false")}\">"));
-        region.Append(Cards.Masthead("Account", "<span class=\"m-screen\">Account</span>", set ? "Your plan is sized from these" : "Not set"));
-
         var body = new StringBuilder();
 
         body.Append("<div class=\"account-said\" role=\"status\"></div>");
@@ -3390,9 +3398,19 @@ public sealed class SinglePageApp : IComponent
         body.Append("<button type=\"submit\" class=\"btn\">Save</button></form>");
         body.Append("<p class=\"degraded\">Kept on this machine in a file of their own under the data folder, never in the store, a log or an exported report.</p>");
 
+        return body.ToString();
+    }
+
+    public string AccountRegion(decimal? size, decimal? riskPercent, decimal? positionCap, decimal proposedCap)
+    {
+        var region = new StringBuilder();
+        var set = size is not null;
+
+        region.Append(Invariant($"<section class=\"account\" data-set=\"{(set ? "true" : "false")}\">"));
+        region.Append(Cards.Masthead("Account", "<span class=\"m-screen\">Account</span>", set ? "Your plan is sized from these" : "Not set"));
         region.Append(Cards.Computed(
             "Account",
-            body.ToString(),
+            AccountForm(size, riskPercent, positionCap, proposedCap),
             title: "Your account",
             lede: "A pick's card sizes its plan from these: the shares the risk a trade buys over the stop's distance, no more than the cap allows.",
             region: "account"));
@@ -3469,7 +3487,7 @@ public sealed class SinglePageApp : IComponent
         body.Append(Cards.Key(
             "How to read the trade line.",
             "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end. A setup that trails its stop names no target, so its row draws no line and its result is what it made in multiples of what it risked.",
-            "Only the live list's trades appear here, each under the setup that listed it. The alternatives being tested in the background stay hidden until one of them is promoted."));
+            "The lists' trades appear here, each under the setup that listed it. A registered variant's own trades are its account's trade log, chosen above, beside its test years verdict and apart from it; none ever appears on Tonight."));
 
         region.Append(Cards.Computed(
             "Past picks",

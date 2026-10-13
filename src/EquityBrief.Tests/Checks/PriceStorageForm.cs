@@ -218,6 +218,12 @@ public class PriceStorageForm
         // earnings over the value at a close out, the count brought to the store's scale by the close as traded on
         // its own day, through `Statistic.FromRatio`. It is every figure the valuation reading places.
         // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
+        //
+        // `PaperAccount.SaleOf` and `PaperAccount.RoundTripOf` joined it at 19.4: a stored trade's buy, its stop and its result
+        // in risks or as a fraction in, the price it was sold at out; and its stored round trip in risks or as a fraction, the
+        // member readings' cost in per cent, or the company value the published table reads in, its round trip in dollars a
+        // share out; each through `Statistic.ToPrice`. They are what every paper account's trade is priced at.
+        // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -225,6 +231,8 @@ public class PriceStorageForm
                 "ForwardReturnSeries.cs: ChangeFromEntry",
                 "MarkRenderer.cs: PlotValue",
                 "MarkRenderer.cs: Y",
+                "PaperAccount.cs: RoundTripOf",
+                "PaperAccount.cs: SaleOf",
                 "Percents.cs: FromFraction",
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",

@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Reading;
 // each registered variant by its number, a variant chosen in the link redrawing the card from the rule's own book under
 // the band with its words, the default and a link naming no standing rule returning to the live rule with no band; on
 // the S&P 400, where no freeze registered a rule, the provisional rule alone with the line that none is registered.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 public partial class ReadSurface
 {
     // The row of section 15.7 this check reaches, which is every row 17.5's selector adds.

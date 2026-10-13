@@ -51,6 +51,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-check" => await LedgerCheckRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
+    "loop-rules" => await LoopRulesRun(args),
     "loop-apply" => await LoopApplyRun(),
     "loop-month" => await LoopMonthRun(args),
     "sweep-fundamentals" => await SweepFundamentalsRun(args),
@@ -69,7 +70,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 36 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 37 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -158,12 +159,17 @@ static int NoVerb()
         "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
         "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
         "'--print' printing each verdict and writing nothing, " +
+        "'loop-rules --index <GSPC, MID or SML>' walks every family rule standing on the index at its own settings over " +
+        "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
+        "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
+        "'loop-test' reads them, " +
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
         "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
         "stands at from the next night and every other refused with why, " +
         "'loop-month' runs the month's steps in order, the SEC's facts asked whole, the history written again beside the " +
         "standing one and kept where a family would lose its benchmarks, each index's point-in-time check, " +
-        "each index's tester run and the month's report naming the one proposal a family an index puts to you, with " +
+        "each index's tester run, each index's per-rule test and the month's report naming the one proposal a family an " +
+        "index puts to you, with " +
         "'--month <yyyy-MM>' naming the month, and run again goes on from the first step no try of the month held, as " +
         "tools/monthly runs it from a clean copy of main's commit, " +
         "'sweep-fundamentals --index <GSPC, MID or SML>' searches the fundamentals-first family's 27 registered settings " +
@@ -649,6 +655,25 @@ static async Task<int> LoopTestRun(string[] args)
         .RunAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
 }
 
+// The monthly per-rule test by hand on one index, every family rule standing on it walked at its own settings over the
+// test years and judged, writing its own two tables.
+// see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
+static async Task<int> LoopRulesRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-rules: give '--index <GSPC, MID or SML>', with '--month <yyyy-MM>' to name the month the run is for.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
+}
+
 // The apply step by hand, as the night runs it before the S&P 400's and 600's families: every change the operator
 // approved on the Loop page that no apply has answered, applied or refused with why, under the configured adopt setting.
 // see: An approved change is applied by the night's own build on the index it was approved on alone
@@ -721,6 +746,17 @@ static async Task<int> LoopMonthRun(string[] args)
                 await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).RunAsync(index, month, cancellation) == 0
                     ? (true, $"the tester ran for {month}")
                     : (false, "the tester did not finish its run"),
+            TakesTheLock: true));
+    }
+
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new(
+            "rules-" + index,
+            async (_, cancellation) =>
+                await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).RulesAsync(index, month, cancellation) == 0
+                    ? (true, $"the per-rule test ran for {month}")
+                    : (false, "the per-rule test did not finish its run"),
             TakesTheLock: true));
     }
 

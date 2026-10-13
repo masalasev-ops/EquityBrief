@@ -823,6 +823,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.LoopFinding, Touch.Read),
             new StoreTouch(Store.LoopReading, Touch.Read),
             new StoreTouch(Store.LoopModel, Touch.Read),
+            new StoreTouch(Store.LoopRule, Touch.Read),
+            new StoreTouch(Store.LoopRuleYear, Touch.Read),
             new StoreTouch(Store.LoopDecision, Touch.Read | Touch.Insert),
             new StoreTouch(Store.LoopApplied, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
@@ -3845,7 +3847,7 @@ public sealed partial class ReadApi : IComponent
 
     // The picks every variant kept on a night: the swing filter's variants' own, and each registered breakout, drift or
     // index rule's list as its recorder kept it, each with its plan.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     const string RulePicksOn = @"
         SELECT rule, ticker, session_date, place, entry, stop, target, reward_to_risk, why FROM rule_pick
         WHERE index_code = $index AND session_date = $on
@@ -4367,7 +4369,7 @@ public sealed partial class ReadApi : IComponent
     // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month whose stored year holds the closes their readings need
     // A registered heavyweights rule's own book as of a night, read as the page's book is, which its card draws when the
     // card's selector chooses it.
-    // see: A variant's picks are shown on its card when chosen and its results only under its tests
+    // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
     const string HeavyweightRuleHoldingsUpTo = @"
         SELECT ticker, entered_on, sector, company, entry_close,
                CASE WHEN ended_on <= $on THEN ended_on END,

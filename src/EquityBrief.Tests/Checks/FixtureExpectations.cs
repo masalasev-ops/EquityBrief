@@ -147,6 +147,8 @@ public partial class FixtureExpectations
             .. ApprovalClaims,
             // 17.10, the monthly run: section 17's row and section 18's.
             .. MonthlyClaims,
+            // 19.4, the per-rule test: section 18's rule it cannot walk.
+            .. RuleTestClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

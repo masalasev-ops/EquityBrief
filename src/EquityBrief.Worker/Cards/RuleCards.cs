@@ -43,7 +43,7 @@ public sealed record RuleNightRow(string Index, string Family, string Rule, bool
 // nearest misses first. A failure in one index's part leaves that index's rows of the night unwritten and named on the
 // stage's row, and the step goes on; the stage makes no request and calls no model. A night run again replaces its own
 // rows.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: The forming list advises and never lists a stock
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 // see: The nightly run is arithmetic only

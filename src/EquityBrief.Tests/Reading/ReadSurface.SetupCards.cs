@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Reading;
 // its tab names what it moves; the funnel's largest drop is the largest fall from one gate to the next, the earlier gate
 // taking a tie; a card listing nothing says so in one line on both sides of its floors; each empty sector says why; and
 // a heavyweight's standing tonight and the card's tiles are worked by hand at their edges.
-// see: A variant's picks are shown on its card when chosen and its results only under its tests
+// see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 public partial class ReadSurface
 {

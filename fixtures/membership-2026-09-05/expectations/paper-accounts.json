@@ -1,0 +1,17 @@
+{
+ "stage": "paper-accounts",
+ "derivation": "derived",
+ "derivedFrom": "section 15.21's rows on every account, the decision that a paper account draws its test years verdict and its record since registration apart, and section 11's arrival rule, not a run. The fixture's night of 2026-09-08 is the first its store runs the swing filter over, so the trigger every buy point needs reads its arrival off gate rows stored for the sessions before the night, finds none and fails for every member, as setup-cards.json derives: no list and no book keeps a trade, and the store holds no taken trade. No rule stands registered on the S&P 500 in the fixture's store, so each family has its page's list as its one account and no variant; the pullback, the breakout, the drift and the sector heavyweights are drawn by the S&P 500's live rules, and the fundamentals-first family by its provisional one. A night runs no monthly per-rule test, so no account's rule has a verdict and each reads not tested yet, and the operator's own reads that the test does not read it. With no trade an account's record since registration holds none: a swing account reads too few trades, none of the 300 the count screen judges a swing family on, and the book too few months, none of 36, and no account has a session to draw. The suite reads every member's stored gate result on the night failing its trigger and reads each account back off the page the whole night draws with an account's settings kept. It names the gate results the derivation rests on, which the replay the other checks read writes.",
+ "tables": ["gate_result"],
+ "paperNight": "2026-09-08",
+ "paperAccounts": [
+  { "key": "list-pullback", "standing": "live", "tooFew": "too few trades (0 of 300)" },
+  { "key": "list-breakout", "standing": "live", "tooFew": "too few trades (0 of 300)" },
+  { "key": "list-drift", "standing": "live", "tooFew": "too few trades (0 of 300)" },
+  { "key": "list-fundamentals", "standing": "provisional", "tooFew": "too few trades (0 of 300)" },
+  { "key": "list-heavyweight", "standing": "live", "tooFew": "too few months (0 of 36)" },
+  { "key": "you", "standing": "you", "tooFew": null }
+ ],
+ "headVerdict": "not tested yet",
+ "yourVerdict": "your own trades, which the test does not read"
+}

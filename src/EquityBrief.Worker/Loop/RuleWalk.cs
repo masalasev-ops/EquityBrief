@@ -91,13 +91,15 @@ public sealed class RuleWalk(
 
     // The breakout or the drift at the setting it froze at on the S&P 500, which the S&P 400 and 600 run provisionally,
     // or at the setting an approval stored for it there: its sweep's own listings and exit, each listing kept only where
-    // it clears the index's floors and gate, and on the S&P 500 every listing.
-    public static RuleWalk Swing(LoopRead read, string family, bool large, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
+    // it clears the index's floors and gate, and on the S&P 500 every listing. A rule reading no market check is walked
+    // over sessions whose check stands open, the sweep reading the check off each session's breadth.
+    public static RuleWalk Swing(LoopRead read, string family, bool large, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, bool marketOff = false)
     {
         var floor = standing?.StopFloor ?? 0;
+        IReadOnlyList<SweepColumns.Session> sessions = marketOff ? [.. read.Sessions.Select(session => session with { Breadth = 1.0 })] : read.Sessions;
         var adapter = floor > 0
-            ? FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar, floor)
-            : FamilySweepRunner.For(family, read.Series, read.Sessions, read.Members, read.FirstScored, read.Calendar);
+            ? FamilySweepRunner.For(family, read.Series, sessions, read.Members, read.FirstScored, read.Calendar, floor)
+            : FamilySweepRunner.For(family, read.Series, sessions, read.Members, read.FirstScored, read.Calendar);
         int[] setting = standing?.Places is { } places ? [.. places] : family == BreakoutRule.Name ? [.. IndexNightRead.BreakoutAsFrozen] : [.. IndexNightRead.DriftAsFrozen];
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var exit = RuleHooks.Of(hooks).ExitChoice;
@@ -169,12 +171,13 @@ public sealed class RuleWalk(
     // The S&P 400's or 600's provisional pullback, the pullback's base as its record replays it, five a night with one
     // open trade a stock over the listings clearing the index's floors and gate, the plan bought at the close with its
     // stop its typical moves under and its target its reward to risk, at the hooks an approval stored for it where it
-    // stored any.
-    public static RuleWalk Pullback(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null)
+    // stored any; or a variant of it at a setting of its dials on the extended grid, over the candidates read once where
+    // a read is handed in.
+    public static RuleWalk Pullback(LoopRead read, IReadOnlyList<SweepMarketSeries> market, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, DialSetting? setting = null, IdeaReplay? candidates = null)
     {
-        var (replay, _) = SweepIdeasRunner.Read(read.Inputs, market, progress);
+        var replay = candidates ?? SweepIdeasRunner.Read(read.Inputs, market, progress).Replay;
         var series = replay.Series;
-        var rule = SweepIdeas.BaseRule with { PerNight = SetupFamilies.ListedANight };
+        var rule = SweepIdeas.BaseRule with { Setting = setting ?? SweepIdeas.BaseRule.Setting, PerNight = SetupFamilies.ListedANight };
 
         bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
 
@@ -182,15 +185,15 @@ public sealed class RuleWalk(
     }
 
     // The S&P 500's pullback: the swing filter at a version's settings read by value over the ideas' run's candidates,
-    // every listing kept, five a night in the list's own order, held on closes to the cap, with the hooks an approval
-    // stored for it.
+    // every listing kept, five a night in the list's own order or as many as a variant keeps, held on closes to the cap,
+    // with the hooks an approval stored for it.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null) =>
+    public static RuleWalk LargeSwingFilter(LoopRead read, LargePullback history, string version, FilterSettings settings, Action<string> progress, LoopChange? standing = null, LoopReadings? readings = null, Func<long, TreeModel?>? trees = null, int perNight = SetupFamilies.ListedANight) =>
         OverListings(
             read,
             history.Series,
             history.Listings(settings),
-            SweepIdeas.TodaysRule with { PerNight = SetupFamilies.ListedANight },
+            SweepIdeas.TodaysRule with { PerNight = perNight },
             LargePullback.Words(version, settings),
             progress,
             standing,
