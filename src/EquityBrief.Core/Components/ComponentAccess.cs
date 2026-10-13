@@ -86,6 +86,7 @@ public enum Store
     FiledFactPull,
     FilingDay,
     LedgerSummary,
+    LedgerReading,
     LoopRun,
     LoopProposal,
     LoopTest,

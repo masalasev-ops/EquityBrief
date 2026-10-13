@@ -49,6 +49,14 @@ Now:
 > 19.4: ... waiting as before. On the operator's ruling of 2026-10-13, paper trading and the trade log each state under their table: "Entries are priced at the close of the night that listed them; a trade placed after the signal would fill at the next session's open." The per-rule test's two stores are created by migration 93, the ruling of 2026-10-13 taking 92 for 19.2's readings. ... Done when ... a chosen family's variants; paper trading's table and the trade log's each state the entries' price under them; and distinctive account values ...
 Why: the operator's words are kept in `prompts/2026-10-13-19.2-addition-what-is-behind-it.md` and `prompts/2026-10-13-19.4-ruling-entry-price-basis.md`, and asked which store to build, chose every member's readings stored each night.
 
+### 2026-10-13 - docs/ARCHITECTURE.html - the setup ledger writes the ledger readings, and the stores table gains them
+Authorised by: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+Was:
+> Setup ledger's catalogue row, its Writes cell: setups, setup nights, ledger summaries
+Now:
+> Setup ledger's catalogue row, its Writes cell: setups, setup nights, ledger summaries, ledger readings; and a row of the stores table for the ledger readings, one row per index, member and night from 19.2.
+Why: migration 92 adds the store of every member's ledger readings a night, written by the ledger's night step, which the chart of what is behind a stock reads.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the Ledger and Loop pages are reached from the header's menu, the Loop with its badge
 Corrects: phase 19's plan, approved on 2026-10-12, moves both pages' links from Universe's body into the header's menu at 19.2, which leaves the two route lines naming the Universe page.
 Was:

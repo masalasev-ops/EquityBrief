@@ -712,7 +712,24 @@ public static class SchemaMigrations
         new Migration(89, "add family_result.exit and family_result.risk_moves", AddFamilyResultExit),
         new Migration(90, "add family_pick.exit", AddFamilyPickExit),
         new Migration(91, "rebuild loop_model with its kind", LoopModelKinds),
+        new Migration(92, "create ledger_reading", CreateLedgerReadings),
     ];
+
+    // Every member's ledger readings on a night, a row a member an index a night, written by the setup ledger's night
+    // step, which the chart of what is behind a stock reads for its percentiles among the members and its push. The
+    // readings are the catalogue's in its order as a list, none where the night read none, statistics and never money,
+    // with the catalogue's version they were read under. Kept for good, as a past night's page reads its own night's.
+    // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+    const string CreateLedgerReadings = @"
+        CREATE TABLE ledger_reading (
+            index_code    TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            readings      TEXT NOT NULL,
+            pin           TEXT NOT NULL,
+            PRIMARY KEY (index_code, session_date, ticker)
+        ) STRICT;
+    ";
 
     // The learned score's models by their kind: the ridge score's, every row stored before 17.15, and from 17.15 its
     // challenger's trees, fitted on the same rows of the same fold and stored beside it. A rebuild rather than an alter,
