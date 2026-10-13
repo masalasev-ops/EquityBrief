@@ -1,10 +1,13 @@
+using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Cards;
 using EquityBrief.Worker.Indices;
+using EquityBrief.Worker.Ledger;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -38,10 +41,36 @@ public partial class ReadSurface
             ["GSPC breakout K1", "GSPC breakout K2", "GSPC pullback F1", "GSPC pullback F2", "GSPC pullback F3", "GSPC pullback F4", "GSPC pullback F5"],
             stored.Select(card => $"{card.Index} {card.Family} {card.Ticker}"));
 
+        // From 19.2 the chart of what is behind each pick: K1 and F1 hold the night's readings, K1's close 1.05 times its
+        // 20-session average and F1's 0.95, and K2 none; the breakout's learned score passed on the S&P 500 and the
+        // pullback has none.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        foreach (var (ticker, overTwenty) in new[] { ("K1", 1.05), ("F1", 0.95) })
+        {
+            var held = new double?[LedgerReadings.Count];
+
+            held[LedgerReadings.IndexOf("close_over_twenty")] = overTwenty;
+            store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{TheSwitch}', '{ticker}', '{SetupLedger.ReadingsText(held)}', '{LedgerReadings.Version}');");
+        }
+
+        ScoreRun(store, "loop-test-GSPC-1", passed: true);
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var rows = await CardsReadBack(client, stored, TheSwitch);
+
+        // K1's card pushes by its momentum alone, 0.2 times 1.05 less the mean of 1 over the spread of 0.1, the push its
+        // total; F1's, whose family has no score, and K2's, holding no readings, draw the readings alone, K2's none read.
+        var momentum = 0.2 * (1.05 - 1.0) / 0.1;
+
+        Assert.Contains($"<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains($"<ul class=\"behind-push\" data-total=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.75\">", rows["K1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.25\">", rows["F1"], StringComparison.Ordinal);
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", rows["K2"], StringComparison.Ordinal);
+        Assert.DoesNotContain("data-percentile=\"0", rows["K2"], StringComparison.Ordinal);
 
         // No rule replayed on the S&P 500: each card's record is the outline under the rule's own heading.
         Assert.Contains("<section class=\"card-record outline\" data-trades=\"none\"><h5>The record of the breakout on the S&P 500</h5><p class=\"degraded\">Not replayed yet", rows["K1"], StringComparison.Ordinal);
@@ -78,6 +107,12 @@ public partial class ReadSurface
 
         await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
 
+        // M1 holds the S&P 400's readings on the night, which its card's chart reads among its own index's members.
+        var m1 = new double?[LedgerReadings.Count];
+
+        m1[LedgerReadings.IndexOf("close_over_twenty")] = 1.02;
+        store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('MID', '{IndexNight}', 'M1', '{SetupLedger.ReadingsText(m1)}', '{LedgerReadings.Version}');");
+
         var stored = StoredCards(store);
 
         Assert.Equal(
@@ -88,6 +123,10 @@ public partial class ReadSurface
         using var client = host.CreateClient();
 
         var rows = await CardsReadBack(client, stored, IndexNight);
+
+        // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
+        Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", rows["M1"], StringComparison.Ordinal);
 
         // The S&P 400's breakout record under the rule's own heading naming its index, opening with the line that it is the
         // rule's record and not the stock's, its figures as the record stored them and no word of the stock; a rule not

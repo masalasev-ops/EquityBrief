@@ -1232,7 +1232,9 @@ public static partial class NameScreen
         // handed it.
         HistoryInputs? historyInputs = null,
         // The SEC's facts as first filed for the name's filer, which the sources check the latest quarter's lines against.
-        IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null)
+        IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>? filedFacts = null,
+        // The chart of what is behind the stock, worked out from the readings the night stored, from 19.2.
+        BehindItView? behind = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1425,7 +1427,8 @@ public static partial class NameScreen
                 ? Calendar(night ?? bars[^1].SessionDate, events ?? [], forwardRate, reportInputs?.Dividends ?? [], historyInputs?.RawCloses ?? [], filings)
                 : null,
             figuresChecked: checkedFigures.Conflicts,
-            filedFactsHeld: checkedFigures.Compared > 0);
+            filedFactsHeld: checkedFigures.Compared > 0,
+            behind: behind);
     }
 
     // The ninety days after the night the page draws: the company's next results, its next ex-dividend date, declared or

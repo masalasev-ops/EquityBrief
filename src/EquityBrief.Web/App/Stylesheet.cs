@@ -458,6 +458,18 @@ span[data-last-asked-at]::before{content:none}
 .card-figures dd{margin:0;font-variant-numeric:tabular-nums}
 .card-caution{margin:6px 0 0;font-size:12.5px;color:var(--ink-2)}
 .card-rule{margin:6px 0 0;font-size:12px;color:var(--soft)}
+.behind-it{margin:12px 0 0;border:1px solid var(--hair-2);border-radius:6px;padding:10px 12px;max-width:560px}
+.behind-it h5{margin:0 0 6px;font:600 13px var(--sans)}
+.behind-lede{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
+.behind-readings,.behind-push{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:4px}
+.behind-readings li,.behind-push li{display:grid;grid-template-columns:minmax(0,170px) 100px 48px;gap:10px;align-items:center;font-size:13px}
+.bh-bar{display:block}
+.bh-track{fill:var(--s1)}
+.bh-fill{fill:var(--s3)}
+.bh-gain{fill:var(--up)} .bh-loss{fill:var(--down)}
+.bh-zero{stroke:var(--ink-2);stroke-width:1}
+.bh-figure{text-align:right;font-variant-numeric:tabular-nums}
+.behind-total{margin:0;font-size:13px}
 .stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--fail) 0,var(--fail) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
 .stt .stt-mark{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:var(--ink)}
 .stt.trailing{width:auto;height:auto;background:none;font-size:12px;color:var(--soft);white-space:nowrap}

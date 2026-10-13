@@ -140,6 +140,16 @@ public partial class ReadSurface
             WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500")));
     }
 
+    // The chart of what is behind AAA, drawn once on its own page.
+    static string ScoreBehind(string named)
+    {
+        var charts = Regex.Matches(named, "<section class=\"behind-it\".*?</section>", RegexOptions.Singleline);
+
+        Assert.True(charts.Count == 1, $"The stock's page draws the chart {charts.Count} times.");
+
+        return charts[0].Value;
+    }
+
     static string ScorePart(string page)
     {
         var part = Regex.Match(page, "<section class=\"card-score\".*?</section>", RegexOptions.Singleline);
@@ -172,6 +182,21 @@ public partial class ReadSurface
 
         await new DecisionCards(clock, store.DatabaseFile).RunAsync("cards-1");
 
+        // From 19.2 the night stores every member's readings, which the chart of what is behind a stock reads: AAA's close
+        // over its 20-session average 110 over 100.5 and its RSI 70, BBB's 1 and 50, CCC's 1 and no RSI.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        foreach (var (ticker, overTwenty, rsi) in new (string, double, double?)[] { ("AAA", 110 / 100.5, 70), ("BBB", 1, 50), ("CCC", 1, null) })
+        {
+            var held = new double?[LedgerReadings.Count];
+
+            held[LedgerReadings.IndexOf("close_over_twenty")] = overTwenty;
+            held[LedgerReadings.IndexOf("rsi")] = rsi;
+            store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{ScoreStamp(70)}', '{ticker}', '{SetupLedger.ReadingsText(held)}', '{LedgerReadings.Version}');");
+        }
+
+        // The stock's page draws the chart beneath its swing readings, so AAA holds a row of them.
+        store.Execute($"INSERT INTO swing_reading (ticker, session_date, bars) VALUES ('AAA', '{ScoreStamp(70)}', 71);");
+
         var stored = CardSimilar.Read(Strings(store, "SELECT similar FROM decision_card WHERE ticker = 'AAA';").Single());
 
         Assert.Equal([string.Empty], Strings(store, "SELECT COALESCE(score_rank, '') FROM decision_card WHERE ticker = 'AAA';"));
@@ -190,6 +215,16 @@ public partial class ReadSurface
 
         Assert.Contains($"<p class=\"loop-rank degraded\" data-rank=\"none\">{CardSimilar.NotValidated}.</p>", loop, StringComparison.Ordinal);
         Assert.Contains($"data-validated=\"0\" data-hash=\"{ScoreOfTheCloseOverTwenty().Hash}\"", loop, StringComparison.Ordinal);
+
+        // The chart on AAA's page with its readings view alone, the score not having passed: momentum the mean of its places
+        // on the close over its average, under two and level with itself of three, 2.5 of 3, and on the RSI, 1.5 of 2,
+        // (0.8333 + 0.75) / 2; valuation, which no member holds, not read; no push drawn.
+        var unpassed = ScoreBehind(named);
+
+        Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", unpassed, StringComparison.Ordinal);
+        Assert.Contains($"<li data-heading=\"Momentum\" data-percentile=\"{((2.5 / 3 + 0.75) / 2).ToString("0.####", CultureInfo.InvariantCulture)}\">", unpassed, StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Valuation\" data-percentile=\"none\"><span class=\"bh-name\">Valuation</span><span class=\"degraded\">not read</span></li>", unpassed, StringComparison.Ordinal);
+        Assert.DoesNotContain("behind-push", unpassed, StringComparison.Ordinal);
 
         // A newer run whose first proposal of the score passed; three hundred setups reading 0.5 up by 0.002, the first
         // fifty losing a risk and the rest winning one. AAA's score is twice 110 / 100.5, 2.189, at or over the hundredths
@@ -221,6 +256,18 @@ public partial class ReadSurface
         Assert.Contains("<dd data-similar=\"250\"", part, StringComparison.Ordinal);
 
         Assert.Contains("data-validated=\"1\"", loop, StringComparison.Ordinal);
+
+        // Now the score passed, the push view: momentum alone pushes, 0.2 times AAA's close over its average less the mean
+        // of 1, over the spread of 0.1, and the pushes sum to the score less the score at the means, 2 x 1.0945 - 2.
+        var passedChart = ScoreBehind(named);
+        var momentum = 0.2 * ((110 / 100.5) - 1.0) / 0.1;
+
+        Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"drawn\">", passedChart, StringComparison.Ordinal);
+        Assert.Contains($"<li data-heading=\"Momentum\" data-push=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", passedChart, StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Valuation\" data-push=\"0\">", passedChart, StringComparison.Ordinal);
+        Assert.Contains($"<ul class=\"behind-push\" data-total=\"{momentum.ToString("R", CultureInfo.InvariantCulture)}\">", passedChart, StringComparison.Ordinal);
+        Assert.Equal(ScoreOfTheCloseOverTwenty().Score([.. Enumerable.Range(0, LedgerReadings.Count).Select(at => at == LedgerReadings.IndexOf("close_over_twenty") ? 110 / 100.5 : (double?)null)])!.Value - LedgerHeadings.Centre(ScoreOfTheCloseOverTwenty()), momentum, 12);
+        Assert.Contains($"<b class=\"bh-figure gain\">+{momentum.ToString("0.00", CultureInfo.InvariantCulture)}</b>", passedChart, StringComparison.Ordinal);
         Assert.Contains("<span data-ticker=\"AAA\" data-rank=\"59\">AAA, hundredth 59</span>", loop, StringComparison.Ordinal);
         Assert.DoesNotContain(CardSimilar.NotValidated, loop, StringComparison.Ordinal);
     }
@@ -251,9 +298,21 @@ public partial class ReadSurface
         Assert.Equal([string.Empty], Strings(store, "SELECT COALESCE(score_rank, '') FROM decision_card WHERE ticker = 'AAA';"));
         Assert.Equal(["5"], Strings(store, "SELECT json_array_length(lines) FROM decision_card WHERE ticker = 'AAA';"));
 
+        // The chart on the stock's page draws its readings and, the score having passed with text it cannot read, no push
+        // and why.
+        var held = new double?[LedgerReadings.Count];
+
+        held[LedgerReadings.IndexOf("close_over_twenty")] = 110 / 100.5;
+        store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{ScoreStamp(70)}', 'AAA', '{SetupLedger.ReadingsText(held)}', '{LedgerReadings.Version}');");
+        store.Execute($"INSERT INTO swing_reading (ticker, session_date, bars) VALUES ('AAA', '{ScoreStamp(70)}', 71);");
+
         var (named, _) = await ScorePagesAsync(store);
+        var chart = ScoreBehind(named);
 
         Assert.Contains("<p class=\"degraded\" data-similar=\"none\">No setups matched: the learned score could not be read tonight: ", ScorePart(named), StringComparison.Ordinal);
+        Assert.StartsWith("<section class=\"behind-it\" data-index=\"S&P 500\" data-push=\"none\">", chart, StringComparison.Ordinal);
+        Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", chart, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-push=\"unread\">The learned score passed on this index, and its push is not drawn: its stored text could not be read: ", chart, StringComparison.Ordinal);
     }
 
     // The S&P 500's families night the card checks read: the breakout lists K1 and K2, which a learned score reaches, and

@@ -89,7 +89,8 @@ public sealed record DecisionCardView(
     CardHitsView? Hits = null,
     CardOperatorRecordView? OperatorRecord = null,
     CardScoreView? Score = null,
-    string? Approved = null)
+    string? Approved = null,
+    BehindItView? Behind = null)
 {
     // The id the card's row and the control opening it share.
     public string Id => $"card-{Index}-{Family}-{Ticker}".ToLowerInvariant().Replace('.', '-').Replace(' ', '-');
@@ -135,6 +136,7 @@ public sealed partial class MarkRenderer
         body.Append(Hits(card));
         body.Append(RuleRecord(card));
         body.Append(ScorePart(card));
+        body.Append(card.Behind is { } behind ? BehindIt(behind) : string.Empty);
         body.Append(OperatorRecord(card));
         body.Append(Taken(card));
         body.Append("</div>");

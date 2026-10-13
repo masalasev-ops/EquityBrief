@@ -1079,7 +1079,9 @@ public sealed class SinglePageApp : IComponent
         // differently with whether any filing's facts are held to check them against.
         CalendarView? calendar = null,
         IReadOnlyList<EquityBrief.Core.Report.FigureConflict>? figuresChecked = null,
-        bool filedFactsHeld = false)
+        bool filedFactsHeld = false,
+        // The chart of what is behind the stock, from 19.2.
+        BehindItView? behind = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1254,12 +1256,16 @@ public sealed class SinglePageApp : IComponent
         // members' returns, the recent high and the pullback from it, the volume while it came down
         // and the range's tightness, as the swing reader stored them for the night.
         // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
+        // From 19.2 the chart of what is behind the stock stands beneath the swing readings, or beneath the member readings
+        // on an index the swing reader does not read.
+        // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+        var behindPart = behind is null ? string.Empty : marks.BehindIt(behind);
         var swingPart = swing is null
             ? string.Empty
             : Fold(
                 "swing",
                 "Its swing readings: where it stands for a swing trade",
-                marks.SwingTable(ticker, swing) + Cards.Key(
+                marks.SwingTable(ticker, swing) + behindPart + Cards.Key(
                     "How to read it.",
                     Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
                     "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."));
@@ -1272,7 +1278,7 @@ public sealed class SinglePageApp : IComponent
             : Fold(
                 "member",
                 Invariant($"Its member readings: what a trade in it costs and what its quarters say, as a member of the {Escaped(member.Index)}"),
-                marks.MemberReadingsTable(ticker, member) + Cards.Key(
+                marks.MemberReadingsTable(ticker, member) + (swing is null ? behindPart : string.Empty) + Cards.Key(
                     "How to read it.",
                     Invariant($"The dollar volume is the mean of the close times the volume over the last {EquityBrief.Core.Readings.MemberReadings.DollarVolumeSessions} sessions. A round trip is half the published effective spread for the company's value and the price at the buy and half again at the sale, stated at the table's figure and at double. The profit gate sums net income over the {EquityBrief.Core.Readings.MemberReadings.Quarters} newest quarters filed before the night, and the coverage asks their operating income for at least twice their interest expense, a company filing none and a financial company passing. The year's high is the highest high of the {EquityBrief.Core.Readings.MemberReadings.YearSessions} sessions before the night, and the industry's figures are its S&amp;P 500 members', each weighted by its company's value."),
                     "These are facts about its trading and its quarters as they stood on the night. The S&amp;P 400's and 600's rules read the price, the dollar volume and the profit gate before they list a name, and the rest are readings their sweeps test."));

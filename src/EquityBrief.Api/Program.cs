@@ -378,6 +378,20 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         clock.SessionZone,
         Newest: on is null);
 
+    // The chart of what is behind the stock, from the readings its index's night stored and, where a family's card lists
+    // it on the night, that family's learned score on the index.
+    // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+    var behindNight = night ?? (bars.Count > 0 ? bars[^1].SessionDate : (DateOnly?)null);
+    BehindItView? behind = null;
+
+    if (behindNight is { } behindOn && await read.IndexOfAsync(ticker, behindOn) is { } behindCode && Universes.ByCode(behindCode) is { } behindIndex)
+    {
+        var listedBy = (await read.DecisionCardsOfAsync(ticker, behindOn)).FirstOrDefault()?.Family;
+        var (behindModel, behindPassed, behindUnread) = listedBy is null ? (null, false, null) : await read.RidgeScoreAsync(behindCode, listedBy, behindOn);
+
+        behind = BehindScreen.Of(ticker, behindIndex.Name, await read.LedgerReadingsAsync(behindCode, behindOn), behindModel, behindPassed, behindUnread);
+    }
+
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
         fundamentals,
@@ -457,7 +471,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         historyInputs: historyInputs,
         // The filer's facts as first filed over the year before the page's night, which the sources check the latest
         // quarter's lines against.
-        filedFacts: await read.FiledFactsAsync(ticker, (night ?? clock.SessionDateAt(clock.UtcNow)).AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead), on));
+        filedFacts: await read.FiledFactsAsync(ticker, (night ?? clock.SessionDateAt(clock.UtcNow)).AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead), on),
+        behind: behind);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -825,6 +840,32 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
     return await read.SpentRowsAsync(from, to);
 }
 
+// Each pick's card on a page with the chart of what is behind it, the index's stored readings read once and each family's
+// learned score once.
+// see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+static async Task<IReadOnlyList<FamilyCardView>> WithBehindAsync(ReadApi read, IReadOnlyList<FamilyCardView> cards, UniverseChoice universe, DateOnly night)
+{
+    if (!cards.Any(card => card.Picks.Any(pick => pick.Card is not null)))
+    {
+        return cards;
+    }
+
+    var readings = await read.LedgerReadingsAsync(universe.Code, night);
+    var drawn = new List<FamilyCardView>();
+
+    foreach (var card in cards)
+    {
+        var (model, passed, unread) = card.Picks.Any(pick => pick.Card is not null) ? await read.RidgeScoreAsync(universe.Code, card.Family, night) : (null, false, null);
+
+        drawn.Add(card with
+        {
+            Picks = [.. card.Picks.Select(pick => pick.Card is { } decision ? pick with { Card = decision with { Behind = BehindScreen.Of(pick.Row.Ticker, universe.Name, readings, model, passed, unread) } } : pick)],
+        });
+    }
+
+    return drawn;
+}
+
 // What the cards a page draws are handed beyond the night's rows: the operator's account where it is set, their taken
 // trades, and the card's presses, which a page the operator reads draws and an export never does.
 // see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold
@@ -1010,6 +1051,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             await read.RulePicksAsync(reading.Code, dated),
             await read.FormingRowsAsync(reading.Code, dated),
             indexNight.MarketOpen);
+        indexCards = await WithBehindAsync(read, indexCards, reading, dated);
         var indexOpen = (await read.IndexTradesAsync(reading.Code, dated)).Count(trade => trade.Listed < dated && trade.EndedOn is null);
 
         // The heavyweights' card drawn from the index's own book, or from its live rule's book where a freeze stands and the
@@ -1313,6 +1355,11 @@ app.MapGet("/screens/tonight/{night?}", async (
         var count = cards.Count + fundamentals.Count;
 
         cards = [.. cards.Select(card => card with { Of = count }), .. fundamentals.Select((card, at) => card with { Place = cards.Count + at + 1, Of = count })];
+    }
+
+    if (cards is not null)
+    {
+        cards = await WithBehindAsync(read, cards, reading, dated);
     }
 
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
