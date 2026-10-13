@@ -131,7 +131,7 @@ public partial class ReadSurface
         var points = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight))), "<table class=\"list-table buy-points\".*?</table>"));
 
         Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
-        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"9\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
+        Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
 
         // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
         // link naming a stock no row holds selects the first.
@@ -189,6 +189,20 @@ public partial class ReadSurface
         Assert.Contains(" .card-mark{justify-self:start}", narrow.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains(".card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains(".decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));", Stylesheet.Css, StringComparison.Ordinal);
+
+        // From 19.3 a row a table opens beneath one of its rows, the buy points' plan and card and a heavyweight's card, is
+        // held inside the box the table scrolls in, read off that box's own width, whatever padding the card around the
+        // table carries: the vw rule above measured the screen and ran a card past the box by the section's own padding.
+        Assert.Contains(".tbl-wrap.opens-rows{container-type:inline-size}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".opens-rows .row-open{position:sticky;left:12px;max-width:calc(100cqw - 24px)}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".list-table tr.card-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".buy-points tr.plan-row>td{white-space:normal;background:var(--plot);padding:12px}", Stylesheet.Css, StringComparison.Ordinal);
+
+        var marks = new MarkRenderer();
+        var card = new DecisionCardView("GSPC", new DateOnly(2026, 10, 1), "pullback", "F1", "the pullback", 50m, 47.3m, 55.4m, [], null);
+
+        Assert.StartsWith("<tr class=\"card-row\" id=\"card-gspc-pullback-f1\" hidden><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\"", marks.CardRow(card, 9), StringComparison.Ordinal);
+        Assert.EndsWith("</div></div></td></tr>", marks.CardRow(card, 9), StringComparison.Ordinal);
     }
 
     // The page each index's Tonight is read on.

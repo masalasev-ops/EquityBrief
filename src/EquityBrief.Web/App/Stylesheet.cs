@@ -472,7 +472,7 @@ details.expander>*:not(summary){margin:10px 12px}
 .hw-tile{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
 .hw-tile b{font:600 20px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
 .hw-tile span{font-size:12px;color:var(--ink-2)}
-.heavyweight-table tr.hw-sector th{text-align:left;font:600 12.5px var(--sans);background:var(--plot);color:var(--ink);padding:6px 8px}
+.heavyweight-table tr.hw-sector th{text-align:left;font:600 12.5px var(--sans);letter-spacing:0;text-transform:none;background:var(--plot);color:var(--ink);padding:6px 8px}
 .hw-fund{font-weight:400;color:var(--ink-2);margin-left:8px}
 .hw-bar{display:inline-block;width:60px;height:7px;background:var(--hair);border-radius:2px;vertical-align:middle;overflow:hidden}
 .hw-fill{display:block;height:100%}
@@ -488,6 +488,11 @@ details.expander>*:not(summary){margin:10px 12px}
 .card-toggle[aria-expanded='true']{background:var(--plot);color:var(--ink)}
 .list-table tr.card-row>td{white-space:normal;background:var(--plot);padding:12px}
 .decision-card{position:sticky;left:0;max-width:min(860px,calc(100vw - 2*var(--gutter) - 24px));font-size:13.5px;color:var(--ink)}
+/* a row a table opens beneath one of its rows, a pick's plan and card, held inside the box the table scrolls in however
+   wide the table is, so a phone reads it without scrolling sideways */
+.tbl-wrap.opens-rows{container-type:inline-size}
+.opens-rows .row-open{position:sticky;left:12px;max-width:calc(100cqw - 24px)}
+.list-table .report-state{display:block;font-size:12px;color:var(--soft)}
 .card-head{margin:0 0 8px;color:var(--ink-2)}
 .card-lines{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
 .card-line{display:grid;grid-template-columns:78px 150px minmax(0,1fr);gap:8px;align-items:baseline}

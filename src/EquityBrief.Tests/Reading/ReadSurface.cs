@@ -86,12 +86,12 @@ public partial class ReadSurface
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 
-            // 13.1, a family's card on tonight's page, and the parts a second family brings.
-            .. FamilyCardClaims,
+            // 13.1, a family's card on tonight's page, and the parts a second family brings, less the parts 19.3 retired.
+            .. FamilyCardClaims.Except(RetiredCardRows),
             .. TwoFamilyClaims,
 
-            // 13.5, the pages around the setup families.
-            .. FamilyPagesClaims,
+            // 13.5, the pages around the setup families, less the list across the setups 19.3 retired.
+            .. FamilyPagesClaims.Except(RetiredCardRows),
 
             // 13.9, the run page's records of the registered family rules.
             .. FamilyRecordPageClaims,
@@ -113,8 +113,9 @@ public partial class ReadSurface
             // 14.1, a family rule's record guarded by a replay: where each rule's record counts from, and why one restarted.
             .. FamilyReplayPageClaims,
 
-            // 17.2, the cards' rule: the card's row as its parts and the checklist's item on a live rule past its mark.
-            .. RuleCardsPageClaims,
+            // 17.2, the cards' rule: the card's row as its parts and the checklist's item on a live rule past its mark, less
+            // the selector and a variant's picks in the live rule's rows, which 19.3 retired.
+            .. RuleCardsPageClaims.Except(RetiredCardRows),
 
             // 17.10, the checklist's item on the newest monthly run.
             .. MonthlyWorryRows,
@@ -125,11 +126,15 @@ public partial class ReadSurface
             // 19.2, the three marks, Tonight's top, the date line's night and the chart of what is behind a stock.
             .. ColourAndTopRows,
 
+            // 19.3, every setup card built one way and the heavyweights card's tiles, sectors and standing.
+            .. SetupCardRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
-            // 14.3, the sector heavyweights on the pages: tonight's card, a name's line and Past picks' holdings.
-            .. HeavyweightPageClaims,
+            // 14.3, the sector heavyweights on the pages: tonight's card, a name's line and Past picks' holdings, less the
+            // card's sector cell and held while leading, which 19.3 retired.
+            .. HeavyweightPageClaims.Except(RetiredCardRows),
 
             // 14.6, the sector heavyweights' registered rules' records on the run page.
             .. HeavyweightRecordPageClaims,

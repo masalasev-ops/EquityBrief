@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Cards;
@@ -17,6 +18,58 @@ namespace EquityBrief.Tests.Reading;
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 public partial class ReadSurface
 {
+    // The rows 19.3 adds: a family's card's header, guide, picks named by place, one line and stocks one gate short; its
+    // rule's tabs, chips, marked chips, share line, a variant's picks with their numbers, the funnel's bar and the forming
+    // list's expander; and the heavyweights card's tiles, sectors, empty sectors' reasons, return since bought and standing.
+    internal static readonly string[] SetupCardRows =
+    [
+        .. new[]
+        {
+            "a header naming the setup in its tint with a pill for its standing",
+            "a reading guide for every setup card behind a press, where the key it repeated stood",
+            "its live rule's picks named by their place among tonight's buy points, each opening its row there",
+            "one line naming the gate that stopped the most of the members reaching it and its empty stretch against its usual longest or the completed stretches it holds of the thirty a usual stretch waits for",
+            "behind an expander naming their count the stocks one gate short of its buy point, each with the gate it missed and its words beneath the pointer and the family's three numbers",
+        }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "A family's card, " + part)),
+        .. new[]
+        {
+            "a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator",
+            "the chosen rule's settings as chips with its sentence a click away",
+            "a chosen variant's differing chips marked",
+            "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
+            "its own picks with their plans and the family's three numbers in place of the live rule's picks named by place",
+            "the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
+            "behind an expander naming the count forming",
+        }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
+        .. new[]
+        {
+            "four tiles counting its holdings and the sectors of the eleven holding one and stating its return since the last rebalance beside the equal-weighted return of the funds of the sectors it holds over the same sessions and the sessions to the next rebalance",
+            "the holdings grouped by sector under each sector's heading with its fund and the fund's return over the look-back to the night",
+            "each empty sector with why its book bought nothing there",
+            "its return since bought",
+            "a pill saying whether it is still leading or lost its lead or is below its 200-day average read off tonight's closes by the rule's own functions and marked as information only",
+        }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, " + part)),
+    ];
+
+    // The rows 19.3 retires: a family's card's rows' place, the buy's place between its stop and target, the why in words
+    // and the key; the card's rule's selector and a variant's picks in place of the live rule's rows; the list of stocks
+    // close to a buy point across the setups, which each card draws behind its expander; and the heavyweights card's
+    // sector cell and held while leading.
+    internal static readonly string[] RetiredCardRows =
+    [
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card, its place down the page"),
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card, where the buy sits between the stop and the target"),
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card, why it is listed tonight in the figures its family stored"),
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card, a key saying how to read it"),
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card's rule, a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words"),
+        Harness.CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans in place of the live rule's rows"),
+        Harness.CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, one row a stock and setup with the setup's label"),
+        Harness.CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the one gate it missed in the gate's words"),
+        Harness.CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the count shown of the count there are"),
+        Harness.CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, each with its sector"),
+        Harness.CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, held while leading in place of a stop and a target"),
+    ];
+
     static string[] Words(RuleKind kind, IReadOnlyDictionary<string, double> parameters) =>
         [.. RuleChips.Of(kind, parameters).Select(chip => chip.Words)];
 
@@ -121,11 +174,12 @@ public partial class ReadSurface
         Assert.Null(RuleFunnelDrop.Largest([("market", 5)]));
     }
 
-    // A card listing nothing tonight, its funnel the volume gate stopping 8 of the 9 reaching it, at a stretch given.
-    static string EmptyCard(StretchLineView stretch, string? empty = "No stock passed this setup tonight.")
+    // A card listing nothing tonight, its funnel the volume gate stopping 8 of the 9 reaching it unless another is given,
+    // at a stretch given.
+    static string EmptyCard(StretchLineView stretch, string? empty = "No stock passed this setup tonight.", IReadOnlyList<(string Gate, int Passed)>? funnel = null)
     {
         var live = new RuleChoiceView("the live breakout rule", RuleScreenWords.LiveSlug, null, true, "Live");
-        var rule = new RuleView(live, [live], [new RulePartView("A stock closes above its high", false)], null, [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], stretch, null, true, null);
+        var rule = new RuleView(live, [live], [new RulePartView("A stock closes above its high", false)], null, funnel ?? [("market", 9), ("new high", 9), ("volume", 1), ("trade", 1)], stretch, null, true, null);
 
         return new MarkRenderer().FamilyCard(new FamilyCardView("breakout", "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 0, [], [], empty, RuleChoice: rule));
     }
@@ -156,6 +210,77 @@ public partial class ReadSurface
         Assert.DoesNotContain("card-picks", card, StringComparison.Ordinal);
         Assert.DoesNotContain("stretch-line", card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"degraded family-empty\" data-picks=\"0\">No stock passed this setup tonight.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"volume\">Most stopped at the volume gate: 8 of the 9 reaching it.</p>", card, StringComparison.Ordinal);
+
+        // A night the market check closed: the line opens on the check's own words and names no gate from the funnel, which
+        // holds no count before its first gate, and the funnel marks the first gate as passing no member, never saying no
+        // gate stopped one.
+        var shut = EmptyCard(
+            new StretchLineView(18, 58, false, 30, 600),
+            "The market check closed every list of the S&P 400 tonight: the S&P 400's breadth was 43.8% of its members closing above their 200-day average, below its floor of 45%.",
+            [("market", 0), ("setup", 0), ("floors", 0)]);
+
+        Assert.Contains(
+            "<p class=\"family-empty-line\" data-picks=\"0\" data-flagged=\"false\">The market check closed every list of the S&amp;P 400 tonight: the S&amp;P 400's breadth was 43.8% of its members closing above their 200-day average, below its floor of 45% · empty 18 nights, its usual longest 58</p>",
+            shut,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("degraded family-empty", shut, StringComparison.Ordinal);
+        Assert.Contains("data-largest-drop=\"market\"", shut, StringComparison.Ordinal);
+        Assert.Contains("<li data-gate=\"market\" data-passed=\"0\" class=\"largest-drop\">", shut, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"funnel-drop\" data-drop=\"market\">The market gate passed no member tonight, so none reached a later one.</p>", shut, StringComparison.Ordinal);
+        Assert.DoesNotContain("No gate stopped", shut, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task EachFamilysThreeNumbersAreReadOffTheNightsLedgerReadingsInTheirOwnForms()
+    {
+        // A member's readings with the six the families draw stored, the breakout's ranges' ratio not stored: the pullback
+        // and the fundamentals-first family read depth, dry-up and strength, the breakout its sessions since its high,
+        // volume and ranges, the drift its reaction, volume and sessions since the report, and the heavyweights none.
+        var readings = new double?[EquityBrief.Core.Ledger.LedgerReadings.Count];
+
+        foreach (var (column, value) in new[] { ("depth", 2.3456), ("dry_up", 0.8), ("strength", 0.734), ("since_high", 3.0), ("volume_multiple", 1.75), ("reaction_moves", 1.5), ("freshness", 2.0) })
+        {
+            readings[EquityBrief.Core.Ledger.LedgerReadings.IndexOf(column)] = value;
+        }
+
+        Assert.Equal([2.3456, 0.8, 0.734], CardNumbers.Values(SetupFamilies.Pullback, readings));
+        Assert.Equal([2.3456, 0.8, 0.734], CardNumbers.Values(FundamentalsRule.Name, readings));
+        Assert.Equal([3.0, 1.75, null], CardNumbers.Values(BreakoutRule.Name, readings));
+        Assert.Equal([1.5, 1.75, 2.0], CardNumbers.Values(DriftRule.Name, readings));
+        Assert.Empty(CardNumbers.Values(HeavyweightRule.Name, readings));
+
+        // Over the night 13.1's cards are read on, N1 failed its trade gate alone and stands one gate short behind the
+        // pullback card's expander; with its readings stored on the night its three numbers are drawn in their forms, depth
+        // in typical moves to two places, dry-up as a multiple to two and strength as a whole per cent.
+        using var store = await FamilyNightStore();
+
+        store.Execute($"INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES ('GSPC', '{TheSwitch}', 'N1', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(readings)}', '{EquityBrief.Core.Ledger.LedgerReadings.Version}');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var card = FamilyCardOf(System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), SetupFamilies.Pullback);
+        var close = Assert.Single(Blocks(card, "<details class=\"expander close-rows\".*?</details>"));
+
+        Assert.StartsWith("<details class=\"expander close-rows\" data-close=\"1\"><summary>One gate short of a buy point: 1</summary>", close, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"N1\" data-gate=\"trade\">", close, StringComparison.Ordinal);
+        Assert.Contains(
+            "<td class=\"r num\" data-number=\"depth\" data-value=\"2.3456\">2.35 moves</td><td class=\"r num\" data-number=\"dry_up\" data-value=\"0.8\">0.80 times</td><td class=\"r num\" data-number=\"strength\" data-value=\"0.734\">73%</td>",
+            close,
+            StringComparison.Ordinal);
+
+        // A member the night stored no readings for draws each of its three numbers as none.
+        var renderer = new MarkRenderer();
+        var drawn = renderer.FamilyCard(new FamilyCardView(
+            BreakoutRule.Name, "Breakout", "Breakouts to a new high", "Breakout from a base", "A stock closes above its high.", 2, 3, new DateOnly(2026, 1, 2), 0, [], [], null,
+            Close: [new CloseToBuyCell("B1", "B One", BreakoutRule.Name, "Breakout", "volume", "its volume 1.2 times its average, under 1.5"), new CloseToBuyCell("B2", null, BreakoutRule.Name, "Breakout", "new high", "no new high")],
+            Numbers: new Dictionary<string, IReadOnlyList<double?>> { ["B1"] = CardNumbers.Values(BreakoutRule.Name, readings), ["B2"] = new double?[3] }));
+
+        Assert.Contains("<td class=\"r num\" data-number=\"since_high\" data-value=\"3\">3</td><td class=\"r num\" data-number=\"volume_multiple\" data-value=\"1.75\">1.75 times</td><td class=\"r num\" data-number=\"range_ratio\" data-value=\"none\"><span class=\"degraded\">none</span></td>", drawn, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"missed-gate\" title=\"its volume 1.2 times its average, under 1.5\"><b>volume</b></td>", drawn, StringComparison.Ordinal);
+        Assert.Equal(3, Regex.Matches(Assert.Single(Blocks(drawn, "<tr data-ticker=\"B2\".*?</tr>")), "data-value=\"none\"").Count);
+        Assert.Contains("<summary>One gate short of a buy point: 2</summary>", drawn, StringComparison.Ordinal);
     }
 
     [Fact]

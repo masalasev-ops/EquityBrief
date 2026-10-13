@@ -230,8 +230,11 @@ public partial class ArchitectureConformance
         var report = Report();
         var total = actual + AfterPhaseFourteen.Length - TakenOutAfterPhaseSeventeen.Length;
 
+        // A row a later checkpoint took out, as 19.3 took out two parts of the heavyweights card 14.3 landed, is counted
+        // where it landed and is in no claim now.
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
-        Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(rows.Except(TakenOutAfterPhaseSeventeen), key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(rows.Intersect(TakenOutAfterPhaseSeventeen), key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.Equal(
             (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
@@ -299,9 +302,12 @@ public partial class ArchitectureConformance
         var report = Report();
         var total = now + AfterPhaseThirteen.Length - TakenOutAfterPhaseSeventeen.Length;
 
+        // A row a later checkpoint took out, as 19.3 took out card parts 13.1 and 13.5 landed, is counted where it landed
+        // and is in no claim now.
         Assert.Equal(PhaseThirteenRows.Length, PhaseThirteenRows.Distinct(StringComparer.Ordinal).Count());
-        Assert.All(PhaseThirteenRows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
-        Assert.All(AfterPhaseThirteen, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(PhaseThirteenRows.Except(TakenOutAfterPhaseSeventeen), key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(PhaseThirteenRows.Intersect(TakenOutAfterPhaseSeventeen), key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(AfterPhaseThirteen.Except(TakenOutAfterPhaseSeventeen), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.Equal(
             (total, 0, 0, total),
@@ -356,9 +362,10 @@ public partial class ArchitectureConformance
         // the checklist's item on the newest monthly run, 1268 from 19.1, the card's rule row's part on the variant
         // reading no market check, and 1277 from 19.2, its store of every member's readings, three marks, Tonight's two
         // rows and its date line's part, the card's and the stock's page's chart, the five rows moving from Tonight to
-        // the Run page under new keys less the five they leave.
+        // the Run page under new keys less the five they leave, and 1283 from 19.3, seventeen parts of the setup cards and
+        // the heavyweights card less the eleven they retire.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1277),
+            (789, 853, 6, 4, 855, 876, 1283),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

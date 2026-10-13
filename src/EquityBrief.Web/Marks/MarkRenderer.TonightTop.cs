@@ -63,7 +63,7 @@ public sealed partial class MarkRenderer
 
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table buy-points\" data-rows=\"{points.Count}\"><thead><tr>");
+        body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table buy-points\" data-rows=\"{points.Count}\"><thead><tr>");
 
         foreach (var (heading, says) in BuyPointHeadings)
         {
@@ -100,7 +100,7 @@ public sealed partial class MarkRenderer
 
             if (chosen)
             {
-                body.Append(Invariant, $"<tr class=\"plan-row\" data-plan-for=\"{Escaped(row.Ticker)}\"><td colspan=\"{BuyPointHeadings.Count}\">{plan}{(pick.Card is { } card ? DecisionCard(card) : string.Empty)}</td></tr>");
+                body.Append(Invariant, $"<tr class=\"plan-row\" data-plan-for=\"{Escaped(row.Ticker)}\"><td colspan=\"{BuyPointHeadings.Count}\"><div class=\"row-open\">{plan}{(pick.Card is { } card ? DecisionCard(card) : string.Empty)}</div></td></tr>");
             }
             else if (pick.Card is { } closed)
             {

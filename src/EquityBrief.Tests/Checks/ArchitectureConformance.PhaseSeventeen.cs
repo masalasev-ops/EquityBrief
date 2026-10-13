@@ -160,8 +160,11 @@ public partial class ArchitectureConformance
         var report = Report();
         var total = actual + AfterPhaseSeventeen.Length - TakenOutAfterPhaseSeventeen.Length;
 
+        // A row a later checkpoint took out, as 19.3 took out the card's selector 17.2 landed, is counted where it landed and
+        // is in no claim now.
         Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
-        Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(rows.Except(TakenOutAfterPhaseSeventeen), key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.All(rows.Intersect(TakenOutAfterPhaseSeventeen), key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.Equal(
             (total, 0, 0, total),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));

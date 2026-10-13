@@ -649,7 +649,8 @@ public sealed partial class MarkRenderer
     }
 
     // The rule's funnel as one bar: each gate's segment as wide as the members reaching it against those reaching the
-    // first, its count written on it, and the gate that stopped the most of those reaching it marked and named.
+    // first, its count written on it, and the gate that stopped the most of those reaching it marked and named; a first
+    // gate passing no member, as a closed market check, is the one marked, since the funnel holds no count before it.
     static string FunnelBar(RuleView rule)
     {
         if (rule.Funnel is not { Count: > 0 } funnel)
@@ -659,23 +660,26 @@ public sealed partial class MarkRenderer
 
         var top = Math.Max(1, funnel[0].Passed);
         var drop = EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel);
+        var shut = funnel[0].Passed == 0 ? funnel[0].Gate : null;
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<div class=\"funnel-bar\" data-gates=\"{funnel.Count}\" data-largest-drop=\"{Escaped(drop?.Gate ?? "none")}\">");
+        body.Append(Invariant, $"<div class=\"funnel-bar\" data-gates=\"{funnel.Count}\" data-largest-drop=\"{Escaped(drop?.Gate ?? shut ?? "none")}\">");
         body.Append("<ol class=\"rule-funnel\">");
 
-        foreach (var (gate, passed) in funnel)
+        foreach (var ((gate, passed), at) in funnel.Select((step, at) => (step, at)))
         {
             var share = Math.Clamp(1.0 * passed / top, 0, 1);
-            var marked = drop is not null && drop.Gate == gate;
+            var marked = drop is not null ? drop.Gate == gate : shut is not null && at == 0;
 
             body.Append(Invariant, $"<li data-gate=\"{Escaped(gate)}\" data-passed=\"{passed}\"{(marked ? " class=\"largest-drop\"" : string.Empty)}><span class=\"fb-name\">{Escaped(gate)}</span><span class=\"fb-bar\"><span class=\"fb-fill\" style=\"width:{(share * 100).ToString("0.#", Invariant)}%\"></span></span><b class=\"fb-count\">{passed}</b></li>");
         }
 
         body.Append("</ol>");
-        body.Append(drop is null
-            ? "<p class=\"funnel-drop\" data-drop=\"none\">No gate stopped a member tonight.</p>"
-            : Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(drop.Gate)}\">Most stopped at the {Escaped(drop.Gate)} gate: {drop.Stopped} of the {drop.Reached} reaching it.</p>"));
+        body.Append(drop is not null
+            ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(drop.Gate)}\">Most stopped at the {Escaped(drop.Gate)} gate: {drop.Stopped} of the {drop.Reached} reaching it.</p>")
+            : shut is not null
+                ? Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(shut)}\">The {Escaped(shut)} gate passed no member tonight, so none reached a later one.</p>")
+                : "<p class=\"funnel-drop\" data-drop=\"none\">No gate stopped a member tonight.</p>");
         body.Append("</div>");
 
         return body.ToString();

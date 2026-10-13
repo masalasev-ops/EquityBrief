@@ -1421,7 +1421,8 @@ public partial class ArchitectureConformance
         // and sources leave.
         // 188 at 19.2: the family tag, the setup tile and what is behind it among the marks, Tonight's setups and buy
         // points, and the card's chart, the reason totals moving from Tonight to the Run page.
-        Assert.Equal(188, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 187 at 19.3: the list of stocks close to a buy point across the setups taken out, each card drawing its own.
+        Assert.Equal(187, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1554,7 +1555,8 @@ public partial class ArchitectureConformance
         // 591 at 19.2: the three marks, Tonight's setups and buy points, the card's chart, the night's state's part on a
         // night not yet run and the swing readings' part on the chart, the night header's four parts and the reason totals
         // moving to the Run page.
-        Assert.Equal(591, inDocument.Length);
+        // 597 at 19.3: seventeen parts of the setup cards and the heavyweights card less the eleven they retire.
+        Assert.Equal(597, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1665,7 +1667,9 @@ public partial class ArchitectureConformance
         // 510 at 19.1: the card's rule row's part on the S&P 400's and 600's variant reading no market check.
         // 512 at 19.2: the night header's four parts on the night's cost and its checks moving to how last night went,
         // the night's state's part on a night not yet run, and the swing readings' part on the chart beneath them.
-        Assert.Equal(512, checkedElements);
+        // 518 at 19.3: a family's card's five parts for its four taken out, its rule's seven for its two, and the
+        // heavyweights card's five for its two, less the three parts of the list across the setups.
+        Assert.Equal(518, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

@@ -156,7 +156,7 @@ public sealed partial class MarkRenderer
         // The sectors once a rebalance has been read, each holding none saying why; before it, the line above alone.
         if (card.Holdings.Count > 0 || (card.Sectors is { Count: > 0 } && card.LastRebalance is not null))
         {
-            body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table heavyweight-table\" data-rows=\"{card.Holdings.Count}\"><thead><tr>");
+            body.Append(Invariant, $"<div class=\"tbl-wrap opens-rows\"><table class=\"list-table heavyweight-table\" data-rows=\"{card.Holdings.Count}\"><thead><tr>");
 
             foreach (var (heading, says) in HeavyweightHeadings)
             {

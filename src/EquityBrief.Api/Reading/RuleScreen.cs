@@ -79,7 +79,7 @@ public static class RuleScreen
         var standing = Standing(card.Family, large, indexName, register, night);
         var (live, variants) = LiveAndVariants(standing);
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(card.Family, provisional) : [];
-        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live, large)) };
+        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
 
         choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
 
@@ -106,8 +106,9 @@ public static class RuleScreen
             Words: words);
     }
 
-    // The live or provisional rule's tab: live where a freeze registered one or on the S&P 500, provisional otherwise.
-    static string LiveTab(CandidateRow? live, bool large) => live is not null || large ? "Live" : "Provisional";
+    // The live or provisional rule's tab: live where a freeze registered one, provisional otherwise, as the card's pill
+    // reads, on the S&P 500 as on the S&P 400 and 600.
+    static string LiveTab(CandidateRow? live) => live is not null ? "Live" : "Provisional";
 
     // A chosen rule's chips, each marked where a chosen variant differs from the live rule on it, and the live rule's
     // settings a variant states none of drawn as without them.
@@ -293,7 +294,7 @@ public static class RuleScreen
         var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
         var (live, variants) = LiveAndVariants(standing);
         var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(HeavyweightRule.Name, provisional) : [];
-        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live, large)) };
+        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live)) };
 
         choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
 

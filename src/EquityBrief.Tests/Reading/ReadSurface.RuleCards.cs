@@ -17,11 +17,27 @@ namespace EquityBrief.Tests.Reading;
 // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
 public partial class ReadSurface
 {
-    // The card's row as the parts the scope enumerates less the one 19.1 adds, and the checklist's item on a live rule
-    // past its mark.
+    // The card's row as the fourteen parts 17.2 landed, two of which 19.3 retired with the selector, and the checklist's
+    // item on a live rule past its mark.
     internal static readonly string[] RuleCardsPageClaims =
     [
-        .. Scope.ElementsOf(CheckReach.Key("15.7 Tonight", "A family's card's rule")).Where(part => part != MarketOffPart).Select(part => CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
+        .. new[]
+        {
+            "a selector beside the card's state line listing the live rule or the provisional rule first and then each registered variant by the number of its first registration with the register's words",
+            "the choice kept in the link under the family's own key by a handler merging the key into the query the link holds",
+            "the live rule drawn where the link names none or names a rule that does not stand",
+            "a variant chosen redraws the card from that rule's rows under the band saying it is scored in the background and not the live rule and its picks are not tonight's list",
+            "its words written by code from its parameters with the clauses the live rule's words lack marked",
+            "its own picks with their plans in place of the live rule's rows",
+            "the chosen rule's funnel with each gate and how many members passed it and every gate before, or that the night did not evaluate the rule",
+            "the stretch line saying how many nights the rule has listed nothing for against the mark its own past empty nights set and flagged past it, or how far the floors are from being met while no mark is drawn",
+            "under a breakout card the breakouts forming with the count forming and the rows drawn and the nearest misses first",
+            "each forming member with the price it would have to close above and the volume the rule would need against tonight's",
+            "its ranges' ratio and the gates it still fails and its next report where one falls within the window",
+            "a line where the market check closed the rule's list",
+            "the closing line that the rule reads its other gates that night as on any other and lists five at most",
+            "on the S&P 400 or 600 where no variant stands before a freeze the provisional rule alone with the line that no variant is registered before its freeze",
+        }.Select(part => CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
         CheckReach.Key("15.10 Run", "Anything to worry about, no live rule gone longer without a pick than its own past empty nights say it does, and where one has its family named with its stretch against its mark"),
     ];
 

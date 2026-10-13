@@ -246,7 +246,7 @@ public partial class ReadSurface
         var row = Regex.Match(chosen, "<tr data-ticker=\"F2\" data-family=\"pullback\"[^>]* class=\"sel\" aria-selected=\"true\">.*?</tr><tr class=\"plan-row\" data-plan-for=\"F2\"><td colspan=\"9\">(.*?)</td></tr><tr data-ticker=\"F3\"", RegexOptions.Singleline);
 
         Assert.True(row.Success, "F2's row is not followed by its plan's row before F3's.");
-        Assert.StartsWith("<section class=\"selected-name\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
+        Assert.StartsWith("<div class=\"row-open\"><section class=\"selected-name\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("<div class=\"decision-card\" data-index=\"GSPC\" data-family=\"pullback\" data-ticker=\"F2\"", row.Groups[1].Value, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(chosen, "class=\"plan-row\""));
 
