@@ -44109,3 +44109,32 @@ Night:      the night of 2026-10-12, run fresh from main's c3c77ab7 after the 2.
             the S&P 500's list.
 Carried:    the off-peak task registered with the machine's scheduler at 16:30Z every day once this merges, and the
             one-off task registered for 2026-10-13 removed in its place.
+
+### 19.2 ruling - each pick's card and each stock's page gain a chart of what is behind it, every member's ledger readings stored each night by migration 92 for it   2026-10-13
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-13 while 19.2 was built, word for word in `prompts/`: a readings view, always drawn,
+            each of seven headings a bar of the stock's percentile among its index's members tonight, and a push view
+            where the learned score passed the tester on the index, each heading's share of the score in risks, the
+            grouping one table in the core, with tests of the percentiles by hand, the push summing to the score and its
+            absence where the score has not passed. Asked, since the night stores no member's readings, the operator
+            chose that the ledger's night step store every member's readings on all three indices each night by
+            migration 92, the pages working the chart out when drawn; 19.4's per-rule test takes migration 93.
+Plan:       `BUILD_PLAN.md`'s phase 19 names four changes beyond the pages where it named three, 19.2's text and done
+            condition gain the chart and its store, and the claims predicted grow by about 4 to about 1,328; the decision
+            is written (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always
+            and its push where the score passed). Its cost to the night is measured at 19.2.
+Verified:   `tools/ci.ps1` green over main as 19.1's entry records, the checks reading these documents run filtered over
+            the tree carrying this entry with 19.2's gates.
+Carried:    nothing new.
+
+### 19.4 ruling - paper trading and the trade log each state under their table that entries are priced at the listing night's close   2026-10-13
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-13, word for word in `prompts/`: paper trading and the trade log each state under
+            their table, "Entries are priced at the close of the night that listed them; a trade placed after the signal
+            would fill at the next session's open."
+Plan:       `BUILD_PLAN.md`'s 19.4 gains the line and its done condition the clause reading it under both tables.
+Verified:   `tools/ci.ps1` green over main as 19.1's entry records, the checks reading these documents run filtered over
+            the tree carrying this entry with 19.2's gates.
+Carried:    nothing new.

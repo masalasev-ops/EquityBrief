@@ -25,6 +25,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - docs/ARCHITECTURE.html - section 15.7's list paragraph draws a buy point's plan and card beneath its row
+Decision: Selecting a row draws its plan and its card beneath the row and is no navigation
+Was:
+> Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and its ticker is a link opening the name's own page (see: Selecting a row draws its plan beneath the list and is no navigation).
+Now:
+> Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and from 19.2 a row of tonight's buy points draws its plan and its pick's card in a row beneath it; its ticker is a link opening the name's own page (see: Selecting a row draws its plan and its card beneath the row and is no navigation).
+Why: the operator's phase 19 plan puts one table of tonight's buy points at the top of the page, a selected row opening its plan and its card beneath it.
+
+### 2026-10-13 - docs/BUILD_PLAN.md - 19.2 gains the chart of what is behind a pick and the store of every member's readings, and 19.4 states the entries' price under its tables
+Decision: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
+Was:
+> The operator's rulings of 2026-10-12 add three changes beyond the pages: - at 19.1, ...; - at 19.4, a monthly-run step testing every registered rule, with one migration; ...
+> What is the operator's. Any migration or night step beyond the two these rulings approve.
+> The claims phase 19 predicts. ... After 19.8 about 1,324, within 1,290 to 1,365: ... about 8 at 19.2, three marks, the top strip's rows and the rows moved to the Run page;
+> 19.2: ... the reason totals move to the Run page. Writes the decisions superseding ... Done when ... every page lists the families in the one order; and the pages are read back at 1440 and 390 pixels.
+> 19.4: ... and the share that reached its target waiting as before. Writes the decision superseding ... Done when ... the chart draws the live accounts by default and a chosen family's variants; and distinctive account values are found in no byte of the store, the logs or an export.
+Now:
+> The operator's rulings of 2026-10-12 and 2026-10-13 add four changes beyond the pages: - at 19.1, ...; - at 19.2, on the ruling of 2026-10-13, a store of every member's ledger readings each night, written by the ledger's night step on all three indices with one migration, which a pick's card and a stock's page read for what is behind it; - at 19.4, ...
+> What is the operator's. Any migration or night step beyond the three these rulings approve.
+> The claims phase 19 predicts. ... After 19.8 about 1,328, within 1,290 to 1,370: ... about 12 at 19.2, three marks, the top strip's rows and the rows moved to the Run page, and from the ruling of 2026-10-13 the chart of what is behind a pick, its card part, its page region, its store and the night's writing of it;
+> 19.2: ... the reason totals move to the Run page. On the operator's ruling of 2026-10-13, each pick's card and each stock's page gain a chart of what is behind it: a readings view ... and a push view ...; the grouping of readings into headings is one table in the core, and migration 92 adds the store of every member's ledger readings a night ... Done when ... every page lists the families in the one order; the chart's percentiles are worked by hand over constructed members, its push view sums exactly to the score, and the push view is absent on an index where the score has not passed; and the pages are read back at 1440 and 390 pixels.
+> 19.4: ... waiting as before. On the operator's ruling of 2026-10-13, paper trading and the trade log each state under their table: "Entries are priced at the close of the night that listed them; a trade placed after the signal would fill at the next session's open." The per-rule test's two stores are created by migration 93, the ruling of 2026-10-13 taking 92 for 19.2's readings. ... Done when ... a chosen family's variants; paper trading's table and the trade log's each state the entries' price under them; and distinctive account values ...
+Why: the operator's words are kept in `prompts/2026-10-13-19.2-addition-what-is-behind-it.md` and `prompts/2026-10-13-19.4-ruling-entry-price-basis.md`, and asked which store to build, chose every member's readings stored each night.
+
 ### 2026-10-12 - docs/ARCHITECTURE.html - the Ledger and Loop pages are reached from the header's menu, the Loop with its badge
 Corrects: phase 19's plan, approved on 2026-10-12, moves both pages' links from Universe's body into the header's menu at 19.2, which leaves the two route lines naming the Universe page.
 Was:
