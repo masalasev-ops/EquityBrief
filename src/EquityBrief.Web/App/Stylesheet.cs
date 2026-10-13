@@ -400,11 +400,21 @@ span[data-last-asked-at]::before{content:none}
 .paper-running figcaption{font-size:12.5px;color:var(--ink-2)}
 
 /* universe */
-.sector-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0;margin:0}
-.sector-strip .sector{padding:8px 10px;border-left:1px solid var(--hair);font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.sector-strip .sector a{display:block;text-decoration:none;color:inherit}
-.sector-strip .sector b{display:block;font:600 12px var(--sans);color:var(--ink)}
-.sector-strip .sector[aria-current='true']{background:var(--ink);color:var(--surface)} .sector-strip .sector[aria-current='true'] b{color:var(--surface)}
+.sector-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;margin:0}
+.sector-tile{display:flex;flex-direction:column;gap:3px;padding:9px 11px;border:1px solid var(--hair-2);border-radius:8px;text-decoration:none;color:var(--ink-2);font-size:12.5px;font-variant-numeric:tabular-nums;background:var(--surface);min-width:0}
+.sector-tile .tile-name{font:600 13px var(--sans);color:var(--ink)}
+.sector-tile[aria-pressed='true']{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.sector-tile .cell-bar{margin-left:0;margin-top:3px;display:block;width:100%}
+.cell-bar{position:relative;display:inline-block;vertical-align:middle;width:44px;height:6px;margin-left:6px;border-radius:3px;background:var(--hair)}
+.cell-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ink-2)}
+.cell-tick{position:absolute;top:-2px;bottom:-2px;width:2px;margin-left:-1px;background:var(--ink)}
+.short-tag{margin-top:3px;font-size:11.5px}
+td.c-nm .short-tag{display:inline-flex}
+.universe-search{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
+.universe-search label{display:flex;align-items:center;gap:8px;flex:1 1 220px;max-width:420px}
+.universe-search input{flex:1;min-width:0;font:inherit;min-height:40px;padding:6px 10px;border-radius:8px;border:1px solid var(--rule);background:var(--surface);color:var(--ink)}
+a.sort{margin-left:4px;text-decoration:none;color:var(--soft);font-size:11px}
+a.sort[aria-pressed='true']{color:var(--ink)}
 .universe-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
 .chips-label{font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--soft);margin-right:4px;min-width:60px}
 .chip{font:600 12.5px var(--sans);text-decoration:none;color:var(--ink-2);border:1px solid var(--hair-2);border-radius:999px;padding:5px 12px;min-height:32px;display:inline-flex;align-items:center}
@@ -1017,6 +1027,18 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
     labels stood four pixels high; the chart and its profile are sized together by their own rule and the plan column
     is drawn narrower than this already */
  .fig>svg:not(.plan-column){min-width:560px}
+}
+/* the universe on a phone: each row a card of the name, the close, the trend and the distance picture, the other
+   columns and the headings left to a wider screen */
+@media (max-width:560px){
+ .universe-table,.universe-table tbody{display:block}
+ .universe-table tr:first-child{display:none}
+ .universe-table tr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--hair)}
+ .universe-table td{display:none;height:auto;padding:0;border:0}
+ .universe-table td.c-nm{display:block}
+ .universe-table td:nth-child(3){display:block;text-align:right}
+ .universe-table td:nth-child(4){display:block;grid-column:1/-1;color:var(--ink-2);font-size:12.5px}
+ .universe-table td:nth-child(5){display:block;grid-column:1/-1}
 }
 @media print{ .mast,.export,form[method='post']{display:none} .card{box-shadow:none;break-inside:avoid} }
 """;

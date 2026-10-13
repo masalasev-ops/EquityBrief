@@ -25,6 +25,34 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-13 - ARCHITECTURE.html - Universe's tiles, search, sorting, rows a page, chips, readings' bars, phone cards and corrections, the Run page's fold and section 17's two rows
+Authorised by: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
+Was:
+> 15.8 Route: `#/universe`, with filters in the hash so a filtered view is a link.
+> 15.8 Reads: the listings, levels and indicators for the night, membership, and the researched sections.
+> 15.8 Sector strip row: one line per sector: names, how many are on tonight's list, how many are in an uptrend. Clicking one filters the table
+Now:
+> The route keeps the filters, the search, the sort and the rows a page in the hash; the reads gain the night's swing filter rows and family answers, the S&P 400's and 600's trades kept tonight and the sector funds' closes; the Sector tiles row replaces the strip, a tile a GICS sector with its members, its count on tonight's lists, its uptrend bar and its fund's return; 15.8 gains the Search, Sorting, Rows a page, Near a level, One gate short, The readings' bars, On a phone and Corrections rows, a paragraph on the order of the filters before the cut and the guide in the key's place, and Figure 15.4 with its key; 15.10 gains the Corrections row; section 17 gains Near a level and Correction notice age.
+Why: 19.5 builds Universe on the operator's rulings R5, R14 and R16 of 2026-10-12, and the strip's one line a sector becomes a tile a sector.
+
+### 2026-10-13 - .claude/rules/checks.md - read-surface and fixture-expectations hold Universe
+Authorised by: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
+Was:
+> read-surface: ... and the settings in no byte of the store, no run log row and no export |
+> fixture-expectations: ... and the fixture's whole night drawing each family's one account holding no trade, not tested yet and too few of its count |
+Now:
+> read-surface: ... and the settings in no byte of the store, no run log row and no export; and from 19.5 Universe's tiles a GICS sector each, [the search, each column's sort, the rows a page, the near-level chips, the members one gate short, the readings' bars, the phone's cards and a correction's notice on both sides of its thirtieth day with the Run page's fold] |
+> fixture-expectations: ... too few of its count; and from 19.5 the fixture's whole night drawing a tile a GICS sector its companies file, none on tonight's lists and each fund's return not read |
+Why: 19.5's assertions, rostered where the checks that run them are.
+
+### 2026-10-13 - SCHEMA.md - the read surface reads the sector funds' closes for Universe's tiles
+Authorised by: Every page names a member's sector by the GICS sector its company fetch files
+Was:
+> from 19.3 the read surface reads each sector fund's closes for a heavyweights card's sectors and tiles when the page is read (see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read), and nothing else reads the table:
+Now:
+> from 19.3 the read surface reads each sector fund's closes for a heavyweights card's sectors and tiles when the page is read (see: ...), and from 19.5 for the Universe page's sector tiles (see: Every page names a member's sector by the GICS sector its company fetch files), and nothing else reads the table:
+Why: each Universe tile states its sector fund's return over the live heavyweights look-back, read off the same table when the page is read.
+
 ### 2026-10-13 - ARCHITECTURE.html - the per-rule test, paper trading and the trade log, and the variant's results decision repointed
 Authorised by: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark
 Was:

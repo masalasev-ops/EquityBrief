@@ -163,7 +163,18 @@ public sealed record UniverseCell(
     double? Tightness = null,
     // The name's stored closes, which the table draws as its year line beside the ticker while the
     // pointer is over it, and null where none were read for it.
-    PeerYear? Year = null);
+    PeerYear? Year = null,
+    // From 19.5 the first setup in the one family order the member is one gate short of on the night, and that gate,
+    // none where it is short of none.
+    string? ShortFamily = null,
+    string? ShortGate = null,
+    // From 19.5 whether the close sits inside its nearest support band or its nearest resistance band, edges included.
+    bool InSupport = false,
+    bool InResistance = false);
+
+// How the universe table's headings sort it: the link a column's key opens, the column sorted on and which way, and the
+// swing filter's dry-up ceiling the dry-up is drawn against.
+public sealed record UniverseSorting(Func<string, bool, string> Href, string? By, bool Descending, double? DryUpCeiling);
 
 // One trade the live list recommended, as the Past picks screen and a name's own page draw it: the night
 // it was listed, the name, the plan's buy, stop and target, what became of it as of the night drawn, the
@@ -1151,7 +1162,9 @@ public sealed record PassProgress(string State, string Step, int Sections);
 public sealed record ResearchCost(int Passes, decimal Total, decimal Most, string Verdict);
 
 // One line of the sector strip.
-public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList);
+// A sector's line, and from 19.5 its tile: whether the night reads the trend on the index, and the sector's fund with its
+// return over the live heavyweights rule's look-back, none where its closes are not stored.
+public sealed record SectorLine(string Sector, int Names, int InUptrend, int OnTheList, bool TrendRead = true, string? Fund = null, double? FundReturn = null);
 
 // The price scale a chart drew, so another mark can draw against it.
 //
@@ -5931,30 +5944,6 @@ public sealed partial class MarkRenderer : IComponent
             ? Formatted($"{value:0.#} typical days to {side}")
             : Formatted($"no {side} band");
 
-    // The sector strip, section 15.8's first region.
-    //
-    // One line per sector with how many names it holds and how many are in an
-    // uptrend. The count of names on tonight's list is the half this cannot draw
-    // until 5.4 creates the store it would read, and it is absent rather than
-    // shown as zero: a zero here would say nothing fired tonight.
-    public string SectorStrip(IReadOnlyList<SectorLine> lines)
-    {
-        var strip = new StringBuilder();
-
-        strip.Append(Formatted($"<section class=\"sector-strip\" data-sectors=\"{lines.Count}\">"));
-
-        foreach (var line in lines)
-        {
-            strip.Append(Invariant, $"<div class=\"sector\" data-sector=\"{Escaped(line.Sector)}\" ");
-            strip.Append(Invariant, $"data-names=\"{line.Names}\" data-uptrend=\"{line.InUptrend}\" data-listed=\"{line.OnTheList}\">");
-            strip.Append(Invariant, $"{Escaped(line.Sector)}: {line.Names} name(s), {line.OnTheList} on the list, {line.InUptrend} in an uptrend</div>");
-        }
-
-        strip.Append("</section>");
-
-        return strip.ToString();
-    }
-
     // What a trend column holds, said alike wherever a table draws one.
     public const string TrendSays = "The chart's trend in a word. Uptrend: the close is above its 50-day average, the 50-day is above the 200-day, and the latest swing low is above the one before it. Downtrend: the mirror of that. Range: every input is there and neither holds. Not classified: too little history to read one.";
 
@@ -5972,15 +5961,15 @@ public sealed partial class MarkRenderer : IComponent
     public static IReadOnlyList<(string Heading, string Says)> UniverseHeadings { get; } =
     [
         ("Name", "The stock's ticker, which opens its own page, with the company beneath it. Hold the pointer over the name to see its year of closes with its nearest support and resistance."),
-        ("Sector", "The sector the index files the company under."),
+        ("Sector", "The GICS sector the company's newest fetch files, or sector not filed where it files none."),
         ("Close", "The stock's closing price on the night the table is drawn for."),
         ("Trend", TrendSays),
         ("Distance", DistanceSays),
         ("Sessions to earnings", "Trading sessions from the night to the company's next dated earnings report on the calendar."),
-        ("Strength", Formatted($"How the stock's returns compare with the rest of the index: the average of where its return over the last {SwingReadings.ReturnShortSessions} sessions and over the last {SwingReadings.ReturnLongSessions} sits among every other member's. 90% means that across the two it beat nine in ten of them.")),
+        ("Strength", Formatted($"How the stock's returns compare with the rest of the index: the average of where its return over the last {SwingReadings.ReturnShortSessions} sessions and over the last {SwingReadings.ReturnLongSessions} sits among every other member's. 90% means that across the two it beat nine in ten of them, and the bar fills to that share.")),
         ("Pullback", Formatted($"How far the close sits below the highest high of the last {SwingReadings.HighWindow} sessions, in typical days' moves.")),
-        ("Dry-up", "The median daily volume since that high against the stock's 50-day average volume. Below 1 means trading thinned out on the way down."),
-        ("Tightness", Formatted($"The mean true range, a day's full span of movement, of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}. Below 1 means the price has been moving in a narrower range lately.")),
+        ("Dry-up", "The median daily volume since that high against the stock's 50-day average volume. Below 1 means trading thinned out on the way down. The bar runs from 0 to 2, its tick at the swing filter's dry-up ceiling, which a pullback's dry-up must sit under."),
+        ("Tightness", Formatted($"The mean true range, a day's full span of movement, of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}. Below 1 means the price has been moving in a narrower range lately. The bar runs from 0 to 2 and carries no tick, since no live rule reads it.")),
         ("Last on the list", "The last evening the stock was on tonight's list, or never."),
         ("Sixty evenings", "One column for each of the last sixty sessions: a solid bar on an evening the stock was on the list and a thin line on one it was not. Before the swing filter's first night an evening's list held every stock any reason fired for, which was most of the index."),
     ];
@@ -6073,20 +6062,33 @@ public sealed partial class MarkRenderer : IComponent
     // carries, being the evening a name was last on the list and the listing
     // strip, are absent rather than blank, and the table says so once rather
     // than in every row.
-    public string UniverseTable(IReadOnlyList<UniverseCell> rows)
+    public string UniverseTable(IReadOnlyList<UniverseCell> rows, UniverseSorting? sorting = null)
     {
         var table = new StringBuilder();
 
         table.Append("<div class=\"tbl-wrap\">");
-        table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
+        table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\"{(sorting?.By is { } by ? Formatted($" data-sort=\"{Escaped(by)}\" data-dir=\"{(sorting.Descending ? "desc" : "asc")}\"") : string.Empty)}>"));
 
         // Each heading carries what its column holds, which the stylesheet shows while the pointer is
-        // over the heading or it has the focus.
+        // over the heading or it has the focus, and from 19.5 a link sorting the table on its column, the column
+        // sorted on turning the other way.
         table.Append("<tr>");
 
         foreach (var (heading, says) in UniverseHeadings)
         {
-            table.Append(TippedHeading(heading, says));
+            var heads = TippedHeading(heading, says);
+
+            if (sorting is not null && UniverseSortKeys.TryGetValue(heading, out var key))
+            {
+                var lit = sorting.By == key;
+                var descending = lit && !sorting.Descending;
+                var mark = lit ? (sorting.Descending ? "&#9660;" : "&#9650;") : "&#8597;";
+
+                heads = heads[..^"</th>".Length]
+                    + Formatted($"<a class=\"sort\" data-sort=\"{key}\" aria-pressed=\"{Flag(lit)}\" href=\"{sorting.Href(key, descending)}\" aria-label=\"Sort by {Escaped(heading)}{(descending ? ", highest first" : string.Empty)}\">{mark}</a></th>");
+            }
+
+            table.Append(heads);
         }
 
         table.Append("</tr>");
@@ -6103,6 +6105,11 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty);
             table.Append(row.Researched is { } written
                 ? $"<span class=\"researched-on\" data-researched=\"{written.ToString("yyyy-MM-dd", Invariant)}\">researched {written.ToString("yyyy-MM-dd", Invariant)}</span>"
+                : string.Empty);
+
+            // A member one gate short of a setup, tagged in the setup's tint with the gate it missed.
+            table.Append(row.ShortFamily is { } family
+                ? Formatted($"<span class=\"fam-tag short-tag\" data-family=\"{Escaped(family)}\" data-gate=\"{Escaped(row.ShortGate ?? string.Empty)}\" title=\"One gate short of a {Escaped(FamilyName(family).ToLowerInvariant())}: the {Escaped(row.ShortGate ?? "one")} gate\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(FamilyName(family))} · {Escaped(row.ShortGate ?? string.Empty)}</span>")
                 : string.Empty);
             table.Append(Formatted($"<span class=\"peer-pop\" role=\"tooltip\">{YearLine(row.Ticker, row.Year, row.NearestSupport, row.NearestResistance)}</span></td>"));
             table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
@@ -6133,10 +6140,13 @@ public sealed partial class MarkRenderer : IComponent
             // The swing readings, each as the swing reader stored it and drawn whole on its
             // cell: the mean of the two places among the members' returns, the pullback in
             // typical days, the volume while it came down and the range's tightness.
-            table.Append(SwingCell("strength", row.Strength, held => Formatted($"{held * 100:0}%")));
-            table.Append(SwingCell("depth", row.Depth, held => Formatted($"{held:0.00}")));
-            table.Append(SwingCell("dry-up", row.DryUp, held => Formatted($"{held:0.00}")));
-            table.Append(SwingCell("tightness", row.Tightness, held => Formatted($"{held:0.00}")));
+            // From 19.5 the strength as its place among the members with a bar, the pullback in moves, and the dry-up and the
+            // tightness each with a bar, the dry-up's carrying the swing filter's ceiling as a tick; no live rule reads the
+            // tightness.
+            table.Append(SwingCell("strength", row.Strength, held => Formatted($"{held * 100:0}%{Bar(held, 1, null)}")));
+            table.Append(SwingCell("depth", row.Depth, held => Formatted($"{held:0.00} moves")));
+            table.Append(SwingCell("dry-up", row.DryUp, held => Formatted($"{held:0.00}{Bar(held, 2, sorting?.DryUpCeiling)}")));
+            table.Append(SwingCell("tightness", row.Tightness, held => Formatted($"{held:0.00}{Bar(held, 2, null)}")));
 
             // The two right-hand columns count evenings a name appeared on the
             // list. They say nothing about index membership, which every name in
@@ -6155,6 +6165,26 @@ public sealed partial class MarkRenderer : IComponent
     // What a name with no ladder row is shown as. Its own value rather than an
     // empty cell, so it can be filtered for and counted.
     const string NotClassified = "not classified";
+
+    // The key each sortable universe column's link carries, the sixty evenings' strip sorting on nothing.
+    static readonly Dictionary<string, string> UniverseSortKeys = new(StringComparer.Ordinal)
+    {
+        ["Name"] = "name",
+        ["Sector"] = "sector",
+        ["Close"] = "close",
+        ["Trend"] = "trend",
+        ["Distance"] = "distance",
+        ["Sessions to earnings"] = "earnings",
+        ["Strength"] = "strength",
+        ["Pullback"] = "pullback",
+        ["Dry-up"] = "dry-up",
+        ["Tightness"] = "tightness",
+        ["Last on the list"] = "listed",
+    };
+
+    // A small bar of a reading over a scale, held at its end past it, with the live threshold as a tick where one is given.
+    static string Bar(double value, double scale, double? threshold) =>
+        Formatted($"<span class=\"cell-bar\" aria-hidden=\"true\"><span class=\"cell-fill\" style=\"width:{Math.Clamp(value / scale, 0, 1) * 100:0.#}%\"></span>{(threshold is { } at && at < scale ? Formatted($"<span class=\"cell-tick\" style=\"left:{at / scale * 100:0.#}%\"></span>") : string.Empty)}</span>");
 
     // One swing reading in a universe cell, the stored value whole on the element and a word where none was stored.
     static string SwingCell(string attribute, double? value, Func<double, string> shown) =>
@@ -6569,7 +6599,7 @@ public sealed partial class MarkRenderer : IComponent
     // five hundred rows is the only question paging raises. The count comes first,
     // beside its own word, and the page after it, so no figure follows another
     // across a comma, which a reader takes for one number with its thousands set off.
-    public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector, string? universe = null)
+    public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector, string? universe = null, UniverseState? state = null)
     {
         var pages = Math.Max(1, (rows + pageSize - 1) / pageSize);
         var at = Math.Clamp(page, 1, pages);
@@ -6580,7 +6610,7 @@ public sealed partial class MarkRenderer : IComponent
         nav.Append(Invariant, $"data-rows=\"{rows}\" data-page-size=\"{pageSize}\">");
 
         string Link(int to, string label, string rel) =>
-            Formatted($"<a class=\"page\" rel=\"{rel}\" data-page=\"{to}\" href=\"{Query(to, trend, sector, universe)}\">{Escaped(label)}</a>");
+            Formatted($"<a class=\"page\" rel=\"{rel}\" data-page=\"{to}\" href=\"{Query(to, trend, sector, universe)}{state?.Extra()}\">{Escaped(label)}</a>");
 
         nav.Append(at > 1
             ? Link(at - 1, "previous", "prev")
@@ -6620,9 +6650,9 @@ public sealed partial class MarkRenderer : IComponent
         return "#/universe?" + string.Join("&amp;", parts);
     }
 
-    public string UniverseFilters(IReadOnlyList<UniverseCell> rows, string? trend = null, string? sector = null, string? universe = null)
+    public string UniverseFilters(IReadOnlyList<UniverseCell> rows, string? trend = null, string? sector = null, string? universe = null, UniverseState? held = null)
     {
-        var chosen = universe is { Length: > 0 } ? "&amp;universe=" + Uri.EscapeDataString(universe) : string.Empty;
+        var chosen = (universe is { Length: > 0 } ? "&amp;universe=" + Uri.EscapeDataString(universe) : string.Empty) + held?.Extra();
         var states = rows
             .Select(row => row.TrendState ?? NotClassified)
             .Distinct(StringComparer.Ordinal)
@@ -6642,7 +6672,7 @@ public sealed partial class MarkRenderer : IComponent
         // Two rows of chips, each with an "all" chip, and the lit chip marked. A chip keeps
         // the other row's filter, so lighting a trend does not clear a sector.
         filters.Append("<span class=\"chips-label\">Trend</span>");
-        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"all\" aria-pressed=\"{Flag(trend is null)}\" href=\"{Query(1, null, sector, universe)}\">all</a>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"trend\" data-value=\"all\" aria-pressed=\"{Flag(trend is null)}\" href=\"{Query(1, null, sector, universe)}{held?.Extra()}\">all</a>");
 
         foreach (var state in states)
         {
@@ -6651,7 +6681,7 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         filters.Append("<span class=\"chip-break\"></span><span class=\"chips-label\">Sector</span>");
-        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"all\" aria-pressed=\"{Flag(sector is null)}\" href=\"{Query(1, trend, null, universe)}\">all</a>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"sector\" data-value=\"all\" aria-pressed=\"{Flag(sector is null)}\" href=\"{Query(1, trend, null, universe)}{held?.Extra()}\">all</a>");
 
         foreach (var named in sectors)
         {

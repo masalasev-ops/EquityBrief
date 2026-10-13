@@ -132,6 +132,10 @@ public partial class ReadSurface
             // 19.4, paper trading and each account's trade log.
             .. PaperRows,
 
+            // 19.5, Universe's tiles, search, sorting, rows a page, chips, bars, phone cards and corrections, and the two
+            // section 17 rows they read.
+            .. UniverseRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
@@ -454,10 +458,6 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Prices may be out of date, when the refetch was last tried and why it failed"),
             CheckReach.Key("15.9 Name", "Prices may be out of date, above everything the page draws from those prices"),
             CheckReach.Key("15.7 Tonight", "Selected name, the plan column"),
-            CheckReach.Key("15.8 Universe", "Sector strip, one line per sector"),
-            CheckReach.Key("15.8 Universe", "Sector strip, how many are on tonight's list"),
-            CheckReach.Key("15.8 Universe", "Sector strip, names"),
-            CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend"),
             CheckReach.Key("15.8 Universe", "The table, every name in the index"),
             CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions"),
             CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending"),
@@ -2245,7 +2245,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheSectorStripCountsEverySectorAndKeepsNotOnFileOutOfAllOfThem()
+    public async Task TheSectorTilesCountEverySectorAndKeepNotOnFileOutOfAllOfThem()
     {
         // The strip's lines sum to the index, and a name with no sector is
         // counted in its own line rather than folded into a real one. A falsy
@@ -2277,13 +2277,15 @@ public partial class ReadSurface
                 line.InUptrend);
         }
 
-        var strip = new MarkRenderer().SectorStrip(lines);
+        // From 19.5 the tiles, a GICS sector each, the members on tonight's list counted per tile and a member filing no
+        // sector counted in none of them.
+        var listed = cells.Where(cell => cell.Evenings is { Count: > 0 } evenings && evenings[^1]).Select(cell => cell.Ticker).ToHashSet(StringComparer.Ordinal);
+        var tiles = UniverseScreen.Tiles(cells, true, listed, _ => null);
+        var drawn = new MarkRenderer().SectorTiles(tiles, null, null, null, new UniverseState(), cells.Count(cell => cell.Sector == UniverseScreen.SectorNotOnFile), 251);
 
-        Assert.Contains($"data-sectors=\"{lines.Count}\"", strip, StringComparison.Ordinal);
-
-        // The count of names on the list, which arrived at 5.4 with the store
-        // that feeds it and was absent and said so until then.
-        Assert.All(lines, line => Assert.Contains($"data-listed=\"{line.OnTheList}\"", strip, StringComparison.Ordinal));
+        Assert.Contains($"data-sectors=\"{tiles.Count}\"", drawn, StringComparison.Ordinal);
+        Assert.Equal(lines.Where(line => line.Sector != UniverseScreen.SectorNotOnFile).Sum(line => line.Names), tiles.Sum(tile => tile.Names));
+        Assert.All(tiles, tile => Assert.Contains($"data-sector=\"{tile.Sector}\" data-names=\"{tile.Names}\" data-uptrend=\"{tile.InUptrend}\" data-listed=\"{tile.OnTheList}\"", drawn, StringComparison.Ordinal));
 
         // A name with no sector never answers to a real sector's bucket,
         // asserted over a constructed row because every fixture name has one.

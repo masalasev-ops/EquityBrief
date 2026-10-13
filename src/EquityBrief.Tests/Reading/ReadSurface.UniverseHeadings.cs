@@ -16,7 +16,7 @@ public partial class ReadSurface
     [
         .. Regex.Matches(
                 WebUtility.HtmlDecode(Regex.Match(table, "<table class=\"universe-table\"[^>]*><tr>(.*?)</tr>", RegexOptions.Singleline).Groups[1].Value),
-                "<th class=\"tipped\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">((?:[^<]|<span class=\"(?:gain|loss)\">[^<]*</span>)+)</span></th>")
+                "<th class=\"tipped\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span><span class=\"head-tip\" role=\"tooltip\">((?:[^<]|<span class=\"(?:gain|loss)\">[^<]*</span>)+)</span>(?:<a class=\"sort\"[^>]*>[^<]*</a>)?</th>")
             .Select(heading => (heading.Groups[1].Value, heading.Groups[2].Value, Regex.Replace(heading.Groups[3].Value, "</?span[^>]*>", string.Empty))),
     ];
 
@@ -25,15 +25,15 @@ public partial class ReadSurface
     static readonly (string Heading, string Says)[] SaidOfEachColumn =
     [
         ("Name", "The stock's ticker, which opens its own page, with the company beneath it. Hold the pointer over the name to see its year of closes with its nearest support and resistance."),
-        ("Sector", "The sector the index files the company under."),
+        ("Sector", "The GICS sector the company's newest fetch files, or sector not filed where it files none."),
         ("Close", "The stock's closing price on the night the table is drawn for."),
         ("Trend", "The chart's trend in a word. Uptrend: the close is above its 50-day average, the 50-day is above the 200-day, and the latest swing low is above the one before it. Downtrend: the mirror of that. Range: every input is there and neither holds. Not classified: too little history to read one."),
         ("Distance", "How far the close sits from its nearest support below and its nearest resistance above, in typical days' moves, a typical day's move being the stock's average true range over 14 sessions. S is the gap between the close and the top of the support band, R the gap between the close and the bottom of the resistance band, so 0.0 means the close is at that band's edge. In the picture the close is the centre line, support is green to the left and resistance orange to the right, one tick per typical day, and an arrow marks a band more than 4 away."),
         ("Sessions to earnings", "Trading sessions from the night to the company's next dated earnings report on the calendar."),
-        ("Strength", "How the stock's returns compare with the rest of the index: the average of where its return over the last 63 sessions and over the last 126 sits among every other member's. 90% means that across the two it beat nine in ten of them."),
+        ("Strength", "How the stock's returns compare with the rest of the index: the average of where its return over the last 63 sessions and over the last 126 sits among every other member's. 90% means that across the two it beat nine in ten of them, and the bar fills to that share."),
         ("Pullback", "How far the close sits below the highest high of the last 20 sessions, in typical days' moves."),
-        ("Dry-up", "The median daily volume since that high against the stock's 50-day average volume. Below 1 means trading thinned out on the way down."),
-        ("Tightness", "The mean true range, a day's full span of movement, of the last 10 sessions against the last 50. Below 1 means the price has been moving in a narrower range lately."),
+        ("Dry-up", "The median daily volume since that high against the stock's 50-day average volume. Below 1 means trading thinned out on the way down. The bar runs from 0 to 2, its tick at the swing filter's dry-up ceiling, which a pullback's dry-up must sit under."),
+        ("Tightness", "The mean true range, a day's full span of movement, of the last 10 sessions against the last 50. Below 1 means the price has been moving in a narrower range lately. The bar runs from 0 to 2 and carries no tick, since no live rule reads it."),
         ("Last on the list", "The last evening the stock was on tonight's list, or never."),
         ("Sixty evenings", "One column for each of the last sixty sessions: a solid bar on an evening the stock was on the list and a thin line on one it was not. Before the swing filter's first night an evening's list held every stock any reason fired for, which was most of the index."),
     ];

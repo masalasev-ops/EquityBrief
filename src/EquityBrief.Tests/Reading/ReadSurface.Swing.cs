@@ -177,8 +177,11 @@ public partial class ReadSurface
             }
             else
             {
+                // From 19.5 the place among the members with a bar filled to it.
+                var strength = double.Parse(row[1], CultureInfo.InvariantCulture);
+
                 Assert.Contains(
-                    string.Create(CultureInfo.InvariantCulture, $">{double.Parse(row[1], CultureInfo.InvariantCulture) * 100:0}%</td>"),
+                    string.Create(CultureInfo.InvariantCulture, $">{strength * 100:0}%<span class=\"cell-bar\" aria-hidden=\"true\"><span class=\"cell-fill\" style=\"width:{strength * 100:0.#}%\"></span></span></td>"),
                     SwingCellOf("strength"),
                     StringComparison.Ordinal);
             }

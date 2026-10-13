@@ -36,4 +36,31 @@ public partial class ArchitectureConformance
             Assert.All(words, text => Assert.DoesNotMatch(@"\d", text));
         }
     }
+
+    // 19.5: the universe's figure the same way, its key naming every part it draws in the architecture and in the guide.
+    [Fact]
+    public void TheUniverseFiguresKeyNamesEveryPartTheFigureDraws()
+    {
+        var architecture = Corpus.Read("docs/ARCHITECTURE.html");
+        var guide = Corpus.Read("docs/HOW_IT_WORKS.html");
+
+        var (drawn, keyed) = Parts(architecture, "Figure 15.4.", "<div class=\"key\">", "</div>");
+
+        Assert.Equal(Enumerable.Range(1, 6).Select(part => part.ToString(CultureInfo.InvariantCulture)), drawn.Keys);
+        Assert.Equal(drawn.Keys, keyed.Keys);
+        Assert.All(keyed.Values, words => Assert.True(words.Length > 40, $"A key line says too little to explain a part: '{words}'."));
+
+        var (pictured, listed) = Parts(guide, "The universe, its figures blanked out", "<ol class=\"parts\">", "</ol>");
+
+        Assert.Equal(drawn.Keys, pictured.Keys);
+        Assert.Equal(pictured.Keys, listed.Keys);
+
+        foreach (var figure in new[] { Figure(architecture, "Figure 15.4."), Figure(guide, "The universe, its figures blanked out") })
+        {
+            var words = Regex.Matches(figure, "<text[^>]*>(.*?)</text>").Select(text => Regex.Replace(text.Groups[1].Value, "<[^>]+>", string.Empty))
+                .Where(text => !Regex.IsMatch(text, @"^\d$"));
+
+            Assert.All(words, text => Assert.DoesNotMatch(@"\d", text));
+        }
+    }
 }

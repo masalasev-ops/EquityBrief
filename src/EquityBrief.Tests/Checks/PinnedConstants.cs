@@ -688,6 +688,8 @@ public class PinnedConstants
             // The dividend's steps a card reads its interval from where none is kept, the 16.3 correction of 2026-10-10.
             new("Dividend step", "0.0002", Core.Cards.CardHitsReading.SmallestStep, "CardHitsReading.SmallestStep"),
             new("Dividend step", "0.20", Core.Cards.CardHitsReading.LargestStep, "CardHitsReading.LargestStep"),
+            new("Near a level", "1", (decimal)Api.Reading.UniverseScreen.NearLevel, "UniverseScreen.NearLevel"),
+            new("Correction notice age", "30", Web.App.SinglePageApp.CorrectionAgeDays, "SinglePageApp.CorrectionAgeDays"),
         ];
     }
 

@@ -1854,24 +1854,72 @@ app.MapGet("/screens/universe", async (
         ? (await read.SwingReadingsAsync(readOn)).ToDictionary(row => row.Ticker, StringComparer.Ordinal)
         : new Dictionary<string, SwingReadingRow>(StringComparer.Ordinal);
 
-    var cells = UniverseScreen.Rows(members, history, events, night, readings);
+    // The S&P 500's swing filter rows and family answers of the night, which the one gate short chip and the dry-up's
+    // ceiling read; the S&P 400's and 600's nights store only the first part each member failed, so they read none.
+    var large = reading == Universes.Large;
+    IReadOnlyList<GateResultRow> gates = large && night is { } gatesOn ? await read.GateResultsAsync(gatesOn) : [];
+    var oneShort = large && night is { } shortOn
+        ? UniverseScreen.OneShort(gates, await read.FamilyResultsAsync(shortOn))
+        : new Dictionary<string, (string Family, string Gate)>(StringComparer.Ordinal);
+
+    IReadOnlyList<UniverseCell> cells =
+    [
+        .. UniverseScreen.Rows(members, history, events, night, readings)
+            .Select(cell => oneShort.TryGetValue(cell.Ticker, out var shortOf) ? cell with { ShortFamily = shortOf.Family, ShortGate = shortOf.Gate } : cell),
+    ];
 
     var trend = request.Query["trend"].FirstOrDefault();
     var sector = request.Query["sector"].FirstOrDefault();
-
-    // The page, from the hash beside the filters. The filters and the cut are
-    // one call, because the order between them is the property: a page taken
-    // from the whole table and then filtered is a short page about the wrong
-    // names, and nothing on the screen contradicts it.
-    var shown = UniverseScreen.Rows(
-        cells,
+    var near = request.Query["near"].FirstOrDefault();
+    var sort = request.Query["sort"].FirstOrDefault();
+    var perPage = request.Query["rows"].FirstOrDefault();
+    var query = new UniverseScreen.Query(
         trend,
         sector,
+        request.Query["q"].FirstOrDefault() is { Length: > 0 } words ? words.Trim() : null,
+        near is UniverseScreen.NearSupport or UniverseScreen.NearResistance ? near : null,
+        large && request.Query["short"].FirstOrDefault() == "1",
+        sort is not null && UniverseScreen.SortKeys.Contains(sort, StringComparer.Ordinal) ? sort : null,
+        request.Query["dir"].FirstOrDefault() == "desc",
+        perPage == UniverseScreen.AllRows || (int.TryParse(perPage, NumberStyles.Integer, CultureInfo.InvariantCulture, out var size) && size != UniverseScreen.PageSize && UniverseScreen.PageSizes.Contains(size)) ? perPage : null,
         int.TryParse(request.Query["page"].FirstOrDefault(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var asked) ? asked : null);
+
+    // The page, from the hash beside the filters. The filters, the search, the chips and the sort come before the cut,
+    // because the order between them is the property: a page taken from the whole table and then filtered is a short
+    // page about the wrong names, and nothing on the screen contradicts it.
+    var kept = UniverseScreen.Kept(cells, query, oneShort.Keys.ToHashSet(StringComparer.Ordinal));
+    var shown = UniverseScreen.Paged(kept, query.Rows, query.Page);
 
     // The stored closes of the names the page draws and of no other, each drawn as its year line
     // beside its ticker.
     var drawn = UniverseScreen.WithYears(shown.Page, await read.ClosesAsync([.. shown.Page.Select(cell => cell.Ticker)]));
+
+    // A tile a GICS sector: the members tonight's lists hold, the page's list on the S&P 500 and the trades the index's
+    // lists kept tonight on the S&P 400 and 600, and each sector fund's return over the live heavyweights look-back.
+    // see: Every page names a member's sector by the GICS sector its company fetch files
+    var listedTonight = night is not { } listedOn ? new HashSet<string>(StringComparer.Ordinal)
+        : large ? cells.Where(cell => cell.LastListed == listedOn).Select(cell => cell.Ticker).ToHashSet(StringComparer.Ordinal)
+        : (await read.IndexTradesAsync(reading.Code, listedOn)).Where(trade => trade.Listed == listedOn).Select(trade => trade.Ticker).ToHashSet(StringComparer.Ordinal);
+    var funds = night is { } fundsOn
+        ? await read.FundStandingClosesAsync([.. EquityBrief.Core.Families.GicsSectors.Funds.Values], fundsOn, EquityBrief.Core.Families.HeavyweightRule.LookBack, null)
+        : new Dictionary<string, StandingCloses>(StringComparer.Ordinal);
+    var tiles = UniverseScreen.Tiles(
+        cells,
+        large,
+        listedTonight,
+        one => EquityBrief.Core.Families.GicsSectors.Funds.TryGetValue(one, out var fund)
+            ? (fund, funds.TryGetValue(fund, out var closes) ? TonightScreen.ReturnOf(closes) : null)
+            : null);
+
+    var view = new UniverseView(
+        new UniverseState(query.Search, query.Near, query.Short, query.Sort, query.Descending, query.Rows),
+        kept,
+        tiles,
+        cells.Count(cell => cell.Sector == UniverseScreen.SectorNotOnFile),
+        EquityBrief.Core.Families.HeavyweightRule.LookBack,
+        large,
+        UniverseScreen.PageSizes,
+        gates.Count > 0 ? (await FilterSettingsOf(read, gates[0].Version)).DryUpCeiling : null);
 
     return Results.Content(
         page.UniverseRegion(
@@ -1882,11 +1930,12 @@ app.MapGet("/screens/universe", async (
             sector,
             drawn,
             shown.At,
-            UniverseScreen.PageSize,
+            query.Rows == UniverseScreen.AllRows ? Math.Max(1, kept.Count) : UniverseScreen.SizeOf(query.Rows),
             TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows)),
             night,
             reading,
-            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.UniverseRoute) : string.Empty),
+            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.UniverseRoute) : string.Empty,
+            view),
         "text/html; charset=utf-8");
 });
 
@@ -2374,7 +2423,10 @@ app.MapGet("/screens/run/{night?}", async (
             prose: TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
             totals: RunScreen.Tracks(TonightScreen.Totals(nightListings)),
             fired: TonightScreen.Fired(nightListings),
-            listedByFilter: await read.ListRuleAsync(dated) == ListRules.Filter),
+            listedByFilter: await read.ListRuleAsync(dated) == ListRules.Filter,
+            // From 19.5 the sessions written before a correction, folded here once the notice is past its age.
+            // see: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
+            oldCorrections: TonightScreen.WrittenBeforeTheCorrection(everyListing.Where(listing => listing.SessionDate <= dated))),
         "text/html; charset=utf-8");
 });
 

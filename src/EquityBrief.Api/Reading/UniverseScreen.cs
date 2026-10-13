@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
 
@@ -183,8 +184,14 @@ public static class UniverseScreen
             nextEvent,
             nextEvent is { } beyond && beyond > ExchangeClosures.CoveredThrough,
             row.Name,
-            row.Researched);
+            row.Researched,
+            InSupport: Inside(row.Close, row.SupportFloor, row.NearestSupport),
+            InResistance: Inside(row.Close, row.NearestResistance, row.ResistanceCeiling));
     }
+
+    // Whether a close sits inside a band, both edges included, and not where the close or either edge is missing.
+    static bool Inside(decimal? close, decimal? low, decimal? high) =>
+        close is { } price && low is { } bottom && high is { } top && price >= bottom && price <= top;
 
     // Stated in one place, which a name's own level table reads too.
     // see: Distances are stated as typical days' moves
@@ -217,5 +224,162 @@ public static class UniverseScreen
                 group.Count(row => row.Evenings is { Count: > 0 } evenings && evenings[^1])))
             .OrderBy(line => line.Sector == SectorNotOnFile)
             .ThenBy(line => line.Sector, StringComparer.Ordinal),
+    ];
+
+    // A close within this many typical days' moves of its nearest band's edge is near it, one inside the band counting,
+    // which section 17 states.
+    public const double NearLevel = 1.0;
+
+    // The page sizes the table offers, the first the default, and every row as the last.
+    public static IReadOnlyList<int> PageSizes { get; } = [PageSize, 100];
+
+    public const string AllRows = "all";
+
+    // The columns the table sorts on, each by the key the link carries.
+    public static IReadOnlyList<string> SortKeys { get; } = ["name", "sector", "close", "trend", "distance", "earnings", "strength", "pullback", "dry-up", "tightness", "listed"];
+
+    // What the link asks of the table: the trend and the sector, the words searched for, the near-level chips and the one
+    // gate short chip, the column sorted on and which way, the rows a page and the page.
+    public sealed record Query(
+        string? Trend,
+        string? Sector,
+        string? Search,
+        string? Near,
+        bool Short,
+        string? Sort,
+        bool Descending,
+        string? Rows,
+        int? Page);
+
+    public const string NearSupport = "support";
+
+    public const string NearResistance = "resistance";
+
+    // The rows the query keeps, in the order it sorts them, the default by distance to the nearest level: the trend, the
+    // sector, the words a ticker opens with or the company's name holds, a close near its support or its resistance, and
+    // a member one gate short of a setup.
+    public static IReadOnlyList<UniverseCell> Kept(IReadOnlyList<UniverseCell> cells, Query query, IReadOnlySet<string>? oneShort = null)
+    {
+        var words = query.Search?.Trim();
+
+        IEnumerable<UniverseCell> kept = cells
+            .Where(row => query.Trend is null || (row.TrendState ?? NotClassified) == query.Trend)
+            .Where(row => query.Sector is null || row.Sector == query.Sector)
+            .Where(row => words is not { Length: > 0 }
+                || row.Ticker.StartsWith(words, StringComparison.OrdinalIgnoreCase)
+                || (row.Name?.Contains(words, StringComparison.OrdinalIgnoreCase) ?? false))
+            .Where(row => query.Near switch
+            {
+                NearSupport => row.InSupport || row.ToSupport <= NearLevel,
+                NearResistance => row.InResistance || row.ToResistance <= NearLevel,
+                _ => true,
+            })
+            .Where(row => !query.Short || (oneShort?.Contains(row.Ticker) ?? false));
+
+        return Sorted([.. kept], query.Sort, query.Descending);
+    }
+
+    // The rows in the order a column sorts them, a row holding no value last whichever way, a tie by the ticker; none
+    // asked keeps the projection's order, nearest a level first.
+    public static IReadOnlyList<UniverseCell> Sorted(IReadOnlyList<UniverseCell> rows, string? sort, bool descending)
+    {
+        static IComparable? Of(UniverseCell row, string key) => key switch
+        {
+            "name" => row.Ticker,
+            "sector" => row.Sector,
+            "close" => row.Close,
+            "trend" => row.TrendState ?? NotClassified,
+            "distance" => row.Nearest,
+            "earnings" => row.SessionsUntilEarnings,
+            "strength" => row.Strength,
+            "pullback" => row.Depth,
+            "dry-up" => row.DryUp,
+            "tightness" => row.Tightness,
+            "listed" => row.LastListed,
+            _ => null,
+        };
+
+        if (sort is null || !SortKeys.Contains(sort, StringComparer.Ordinal))
+        {
+            return rows;
+        }
+
+        var held = rows.Where(row => Of(row, sort) is not null);
+        var ordered = descending
+            ? held.OrderByDescending(row => Of(row, sort)).ThenBy(row => row.Ticker, StringComparer.Ordinal)
+            : held.OrderBy(row => Of(row, sort)).ThenBy(row => row.Ticker, StringComparer.Ordinal);
+
+        return [.. ordered, .. rows.Where(row => Of(row, sort) is null).OrderBy(row => row.Ticker, StringComparer.Ordinal)];
+    }
+
+    // The rows a page holds at the size asked, every row where the link asks for all.
+    public static int SizeOf(string? rows) =>
+        rows == AllRows ? int.MaxValue : int.TryParse(rows, out var size) && PageSizes.Contains(size) ? size : PageSize;
+
+    // A page of the kept rows at the size asked, with the page it is.
+    public static Shown Paged(IReadOnlyList<UniverseCell> kept, string? rows, int? asked)
+    {
+        var size = SizeOf(rows);
+
+        if (size == int.MaxValue)
+        {
+            return new Shown(kept, 1, kept.Count);
+        }
+
+        var pages = Math.Max(1, (kept.Count + size - 1) / size);
+        var at = Math.Clamp(asked ?? 1, 1, pages);
+
+        return new Shown([.. kept.Skip((at - 1) * size).Take(size)], at, kept.Count);
+    }
+
+    // The members one gate short of a setup on the S&P 500's night, each with the first setup in the one family order it
+    // missed by one gate and that gate's words: the pullback's from the swing filter's rows, a row failing one gate with
+    // nothing excluding it, and every other family's from its stored answers missing exactly one gate.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public static IReadOnlyDictionary<string, (string Family, string Gate)> OneShort(IReadOnlyList<GateResultRow> gates, IReadOnlyList<FamilyResultRow> results)
+    {
+        var shorts = new Dictionary<string, (string Family, string Gate)>(StringComparer.Ordinal);
+
+        foreach (var gate in gates.Where(CloseScreen.MissedOne))
+        {
+            var missed = !gate.Market ? SwingGates.Market : !gate.Trend ? SwingGates.Trend : !gate.Setup ? SwingGates.Setup : !gate.Trigger ? SwingGates.Trigger : SwingGates.Trade;
+
+            shorts.TryAdd(gate.Ticker, (EquityBrief.Core.Families.SetupFamilies.Pullback, missed));
+        }
+
+        foreach (var result in results
+            .Where(result => !result.Passed && result.Missed == 1 && result.Exclusions.Count == 0)
+            .OrderBy(result => EquityBrief.Core.Families.SetupFamilies.OrderOf(result.Family)))
+        {
+            if (EquityBrief.Core.Families.FamilyRule.GatesOf(result.Gates).FirstOrDefault(gate => !gate.Passed) is { } missed)
+            {
+                shorts.TryAdd(result.Ticker, (result.Family, missed.Name));
+            }
+        }
+
+        return shorts;
+    }
+
+    // Each sector's tile: its members, the share of them in an uptrend where the night reads the trend on the index, how
+    // many tonight's lists hold, and its fund's return over the live heavyweights rule's look-back to the night; members
+    // with no sector filed counted in none.
+    public static IReadOnlyList<SectorLine> Tiles(
+        IReadOnlyList<UniverseCell> rows,
+        bool trendRead,
+        IReadOnlySet<string> listedTonight,
+        Func<string, (string Fund, double? Return)?> fund) =>
+    [
+        .. rows
+            .Where(row => row.Sector != SectorNotOnFile)
+            .GroupBy(row => row.Sector, StringComparer.Ordinal)
+            .Select(group => new SectorLine(
+                group.Key,
+                group.Count(),
+                group.Count(row => row.TrendState == "uptrend"),
+                group.Count(row => listedTonight.Contains(row.Ticker)),
+                trendRead,
+                fund(group.Key)?.Fund,
+                fund(group.Key)?.Return))
+            .OrderBy(line => line.Sector, StringComparer.Ordinal),
     ];
 }

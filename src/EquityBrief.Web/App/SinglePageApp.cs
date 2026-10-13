@@ -642,6 +642,22 @@ public sealed partial class SinglePageApp : IComponent
           const kept = event.target.closest ? event.target.closest('select[data-merge-key]') : null;
           if (kept) { fresh = true; location.hash = merged(kept.getAttribute('data-merge-key'), kept.value === '' ? null : kept.value); }
         });
+        // Words searched for kept in the link under the box's key with every other key kept, none where the box is
+        // empty, and the page back to the first.
+        document.addEventListener('submit', (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-merge-key')) { return; }
+          event.preventDefault();
+          const key = form.getAttribute('data-merge-key');
+          const box = form.querySelector('input[name="' + key + '"]');
+          const words = box ? box.value.trim() : '';
+          const hash = merged(key, words === '' ? null : words);
+          const cut = hash.indexOf('?');
+          const params = new URLSearchParams(cut < 0 ? '' : hash.slice(cut + 1));
+          params.delete('page');
+          fresh = true;
+          location.hash = (cut < 0 ? hash : hash.slice(0, cut)) + (params.toString() ? '?' + params.toString() : '');
+        });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
         // with what the read surface said above the list.
@@ -1949,14 +1965,15 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         DateOnly? night = null,
         UniverseChoice? universe = null,
-        string selector = "")
+        string selector = "",
+        UniverseView? view = null)
     {
         var reading = universe ?? Universes.Large;
         var heading = "The universe: " + reading.Name;
-        var shown = rows
+        var state = view?.State ?? new UniverseState();
+        IReadOnlyList<UniverseCell> shown = view?.Kept ?? [.. rows
             .Where(row => trendFilter is null || (row.TrendState ?? "not classified") == trendFilter)
-            .Where(row => sectorFilter is null || row.Sector == sectorFilter)
-            .ToArray();
+            .Where(row => sectorFilter is null || row.Sector == sectorFilter)];
 
         // The page the reader asked for, cut from the filtered rows by the
         // projection and handed here already cut. A caller that hands none is
@@ -1966,7 +1983,7 @@ public sealed partial class SinglePageApp : IComponent
 
         var region = new StringBuilder();
 
-        region.Append(Invariant($"<section class=\"universe\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\" data-shown=\"{shown.Length}\" "));
+        region.Append(Invariant($"<section class=\"universe\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\" data-shown=\"{shown.Count}\" "));
         region.Append(Invariant($"data-drawn=\"{drawn.Count}\" data-page=\"{at}\" "));
         region.Append(Invariant($"data-trend-filter=\"{Escaped(trendFilter ?? "all")}\" data-sector-filter=\"{Escaped(sectorFilter ?? "all")}\">"));
 
@@ -1986,27 +2003,34 @@ public sealed partial class SinglePageApp : IComponent
             region.Append(Invariant($"<p class=\"oneline\" data-universe-reads=\"members\">The {Escaped(reading.Possessive)} {rows.Count} members carry their closes, typical moves and bands; the trend, the swing readings and the listing strip are read for the S&amp;P 500's members alone, so those columns are empty here.</p>"));
         }
 
-        region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
-        region.Append(Cards.Computed("Sectors", marks.SectorStrip(sectors), stamp: Cards.Night(night), region: "sectors"));
-
-        var table = new StringBuilder();
+        // A correction older than the age a notice is kept for is listed on the Run page, and this page links there.
+        // see: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
+        region.Append(CorrectionIsOld(writtenBeforeTheCorrection, night)
+            ? Invariant($"<p class=\"oneline corrections-link\" data-sessions=\"{writtenBeforeTheCorrection!.Count}\">A correction to listings more than {CorrectionAgeDays} days old is listed under Corrections on <a href=\"{RunRoute}\">the Run page</a>.</p>")
+            : WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
 
         var kept = reading == Universes.Large ? null : reading.Word;
 
-        table.Append(marks.UniverseFilters(rows, trendFilter, sectorFilter, kept));
-        table.Append("<div class=\"tbl-wrap\">").Append(marks.UniverseTable(drawn)).Append("</div>");
-        table.Append(marks.UniversePaging(shown.Length, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter, kept));
+        region.Append(Cards.Computed(
+            "Sectors",
+            marks.SectorTiles(view?.Tiles ?? [.. sectors.Where(line => line.Sector != "sector not filed")], sectorFilter, trendFilter, kept, state, view?.NotFiled ?? 0, view?.LookBack ?? 0),
+            stamp: Cards.Night(night),
+            region: "sectors"));
+
+        var table = new StringBuilder();
+
+        table.Append(Guide(UniverseGuide));
+        table.Append(marks.UniverseFilters(rows, trendFilter, sectorFilter, kept, state));
+        table.Append(marks.UniverseControls(state, trendFilter, sectorFilter, kept, view?.ShortRead ?? reading == Universes.Large, view?.PageSizes ?? [50, 100], "all"));
+        table.Append("<div class=\"tbl-wrap\">").Append(marks.UniverseTable(drawn, new UniverseSorting(MarkRenderer.SortHref(trendFilter, sectorFilter, kept, state), state.Sort, state.Descending, view?.DryUpCeiling))).Append("</div>");
+        table.Append(marks.UniversePaging(shown.Count, at, pageSize > 0 ? pageSize : Math.Max(1, drawn.Count), trendFilter, sectorFilter, kept, state));
         table.Append("<p class=\"oneline\">The two right-hand columns count evenings a name appeared on the list. They say nothing about index membership, which every name here has.</p>");
-        table.Append(Cards.Key(
-            "How to read the rows.",
-            "The distance picture fixes each close at its centre line. The green block to its left is the nearest support, the orange block to its right the nearest resistance, one tick per typical day. Scan down that column for blocks touching the centre. In the strip, each column is one session, marked on an evening the name was on the list and a rule on an evening it was not.",
-            "Names at the top are closest to one of their own levels, measured in days of their own ordinary movement. A strip with marks spread across it belongs to a name that keeps returning to its levels; a single mark is a one-off."));
 
         region.Append(Cards.Computed(
             "The index",
             table.ToString(),
             title: Invariant($"Every {reading.Name} member, nearest a level first"),
-            lede: "The top of the table is what nearly fired. Filters live in the address, so a filtered view is a link you can keep.",
+            lede: "The top of the table is what nearly fired. Filters, the search and the sort live in the address, so a view is a link you can keep.",
             stamp: Cards.Night(night),
             region: "index"));
 
@@ -2651,7 +2675,8 @@ public sealed partial class SinglePageApp : IComponent
         NightProse? prose = null,
         IReadOnlyList<ReasonTrackRow>? totals = null,
         int fired = 0,
-        bool listedByFilter = true)
+        bool listedByFilter = true,
+        IReadOnlyList<DateOnly>? oldCorrections = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Name;
@@ -2987,6 +3012,10 @@ public sealed partial class SinglePageApp : IComponent
             lede: "Four counts, kept apart and never added together.",
             region: "harness"));
         region.Append(Folded);
+
+        // From 19.5 the correction notices older than their age, folded at the page's end.
+        // see: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
+        region.Append(CorrectionsRegion(oldCorrections, night));
 
         region.Append("</section></section>");
 
