@@ -44519,3 +44519,43 @@ Run:        the off-peak run by hand from main's e4f57b98 at 16:33Z: the labelle
             2026-10-12 listing nothing; the drain wrote DAVE by 16:42Z and PBI by 16:51Z, 16 sections each, 32 model calls
             and 0.15 dollars in all.
 Carried:    nothing new.
+
+### 19.6 - the Queue: what settled a row a stock and New York day over fourteen days, the reports written by hand a row a day with their cost, and every time in New York's with UTC beneath the pointer   2026-10-13
+
+Built:      the queue page's settled requests drawn a row a stock and New York day it was asked on, newest first, with
+            the newest request's outcome, when it settled and why, and how many times it was asked that day, over the
+            fourteen New York days to the page's own with the older behind a link drawing every day; beneath them the
+            research passes no request names, a regenerate or a pass from the worker's command, a row a New York day
+            with how many reports they wrote and what their answered paid calls cost, a trial's and a review's calls
+            left out and a pass a request being written is under counted as that request's; and every instant on the
+            page, the asked, settled and pass times and a stopped drain's start, in New York's time marked ET with UTC
+            beneath the pointer. Tonight's rows keep their form. Two decisions, one superseding the queue's times; 15.15,
+            the 15.7 row's citation and section 17's window row; the guide and the roster, the prior text in
+            `CHANGELOG.md`. No migration and no remedy.
+Measured:   read back from a scratch folder's Release build of the branch over the live store, read-only but the read
+            surface's start row, at 1440 and a true 390 px in both palettes, no page wider than its screen: 43 requests,
+            all settled, drawn as 27 rows over the window, BDX, IT and MO each one row asked 4 times on 2026-09-30, and
+            34 over every day; 4 days written by hand in the window, 2026-10-11's 21 reports at $1.35, and 7 over every
+            day; the link naming 10 older rows.
+Tests:      four new, three read-surface and the fixture's: the grouping and the window over constructed requests across
+            midnight in New York; the passes no request names with a request being written and a theme's run; the page
+            read back off the route over a constructed store, a trial's call kept out of the cost; and the time form on
+            both sides of 2026-11-01. The 11.2 page test, the drain's stop and the region tests moved to the new form and
+            the grouped rows. Derived expectation `queue-screen.json`: the fixture's pass run by hand, its cost the two
+            parts `research-record.json` works by hand.
+Claims:     two more, 1305: the Queue's row written by hand and section 17's window.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, each filtered to the test it
+            was predicted red at. M1 the day read in UTC, M2 the oldest request's outcome, M3 the window a day longer:
+            each predicted red at the settled days test; so. M4 a pass a request being written is under counted by hand,
+            M5 a report counted a paid call: each predicted red at the passes by hand test; so. M6 the time beneath the
+            pointer in New York's: predicted red at the time form test; so. M7 the asked instant drawn as stored:
+            predicted red at the 11.2 page test; so. M8 the older rows leaving out the passes by hand: predicted red at
+            the fixture's expectation; so. M9 the shell dropping the link's query: predicted red at the route test; so.
+            Not mutated: the settled time's cell and the empty window's lines. Each reverted before anything was
+            committed, the eleven queue cases passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 to 19.5 as PRs 446 to 449 and 452 to 455, the screens' corrections as PR 456, the 11.4
+            correction as PR 457; in progress, 19.6; next, 19.7, the remaining screens.
+Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
+            of phases 16, 17 and 18.
