@@ -133,6 +133,24 @@ public partial class ReadSurface
         Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
         Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"7\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
 
+        // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
+        // link naming a stock no row holds selects the first.
+        store.Execute(
+            "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
+            $"('SML', '{IndexNight}', 'S3', 'breakout', 1, 2, '40', '38', NULL, '2', 63, 1.9, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            $"('SML', '{IndexNight}', 'S3', 'breakout', 'listed', 2, '[]', NULL, NULL, NULL);");
+
+        var named = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=S3")), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S3&universe=600\" class=\"sel\" aria-selected=\"true\">", named, StringComparison.Ordinal);
+        Assert.Equal(["S3"], Regex.Matches(named, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+
+        var unnamed = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync(TonightOf("SML", IndexNight) + "&name=ZZZ")), "<table class=\"list-table buy-points\".*?</table>"));
+
+        Assert.Equal(["S1"], Regex.Matches(unnamed, "<tr class=\"plan-row\" data-plan-for=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
+
         // M1's chart names its index and places it alone among its members, level with itself; no score on the S&P 400.
         Assert.Contains("<section class=\"behind-it\" data-index=\"S&P 400\" data-push=\"none\">", rows["M1"], StringComparison.Ordinal);
         Assert.Contains("<li data-heading=\"Momentum\" data-percentile=\"0.5\">", rows["M1"], StringComparison.Ordinal);

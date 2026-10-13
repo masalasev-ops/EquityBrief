@@ -106,9 +106,10 @@ public partial class FixtureExpectations
         Assert.Equal(LedgerReadings.Count, expected.GetProperty("readingsAMember").GetInt32());
         Assert.StartsWith("none:", expected.GetProperty("pushes").GetString(), StringComparison.Ordinal);
 
-        using var store = await Replayed();
+        using var store = await FixtureReplay.ReplayedAsync();
 
-        // One row for every S&P 500 member holding a bar on the night, each holding every reading of the catalogue.
+        // One row for every S&P 500 member holding a bar on the night, each holding every reading of the catalogue: three of
+        // the fixture's four, AAPL being the gapped name `gap-stop.json` names, whose stored year ends before the night.
         var night = Query(store, "SELECT MAX(session_date) FROM ledger_reading;").Single();
         var stored = Query(store, $"SELECT ticker || '|' || readings FROM ledger_reading WHERE index_code = 'GSPC' AND session_date = '{night}' ORDER BY ticker;")
             .Select(row => row.Split('|', 2))
@@ -116,6 +117,7 @@ public partial class FixtureExpectations
         var holding = Query(store, $"SELECT DISTINCT b.ticker FROM bar b JOIN membership m ON m.ticker = b.ticker AND m.index_code = 'GSPC' WHERE b.session_date = '{night}' ORDER BY b.ticker;");
 
         Assert.Equal(holding, stored.Keys);
+        Assert.Equal(["KEYS", "MSFT", "NFLX"], stored.Keys);
         Assert.All(stored.Values, readings => Assert.Equal(LedgerReadings.Count, readings.Length));
 
         // Each name's place under each heading by the test's own arithmetic: on each reading of the heading no market
