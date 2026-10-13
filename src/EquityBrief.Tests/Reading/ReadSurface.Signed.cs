@@ -4,10 +4,10 @@ using EquityBrief.Tests.Checks;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, 19.2: every figure a page writes with its sign stands in an element of the one class pair, the gain's green
-// or the loss's red, read off the rendered pages element by element, a page's scripts, styles and a picture's tooltips left
-// out, and a chart's axis labels and a peer's likeness, which are no figure that rose or fell; and the reader is shown to
-// find a signed figure written in ink and to pass one in the pair.
+// read-surface, 19.2: every figure a page writes with its sign stands in an element of the one class pair, a rise in the
+// gain's green and a fall in the loss's red, read off the rendered pages element by element, a page's scripts, styles and
+// a picture's tooltips left out, and a chart's axis labels and a peer's likeness, which are no figure that rose or fell;
+// and the reader is shown to find a signed figure written in ink or in the other class and to pass one in its own.
 // see: A figure that rose or fell is drawn green or red with its sign on every page
 public partial class ReadSurface
 {
@@ -57,11 +57,12 @@ public partial class ReadSurface
         return found;
     }
 
-    // The signed figures a page writes outside the pair, each with the classes it stood in.
+    // The signed figures a page writes outside the class its sign gives, a rise outside the gain's and a fall outside the
+    // loss's, each with the classes it stood in.
     static IReadOnlyList<string> Uncoloured(string page) =>
     [
         .. SignedFigures(page)
-            .Where(figure => !Regex.IsMatch(figure.Classes, @"(^|\s)(gain|loss)(\s|$)"))
+            .Where(figure => !Regex.IsMatch(figure.Classes, figure.Figure.StartsWith('+') ? @"(^|\s)gain(\s|$)" : @"(^|\s)loss(\s|$)"))
             .Where(figure => !AxisLabels.Any(axis => Regex.IsMatch(figure.Classes, $@"(^|\s){axis}(\s|$)")))
             .Select(figure => $"{figure.Figure} in \"{figure.Classes}\""),
     ];
@@ -72,6 +73,9 @@ public partial class ReadSurface
         Assert.Equal(["+1.25 in \"num\""], Uncoloured("<table><tr><td class=\"num\">+1.25</td></tr></table>"));
         Assert.Equal(["-0.40 in \"\""], Uncoloured("<p>a mean -0.40 of the risk</p>"));
         Assert.Empty(Uncoloured("<p>a mean <span class=\"loss\">-0.40</span> of the risk, <b class=\"bh-figure gain\">+0.19</b></p>"));
+
+        // A rise drawn in the loss's red and a fall in the gain's green each stand outside the class their sign gives.
+        Assert.Equal(["+0.19 in \"loss\"", "-0.40 in \"gain\""], Uncoloured("<p><span class=\"loss\">+0.19</span> and <span class=\"gain\">-0.40</span></p>"));
 
         // A date, a range of years, a word joined by a hyphen and a tooltip carry no signed figure.
         Assert.Empty(Uncoloured("<p>2026-10-13, the 52-week high, 2019-2026<svg><title>-3.0% on the day</title></svg></p>"));
