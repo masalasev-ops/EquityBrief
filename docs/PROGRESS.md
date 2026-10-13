@@ -44594,7 +44594,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
             by the newest registration, M23 no earlier versions drawn, M24 the version left out of the row, M25 the
             carried words never written: each predicted red at the new test; so, 1 of 8 each. Not mutated: the
             selector's order and the closes read for the earlier trades. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 922e7721: all six
+            steps, 0 warnings, 0 errors, 2321 of 2321 tests ran with none failed in 19 minutes 59 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 57 tables,
+            1306 claims, 1306 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      done, 19.0 to 19.6 as PRs 446 to 449, 452 to 455 and 458, the screens' corrections as PR 456, the 11.4
             correction as PR 457; in progress, this correction of 19.4; next, 19.7, the remaining screens, on the
             operator's word.
