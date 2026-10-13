@@ -44186,7 +44186,12 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             test alone; so, 1 of 22. M14 the night step writing no readings: predicted red at the ledger night test and
             the fixture's chart; so, 2 of 22. Each reverted before anything was committed, the 22 passing over the
             reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, b507da25: all six
+            steps, 0 warnings, 0 errors, 2276 of 2276 tests ran with none failed in 16 minutes 43 seconds, migrations 0
+            to 92 with none pending, schema version 92, against `data-ci` and never `data`; the phase report 55 tables,
+            1277 claims, 1277 passing and none unexamined, 43 checks on the roster run and passed. The run over
+            cf3737bd stopped at the suite on a cast the price storage check does not list, the percentiles' none written
+            as `(double?)null`, which b507da25 writes with no cast.
 Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451; in
             progress, 19.2; next, 19.3, every setup card built one way.
 Carried:    the chart read back on the served pages after the first night past the remedy, and the ledger step's added
