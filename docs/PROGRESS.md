@@ -44099,7 +44099,10 @@ Mutated:    the rule, stated before the run: one mutation a property the correct
             the off-peak script accepting a checkout off main: predicted red at the script's test alone. Results: each
             red where predicted and nowhere else, 1 of 9 each. Each reverted before anything was committed, the 9
             passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 73fe3163: all six
+            steps, 0 warnings, 0 errors, 2261 of 2261 tests ran with none failed in 16 minutes 52 seconds, migrations 0
+            to 91 with none pending, schema version 91, against `data-ci` and never `data`; the phase report 54 tables,
+            1268 claims, 1268 passing and none unexamined, 43 checks on the roster run and passed.
 Night:      the night of 2026-10-12, run fresh from main's c3c77ab7 after the 2.1 correction merged, finished green
             with 0 model calls and 370 weighted calls, LUMN's bar stored from Yahoo; its drain was stopped as the night
             started it and its requests for PBI and DAVE wait for the 16:30Z run, its labeller having found no name on
