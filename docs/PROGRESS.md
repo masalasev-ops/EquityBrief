@@ -44243,7 +44243,14 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             among them. M17 the other picks' card rows not drawn: predicted red at the buy points test and the S&P 500
             card test; red at the first, 1 of 36, the second standing outside the set. Each reverted before anything was
             committed, the 36 passing over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, fe865c52: all six
+            steps, 0 warnings, 0 errors, 2286 of 2286 tests ran with none failed in 17 minutes 38 seconds, migrations 0
+            to 92 with none pending, schema version 92, against `data-ci` and never `data`; the phase report 55 tables,
+            1283 claims, 1283 passing and none unexamined, 43 checks on the roster run and passed. The checks run over
+            053171d8 before the gates found five, repaired at fe865c52: a local function crossing a price to a
+            statistic, and on its rerun a second, a card's pick link dated by the machine's locale, the standing's
+            membership read not stated, the expectation naming no table and a key no test read; a sixth failed only
+            because the expectation was edited while that run read it.
 Queue:      done, 19.0 as PRs 446, 447 and 449, 19.1 as PR 448, the 2.1 and 11.4 corrections as PRs 450 and 451, 19.2 as
             PR 452; in progress, 19.3; next, 19.4, paper trading and the per-rule test.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; the sign-offs
