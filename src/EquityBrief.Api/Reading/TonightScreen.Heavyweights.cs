@@ -99,6 +99,108 @@ public static partial class TonightScreen
             : $"The rebalance of this month has not been read, and the book tries again {on}.";
     }
 
+    // The line an S&P 400's or 600's book draws for a sector it holds nothing in, since its rebalance stores its holdings
+    // alone.
+    public const string StoresNoSectorReading = "This book stores no reading for a sector it bought nothing in.";
+
+    // A heavyweights card with its standing tonight: each holding's return since bought off its own book's growth carried
+    // to the night and its standing off tonight's closes by the rule's own functions, design (b)'s read for no design of
+    // its own; the eleven sectors in order with each fund's return over the look-back and why a sector holding nothing
+    // holds none; and the four tiles.
+    // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
+    public static HeavyweightCardView WithStanding(
+        HeavyweightCardView card,
+        DateOnly night,
+        IReadOnlyDictionary<string, StandingCloses> stocks,
+        IReadOnlyDictionary<string, StandingCloses> funds,
+        IReadOnlyDictionary<string, double?> growth,
+        Func<string, double?> sectorReturn,
+        Func<string, string?> reason,
+        bool designB = false)
+    {
+        static double? Of(decimal? price) => price is { } held ? Statistic.FromPrice(held) : null;
+
+        HeavyweightHoldingCell[] holdings =
+        [
+            .. card.Holdings.Select(holding =>
+            {
+                var closes = stocks.GetValueOrDefault(holding.Ticker) ?? new StandingCloses(null, null, null);
+                var standing = designB
+                    ? new HeavyweightStanding(null, null, null, closes.Now is { } shut && holding.Average200 is { } line && line > 0 ? (Statistic.FromPrice(shut) / line) - 1.0 : null, HeavyweightStandings.NotForThisDesign)
+                    : HeavyweightStandings.Of(Of(closes.Now), Of(closes.Back), holding.Average200, sectorReturn(holding.Sector));
+
+                return holding with
+                {
+                    SinceBought = growth.TryGetValue(holding.Ticker, out var carried) && carried is { } grown ? grown - 1.0 : null,
+                    Standing = standing,
+                };
+            }),
+        ];
+
+        double? FundReturn(string? fund) =>
+            fund is not null && funds.TryGetValue(fund, out var closes) ? HeavyweightStandings.Return(Of(closes.Now), Of(closes.Back)) : null;
+
+        HeavyweightSectorView[] sectors =
+        [
+            .. GicsSectors.Eleven
+                .Concat(holdings.Select(holding => holding.Sector).Where(sector => !GicsSectors.Eleven.Contains(sector, StringComparer.Ordinal)).Distinct(StringComparer.Ordinal))
+                .Select(sector =>
+                {
+                    var fund = GicsSectors.Funds.GetValueOrDefault(sector);
+                    HeavyweightHoldingCell[] held = [.. holdings.Where(holding => holding.Sector == sector)];
+
+                    return new HeavyweightSectorView(sector, fund, FundReturn(fund), held, held.Length == 0 ? reason(sector) : null);
+                }),
+        ];
+
+        string[] heldFunds = [.. holdings.Select(holding => GicsSectors.Funds.GetValueOrDefault(holding.Sector)).OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+        return card with
+        {
+            Holdings = holdings,
+            Sectors = sectors,
+            Tiles = new HeavyweightTilesView(
+                holdings.Length,
+                GicsSectors.Eleven.Count(sector => holdings.Any(holding => holding.Sector == sector)),
+                GicsSectors.Eleven.Count,
+                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(holdings.Select(holding => stocks.GetValueOrDefault(holding.Ticker) is { } closes ? (Of(closes.Now), Of(closes.AtRebalance)) : (null, null))),
+                card.LastRebalance is null ? null : HeavyweightStandings.EqualWeighted(heldFunds.Select(fund => funds.GetValueOrDefault(fund) is { } closes ? (Of(closes.Now), Of(closes.AtRebalance)) : (null, null))),
+                heldFunds,
+                card.NextRebalance is { } next ? EquityBrief.Core.Bars.ExchangeClosures.SessionsUntil(night, next) : null),
+        };
+    }
+
+    // Why a sector the S&P 500's book, or one of its registered books, bought nothing in holds nothing, read off the
+    // book's own rows of its last rebalance: none of its largest companies beat the sector's return, its leaders failed
+    // the trend gate, their beta sat under one, or what it bought was sold since.
+    // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
+    public static string? EmptySectorReason(string sector, IReadOnlyList<HeavyweightReadRow> read, bool fundReturn, bool highBeta)
+    {
+        var rows = read.Where(row => row.Sector == sector).ToArray();
+
+        if (rows.Length == 0)
+        {
+            return read.Count == 0 ? "No rebalance has been read yet." : "Its last rebalance read none of its companies.";
+        }
+
+        var on = rows[0].Session.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var leading = rows.Where(row => row.Lead > 0).ToArray();
+        var trending = leading.Where(row => row.Trend).ToArray();
+
+        return leading.Length == 0
+            ? $"None of its largest companies beat {(fundReturn ? "its fund" : "its members' mean")} at the rebalance of {on}."
+            : trending.Length == 0
+                ? $"Its leaders failed the trend gate at the rebalance of {on}."
+                : highBeta && trending.All(row => row.Beta is not { } beta || beta < HeavyweightRule.BetaFloor)
+                    ? $"Its leaders' beta sat under one at the rebalance of {on}."
+                    : $"What its rebalance of {on} bought has been sold since.";
+    }
+
+    // The stocks a book holds open at the night's close, in the order of their sectors and then by ticker, which a chosen
+    // variant's book is read beside.
+    public static IReadOnlyList<string> OpenHoldings(IReadOnlyList<HeavyweightHoldingRow> holdings) =>
+        [.. holdings.Where(holding => holding.EndedOn is null).OrderBy(holding => holding.Sector, StringComparer.Ordinal).ThenBy(holding => holding.Ticker, StringComparer.Ordinal).Select(holding => holding.Ticker)];
+
     // What a name's page says where the sector heavyweights hold the name at its night's close, and nothing where
     // they do not.
     public static string? HeldAsAHeavyweight(string ticker, IReadOnlyList<HeavyweightHoldingRow> holdings) =>

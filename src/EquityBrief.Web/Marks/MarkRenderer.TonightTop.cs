@@ -47,8 +47,11 @@ public sealed partial class MarkRenderer
     }
 
     // Tonight's buy points across every setup, in the one family order and each setup's own order, each row tagged with
-    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card. The
-    // query given follows each row's link, so a page reading one index selects a row on it.
+    // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card, and
+    // every other pick's card in a row of its own beneath it, opened by the control in its name cell, since the setups'
+    // cards draw their picks here alone. The query given follows each row's link, so a page reading one index selects a
+    // row on it.
+    // see: Live picks are drawn once, in tonight's buy points, and a setup's card names them by their place
     public string BuyPoints(IReadOnlyList<BuyPointView> points, string? selected, string plan, string query = "")
     {
         if (points.Count == 0)
@@ -83,6 +86,7 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td class=\"setup\"><span class=\"fam-tag\" data-family=\"{Escaped(point.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(point.Family)}\"></span>{Escaped(point.Label)}</span></td>");
             body.Append(Invariant, $"<td class=\"place\" data-place=\"{number}\">{number}</td>");
             body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            body.Append(!chosen && pick.Card is { } toggled ? CardToggle(toggled) : string.Empty);
             body.Append(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
@@ -95,6 +99,11 @@ public sealed partial class MarkRenderer
             if (chosen)
             {
                 body.Append(Invariant, $"<tr class=\"plan-row\" data-plan-for=\"{Escaped(row.Ticker)}\"><td colspan=\"{BuyPointHeadings.Count}\">{plan}{(pick.Card is { } card ? DecisionCard(card) : string.Empty)}</td></tr>");
+            }
+            else if (pick.Card is { } closed)
+            {
+                // Every other pick's card in place beneath its row, opened by the control in its name cell.
+                body.Append(CardRow(closed, BuyPointHeadings.Count));
             }
         }
 

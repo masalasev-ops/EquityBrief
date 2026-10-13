@@ -54,11 +54,12 @@ public static class RuleScreen
         IReadOnlyList<RuleNightRow> nights,
         IReadOnlyList<RulePickRow> picks,
         IReadOnlyList<FormingRow> forming,
-        bool marketOpen) =>
+        bool marketOpen,
+        IndexRuleSettings? provisional = null) =>
     [
         .. cards.Select(card => card with
         {
-            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen),
+            RuleChoice = Of(card, indexName, large, night, register, chosen(QueryKey(card.Family)), nights, picks, forming, marketOpen, provisional),
         }),
     ];
 
@@ -72,13 +73,15 @@ public static class RuleScreen
         IReadOnlyList<RuleNightRow> nights,
         IReadOnlyList<RulePickRow> picks,
         IReadOnlyList<FormingRow> forming,
-        bool marketOpen)
+        bool marketOpen,
+        IndexRuleSettings? provisional)
     {
         var standing = Standing(card.Family, large, indexName, register, night);
         var (live, variants) = LiveAndVariants(standing);
-        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true) };
+        var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(card.Family, provisional) : [];
+        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live, large)) };
 
-        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false)));
+        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
 
         var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
         var chosenRow = chosen.Live ? live : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
@@ -86,17 +89,192 @@ public static class RuleScreen
         var liveWords = live is null ? card.Rule : Words(card.Family, live) ?? card.Rule;
         var words = chosen.Live ? card.Rule : Words(card.Family, chosenRow!) ?? chosenRow!.Candidate;
         var row = nights.FirstOrDefault(one => one.Family == card.Family && one.Rule == ruleName && one.Session == night);
+        var own = chosen.Live ? null : picks.Where(pick => pick.Rule == ruleName && pick.Session == night).OrderBy(pick => pick.Place).ToArray();
 
         return new RuleView(
             chosen,
             choices,
             Parts(words, liveWords),
-            chosen.Live ? null : [.. picks.Where(pick => pick.Rule == ruleName && pick.Session == night).OrderBy(pick => pick.Place).Select(pick => new VariantPickView(pick.Place, pick.Ticker, pick.Entry, pick.Stop, pick.Target, pick.RewardToRisk, pick.Why))],
+            own is null ? null : [.. own.Select(pick => new VariantPickView(pick.Place, pick.Ticker, pick.Entry, pick.Stop, pick.Target, pick.RewardToRisk, pick.Why))],
             row?.Gates is { } gates ? Funnel(gates) : null,
             row is { Evaluated: true, Stretch: { } stretch } && card.Family != HeavyweightRule.Name ? new StretchLineView(stretch, row.Mark, row.Flagged, row.Completed ?? 0, row.Sessions ?? 0) : null,
             card.Family == BreakoutRule.Name && row is not null ? FormingOf(forming.Where(one => one.Rule == ruleName).ToArray(), marketOpen) : null,
             row?.Evaluated ?? false,
-            large || variants.Length > 0 ? null : NoVariantLine(indexName));
+            large || variants.Length > 0 ? null : NoVariantLine(indexName),
+            Chips: ChipViews(liveChips, chosen.Live ? liveChips : ChipsOf(chosenRow!), !chosen.Live),
+            Share: own is null ? null : ShareOf(large || live is not null, card.Passes ?? [], [.. own.Select(pick => pick.Ticker)]));
+    }
+
+    // The live or provisional rule's tab: live where a freeze registered one or on the S&P 500, provisional otherwise.
+    static string LiveTab(CandidateRow? live, bool large) => live is not null || large ? "Live" : "Provisional";
+
+    // A chosen rule's chips, each marked where a chosen variant differs from the live rule on it, and the live rule's
+    // settings a variant states none of drawn as without them.
+    static IReadOnlyList<RuleChipView> ChipViews(IReadOnlyList<RuleChip> live, IReadOnlyList<RuleChip> chosen, bool variant)
+    {
+        if (!variant)
+        {
+            return [.. chosen.Select(chip => new RuleChipView(chip.Words, false))];
+        }
+
+        var differing = RuleChips.Differing(live, chosen).Select(chip => chip.Words).ToHashSet(StringComparer.Ordinal);
+
+        return
+        [
+            .. chosen.Select(chip => new RuleChipView(chip.Words, differing.Contains(chip.Words))),
+            .. RuleChips.Differing(live, chosen).Where(chip => chosen.All(own => own.Key != chip.Key)).Select(chip => new RuleChipView(chip.Words, true)),
+        ];
+    }
+
+    // A chosen variant's picks or holdings beside the live or provisional rule's passes tonight: those both hold, those
+    // the variant adds and those it drops, each in the order given.
+    public static RuleShareView ShareOf(bool live, IReadOnlyList<string> passes, IReadOnlyList<string> chosen) =>
+        new(
+            live ? "live" : "provisional",
+            [.. chosen.Where(ticker => passes.Contains(ticker, StringComparer.Ordinal))],
+            [.. chosen.Where(ticker => !passes.Contains(ticker, StringComparer.Ordinal))],
+            [.. passes.Where(ticker => !chosen.Contains(ticker, StringComparer.Ordinal))]);
+
+    // A registered rule's chips, read off its parameters through its kind's table of short words; none for a rule whose
+    // parameters cannot be read or whose evaluator no table is written for.
+    public static IReadOnlyList<RuleChip> ChipsOf(CandidateRow row)
+    {
+        try
+        {
+            return CandidateEvaluators.Find(row.Evaluator) is { } evaluator && KindOf(evaluator) is { } kind
+                ? RuleChips.Of(kind, CandidateEvaluator.Read(row.Parameters))
+                : [];
+        }
+        catch (Exception failure) when (failure is ArgumentException or JsonException or InvalidCastException)
+        {
+            return [];
+        }
+    }
+
+    static RuleKind? KindOf(CandidateEvaluator evaluator) => evaluator switch
+    {
+        IndexPullbackCandidate => RuleKind.IndexPullback,
+        IndexBreakoutCandidate => RuleKind.IndexBreakout,
+        IndexDriftCandidate => RuleKind.IndexDrift,
+        IndexHeavyweightCandidate => RuleKind.IndexHeavyweights,
+        SwingFilterRule => RuleKind.Pullback,
+        BreakoutCandidate => RuleKind.Breakout,
+        DriftCandidate => RuleKind.Drift,
+        BookEvaluator => RuleKind.Heavyweights,
+        _ => null,
+    };
+
+    // An S&P 400's or 600's provisional rule's chips, read off the settings its night stored as a registration would
+    // state them: its family's dials and the levels every provisional rule holds, the profit gate where the night read
+    // one, its own breadth and the dollar volume floor at one times.
+    public static IReadOnlyList<RuleChip> ProvisionalChips(string family, IndexRuleSettings settings)
+    {
+        var p = new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            [IndexRuleCandidate.FloorsParameter] = 1,
+            [IndexRuleCandidate.LowestCloseParameter] = EquityBrief.Core.Prices.Statistic.FromPrice(settings.LowestPrice),
+            [IndexRuleCandidate.QualityParameter] = settings.ProfitQuarters is null ? 0 : 1,
+            [IndexRuleCandidate.LargeBreadthParameter] = 0,
+        };
+
+        static double? Dial(IReadOnlyDictionary<string, string> dials, string name) =>
+            dials.TryGetValue(name, out var value) ? value is "off" or "none" ? 0 : double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null : null;
+
+        void Set(string key, double? value)
+        {
+            if (value is { } held)
+            {
+                p[key] = held;
+            }
+        }
+
+        switch (family)
+        {
+            case SetupFamilies.Pullback:
+                foreach (var (key, value) in PullbackDials(settings.Pullback))
+                {
+                    p[key] = value;
+                }
+
+                return RuleChips.Of(RuleKind.IndexPullback, p);
+
+            case BreakoutRule.Name:
+                Set(IndexBreakoutCandidate.HighSessionsParameter, Dial(settings.Breakout, "high"));
+                Set(IndexBreakoutCandidate.VolumeMultipleParameter, Dial(settings.Breakout, "volume"));
+                Set(IndexBreakoutCandidate.RangeCeilingParameter, Dial(settings.Breakout, "ceiling"));
+                Set(IndexBreakoutCandidate.StopMovesParameter, Dial(settings.Breakout, "stop"));
+
+                return RuleChips.Of(RuleKind.IndexBreakout, p);
+
+            case DriftRule.Name:
+                Set(IndexDriftCandidate.WindowSessionsParameter, Dial(settings.Drift, "window"));
+                Set(IndexDriftCandidate.ReactionMovesParameter, Dial(settings.Drift, "reaction"));
+                Set(IndexDriftCandidate.VolumeMultipleParameter, Dial(settings.Drift, "volume"));
+                Set(IndexDriftCandidate.TargetMultipleParameter, Dial(settings.Drift, "target"));
+
+                return RuleChips.Of(RuleKind.IndexDrift, p);
+
+            case HeavyweightRule.Name:
+                p.Remove(IndexRuleCandidate.LargeBreadthParameter);
+                p.Remove(IndexRuleCandidate.LowestCloseParameter);
+                p[IndexHeavyweightCandidate.DesignParameter] = IndexHeavyweightCandidate.DesignA;
+                Set(IndexHeavyweightCandidate.LargestParameter, settings.Heavyweights.GetValueOrDefault("size") == "every" ? 0 : Dial(settings.Heavyweights, "size"));
+                Set(IndexHeavyweightCandidate.LookBackParameter, Dial(settings.Heavyweights, "look-back"));
+                Set(IndexHeavyweightCandidate.LeadersParameter, Dial(settings.Heavyweights, "leaders"));
+                Set(IndexHeavyweightCandidate.BetaParameter, settings.Heavyweights.TryGetValue("beta", out var beta) ? beta == "off" ? 0 : 1 : null);
+                Set(IndexHeavyweightCandidate.LeadingExitParameter, settings.Heavyweights.GetValueOrDefault("exit") is "drop" or "both" ? 1 : 0);
+                Set(IndexHeavyweightCandidate.AverageExitParameter, settings.Heavyweights.GetValueOrDefault("exit") is "break" or "both" ? 1 : 0);
+
+                return RuleChips.Of(RuleKind.IndexHeavyweights, p);
+
+            default:
+                return [];
+        }
+    }
+
+    // The pullback's dials off the setting its night stored, each as a registration states it: its strength, its depth,
+    // its dry-up, its freshness, its reward to risk, its stop, its market dial and its band strength, none for a part the
+    // words do not carry.
+    static IEnumerable<(string Key, double Value)> PullbackDials(string setting)
+    {
+        static double? Number(string text) =>
+            double.TryParse(text.TrimEnd('%'), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? text.EndsWith('%') ? value / 100 : value : null;
+
+        foreach (var part in setting.Split(", ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var words = part.Split(' ');
+            var last = Number(words[^1]);
+
+            switch (words[0])
+            {
+                case "strength" when last is { } strength:
+                    yield return (IndexPullbackCandidate.StrengthParameter, strength);
+                    break;
+                case "depth" when words.Length == 4 && Number(words[1]) is { } low && last is { } high:
+                    yield return (IndexPullbackCandidate.DepthLowParameter, low);
+                    yield return (IndexPullbackCandidate.DepthHighParameter, high);
+                    break;
+                case "dry-up":
+                    yield return (IndexPullbackCandidate.DryUpParameter, last ?? 0);
+                    break;
+                case "fresh" when last is { } fresh:
+                    yield return (IndexPullbackCandidate.FreshnessParameter, fresh);
+                    break;
+                case "reward" when last is { } reward:
+                    yield return (IndexPullbackCandidate.RewardToRiskParameter, reward);
+                    break;
+                case "stop" when words.Length == 4 && Number(words[1]) is { } low && last is { } high:
+                    yield return (IndexPullbackCandidate.StopLowParameter, low);
+                    yield return (IndexPullbackCandidate.StopHighParameter, high);
+                    break;
+                case "market":
+                    yield return (IndexPullbackCandidate.MarketParameter, last ?? 0);
+                    break;
+                case "band" when last is { } band:
+                    yield return (IndexPullbackCandidate.BandParameter, band);
+                    break;
+            }
+        }
     }
 
     // The sector heavyweights' card's selector on an index, as a swing card's: the live rule, or the provisional rule
@@ -104,13 +282,14 @@ public static class RuleScreen
     // chooses under the family's own key, the live rule where it names none or one that does not stand; with the chosen
     // variant's name, whose own book the card is then drawn from.
     // see: A variant's picks are shown on its card when chosen and its results only under its tests
-    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null)
+    public static (RuleView Rule, string? Variant) Heavyweights(string indexName, bool large, DateOnly night, IReadOnlyList<CandidateRow> register, string? asked, string liveWords, IReadOnlyList<SixSettingsVerdict>? sixSettings = null, IndexRuleSettings? provisional = null)
     {
         var standing = Standing(HeavyweightRule.Name, large, indexName, register, night);
         var (live, variants) = LiveAndVariants(standing);
-        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true) };
+        var liveChips = live is not null ? ChipsOf(live) : !large && provisional is not null ? ProvisionalChips(HeavyweightRule.Name, provisional) : [];
+        var choices = new List<RuleChoiceView> { new(live?.Candidate ?? (large ? LiveChoice : ProvisionalChoice), RuleScreenWords.LiveSlug, null, true, LiveTab(live, large)) };
 
-        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false)));
+        choices.AddRange(variants.Select((row, at) => new RuleChoiceView(row.Candidate, RunScreen.Slug(row.Candidate), at + 1, false, RuleChips.TabWords(at + 1, RuleChips.Differing(liveChips, ChipsOf(row))))));
 
         var chosen = choices.FirstOrDefault(choice => !choice.Live && choice.Slug == asked) ?? choices[0];
         var chosenRow = chosen.Live ? null : variants.First(row => RunScreen.Slug(row.Candidate) == chosen.Slug);
@@ -118,8 +297,44 @@ public static class RuleScreen
         var untested = !large && live is null && chosenRow is not null ? Untested(chosenRow, sixSettings ?? []) : null;
 
         return (
-            new RuleView(chosen, choices, Parts(words, liveWords), null, null, null, null, true, large || variants.Length > 0 ? null : NoVariantLine(indexName), untested),
+            new RuleView(
+                chosen,
+                choices,
+                Parts(words, liveWords),
+                null,
+                null,
+                null,
+                null,
+                true,
+                large || variants.Length > 0 ? null : NoVariantLine(indexName),
+                untested,
+                ChipViews(liveChips, chosenRow is null ? liveChips : ChipsOf(chosenRow), chosenRow is not null)),
             chosenRow?.Candidate);
+    }
+
+    // A registered heavyweights rule's settings as its registration states them, none for a rule the register does not
+    // hold or whose parameters cannot be read; and whether it is a design (b) book, which reads no lead over a sector.
+    public static HeavyweightSettings? HeavyweightSettingsOf(string? candidate, IReadOnlyList<CandidateRow> register) =>
+        BookParameters(candidate, register) is { } found && CandidateEvaluators.Find(found.Row.Evaluator) is BookEvaluator book ? book.SettingsOf(found.Parameters) : null;
+
+    public static bool DesignB(string? candidate, IReadOnlyList<CandidateRow> register) =>
+        BookParameters(candidate, register) is { } found && found.Parameters.GetValueOrDefault(IndexHeavyweightCandidate.DesignParameter) == IndexHeavyweightCandidate.DesignB;
+
+    static (CandidateRow Row, IReadOnlyDictionary<string, double> Parameters)? BookParameters(string? candidate, IReadOnlyList<CandidateRow> register)
+    {
+        if (candidate is null || register.LastOrDefault(row => row.Candidate == candidate) is not { } row)
+        {
+            return null;
+        }
+
+        try
+        {
+            return (row, CandidateEvaluator.Read(row.Parameters));
+        }
+        catch (Exception failure) when (failure is ArgumentException or JsonException or InvalidCastException or KeyNotFoundException)
+        {
+            return null;
+        }
     }
 
     // The line beside a heavyweights book registered before its family's freeze: how the index's newest tester run judged

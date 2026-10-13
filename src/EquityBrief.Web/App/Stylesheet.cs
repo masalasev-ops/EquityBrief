@@ -435,6 +435,50 @@ span[data-last-asked-at]::before{content:none}
 .family-state .provisional{font-weight:600;color:var(--ink)}
 .family-sweep{margin:-6px 0 10px;font-size:13.5px;color:var(--ink)}
 .family-empty{margin:0 0 8px}
+.fam-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px}
+.fam-head .fam-tag{font-size:14px;padding:3px 10px 3px 8px}
+.fam-head .fam-count{font-size:13px;color:var(--ink-2)}
+.fam-head .guide{margin-left:auto}
+.fam-head .guide[open]{flex-basis:100%;margin-left:0}
+.fam-head .guide>summary{list-style:none;cursor:pointer;width:26px;height:26px;border:1px solid var(--hair-2);border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:600 13px var(--sans);color:var(--ink-2)}
+.fam-head .guide>summary::-webkit-details-marker{display:none}
+.fam-head .guide-b{margin:8px 0 0;padding:10px 12px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);font-size:13px;line-height:1.5;color:var(--ink-2)}
+.rule-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.rule-tab{font:600 12.5px var(--sans);text-decoration:none;color:var(--ink-2);border:1px solid var(--hair-2);border-radius:6px;padding:4px 10px}
+.rule-tab.current{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
+.rule-chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 6px;padding:0}
+.rule-chip{font:500 12px var(--sans);color:var(--ink-2);border:1px solid var(--hair);border-radius:999px;padding:2px 9px;background:var(--plot)}
+.rule-chip.differs{border-color:var(--warn);color:var(--ink);background:var(--warn-fill);font-weight:600}
+.rule-sentence{margin:0 0 10px}
+.rule-sentence>summary{cursor:pointer;font-size:12.5px;color:var(--ink-2)}
+.rule-share,.card-picks,.family-empty-line{margin:6px 0;font-size:13.5px;color:var(--ink-2)}
+.card-picks .card-pick{font-weight:600}
+.family-empty-line.flagged{color:var(--ink);font-weight:600}
+.funnel-bar{margin:10px 0}
+.funnel-bar .rule-funnel{list-style:none;margin:0;padding:0;display:grid;gap:3px}
+.funnel-bar li{display:grid;grid-template-columns:minmax(90px,150px) 1fr 44px;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+.funnel-bar .fb-bar{height:8px;background:var(--hair);border-radius:2px;overflow:hidden}
+.funnel-bar .fb-fill{display:block;height:100%;background:var(--stat)}
+.funnel-bar li.largest-drop .fb-name{font-weight:600;color:var(--ink)}
+.funnel-bar li.largest-drop .fb-fill{background:var(--warn)}
+.funnel-bar .fb-count{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.funnel-drop{margin:4px 0 0;font-size:12.5px;color:var(--ink-2)}
+details.expander{margin:10px 0 0;border:1px solid var(--hair);border-radius:6px;background:var(--surface)}
+details.expander>summary{cursor:pointer;padding:8px 12px;font:600 13px var(--sans);color:var(--ink)}
+details.expander[open]>summary{border-bottom:1px solid var(--hair)}
+details.expander>*:not(summary){margin:10px 12px}
+.hw-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:8px 0 12px}
+.hw-tile{background:var(--surface);border:1px solid var(--hair);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.hw-tile b{font:600 20px/1.2 var(--sans);font-variant-numeric:tabular-nums;color:var(--ink)}
+.hw-tile span{font-size:12px;color:var(--ink-2)}
+.heavyweight-table tr.hw-sector th{text-align:left;font:600 12.5px var(--sans);background:var(--plot);color:var(--ink);padding:6px 8px}
+.hw-fund{font-weight:400;color:var(--ink-2);margin-left:8px}
+.hw-bar{display:inline-block;width:60px;height:7px;background:var(--hair);border-radius:2px;vertical-align:middle;overflow:hidden}
+.hw-fill{display:block;height:100%}
+.hw-fill.gain{background:var(--up)} .hw-fill.loss{background:var(--down)}
+.hw-pill{display:inline-block;font:600 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:1px 8px;color:var(--ink-2);white-space:nowrap}
+@media (max-width:700px){ .hw-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .funnel-bar li{grid-template-columns:minmax(70px,100px) 1fr 36px} }
 .family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
 .family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}
 .family-table td.plan-stop{color:var(--down)}

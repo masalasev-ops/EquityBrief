@@ -39,11 +39,22 @@ public sealed record FamilyCardView(
     string? Empty,
     bool SweepFoundNone = false,
     RuleView? RuleChoice = null,
-    int HeldBack = 0);
+    int HeldBack = 0,
+    IReadOnlyList<string>? Passes = null,
+    IReadOnlyList<CloseToBuyCell>? Close = null,
+    IReadOnlyDictionary<string, IReadOnlyList<double?>>? Numbers = null);
 
-// One choice on a card's selector: the rule's name as the register holds it, the slug the link keeps it under, its
-// variant number by its first registration or none for the live rule.
-public sealed record RuleChoiceView(string Rule, string Slug, int? Variant, bool Live);
+// One choice on a card's tabs: the rule's name as the register holds it, the slug the link keeps it under, its variant
+// number by its first registration or none for the live rule, and the words its tab is drawn with, the settings it
+// differs from the live rule by for a variant.
+public sealed record RuleChoiceView(string Rule, string Slug, int? Variant, bool Live, string? Tab = null);
+
+// One of a rule's settings as a chip, marked where the chosen variant differs from its live rule on it.
+public sealed record RuleChipView(string Words, bool Differs);
+
+// A chosen variant's picks or holdings beside the live rule's passes tonight: the live rule's word, those both hold,
+// those the variant adds and those it drops.
+public sealed record RuleShareView(string Against, IReadOnlyList<string> Shared, IReadOnlyList<string> Added, IReadOnlyList<string> Dropped);
 
 // One clause of a rule's words, marked where the live rule's words do not carry it.
 public sealed record RulePartView(string Text, bool Differs);
@@ -77,7 +88,9 @@ public sealed record RuleView(
     FormingListView? Forming,
     bool Evaluated,
     string? NoVariantLine,
-    UntestedLineView? Untested = null);
+    UntestedLineView? Untested = null,
+    IReadOnlyList<RuleChipView>? Chips = null,
+    RuleShareView? Share = null);
 
 // The line beside a book registered before its family's freeze: the line itself and the adjusted p it states, as the
 // tester's newest run stored it.
@@ -416,86 +429,67 @@ public sealed partial class MarkRenderer
     internal static string SweepFoundNoneLine(bool drawn) =>
         drawn ? $"<p class=\"family-sweep\" data-sweep=\"none passed\">{Escaped(EquityBrief.Core.Sweep.SweepAnswer.Line)}</p>" : string.Empty;
 
-    // One family's card: its state and counts in a line, its picks as rows numbered by their place down
-    // the page, or why it lists nothing, and the notes beneath.
+    // How a setup card is read, written once for every setup card on every index and opened from its header's "?",
+    // where each card once repeated its key.
+    public const string SetupCardGuide =
+        "The header names the setup in its hue with its standing and tonight's count. The tabs choose the rule the card is drawn by: the live or provisional rule first, then each registered variant named by the settings it differs from the live rule on, the full rule in the tab's tooltip. The chips are the chosen rule's settings, the ones a variant differs on marked, and the rule in a sentence opens beneath them. The live rule's picks are drawn once, in tonight's buy points above, and the card names them by their place there; a chosen variant draws its own picks under the band with what it shares with the live rule's passes tonight, adds and drops. The bar beneath is the rule's funnel, the members reaching each gate, with the gate that stopped the most named. Breakouts forming and stocks one gate short of a buy point open beneath it, and neither is a pick. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes name what was held back and on which index's list. On the S&P 400 and 600 a rule runs on provisional settings until its freeze, read on its own index's members, and its record starts at the freeze. The reward to risk is a fact about the chart and not a chance of anything.";
+
+    // A card's header: the setup's word in its tint beside its swatch, its standing as a pill, tonight's count, and the
+    // "?" opening the guide its kind of card is read by.
+    // see: Each setup family has a hue of its own drawn as a mark and a tint beside its word
+    static string CardHead(string family, string heading, string pill, string pillClass, string? pillTitle, string count, string guide) =>
+        $"<header class=\"fam-head\" data-family=\"{Escaped(family)}\"><span class=\"fam-tag\" data-family=\"{Escaped(family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family)}\"></span>{Escaped(heading)}</span>"
+        + $" <span class=\"status-pill {pillClass}\"{(pillTitle is null ? string.Empty : $" title=\"{Escaped(pillTitle)}\"")}>{Escaped(pill)}</span>"
+        + $" <span class=\"fam-count\">{Escaped(count)}</span>"
+        + $"<details class=\"guide\"><summary title=\"How to read this card\" aria-label=\"How to read this card\">?</summary><p class=\"guide-b\">{Escaped(guide)}</p></details></header>";
+
+    // A card's standing as a pill: a chosen variant's dashed outline, the live rule's slate with the day it went live under
+    // the pointer, or the provisional rule's amber.
+    static (string Words, string Class, string? Title) Pill(DateOnly? liveSince, RuleView? rule) =>
+        rule is { Chosen.Live: false } variant
+            ? (FormattableString.Invariant($"Variant {variant.Chosen.Variant}"), "variant", variant.Chosen.Rule)
+            : liveSince is { } since
+                ? ("Live", "live", FormattableString.Invariant($"live since {since:yyyy-MM-dd}"))
+                : ("Provisional", "provisional", EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus);
+
+    // One family's card: its header, the rule's tabs and chips with its sentence a click away, the live rule's picks
+    // named by their place among tonight's buy points or a chosen variant's own picks, the notes, the funnel as one bar,
+    // and the breakouts forming and the stocks one gate short behind expanders; a card listing nothing says so in one line.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    // see: A variant's picks are shown on its card when chosen and its results only under its tests
     public string FamilyCard(FamilyCardView card)
     {
         var body = new StringBuilder();
         var provisional = card.LiveSince is null;
         var variant = card.RuleChoice is { Chosen.Live: false } chosen ? chosen : null;
+        var (pill, pillClass, pillTitle) = Pill(card.LiveSince, card.RuleChoice);
+        var count = variant is null ? Count(card.Picks.Count, "pick") + " tonight" : Count(variant.Picks?.Count ?? 0, "pick") + " tonight under this variant";
 
         body.Append(Invariant, $"<section class=\"family-card\" data-family=\"{Escaped(card.Family)}\" data-place=\"{card.Place}\" data-of=\"{card.Of}\" data-picks=\"{card.Picks.Count}\" ");
         body.Append(Invariant, $"data-state=\"{(provisional ? "provisional" : "live")}\" data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-rule=\"{Escaped(card.RuleChoice?.Chosen.Slug ?? RuleScreenWords.LiveSlug)}\" data-variant=\"{(variant is null ? "none" : variant.Chosen.Variant!.Value.ToString(Invariant))}\">");
-
-        // The rule's standing, the night's count and the variants scored beside it, in one line.
-        body.Append("<p class=\"family-state\">");
-        body.Append(card.LiveSince is { } live
-            ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
-            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.ProvisionalStatus)}</b>");
-        body.Append(Invariant, $" · {Count(card.Picks.Count, "pick")} tonight · {Count(card.Variants, "variant")} scoring in the background</p>");
+        body.Append(CardHead(card.Family, card.Heading, pill, pillClass, pillTitle, count, SetupCardGuide));
         body.Append(SweepFoundNoneLine(card.SweepFoundNone));
 
-        // The selector, the band a variant is drawn under, and the rule's words with the clauses the live rule's lack
-        // marked, for the rule the link chose.
-        // see: A variant's picks are shown on its card when chosen and its results only under its tests
         if (card.RuleChoice is { } rule)
         {
-            body.Append(RuleChoice(card.Family, rule));
-
-            if (variant is not null)
-            {
-                body.Append(Invariant, $"<p class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\">{Escaped(RuleScreenWords.Band(variant.Chosen.Variant!.Value))}</p>");
-                body.Append(RuleWordsLine(rule.Parts));
-                body.Append(VariantPicks(variant.Picks ?? []));
-                body.Append(RuleFunnel(rule));
-                body.Append(StretchLine(rule.Stretch, rule.Evaluated));
-                body.Append(FormingList(rule.Forming));
-
-                foreach (var note in card.Notes)
-                {
-                    body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
-                }
-
-                body.Append("</section>");
-
-                return body.ToString();
-            }
+            body.Append(RuleTabs(card.Family, rule));
+            body.Append(RuleChipsLine(rule));
         }
 
-        if (card.Picks.Count == 0)
+        if (variant is not null)
         {
-            body.Append(Invariant, $"<p class=\"degraded family-empty\" data-picks=\"0\">{Escaped(card.Empty ?? "No stock qualified under this setup tonight.")}</p>");
+            body.Append(Invariant, $"<p class=\"variant-band\" role=\"status\" data-variant=\"{variant.Chosen.Variant}\">{Escaped(RuleScreenWords.Band(variant.Chosen.Variant!.Value))}</p>");
+            body.Append(ShareLine(variant.Share, "picks"));
+            body.Append(VariantPicks(card.Family, variant.Picks ?? [], card.Numbers));
+        }
+        else if (card.Picks.Count == 0)
+        {
+            body.Append(EmptyLine(card));
         }
         else
         {
-            body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table family-table\" data-rows=\"{card.Picks.Count}\"><thead><tr>");
-
-            foreach (var (heading, says) in FamilyHeadings)
-            {
-                body.Append(TippedHeading(heading, says, heading switch
-                {
-                    "#" => "place",
-                    "Buy" or "Stop" or "Target" or "Reward to risk" => "r",
-                    _ => null,
-                }));
-            }
-
-            body.Append("</tr></thead><tbody>");
-
-            foreach (var pick in card.Picks)
-            {
-                body.Append(FamilyRow(card.Family, pick));
-
-                // The pick's card in place beneath its row, opened by the control in its name cell.
-                if (pick.Card is { } decision)
-                {
-                    body.Append(CardRow(decision, FamilyHeadings.Count));
-                }
-            }
-
-            body.Append("</tbody></table></div>");
+            body.Append(PicksByPlace(card.Picks));
         }
 
         foreach (var note in card.Notes)
@@ -503,53 +497,154 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<p class=\"family-note\">{WithSignedFigures(note)}</p>");
         }
 
-        // The live rule's funnel, stretch line and forming list, beneath its picks and notes.
         if (card.RuleChoice is { } drawn)
         {
-            body.Append(RuleFunnel(drawn));
-            body.Append(StretchLine(drawn.Stretch, drawn.Evaluated));
+            body.Append(FunnelBar(drawn));
+
+            if (variant is not null || card.Picks.Count > 0)
+            {
+                body.Append(StretchLine(drawn.Stretch, drawn.Evaluated));
+            }
+
             body.Append(FormingList(drawn.Forming));
         }
 
+        body.Append(CloseRows(card.Family, card.Close ?? [], card.Numbers));
         body.Append("</section>");
 
         return body.ToString();
     }
 
-    // The card's selector: the live rule first, then each variant by its number and the register's words, the choice
-    // kept in the link under the family's own key; and on an index no freeze has registered a rule on, the line saying
-    // so beside the one choice.
-    static string RuleChoice(string family, RuleView rule)
+    // The live rule's picks named by their place among tonight's buy points, each selecting its row there.
+    static string PicksByPlace(IReadOnlyList<FamilyPickCell> picks) =>
+        Formatted($"<p class=\"card-picks\" data-picks=\"{picks.Count}\">Tonight's picks, drawn in the buy points above: ")
+        + string.Join(", ", picks.Select(pick => Formatted($"<a class=\"card-pick\" data-ticker=\"{Escaped(pick.Row.Ticker)}\" href=\"#/night/{pick.Row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(pick.Row.Ticker)}\">{Escaped(pick.Row.Ticker)}</a>")))
+        + ".</p>";
+
+    // A card listing nothing tonight in one line: why it lists nothing, the gate that stopped the most of the members
+    // reaching it, and its empty stretch against its usual longest, or that no usual stretch is read yet under the floors.
+    // see: A card's stretch line counts its mark over past empty nights and draws none under thirty completed stretches
+    static string EmptyLine(FamilyCardView card)
+    {
+        var parts = new List<string> { card.Empty is { } empty && empty.StartsWith("The market check closed", StringComparison.Ordinal) ? empty.TrimEnd('.') : "Nothing tonight" };
+
+        if (card.RuleChoice?.Funnel is { Count: > 0 } funnel && EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel) is { } drop)
+        {
+            parts.Add(FormattableString.Invariant($"most stopped at the {drop.Gate} gate ({drop.Stopped} of {drop.Reached})"));
+        }
+
+        if (card.RuleChoice?.Stretch is { } stretch)
+        {
+            parts.Add(stretch.Mark is { } mark
+                ? FormattableString.Invariant($"empty {stretch.Stretch} night{(stretch.Stretch == 1 ? string.Empty : "s")}, its usual longest {mark}")
+                : FormattableString.Invariant($"no usual stretch yet ({stretch.Completed} of {EquityBrief.Core.Cards.RuleStretch.CompletedStretchesFloor})"));
+        }
+
+        var flagged = card.RuleChoice?.Stretch is { Flagged: true };
+
+        return Formatted($"<p class=\"family-empty-line{(flagged ? " flagged" : string.Empty)}\" data-picks=\"0\" data-flagged=\"{Flag(flagged)}\">{Escaped(string.Join(" · ", parts))}</p>")
+            + (card.Empty is { } why && !why.StartsWith("The market check closed", StringComparison.Ordinal) ? Formatted($"<p class=\"degraded family-empty\" data-picks=\"0\">{Escaped(why)}</p>") : string.Empty);
+    }
+
+    // The card's tabs: the live or provisional rule first, then each variant by its number and the settings it differs
+    // on, the full rule under the pointer, the choice kept in the link under the family's own key; and on an index no
+    // freeze has registered a rule on, the line saying so beside the one tab.
+    static string RuleTabs(string family, RuleView rule)
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<p class=\"rule-choice\"><label>Rule <select data-rule-choice=\"{Escaped(family)}\" aria-label=\"The rule this card is drawn by\">");
+        body.Append(Invariant, $"<nav class=\"rule-tabs\" data-rule-choice=\"{Escaped(family)}\" aria-label=\"The rule this card is drawn by\">");
 
         foreach (var choice in rule.Choices)
         {
-            var label = choice.Live ? choice.Rule : FormattableString.Invariant($"Variant {choice.Variant}: {choice.Rule}");
+            var value = choice.Live ? RuleScreenWords.LiveSlug : choice.Slug;
+            var current = choice.Slug == rule.Chosen.Slug;
 
-            body.Append(Invariant, $"<option value=\"{Escaped(choice.Live ? RuleScreenWords.LiveSlug : choice.Slug)}\"{(choice.Slug == rule.Chosen.Slug ? " selected" : string.Empty)} data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\">{Escaped(label)}</option>");
+            body.Append(Invariant, $"<a class=\"rule-tab{(current ? " current" : string.Empty)}\" href=\"#\" data-rule-tab=\"{Escaped(family)}\" data-value=\"{Escaped(value)}\" data-variant=\"{(choice.Variant is { } number ? number.ToString(Invariant) : "none")}\" title=\"{Escaped(choice.Rule)}\"{(current ? " aria-current=\"true\"" : string.Empty)}>");
+            body.Append(Escaped(choice.Tab ?? (choice.Live ? "Live" : FormattableString.Invariant($"V{choice.Variant}"))));
+            body.Append("</a>");
         }
 
-        body.Append("</select></label>");
+        body.Append("</nav>");
 
         if (rule.NoVariantLine is { } line)
         {
-            body.Append(Invariant, $" <span class=\"no-variant\" data-no-variant=\"true\">{Escaped(line)}</span>");
+            body.Append(Invariant, $"<p class=\"no-variant\" data-no-variant=\"true\">{Escaped(line)}</p>");
         }
 
-        body.Append("</p>");
+        return body.ToString();
+    }
+
+    // The chosen rule's settings as chips, a chosen variant's differing ones marked, with its sentence a click away, its
+    // clauses the live rule's words lack marked as well.
+    static string RuleChipsLine(RuleView rule)
+    {
+        var body = new StringBuilder();
+
+        if (rule.Chips is { Count: > 0 } chips)
+        {
+            body.Append(Invariant, $"<ul class=\"rule-chips\" data-chips=\"{chips.Count}\">");
+
+            foreach (var chip in chips)
+            {
+                body.Append(Invariant, $"<li class=\"rule-chip{(chip.Differs ? " differs" : string.Empty)}\">{WithSignedFigures(chip.Words)}</li>");
+            }
+
+            body.Append("</ul>");
+        }
+
+        body.Append("<details class=\"rule-sentence\"><summary>The rule in a sentence</summary>");
+        body.Append(RuleWordsLine(rule.Parts));
+        body.Append("</details>");
 
         return body.ToString();
+    }
+
+    // A chosen variant's picks or holdings beside the live rule's passes tonight, in one line.
+    static string ShareLine(RuleShareView? share, string what)
+    {
+        if (share is null)
+        {
+            return string.Empty;
+        }
+
+        static string Named(IReadOnlyList<string> tickers) => tickers.Count == 0 ? "none" : string.Join(", ", tickers);
+
+        return Formatted($"<p class=\"rule-share\" data-shared=\"{Escaped(string.Join(",", share.Shared))}\" data-added=\"{Escaped(string.Join(",", share.Added))}\" data-dropped=\"{Escaped(string.Join(",", share.Dropped))}\">")
+            + Escaped(FormattableString.Invariant($"Beside the {share.Against} rule's {(what == "picks" ? "passes" : "holdings")} tonight: shares {Named(share.Shared)} · adds {Named(share.Added)} · drops {Named(share.Dropped)}."))
+            + "</p>";
     }
 
     // The chosen rule's words in clauses, each the live rule's words lack marked.
     static string RuleWordsLine(IReadOnlyList<RulePartView> parts) =>
         "<p class=\"rule-words\">" + string.Join(", ", parts.Select(part => part.Differs ? $"<mark class=\"differs\">{WithSignedFigures(part.Text)}</mark>" : WithSignedFigures(part.Text))) + ".</p>";
 
-    // A variant's own picks, drawn under the band: each with its plan and the figures that listed it.
-    static string VariantPicks(IReadOnlyList<VariantPickView> picks)
+    // A family's three numbers for a row, each in its own cell, a number the night stored no reading of drawn as none.
+    static string NumberCells(string family, string ticker, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
+    {
+        var columns = EquityBrief.Core.Cards.CardNumbers.Of(family);
+        var values = numbers is not null && numbers.TryGetValue(ticker, out var held) ? held : null;
+
+        return string.Concat(columns.Select((column, at) => values is not null && at < values.Count && values[at] is { } value
+            ? Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"{value.ToString("R", Invariant)}\">{CardNumber(column.Form, value)}</td>")
+            : Formatted($"<td class=\"r num\" data-number=\"{Escaped(column.Column)}\" data-value=\"none\"><span class=\"degraded\">none</span></td>")));
+    }
+
+    static string NumberHeadings(string family) =>
+        string.Concat(EquityBrief.Core.Cards.CardNumbers.Of(family).Select(column => TippedHeading(column.Heading, column.Says, "r")));
+
+    // A number in its form: typical moves and multiples to two places, a share as a whole per cent and sessions whole.
+    static string CardNumber(EquityBrief.Core.Cards.CardNumberForm form, double value) => form switch
+    {
+        EquityBrief.Core.Cards.CardNumberForm.Moves => value.ToString("0.00", Invariant) + " moves",
+        EquityBrief.Core.Cards.CardNumberForm.Times => value.ToString("0.00", Invariant) + " times",
+        EquityBrief.Core.Cards.CardNumberForm.Share => (value * 100).ToString("0", Invariant) + "%",
+        EquityBrief.Core.Cards.CardNumberForm.Sessions => value.ToString("0", Invariant),
+        _ => value.ToString("0.00", Invariant),
+    };
+
+    // A variant's own picks, drawn under the band: each with its plan and the family's three numbers in place of words.
+    string VariantPicks(string family, IReadOnlyList<VariantPickView> picks, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
     {
         if (picks.Count == 0)
         {
@@ -559,7 +654,8 @@ public sealed partial class MarkRenderer
         var body = new StringBuilder();
 
         body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table variant-table\" data-rows=\"{picks.Count}\"><thead><tr>");
-        body.Append("<th scope=\"col\">#</th><th scope=\"col\">Stock</th><th scope=\"col\" class=\"r\">Buy</th><th scope=\"col\" class=\"r\">Stop</th><th scope=\"col\" class=\"r\">Target</th><th scope=\"col\" class=\"r\">Reward to risk</th><th scope=\"col\">Why</th>");
+        body.Append("<th scope=\"col\">#</th><th scope=\"col\">Stock</th><th scope=\"col\" class=\"r\">Buy</th><th scope=\"col\" class=\"r\">Stop</th><th scope=\"col\" class=\"r\">Target</th><th scope=\"col\" class=\"r\">Reward to risk</th>");
+        body.Append(NumberHeadings(family));
         body.Append("</tr></thead><tbody>");
 
         foreach (var pick in picks)
@@ -570,7 +666,8 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td class=\"r\" data-stop=\"{pick.Stop.ToString(Invariant)}\">{Price(pick.Stop)}</td>");
             body.Append(Invariant, $"<td class=\"r\">{(pick.Target is { } target ? Price(target) : "trails")}</td>");
             body.Append(Invariant, $"<td class=\"r\">{(pick.RewardToRisk is { } reward ? reward.ToString("0.0", Invariant) : "none")}</td>");
-            body.Append(Invariant, $"<td class=\"why\">{Escaped(WhyWords(pick.Why))}</td></tr>");
+            body.Append(NumberCells(family, pick.Ticker, numbers));
+            body.Append("</tr>");
         }
 
         body.Append("</tbody></table></div>");
@@ -578,37 +675,68 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // The figures behind a pick as stored, each named, in one line.
-    static string WhyWords(string why)
+    // The stocks one gate short of the family's buy point tonight, behind an expander: each with the gate it missed and
+    // the family's three numbers. It recommends nothing.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    string CloseRows(string family, IReadOnlyList<CloseToBuyCell> rows, IReadOnlyDictionary<string, IReadOnlyList<double?>>? numbers)
     {
-        try
+        if (rows.Count == 0)
         {
-            using var document = System.Text.Json.JsonDocument.Parse(why);
+            return string.Empty;
+        }
 
-            return string.Join("; ", document.RootElement.EnumerateObject().Select(value => $"{value.Name} {value.Value.GetString()}"));
-        }
-        catch (System.Text.Json.JsonException)
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<details class=\"expander close-rows\" data-close=\"{rows.Count}\"><summary>One gate short of a buy point: {rows.Count}</summary>");
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table close-table\" data-rows=\"{rows.Count}\"><thead><tr>");
+        body.Append("<th scope=\"col\">#</th><th scope=\"col\">Stock</th><th scope=\"col\">The gate it missed</th>");
+        body.Append(NumberHeadings(family));
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var (row, at) in rows.Select((row, at) => (row, at + 1)))
         {
-            return why;
+            body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-gate=\"{Escaped(row.Gate)}\"><td class=\"place\">{at}</td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"missed-gate\" title=\"{Escaped(row.Words)}\"><b>{Escaped(row.Gate)}</b></td>");
+            body.Append(NumberCells(family, row.Ticker, numbers));
+            body.Append("</tr>");
         }
+
+        body.Append("</tbody></table></div>");
+        body.Append("<p class=\"forming-key\">Each passed every gate of this setup but one tonight, with nothing excluding it. None is a pick.</p></details>");
+
+        return body.ToString();
     }
 
-    // The rule's funnel: each gate with how many members passed it and every gate before, in the rule's order.
-    static string RuleFunnel(RuleView rule)
+    // The rule's funnel as one bar: each gate's segment as wide as the members reaching it against those reaching the
+    // first, its count written on it, and the gate that stopped the most of those reaching it marked and named.
+    static string FunnelBar(RuleView rule)
     {
         if (rule.Funnel is not { Count: > 0 } funnel)
         {
             return rule.Evaluated ? string.Empty : "<p class=\"degraded rule-unevaluated\" data-evaluated=\"false\">The night did not evaluate this rule.</p>";
         }
 
-        var body = new StringBuilder("<ol class=\"rule-funnel\" data-gates=\"" + funnel.Count.ToString(Invariant) + "\">");
+        var top = Math.Max(1, funnel[0].Passed);
+        var drop = EquityBrief.Core.Cards.RuleFunnelDrop.Largest(funnel);
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"funnel-bar\" data-gates=\"{funnel.Count}\" data-largest-drop=\"{Escaped(drop?.Gate ?? "none")}\">");
+        body.Append("<ol class=\"rule-funnel\">");
 
         foreach (var (gate, passed) in funnel)
         {
-            body.Append(Invariant, $"<li data-gate=\"{Escaped(gate)}\" data-passed=\"{passed}\">{Escaped(gate)}: <b>{passed}</b></li>");
+            var share = Math.Clamp(1.0 * passed / top, 0, 1);
+            var marked = drop is not null && drop.Gate == gate;
+
+            body.Append(Invariant, $"<li data-gate=\"{Escaped(gate)}\" data-passed=\"{passed}\"{(marked ? " class=\"largest-drop\"" : string.Empty)}><span class=\"fb-name\">{Escaped(gate)}</span><span class=\"fb-bar\"><span class=\"fb-fill\" style=\"width:{(share * 100).ToString("0.#", Invariant)}%\"></span></span><b class=\"fb-count\">{passed}</b></li>");
         }
 
         body.Append("</ol>");
+        body.Append(drop is null
+            ? "<p class=\"funnel-drop\" data-drop=\"none\">No gate stopped a member tonight.</p>"
+            : Formatted($"<p class=\"funnel-drop\" data-drop=\"{Escaped(drop.Gate)}\">Most stopped at the {Escaped(drop.Gate)} gate: {drop.Stopped} of the {drop.Reached} reaching it.</p>"));
+        body.Append("</div>");
 
         return body.ToString();
     }
@@ -649,8 +777,8 @@ public sealed partial class MarkRenderer
 
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<section class=\"forming\" data-forming=\"{forming.Forming}\" data-drawn=\"{forming.Rows.Count}\" data-market-open=\"{Flag(forming.MarketOpen)}\">");
-        body.Append(Invariant, $"<h4>Breakouts forming: {forming.Forming}{(forming.Rows.Count < forming.Forming ? FormattableString.Invariant($", {forming.Rows.Count} drawn") : string.Empty)}</h4>");
+        body.Append(Invariant, $"<details class=\"expander forming\" data-forming=\"{forming.Forming}\" data-drawn=\"{forming.Rows.Count}\" data-market-open=\"{Flag(forming.MarketOpen)}\">");
+        body.Append(Invariant, $"<summary>Breakouts forming: {forming.Forming}{(forming.Rows.Count < forming.Forming ? FormattableString.Invariant($", {forming.Rows.Count} drawn") : string.Empty)}</summary>");
 
         if (!forming.MarketOpen)
         {
@@ -683,7 +811,7 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(Invariant, $"<p class=\"forming-key\">{Escaped(RuleScreenWords.FormingClosingLine)}</p>");
-        body.Append("</section>");
+        body.Append("</details>");
 
         return body.ToString();
     }

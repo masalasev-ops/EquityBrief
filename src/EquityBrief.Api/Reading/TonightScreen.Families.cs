@@ -125,11 +125,17 @@ public static partial class TonightScreen
                 listed,
                 Notes(family, own, listedUnder),
                 listed.Length > 0 ? null : Empty(family, own, rule, [.. (results ?? []).Where(result => result.Family == family.Name)]),
-                HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade)));
+                HeldBack: own.Count(pick => pick.State == FamilyList.OpenTrade),
+                Passes: Passes(own)));
         }
 
         return cards;
     }
+
+    // Every stock a family's live rule passed on the night, listed or not, in its place order and then by ticker, which a
+    // chosen variant's picks are read beside.
+    public static IReadOnlyList<string> Passes(IReadOnlyList<FamilyPickRow> own) =>
+        [.. own.OrderBy(pick => pick.Place ?? int.MaxValue).ThenBy(pick => pick.Ticker, StringComparer.Ordinal).Select(pick => pick.Ticker).Distinct(StringComparer.Ordinal)];
 
     // An S&P 500 card's rule in words, written from the settings its live rule runs at: the pullback's from the swing
     // filter version its night ran under, and the proposed settings where none is named.
