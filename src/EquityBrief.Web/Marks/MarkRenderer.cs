@@ -7628,7 +7628,7 @@ public sealed partial class MarkRenderer : IComponent
     // The news labeller's line for the night: what it cost and the month against its limit, the articles
     // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
     // and the stop; the line it was refused with; or that no run is recorded for the night.
-    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
     static string LabellerParagraph(LabellerLine? line)
     {
         if (line is null)

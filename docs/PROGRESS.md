@@ -44063,3 +44063,46 @@ Carried:    the night of 2026-10-12 run to its end from main after the merge, LU
             night's report requests left queued and its drain and labeller stopped, written by a drain started at 16:30Z
             on 2026-10-13; and the night queuing its requests and starting neither the drain nor the labeller, with the
             scheduled run at 16:30Z that starts both, as the operator ruled, built next.
+
+### 11.4 - correction: the night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z   2026-10-12
+
+Corrects:   the night's report step from 11.4 (f88d58ee), which started the drain after the close, and its labeller step
+            from the 12.6 correction (5cd3d42b), which started the labeller beside it; both then waited into the small
+            hours for the research model's peak to end, and the night's tail was the reports waiting.
+Ruled:      by the operator on 2026-10-12: "I think the reports needs to be queued after that and the night should just
+            stop. The report generation is continously getting in the high cost time period so i dont see any point in
+            attempting this anymore", choosing "Off-peak drain at 16:30Z (Recommended)", the night queuing the requests
+            and stopping without starting the drain or the paid labeller, and a scheduled drain writing them at 16:30Z.
+            Told after that the settings' peak for the research model is 01:00 to 04:00 and 06:00 to 10:00 UTC on
+            weekdays, so 10:00Z is off-peak too, the time was kept at 16:30Z. Two decisions are written (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z)
+            (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own),
+            the second superseding the labeller's decision of the 12.6 ruling.
+Built:      the night writes its six requests as before and its report row says they wait for the off-peak run; its
+            labeller row says the off-peak run labels tonight's list, and it starts no drain and no labeller; its store's
+            copy waits for neither. `tools/offpeak` and `tools/offpeak.ps1` build a clean copy of main's commit as the
+            monthly run's script does, refuse a checkout off main or ahead of origin/main, then run `label-news` over the
+            newest night's list and `drain`. Every citation of the superseded decision in the code, the tests and the
+            specs moved to its successor; section 14's report, labeller and copy steps and its note, section 17's model
+            calls row and section 18's labeller and drain rows; CLAUDE.md's hard rule, merge rule, layout and commands;
+            the runbook's labelling and copy passages and a section on the off-peak run with its tasks for Windows and
+            macOS; the roster's nightly-run row; the guide's sentence on when the six reports are written; the prior
+            text in `CHANGELOG.md`.
+Tests:      one more: the off-peak script in its check mode over temporary repositories, building main's commit,
+            reusing a night's copy and refusing a checkout off main or ahead. One changed: the night's labeller test,
+            which now asserts no labeller and no drain started, the labeller row's words, a copy waiting for none and
+            the night's source asking its launcher for neither. The store-never-deleted script removals gain the
+            off-peak script's two, and the harness's three step keys and due-point key follow the steps' words.
+Mutated:    the rule, stated before the run: one mutation a property the correction adds, each run filtered to the
+            labeller test, the off-peak script's test and store-never-deleted, 9 tests. M7 the night starting the drain
+            again: predicted red at the labeller test alone. M8 the night starting the labeller again: predicted red at
+            the labeller test alone. M9 the copy waiting for a labeller: predicted red at the labeller test alone. M10
+            the off-peak script accepting a checkout off main: predicted red at the script's test alone. Results: each
+            red where predicted and nowhere else, 1 of 9 each. Each reverted before anything was committed, the 9
+            passing over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Night:      the night of 2026-10-12, run fresh from main's c3c77ab7 after the 2.1 correction merged, finished green
+            with 0 model calls and 370 weighted calls, LUMN's bar stored from Yahoo; its drain was stopped as the night
+            started it and its requests for PBI and DAVE wait for the 16:30Z run, its labeller having found no name on
+            the S&P 500's list.
+Carried:    the off-peak task registered with the machine's scheduler at 16:30Z every day once this merges, and the
+            one-off task registered for 2026-10-13 removed in its place.

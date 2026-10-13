@@ -2527,7 +2527,7 @@ public static class SchemaMigrations
     // and its admissibility judged as it is stored, kept for thirty-one days; and the labels a paid model gave
     // them, one row per article per profile per instruction version, never overwritten, an answer that could
     // not be read kept as unreadable with its cause so it is not paid for again.
-    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
     // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
     const string CreateNewsArticlesAndLabels = @"
         CREATE TABLE news_article (

@@ -21,10 +21,10 @@ public partial class FixtureExpectations
 {
     // The night's step that starts the copy, as section 14 states it.
     internal const string StoreCopyStep =
-        "Start the store's copy as the labeller is started, a process of its own that waits until the night, the drain it started and the " +
-        "labeller have finished, holding the drain's lock while it copies the store through SQLite's own backup into the copies' folder, " +
+        "Start the store's copy, a process of its own that waits until the night has finished, " +
+        "holding the drain's lock while it copies the store through SQLite's own backup into the copies' folder, " +
         "opens and reads the copy against the store, keeps the newest three after opening and reading each, and writes a row of its own as " +
-        "it starts and one as it ends and nothing else; a night run again for an earlier session starts one that waits for no labeller (see: " +
+        "it starts and one as it ends and nothing else; it waits for no labeller and no drain, since the night starts neither (see: " +
         "The store is copied once the night and every process it started have finished and the newest three copies are kept after each is " +
         "opened and read, and the copy writes a row as it starts and one as it ends).";
 

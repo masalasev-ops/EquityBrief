@@ -12,7 +12,7 @@ public sealed record NewsLabel(string Kind, string Direction, string Reason);
 // asks for three things and nothing else: the kind of story, which way it cuts for the company, and one
 // sentence saying why with no figure in it, since a reason is prose and every number in prose must exist in
 // the facts file, which a reason's number never would.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 public static class NewsInstruction
 {

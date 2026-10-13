@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Checks;
 
 // component-access: the news labels are context. No gate, order or plan reads them, and no source a rule
 // version, the swing filter or a candidate evaluator pins names the store.
-// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+// see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
 public partial class ComponentAccess
 {
     [Fact]

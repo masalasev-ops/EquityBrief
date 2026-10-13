@@ -41,7 +41,7 @@ public static class ModelProfiles
     public const string AnswerTokensField = "AnswerTokens";
 
     // The news job's own limits: the most it spends in a UTC month, in dollars, and how long one run may take.
-    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    // see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own
     public const string MonthLimitField = "MonthLimit";
     public const string TimeLimitField = "TimeLimitMinutes";
 
