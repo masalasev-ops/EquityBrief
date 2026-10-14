@@ -664,7 +664,7 @@ public partial class ReadSurface
 
         // The drain verb puts back once it holds the lock and before it claims, read off its own source.
         var program = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
-        var drainVerb = program[program.IndexOf("static async Task<int> Drain()", StringComparison.Ordinal)..];
+        var drainVerb = program[program.IndexOf("static async Task<int> Drain(string[] args)", StringComparison.Ordinal)..];
         var locked = drainVerb.IndexOf("DrainLock.AcquireAsync", StringComparison.Ordinal);
         var putBack = drainVerb.IndexOf("RequestDrain.PutBackAsync", StringComparison.Ordinal);
         var drained = drainVerb.IndexOf("RequestDrain.DrainAsync", StringComparison.Ordinal);
