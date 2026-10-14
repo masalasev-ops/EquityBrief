@@ -344,7 +344,7 @@ public partial class ReadSurface
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().ResearchRegion(new ResearchPicture(new NightSpend(0m, 0m, 10m, 50m), [], Quotes: view)));
 
         Assert.Contains(
-            "<p class=\"rp-quotes\" data-session=\"2026-10-07\" data-asked=\"3\" data-cap=\"500\" data-median-delay=\"15\">3 delayed quote(s) asked in the session of 2026-10-07, against a cap of 500, each asked a median 15 minutes after its own time and at most 16; 1 run(s) cap reached, 2 run(s) session closed.</p>",
+            "<p class=\"rp-quotes\" data-session=\"2026-10-07\" data-asked=\"3\" data-cap=\"500\" data-median-delay=\"15\">3 delayed quote(s) asked in the session of 2026-10-07, against a cap of 500, each asked a median 15 min 0 s after its own time and at most 16 min 0 s; 1 run(s) cap reached, 2 run(s) session closed.</p>",
             drawn,
             StringComparison.Ordinal);
 

@@ -1428,7 +1428,10 @@ public partial class ArchitectureConformance
         // 206 at 19.6: the Queue's reports written by hand.
         // 207 at the second 19.4 correction of 2026-10-13: paper trading's start and the version an account counts.
         // 208 at the 19.6 correction of 2026-10-14: the Queue's Write now press.
-        Assert.Equal(208, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 219 at 19.7: the Watch list's nearest setup and its distance and report, the Loop's summary, what a change must
+        // pass and a proposal's row, the Ledger's business-first family and the researched list's five columns, the Run
+        // page's three new rows each in the place of one it retires.
+        Assert.Equal(219, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1568,7 +1571,11 @@ public partial class ArchitectureConformance
         // 613 at 19.6: the Queue's reports written by hand.
         // 614 at the second 19.4 correction of 2026-10-13: paper trading's start and the version an account counts.
         // 615 at the 19.6 correction of 2026-10-14: the Queue's Write now press.
-        Assert.Equal(615, inDocument.Length);
+        // 620 at 19.7: the Run page's trades line, monthly run and headings, every length of time, the setup families'
+        // three parts, three marks, the Watch list's two rows, the Loop's three, the Ledger's one and the researched
+        // list's five, less the trades region's four parts, how the system learns' five, a checkpoint's four and the
+        // three marks they drew.
+        Assert.Equal(620, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1682,7 +1689,10 @@ public partial class ArchitectureConformance
         // 518 at 19.3: a family's card's five parts for its four taken out, its rule's seven for its two, and the
         // heavyweights card's five for its two, less the three parts of the list across the setups.
         // 514 at 19.5: the sector strip's four parts, the tiles in its place one claim.
-        Assert.Equal(514, checkedElements);
+        // 505 at 19.7: the Run page's trades region's four parts, how the system learns' five and a checkpoint's four
+        // taken out, the setup families' three parts added, research and spend's two moved from how last night went and
+        // its one on every length of time added.
+        Assert.Equal(505, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

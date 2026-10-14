@@ -44651,3 +44651,49 @@ After:      the scheduled task registered again at 04:05Z and 10:05Z on 2026-10-
             built 19e6bfe6 and labelled 21 articles of the night of 2026-10-13's list, while a drain a press on JNJ
             started at 03:54Z waited out the window and wrote JBL by 04:08Z.
 Carried:    nothing new.
+
+### 19.7 - the remaining screens: the Run page in the monthly run's terms, the Loop's summary, the Ledger's bars and strip, the Watch list's nearest setup and the researched list's columns   2026-10-14
+
+Built:      the Run page under two headings, Health and Research, holding none of the retired loop's clocks or
+            checkpoints: the newest monthly run's date and state with each family's proposals tested, passed and put
+            and each registered rule's verdict, linking the Loop and paper trading, the shape clock in one line; the
+            setup families a row a rule under its setup's heading row in its tint with the level its rules share, each
+            rule by its short words with its full name and where its record counts from under the pointer, and its
+            verdict; the trades in one line linking their log; and every length of time as "31 min 32 s" by one
+            function. The Loop page opens on a summary a family with its chips, the strongest proposal's adjusted p as
+            a meter against the bar and the one put with its presses, or why none is and when the next run is, the
+            business-first family waiting on 19.9; one line saying what a change must pass; each proposal a row opening
+            to its paired bars a year; the learned score named by its fit month. The Ledger names 19.9 for the
+            business-first family and draws each family's edge a year as bars, the newest year's deciles as a strip,
+            the units once in each heading and the settled setups under family tabs. The Watch list draws each name's
+            nearest setup with the gate it misses, its distance picture and sessions to its report, and adds a name
+            through the header's search. The researched list draws each report's staleness by the page's judge, its
+            move since written, its sections of ten and why it was written, sorted by day or staleness. The shadow
+            candidates' line no longer says a record waits for a promotion. Section 13.8's sentence, 15.5, 15.8, 15.10,
+            15.16, 15.19, 15.20 with Figure 15.5 and its key, section 20's row, the guide with its Loop picture, the
+            roster and `CHANGELOG.md`. No migration and no remedy.
+Measured:   read back from the branch's Debug build over the live store, read-only, at 1440 and a true 390 px in both
+            palettes on the Run page, the Loop for the S&P 500 and 600, the Ledger, the Watch list and both researched
+            orders: no page wider than its screen and no element cut off. The run for 2026-10 started at 21:02Z on
+            2026-10-11 and held every step: the breakout and the drift 13 proposals each, the heavyweights 2, none
+            passed, the pullback none tested. 37 researched names, 5 watched. The read-back found a proposal's row
+            drawing its stored change as JSON 7,400 px wide, now its words wrapping.
+Tests:      twelve new: ten read-surface over constructed stores and rows, the Loop figure's key, and the fixture's.
+            Twenty-two older tests moved to the new markup, words and duration form. Derived expectation
+            `remaining-screens.json`: the fixture's night counting no trade and no monthly run, and KEYS's report
+            written by hand on its night, seven sections of ten, standing.
+Claims:     1312, five more than 1307: 24 rows and parts added, 19 retired and counted where they landed.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, on the line computing it,
+            each filtered to the test it was predicted red at. M1 the duration's seconds modulo 59, predicted red at the
+            duration test; so. M2 the meter's floor at a thousandth, at the meter and the summary tests; so. M3 the
+            nearest setup ordered by most gates missed, at the nearest setup test; so. M4 why written reading two days
+            after, and M5 the move's ratio inverted, each at the researched test; so. M6 the monthly run reading a
+            variant's row as the rule's, at the monthly run test; so. M7 the edge bars' hue by the other sign, at the
+            Ledger test; so. M8 the shared level read only where two differ, at the setup families test; so. Not
+            mutated: the guide lines and the shell's search. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Queue:      done, 19.0 to 19.6 with their corrections as PRs 446 to 460; in progress, 19.7; next, 19.8, which waits
+            for the operator's go.
+Carried:    Figure 11.4 still labels the edge clock's look at 12 blocks "earliest promotion", a picture the section 11
+            worked example generates and holds word for word, owed a correction of section 11.

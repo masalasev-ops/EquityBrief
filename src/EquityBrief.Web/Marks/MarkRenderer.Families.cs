@@ -288,7 +288,7 @@ public sealed partial class MarkRenderer
         foreach (var family in rows.GroupBy(row => row.Family))
         {
             var levels = family.Select(row => row.Level).Distinct().ToArray();
-            var shared = levels.Length == 1 ? levels[0] : (double?)null;
+            double? shared = levels.Length == 1 ? levels[0] : null;
             var heading = family.First().Heading;
 
             body.Append(Invariant, $"<tr class=\"family-head\" data-family=\"{Escaped(family.Key)}\" data-level=\"{(shared is { } level ? level.ToString("0.#####", Invariant) : "differs")}\"><th colspan=\"6\"><span class=\"fam-tag\" data-family=\"{Escaped(family.Key)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family.Key)}\"></span>{Escaped(heading)}</span>{(shared is { } one ? Formatted($" · its looks read at a level of {one.ToString("0.####", Invariant)}") : string.Empty)}</th></tr>");
@@ -301,7 +301,7 @@ public sealed partial class MarkRenderer
                     + ".";
 
                 body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\" data-from=\"{(row.From is { } counted ? DayOf(counted) : "none")}\" data-restarted=\"{Flag(row.Restarted is not null)}\" data-verdict=\"{Escaped(row.Verdict ?? "none")}\">");
-                body.Append(Invariant, $"<td class=\"fam-edge\" data-family=\"{Escaped(row.Family)}\" title=\"{Escaped(tip)}\"><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\">{Escaped(row.Short ?? row.Rule)}</span>{(row.Live ? " <b>live</b>" : string.Empty)}</td>");
+                body.Append(Invariant, $"<td class=\"fam-edge\" data-family=\"{Escaped(row.Family)}\" title=\"{Escaped(tip)}\"><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\">{Escaped(row.Short ?? row.Rule)}</span>{(row.Live && row.Short is null ? " <b>live</b>" : string.Empty)}</td>");
                 body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
                 body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? SignedTenth(shown * 100) + " points" : SignedFigure(shown, 3, Unsigned(shown, 3).ToString("+0.000;-0.000;0.000", Invariant)))}</td>");
                 body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}{(shared is null ? Formatted($", level {row.Level.ToString("0.####", Invariant)}") : string.Empty)}</td>");

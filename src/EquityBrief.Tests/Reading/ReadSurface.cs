@@ -68,10 +68,11 @@ public partial class ReadSurface
 
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
             // research and checklist, how the system learns, the comparison of tonight's picks and each
-            // version at a checkpoint, and the night's tries on tonight's notice and the Run page.
+            // version at a checkpoint, and the night's tries on tonight's notice and the Run page, less the trades region,
+            // how the system learns and the checkpoints, which 19.7 retired.
             .. RunPageClaims,
-            .. RunMiddleClaims,
-            .. RunBottomClaims,
+            .. RunMiddleClaims.Except(RetiredRunRows),
+            .. RunBottomClaims.Except(RetiredRunRows),
             .. NightNoticeClaims,
 
             // 12.3's build of the night from a clean copy: the refusal on tonight's notice and the commit on the Run page.
@@ -140,6 +141,10 @@ public partial class ReadSurface
             .. QueueDayRows,
             .. WriteNowRows,
 
+            // 19.7, the remaining screens: the Run page's monthly run, trades line, headings and durations, the Loop's
+            // summary, the Ledger's business-first line, the Watch list's nearest setup and the researched list's columns.
+            .. RemainingScreensRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
@@ -179,7 +184,6 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "The edge clock, its resolved setups"),
             CheckReach.Key("15.10 Run", "The edge clock, its share against its planned break-even and calibrated null from the floor on and nothing below it"),
             CheckReach.Key("15.10 Run", "The edge clock, that the first look can retire or leave a candidate and never promote one"),
-            CheckReach.Key("15.10 Run", "The edge clock, when the earliest promotion can come"),
             CheckReach.Key("15.10 Run", "The edge clock, each variant with the filter version it was defined against and the settings the live filter has since moved"),
             CheckReach.Key("15.10 Run", "Near misses, the setups the filter admitted"),
             CheckReach.Key("15.10 Run", "Near misses, beside each gate and each exclusion the setups it alone rejected with every other gate passing"),
@@ -269,7 +273,7 @@ public partial class ReadSurface
 
             CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered"),
             CheckReach.Key("15.10 Run", "Shadow candidates, the family's divisor that number sets"),
-            CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted"),
+            CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until its look reads it"),
 
             // The 12.5 correction's count of distinct trials and the bar it sets beside the divisor, and the
             // row section 17 states it in.
@@ -337,8 +341,6 @@ public partial class ReadSurface
             CheckReach.Key("15.15 Queue", "Take it out"),
             CheckReach.Key("15.15 Queue", "Which lane would write one"),
             CheckReach.Key("15.15 Queue", "When each will be written"),
-            CheckReach.Key("15.16 Watch list", "Add a name, a box offering the names of the index"),
-            CheckReach.Key("15.16 Watch list", "Add a name, which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached"),
             CheckReach.Key("15.16 Watch list", "Add a name, the same press beside a name on its own page"),
             CheckReach.Key("15.16 Watch list", "Add a name, a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"),
             CheckReach.Key("15.16 Watch list", "Each name watched, in the order it was added"),
@@ -523,7 +525,7 @@ public partial class ReadSurface
             // written sections, what each research state offers
             // and the cost beside it, the page's half of section 18's cloud model row
             // and of its two local lane rows, and tonight's fresh prose against reused.
-            CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
+            CheckReach.Key("15.10 Run", "Research and spend, the reports carrying fresh prose against reused"),
             CheckReach.Key("15.9 Name", "The short version"),
             CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks"),
             CheckReach.Key("15.9 Name", "Research not yet written, a control that writes them with its cost stated before it is pressed"),
@@ -536,7 +538,7 @@ public partial class ReadSurface
 
             // 6.7, what research spent in tonight's header, and research paused on the
             // name page, which is the page's half of section 18's spend cap row.
-            CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
+            CheckReach.Key("15.10 Run", "Research and spend, from 19.7 what research spent on the night's day and in its month against their caps"),
             CheckReach.Key("15.9 Name", "Research paused, one line saying that research is paused and when it resumes"),
             CheckReach.Key(Scope.FailureTable, "Spend cap reached, the name says research is paused and when it resumes"),
 
@@ -1951,7 +1953,7 @@ public partial class ReadSurface
 
         Assert.Contains($"data-fired=\"{fired}\"", header, StringComparison.Ordinal);
         Assert.Contains($"data-index=\"{universe.Count}\"", header, StringComparison.Ordinal);
-        Assert.Contains("data-prose=\"absent\"", marks.NightOps(night.Value, "00:00:01", new HarnessCounts(211, 0, 0, 87)), StringComparison.Ordinal);
+        Assert.Contains("data-prose=\"absent\"", marks.NightResearch(night.Value, null, null), StringComparison.Ordinal);
 
         // A night with more than twenty fired names draws twenty and states the
         // true count. The committed fixture holds four names, so the night of
@@ -2748,7 +2750,7 @@ public partial class ReadSurface
 
         // Sixty seconds and sixty seconds of the night, and the backfill's ninety-five left out.
         Assert.Contains(
-            "<p class=\"total\" data-seconds=\"120\" data-by-hand=\"2\">2 stage(s) of the night, 120 second(s) of stage time, and 2 command(s) run by hand</p>",
+            "<p class=\"total\" data-seconds=\"120\" data-by-hand=\"2\">2 stage(s) of the night, 2 min 0 s of stage time, and 2 command(s) run by hand</p>",
             header,
             StringComparison.Ordinal);
 
@@ -4336,7 +4338,7 @@ public partial class ReadSurface
         // maximum the family may reach and never with an empty row.
         Assert.Contains("data-shadow=\"0\"", page, StringComparison.Ordinal);
         Assert.Contains("no candidate condition is registered", page, StringComparison.Ordinal);
-        Assert.Contains("withheld until it is promoted", page, StringComparison.Ordinal);
+        Assert.Contains("withheld until its look reads it", page, StringComparison.Ordinal);
 
         // And the route is a link, which is what makes the page shareable.
         Assert.Contains(SinglePageApp.RunRoute, new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
@@ -4477,9 +4479,15 @@ public partial class ReadSurface
         Assert.True(operations.Success, "The Run page draws no line of the night's operations.");
         Assert.StartsWith($"<div class=\"night-ops\" data-night=\"{stamp}\"><p class=\"duration\" data-duration=\"{await api.NightDurationAsync(night) ?? "not recorded"}\">", operations.Value, StringComparison.Ordinal);
         Assert.Contains("class=\"harness-verdict", operations.Value, StringComparison.Ordinal);
-        Assert.Matches("class=\"night-spend\"|data-spend=\"absent\"", operations.Value);
-        Assert.Contains("class=\"night-prose\"", operations.Value, StringComparison.Ordinal);
         Assert.True(run.IndexOf("data-region=\"night\"", StringComparison.Ordinal) < operations.Index, "The night's operations stand outside how the night went.");
+
+        // From 19.7 what research spent and the fresh prose stand under the Research heading, after the operations.
+        var research = Regex.Match(run, "<div class=\"night-research\" data-night=\"" + stamp + "\">.*?</div>", RegexOptions.Singleline);
+
+        Assert.True(research.Success && research.Index > operations.Index, "The Run page draws no research line after the night's operations.");
+        Assert.Matches("class=\"night-spend\"|data-spend=\"absent\"", research.Value);
+        Assert.Contains("class=\"night-prose\"", research.Value, StringComparison.Ordinal);
+        Assert.True(run.IndexOf("data-heading=\"research\"", StringComparison.Ordinal) < research.Index, "The research line stands outside the Research heading.");
 
         // The reason totals, each reason counted by the test's own reading of the night's stored listings.
         var counted = Strings(store, $"SELECT json_extract(reason.value, '$.name') || ' ' || COUNT(*) FROM listing, json_each(listing.reasons) AS reason WHERE listing.session_date = '{stamp}' AND json_extract(reason.value, '$.fired') = 1 GROUP BY json_extract(reason.value, '$.name') ORDER BY json_extract(reason.value, '$.name');");

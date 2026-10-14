@@ -1,0 +1,18 @@
+{
+ "stage": "remaining-screens",
+ "derivation": "derived",
+ "derivedFrom": "section 15.10's rows on the trades line and the monthly run, section 15.8's rows on a report's staleness, its move, its sections and why it was written, section 17's row on the minimum a share waits on, the decision that research goes stale on an event dated after the section was written, setup-cards.json's night, staleness.json's dates and research-record.json's versions, not a run. The fixture's night of 2026-09-08 lists no stock, since every member's trigger fails on it as setup-cards.json derives, so the Run page's trades line counts none listed, none open and none decided of the 250 a share waits on. The fixture holds no monthly run, so the page says none has started and draws no family's row. The fixture's research pass for KEYS runs on the night and dates its sections by it, so its report was written on 2026-09-08; no request names it, so it was written by hand. Of research-record.json's ten sections, the newest version of seven stands accepted: what the company sells, what management said, the dated calendar items, the two cases, the risks, the short version and the headline, while the segment commentary fell back and the industry cycle and the cause of each large move were not written; so the report holds seven of ten. Its newest filing is dated 2026-09-02 and its newest passed print 2026-08-18 after the close, as staleness.json reads them, both before the day written, so the report stands. Its close on the day written is the newest close the store holds, so it has moved nothing since. The suite reads the night's listings, the stored steps and requests and the accepted sections the derivation rests on, and reads each line and row back off the pages the fixture's stores draw. It names the research sections the derivation rests on, which the replay the other checks read writes.",
+ "tables": ["research_section"],
+ "night": "2026-09-08",
+ "trades": { "listed": 0, "open": 0, "decided": 0, "needed": 250 },
+ "monthly": "none",
+ "researched": {
+  "ticker": "KEYS",
+  "written": "2026-09-08",
+  "why": "by hand",
+  "sections": 7,
+  "of": 10,
+  "stale": false,
+  "move": "0"
+ }
+}

@@ -125,7 +125,7 @@ public sealed partial class MarkRenderer
 
     // A run's month as words, 2026-10 as October 2026; none where the month cannot be read.
     static string? FittedIn(string? month) =>
-        month is not null && DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", Invariant, System.Globalization.DateTimeStyles.None, out var first)
+        month is not null && DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var first)
             ? first.ToString("MMMM yyyy", Invariant)
             : null;
 

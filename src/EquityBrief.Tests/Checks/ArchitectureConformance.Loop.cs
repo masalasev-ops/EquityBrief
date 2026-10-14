@@ -1574,7 +1574,7 @@ public partial class ArchitectureConformance
         var report = Report();
 
         Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(key, PhaseTwelveRows));
-        Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(PhaseTwelveBeyondThePrediction.Except(TakenOutAfterPhaseSeventeen), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.All([.. TakenOutAfterPhaseTwelve, .. PhaseTwelveAddedThenTakenOut], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
@@ -1808,7 +1808,7 @@ public partial class ArchitectureConformance
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.All(TakenOutAfterPhaseTwelve, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        Assert.All(PhaseTwelveRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(PhaseTwelveRows.Except(TakenOutAfterPhaseSeventeen), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.Equal(
             (now, pending, 0, now - pending),

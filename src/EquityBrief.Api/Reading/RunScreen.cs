@@ -235,7 +235,7 @@ public static class RunScreen
     // The shadow region, which is a count and a divisor and never a name.
     //
     // A screen shows how many candidate conditions are registered and that each
-    // one's record is withheld until it is promoted. It shows no candidate's pick
+    // one's record is withheld until its look reads it. It shows no candidate's pick
     // of a name, which the comparison of tonight's picks alone draws: seeing a candidate's record before it is
     // promoted is the thing the shadow exists to prevent, and a page that drew
     // one would make the register a formality.

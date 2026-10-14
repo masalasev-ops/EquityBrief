@@ -80,7 +80,7 @@ public partial class ReadSurface
         Assert.Contains("data-divisor=\"2\"", two, StringComparison.Ordinal);
         Assert.Contains("2 candidate condition(s) registered as this page is read, of at most 9, and the family's divisor is 2", two, StringComparison.Ordinal);
         Assert.Contains("data-trials=\"2\" data-level=\"0.025\"", two, StringComparison.Ordinal);
-        Assert.Contains("withheld until it is promoted", two, StringComparison.Ordinal);
+        Assert.Contains("withheld until its look reads it", two, StringComparison.Ordinal);
 
         // A retirement moves the divisor down, which is what the region is for:
         // a reader comparing a verdict against it needs the number as it stands
@@ -400,6 +400,6 @@ public partial class ReadSurface
             Assert.DoesNotContain($"{ticker}</td><td>momentum", run, StringComparison.Ordinal);
         }
 
-        Assert.Contains("withheld until it is promoted", run, StringComparison.Ordinal);
+        Assert.Contains("withheld until its look reads it", run, StringComparison.Ordinal);
     }
 }

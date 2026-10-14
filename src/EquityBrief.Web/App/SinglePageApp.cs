@@ -3044,7 +3044,7 @@ public sealed partial class SinglePageApp : IComponent
             region: "overlap"));
         region.Append(Folded);
 
-        region.Append(Fold("candidates", "The background versions: statistics and checkpoints"));
+        region.Append(Fold("candidates", "The background versions and their statistics"));
         region.Append(Cards.Computed(
             "Shadow candidates",
             marks.ShadowCandidates(shadow),
@@ -3088,7 +3088,7 @@ public sealed partial class SinglePageApp : IComponent
                 marks.FamilyRun(setupFamilies) + (familyRecords is { Count: > 0 } ? marks.FamilyRecords(familyRecords) : string.Empty) + Cards.Key(
                     "How to read it.",
                     "Each row is one setup the page is drawn from. A live setup's rule is registered and its record counts from that day; a provisional one runs on settings taken from published evidence until its sweep proposes the values its freeze registers.",
-                    "A provisional setup's trades are listed and followed like any other and are in no share and no checkpoint until its freeze."),
+                    "A provisional setup's trades are listed and followed like any other and are in no share and no record until its freeze."),
                 title: "The setups the page is drawn from",
                 lede: "One row a setup, in the page's order: where its rule stands, what it lists tonight and how its trades stand.",
                 stamp: Cards.Night(night),
@@ -3202,7 +3202,7 @@ public sealed partial class SinglePageApp : IComponent
         body.Append(Guide(WatchGuide));
         body.Append("<div class=\"watch-said\" role=\"status\"></div>");
         body.Append(watched.Count < limit
-            ? Invariant($"<p class=\"watch-add-line\" data-full=\"false\">Search a name in the bar above to add it here; {limit - watched.Count} place(s) left.</p>")
+            ? Invariant($"<p class=\"watch-add-line\" data-full=\"false\">Search a name in the bar above to add it here; {limit - watched.Count} {(limit - watched.Count == 1 ? "place" : "places")} left.</p>")
             : Invariant($"<p class=\"watch-full\" data-full=\"true\">The watch list holds {limit}, its limit; take one out to add another.</p>"));
 
         if (watched.Count == 0)
@@ -3211,8 +3211,8 @@ public sealed partial class SinglePageApp : IComponent
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th>Nearest setup</th><th>Distance to its bands</th><th class=\"r\">Report in</th><th class=\"r\">Close</th><th class=\"r\">Day</th>");
-            body.Append("<th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th>Nearest setup</th><th>Distance to its bands</th><th class=\"r\">Report in</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th>");
+            body.Append("<th class=\"r\">Reward to risk</th><th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
 
             for (var at = 0; at < watched.Count; at++)
             {
@@ -3231,6 +3231,8 @@ public sealed partial class SinglePageApp : IComponent
                 body.Append(one.Cell?.SessionsUntilEarnings is { } sessions ? Invariant($"<td class=\"r num\" data-sessions=\"{sessions}\">{sessions} session(s)</td>") : "<td class=\"r\"><span class=\"degraded\">no date</span></td>");
                 body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num {MarkRenderer.Hue(change)}\">{(Math.Round(change, 2) == 0 ? 0 : change):+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
+                body.Append(row.RewardToRisk is { } ratio ? Invariant($"<td class=\"r num\">{ratio:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td class=\"{(one.Listed ? "listed" : "stopped")}\" data-filter=\"{Escaped(one.Filter)}\">{Escaped(one.Filter)}</td>"));
                 body.Append(Invariant($"<td class=\"num\">{one.Added:yyyy-MM-dd}</td>"));
                 body.Append(Invariant($"<td><form class=\"watch-control\" method=\"post\" action=\"{UnwatchPostRoute}\" data-ticker=\"{Escaped(row.Ticker)}\"><button type=\"submit\" class=\"btn-2\" aria-label=\"Stop watching {Escaped(row.Ticker)}\">&#215;</button></form></td></tr>"));
@@ -3543,7 +3545,7 @@ public sealed partial class SinglePageApp : IComponent
 
         return decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldBack(run, one, decided))
             ? "Its passing proposal was declined; it is put to you again once a later run reads a new complete block of 63 sessions and it passes with that block."
-            : Invariant($"None of its {own.Count} proposal(s) that states a change passed; the next monthly run is on {next:yyyy-MM-dd}.");
+            : Invariant($"{(own.Count == 1 ? "Its one proposal did not pass" : $"None of its {own.Count} proposals passed")} with a change to put to you; the next monthly run is on {next:yyyy-MM-dd}.");
     }
 
     // The first Saturday of the month after a run's month, the day the monthly run is scheduled on.

@@ -983,7 +983,7 @@ public sealed record BaseRateLine(string Window, double? Rate);
 // at and what a candidate's looks release of it, first to last.
 //
 // Numbers and no names. The region says how hard the correction is and that
-// every candidate's own record is withheld until it is promoted, and it carries
+// every candidate's own record is withheld until its look reads it, and it carries
 // nothing a reader could read a candidate's performance off, because the
 // register is only a pre-registration for as long as nobody can see how a
 // candidate is doing before deciding whether to keep it.
@@ -4903,7 +4903,7 @@ public sealed partial class MarkRenderer : IComponent
             region.Append("<p data-trials=\"0\">no distinct trial is counted, since no rule is running and no look has read one, so no level is divided</p>");
         }
 
-        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and its picks are drawn in the comparison of tonight's picks alone</p>");
+        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until its look reads it, and its picks are drawn in the comparison of tonight's picks alone</p>");
 
         region.Append("</section>");
 

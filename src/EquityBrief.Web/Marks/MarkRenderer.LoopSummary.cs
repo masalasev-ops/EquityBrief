@@ -73,7 +73,7 @@ public sealed partial class MarkRenderer
 
             if (row.Strongest is { } strongest)
             {
-                html.Append(Invariant, $"<td>{PMeter(strongest.Adjusted)} <span class=\"loop-better\" data-better=\"{strongest.Better}\" data-counted=\"{strongest.Counted}\">{(strongest.Adjusted is { } p ? Formatted($"p {p.ToString("0.0000", Invariant)}, ") : "p not read, ")}better in {strongest.Better} of {strongest.Counted} year(s)</span></td>");
+                html.Append(Invariant, $"<td>{PMeter(strongest.Adjusted)} <span class=\"loop-better\" data-better=\"{strongest.Better}\" data-counted=\"{strongest.Counted}\">{(strongest.Adjusted is { } p ? Formatted($"p {p.ToString("0.0000", Invariant)}, ") : "p not read, ")}better in {strongest.Better} of {Counted(strongest.Counted, "year", "years")}</span></td>");
             }
             else
             {
@@ -101,7 +101,7 @@ public sealed partial class MarkRenderer
 
         html.Append(Invariant, $"<details class=\"loop-row\" data-family=\"{Escaped(proposal.Family)}\" data-proposal=\"{Escaped(proposal.Proposal)}\"><summary>");
         html.Append(Invariant, $"<span class=\"lr-name\">{Escaped(Capitalised(proposal.Proposal))}</span>");
-        html.Append(Invariant, $"<span class=\"lr-change\">{(proposal.Change is { } change ? Escaped(change) : proposal.Words is { } words ? Escaped(words) : "no change")}</span>");
+        html.Append(Invariant, $"<span class=\"lr-change\">{(proposal.Words is { } words ? Escaped(words) : "proposes no change")}</span>");
         html.Append(PMeter(proposal.Adjusted));
         html.Append(Invariant, $"<span class=\"lr-years\">better in {proposal.Better} of {proposal.Counted}</span>");
         html.Append(Invariant, $"<span class=\"lr-trimmed\">{LoopFigure(proposal.Unit, proposal.Trimmed)} trimmed</span>");

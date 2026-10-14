@@ -214,8 +214,9 @@ public class ResearchMarked
         var run = Assert.Single(partly);
 
         // Six paragraphs from 15.1's second half, which added the one on the page reading the index chosen under Universe,
-        // and seven from 15.5, which added the one on each registered rule's record on the S&P 400's and 600's pages.
-        Assert.Equal(("15.10 Run", 1, 7), (run.Heading, run.Rules, run.Paragraphs));
+        // and seven from 15.5, which added the one on each registered rule's record on the S&P 400's and 600's pages, and
+        // eight from 19.7, which added the one saying the page holds none of the retired loop's clocks.
+        Assert.Equal(("15.10 Run", 1, 8), (run.Heading, run.Rules, run.Paragraphs));
         Assert.DoesNotContain(run.Heading, Subsections);
     }
 

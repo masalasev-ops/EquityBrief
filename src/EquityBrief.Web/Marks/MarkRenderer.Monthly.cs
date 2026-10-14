@@ -37,9 +37,14 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Invariant, $"<div class=\"monthly-run\" data-state=\"{Escaped(view.State)}\" data-month=\"{Escaped(view.Month ?? "none")}\" data-families=\"{view.Families.Count}\">");
-        html.Append(view.Started is { } started
-            ? Formatted($"<p class=\"mr-state\" data-started=\"{started.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"><span class=\"status-pill {(view.State == WorryItem.Held ? "live" : "failed")}\">{(view.State == WorryItem.Held ? "held" : "stopped")}</span> The monthly run for {Escaped(view.Month ?? "its month")} started at {started.UtcDateTime:HH:mm} UTC on {started.UtcDateTime:yyyy-MM-dd}{(view.Why is { } why ? ": " + Escaped(why) : ", and every step it ran held")}.</p>")
-            : "<p class=\"mr-state degraded\" data-started=\"none\">No monthly run has started yet. It runs on the first Saturday of each month.</p>");
+        if (view.Started is { } started)
+        {
+            html.Append(Invariant, $"<p class=\"mr-state\" data-started=\"{started.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\"><span class=\"status-pill {(view.State == WorryItem.Held ? "live" : "failed")}\">{(view.State == WorryItem.Held ? "held" : "stopped")}</span> The monthly run for {Escaped(view.Month ?? "its month")} started at {started.UtcDateTime:HH:mm} UTC on {started.UtcDateTime:yyyy-MM-dd}{(view.Why is { } why ? ": " + Escaped(why) : ", and every step it ran held")}.</p>");
+        }
+        else
+        {
+            html.Append("<p class=\"mr-state degraded\" data-started=\"none\">No monthly run has started yet. It runs on the first Saturday of each month.</p>");
+        }
 
         if (view.Families.Count > 0)
         {

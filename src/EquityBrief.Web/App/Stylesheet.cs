@@ -446,7 +446,7 @@ span[data-last-asked-at]::before{content:none}
 .loop-row{border-top:1px solid var(--hair);padding:6px 0}
 .loop-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;cursor:pointer;font-size:14px}
 .loop-row .lr-name{font-weight:600}
-.loop-row .lr-change{flex:1 1 220px;color:var(--ink-2)}
+.loop-row .lr-change{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;color:var(--ink-2)}
 .loop-row .lr-years,.loop-row .lr-trimmed,.loop-row .lr-count{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .loop-yearbars,.ledger-edge-bars,.ledger-decile-strip{display:block;margin:6px 0 2px;max-width:100%}
 .loop-yearbars .yb-axis,.ledger-edge-bars .yb-axis{stroke:var(--hair-2);stroke-width:1}

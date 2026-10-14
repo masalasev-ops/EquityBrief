@@ -132,7 +132,7 @@ public partial class NightlyRun
 
         Assert.Contains("data-members=\"GSPC 4, MID 2, SML 1\"", region, StringComparison.Ordinal);
         Assert.Contains(
-            FormattableString.Invariant($"Members read in {night.Seconds:0} seconds to the close: 4 of the S&amp;P 500, 2 of the S&amp;P 400 and 1 of the S&amp;P 600."),
+            FormattableString.Invariant($"Members read in {Math.Floor(night.Seconds!.Value / 60)} min {Math.Floor(night.Seconds.Value) % 60} s to the close: 4 of the S&amp;P 500, 2 of the S&amp;P 400 and 1 of the S&amp;P 600."),
             region,
             StringComparison.Ordinal);
     }
