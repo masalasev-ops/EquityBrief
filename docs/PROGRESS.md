@@ -44603,3 +44603,44 @@ Queue:      done, 19.0 to 19.6 as PRs 446 to 449, 452 to 455 and 458, the screen
             operator's word.
 Carried:    the 19.2 chart's read back and the ledger step's time after the first night past 19.2's remedy; 19.10 after
             the report; the sign-offs of phases 16, 17 and 18.
+
+### 19.6 - correction: the off-peak run five minutes after each peak window ends, and Write now on the queue   2026-10-14
+
+Corrects:   19.6's queue page, which drew the night of 2026-10-13's two requests, JBL and NTCT, as starting now while
+            the night starts no drain and the off-peak run waited until 16:30Z the next day.
+Ruled:      by the operator on 2026-10-14: "i need an override button on that page where if i want the report to be
+            generated right away i can. It show me a warning and ask confirmation if it is during peak hours or else
+            generate right away. ANd i cannot have reports generating one day later. Schedule for the nearest off peak
+            hours please", choosing a button a report and "5 mins after Every off peak interval start". Two decisions
+            supersede the off-peak run's and the press's.
+Built:      the off-peak run's times worked out in one place from the research job's profiles, five minutes after each
+            peak window ends every day, 04:05Z and 10:05Z as shipped; the queue page states a queue of the night's
+            requests alone, with nothing being written, as starting at the next run. Write now on each outstanding row
+            starts `drain --now <TICKER>`, which claims that one request ahead of the queue; inside a peak window the
+            row carries the window's end and the multiple, the shell's script states both and asks, and the read surface
+            refuses a press at peak without the confirmation, the drain then writing it with `--at-peak`, which the
+            industry's pass reads. A drain waiting out a window lets its lock go while it waits. The night's two rows,
+            section 14's steps and note, the catalogue's two rows, 15.15's When row, its new Write now row and its
+            paragraph, the runbook's scheduling for both machines and a paragraph on Write now, CLAUDE.md's rule and
+            layout, the guide, the roster; every citation of the two superseded decisions moved; the prior text in
+            `CHANGELOG.md`.
+Tests:      four new: the run's times worked by hand; the queue's times for the night's requests alone, with a press's
+            among them and with one being written; the drain writing the named request alone, confirmed and not; and
+            the press drawn, refused without the header, for a stock with none, at peak without the confirmation, and
+            started off-peak and confirmed. The stated counts with the row: 208 screen rows, 615 due points.
+Claims:     one more, 1307: 15.15's Write now row.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds, each filtered to the four
+            new tests. M26 the run read at a window's start rather than its end: predicted red at the run's test. M27
+            the run applied with a press's request in the queue: predicted red at the queue's test. M28 the press at
+            peak started without the confirmation: predicted red at the press's test. M29 Write now claiming the oldest
+            request rather than the named one: predicted red at the drain's test. M30 Write now not waiting where the
+            peak is not confirmed: predicted red at the drain's test. Not mutated: the lock let go while a drain waits
+            and the industry's pass reading the flag, which no test reaches. Results: each red where predicted, M26 at
+            the queue's test as well, which reads the same times, 2 of 4; M27, M28, M29 and M30 1 of 4 each. M28 first
+            written as the refusal never made, which the compiler refused as reading a peak that is none, and run as
+            the refusal made only on a word no press sends. Each reverted before anything was committed, the 4 passing
+            over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+After:      the scheduled task registered again at 04:05Z and 10:05Z once this merges.
+Carried:    nothing new.

@@ -1427,7 +1427,8 @@ public partial class ArchitectureConformance
         // bars, phone cards and corrections, and the Run page's corrections.
         // 206 at 19.6: the Queue's reports written by hand.
         // 207 at the second 19.4 correction of 2026-10-13: paper trading's start and the version an account counts.
-        Assert.Equal(207, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 208 at the 19.6 correction of 2026-10-14: the Queue's Write now press.
+        Assert.Equal(208, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1566,7 +1567,8 @@ public partial class ArchitectureConformance
         // strip's four parts.
         // 613 at 19.6: the Queue's reports written by hand.
         // 614 at the second 19.4 correction of 2026-10-13: paper trading's start and the version an account counts.
-        Assert.Equal(614, inDocument.Length);
+        // 615 at the 19.6 correction of 2026-10-14: the Queue's Write now press.
+        Assert.Equal(615, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

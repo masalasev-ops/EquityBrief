@@ -63,7 +63,7 @@ public partial class ReadSurface
         // The drain verb runs its put-back and its queue inside the guard, once it holds the lock, and exits failing
         // where the guard says it stopped, read off its own source.
         var program = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
-        var verb = program[program.IndexOf("static async Task<int> Drain()", StringComparison.Ordinal)..];
+        var verb = program[program.IndexOf("static async Task<int> Drain(string[] args)", StringComparison.Ordinal)..];
         var end = verb.IndexOf("\n}", StringComparison.Ordinal);
 
         verb = verb[..end];

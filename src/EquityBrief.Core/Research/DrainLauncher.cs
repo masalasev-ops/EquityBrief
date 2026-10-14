@@ -41,6 +41,12 @@ public interface IDrainLauncher
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
     DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         new(false, "The quote was not asked, because this surface holds no way to start the worker.");
+
+    // The drain writing one named request now, ahead of the queue, which the queue page's Write now press starts,
+    // at the peak price where the press confirmed it.
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+    DrainStart StartNow(string ticker, bool atPeak) =>
+        new(false, "The report was not started, because this surface holds no way to start the worker.");
 }
 
 // The worker's drain, started as a process of its own from a copy of the worker's build
@@ -58,7 +64,7 @@ public interface IDrainLauncher
 // as `RUNBOOK.md` shows it run by hand, with the arguments passed as a list and never
 // through a shell, and names the store it reads in the environment, which the worker's
 // configuration reads over its own file, so the drain writes the store this surface reads.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 public sealed class WorkerDrainLauncher(
     string? checkout,
     string? workerBuild,
@@ -147,6 +153,18 @@ public sealed class WorkerDrainLauncher(
 
     public DrainStart StartTheQuote(string ticker, DateTimeOffset askedAt) =>
         Launch(AskTheQuote(ticker, askedAt), "The quote has been asked as a process of its own.", "the page keeps the last stored price");
+
+    // The flags match the worker's own, which this project cannot reference.
+    public static IReadOnlyList<string> WriteNow(string ticker, bool atPeak) =>
+        atPeak ? [Verb, "--now", ticker, "--at-peak"] : [Verb, "--now", ticker];
+
+    public DrainStart StartNow(string ticker, bool atPeak) =>
+        Launch(
+            WriteNow(ticker, atPeak),
+            atPeak
+                ? $"The worker has started writing {ticker} now, at the peak price."
+                : $"The worker has started writing {ticker} now.",
+            "the report waits in the queue for the off-peak run");
 
     // The build a drain or the rest of the night is started from: the newest night's own build where the
     // night's script left one holding the worker, so the drain and the rest of a night run the build the

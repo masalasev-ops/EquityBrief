@@ -7,7 +7,7 @@ namespace EquityBrief.Tests.Checks;
 // same folder of nights, reusing a copy a night built, building main's commit and not the branch's where the checkout
 // is on a branch, and refusing a main holding a commit origin/main lacks before any worker exists; read in its check
 // mode over temporary repositories as the monthly run's script is.
-// see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+// see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
 // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
 public partial class NightlyRun
 {

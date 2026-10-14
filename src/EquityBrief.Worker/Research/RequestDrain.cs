@@ -25,7 +25,7 @@ public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, Da
 // The read surface writes the ask and this writes what the ask came to, so the table has
 // two writers and no operation has two. Nothing here writes research: the pass does that,
 // and this moves the request beside it.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 public sealed class RequestDrain : IComponent
 {
     public static ComponentAccess Access => new(
@@ -558,49 +558,144 @@ public sealed class RequestDrain : IComponent
 
             taken++;
 
-            // The request carries the lane the press meant, so a queue drained a day later
-            // writes under it rather than under whatever configuration now says, and whether
-            // the press asked for every section to be written again, which the paid model
-            // writes whole whatever lane the request names.
-            // see: Nothing expires on a timer
-            // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
-            string[] verb =
-            [
-                "research", "--ticker", request.Ticker,
-                .. request.Lane == "paid" || request.Refresh ? ["--paid-for-local"] : Array.Empty<string>(),
-                .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
-            ];
-
-            // A pass that ends on an error it wrote no run for is settled as refused with the error, so its request is
-            // never left being written, and the drain goes on to the next.
-            // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
-            try
-            {
-                await pass(verb);
-            }
-            catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
-            {
-                await SettleAsync(connection, request, SettlementFor(null).State, "the pass stopped on an error before it wrote its run: " + failure.Message, null, clock.UtcNow, cancellation);
-
-                continue;
-            }
-
-            // What this request's own pass came to, and not whether the verb exited zero. A
-            // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
-            // pass the model could not be reached for exits zero and writes nothing, and one
-            // refused before the runner starts writes no run for this request at all.
-            var (runId, outcome) = await PassAsync(connection, request, cancellation);
-            var (state, reason) = SettlementFor(outcome);
-
-            if (reason is null)
+            if (await WriteAsync(connection, request, clock, pass, atPeak: false, cancellation))
             {
                 written++;
             }
-
-            await SettleAsync(connection, request, state, reason, runId, clock.UtcNow, cancellation);
         }
 
         return (taken, written);
+    }
+
+    // The flag a drain is started with to write one named request at once, ahead of the queue, and the flag
+    // saying the operator confirmed the peak price for it, which the drain hands on to the pass so its
+    // industry's pass is not refused at peak either.
+    public const string NowFlag = "--now";
+
+    public const string AtPeakFlag = "--at-peak";
+
+    // The named stock's request nobody has started, taken and marked in one statement as the queue's claim is,
+    // whatever its place in the queue.
+    const string ClaimNamed = @"
+        UPDATE research_request
+        SET state = 'writing'
+        WHERE ticker = $ticker AND state = 'outstanding'
+        RETURNING ticker, asked_at, lane, refresh;
+    ";
+
+    // The operator's Write now press: the one named request written now, ahead of every older one, and
+    // nothing else. Off-peak it starts at once. At peak it starts at once only where the press confirmed the
+    // peak price, and otherwise waits for the instant a queue drain would take a request, as every other pass
+    // does. A request the drain has already claimed, or one taken out, is not written twice and the line says
+    // so.
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+    public static async Task<(int Taken, int Written)> WriteNowAsync(
+        string databaseFile,
+        IClock clock,
+        Func<string[], Task> pass,
+        string ticker,
+        bool atPeak,
+        IReadOnlyList<ResearchPricing> pricings,
+        Func<DateTimeOffset, Task> waitUntil,
+        CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+
+        if (!atPeak)
+        {
+            var now = clock.UtcNow;
+            var startsAt = ResearchPricing.StartFor(pricings, now, await LongestPassAsync(connection, cancellation));
+
+            if (startsAt > now)
+            {
+                await waitUntil(startsAt);
+            }
+        }
+
+        var request = await ClaimNamedAsync(connection, ticker, clock.UtcNow, cancellation);
+
+        if (request is null)
+        {
+            return (0, 0);
+        }
+
+        return (1, await WriteAsync(connection, request, clock, pass, atPeak, cancellation) ? 1 : 0);
+    }
+
+    // One claimed request's pass and its settle, the queue's and Write now's alike, and whether it wrote.
+    static async Task<bool> WriteAsync(
+        SqliteConnection connection,
+        TakenRequest request,
+        IClock clock,
+        Func<string[], Task> pass,
+        bool atPeak,
+        CancellationToken cancellation)
+    {
+        // The request carries the lane the press meant, so a queue drained a day later
+        // writes under it rather than under whatever configuration now says, and whether
+        // the press asked for every section to be written again, which the paid model
+        // writes whole whatever lane the request names.
+        // see: Nothing expires on a timer
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        string[] verb =
+        [
+            "research", "--ticker", request.Ticker,
+            .. request.Lane == "paid" || request.Refresh ? ["--paid-for-local"] : Array.Empty<string>(),
+            .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
+            .. atPeak ? [AtPeakFlag] : Array.Empty<string>(),
+        ];
+
+        // A pass that ends on an error it wrote no run for is settled as refused with the error, so its request is
+        // never left being written, and the drain goes on to the next.
+        // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+        try
+        {
+            await pass(verb);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
+        {
+            await SettleAsync(connection, request, SettlementFor(null).State, "the pass stopped on an error before it wrote its run: " + failure.Message, null, clock.UtcNow, cancellation);
+
+            return false;
+        }
+
+        // What this request's own pass came to, and not whether the verb exited zero. A
+        // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
+        // pass the model could not be reached for exits zero and writes nothing, and one
+        // refused before the runner starts writes no run for this request at all.
+        var (runId, outcome) = await PassAsync(connection, request, cancellation);
+        var (state, reason) = SettlementFor(outcome);
+
+        await SettleAsync(connection, request, state, reason, runId, clock.UtcNow, cancellation);
+
+        return reason is null;
+    }
+
+    // The named stock's request nobody has started, claimed as the queue's claim is, inside a transaction that
+    // holds the write lock from its start.
+    public static async Task<TakenRequest?> ClaimNamedAsync(SqliteConnection connection, string ticker, DateTimeOffset at, CancellationToken cancellation = default)
+    {
+        await using var transaction = connection.BeginTransaction(deferred: false);
+        TakenRequest? taken;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = ClaimNamed;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            taken = await reader.ReadAsync(cancellation)
+                ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
+                : null;
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return taken;
     }
 
     // Taken inside a transaction that holds the write lock from its start and commits as a statement of its own,

@@ -31,7 +31,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "nightly" => await NightlyRun(args),
     "fundamentals" => await FundamentalsFetch(args),
     "research" => await ResearchPass(args),
-    "drain" => await Drain(),
+    "drain" => await Drain(args),
     "register" => await Register(args),
     "version" => await VersionWindows(args),
     "filter-counts" => await FilterCountsReport(args),
@@ -77,7 +77,8 @@ static int NoVerb()
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
         "stale, with '--refresh' to fetch its figures again and write every section again, once a day, and '--paid-for-local' to have the paid model write the " +
         "local lane's sections as well, " +
-        "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, and " +
+        "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, with " +
+        "'--now <TICKER>' writing that one request alone ahead of the queue and '--at-peak' writing it inside a peak window too, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
         "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
         "writing the new row that withdraws one and '--the-three' writing phase 10's three rows at one instant, and " +
@@ -1028,7 +1029,7 @@ static async Task<int> FundamentalsFetch(string[] args)
 // drain runs this verb for each request it takes, and the operator can run it by hand for
 // the same result.
 // see: Everything expensive happens when a name is opened
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 static async Task<int> ResearchPass(string[] args)
 {
     var configuration = Configuration();
@@ -1169,7 +1170,7 @@ static async Task<int> ResearchPass(string[] args)
         lane,
         clock,
         database,
-        models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local")));
+        models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local"), args.Contains(RequestDrain.AtPeakFlag)));
 
     // The trial, after a pass that wrote one of its sections through the paid lane at the first draft.
     // see: A trial asks a second profile for named sections beside a report, and ships naming none
@@ -1203,10 +1204,15 @@ static async Task<int> ResearchPass(string[] args)
 // name, so one code path writes a pass whether a person asked for it at a shell or a
 // press on a screen put it here. A press starts this verb from a copy of the worker's
 // build, and a person runs it by hand; either way it waits for the off-peak rate before
-// a pass, reading the windows from the prices configuration states.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-static async Task<int> Drain()
+// a pass, reading the windows from the prices configuration states. With `--now` and a
+// name it writes that one request alone, ahead of the queue, which the Write now press
+// starts, and with `--at-peak` beside it writes it inside a peak window too.
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+static async Task<int> Drain(string[] args)
 {
+    var named = Argument(args, RequestDrain.NowFlag)?.ToUpperInvariant();
+    var atPeak = args.Contains(RequestDrain.AtPeakFlag);
+
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var clock = SystemClock.ForUnitedStatesSessions();
@@ -1236,7 +1242,7 @@ static async Task<int> Drain()
     // whatever it left.
     var said = false;
 
-    using var held = await DrainLock.AcquireAsync(store.DataRoot, () =>
+    Task Pause()
     {
         if (!said)
         {
@@ -1245,39 +1251,67 @@ static async Task<int> Drain()
         }
 
         return Task.Delay(TimeSpan.FromSeconds(5));
-    });
+    }
 
-    // An error escaping the put-back or the queue stops the drain on a row of its own, so a page says it stopped.
-    // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
-    var stopped = await RequestDrain.GuardAsync(store.DatabaseFile, store.DataRoot, clock, async () =>
+    var held = await DrainLock.AcquireAsync(store.DataRoot, Pause);
+
+    // A drain waiting out a peak window lets the lock go for the wait and takes it again before it claims, so a
+    // Write now press and the store's copy are not held behind a wait of hours; it holds no request while it waits.
+    async Task WaitUntil(DateTimeOffset until)
     {
-        // A request a drain left being written when it ended is put back first, which only a drain holding the lock may do.
-        var putBack = await RequestDrain.PutBackAsync(store.DatabaseFile);
+        Console.WriteLine(
+            "drain: a peak window is open, so the next pass waits until "
+            + until.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
 
-        if (putBack > 0)
+        held.Dispose();
+
+        var wait = until - clock.UtcNow;
+
+        if (wait > TimeSpan.Zero)
         {
-            Console.WriteLine(FormattableString.Invariant($"drain: {putBack} request(s) a drain left being written when it ended put back as outstanding"));
+            await Task.Delay(wait);
         }
 
-        var (taken, written) = await RequestDrain.DrainAsync(
-            store.DatabaseFile,
-            clock,
-            ResearchPass,
-            pricings,
-            until =>
+        held = await DrainLock.AcquireAsync(store.DataRoot, Pause);
+    }
+
+    string? stopped;
+
+    try
+    {
+        // An error escaping the put-back or the queue stops the drain on a row of its own, so a page says it stopped.
+        // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+        stopped = await RequestDrain.GuardAsync(store.DatabaseFile, store.DataRoot, clock, async () =>
+        {
+            // A request a drain left being written when it ended is put back first, which only a drain holding the lock may do.
+            var putBack = await RequestDrain.PutBackAsync(store.DatabaseFile);
+
+            if (putBack > 0)
             {
-                Console.WriteLine(
-                    "drain: a peak window is open, so the next pass waits until "
-                    + until.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                Console.WriteLine(FormattableString.Invariant($"drain: {putBack} request(s) a drain left being written when it ended put back as outstanding"));
+            }
 
-                var wait = until - clock.UtcNow;
+            if (named is not null)
+            {
+                var (one, wrote) = await RequestDrain.WriteNowAsync(store.DatabaseFile, clock, ResearchPass, named, atPeak, pricings, WaitUntil);
 
-                return wait > TimeSpan.Zero ? Task.Delay(wait) : Task.CompletedTask;
-            });
+                Console.WriteLine(one == 0
+                    ? $"drain: {named} has no request nobody has started, so nothing was written now"
+                    : $"drain: {named} written now, {(wrote == 1 ? "written" : "refused")}{(atPeak ? " at the peak price the press confirmed" : string.Empty)}");
 
-        Console.WriteLine(FormattableString.Invariant(
-            $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));
-    });
+                return;
+            }
+
+            var (taken, written) = await RequestDrain.DrainAsync(store.DatabaseFile, clock, ResearchPass, pricings, WaitUntil);
+
+            Console.WriteLine(FormattableString.Invariant(
+                $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));
+        });
+    }
+    finally
+    {
+        held.Dispose();
+    }
 
     if (stopped is not null)
     {

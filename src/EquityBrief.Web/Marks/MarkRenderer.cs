@@ -3289,7 +3289,7 @@ public sealed partial class MarkRenderer : IComponent
                 // name holds none and the queue holds nothing for it. It writes a request and
                 // starts the worker's drain, and a row whose name is already waiting is refused
                 // by the store rather than by the page reading the queue first and racing itself.
-                // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+                // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
                 if (row.Queue is null)
                 {
                     list.Append(AskForAReport(row.Ticker));
@@ -3424,7 +3424,7 @@ public sealed partial class MarkRenderer : IComponent
     // The control asking for a report on a name holding none, as tonight's list draws it on
     // a row and in the selected name's region, both on the list's page. It writes a request
     // and starts the worker's drain.
-    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
     public static string AskForAReport(string ticker) =>
         Formatted($"<form class=\"research-control ask\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" ")
         + Formatted($"data-kind=\"ask\" data-asks=\"{Escaped(ticker)}\" data-from=\"list\">")
@@ -4024,7 +4024,7 @@ public sealed partial class MarkRenderer : IComponent
         // the form so a test reads what a press would send rather than the label beside it.
         // The cost is stated once, before any of them, because it is the same statement
         // for each: the local lane costs nothing and every other call goes through the cap.
-        // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+        // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
         if (offered.Count > 0 && cost is not null)
         {
             // Before the controls, so it is read before any of them is pressed.

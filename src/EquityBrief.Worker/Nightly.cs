@@ -736,12 +736,13 @@ public static class Nightly
             }),
             // Section 14's step 27, after the Treasury's 10-year. The night asks for six reports taken
             // in turn across the S&P 500's, 400's and 600's pages and leaves them queued: it writes a
-            // row a name and starts no drain, and the off-peak run starts the drain at 16:30Z, each pass
+            // row a name and starts no drain, and the off-peak run starts the drain five minutes after each
+            // peak window ends, each pass
             // the drain's own run, its calls and requests on its own rows. It is handed no token from
             // the night's deadline, which bounds the arithmetic. A night run again for an earlier
             // session asks for nothing, since its list is not tonight's.
             // see: The six reports a night are taken in turn across the three indices, one at a time in the page's order
-            // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
+            // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
             new("report", async () =>
             {
                 var started = clock.UtcNow;
@@ -765,7 +766,7 @@ public static class Nightly
                 return said;
             }),
             // Section 14's step after the report. The night starts no news labeller: the off-peak run starts
-            // it at 16:30Z over the newest night's list, one process of its own whose calls and spend sit on
+            // it five minutes after each peak window ends over the newest night's list, one process of its own whose calls and spend sit on
             // the labeller's own run and never the night's, the fifth carve-out of the nightly rule. The step
             // writes the night's row saying so, and a night run again for an earlier session says its list
             // is not tonight's.
@@ -1023,11 +1024,12 @@ public static class Nightly
     public const string FirstStep = "migrate";
 
     // What the night's report and labeller rows say on a night whose list is tonight's: the requests wait for the
-    // off-peak run, which starts the labeller and then the drain at 16:30Z, and the night starts neither.
-    // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit
-    public const string QueuedForTheOffPeakRun = "The requests wait for the off-peak run, which starts the drain at 16:30Z; the night starts none.";
+    // off-peak run, which starts the labeller and then the drain five minutes after each peak window ends, and the
+    // night starts neither.
+    // see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
+    public const string QueuedForTheOffPeakRun = "The requests wait for the off-peak run, which starts the drain five minutes after each peak window ends; the night starts none.";
 
-    public const string LabelledByTheOffPeakRun = "No labeller was started: the off-peak run labels tonight's list at 16:30Z.";
+    public const string LabelledByTheOffPeakRun = "No labeller was started: the off-peak run labels tonight's list five minutes after each peak window ends.";
 
     public static async Task<int> RefusedAsync(
         StoreLocation store,

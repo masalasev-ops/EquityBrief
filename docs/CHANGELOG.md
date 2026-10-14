@@ -25,6 +25,57 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-14 - CLAUDE.md - the off-peak run five minutes after each peak window ends
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
+Was:
+> Layout: offpeak  offpeak.ps1   the off-peak run, what the scheduler calls at 16:30Z every day: ...
+> The nightly hard rule: ... paid passes the off-peak run sets off at 16:30Z, the night starting no drain, ... the news labeller, a process of its own the off-peak run starts at 16:30Z before the drain, ... (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit) ...
+Now:
+> The layout's line says the scheduler calls it five minutes after each peak window ends, every day; the rule says the off-peak run sets the passes off five minutes after each peak window ends and starts the labeller before the drain, and cites (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends).
+Why: the operator ruled on 2026-10-14 that a night's reports are written at the nearest off-peak time and never a day later.
+
+### 2026-10-14 - ARCHITECTURE.html - the off-peak run's hours and the queue page's Write now press
+Authorised by: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+Was:
+> Section 14's request step: ... and leave them queued, starting no drain: the off-peak run starts the drain at 16:30Z, whose passes ... (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit).
+> Section 14's labeller step: Start no news labeller, writing the night's row saying the off-peak run labels tonight's list at 16:30Z, a process of its own ...
+> Section 14's note: ... the passes they lead to are the drain's own runs, which the off-peak run starts at 16:30Z (see: ... at 16:30Z from main's own commit) ...
+> Catalogue, Request drain: the worker's drain verb, started by the press that writes a request and runnable by hand: it waits out a peak window before any pass, takes the oldest request nobody has started, runs the research verb ...
+> Catalogue, Read API: ... and starts two processes from a copy of the worker's build: the worker's drain, when a press writes a request, and its quote job ...
+> 15.15, When each will be written: ... a request with nothing ahead of it starts now, or at the end of the peak window it was asked in or that the longest pass the store holds would carry it into; one behind others ...
+> 15.15, its paragraph: ... waiting for the off-peak rate before a pass where it starts inside a peak window or reaches one between passes. Drains run one at a time over a store, one started while another runs waiting for it to end, so the order this screen states is the order passes run in. Nothing on this screen starts one, and a drain that could not be started leaves a request outstanding rather than losing it, for the next press or the drain run by hand ...
+> Each citation of (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours).
+Now:
+> The steps and the note say five minutes after each peak window ends; the drain's row names the off-peak run and the Write now press as starting it, the lock let go while it waits and `--now`; the Read API's row starts the drain on a Write now press; the When row states a queue of the night's requests alone as starting at the next off-peak run, in a clause of its own; a Write now row is added before Take it out, its three statements set apart by semicolons so the row lists no parts; the paragraph states the night's requests waiting for the off-peak run and Write now as the one control that starts a pass; each citation names the decisions that supersede the two.
+Why: the operator asked on 2026-10-14 for a press writing a report at once, warned and confirmed at peak, and for the night's reports at the nearest off-peak time.
+
+### 2026-10-14 - RUNBOOK.md - the off-peak run at 04:05Z and 10:05Z and Write now
+Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
+Was:
+> Labelling the news: The off-peak run starts the labeller at 16:30Z before the drain, ...
+> The off-peak run: ... The off-peak run does both, every day at 16:30 UTC, from a clean copy of main's own commit as the night is built: ... so a session at work on a branch at 16:30Z neither stops it nor has its branch built; ...
+> Scheduling it. Every day at 16:30 UTC, ... $trigger = New-ScheduledTaskTrigger -Daily -At 12:30pm / $trigger.StartBoundary = '2026-10-13T16:30:00Z' ... On macOS the job runs every hour at half past and the script runs at 16 UTC alone: ... [ "$(date -u +%H)" = 16 ] ... Minute 30 ... The queue page shows the requests waiting until the run starts the drain, ...
+> What the control does: ... (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours).
+Now:
+> The run is scheduled at 04:05 and 10:05 UTC every day as two triggers, the macOS job at five past every hour running the script at 04 and 10 UTC alone, and the times move with the peak windows in the settings; the queue page states a queue of the night's requests as starting at the next run; a paragraph on Write now and `drain --now` is added; each citation names the decisions that supersede the two.
+Why: the operator ruled on 2026-10-14 that a night's reports are written at the nearest off-peak time, and asked for Write now.
+
+### 2026-10-14 - SCHEMA.md - the press decision cited by the name that supersedes it
+Authorised by: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+Was:
+> ... a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours).
+Now:
+> It cites (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now), and nothing else changed: the Write now press writes no row.
+Why: the decision cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-14 - .claude/rules/checks.md - read-surface holds the off-peak run's times and Write now
+Authorised by: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+Was:
+> read-surface: ... and reading the pages deleting no stored trade or registration |
+Now:
+> read-surface: ... and reading the pages deleting no stored trade or registration; and from the 19.6 correction of 2026-10-14 [the off-peak run's times worked by hand, a queue of the night's requests stated at the next run, the Write now press drawn, refused and started, and the drain writing the named request alone] |
+Why: the correction's assertions, rostered where the check that runs them is.
+
 ### 2026-10-13 - ARCHITECTURE.html - a paper account starts at its rule's current version
 Authorised by: A paper account counts only the trades of its rule's current version, from where the Run page's record of that rule starts
 Was:

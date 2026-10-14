@@ -7,10 +7,11 @@ namespace EquityBrief.Worker.Research;
 // Every press starts a drain and the night starts one, so without this several could run at
 // once, each taking the next request, and the order the queue page states would not be the
 // order passes run in. A drain holds a file under the data root open, shared with nobody, for
-// as long as it runs, and one started while another holds it waits for it to end and then
-// takes whatever the other left. A claim is still one write only one drain can make, so a
-// drain that got past this by any other route would still take nothing another holds.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// as long as it runs but while it waits out a peak window holding no request, and one started
+// while another holds it waits for it to let go and then takes whatever the other left. A
+// claim is still one write only one drain can make, so a drain that got past this by any other
+// route would still take nothing another holds.
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 public static class DrainLock
 {
     public const string FileName = "drain.lock";
