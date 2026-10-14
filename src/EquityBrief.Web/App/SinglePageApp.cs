@@ -3261,6 +3261,9 @@ public sealed partial class SinglePageApp : IComponent
             night is { } on ? Invariant($"Every near-setup on the {reading.Name}, as of the close of {on:yyyy-MM-dd}") : "No night is stored yet"));
         region.Append(selector);
 
+        // From 19.7 the page says the ledger holds no business-first setup and why, and names the checkpoint that writes them.
+        region.Append(Invariant($"<p class=\"notice ledger-business\" data-family=\"{EquityBrief.Core.Families.FundamentalsRule.Name}\">{Escaped(LedgerBusinessLine)}</p>"));
+
         if (years.Count == 0)
         {
             region.Append(Cards.Computed(
@@ -3281,34 +3284,20 @@ public sealed partial class SinglePageApp : IComponent
 
             region.Append(Cards.Computed(
                 "Setup ledger",
-                marks.LedgerYears(group.Key, rows)
-                    + Cards.Key(
-                        "Setups a year.",
-                        "Each row is a year of the family's setups on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones.",
-                        "A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid.")
-                    + marks.LedgerDeciles(newest)
-                    + Cards.Key(
-                        "The deciles.",
-                        newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The cut points between the tenths of {newest.Year}'s {newest.Settled} settled setups, result beside edge."),
-                        "A wide spread between the low and the high tenths is a family whose setups differ a great deal, which is what the loop's engines read."),
+                (group.Key == families[0] ? Guide(LedgerGuide) : string.Empty)
+                    + marks.LedgerYears(group.Key, rows)
+                    + Invariant($"<p class=\"ledger-deciles-said\">{(newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The edge at each tenth of {newest.Year}'s {newest.Settled} settled setups, the median drawn larger, and the cut points beneath."))}</p>")
+                    + marks.LedgerDeciles(newest),
                 title: Escaped(Named(group.Key)) + " setups",
                 stamp: Cards.Night(night),
                 region: "ledger-" + group.Key));
         }
 
-        var choose = string.Join(" · ", families.Select(word => word == family
-            ? $"<b data-family-chosen=\"{Escaped(word)}\">{Escaped(Named(word))}</b>"
-            : $"<a href=\"{LedgerRoute}?universe={reading.Word}&amp;family={Uri.EscapeDataString(word)}\" data-family-link=\"{Escaped(word)}\">{Escaped(Named(word))}</a>"));
-
         region.Append(Cards.Computed(
             "Setup ledger",
-            $"<p class=\"ledger-families\">{choose}</p>"
+            MarkRenderer.LedgerTabs(families, family, reading.Word, LedgerRoute)
                 + marks.LedgerSettled(settled, reading.Word, LedgerRoute)
-                + marks.LedgerPath(path)
-                + Cards.Key(
-                    "A setup's path.",
-                    "The closes from about ten sessions before the setup to the session its path ended, with its buy, its stop and its target drawn across where the plan holds them, and the session it was bought on marked.",
-                    "The figures in the table above are this path's end against the same plan on every member that session."),
+                + marks.LedgerPath(path),
             title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
             stamp: Cards.Night(night),
             region: "ledger-path"));
@@ -3316,6 +3305,14 @@ public sealed partial class SinglePageApp : IComponent
 
         return region.ToString();
     }
+
+    // Why the ledger holds no business-first setup, and the checkpoint that writes them.
+    public const string LedgerBusinessLine =
+        "The ledger holds no business-first setup yet: its history build and its night step write the families built at 17.3, and the business-first family came at 17.8. Writing its setups is queued as 19.9.";
+
+    // How the Ledger page is read, opened from its "?".
+    public const string LedgerGuide =
+        "Each family's card counts its setups a year on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones, its edge a bar a year in green above nothing and red beneath. A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid. The strip draws the edge at each tenth of the newest year's settled setups; a wide strip is a family whose setups differ a great deal, which is what the loop's engines read. Beneath, a setup's path draws its closes from about ten sessions before it to where its path ended, with its buy, its stop and its target across.";
 
     // The families the Loop page draws, in the one order every page lists them in, the fundamentals-first family left out
     // while the ledger holds none of its setups for the tester to read.
@@ -3394,9 +3391,18 @@ public sealed partial class SinglePageApp : IComponent
         var summary = new List<LoopSummaryRow>();
         var cards = new StringBuilder();
 
-        foreach (var family in LoopFamilies)
+        foreach (var family in EquityBrief.Core.Families.SetupFamilies.Order)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
+
+            // The business-first family stands in the summary saying what it waits on, and draws no card of its own.
+            if (!LoopFamilies.Contains(family))
+            {
+                summary.Add(new LoopSummaryRow(family, chips?.GetValueOrDefault(family) ?? [], 0, null, null, string.Empty, LoopWaiting(family, run, own, decided)));
+
+                continue;
+            }
+
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
             var presses = string.Empty;

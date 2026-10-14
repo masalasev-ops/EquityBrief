@@ -2165,7 +2165,7 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var large = reading == Universes.Large;
     var register = await read.RegisteredCandidatesAsync();
     var provisional = large || night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
-    var chips = SinglePageApp.LoopFamilies.ToDictionary(
+    var chips = EquityBrief.Core.Families.SetupFamilies.Order.ToDictionary(
         family => family,
         family =>
         {
