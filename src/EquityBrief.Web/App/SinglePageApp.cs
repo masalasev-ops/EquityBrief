@@ -716,9 +716,8 @@ public sealed partial class SinglePageApp : IComponent
           fresh = true;
           location.hash = (cut < 0 ? hash : hash.slice(0, cut)) + (params.toString() ? '?' + params.toString() : '');
         });
-        // A name put on the watch list or taken off it: the press names the ticker, from the box on the
-        // watch list page or from the form's own, sends the page's header, and the screen is drawn again
-        // with what the read surface said above the list.
+        // A name put on the watch list or taken off it: the press names the ticker the form carries, sends the
+        // page's header, and the screen is drawn again with what the read surface said above the list.
         document.addEventListener('submit', async (event) => {
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !form.classList.contains('watch-control')) { return; }
@@ -1124,9 +1123,23 @@ public sealed partial class SinglePageApp : IComponent
           const byName = options.find((option) => option.textContent.toLowerCase().includes(lower));
           return byName ? byName.value : null;
         }
-        function go(text) {
+        async function go(text) {
           for (const old of screen.querySelectorAll('.notice[data-not-found]')) { old.remove(); }
           const ticker = found(text);
+          // On the watch list the name found is added to it under the page's own header, and elsewhere its page opens.
+          if (ticker && location.hash.startsWith('{{{WatchRoute}}}')) {
+            find.value = '';
+            find.blur();
+            const response = await fetch('{{{WatchPostRoute}}}' + encodeURIComponent(ticker), {
+              method: 'POST',
+              headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            });
+            const said = await response.text();
+            await show();
+            const place = screen.querySelector('.watch-said');
+            if (place) { place.innerHTML = said; }
+            return;
+          }
           if (ticker) {
             find.value = '';
             find.blur();
@@ -3164,7 +3177,9 @@ public sealed partial class SinglePageApp : IComponent
     // not the list holds it with what the swing filter said of it, a box to add a name of the index while
     // the list holds fewer than its limit, and a press to take each out.
     // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
-    public string WatchRegion(DateOnly? night, IReadOnlyList<WatchCell> watched, int limit)
+    // From 19.7 each name's nearest setup across every family, its distance picture and its sessions to the next report;
+    // the header's search adds a name here, so the page carries no box of its own.
+    public string WatchRegion(DateOnly? night, IReadOnlyList<WatchCell> watched, int limit, MarkRenderer? marks = null)
     {
         var region = new StringBuilder();
         var shown = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -3174,31 +3189,38 @@ public sealed partial class SinglePageApp : IComponent
 
         var body = new StringBuilder();
 
+        body.Append(Guide(WatchGuide));
         body.Append("<div class=\"watch-said\" role=\"status\"></div>");
         body.Append(watched.Count < limit
-            ? Invariant($"<form class=\"watch-control watch-add\" method=\"post\" action=\"{WatchPostRoute}\"><input name=\"ticker\" list=\"findable\" placeholder=\"Add a name from the S&amp;P 500\" aria-label=\"A ticker to watch\" autocomplete=\"off\" spellcheck=\"false\"><button type=\"submit\" class=\"btn\">Add</button></form>")
+            ? Invariant($"<p class=\"watch-add-line\" data-full=\"false\">Search a name in the bar above to add it here; {limit - watched.Count} place(s) left.</p>")
             : Invariant($"<p class=\"watch-full\" data-full=\"true\">The watch list holds {limit}, its limit; take one out to add another.</p>"));
 
         if (watched.Count == 0)
         {
-            body.Append("<p class=\"degraded\" data-watch=\"none\">No name is watched yet. Add one above, or press Watch on any name's page.</p>");
+            body.Append("<p class=\"degraded\" data-watch=\"none\">No name is watched yet. Search one in the bar above, or press Watch on any name's page.</p>");
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th>");
-            body.Append("<th class=\"r\">Reward to risk</th><th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th>Nearest setup</th><th>Distance to its bands</th><th class=\"r\">Report in</th><th class=\"r\">Close</th><th class=\"r\">Day</th>");
+            body.Append("<th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
 
             for (var at = 0; at < watched.Count; at++)
             {
                 var one = watched[at];
                 var row = one.Row;
 
-                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\"><td class=\"num\">{at + 1}</td>"));
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\" data-nearest=\"{Escaped(one.Nearest?.Family ?? "none")}\" data-missed=\"{(one.Nearest is { } near ? near.Missed.ToString(CultureInfo.InvariantCulture) : "none")}\"><td class=\"num\">{at + 1}</td>"));
                 body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
+                body.Append(one.Nearest is { } nearest
+                    ? Invariant($"<td><span class=\"fam-tag\" data-family=\"{Escaped(nearest.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(nearest.Family)}\"></span>{Escaped(FamilyLabel(nearest.Family))}</span> ")
+                        + (nearest.Missed == 0
+                            ? "<span class=\"chip\" data-gate=\"passed\">passed tonight</span></td>"
+                            : Invariant($"<span class=\"chip\" data-gate=\"{Escaped(nearest.Gate ?? string.Empty)}\" title=\"{Escaped(nearest.Words ?? string.Empty)}\">{nearest.Missed} short: {Escaped(nearest.Gate ?? string.Empty)}</span></td>"))
+                    : "<td><span class=\"degraded\">no answer stored</span></td>");
+                body.Append(one.Cell is { } cell && marks is not null ? Invariant($"<td>{marks.DistanceRow(cell)}</td>") : "<td><span class=\"degraded\">none</span></td>");
+                body.Append(one.Cell?.SessionsUntilEarnings is { } sessions ? Invariant($"<td class=\"r num\" data-sessions=\"{sessions}\">{sessions} session(s)</td>") : "<td class=\"r\"><span class=\"degraded\">no date</span></td>");
                 body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num {MarkRenderer.Hue(change)}\">{(Math.Round(change, 2) == 0 ? 0 : change):+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
-                body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
-                body.Append(row.RewardToRisk is { } ratio ? Invariant($"<td class=\"r num\">{ratio:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td class=\"{(one.Listed ? "listed" : "stopped")}\" data-filter=\"{Escaped(one.Filter)}\">{Escaped(one.Filter)}</td>"));
                 body.Append(Invariant($"<td class=\"num\">{one.Added:yyyy-MM-dd}</td>"));
                 body.Append(Invariant($"<td><form class=\"watch-control\" method=\"post\" action=\"{UnwatchPostRoute}\" data-ticker=\"{Escaped(row.Ticker)}\"><button type=\"submit\" class=\"btn-2\" aria-label=\"Stop watching {Escaped(row.Ticker)}\">&#215;</button></form></td></tr>"));
@@ -3305,6 +3327,10 @@ public sealed partial class SinglePageApp : IComponent
 
         return region.ToString();
     }
+
+    // How the Watch list is read, opened from its "?".
+    public const string WatchGuide =
+        "Each name you follow, drawn every evening whether or not a list holds it. Its nearest setup is the family that passed it tonight, or the one it missed by the fewest gates, a tie going to the family first in the one order, with the first gate it missed and that gate's own words under the pointer. Beside it the distance picture places the close between the nearest bands, and the report column counts the sessions to its next report. Search a name in the bar above to add it here.";
 
     // Why the ledger holds no business-first setup, and the checkpoint that writes them.
     public const string LedgerBusinessLine =

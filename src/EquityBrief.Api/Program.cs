@@ -1584,7 +1584,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 // The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from
 // that night's own rows whether or not the list holds it, with what the swing filter said of it.
 // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
-app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page) =>
+app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRenderer marks) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
     var watched = await read.WatchedAsync();
@@ -1607,8 +1607,10 @@ app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page) =>
                 await read.ClosesToTheNightAsync(night),
                 universe,
                 await read.GateResultsAsync(night),
-                await read.ResearchedAsync()),
-            ReadApi.WatchLimit),
+                await read.ResearchedAsync(),
+                await read.FamilyResultsAsync(night)),
+            ReadApi.WatchLimit,
+            marks),
         "text/html; charset=utf-8");
 });
 

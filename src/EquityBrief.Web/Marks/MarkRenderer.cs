@@ -858,7 +858,11 @@ public sealed record FilterGate(string Name, bool Passed, string Reason);
 
 // A name the operator watches as its page draws it: the night's row for it, its company, the day it was
 // added, what the swing filter said of it that night, and whether that was a place on the list.
-public sealed record WatchCell(ListingCell Row, string? Company, DateOnly Added, string Filter, bool Listed);
+public sealed record WatchCell(ListingCell Row, string? Company, DateOnly Added, string Filter, bool Listed, NearestSetup? Nearest = null, UniverseCell? Cell = null);
+
+// A watched name's nearest setup across every family on the night: the family, how many of its gates the name missed,
+// none where it passed, and the first it missed in short words and in the gate's own words.
+public sealed record NearestSetup(string Family, int Missed, string? Gate, string? Words);
 
 // Why a name the swing filter listed is on the list: the evening, each gate with why it passed, and the
 // reasons that fired on it, as context.
