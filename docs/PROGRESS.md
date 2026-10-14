@@ -44692,7 +44692,10 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             variant's row as the rule's, at the monthly run test; so. M7 the edge bars' hue by the other sign, at the
             Ledger test; so. M8 the shared level read only where two differ, at the setup families test; so. Not
             mutated: the guide lines and the shell's search. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, af870d2d: all six
+            steps, 0 warnings, 0 errors, 2336 of 2336 tests ran with none failed in 18 minutes 34 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 58 tables,
+            1312 claims, 1312 passing and none unexamined, 43 checks on the roster run and passed.
 Queue:      done, 19.0 to 19.6 with their corrections as PRs 446 to 460; in progress, 19.7; next, 19.8, which waits
             for the operator's go.
 Carried:    Figure 11.4 still labels the edge clock's look at 12 blocks "earliest promotion", a picture the section 11
