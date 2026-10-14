@@ -2211,11 +2211,38 @@ app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, Sing
         ? !wider.Values.Any(members => members.Contains(ticker))
         : wider[reading.Code].Contains(ticker);
 
+    // From 19.7 each report's staleness by the judge its stock's page calls, the move since it was written off the store's
+    // closes, its sections out of the full set and why it was written, the list sorted by the day written or by staleness.
+    var researched = (await read.ResearchedAsync()).Where(row => Reads(row.Ticker)).ToArray();
+    var requests = await read.WrittenRequestsAsync();
+    var closes = researched.Length == 0 ? new Dictionary<(string, DateOnly), decimal>() : await read.ClosesAsync([.. researched.Select(row => row.Ticker)], researched.Min(row => row.Written).AddDays(-10));
+    var cells = new List<ResearchedCell>();
+
+    foreach (var row in researched)
+    {
+        var staleness = await read.StalenessAsync(row.Ticker);
+
+        cells.Add(new ResearchedCell(
+            row.Ticker,
+            row.Name,
+            row.Sector,
+            row.Written,
+            row.Sections,
+            staleness.State == EquityBrief.Core.Research.ResearchState.Stale,
+            [.. staleness.Fired.Select(fired => fired.Line)],
+            ResearchedScreen.Move(row.Written, closes, row.Ticker),
+            EquityBrief.Core.Research.ClaimRules.Sections.Length,
+            ResearchedScreen.Why(row.Written, [.. requests.Where(request => request.Ticker == row.Ticker)])));
+    }
+
+    var sort = request.Query[ResearchedScreen.SortQuery].FirstOrDefault() == ResearchedScreen.ByStaleness ? ResearchedScreen.ByStaleness : ResearchedScreen.ByWritten;
+
     return Results.Content(
         page.ResearchedRegion(
-            [.. (await read.ResearchedAsync()).Where(row => Reads(row.Ticker)).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))],
+            ResearchedScreen.Sorted(cells, sort),
             reading,
-            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.ResearchedRoute) : string.Empty),
+            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.ResearchedRoute) : string.Empty,
+            sort),
         "text/html; charset=utf-8");
 });
 

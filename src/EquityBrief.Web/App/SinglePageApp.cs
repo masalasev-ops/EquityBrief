@@ -67,7 +67,7 @@ public sealed record Findable(string Ticker, string? Name, DateOnly? Researched)
 public sealed record YourTradeView(string Ticker, string TakenAt, string Rule, DateOnly Night, decimal Fill, DateOnly FillDate, bool Provisional, bool Open, DateOnly? EndedOn, string? EndReason, decimal? EndPrice, double? Result, string Unit);
 
 // A name holding researched sections, as the researched list draws it.
-public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
+public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections, bool? Stale = null, IReadOnlyList<string>? StaleLines = null, double? Move = null, int Of = 0, string? Why = null);
 
 // One request, as the queue screen draws it. The instant is carried as the store
 // spells it, because a press to take one out names the request rather than the
@@ -2199,11 +2199,14 @@ public sealed partial class SinglePageApp : IComponent
     // holding a researched section, newest first, each with the day its newest section was
     // written and how many sections it holds.
     // see: A researched name is one holding an accepted section besides the key under each figure
-    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "")
+    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "", string? sort = null)
     {
         var reading = universe ?? Universes.Large;
         var heading = "Researched: " + reading.Titled;
         var body = new StringBuilder();
+        var byStale = sort == "stale";
+
+        body.Append(Guide(ResearchedGuide));
 
         if (rows.Count == 0)
         {
@@ -2211,23 +2214,30 @@ public sealed partial class SinglePageApp : IComponent
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"researched-table\"><thead><tr><th>Name</th><th>Sector</th><th>Written</th><th>Sections</th></tr></thead><tbody>");
+            // The two orders, each a link keeping the index, the one drawn marked.
+            body.Append(Invariant($"<nav class=\"researched-sort\" data-sort=\"{(byStale ? "stale" : "written")}\">Order by <a href=\"{ResearchedRoute}?universe={reading.Word}&amp;sort=written\"{(byStale ? string.Empty : " aria-current=\"true\"")}>day written</a> · <a href=\"{ResearchedRoute}?universe={reading.Word}&amp;sort=stale\"{(byStale ? " aria-current=\"true\"" : string.Empty)}>staleness</a></nav>"));
+            body.Append("<div class=\"tbl-wrap\"><table class=\"researched-table\"><thead><tr><th>Name</th><th>Sector</th><th>Written</th><th>Why written</th><th>Stands</th><th class=\"r\">Since written</th><th class=\"r\">Sections</th></tr></thead><tbody>");
 
             foreach (var row in rows)
             {
-                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\">"));
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\" data-stale=\"{(row.Stale is { } stale ? (stale ? "true" : "false") : "none")}\" data-why=\"{Escaped(row.Why ?? "none")}\" data-move=\"{(row.Move is { } moved ? moved.ToString("R", CultureInfo.InvariantCulture) : "none")}\">"));
                 body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
                 body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
-                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
+                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td>{Escaped(row.Why ?? "not read")}</td>"));
+                body.Append(row.Stale switch
+                {
+                    true => Invariant($"<td><span class=\"status-pill failed\">stale</span> {Escaped(string.Join("; ", row.StaleLines ?? []))}</td>"),
+                    false => "<td><span class=\"status-pill live\">stands</span></td>",
+                    null => "<td class=\"degraded\">not read</td>",
+                });
+                body.Append(row.Move is { } move
+                    ? Invariant($"<td class=\"r num {MarkRenderer.Hue(move * 100, 1)}\">{(Math.Round(move * 100, 1) == 0 ? 0 : move * 100):+0.0;-0.0;0.0}%</td>")
+                    : "<td class=\"r degraded\">not read</td>");
+                body.Append(Invariant($"<td class=\"r num\" data-of=\"{row.Of}\">{row.Sections} of {row.Of}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
         }
-
-        body.Append(Cards.Key(
-            "What is listed.",
-            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. A key under each figure, which the overnight queue once wrote for every name in the index, is not counted.",
-            "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
 
         return Invariant($"<section class=\"researched\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\">")
             + Cards.Masthead(
@@ -3327,6 +3337,10 @@ public sealed partial class SinglePageApp : IComponent
 
         return region.ToString();
     }
+
+    // How the Researched page is read, opened from its "?".
+    public const string ResearchedGuide =
+        "Every name holding a section a research pass wrote and the claim checker accepted, with the day its newest section was written and why: tonight's list, asked by you, a regeneration you asked for, or a pass run by hand. A report stands until a filing, a passed earnings date or a jump in the name's news is dated after a section was written, which the stock's page judges the same way; a stale report names what made it so. The move is the stock's close tonight against its close on the day the report was written, and the sections count those accepted out of the full set. A key under each figure, which the overnight queue once wrote for every name, is not counted.";
 
     // How the Watch list is read, opened from its "?".
     public const string WatchGuide =
