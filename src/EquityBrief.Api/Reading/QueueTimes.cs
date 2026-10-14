@@ -1,22 +1,29 @@
 using System.Globalization;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
 
 // What a request's time rests on, which the page states beside the time: a pass that can
-// start now, the end of a peak window, an estimate over the passes the store holds, no
-// estimate because the store holds none, a pass that has started, or a request settled.
+// start now, the end of a peak window, the off-peak run the night's requests wait for, an
+// estimate over the passes the store holds, no estimate because the store holds none, a pass
+// that has started, or a request settled.
 public enum TimeBasis
 {
     Now,
     PeakEnds,
+    OffPeakRun,
     Estimated,
     NotEstimated,
     Started,
     Settled,
 }
+
+// The research model at its peak price at the instant the page is drawn: when the window ends and how
+// many times the off-peak price a call inside it costs, which the Write now press states before it asks.
+public sealed record PeakNow(DateTimeOffset Ends, decimal Multiple);
 
 // When one request's pass will start or started, and when it is expected to end or ended.
 public sealed record RequestTime(TimeBasis Basis, DateTimeOffset? Starts, DateTimeOffset? Ends, int Ahead);
@@ -36,9 +43,28 @@ public sealed record PassEstimate(TimeSpan? Median, int Count, TimeSpan? Longest
 // being written and every older request outstanding. A pass is expected to take the median of
 // the passes the store holds, and where it holds none nothing behind the first request is given
 // a time, because a time with nothing under it would read as a promise.
+//
+// The night starts no drain, so a queue holding the night's requests alone, with nothing being
+// written, starts at the next off-peak run and not now; a press for any name starts the drain,
+// which takes the night's requests ahead of it in their order.
 // see: The queue page states when each request will be written in New York's time with UTC beneath the pointer
+// see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
 public static class QueueTimes
 {
+    // The peak price at an instant: where any profile the drain waits out is at peak, the instant every one of
+    // them is off peak again and the largest multiple of those at peak, and none where none is.
+    public static PeakNow? Peak(IReadOnlyList<ResearchPricing> pricings, DateTimeOffset now)
+    {
+        var atPeak = pricings.Where(pricing => pricing.IsPeak(now)).ToArray();
+
+        if (atPeak.Length == 0)
+        {
+            return null;
+        }
+
+        return new PeakNow(ResearchPricing.StartFor(pricings, now, TimeSpan.Zero), atPeak.Max(pricing => pricing.PeakMultiple));
+    }
+
     public static PassEstimate Estimate(IReadOnlyList<TimeSpan> passes)
     {
         if (passes.Count == 0)
@@ -71,9 +97,15 @@ public static class QueueTimes
         // see: A pass starts only where the longest pass the store holds would end before a peak window opens
         DateTimeOffset OffPeak(DateTimeOffset at) => ResearchPricing.StartFor(pricings, at, estimate.Longest ?? TimeSpan.Zero);
 
+        // A queue of the night's requests alone, with no pass being written, waits for the next off-peak run.
+        var run = rows.Any(row => row.State == ResearchRequests.Writing)
+            || rows.Any(row => row.State == ResearchRequests.Outstanding && row.AskedFrom != ResearchRequests.FromNight)
+                ? null
+                : OffPeakRun.NextAt(pricings, now);
+
         // Where the next pass can start, and whether that is known: after every pass being
         // written, each expected to end a median after it started and never before now.
-        DateTimeOffset? cursor = now;
+        DateTimeOffset? cursor = run ?? now;
         var ahead = 0;
 
         foreach (var row in rows.Where(row => row.State == ResearchRequests.Writing))
@@ -117,6 +149,7 @@ public static class QueueTimes
                 var starts = OffPeak(from);
                 var basis = ahead > 0
                     ? TimeBasis.Estimated
+                    : run is not null ? TimeBasis.OffPeakRun
                     : starts > from ? TimeBasis.PeakEnds : TimeBasis.Now;
                 var ends = estimate.Median is { } median ? starts + median : (DateTimeOffset?)null;
 
@@ -171,6 +204,7 @@ public static class QueueTimes
         {
             TimeBasis.Now => "starts now" + ends,
             TimeBasis.PeakEnds => "starts " + At(time.Starts!.Value) + ", when the peak window ends" + ends,
+            TimeBasis.OffPeakRun => "starts " + At(time.Starts!.Value) + ", at the off-peak run the night's requests wait for" + ends,
             TimeBasis.Estimated => "starts about " + At(time.Starts!.Value) + ", after " + Ahead(time.Ahead) + ends,
             TimeBasis.NotEstimated => "starts after " + Ahead(time.Ahead) + ", and no time is stated because the store holds no pass that ran to its end",
             TimeBasis.Started => (time.Starts is { } started ? "started " + At(started) : "started, and its pass has written no row yet")
@@ -209,6 +243,7 @@ public static class QueueTimes
                     {
                         TimeBasis.Now => "queued, and starts now",
                         TimeBasis.PeakEnds => "queued, and starts " + Stated(time.Starts!.Value, zone) + ", when the peak window ends",
+                        TimeBasis.OffPeakRun => "queued, and starts " + Stated(time.Starts!.Value, zone) + ", at the off-peak run",
                         TimeBasis.Estimated => "queued, and starts about " + Stated(time.Starts!.Value, zone),
                         _ => "queued behind " + Ahead(time.Ahead),
                     });
@@ -217,6 +252,10 @@ public static class QueueTimes
 
         return states;
     }
+
+    // A price multiple in words: twice for two, and the figure and times otherwise.
+    public static string Times(decimal multiple) =>
+        multiple == 2m ? "twice" : multiple.ToString("0.##", CultureInfo.InvariantCulture) + " times";
 
     static string Ahead(int count) =>
         count == 1 ? "the 1 request ahead of it" : "the " + count.ToString(CultureInfo.InvariantCulture) + " requests ahead of it";

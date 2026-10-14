@@ -538,7 +538,7 @@ app.MapGet(SinglePageApp.PassRoute + "{ticker}", async (string ticker, string? s
 // request is the one row written here: the pass is the worker's, and its rows are what
 // the page reads next. A press that wrote nothing starts nothing, since what it asked for
 // is already waiting.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 // see: A pass is started only by a request carrying the name page's own header
 app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
 {
@@ -713,7 +713,7 @@ app.MapPost(SinglePageApp.NightResumeRoute, async (HttpRequest request, ReadApi 
 // Refused without the page's own header, as the press that asks for one is, and refused
 // once the worker has claimed the request, because what the operator asked to remove is a
 // report that has not been generated.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 // see: A pass is started only by a request carrying the name page's own header
 app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read) =>
 {
@@ -741,6 +741,49 @@ app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, Http
         $"<p class=\"pass-withdrawn\" data-withdrawn=\"{(taken.Written ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(taken.Line)}</p>",
         "text/html; charset=utf-8",
         statusCode: taken.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
+});
+
+// The queue page's Write now press: one outstanding report started at once, ahead of the queue, by the drain
+// writing that request alone. Refused without the page's own header and for a stock holding no request
+// nobody has started. Inside a peak window it is refused, with the window's end and the price's multiple,
+// unless the press says the operator confirmed the peak price, and then the drain writes it at that price.
+// The press writes nothing: the drain claims and settles the request as it claims any other.
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+// see: A pass is started only by a request carrying the name page's own header
+app.MapPost(SinglePageApp.WriteNowRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
+{
+    static IResult Said(string state, string line, int status) =>
+        Results.Content(
+            $"<p class=\"pass-now\" data-now=\"{state}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
+            "text/html; charset=utf-8",
+            statusCode: status);
+
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Said("header", "Nothing was started: the request did not come from the queue screen.", StatusCodes.Status403Forbidden);
+    }
+
+    var named = ticker.ToUpperInvariant();
+
+    if (!(await read.QueueAsync()).Any(row => row.Ticker == named && row.State == ResearchRequests.Outstanding))
+    {
+        return Said("state", $"Nothing was started: {named} has no request nobody has started, so there is nothing to write now.", StatusCodes.Status409Conflict);
+    }
+
+    var form = request.HasFormContentType ? await request.ReadFormAsync() : null;
+    var peak = QueueTimes.Peak(QueuePrices(builder.Configuration), clock.UtcNow);
+
+    if (peak is not null && !string.Equals(form?["confirm"].FirstOrDefault(), SinglePageApp.WriteNowAtPeak, StringComparison.Ordinal))
+    {
+        return Said(
+            "peak",
+            $"Nothing was started: the research model is at its peak price, {QueueTimes.Times(peak.Multiple)} its off-peak price, until {QueueTimes.Stated(peak.Ends, clock.SessionZone)}, and writing {named} now needs that price confirmed.",
+            StatusCodes.Status409Conflict);
+    }
+
+    var started = launcher.StartNow(named, peak is not null);
+
+    return Said(started.Started ? "started" : "not-started", started.Line, started.Started ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
 });
 
 // The queue with each request's time, as the queue page states them and tonight's rows read
@@ -806,7 +849,7 @@ static EquityBrief.Core.Providers.ModelProfile? Profile(IConfiguration configura
 // meant. The local lane is drawn and refused until the two lanes' reports have been
 // compared, so a setting naming it is not honoured and the paid lane is what a request
 // carries.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 static string Lane(IConfiguration configuration)
 {
     var asked = configuration["EquityBrief:Research:Lane"];
@@ -2203,7 +2246,10 @@ app.MapGet("/screens/queue", async (string? all, ReadApi read, SinglePageApp pag
             : new QueueStop(
                 stop.StartedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
                 QueueTimes.Marked(stop.StartedAt, clock.SessionZone),
-                stop.Error)),
+                stop.Error),
+        QueueTimes.Peak(QueuePrices(builder.Configuration), clock.UtcNow) is { } peak
+            ? new QueuePeak(QueueTimes.Marked(peak.Ends, clock.SessionZone), QueueTimes.Times(peak.Multiple))
+            : null),
         "text/html; charset=utf-8");
 });
 

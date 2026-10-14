@@ -94,6 +94,10 @@ public sealed record QueuedTime(string Basis, string? Starts, string? Ends, stri
 // holds, and their median in whole minutes where it holds any.
 public sealed record QueueEstimate(int Passes, string? Minutes, string? LongestMinutes = null);
 
+// The research model at its peak price as the queue page is drawn: the window's end as the read surface
+// marked it, and the price's multiple in words, which the Write now press states before it asks.
+public sealed record QueuePeak(string Ends, string Multiple);
+
 // A drain that stopped on an error and no pass has started since: the instant it started as the store spells one,
 // that instant as the read surface marked it for the page, and the error it stopped on.
 public sealed record QueueStop(string StartedAt, string Words, string Error);
@@ -201,6 +205,13 @@ public sealed partial class SinglePageApp : IComponent
     // Where a request is taken back out of the queue. A press names the request rather than
     // the name, because a name may have been asked for before and settled since.
     public const string WithdrawRoute = "/passes/withdraw/";
+
+    // Where the queue page's Write now press starts one outstanding report at once, and the word the press
+    // carries once the operator confirmed the peak price.
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+    public const string WriteNowRoute = "/passes/now/";
+
+    public const string WriteNowAtPeak = "peak";
 
     // Where a name page asks for its delayed quote, carrying the page's own header, and reads back the newest one stored.
     // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
@@ -1001,6 +1012,53 @@ public sealed partial class SinglePageApp : IComponent
           notice.innerHTML = said;
           const drawn = notice.firstElementChild;
           if (drawn) { screen.querySelector('.queue-part[data-region="outstanding"]').prepend(drawn); }
+        });
+        // Writing one report now, ahead of the queue. Off-peak it is pressed at once; inside a peak window the
+        // press first says when the window ends and how many times the off-peak price the report costs, and is
+        // sent, carrying the confirmation, only once the operator says so.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('now-control')) { return; }
+          event.preventDefault();
+          if (form.dataset.peak === 'true' && form.dataset.confirmed !== 'yes') {
+            for (const open of screen.querySelectorAll('.confirm')) { open.remove(); }
+            const box = document.createElement('div');
+            box.className = 'confirm key';
+            const line = document.createElement('p');
+            const ends = form.querySelector('.now-peak');
+            line.textContent = 'The research model is at its peak price until ' + (ends ? ends.textContent : 'its peak window ends')
+              + ', so writing ' + form.dataset.writes + ' now costs about ' + form.dataset.multiple
+              + ' its off-peak price. Write it now anyway?';
+            const go = document.createElement('button');
+            go.type = 'button'; go.className = 'btn'; go.textContent = 'Write it now';
+            const stop = document.createElement('button');
+            stop.type = 'button'; stop.className = 'btn-2'; stop.textContent = 'Wait for the off-peak price';
+            go.addEventListener('click', () => { form.dataset.confirmed = 'yes'; box.remove(); form.requestSubmit(); });
+            stop.addEventListener('click', () => { box.remove(); });
+            const actions = document.createElement('div');
+            actions.className = 'sel-links';
+            actions.append(go, stop);
+            box.append(line, actions);
+            form.after(box);
+            return;
+          }
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const body = new URLSearchParams();
+          if (form.dataset.confirmed === 'yes') { body.set('confirm', '{{{WriteNowAtPeak}}}'); }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            body,
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const notice = document.createElement('div');
+          notice.innerHTML = said;
+          const drawn = notice.firstElementChild;
+          const region = screen.querySelector('.queue-part[data-region="outstanding"]');
+          if (drawn && region) { region.prepend(drawn); }
         });
         // A pass the page started, watched until it ends: what it is doing is asked for every
         // few seconds and drawn beside the control, and the page is drawn again each time one
@@ -2182,8 +2240,8 @@ public sealed partial class SinglePageApp : IComponent
     // beneath them the passes no request names. Nothing here starts a pass: the press that
     // wrote a request started the worker's drain, and a drain that could not be started
     // leaves a request outstanding rather than losing it.
-    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueDays days, QueueEstimate? estimate = null, QueueStop? stopped = null)
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueDays days, QueueEstimate? estimate = null, QueueStop? stopped = null, QueuePeak? peak = null)
     {
         var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
         var writing = rows.Where(row => row.State == Writing).ToArray();
@@ -2220,13 +2278,21 @@ public sealed partial class SinglePageApp : IComponent
         }
         else
         {
-            body.Append("<p class=\"lede\">Oldest first, which is the order the worker takes them in.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Take it out</th></tr></thead><tbody>");
+            body.Append("<p class=\"lede\">Oldest first, which is the order the worker takes them in. Write now starts one at once, ahead of the rest, and asks first where the research model is at its peak price.</p>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Write now</th><th>Take it out</th></tr></thead><tbody>");
 
             foreach (var row in outstanding)
             {
                 body.Append(Row(row));
                 body.Append(When(row));
+                // The press writing this one report at once. Inside a peak window it carries the window's end and the
+                // price's multiple, which the shell's script states and asks about before it presses, and the read
+                // surface refuses a press at peak that does not carry the confirmation.
+                // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+                body.Append(Invariant($"<td><form class=\"now-control\" method=\"post\" action=\"{WriteNowRoute}{Uri.EscapeDataString(row.Ticker)}\" data-writes=\"{Escaped(row.Ticker)}\" data-peak=\"{(peak is null ? "false" : "true")}\""));
+                body.Append(peak is null ? ">" : Invariant($" data-multiple=\"{Escaped(peak.Multiple)}\">"));
+                body.Append(peak is null ? string.Empty : Invariant($"<span class=\"now-peak\" hidden>{peak.Ends}</span>"));
+                body.Append("<button type=\"submit\" title=\"write this report now, ahead of the queue\">write now</button></form></td>");
                 // The control the operator asked for: a report that has not been generated
                 // is one nobody has started, so it is drawn on an outstanding request and
                 // on no other. The press names the request by its instant.
@@ -2245,7 +2311,7 @@ public sealed partial class SinglePageApp : IComponent
 
         if (writing.Length == 0)
         {
-            body.Append("<p class=\"degraded\" data-writing=\"none\">Nothing is being written. A press starts the worker on what is outstanding, and a request asked at peak waits for the off-peak rate.</p>");
+            body.Append("<p class=\"degraded\" data-writing=\"none\">Nothing is being written. The night's requests wait for the off-peak run, five minutes after each peak window ends; a press on a name starts the worker on what is outstanding, a request asked at peak waiting for the off-peak rate, and Write now starts one at once.</p>");
         }
         else
         {
@@ -2269,7 +2335,7 @@ public sealed partial class SinglePageApp : IComponent
         body.Append(Cards.Key(
             "What is listed.",
             "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for six names taken in turn across the three indices' pages, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
-            "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
+            "A request nobody has started can be written now or taken out. Write now starts that report alone at once; inside a peak window it says when the window ends and how many times the off-peak price a report costs, and starts only once that is confirmed. One the worker has claimed cannot be taken out, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
 
         return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled}\">")
             + Cards.Masthead(
@@ -2282,7 +2348,7 @@ public sealed partial class SinglePageApp : IComponent
                 "Queue",
                 body.ToString(),
                 title: "Reports asked for",
-                lede: "A press asks for a report and starts the worker, which writes it at the off-peak rate. Nothing on this screen starts a pass.",
+                lede: "A press asks for a report and starts the worker, which writes it at the off-peak rate, and the night's own requests wait for the off-peak run. Write now is the one control here that starts a pass.",
                 region: "queue")
             + "</section>";
     }

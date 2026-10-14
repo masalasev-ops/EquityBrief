@@ -24,7 +24,7 @@ public sealed record RequestRow(
 // statement of its own: a file holding a write is read as the writer of it, and
 // a second writer of this table beside the one SCHEMA declares is the thing that
 // would be wrong.
-// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+// see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 public static class ResearchRequests
 {
     public const string Outstanding = "outstanding";
@@ -35,6 +35,9 @@ public static class ResearchRequests
 
     public const string FromList = "list";
     public const string FromName = "name";
+
+    // A request the night wrote, which waits for the off-peak run rather than starting a drain.
+    public const string FromNight = "night";
 
     public const string Local = "local";
 

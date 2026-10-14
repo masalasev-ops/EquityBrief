@@ -172,7 +172,7 @@ public sealed class ThemeResearchRunner(
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
-    public async Task<ThemePassOutcome> RunAsync(string theme, string runId, CancellationToken cancellation = default, string? sector = null)
+    public async Task<ThemePassOutcome> RunAsync(string theme, string runId, CancellationToken cancellation = default, string? sector = null, bool atPeak = false)
     {
         var industrySites = SitesFor(sector);
         var startedAt = clock.UtcNow;
@@ -203,9 +203,11 @@ public sealed class ThemeResearchRunner(
             return await RecordAsync(connection, runId, startedAt, Outcome(theme, asOf, NotWarranted, WrittenToday), 0, 0, cancellation);
         }
 
-        // At peak the pass does not start, and says when the window opens.
+        // At peak the pass does not start, and says when the window opens, unless the operator's
+        // Write now press confirmed the peak price for the report it serves.
         // see: Queued work runs off-peak, and every schedule is written in UTC
-        if (pricing.IsPeak(startedAt))
+        // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
+        if (pricing.IsPeak(startedAt) && !atPeak)
         {
             return await RecordAsync(connection, runId, startedAt, Outcome(theme, asOf, AtPeak, PeakLine(pricing.OffPeakFrom(startedAt))), 0, 0, cancellation);
         }

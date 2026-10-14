@@ -6177,7 +6177,7 @@ public sealed partial class ReadApi : IComponent
     // rather than behind a writer of their own because the owner of a table is
     // the component whose source carries the statements, and splitting the two
     // leaves SCHEMA naming one thing and the code doing another.
-    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
+    // see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now
 
     // A request is written only where the name holds none outstanding. The index
     // refuses the second, and the refusal is read back as the line the page

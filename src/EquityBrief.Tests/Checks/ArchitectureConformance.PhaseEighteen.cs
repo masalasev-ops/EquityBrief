@@ -43,7 +43,7 @@ public partial class ArchitectureConformance
     // behind a stock and the rows it moves from Tonight to the Run page under their new keys, 19.3's parts of the setup
     // cards and the heavyweights card, 19.4's two stores of the per-rule test, section 18's rule it cannot walk, paper
     // trading's rows and the trade log's two, 19.5's Universe rows, the Run page's corrections and section 17's two, and
-    // 19.6's queue row of the reports written by hand and section 17's window.
+    // 19.6's queue row of the reports written by hand and section 17's window, and its correction's Write now row.
     internal static string[] AfterPhaseEighteen =>
     [
         .. Reading.ReadSurface.MarketOffRows,
@@ -57,6 +57,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.PaperRows,
         .. Reading.ReadSurface.UniverseRows,
         .. Reading.ReadSurface.QueueDayRows,
+        .. Reading.ReadSurface.WriteNowRows,
     ];
 
     // The rows the document loses after phase 18's report: 19.2's night header parts and reason totals on Tonight, which

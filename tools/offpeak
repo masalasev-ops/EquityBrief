@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# What the scheduler calls at 16:30Z every day. Runs the work the night leaves queued from a clean copy of the
+# What the scheduler calls five minutes after each of the research model's peak windows ends, every day, as
+# shipped 04:05Z and 10:05Z. Runs the work the night leaves queued from a clean copy of the
 # committed code, as tools/nightly builds a night: main's own commit, read from the main branch with no fetch
 # whatever branch the checkout is on, exported whole with `git archive` into the data root's folder of nights, one
 # folder a commit, built once in Release and reused where a night built that commit already; the data root and the

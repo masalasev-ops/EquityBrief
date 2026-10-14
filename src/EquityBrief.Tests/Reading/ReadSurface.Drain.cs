@@ -51,6 +51,16 @@ public partial class ReadSurface
 
             return new DrainStart(true, Line);
         }
+
+        // Each Write now press's drain asked for, with the name and whether at the peak price.
+        public List<(string Ticker, bool AtPeak)> Now { get; } = [];
+
+        public DrainStart StartNow(string ticker, bool atPeak)
+        {
+            Now.Add((ticker, atPeak));
+
+            return new DrainStart(true, Line);
+        }
     }
 
     // A clock the drain's own wait moves on, so the instant a pass starts at is the one the

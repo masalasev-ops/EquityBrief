@@ -16,7 +16,10 @@ namespace EquityBrief.Worker.Research;
 // `PaidForLocal` is the page's option to have the paid model write the local lane's
 // sections, which section 18 offers where the local model is unavailable or cannot
 // hold a section: for this pass the local lane is empty and every section is paid.
-public sealed record ResearchPassRequest(bool Refresh = false, bool PaidForLocal = false);
+//
+// `AtPeak` is the operator's Write now press confirmed inside a peak window: the industry's
+// pass the report waits on is written at the peak price too, rather than refused until it ends.
+public sealed record ResearchPassRequest(bool Refresh = false, bool PaidForLocal = false, bool AtPeak = false);
 
 public sealed record ResearchPassOutcome(
     string Ticker,
@@ -354,7 +357,7 @@ public sealed class ResearchRunner(
         if (themeWanted)
         {
             var probesBefore = sectionModels.Probes;
-            var themed = await themes.RunAsync(industry!, runId, cancellation, sector);
+            var themed = await themes.RunAsync(industry!, runId, cancellation, sector, asked.AtPeak);
 
             themeProbes = sectionModels.Probes - probesBefore;
 

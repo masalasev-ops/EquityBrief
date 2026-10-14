@@ -368,7 +368,7 @@ dotnet run --project src/EquityBrief.Worker -- research --ticker KEYS
 
 **A report the connection cut is not the day's report, and a regenerate the same day fills what a report left out.** Where a pass's run log holds a call of the report's own with the outcome `unavailable`, the model could not be reached for that section, and the pass is not the day's report: a regenerate or a second press the same day runs. A trial's or a review's call that could not be reached leaves the pass the day's report. On the day a report was written, a regenerate writes the sections it left out, whether the checker refused them at the last retry or the connection lost them, and none it accepted; where it left nothing out, a regenerate that day starts nothing. The name page reads the pass as written and does not offer the control that day, so the request is written by a press to `/passes/<TICKER>` carrying the page's header and `refresh=true` (see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's).
 
-**What the control does.** It sends the press with a header of the page's own, and the read surface refuses a request without one, so another site's page open in a browser on this machine cannot ask for a pass (see: A pass is started only by a request carrying the name page's own header). The surface refuses a name the index does not hold, then writes a request, starts the worker's drain from a copy of the worker's build and returns at once. The drain runs the pass at the off-peak rate, and the page shows what it wrote as it lands and when it is opened again (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours).
+**What the control does.** It sends the press with a header of the page's own, and the read surface refuses a request without one, so another site's page open in a browser on this machine cannot ask for a pass (see: A pass is started only by a request carrying the name page's own header). The surface refuses a name the index does not hold, then writes a request, starts the worker's drain from a copy of the worker's build and returns at once. The drain runs the pass at the off-peak rate, and the page shows what it wrote as it lands and when it is opened again (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now).
 
 ### Measuring a sector's sites
 
@@ -406,7 +406,7 @@ A request the drain has claimed is `writing` and cannot be taken out, because wh
 
 ### Labelling the news
 
-The off-peak run starts the labeller at 16:30Z before the drain, over the newest night's list, as a process of its own on main's clean build, so every call and every dollar it makes sits on its own run and never the night's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own); the night starts none. It is also run by hand, which is how a night whose labeller stopped at a limit is finished early, or a night's list labelled under a profile just switched to:
+The off-peak run starts the labeller before the drain, five minutes after each peak window ends, over the newest night's list, as a process of its own on main's clean build, so every call and every dollar it makes sits on its own run and never the night's (see: The news labeller is a process of its own the off-peak run starts, and its calls and its spend are its own); the night starts none. It is also run by hand, which is how a night whose labeller stopped at a limit is finished early, or a night's list labelled under a profile just switched to:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- label-news
@@ -876,31 +876,33 @@ Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.monthly.plis
 
 ### The off-peak run
 
-The night queues its six report requests and stops: it starts no drain and no labeller (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both at 16:30Z from main's own commit). The off-peak run does both, every day at 16:30 UTC, from a clean copy of main's own commit as the night is built:
+The night queues its six report requests and stops: it starts no drain and no labeller (see: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends). The off-peak run does both five minutes after each of the research model's peak windows ends, every day of the week, at 04:05 and 10:05 UTC under the shipped windows of 01:00 to 04:00 and 06:00 to 10:00, from a clean copy of main's own commit as the night is built. A weekday night's reports are written from 04:05, and a Friday night's on the Saturday:
 
 ```
 tools/offpeak.ps1
 ```
 
-It labels the newest night's list, as `label-news` run by hand does, and then drains the queue, as `drain` run by hand does, each a run of its own with its calls and spend on its own rows; a labeller that stops leaves the drain to run, and the drain waits out any peak window it starts in. `--check` prints what it would build and run and runs nothing. It builds main's own commit whatever branch the checkout is on, its line naming the branch where the checkout is on one, so a session at work on a branch at 16:30Z neither stops it nor has its branch built; a main holding a commit origin/main does not have is refused before any worker exists. Nothing is merged to main while its labeller or its drain is writing, as for a night.
+It labels the newest night's list, as `label-news` run by hand does, and then drains the queue, as `drain` run by hand does, each a run of its own with its calls and spend on its own rows; a labeller that stops leaves the drain to run, and the drain waits out any peak window it starts in. `--check` prints what it would build and run and runs nothing. It builds main's own commit whatever branch the checkout is on, its line naming the branch where the checkout is on one, so a session at work on a branch when it starts neither stops it nor has its branch built; a main holding a commit origin/main does not have is refused before any worker exists. Nothing is merged to main while its labeller or its drain is writing, as for a night.
 
-**Scheduling it.** Every day at 16:30 UTC, the start boundary pinned in UTC as the night's is, its output kept in `data/offpeak.log`:
+**Scheduling it.** Every day at 04:05 and 10:05 UTC, each start boundary pinned in UTC as the night's is, its output kept in `data/offpeak.log`. A change to the research model's peak windows in the settings moves these times, and the task is registered again with the new ones:
 
 ```powershell
 $root    = 'E:\Stock Analysis  Tool Ideas\EquityBrief'
 $action  = New-ScheduledTaskAction -Execute 'powershell.exe' `
              -Argument "-NoProfile -ExecutionPolicy Bypass -Command `"& '$root\tools\offpeak.ps1' *>> '$root\data\offpeak.log'`"" `
              -WorkingDirectory $root
-$trigger = New-ScheduledTaskTrigger -Daily -At 12:30pm
-$trigger.StartBoundary = '2026-10-13T16:30:00Z'
+$early   = New-ScheduledTaskTrigger -Daily -At 12:05am
+$early.StartBoundary = '2026-10-14T04:05:00Z'
+$late    = New-ScheduledTaskTrigger -Daily -At 6:05am
+$late.StartBoundary = '2026-10-14T10:05:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
              -ExecutionTimeLimit (New-TimeSpan -Hours 6)
 Register-ScheduledTask -TaskName 'EquityBrief offpeak' -Action $action `
-             -Trigger $trigger -Settings $settings
+             -Trigger $early, $late -Settings $settings
 ```
 
-On macOS the job runs every hour at half past and the script runs at 16 UTC alone:
+On macOS the job runs every hour at five past and the script runs at 04 and 10 UTC alone:
 
 ```xml
 <!-- ~/Library/LaunchAgents/dev.equitybrief.offpeak.plist -->
@@ -910,14 +912,16 @@ On macOS the job runs every hour at half past and the script runs at 16 UTC alon
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>[ "$(date -u +%H)" = 16 ] &amp;&amp; exec "$HOME/EquityBrief/tools/offpeak" &gt;&gt; "$HOME/EquityBrief/data/offpeak.log" 2&gt;&amp;1</string>
+    <string>case "$(date -u +%H)" in 04|10) exec "$HOME/EquityBrief/tools/offpeak" &gt;&gt; "$HOME/EquityBrief/data/offpeak.log" 2&gt;&amp;1 ;; esac</string>
   </array>
-  <key>StartCalendarInterval</key><dict><key>Minute</key><integer>30</integer></dict>
+  <key>StartCalendarInterval</key><dict><key>Minute</key><integer>5</integer></dict>
   <key>RunAtLoad</key><false/>
 </dict></plist>
 ```
 
-Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.offpeak.plist`. The queue page shows the requests waiting until the run starts the drain, and the run page the labeller's line once it has run.
+Load it with `launchctl load ~/Library/LaunchAgents/dev.equitybrief.offpeak.plist`. The queue page states a queue of the night's requests alone as starting at the next run, and the run page the labeller's line once it has run.
+
+**Writing one report now.** Each outstanding row on the queue page carries Write now, which starts the drain on that one request at once, ahead of the rest, as `drain --now <TICKER>` run by hand does. Inside a peak window the page first says when the window ends and how many times the off-peak price the report costs, and the press goes only once that is confirmed; the drain then writes it at the peak price, as `drain --now <TICKER> --at-peak` does by hand, and each call's price on the run page shows what was paid (see: A press writes a request and starts the worker's drain as a process of its own, and a pass waits for the off-peak hours unless the operator writes it now). A drain waiting out a peak window lets its lock go while it waits, so a Write now press is never held behind it.
 
 ### The fundamentals-first family
 
