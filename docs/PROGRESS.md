@@ -44641,6 +44641,13 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
             written as the refusal never made, which the compiler refused as reading a peak that is none, and run as
             the refusal made only on a word no press sends. Each reverted before anything was committed, the 4 passing
             over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
-After:      the scheduled task registered again at 04:05Z and 10:05Z once this merges.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, d14451b6: all six steps, 0 warnings, 0 errors, 2325
+            of 2325 tests ran with none failed in 24 minutes 15 seconds, migrations 0 to 93 with none pending, schema
+            version 93, against `data-ci` and never `data`. The first run over 4ecbaf06 failed two drain tests reading
+            the verb by its old signature and two rows read as lists of parts, and the second the changelog's check on
+            the commit fixing them, each corrected in d14451b6. `tools/verify-phase.ps1` was not run to its end: the
+            operator merged PR 460 while it ran, and it was stopped.
+After:      the scheduled task registered again at 04:05Z and 10:05Z on 2026-10-14 at 03:34Z; its first run, at 04:05Z,
+            built 19e6bfe6 and labelled 21 articles of the night of 2026-10-13's list, while a drain a press on JNJ
+            started at 03:54Z waited out the window and wrote JBL by 04:08Z.
 Carried:    nothing new.
