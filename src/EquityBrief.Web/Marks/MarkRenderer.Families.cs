@@ -141,7 +141,7 @@ public sealed record FamilyRunRow(string Family, string Heading, DateOnly? LiveS
 // it restarted there.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
 // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
-public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record, DateOnly? From = null, string? Restarted = null);
+public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record, DateOnly? From = null, string? Restarted = null, string? Short = null, string? Verdict = null);
 
 // One trade an S&P 400's or 600's list kept, as Past picks draws it: the stock and its company, the setup that listed
 // it and the night, its plan, where it ended by the page's night, its result before its cost, its cost and its result
@@ -259,7 +259,11 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // The registered rules of the new setups, one row a rule, each read over its own trades.
+    // The registered rules of the new setups, one row a rule, each read over its own trades. From 19.7 the rules are
+    // grouped under a heading row a family in its tint, each named by its short words with its full name, the session its
+    // record counts from and why it restarted in the pointer's tooltip, beside its verdict in the newest per-rule test;
+    // a level every rule of the family shares stands once in the family's heading and one that differs on its row.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
     public string FamilyRecords(IReadOnlyList<FamilyRecordRow> rows)
     {
         var body = new StringBuilder();
@@ -268,41 +272,41 @@ public sealed partial class MarkRenderer
 
         foreach (var (heading, says) in new[]
         {
-            ("Setup", "The setup family the rule belongs to."),
-            ("Rule", "The registered rule, its live one first, each a variant otherwise."),
+            ("Rule", "The registered rule by its short words, its live one first, each a variant otherwise; its full name, where its record counts from and why it restarted under the pointer."),
             ("Trades", "The trades its own list kept, five a night at most with one open a stock; a sector heavyweights rule's, the holdings its own book kept."),
             ("Decided", "Its trades ended with a result and the benchmark of the same plan on every member that night; a heavyweights rule's, its holdings sold, with its size cut's return over the same sessions."),
             ("Edge", "The average of each decided trade's result less its benchmark, in multiples of its risk; a heavyweights rule's in percentage points of the buy, its result less its size cut's return."),
             ("Whole blocks", "Blocks of 63 sessions whose trades have all had their cap, against the look they wait for; a heavyweights rule's holding counted in the block of the session it ended on."),
-            ("Level", "The level its looks are read at, the setup's own share of 0.05 over its own rules."),
+            ("Verdict", "The rule's verdict in the newest monthly per-rule test over the ledger's test years."),
         })
         {
-            body.Append(TippedHeading(heading, says, heading is "Trades" or "Decided" or "Edge" or "Whole blocks" or "Level" ? "r" : null));
+            body.Append(TippedHeading(heading, says, heading is "Trades" or "Decided" or "Edge" or "Whole blocks" ? "r" : null));
         }
 
         body.Append("</tr></thead><tbody>");
 
-        foreach (var row in rows)
+        foreach (var family in rows.GroupBy(row => row.Family))
         {
-            body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\" data-from=\"{(row.From is { } from ? DayOf(from) : "none")}\" data-restarted=\"{Flag(row.Restarted is not null)}\">");
-            body.Append(Invariant, $"<td class=\"setup\">{Escaped(row.Heading)}</td>");
-            body.Append(Invariant, $"<td>{Escaped(row.Rule)}{(row.Live ? " <b>live</b>" : string.Empty)}");
+            var levels = family.Select(row => row.Level).Distinct().ToArray();
+            var shared = levels.Length == 1 ? levels[0] : (double?)null;
+            var heading = family.First().Heading;
 
-            if (row.From is { } counted)
+            body.Append(Invariant, $"<tr class=\"family-head\" data-family=\"{Escaped(family.Key)}\" data-level=\"{(shared is { } level ? level.ToString("0.#####", Invariant) : "differs")}\"><th colspan=\"6\"><span class=\"fam-tag\" data-family=\"{Escaped(family.Key)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(family.Key)}\"></span>{Escaped(heading)}</span>{(shared is { } one ? Formatted($" · its looks read at a level of {one.ToString("0.####", Invariant)}") : string.Empty)}</th></tr>");
+
+            foreach (var row in family)
             {
-                body.Append(Invariant, $"<span class=\"record-from\">its record counts from {DayOf(counted)}</span>");
-            }
+                var tip = row.Rule
+                    + (row.From is { } from ? ". Its record counts from " + DayOf(from) : string.Empty)
+                    + (row.Restarted is { } restarted ? ". It restarted at its registration, since " + restarted : string.Empty)
+                    + ".";
 
-            if (row.Restarted is { } why)
-            {
-                body.Append(Invariant, $"<span class=\"record-restarted\">it restarted at its registration, since {Escaped(why)}</span>");
+                body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\" data-from=\"{(row.From is { } counted ? DayOf(counted) : "none")}\" data-restarted=\"{Flag(row.Restarted is not null)}\" data-verdict=\"{Escaped(row.Verdict ?? "none")}\">");
+                body.Append(Invariant, $"<td class=\"fam-edge\" data-family=\"{Escaped(row.Family)}\" title=\"{Escaped(tip)}\"><span class=\"fam-tag\" data-family=\"{Escaped(row.Family)}\">{Escaped(row.Short ?? row.Rule)}</span>{(row.Live ? " <b>live</b>" : string.Empty)}</td>");
+                body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
+                body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? SignedTenth(shown * 100) + " points" : SignedFigure(shown, 3, Unsigned(shown, 3).ToString("+0.000;-0.000;0.000", Invariant)))}</td>");
+                body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}{(shared is null ? Formatted($", level {row.Level.ToString("0.####", Invariant)}") : string.Empty)}</td>");
+                body.Append(row.Verdict is { } verdict ? $"<td class=\"verdict-word\" data-rank=\"{EquityBrief.Core.Loop.RuleVerdict.Rank(verdict)}\">{Escaped(verdict)}</td></tr>" : "<td class=\"degraded\">not read</td></tr>");
             }
-
-            body.Append("</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? SignedTenth(shown * 100) + " points" : SignedFigure(shown, 3, Unsigned(shown, 3).ToString("+0.000;-0.000;0.000", Invariant)))}</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{row.Level.ToString("0.####", Invariant)}</td></tr>");
         }
 
         body.Append("</tbody></table></div>");

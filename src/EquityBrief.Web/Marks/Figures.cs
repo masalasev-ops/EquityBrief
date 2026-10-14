@@ -23,6 +23,15 @@ public static partial class Figures
 
     public static string Multiple(decimal value) => value.ToString("#,##0.0", Invariant);
 
+    // A length of time in one form on every page that states one, its whole minutes and whole seconds: 1892.4 seconds is
+    // 31 min 32 s, and 45 seconds 0 min 45 s.
+    public static string Duration(double seconds)
+    {
+        var whole = (long)Math.Floor(Math.Max(seconds, 0));
+
+        return (whole / 60).ToString("#,##0", Invariant) + " min " + (whole % 60).ToString(Invariant) + " s";
+    }
+
     // 0.749753 is 75.0%.
     public static string Percent(decimal fraction) => (fraction * 100).ToString("#,##0.0", Invariant) + "%";
 

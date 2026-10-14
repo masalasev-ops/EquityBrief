@@ -2311,7 +2311,13 @@ app.MapGet("/screens/run/{night?}", async (
         var indexRegister = await read.RegisteredCandidatesAsync();
 
         // Each registered rule's record, from the index's first freeze on, and its family's setup row live beside it.
-        var indexRecords = TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated);
+        var indexRecords = RunScreen.Named(
+            TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated),
+            indexRegister,
+            dated,
+            false,
+            reading.Name,
+            (await read.RuleTestsAsync(reading.Code)).Rules);
 
         return Results.Content(
             page.IndexRunRegion(
@@ -2377,6 +2383,18 @@ app.MapGet("/screens/run/{night?}", async (
     var labellerRuns = await read.LabellerRunsAsync();
     var reports = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week.Count > 0 ? week[0].Night : dated, dated);
 
+    // The shape clock, read once for the Calibration region and the monthly run's line; and from 19.7 the S&P 500's newest
+    // tester run with its proposals and the operator's words, which the monthly run region reads what was put from.
+    var shapeState = RunScreen.Calibration(
+        await read.GateNightsAsync(),
+        await read.MarketRatiosAsync(),
+        RunScreen.Firings(everyListing),
+        await read.OpenFilterVersionAsync(),
+        dated);
+    var monthlyRun = (await read.LoopMonthsAsync(Universes.Large.Code)).FirstOrDefault() is { } newestMonth ? await read.LoopRunAsync(Universes.Large.Code, newestMonth) : null;
+    var monthlyProposals = monthlyRun is null ? [] : await read.LoopProposalsAsync(monthlyRun);
+    var monthlyDecisions = await read.LoopDecisionsAsync(Universes.Large.Code);
+
     return Results.Content(
         page.RunRegion(
             marks,
@@ -2414,12 +2432,7 @@ app.MapGet("/screens/run/{night?}", async (
                 flips.Returns,
                 flips.Nights,
                 dated),
-            RunScreen.Calibration(
-                await read.GateNightsAsync(),
-                await read.MarketRatiosAsync(),
-                RunScreen.Firings(everyListing),
-                await read.OpenFilterVersionAsync(),
-                dated),
+            shapeState,
             market,
             funnel,
             RunScreen.Triggers(await read.TriggerReadsAsync(), priced, NewsScreen.Trigger(labellerRuns)),
@@ -2458,9 +2471,13 @@ app.MapGet("/screens/run/{night?}", async (
                 storeCopy,
                 RuleScreen.Flagged(await read.RuleNightsAsync(index, dated), dated, await read.RegisteredCandidatesAsync()),
                 await read.NewestMonthlyRunAsync()),
-            background: versions,
+            monthly: RunScreen.Monthly(
+                await read.NewestMonthlyRunAsync(),
+                monthlyProposals,
+                one => monthlyRun is { } tested && MarkRenderer.HeldBack(tested, one, new LoopDecided(monthlyDecisions, [], [], null)),
+                (await read.RuleTestsAsync(Universes.Large.Code)).Rules,
+                shapeState),
             compare: compare,
-            checkpoints: RunScreen.Checkpoints(edge),
             reports: reports,
             // The setups the page is drawn from, on a night the families drew its list, and each registered rule
             // of a new setup read over its own trades.
@@ -2473,7 +2490,13 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.RegisteredCandidatesAsync(),
                     await read.FamilyTradesAsync(dated),
                     await read.FamilyReplaysAsync()),
-            familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
+            familyRecords: RunScreen.Named(
+                TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
+                await read.RegisteredCandidatesAsync(),
+                dated,
+                true,
+                Universes.Large.Name,
+                (await read.RuleTestsAsync(Universes.Large.Code)).Rules),
             storeCopy: storeCopy,
             selector: selector,
             // From 19.2 the night's operations and its reason totals, which Tonight drew before.

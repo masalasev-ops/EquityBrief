@@ -2774,9 +2774,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<FreshNight>? fresh = null,
         ResearchPicture? research = null,
         IReadOnlyList<WorryItem>? worries = null,
-        IReadOnlyList<VersionLine>? background = null,
+        MonthlyRunView? monthly = null,
         CompareView? compare = null,
-        IReadOnlyList<CheckpointRow>? checkpoints = null,
         ReportsView? reports = null,
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
         IReadOnlyList<FamilyRecordRow>? familyRecords = null,
@@ -2805,18 +2804,34 @@ public sealed partial class SinglePageApp : IComponent
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
 
-        // How last night went: its state from its own run log rows and its tries, the four headline figures,
-        // the time its steps took, and the press running the rest of a night left unfinished, above
-        // everything else; and from 19.2, beneath them, how long it took, the harness verdict, what research
-        // spent and the prose counts, which Tonight drew in its header before.
+        // Health, from 19.7 the heading over how last night went and anything to worry about: the night's state from its
+        // own run log rows and its tries, the four headline figures, the time its steps took, the press running the rest of
+        // a night left unfinished, how long it took and the harness verdict, which Tonight drew in its header before 19.2,
+        // and beside them the checklist.
         // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+        region.Append("<h2 class=\"run-heading\" data-heading=\"health\">Health</h2><div class=\"run-pair\">");
         region.Append(Cards.Computed(
             "Last night",
-            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness, spend, prose),
+            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness),
             title: "How last night went",
             lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
             stamp: Cards.Night(night),
             region: "night"));
+
+        if (worries is { } items)
+        {
+            // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
+            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+            region.Append(Cards.Computed(
+                "Health",
+                marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),
+                title: "Anything to worry about?",
+                lede: "Each item turns red with its reason when it fails.",
+                stamp: Cards.Night(night),
+                region: "worry-picture"));
+        }
+
+        region.Append("</div>");
 
         // The market and the funnel side by side, each a picture with its words beneath.
         region.Append("<div class=\"run-pair\">");
@@ -2842,19 +2857,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append("</div>");
 
-        // How the live list's trades are going and whether it finds new stocks, side by side.
-        region.Append("<div class=\"run-pair\">");
-
-        if (trades is { } picked)
-        {
-            region.Append(Cards.Computed(
-                "The picks so far",
-                marks.TradesRegion(picked, PicksRoute),
-                title: "How the list's trades are going",
-                lede: "Every trade the live list recommended, by where each one stands; the share that won waits until enough have finished to say something.",
-                stamp: Cards.Night(night),
-                region: "trades-picture"));
-        }
+        // From 19.7 the live list's trades in one line linking their trade log, where a ring and tiles repeated Past picks.
+        region.Append(trades is { } picked ? marks.TradesLine(picked, PicksRoute) : string.Empty);
 
         if (fresh is { } evenings)
         {
@@ -2867,74 +2871,46 @@ public sealed partial class SinglePageApp : IComponent
                 region: "fresh-picture"));
         }
 
-        region.Append("</div>");
-
-        // How the system learns, tonight's picks compared with a version's, and each version at a checkpoint.
-        // Picks only: a version's outcomes wait for its look.
-        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-        if (background is { } running && edge is { } judging)
+        // From 19.7 the newest monthly run in the retired loop's place: its date and state, what it tested and put to you
+        // for each family, each rule's verdict, links to the Loop page and paper trading, and the shape clock in one line.
+        // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+        if (monthly is { } month)
         {
-            var route = RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
             region.Append(Cards.Computed(
-                "The learning loop",
-                marks.LearningRegion(shape, judging, running, route + "?version=" + (running.FirstOrDefault(version => !version.Live)?.Slug ?? string.Empty)),
-                title: "How the system learns",
-                lede: "Two clocks run every night, and nothing changes the list without your decision: the first tunes how many stocks pass each check, and the second judges over years whether the picks make money, by running other versions of the rules beside the live one.",
+                "The monthly run",
+                marks.MonthlyRunRegion(month, LoopRoute + "?universe=" + Universes.Large.Word, PaperRoute + "?universe=" + Universes.Large.Word),
+                title: "What the monthly run tested",
+                lede: "Each month the tester reads every family's proposals and every registered rule over the ledger's test years; a rule changes only when you approve a proposal that passed.",
                 stamp: Cards.Night(night),
-                region: "learning-picture"));
-
-            if (compare is { } compared)
-            {
-                region.Append(Cards.Computed(
-                    "The learning loop",
-                    marks.CompareRegion(compared, route, NameRoute),
-                    title: "Compare tonight's picks",
-                    lede: "What a background version would have listed on this night, beside the live list. Picks only: how each version's trades turn out stays hidden until its checkpoint.",
-                    stamp: Cards.Night(night),
-                    region: "compare-picture"));
-            }
-
-            if (checkpoints is { } rows)
-            {
-                region.Append(Cards.Computed(
-                    "The learning loop",
-                    marks.CheckpointRegion(rows),
-                    title: "At a checkpoint",
-                    lede: "Each version's results, locked until its first checkpoint, about two years in, when a clearly worse version can be dropped; none can be promoted before the second.",
-                    stamp: Cards.Night(night),
-                    region: "checkpoint-picture"));
-            }
+                region: "monthly-run"));
         }
 
-        // Research and spend beside anything to worry about.
-        region.Append("<div class=\"run-pair\">");
-
-        if (research is { } written)
+        // Tonight's picks beside a version's, picks only.
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+        if (compare is { } compared)
         {
             region.Append(Cards.Computed(
+                "Versions",
+                marks.CompareRegion(compared, RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NameRoute),
+                title: "Compare tonight's picks",
+                lede: "What a registered version would have listed on this night, beside the live list. Picks only.",
+                stamp: Cards.Night(night),
+                region: "compare-picture"));
+        }
+
+        // Research, from 19.7 the heading over what research spent, the prose it wrote and the reports over the week, with
+        // how each report did folded in the detail beneath.
+        if (research is { } written)
+        {
+            region.Append("<h2 class=\"run-heading\" data-heading=\"research\">Research</h2>");
+            region.Append(Cards.Computed(
                 "Research",
-                marks.ResearchRegion(written),
+                marks.NightResearch(night, spend, prose) + marks.ResearchRegion(written) + "<p class=\"run-reports-link\">How each report did, section by section, is folded in the detail beneath.</p>",
                 title: "Written reports and what they cost",
                 lede: "What the paid model spent this month against its cap, and the reports written over the last week.",
                 stamp: Cards.Night(night),
                 region: "research-picture"));
         }
-
-        if (worries is { } items)
-        {
-            // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
-            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
-            region.Append(Cards.Computed(
-                "Health",
-                marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),
-                title: "Anything to worry about?",
-                lede: "Each item turns red with its reason when it fails.",
-                stamp: Cards.Night(night),
-                region: "worry-picture"));
-        }
-
-        region.Append("</div>");
 
         // The detail: every table the page drew before, each in a section folded shut, so a reader checking
         // the arithmetic finds it whole and a reader glancing does not have to scroll past it.

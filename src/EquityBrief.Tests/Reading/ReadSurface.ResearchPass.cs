@@ -1156,7 +1156,7 @@ public partial class ReadSurface
             "('AAAA', 'The key under each figure', 1, '2026-09-08', 'm', 'accepted', 'p', '[]', NULL);");
 
         var prose = TonightScreen.Prose(night, await Api(store).WrittenOnOrBeforeAsync(night));
-        var header = new MarkRenderer().NightOps(night, "00:03:10", null, null, prose);
+        var header = new MarkRenderer().NightResearch(night, null, prose);
         var line = Regex.Match(header, "<p class=\"night-prose\" data-fresh=\"(\\d+)\" data-reused=\"(\\d+)\" data-names=\"(\\d+)\">([^<]*)</p>");
 
         Assert.True(line.Success);
