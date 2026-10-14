@@ -3346,7 +3346,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopModelRow>? models = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null,
-        LoopDecided? decided = null)
+        LoopDecided? decided = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null)
     {
         static string Named(string word) => word switch
         {
@@ -3387,42 +3388,62 @@ public sealed partial class SinglePageApp : IComponent
             return region.ToString();
         }
 
+        // From 19.7 the page opens on a summary a family in the one order, its rule today as chips, the proposals tested,
+        // the strongest one's adjusted p as a meter against the bar with its years better and the one put to you with its
+        // presses, or why nothing is and when it next can be; beneath it the one line saying what a change must pass.
+        var summary = new List<LoopSummaryRow>();
+        var cards = new StringBuilder();
+
         foreach (var family in LoopFamilies)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
+            var presses = string.Empty;
 
             body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
 
             foreach (var proposal in own)
             {
-                body.Append(marks.LoopProposal(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)]));
+                var decision = decided is null ? string.Empty : marks.LoopDecision(reading.Code, run, proposal, decided, put);
 
-                if (decided is not null)
+                if (put is not null && proposal.Proposal == put.Proposal)
                 {
-                    body.Append(marks.LoopDecision(reading.Code, run, proposal, decided, put));
+                    presses = decision;
+                    decision = "<p class=\"loop-pressed-above\">Its presses stand in the summary above.</p>";
                 }
+
+                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision));
             }
+
+            summary.Add(new LoopSummaryRow(
+                family,
+                chips?.GetValueOrDefault(family) ?? [],
+                own.Length,
+                own.Where(proposal => proposal.Adjusted is not null).MinBy(proposal => proposal.Adjusted) ?? own.FirstOrDefault(),
+                put,
+                presses,
+                put is not null ? null : LoopWaiting(family, run, own, decided)));
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
-            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)]));
+            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
 
-            if (own.Length > 0)
-            {
-                body.Append(Cards.Key(
-                    "Each proposal.",
-                    "A procedure is run in each test year on the trades that ended before the year began and scored on that year against the rule today; the four parts must all hold for a proposal to pass, and the setting put forward is the procedure run on all finished data.",
-                    "The rule today was chosen on these same test years, so a proposal reads understated against it."));
-            }
-
-            region.Append(Cards.Computed(
+            cards.Append(Cards.Computed(
                 "Loop",
                 body.ToString(),
                 title: Escaped(Named(family)),
                 stamp: Cards.Night(night),
                 region: "loop-" + family));
         }
+
+        region.Append(Cards.Computed(
+            "Loop",
+            Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine(),
+            title: Invariant($"What the run for {Escaped(run.Month)} found"),
+            lede: "A row a setup: the rule today, what was tested against it, the strongest proposal against the bar, and the one put to you.",
+            stamp: Cards.Night(night),
+            region: "loop-summary"));
+        region.Append(cards);
 
         // What the operator decided on this index and what the apply step did, and the live alarm's periods.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
@@ -3449,6 +3470,42 @@ public sealed partial class SinglePageApp : IComponent
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // How the Loop page is read, opened from its "?".
+    public const string LoopGuide =
+        "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
+
+    // Why nothing is put to the operator for a family and when it next can be: the business-first family waiting on the
+    // ledger's setups, a family the run tested nothing for or none of whose proposals passed waiting on the next monthly
+    // run, the first Saturday of the month after the run's, and a passing proposal an earlier decline holds back waiting
+    // on a later run reading a new complete block.
+    // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
+    public static string LoopWaiting(string family, EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> own, LoopDecided? decided)
+    {
+        var next = NextMonthlyRun(run.Month);
+
+        if (own.Count == 0 && family == EquityBrief.Core.Families.FundamentalsRule.Name)
+        {
+            return "Nothing is tested for the business-first family yet: it waits on 19.9, which writes its setups to the ledger the tester reads.";
+        }
+
+        if (own.Count == 0)
+        {
+            return Invariant($"Nothing was tested for this setup in the run for {run.Month}; the next monthly run is on {next:yyyy-MM-dd}.");
+        }
+
+        return decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldBack(run, one, decided))
+            ? "Its passing proposal was declined; it is put to you again once a later run reads a new complete block of 63 sessions and it passes with that block."
+            : Invariant($"None of its {own.Count} proposal(s) that states a change passed; the next monthly run is on {next:yyyy-MM-dd}.");
+    }
+
+    // The first Saturday of the month after a run's month, the day the monthly run is scheduled on.
+    public static DateOnly NextMonthlyRun(string month)
+    {
+        var first = DateOnly.ParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture).AddMonths(1);
+
+        return first.AddDays(((int)DayOfWeek.Saturday - (int)first.DayOfWeek + 7) % 7);
     }
 
     // A line above an index's Tonight for each family whose live rule the alarm flags on its newest period, naming the

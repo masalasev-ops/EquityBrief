@@ -2161,7 +2161,21 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var alarms = await read.LoopAlarmsAsync(reading.Code);
     var newest = await read.NewestLoopRunAsync(reading.Code);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest)), "text/html; charset=utf-8");
+    // From 19.7 each family's rule standing on the index as its card's chips draw it, for the summary's rule today.
+    var large = reading == Universes.Large;
+    var register = await read.RegisteredCandidatesAsync();
+    var provisional = large || night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
+    var chips = SinglePageApp.LoopFamilies.ToDictionary(
+        family => family,
+        family =>
+        {
+            var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, provisional);
+
+            return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : !large && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
+        },
+        StringComparer.Ordinal);
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest), chips), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.

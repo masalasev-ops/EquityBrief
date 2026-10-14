@@ -86,7 +86,7 @@ public sealed partial class MarkRenderer
     // words with its hash, the words saying it has not passed the tester on this index until one of its proposals did,
     // and from then the rank each of tonight's cards carries under it, read off the cards and never worked out here.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
-    public string LoopScore(string family, IReadOnlyList<LoopProposalRow> proposals, LoopModelRow? model, IReadOnlyList<LoopRankRow> ranks)
+    public string LoopScore(string family, IReadOnlyList<LoopProposalRow> proposals, LoopModelRow? model, IReadOnlyList<LoopRankRow> ranks, string? month = null)
     {
         var scored = proposals.Where(proposal => proposal.Proposal.StartsWith(RidgeScore.Proposal, StringComparison.Ordinal)).ToArray();
 
@@ -99,8 +99,9 @@ public sealed partial class MarkRenderer
         var html = new StringBuilder();
 
         html.Append(Invariant, $"<div class=\"loop-score\" data-family=\"{Escaped(family)}\" data-validated=\"{(validated ? 1 : 0)}\" data-hash=\"{Escaped(model?.Hash ?? "none")}\">");
+        // From 19.7 the score is named by the month it was fitted in, its stored hash under the pointer.
         html.Append(model is { } held
-            ? Formatted($"<p class=\"loop-model\" data-setups=\"{held.Setups}\"><b>The learned score.</b> {WithSignedFigures(Capitalised(held.Words))}; {Escaped(held.Hash)}, fitted on the setups that ended before {held.LearnedBefore.ToString("yyyy-MM-dd", Invariant)}.</p>")
+            ? Formatted($"<p class=\"loop-model\" data-setups=\"{held.Setups}\" data-hash=\"{Escaped(held.Hash)}\" title=\"{Escaped(held.Hash)}\"><b>The learned score{(FittedIn(month) is { } fitted ? ", fitted " + fitted : string.Empty)}.</b> {WithSignedFigures(Capitalised(held.Words))}; fitted on the setups that ended before {held.LearnedBefore.ToString("yyyy-MM-dd", Invariant)}.</p>")
             : "<p class=\"loop-model degraded\" data-setups=\"none\"><b>The learned score.</b> No score was fitted on all finished data in this run: too few of the ledger's finished setups held every reading it weighs.</p>");
 
         if (!validated)
@@ -121,6 +122,12 @@ public sealed partial class MarkRenderer
 
         return html.ToString();
     }
+
+    // A run's month as words, 2026-10 as October 2026; none where the month cannot be read.
+    static string? FittedIn(string? month) =>
+        month is not null && DateOnly.TryParseExact(month + "-01", "yyyy-MM-dd", Invariant, System.Globalization.DateTimeStyles.None, out var first)
+            ? first.ToString("MMMM yyyy", Invariant)
+            : null;
 
     // The Loop page's two presses, which the read surface maps.
     public const string LoopDecideRoute = "/loop/decide/";
