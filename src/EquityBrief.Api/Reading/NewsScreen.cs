@@ -251,7 +251,7 @@ public static class NewsScreen
             "news labeller",
             nights,
             NewsLabelling.SettlingNights,
-            FormattableString.Invariant($"night(s) the news labeller ran, against the twenty its time limit, its month limit and the share of answers refused for a digit are settled from: {median:0.#} minute(s) a run at the median, {Core.Spending.SpendVerdict.Money(month)} this month, {digits} of {answers} answer(s) refused for a digit"));
+            FormattableString.Invariant($"night(s) the news labeller ran, against the twenty its time limit, its month limit and the share of answers refused for a digit are settled from: {EquityBrief.Web.Marks.Figures.Duration(median * 60)} a run at the median, {Core.Spending.SpendVerdict.Money(month)} this month, {digits} of {answers} answer(s) refused for a digit"));
     }
 
     static double? Minutes(string startedAt, string endedAt) =>

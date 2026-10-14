@@ -73,16 +73,21 @@ public partial class ReadSurface
         // the family's own level, 0.05 over its four distinct trials.
         Assert.Equal(
             [
-                $"<tr data-family=\"heavyweight\" data-rule=\"{live}\" data-live=\"true\" data-trades=\"4\" data-decided=\"2\" data-edge=\"-0.01\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"heavyweight\" data-rule=\"{every}\" data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"heavyweight\" data-rule=\"{bothExits}\" data-live=\"false\" data-trades=\"2\" data-decided=\"2\" data-edge=\"0.02\" data-blocks=\"2\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"heavyweight\" data-rule=\"{members}\" data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\">",
+                $"<tr data-family=\"heavyweight\" data-rule=\"{live}\" data-live=\"true\" data-trades=\"4\" data-decided=\"2\" data-edge=\"-0.01\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"heavyweight\" data-rule=\"{every}\" data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"heavyweight\" data-rule=\"{bothExits}\" data-live=\"false\" data-trades=\"2\" data-decided=\"2\" data-edge=\"0.02\" data-blocks=\"2\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"heavyweight\" data-rule=\"{members}\" data-live=\"false\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.0125\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
             ],
             rows.Select(row => row[..(row.IndexOf('>') + 1)]));
 
-        // The cells a reader reads: the family's heading, the rule marked live, and the edge in points of the buy.
+        // The cells a reader reads: the family's heading row with the level its rules share, the rule by its short words
+        // with its full name and where its record counts from under the pointer, and the edge in points of the buy.
         Assert.Contains(
-            $"<td class=\"setup\">{SetupFamilies.SectorHeavyweights.Heading}</td><td>{live} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">4</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"loss\">-1.0</span> points</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.0125</td>",
+            $"<tr class=\"family-head\" data-family=\"heavyweight\" data-level=\"0.0125\"><th colspan=\"6\"><span class=\"fam-tag\" data-family=\"heavyweight\"><span class=\"fam-swatch\" data-family=\"heavyweight\"></span>{SetupFamilies.SectorHeavyweights.Heading}</span> · its looks read at a level of 0.0125</th></tr>",
+            records,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            $"<td class=\"fam-edge\" data-family=\"heavyweight\" title=\"{live}. Its record counts from 2026-01-02.\"><span class=\"fam-tag\" data-family=\"heavyweight\">Live</span></td><td class=\"r num\">4</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"loss\">-1.0</span> points</td><td class=\"r num\">1 of 8</td><td class=\"verdict-word\"",
             rows[0],
             StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\"><span class=\"gain\">+2.0</span> points</td><td class=\"r num\">2 of 8</td>", rows[2], StringComparison.Ordinal);

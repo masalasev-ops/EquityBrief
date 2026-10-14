@@ -67,7 +67,7 @@ public sealed record Findable(string Ticker, string? Name, DateOnly? Researched)
 public sealed record YourTradeView(string Ticker, string TakenAt, string Rule, DateOnly Night, decimal Fill, DateOnly FillDate, bool Provisional, bool Open, DateOnly? EndedOn, string? EndReason, decimal? EndPrice, double? Result, string Unit);
 
 // A name holding researched sections, as the researched list draws it.
-public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
+public sealed record ResearchedCell(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections, bool? Stale = null, IReadOnlyList<string>? StaleLines = null, double? Move = null, int Of = 0, string? Why = null);
 
 // One request, as the queue screen draws it. The instant is carried as the store
 // spells it, because a press to take one out names the request rather than the
@@ -716,9 +716,8 @@ public sealed partial class SinglePageApp : IComponent
           fresh = true;
           location.hash = (cut < 0 ? hash : hash.slice(0, cut)) + (params.toString() ? '?' + params.toString() : '');
         });
-        // A name put on the watch list or taken off it: the press names the ticker, from the box on the
-        // watch list page or from the form's own, sends the page's header, and the screen is drawn again
-        // with what the read surface said above the list.
+        // A name put on the watch list or taken off it: the press names the ticker the form carries, sends the
+        // page's header, and the screen is drawn again with what the read surface said above the list.
         document.addEventListener('submit', async (event) => {
           const form = event.target;
           if (!(form instanceof HTMLFormElement) || !form.classList.contains('watch-control')) { return; }
@@ -1124,9 +1123,23 @@ public sealed partial class SinglePageApp : IComponent
           const byName = options.find((option) => option.textContent.toLowerCase().includes(lower));
           return byName ? byName.value : null;
         }
-        function go(text) {
+        async function go(text) {
           for (const old of screen.querySelectorAll('.notice[data-not-found]')) { old.remove(); }
           const ticker = found(text);
+          // On the watch list the name found is added to it under the page's own header, and elsewhere its page opens.
+          if (ticker && location.hash.startsWith('{{{WatchRoute}}}')) {
+            find.value = '';
+            find.blur();
+            const response = await fetch('{{{WatchPostRoute}}}' + encodeURIComponent(ticker), {
+              method: 'POST',
+              headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+            });
+            const said = await response.text();
+            await show();
+            const place = screen.querySelector('.watch-said');
+            if (place) { place.innerHTML = said; }
+            return;
+          }
           if (ticker) {
             find.value = '';
             find.blur();
@@ -2186,11 +2199,14 @@ public sealed partial class SinglePageApp : IComponent
     // holding a researched section, newest first, each with the day its newest section was
     // written and how many sections it holds.
     // see: A researched name is one holding an accepted section besides the key under each figure
-    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "")
+    public string ResearchedRegion(IReadOnlyList<ResearchedCell> rows, UniverseChoice? universe = null, string selector = "", string? sort = null)
     {
         var reading = universe ?? Universes.Large;
         var heading = "Researched: " + reading.Titled;
         var body = new StringBuilder();
+        var byStale = sort == "stale";
+
+        body.Append(Guide(ResearchedGuide));
 
         if (rows.Count == 0)
         {
@@ -2198,23 +2214,30 @@ public sealed partial class SinglePageApp : IComponent
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"researched-table\"><thead><tr><th>Name</th><th>Sector</th><th>Written</th><th>Sections</th></tr></thead><tbody>");
+            // The two orders, each a link keeping the index, the one drawn marked.
+            body.Append(Invariant($"<nav class=\"researched-sort\" data-sort=\"{(byStale ? "stale" : "written")}\">Order by <a href=\"{ResearchedRoute}?universe={reading.Word}&amp;sort=written\"{(byStale ? string.Empty : " aria-current=\"true\"")}>day written</a> · <a href=\"{ResearchedRoute}?universe={reading.Word}&amp;sort=stale\"{(byStale ? " aria-current=\"true\"" : string.Empty)}>staleness</a></nav>"));
+            body.Append("<div class=\"tbl-wrap\"><table class=\"researched-table\"><thead><tr><th>Name</th><th>Sector</th><th>Written</th><th>Why written</th><th>Stands</th><th class=\"r\">Since written</th><th class=\"r\">Sections</th></tr></thead><tbody>");
 
             foreach (var row in rows)
             {
-                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\">"));
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\" data-stale=\"{(row.Stale is { } stale ? (stale ? "true" : "false") : "none")}\" data-why=\"{Escaped(row.Why ?? "none")}\" data-move=\"{(row.Move is { } moved ? moved.ToString("R", CultureInfo.InvariantCulture) : "none")}\">"));
                 body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
                 body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
-                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td class=\"num\">{row.Sections}</td></tr>"));
+                body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td>{Escaped(row.Why ?? "not read")}</td>"));
+                body.Append(row.Stale switch
+                {
+                    true => Invariant($"<td><span class=\"status-pill failed\">stale</span> {Escaped(string.Join("; ", row.StaleLines ?? []))}</td>"),
+                    false => "<td><span class=\"status-pill live\">stands</span></td>",
+                    null => "<td class=\"degraded\">not read</td>",
+                });
+                body.Append(row.Move is { } move
+                    ? Invariant($"<td class=\"r num {MarkRenderer.Hue(move * 100, 1)}\">{(Math.Round(move * 100, 1) == 0 ? 0 : move * 100):+0.0;-0.0;0.0}%</td>")
+                    : "<td class=\"r degraded\">not read</td>");
+                body.Append(Invariant($"<td class=\"r num\" data-of=\"{row.Of}\">{row.Sections} of {row.Of}</td></tr>"));
             }
 
             body.Append("</tbody></table></div>");
         }
-
-        body.Append(Cards.Key(
-            "What is listed.",
-            "Every name holding a section a research pass wrote and the claim checker accepted, newest first, with the day its newest section was written. A key under each figure, which the overnight queue once wrote for every name in the index, is not counted.",
-            "A name here opens with its research in place. Any other name offers to write it on its own page, and the search box above finds any name in the index."));
 
         return Invariant($"<section class=\"researched\" data-universe=\"{reading.Word}\" data-names=\"{rows.Count}\">")
             + Cards.Masthead(
@@ -2774,9 +2797,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<FreshNight>? fresh = null,
         ResearchPicture? research = null,
         IReadOnlyList<WorryItem>? worries = null,
-        IReadOnlyList<VersionLine>? background = null,
+        MonthlyRunView? monthly = null,
         CompareView? compare = null,
-        IReadOnlyList<CheckpointRow>? checkpoints = null,
         ReportsView? reports = null,
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
         IReadOnlyList<FamilyRecordRow>? familyRecords = null,
@@ -2805,18 +2827,34 @@ public sealed partial class SinglePageApp : IComponent
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
 
-        // How last night went: its state from its own run log rows and its tries, the four headline figures,
-        // the time its steps took, and the press running the rest of a night left unfinished, above
-        // everything else; and from 19.2, beneath them, how long it took, the harness verdict, what research
-        // spent and the prose counts, which Tonight drew in its header before.
+        // Health, from 19.7 the heading over how last night went and anything to worry about: the night's state from its
+        // own run log rows and its tries, the four headline figures, the time its steps took, the press running the rest of
+        // a night left unfinished, how long it took and the harness verdict, which Tonight drew in its header before 19.2,
+        // and beside them the checklist.
         // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+        region.Append("<h2 class=\"run-heading\" data-heading=\"health\">Health</h2><div class=\"run-pair\">");
         region.Append(Cards.Computed(
             "Last night",
-            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness, spend, prose),
+            (how is { } went ? marks.NightStatus(went) + NightPress(went) : string.Empty) + marks.NightOps(night, duration, harness),
             title: "How last night went",
             lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
             stamp: Cards.Night(night),
             region: "night"));
+
+        if (worries is { } items)
+        {
+            // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
+            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
+            region.Append(Cards.Computed(
+                "Health",
+                marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),
+                title: "Anything to worry about?",
+                lede: "Each item turns red with its reason when it fails.",
+                stamp: Cards.Night(night),
+                region: "worry-picture"));
+        }
+
+        region.Append("</div>");
 
         // The market and the funnel side by side, each a picture with its words beneath.
         region.Append("<div class=\"run-pair\">");
@@ -2842,19 +2880,8 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append("</div>");
 
-        // How the live list's trades are going and whether it finds new stocks, side by side.
-        region.Append("<div class=\"run-pair\">");
-
-        if (trades is { } picked)
-        {
-            region.Append(Cards.Computed(
-                "The picks so far",
-                marks.TradesRegion(picked, PicksRoute),
-                title: "How the list's trades are going",
-                lede: "Every trade the live list recommended, by where each one stands; the share that won waits until enough have finished to say something.",
-                stamp: Cards.Night(night),
-                region: "trades-picture"));
-        }
+        // From 19.7 the live list's trades in one line linking their trade log, where a ring and tiles repeated Past picks.
+        region.Append(trades is { } picked ? marks.TradesLine(picked, PicksRoute) : string.Empty);
 
         if (fresh is { } evenings)
         {
@@ -2867,74 +2894,46 @@ public sealed partial class SinglePageApp : IComponent
                 region: "fresh-picture"));
         }
 
-        region.Append("</div>");
-
-        // How the system learns, tonight's picks compared with a version's, and each version at a checkpoint.
-        // Picks only: a version's outcomes wait for its look.
-        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-        if (background is { } running && edge is { } judging)
+        // From 19.7 the newest monthly run in the retired loop's place: its date and state, what it tested and put to you
+        // for each family, each rule's verdict, links to the Loop page and paper trading, and the shape clock in one line.
+        // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+        if (monthly is { } month)
         {
-            var route = RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
             region.Append(Cards.Computed(
-                "The learning loop",
-                marks.LearningRegion(shape, judging, running, route + "?version=" + (running.FirstOrDefault(version => !version.Live)?.Slug ?? string.Empty)),
-                title: "How the system learns",
-                lede: "Two clocks run every night, and nothing changes the list without your decision: the first tunes how many stocks pass each check, and the second judges over years whether the picks make money, by running other versions of the rules beside the live one.",
+                "The monthly run",
+                marks.MonthlyRunRegion(month, LoopRoute + "?universe=" + Universes.Large.Word, PaperRoute + "?universe=" + Universes.Large.Word),
+                title: "What the monthly run tested",
+                lede: "Each month the tester reads every family's proposals and every registered rule over the ledger's test years; a rule changes only when you approve a proposal that passed.",
                 stamp: Cards.Night(night),
-                region: "learning-picture"));
-
-            if (compare is { } compared)
-            {
-                region.Append(Cards.Computed(
-                    "The learning loop",
-                    marks.CompareRegion(compared, route, NameRoute),
-                    title: "Compare tonight's picks",
-                    lede: "What a background version would have listed on this night, beside the live list. Picks only: how each version's trades turn out stays hidden until its checkpoint.",
-                    stamp: Cards.Night(night),
-                    region: "compare-picture"));
-            }
-
-            if (checkpoints is { } rows)
-            {
-                region.Append(Cards.Computed(
-                    "The learning loop",
-                    marks.CheckpointRegion(rows),
-                    title: "At a checkpoint",
-                    lede: "Each version's results, locked until its first checkpoint, about two years in, when a clearly worse version can be dropped; none can be promoted before the second.",
-                    stamp: Cards.Night(night),
-                    region: "checkpoint-picture"));
-            }
+                region: "monthly-run"));
         }
 
-        // Research and spend beside anything to worry about.
-        region.Append("<div class=\"run-pair\">");
-
-        if (research is { } written)
+        // Tonight's picks beside a version's, picks only.
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+        if (compare is { } compared)
         {
             region.Append(Cards.Computed(
+                "Versions",
+                marks.CompareRegion(compared, RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), NameRoute),
+                title: "Compare tonight's picks",
+                lede: "What a registered version would have listed on this night, beside the live list. Picks only.",
+                stamp: Cards.Night(night),
+                region: "compare-picture"));
+        }
+
+        // Research, from 19.7 the heading over what research spent, the prose it wrote and the reports over the week, with
+        // how each report did folded in the detail beneath.
+        if (research is { } written)
+        {
+            region.Append("<h2 class=\"run-heading\" data-heading=\"research\">Research</h2>");
+            region.Append(Cards.Computed(
                 "Research",
-                marks.ResearchRegion(written),
+                marks.NightResearch(night, spend, prose) + marks.ResearchRegion(written) + "<p class=\"run-reports-link\">How each report did, section by section, is folded in the detail beneath.</p>",
                 title: "Written reports and what they cost",
                 lede: "What the paid model spent this month against its cap, and the reports written over the last week.",
                 stamp: Cards.Night(night),
                 region: "research-picture"));
         }
-
-        if (worries is { } items)
-        {
-            // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
-            // see: The store is copied once the night and every process it started have finished and the newest three copies are kept after each is opened and read, and the copy writes a row as it starts and one as it ends
-            region.Append(Cards.Computed(
-                "Health",
-                marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),
-                title: "Anything to worry about?",
-                lede: "Each item turns red with its reason when it fails.",
-                stamp: Cards.Night(night),
-                region: "worry-picture"));
-        }
-
-        region.Append("</div>");
 
         // The detail: every table the page drew before, each in a section folded shut, so a reader checking
         // the arithmetic finds it whole and a reader glancing does not have to scroll past it.
@@ -3045,7 +3044,7 @@ public sealed partial class SinglePageApp : IComponent
             region: "overlap"));
         region.Append(Folded);
 
-        region.Append(Fold("candidates", "The background versions: statistics and checkpoints"));
+        region.Append(Fold("candidates", "The background versions and their statistics"));
         region.Append(Cards.Computed(
             "Shadow candidates",
             marks.ShadowCandidates(shadow),
@@ -3089,7 +3088,7 @@ public sealed partial class SinglePageApp : IComponent
                 marks.FamilyRun(setupFamilies) + (familyRecords is { Count: > 0 } ? marks.FamilyRecords(familyRecords) : string.Empty) + Cards.Key(
                     "How to read it.",
                     "Each row is one setup the page is drawn from. A live setup's rule is registered and its record counts from that day; a provisional one runs on settings taken from published evidence until its sweep proposes the values its freeze registers.",
-                    "A provisional setup's trades are listed and followed like any other and are in no share and no checkpoint until its freeze."),
+                    "A provisional setup's trades are listed and followed like any other and are in no share and no record until its freeze."),
                 title: "The setups the page is drawn from",
                 lede: "One row a setup, in the page's order: where its rule stands, what it lists tonight and how its trades stand.",
                 stamp: Cards.Night(night),
@@ -3188,7 +3187,9 @@ public sealed partial class SinglePageApp : IComponent
     // not the list holds it with what the swing filter said of it, a box to add a name of the index while
     // the list holds fewer than its limit, and a press to take each out.
     // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
-    public string WatchRegion(DateOnly? night, IReadOnlyList<WatchCell> watched, int limit)
+    // From 19.7 each name's nearest setup across every family, its distance picture and its sessions to the next report;
+    // the header's search adds a name here, so the page carries no box of its own.
+    public string WatchRegion(DateOnly? night, IReadOnlyList<WatchCell> watched, int limit, MarkRenderer? marks = null)
     {
         var region = new StringBuilder();
         var shown = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -3198,18 +3199,19 @@ public sealed partial class SinglePageApp : IComponent
 
         var body = new StringBuilder();
 
+        body.Append(Guide(WatchGuide));
         body.Append("<div class=\"watch-said\" role=\"status\"></div>");
         body.Append(watched.Count < limit
-            ? Invariant($"<form class=\"watch-control watch-add\" method=\"post\" action=\"{WatchPostRoute}\"><input name=\"ticker\" list=\"findable\" placeholder=\"Add a name from the S&amp;P 500\" aria-label=\"A ticker to watch\" autocomplete=\"off\" spellcheck=\"false\"><button type=\"submit\" class=\"btn\">Add</button></form>")
+            ? Invariant($"<p class=\"watch-add-line\" data-full=\"false\">Search a name in the bar above to add it here; {limit - watched.Count} {(limit - watched.Count == 1 ? "place" : "places")} left.</p>")
             : Invariant($"<p class=\"watch-full\" data-full=\"true\">The watch list holds {limit}, its limit; take one out to add another.</p>"));
 
         if (watched.Count == 0)
         {
-            body.Append("<p class=\"degraded\" data-watch=\"none\">No name is watched yet. Add one above, or press Watch on any name's page.</p>");
+            body.Append("<p class=\"degraded\" data-watch=\"none\">No name is watched yet. Search one in the bar above, or press Watch on any name's page.</p>");
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th>Nearest setup</th><th>Distance to its bands</th><th class=\"r\">Report in</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th>");
             body.Append("<th class=\"r\">Reward to risk</th><th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
 
             for (var at = 0; at < watched.Count; at++)
@@ -3217,8 +3219,16 @@ public sealed partial class SinglePageApp : IComponent
                 var one = watched[at];
                 var row = one.Row;
 
-                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\"><td class=\"num\">{at + 1}</td>"));
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\" data-nearest=\"{Escaped(one.Nearest?.Family ?? "none")}\" data-missed=\"{(one.Nearest is { } near ? near.Missed.ToString(CultureInfo.InvariantCulture) : "none")}\"><td class=\"num\">{at + 1}</td>"));
                 body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
+                body.Append(one.Nearest is { } nearest
+                    ? Invariant($"<td><span class=\"fam-tag\" data-family=\"{Escaped(nearest.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(nearest.Family)}\"></span>{Escaped(FamilyLabel(nearest.Family))}</span> ")
+                        + (nearest.Missed == 0
+                            ? "<span class=\"chip\" data-gate=\"passed\">passed tonight</span></td>"
+                            : Invariant($"<span class=\"chip\" data-gate=\"{Escaped(nearest.Gate ?? string.Empty)}\" title=\"{Escaped(nearest.Words ?? string.Empty)}\">{nearest.Missed} short: {Escaped(nearest.Gate ?? string.Empty)}</span></td>"))
+                    : "<td><span class=\"degraded\">no answer stored</span></td>");
+                body.Append(one.Cell is { } cell && marks is not null ? Invariant($"<td>{marks.DistanceRow(cell)}</td>") : "<td><span class=\"degraded\">none</span></td>");
+                body.Append(one.Cell?.SessionsUntilEarnings is { } sessions ? Invariant($"<td class=\"r num\" data-sessions=\"{sessions}\">{sessions} session(s)</td>") : "<td class=\"r\"><span class=\"degraded\">no date</span></td>");
                 body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num {MarkRenderer.Hue(change)}\">{(Math.Round(change, 2) == 0 ? 0 : change):+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
                 body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
@@ -3285,6 +3295,9 @@ public sealed partial class SinglePageApp : IComponent
             night is { } on ? Invariant($"Every near-setup on the {reading.Name}, as of the close of {on:yyyy-MM-dd}") : "No night is stored yet"));
         region.Append(selector);
 
+        // From 19.7 the page says the ledger holds no business-first setup and why, and names the checkpoint that writes them.
+        region.Append(Invariant($"<p class=\"notice ledger-business\" data-family=\"{EquityBrief.Core.Families.FundamentalsRule.Name}\">{Escaped(LedgerBusinessLine)}</p>"));
+
         if (years.Count == 0)
         {
             region.Append(Cards.Computed(
@@ -3305,34 +3318,20 @@ public sealed partial class SinglePageApp : IComponent
 
             region.Append(Cards.Computed(
                 "Setup ledger",
-                marks.LedgerYears(group.Key, rows)
-                    + Cards.Key(
-                        "Setups a year.",
-                        "Each row is a year of the family's setups on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones.",
-                        "A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid.")
-                    + marks.LedgerDeciles(newest)
-                    + Cards.Key(
-                        "The deciles.",
-                        newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The cut points between the tenths of {newest.Year}'s {newest.Settled} settled setups, result beside edge."),
-                        "A wide spread between the low and the high tenths is a family whose setups differ a great deal, which is what the loop's engines read."),
+                (group.Key == families[0] ? Guide(LedgerGuide) : string.Empty)
+                    + marks.LedgerYears(group.Key, rows)
+                    + Invariant($"<p class=\"ledger-deciles-said\">{(newest is null ? "No year of the family holds a settled setup yet." : Invariant($"The edge at each tenth of {newest.Year}'s {newest.Settled} settled setups, the median drawn larger, and the cut points beneath."))}</p>")
+                    + marks.LedgerDeciles(newest),
                 title: Escaped(Named(group.Key)) + " setups",
                 stamp: Cards.Night(night),
                 region: "ledger-" + group.Key));
         }
 
-        var choose = string.Join(" · ", families.Select(word => word == family
-            ? $"<b data-family-chosen=\"{Escaped(word)}\">{Escaped(Named(word))}</b>"
-            : $"<a href=\"{LedgerRoute}?universe={reading.Word}&amp;family={Uri.EscapeDataString(word)}\" data-family-link=\"{Escaped(word)}\">{Escaped(Named(word))}</a>"));
-
         region.Append(Cards.Computed(
             "Setup ledger",
-            $"<p class=\"ledger-families\">{choose}</p>"
+            MarkRenderer.LedgerTabs(families, family, reading.Word, LedgerRoute)
                 + marks.LedgerSettled(settled, reading.Word, LedgerRoute)
-                + marks.LedgerPath(path)
-                + Cards.Key(
-                    "A setup's path.",
-                    "The closes from about ten sessions before the setup to the session its path ended, with its buy, its stop and its target drawn across where the plan holds them, and the session it was bought on marked.",
-                    "The figures in the table above are this path's end against the same plan on every member that session."),
+                + marks.LedgerPath(path),
             title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
             stamp: Cards.Night(night),
             region: "ledger-path"));
@@ -3340,6 +3339,22 @@ public sealed partial class SinglePageApp : IComponent
 
         return region.ToString();
     }
+
+    // How the Researched page is read, opened from its "?".
+    public const string ResearchedGuide =
+        "Every name holding a section a research pass wrote and the claim checker accepted, with the day its newest section was written and why: tonight's list, asked by you, a regeneration you asked for, or a pass run by hand. A report stands until a filing, a passed earnings date or a jump in the name's news is dated after a section was written, which the stock's page judges the same way; a stale report names what made it so. The move is the stock's close tonight against its close on the day the report was written, and the sections count those accepted out of the full set. A key under each figure, which the overnight queue once wrote for every name, is not counted.";
+
+    // How the Watch list is read, opened from its "?".
+    public const string WatchGuide =
+        "Each name you follow, drawn every evening whether or not a list holds it. Its nearest setup is the family that passed it tonight, or the one it missed by the fewest gates, a tie going to the family first in the one order, with the first gate it missed and that gate's own words under the pointer. Beside it the distance picture places the close between the nearest bands, and the report column counts the sessions to its next report. Search a name in the bar above to add it here.";
+
+    // Why the ledger holds no business-first setup, and the checkpoint that writes them.
+    public const string LedgerBusinessLine =
+        "The ledger holds no business-first setup yet: its history build and its night step write the families built at 17.3, and the business-first family came at 17.8. Writing its setups is queued as 19.9.";
+
+    // How the Ledger page is read, opened from its "?".
+    public const string LedgerGuide =
+        "Each family's card counts its setups a year on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones, its edge a bar a year in green above nothing and red beneath. A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid. The strip draws the edge at each tenth of the newest year's settled setups; a wide strip is a family whose setups differ a great deal, which is what the loop's engines read. Beneath, a setup's path draws its closes from about ten sessions before it to where its path ended, with its buy, its stop and its target across.";
 
     // The families the Loop page draws, in the one order every page lists them in, the fundamentals-first family left out
     // while the ledger holds none of its setups for the tester to read.
@@ -3370,7 +3385,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Loop.LoopReadingRow>? spreads = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopModelRow>? models = null,
         IReadOnlyList<EquityBrief.Core.Loop.LoopRankRow>? ranks = null,
-        LoopDecided? decided = null)
+        LoopDecided? decided = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? chips = null)
     {
         static string Named(string word) => word switch
         {
@@ -3411,42 +3427,71 @@ public sealed partial class SinglePageApp : IComponent
             return region.ToString();
         }
 
-        foreach (var family in LoopFamilies)
+        // From 19.7 the page opens on a summary a family in the one order, its rule today as chips, the proposals tested,
+        // the strongest one's adjusted p as a meter against the bar with its years better and the one put to you with its
+        // presses, or why nothing is and when it next can be; beneath it the one line saying what a change must pass.
+        var summary = new List<LoopSummaryRow>();
+        var cards = new StringBuilder();
+
+        foreach (var family in EquityBrief.Core.Families.SetupFamilies.Order)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
+
+            // The business-first family stands in the summary saying what it waits on, and draws no card of its own.
+            if (!LoopFamilies.Contains(family))
+            {
+                summary.Add(new LoopSummaryRow(family, chips?.GetValueOrDefault(family) ?? [], 0, null, null, string.Empty, LoopWaiting(family, run, own, decided)));
+
+                continue;
+            }
+
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
+            var presses = string.Empty;
 
             body.Append(marks.LoopFindings(family, [.. (findings ?? []).Where(finding => finding.Family == family)]));
 
             foreach (var proposal in own)
             {
-                body.Append(marks.LoopProposal(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)]));
+                var decision = decided is null ? string.Empty : marks.LoopDecision(reading.Code, run, proposal, decided, put);
 
-                if (decided is not null)
+                if (put is not null && proposal.Proposal == put.Proposal)
                 {
-                    body.Append(marks.LoopDecision(reading.Code, run, proposal, decided, put));
+                    presses = decision;
+                    decision = "<p class=\"loop-pressed-above\">Its presses stand in the summary above.</p>";
                 }
+
+                body.Append(marks.LoopProposalRow(proposal, [.. tests.Where(test => test.Family == family && test.Proposal == proposal.Proposal)], decision));
             }
+
+            summary.Add(new LoopSummaryRow(
+                family,
+                chips?.GetValueOrDefault(family) ?? [],
+                own.Length,
+                own.Where(proposal => proposal.Adjusted is not null).MinBy(proposal => proposal.Adjusted) ?? own.FirstOrDefault(),
+                put,
+                presses,
+                put is not null ? null : LoopWaiting(family, run, own, decided)));
 
             body.Append(marks.LoopReadings(family, [.. (spreads ?? []).Where(spread => spread.Family == family)]));
-            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)]));
+            body.Append(marks.LoopScore(family, own, (models ?? []).FirstOrDefault(model => model.Family == family), [.. (ranks ?? []).Where(rank => rank.Family == family)], run.Month));
 
-            if (own.Length > 0)
-            {
-                body.Append(Cards.Key(
-                    "Each proposal.",
-                    "A procedure is run in each test year on the trades that ended before the year began and scored on that year against the rule today; the four parts must all hold for a proposal to pass, and the setting put forward is the procedure run on all finished data.",
-                    "The rule today was chosen on these same test years, so a proposal reads understated against it."));
-            }
-
-            region.Append(Cards.Computed(
+            cards.Append(Cards.Computed(
                 "Loop",
                 body.ToString(),
                 title: Escaped(Named(family)),
                 stamp: Cards.Night(night),
                 region: "loop-" + family));
         }
+
+        region.Append(Cards.Computed(
+            "Loop",
+            Guide(LoopGuide) + marks.LoopSummary(summary) + MarkRenderer.LoopChangeLine(),
+            title: Invariant($"What the run for {Escaped(run.Month)} found"),
+            lede: "A row a setup: the rule today, what was tested against it, the strongest proposal against the bar, and the one put to you.",
+            stamp: Cards.Night(night),
+            region: "loop-summary"));
+        region.Append(cards);
 
         // What the operator decided on this index and what the apply step did, and the live alarm's periods.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
@@ -3473,6 +3518,42 @@ public sealed partial class SinglePageApp : IComponent
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // How the Loop page is read, opened from its "?".
+    public const string LoopGuide =
+        "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
+
+    // Why nothing is put to the operator for a family and when it next can be: the business-first family waiting on the
+    // ledger's setups, a family the run tested nothing for or none of whose proposals passed waiting on the next monthly
+    // run, the first Saturday of the month after the run's, and a passing proposal an earlier decline holds back waiting
+    // on a later run reading a new complete block.
+    // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
+    public static string LoopWaiting(string family, EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> own, LoopDecided? decided)
+    {
+        var next = NextMonthlyRun(run.Month);
+
+        if (own.Count == 0 && family == EquityBrief.Core.Families.FundamentalsRule.Name)
+        {
+            return "Nothing is tested for the business-first family yet: it waits on 19.9, which writes its setups to the ledger the tester reads.";
+        }
+
+        if (own.Count == 0)
+        {
+            return Invariant($"Nothing was tested for this setup in the run for {run.Month}; the next monthly run is on {next:yyyy-MM-dd}.");
+        }
+
+        return decided is not null && own.Any(one => one.Passed && one.Change is not null && MarkRenderer.HeldBack(run, one, decided))
+            ? "Its passing proposal was declined; it is put to you again once a later run reads a new complete block of 63 sessions and it passes with that block."
+            : Invariant($"{(own.Count == 1 ? "Its one proposal did not pass" : $"None of its {own.Count} proposals passed")} with a change to put to you; the next monthly run is on {next:yyyy-MM-dd}.");
+    }
+
+    // The first Saturday of the month after a run's month, the day the monthly run is scheduled on.
+    public static DateOnly NextMonthlyRun(string month)
+    {
+        var first = DateOnly.ParseExact(month + "-01", "yyyy-MM-dd", CultureInfo.InvariantCulture).AddMonths(1);
+
+        return first.AddDays(((int)DayOfWeek.Saturday - (int)first.DayOfWeek + 7) % 7);
     }
 
     // A line above an index's Tonight for each family whose live rule the alarm flags on its newest period, naming the

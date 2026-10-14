@@ -160,7 +160,8 @@ public partial class ReadSurface
 
         Assert.Contains($"<section class=\"watch\" data-night=\"{night}\" data-watched=\"4\" data-limit=\"20\">", page, StringComparison.Ordinal);
         Assert.Contains($"4 of 20 names, night of {night}", page, StringComparison.Ordinal);
-        Assert.Contains("<form class=\"watch-control watch-add\" method=\"post\" action=\"/watch/\"><input name=\"ticker\" list=\"findable\"", page, StringComparison.Ordinal);
+        Assert.Contains("Search a name in the bar above to add it here; 16 places left.", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("watch-add\"", page, StringComparison.Ordinal);
         Assert.Equal([stopped, passed, excluded, unanswered], Regex.Matches(page, "<tr data-ticker=\"([^\"]+)\" data-listed=").Select(match => match.Groups[1].Value));
 
         string RowOf(string ticker)
@@ -190,7 +191,7 @@ public partial class ReadSurface
         }
 
         // What the filter said of each, read against the gate rows written above.
-        Assert.Contains("data-listed=\"true\"><td class=\"num\">2</td>", RowOf(passed), StringComparison.Ordinal);
+        Assert.Matches("data-listed=\"true\"[^>]*><td class=\"num\">2</td>", RowOf(passed));
         Assert.Contains("<td class=\"listed\" data-filter=\"listed, number 1\">listed, number 1</td>", RowOf(passed), StringComparison.Ordinal);
         Assert.Contains("<td class=\"stopped\" data-filter=\"stopped at trend and strength: not an uptrend\">", RowOf(stopped), StringComparison.Ordinal);
         Assert.Contains($"<td class=\"stopped\" data-filter=\"excluded: {exclusion}\">", RowOf(excluded), StringComparison.Ordinal);

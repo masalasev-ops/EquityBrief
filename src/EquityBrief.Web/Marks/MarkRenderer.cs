@@ -659,10 +659,9 @@ public sealed record ComparisonView(
     public bool BothSidesReady => SinceTheAsk.Count == BothSidesWindow;
 }
 
-// A version running beside the live list, as the Run page's learning region draws it: what it changes in
-// plain words, the stocks it has picked so far, the share of them the live list also picked, and the
-// evidence it has gathered against the floor its first look is read at. Picks only: nothing here is read
-// from how its trades turned out.
+// A version running beside the live list, as the Run page's comparison of tonight's picks offers it: what it changes
+// in plain words, the stocks it has picked so far, the share of them the live list also picked, and the evidence it has
+// gathered against the floor its first look is read at. Picks only: nothing here is read from how its trades turned out.
 // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed record VersionLine(string Candidate, string Slug, string Changes, int Picks, double? Shared, int Blocks, int Floor, bool Live);
 
@@ -686,24 +685,6 @@ public sealed record CompareView(
     int Picked,
     double? SharedShare,
     int EveningsAhead);
-
-// One version at a checkpoint: before its first look a locked row with its trades and blocks so far, and
-// from then the share of its trades that reached the target, the break-even they needed, what a version
-// with no skill scored from the same starts, how far luck alone could move it, and the verdict in words.
-public sealed record CheckpointRow(
-    string Candidate,
-    bool Live,
-    int Setups,
-    int Blocks,
-    int Floor,
-    double? Share,
-    double? BreakEven,
-    double? NullShare,
-    double? SmallestExcess,
-    string Verdict)
-{
-    public bool Unlocked => Share is not null && NullShare is not null;
-}
 
 // One item of the Run page's checklist: what it asks, whether it held, and where it failed or could not be
 // read, why.
@@ -877,7 +858,11 @@ public sealed record FilterGate(string Name, bool Passed, string Reason);
 
 // A name the operator watches as its page draws it: the night's row for it, its company, the day it was
 // added, what the swing filter said of it that night, and whether that was a place on the list.
-public sealed record WatchCell(ListingCell Row, string? Company, DateOnly Added, string Filter, bool Listed);
+public sealed record WatchCell(ListingCell Row, string? Company, DateOnly Added, string Filter, bool Listed, NearestSetup? Nearest = null, UniverseCell? Cell = null);
+
+// A watched name's nearest setup across every family on the night: the family, how many of its gates the name missed,
+// none where it passed, and the first it missed in short words and in the gate's own words.
+public sealed record NearestSetup(string Family, int Missed, string? Gate, string? Words);
 
 // Why a name the swing filter listed is on the list: the evening, each gate with why it passed, and the
 // reasons that fired on it, as context.
@@ -998,7 +983,7 @@ public sealed record BaseRateLine(string Window, double? Rate);
 // at and what a candidate's looks release of it, first to last.
 //
 // Numbers and no names. The region says how hard the correction is and that
-// every candidate's own record is withheld until it is promoted, and it carries
+// every candidate's own record is withheld until its look reads it, and it carries
 // nothing a reader could read a candidate's performance off, because the
 // register is only a pre-registration for as long as nobody can see how a
 // candidate is doing before deciding whether to keep it.
@@ -3811,7 +3796,7 @@ public sealed partial class MarkRenderer : IComponent
             header.Append(Invariant, $"data-outcome=\"{Escaped(stage.Outcome)}\">");
             header.Append(Invariant, $"<td>{Escaped(stage.Stage)}{(stage.ByHand ? " (run by hand)" : string.Empty)}</td>");
             header.Append(Invariant, $"<td>{stage.StartedAt.UtcDateTime:HH:mm:ss}</td>");
-            header.Append(Invariant, $"<td>{Number(stage.Seconds)}s</td><td>{stage.RowsWritten}</td>");
+            header.Append(Invariant, $"<td>{Figures.Duration(stage.Seconds)}</td><td>{stage.RowsWritten}</td>");
             header.Append(Invariant, $"<td>{stage.ModelCalls}</td><td>{stage.NetworkRequests}</td>");
             header.Append(Invariant, $"<td>{Escaped(stage.Spend)}</td><td>{Escaped(stage.Outcome)}</td>");
 
@@ -3833,7 +3818,7 @@ public sealed partial class MarkRenderer : IComponent
         var byHand = stages.Count - ofTheNight.Length;
 
         header.Append(Invariant, $"<p class=\"total\" data-seconds=\"{Number(ofTheNight.Sum(stage => stage.Seconds))}\" data-by-hand=\"{byHand}\">");
-        header.Append(Invariant, $"{ofTheNight.Length} stage(s) of the night, {Number(ofTheNight.Sum(stage => stage.Seconds))} second(s) of stage time");
+        header.Append(Invariant, $"{ofTheNight.Length} stage(s) of the night, {Figures.Duration(ofTheNight.Sum(stage => stage.Seconds))} of stage time");
         header.Append(byHand > 0 ? Formatted($", and {byHand} command(s) run by hand</p>") : "</p>");
 
         // Every paid call the run log carries a recorded cost for, over every night
@@ -4724,7 +4709,7 @@ public sealed partial class MarkRenderer : IComponent
         }
 
         region.Append(Invariant, $"<p class=\"looks\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\">");
-        region.Append(Invariant, $"Each candidate's first look is read at {Looks.At[0]} non-empty blocks, no earlier than {edge.FirstLookSessions} sessions after its first night, and it can retire the candidate or leave it and cannot promote it; a promotion can come no earlier than the look at {Looks.At[1]} blocks, {edge.PromotionSessions} sessions after its first night.</p>");
+        region.Append(Invariant, $"Each candidate's first look is read at {Looks.At[0]} non-empty blocks, no earlier than {edge.FirstLookSessions} sessions after its first night, and it can retire the candidate or leave it and promotes nothing: a look is monitoring, and a rule changes only through the monthly test and your approval on the Loop page.</p>");
         region.Append("<div class=\"tbl-wrap\"><table class=\"edge-table\"><tr><th>Candidate</th><th>Defined against</th><th>Sessions run</th><th class=\"num\">Blocks</th><th class=\"num\">Resolved setups</th><th>Against its null</th></tr>");
 
         foreach (var candidate in edge.Candidates)
@@ -4918,7 +4903,7 @@ public sealed partial class MarkRenderer : IComponent
             region.Append("<p data-trials=\"0\">no distinct trial is counted, since no rule is running and no look has read one, so no level is divided</p>");
         }
 
-        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and its picks are drawn in the comparison of tonight's picks alone</p>");
+        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until its look reads it, and its picks are drawn in the comparison of tonight's picks alone</p>");
 
         region.Append("</section>");
 
@@ -5277,15 +5262,15 @@ public sealed partial class MarkRenderer : IComponent
         return header.ToString();
     }
 
-    // The night's operations on the Run page, from 19.2: how long it took, the harness verdict, what research spent and
-    // the reports carrying fresh prose against reused. The quantities phase 6 supplies are absent and say so rather
-    // than being drawn as zero, which would read as a night that spent nothing because it did nothing.
-    public string NightOps(DateOnly night, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null)
+    // The night's operations on the Run page, from 19.2, and from 19.7 under its Health heading: how long the night took
+    // and the harness verdict. What research spent and the prose it wrote stand under Research. A quantity not read is
+    // absent and says so rather than being drawn as zero, which would read as a night that did nothing.
+    public string NightOps(DateOnly night, string? duration, HarnessCounts? harness)
     {
         var header = new StringBuilder();
 
         header.Append(Invariant, $"<div class=\"night-ops\" data-night=\"{night:yyyy-MM-dd}\">");
-        header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
+        header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration is { } took && TimeSpan.TryParseExact(took, @"hh\:mm\:ss", Invariant, out var span) ? Figures.Duration(span.TotalSeconds) : duration ?? "a time the run log does not record")}</p>");
 
         // The harness verdict: the same four counts the run page's own region
         // draws from the same report, in one line beside how the night went,
@@ -5305,6 +5290,19 @@ public sealed partial class MarkRenderer : IComponent
         {
             header.Append("<p class=\"harness-verdict degraded\" data-report=\"none\">harness: no phase report has been written on this machine</p>");
         }
+
+        header.Append("</div>");
+
+        return header.ToString();
+    }
+
+    // From 19.7 what research spent and the prose it wrote on the night, under the Run page's Research heading, which 19.2
+    // drew beside the night's time and the harness.
+    public string NightResearch(DateOnly night, NightSpend? spend, NightProse? prose)
+    {
+        var header = new StringBuilder();
+
+        header.Append(Invariant, $"<div class=\"night-research\" data-night=\"{night:yyyy-MM-dd}\">");
 
         // What research spent, from 6.7, which is where anything first spends: the
         // night's UTC day and its month to the end of that day, each beside its cap,
@@ -7190,10 +7188,7 @@ public sealed partial class MarkRenderer : IComponent
 
         return said;
 
-        static string Span(double seconds) =>
-            seconds >= 60
-                ? Formatted($"{(int)(seconds / 60)} min {(int)(seconds % 60)} s")
-                : Formatted($"{(int)seconds} s");
+        static string Span(double seconds) => Figures.Duration(seconds);
     }
 
     // The kind of status a night's state is drawn as: blue for a night that finished or is running,
@@ -7313,7 +7308,7 @@ public sealed partial class MarkRenderer : IComponent
         if (night.Members is { Count: > 1 } members)
         {
             var named = members.Select(index => Formatted($"{index.Members:N0} of the {index.Named}")).ToArray();
-            var time = night.Seconds is { } seconds ? Formatted($" in {seconds:0} seconds to the close") : string.Empty;
+            var time = night.Seconds is { } seconds ? " in " + Figures.Duration(seconds) + " to the close" : string.Empty;
 
             region.Append(Formatted($"<p class=\"ns-members\" data-members=\"{Escaped(string.Join(", ", members.Select(index => Formatted($"{index.Index} {index.Members}"))))}\">Members read{time}: {Escaped(string.Join(", ", named[..^1]) + " and " + named[^1])}.</p>"));
         }
@@ -7370,7 +7365,7 @@ public sealed partial class MarkRenderer : IComponent
                 ? "stopped here"
                 : group.Reached == 0
                     ? "not reached"
-                    : Formatted($"{Number(group.Seconds)} s");
+                    : Figures.Duration(group.Seconds);
 
             bar.Append(Invariant, $"<li data-group=\"{Escaped(group.Name)}\" data-reached=\"{group.Reached}\"><b>{Escaped(group.Name)}</b> {said}</li>");
         }
@@ -7544,46 +7539,11 @@ public sealed partial class MarkRenderer : IComponent
         return picture.ToString();
     }
 
-    // How the list's trades are going, section 15.10's fourth region: the live list's trades by where each
-    // stands, a ring of the trades decided at the target or the stop against the minimum a share waits on,
-    // drawn as a dashed outline until it is met, and from then the share, the break-even and the average
-    // result together as Past picks draws them, with a link to Past picks.
+    // From 19.7 the live list's trades on the Run page in one line linking their trade log, where 19.4 put the ring and
+    // tiles Past picks draws: how many it listed, how many are open and how many decided against the count a share waits on.
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
-    public string TradesRegion(PicksSummary summary, string picks)
-    {
-        const double Radius = 56;
-        var circumference = 2 * Math.PI * Radius;
-        var decided = Math.Min(summary.Decided, summary.MinimumDecided);
-        var region = new StringBuilder();
-
-        region.Append(Invariant, $"<div class=\"trades-picture\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-met=\"{(summary.TargetShare is null ? "false" : "true")}\">");
-        region.Append("<div class=\"tp-body\">");
-        region.Append(Invariant, $"<svg class=\"trades-ring\" viewBox=\"0 0 150 150\" width=\"150\" height=\"150\" role=\"img\" aria-label=\"{summary.Decided} of the {summary.MinimumDecided} trades decided that a share waits on\">");
-        region.Append(Invariant, $"<circle class=\"{(summary.TargetShare is null ? "tr-track tr-unmet" : "tr-track")}\" cx=\"75\" cy=\"75\" r=\"{Number(Radius)}\"></circle>");
-        region.Append(Invariant, $"<circle class=\"tr-done\" cx=\"75\" cy=\"75\" r=\"{Number(Radius)}\" stroke-dasharray=\"{Number(circumference * decided / Math.Max(1, summary.MinimumDecided))} {Number(circumference)}\" transform=\"rotate(-90 75 75)\"></circle>");
-        region.Append(Invariant, $"<text class=\"tr-figure\" x=\"75\" y=\"74\" text-anchor=\"middle\">{summary.Decided}</text>");
-        region.Append(Invariant, $"<text class=\"tr-caption\" x=\"75\" y=\"94\" text-anchor=\"middle\">of {summary.MinimumDecided} decided</text></svg>");
-        region.Append("<div class=\"tp-tiles\">");
-
-        foreach (var (status, count, words) in new[]
-        {
-            (PickStatus.Open, summary.Open, "still open"),
-            (PickStatus.Target, summary.Target, "reached target"),
-            (PickStatus.Stopped, summary.Stopped, "stopped out"),
-            (PickStatus.Time, summary.Time, "ran out of time"),
-        })
-        {
-            region.Append(Invariant, $"<div class=\"tile\" data-status=\"{status}\"><b>{count}</b><span>{words}</span></div>");
-        }
-
-        region.Append("</div></div>");
-        region.Append(summary.TargetShare is { } share
-            ? Formatted($"<p class=\"tp-rate\" data-share=\"{share.ToString("R", Invariant)}\"><b>{share:0.0}%</b> reached the target against <b>{summary.BreakEven ?? 0:0.0}%</b> needed to break even, and the average trade came to <b>{summary.AverageResult ?? 0:0.00}</b> of its risk.</p>")
-            : Formatted($"<p class=\"tp-rate\" data-share=\"none\">The share that reached the target is drawn once {summary.MinimumDecided} trades are decided over {summary.MinimumNights} listing nights: {summary.Decided} and {summary.DecidedNights} so far.</p>"));
-        region.Append(Invariant, $"<p class=\"tp-open\"><a href=\"{Escaped(picks)}\">Every trade on Past picks &#8594;</a></p></div>");
-
-        return region.ToString();
-    }
+    public string TradesLine(PicksSummary summary, string picks) =>
+        Formatted($"<p class=\"run-trades\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\">The live list's trades: {summary.Listed} listed, {summary.Open} still open, {summary.Decided} decided of the {summary.MinimumDecided} a share waits on. <a href=\"{Escaped(picks)}\">Open their trade log &#8594;</a></p>");
 
     // Is the list finding new stocks, section 15.10's fifth region: a bar for each evening up to the night, the
     // part new that evening and the part also on the list the evening before, and the night's split in words.
@@ -7700,7 +7660,7 @@ public sealed partial class MarkRenderer : IComponent
 
         return Formatted($"<p class=\"rp-quotes\" data-session=\"{day}\" data-asked=\"{quotes.Asked.Count}\" data-cap=\"{quotes.Cap}\" data-median-delay=\"{(median is { } middle ? middle.ToString(Invariant) : "none")}\">")
             + Formatted($"{quotes.Asked.Count} delayed quote(s) asked in the session of {day}, against a cap of {quotes.Cap}")
-            + (median is { } typical ? Formatted($", each asked a median {typical:0} minutes after its own time and at most {delays[^1]:0}") : string.Empty)
+            + (median is { } typical ? ", each asked a median " + Figures.Duration(typical * 60) + " after its own time and at most " + Figures.Duration(delays[^1] * 60) : string.Empty)
             + (refused.Length == 0 ? "." : "; " + string.Join(", ", refused.Select(outcome => Formatted($"{outcome.Runs} run(s) {Escaped(outcome.Outcome)}"))) + ".")
             + "</p>";
     }
@@ -7938,95 +7898,6 @@ public sealed partial class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // How the system learns, section 15.10's sixth region: the shape clock as progress toward the ordinary
-    // nights it waits on with each check's median count against its band, dashed until measured; the edge
-    // clock as a line from today to its two checkpoints with the blocks gathered; and every version running
-    // beside the live list, what it changes, its picks, the share the live list also picked and its evidence,
-    // with the checkpoint that unlocks its results and a link comparing tonight's picks.
-    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-    public string LearningRegion(ShapeState? shape, EdgeView edge, IReadOnlyList<VersionLine> versions, string compare)
-    {
-        var region = new StringBuilder();
-
-        region.Append("<div class=\"learning-picture\"><div class=\"lp-clocks\">");
-
-        // The shape clock.
-        region.Append("<div class=\"lp-shape\"><p class=\"lp-head\">Tuning how many stocks pass</p>");
-
-        if (shape is { } clock)
-        {
-            var done = clock.Wanted == 0 ? 0 : Math.Min(1.0, 1.0 * clock.Ordinary / clock.Wanted);
-
-            region.Append(Invariant, $"<svg class=\"progress-bar\" viewBox=\"0 0 380 16\" role=\"img\" data-ordinary=\"{clock.Ordinary}\" data-wanted=\"{clock.Wanted}\" aria-label=\"{clock.Ordinary} of {clock.Wanted} ordinary nights\">");
-            region.Append("<rect class=\"pg-track\" x=\"0\" y=\"2\" width=\"380\" height=\"12\" rx=\"6\"></rect>");
-            region.Append(Invariant, $"<rect class=\"pg-done\" x=\"0\" y=\"2\" width=\"{Number(Math.Max(done * 380, clock.Ordinary > 0 ? 6 : 0))}\" height=\"12\" rx=\"6\"></rect></svg>");
-            region.Append(Invariant, $"<p class=\"lp-said\">{clock.Ordinary} of {clock.Wanted} ordinary nights under {(clock.VersionOpen ? "filter version " + Escaped(clock.Version) : "no open filter version")}. Each check's typical pass count against the range it should fall in:</p>");
-
-            foreach (var band in clock.Gates.Append(clock.List))
-            {
-                var top = Math.Max(band.High, band.Median ?? 0) * 1.15;
-                double X(double at) => 300 * at / Math.Max(top, 1);
-
-                region.Append(Invariant, $"<div class=\"band-row\" data-measure=\"{Escaped(band.Measure)}\" data-median=\"{Whole(band.Median)}\" data-low=\"{band.Low}\" data-high=\"{band.High}\"><span>{Escaped(char.ToUpperInvariant(band.Measure[0]) + band.Measure[1..])}</span>");
-                region.Append("<svg class=\"band-dot\" viewBox=\"0 0 300 22\" role=\"img\" aria-label=\"" + Escaped(band.Measure) + "\">");
-                region.Append("<line class=\"bd-axis\" x1=\"0\" y1=\"11\" x2=\"300\" y2=\"11\"></line>");
-                region.Append(Invariant, $"<rect class=\"{(clock.Crossed && band.Median is not null ? "bd-band" : "bd-band bd-unmeasured")}\" x=\"{Number(X(band.Low))}\" y=\"4\" width=\"{Number(X(band.High) - X(band.Low))}\" height=\"14\" rx=\"7\"></rect>");
-                region.Append(band.Median is { } median && clock.Crossed
-                    ? Formatted($"<circle class=\"bd-dot\" cx=\"{Number(X(median))}\" cy=\"11\" r=\"6\"></circle>")
-                    : string.Empty);
-                region.Append("</svg></div>");
-            }
-
-            region.Append("<p class=\"lp-note\">The range is dashed and holds no dot until the sixty ordinary nights are stored; then the page proposes settings for you to accept or reject.</p>");
-        }
-        else
-        {
-            region.Append("<p class=\"degraded\" data-shape=\"none\">the shape clock is not read on this page</p>");
-        }
-
-        region.Append("</div>");
-
-        // The edge clock.
-        var live = edge.Candidates.FirstOrDefault(candidate => candidate.Live) ?? edge.Candidates.FirstOrDefault();
-        var run = live?.SessionsRun ?? 0;
-        var end = Math.Max(edge.PromotionSessions, 1);
-        double At(double sessions) => 10 + (500 * Math.Min(sessions, end) / end);
-
-        region.Append("<div class=\"lp-edge\"><p class=\"lp-head\">Judging whether the picks make money</p>");
-        region.Append(Invariant, $"<svg class=\"edge-line\" viewBox=\"0 0 520 96\" role=\"img\" data-sessions=\"{run}\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\" aria-label=\"{run} sessions run of the {edge.FirstLookSessions} the first checkpoint waits on\">");
-        region.Append("<line class=\"el-track\" x1=\"10\" y1=\"46\" x2=\"510\" y2=\"46\"></line>");
-        region.Append(Invariant, $"<line class=\"el-done\" x1=\"10\" y1=\"46\" x2=\"{Number(At(run))}\" y2=\"46\"></line>");
-        region.Append(Invariant, $"<circle class=\"el-today\" cx=\"{Number(At(run))}\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"{Number(Math.Max(At(run), 24))}\" y=\"22\" text-anchor=\"middle\">today</text>");
-        region.Append(Invariant, $"<circle class=\"el-check\" cx=\"{Number(At(edge.FirstLookSessions))}\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"{Number(At(edge.FirstLookSessions))}\" y=\"76\" text-anchor=\"middle\">1</text>");
-        region.Append(Invariant, $"<circle class=\"el-check\" cx=\"510\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"510\" y=\"76\" text-anchor=\"middle\">2</text>");
-        region.Append("</svg>");
-        region.Append(Invariant, $"<p class=\"lp-said\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\">Checkpoint 1, {edge.FirstLookSessions} sessions in, about two years: it can drop a version and never promote one. Checkpoint 2, {edge.PromotionSessions} sessions in, about three years: it can promote one.</p>");
-        region.Append(Invariant, $"<p class=\"lp-said\">Block {live?.Record.Blocks ?? 0} of {live?.Record.Floor ?? 8} gathered by the live list. Trades that overlap in time share one market, so evidence is counted in blocks of {EquityBrief.Core.Returns.Blocks.Sessions} sessions and not in trades.</p>");
-        region.Append("</div></div>");
-
-        // The versions.
-        region.Append("<div class=\"lp-versions\"><p class=\"lp-head\">Versions running in the background</p>");
-        region.Append("<p class=\"lp-note\">Picks only: how any version's trades turn out stays hidden until a checkpoint, so none wins on a lucky month.</p>");
-        region.Append("<div class=\"tbl-wrap\"><table class=\"versions-table\"><tr><th>Version</th><th>What it changes</th><th class=\"num\">Picks so far</th><th>Also on the live list</th><th>Evidence</th><th>Results</th></tr>");
-
-        foreach (var version in versions)
-        {
-            region.Append(Invariant, $"<tr data-version=\"{Escaped(version.Slug)}\" data-picks=\"{version.Picks}\" data-shared=\"{Whole(version.Shared)}\" data-blocks=\"{version.Blocks}\" data-live=\"{(version.Live ? "true" : "false")}\">");
-            region.Append(Invariant, $"<td><b>{Escaped(version.Candidate)}</b></td><td>{Escaped(version.Changes)}</td><td class=\"num\">{version.Picks}</td>");
-            region.Append(version.Live
-                ? "<td>is the live list</td>"
-                : version.Shared is { } shared
-                    ? Formatted($"<td><svg class=\"share-bar\" viewBox=\"0 0 90 12\" width=\"90\" height=\"12\" aria-hidden=\"true\"><rect class=\"sh-track\" x=\"0\" y=\"1\" width=\"90\" height=\"10\" rx=\"5\"></rect><rect class=\"sh-done\" x=\"0\" y=\"1\" width=\"{Number(90 * shared)}\" height=\"10\" rx=\"5\"></rect></svg> {shared * 100:0}% of its picks</td>")
-                    : "<td><span class=\"degraded\">no pick yet</span></td>");
-            region.Append(Invariant, $"<td>block {version.Blocks} of {version.Floor}</td><td><span class=\"tag-wait\">at checkpoint 1</span></td></tr>");
-        }
-
-        region.Append("</table></div>");
-        region.Append(Invariant, $"<p class=\"lp-open\"><a href=\"{Escaped(compare)}\">Compare tonight's picks &#8594;</a></p></div></div>");
-
-        return region.ToString();
-    }
-
     // Compare tonight's picks, section 15.10's seventh region: a choice of the versions running beside the
     // live list, kept in the link, and for the one chosen the names only the live list picked, the names both
     // picked and the names only it picked, each only-name with the setting that made the difference, drawn
@@ -8072,7 +7943,7 @@ public sealed partial class MarkRenderer : IComponent
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"picked\"><b>{view.Picked}</b><span>stocks this version picked over the last {view.Evenings} evening(s)</span></div>");
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"shared\"><b>{(view.SharedShare is { } share ? Formatted($"{share * 100:0}%") : "none")}</b><span>of them also on the live list</span></div>");
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"ahead\"><b>{view.EveningsAhead}</b><span>evenings it picked a stock the live list did not</span></div>");
-        region.Append("</div><p class=\"lp-note\">These are picks, not results. A version's picks never appear on tonight's list, a stock's page or Past picks, and how its trades turn out stays hidden until its checkpoint.</p></div>");
+        region.Append("</div><p class=\"lp-note\">These are picks, not results. A version's picks never appear on tonight's list, a stock's page or Past picks; how a registered rule's trades did is its verdict in the monthly test.</p></div>");
 
         return region.ToString();
 
@@ -8092,54 +7963,6 @@ public sealed partial class MarkRenderer : IComponent
 
             return group.ToString();
         }
-    }
-
-    // At a checkpoint, section 15.10's eighth region: one row per version on a scale from nought to a
-    // hundred. Before its first look a row is a dashed, locked outline with its trades and blocks so far; from
-    // its first look the share of its trades that reached the target, the break-even they needed, what no
-    // skill scored from the same starts and how far luck alone could move it, with the verdict in words.
-    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
-    public string CheckpointRegion(IReadOnlyList<CheckpointRow> rows)
-    {
-        const double Wide = 560;
-        double X(double percent) => Wide * Math.Clamp(percent, 0, 100) / 100;
-
-        var region = new StringBuilder();
-
-        region.Append(Invariant, $"<div class=\"checkpoint-picture\" data-rows=\"{rows.Count}\" data-unlocked=\"{rows.Count(row => row.Unlocked)}\">");
-        region.Append("<p class=\"ck-key\"><span class=\"ck-k ck-k-share\"></span>the share of its trades that reached the target <span class=\"ck-k ck-k-even\"></span>the share needed to break even <span class=\"ck-k ck-k-null\"></span>what no skill scored from the same starts <span class=\"ck-k ck-k-luck\"></span>how far luck alone could move it</p>");
-
-        foreach (var row in rows)
-        {
-            region.Append(Invariant, $"<div class=\"ck-row\" data-candidate=\"{Escaped(row.Candidate)}\" data-unlocked=\"{(row.Unlocked ? "true" : "false")}\" data-setups=\"{row.Setups}\" data-blocks=\"{row.Blocks}\">");
-            region.Append(Invariant, $"<span class=\"ck-name\">{Escaped(row.Candidate)}</span>");
-
-            if (row.Unlocked)
-            {
-                var share = row.Share!.Value;
-                var zero = row.NullShare!.Value;
-                var luck = row.SmallestExcess ?? 0;
-
-                region.Append(Invariant, $"<svg class=\"ck-scale\" viewBox=\"0 0 {Wide} 34\" role=\"img\" aria-label=\"{share:0.0}% reached the target\">");
-                region.Append(Invariant, $"<line class=\"ck-axis\" x1=\"0\" y1=\"17\" x2=\"{Wide}\" y2=\"17\"></line>");
-                region.Append(Invariant, $"<rect class=\"ck-luck\" x=\"{Number(X(zero))}\" y=\"11\" width=\"{Number(X(zero + luck) - X(zero))}\" height=\"12\" rx=\"6\"></rect>");
-                region.Append(Invariant, $"<circle class=\"ck-null\" cx=\"{Number(X(zero))}\" cy=\"17\" r=\"6\"></circle>");
-                region.Append(row.BreakEven is { } even ? Formatted($"<line class=\"ck-even\" x1=\"{Number(X(even))}\" y1=\"3\" x2=\"{Number(X(even))}\" y2=\"31\"></line>") : string.Empty);
-                region.Append(Invariant, $"<circle class=\"ck-share\" cx=\"{Number(X(share))}\" cy=\"17\" r=\"8\"></circle></svg>");
-                region.Append(Invariant, $"<span class=\"ck-words\">{share:0.0}% reached the target against {(row.BreakEven is { } needed ? Formatted($"{needed:0.0}%") : "no stored")} needed</span><span class=\"ck-verdict\">{Escaped(row.Verdict)}</span>");
-            }
-            else
-            {
-                region.Append(Invariant, $"<span class=\"ck-locked\">unlocks at checkpoint 1, after block {row.Floor} of {row.Floor}</span>");
-                region.Append(Invariant, $"<span class=\"ck-words\">{row.Setups} trade(s) so far, block {row.Blocks} of {row.Floor}</span><span class=\"tag-wait\">at checkpoint 1</span>");
-            }
-
-            region.Append("</div>");
-        }
-
-        region.Append("</div>");
-
-        return region.ToString();
     }
 
     static string Escaped(string text) =>

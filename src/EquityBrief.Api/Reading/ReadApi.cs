@@ -741,6 +741,10 @@ public sealed record FindableRow(string Ticker, string? Name, DateOnly? Research
 // sections it holds.
 public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, DateOnly Written, int Sections);
 
+// A request a pass wrote: its stock, the screen or the night that asked, whether it asked for every section again, and
+// when it settled.
+public sealed record WrittenRequestRow(string Ticker, string AskedFrom, bool Refresh, DateTimeOffset SettledAt);
+
 // The read surface. Serves what the nightly run stored, and nothing else.
 //
 // It computes nothing and fetches nothing, which section 7's row states and
@@ -5031,6 +5035,29 @@ public sealed partial class ReadApi : IComponent
                 reader.GetString(0),
                 reader.IsDBNull(1) ? null : reader.GetString(1),
                 reader.IsDBNull(2) ? null : Day(reader.GetString(2))));
+        }
+
+        return rows;
+    }
+
+    // From 19.7 every request a pass wrote, which the researched list reads why a report was written from: the stock, the
+    // screen or the night that asked, whether it asked for every section again, and when it settled.
+    const string WrittenRequests = "SELECT ticker, asked_from, refresh, settled_at FROM research_request WHERE state = 'written' AND settled_at IS NOT NULL ORDER BY settled_at;";
+
+    public async Task<IReadOnlyList<WrittenRequestRow>> WrittenRequestsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = WrittenRequests;
+
+        var rows = new List<WrittenRequestRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new WrittenRequestRow(reader.GetString(0), reader.GetString(1), reader.GetInt64(2) == 1, DateTimeOffset.Parse(reader.GetString(3), CultureInfo.InvariantCulture)));
         }
 
         return rows;

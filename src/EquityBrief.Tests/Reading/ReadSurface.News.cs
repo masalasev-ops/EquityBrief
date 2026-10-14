@@ -274,7 +274,7 @@ public partial class ReadSurface
             .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Of: match.Groups[3].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
 
         Assert.Equal(("1", "20"), (triggers["news labeller"].Count, triggers["news labeller"].Of));
-        Assert.Contains("4.5 minute(s) a run at the median", triggers["news labeller"].Text, StringComparison.Ordinal);
+        Assert.Contains("4 min 30 s a run at the median", triggers["news labeller"].Text, StringComparison.Ordinal);
         Assert.Contains("1 of 6 answer(s) refused for a digit", triggers["news labeller"].Text, StringComparison.Ordinal);
 
         // A night the labeller has no run for says so.

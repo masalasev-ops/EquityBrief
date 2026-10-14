@@ -185,8 +185,8 @@ public partial class ReadSurface
     [
         CheckReach.Key("15.10 Run", "How last night went, how long the night took"),
         CheckReach.Key("15.10 Run", "How last night went, the harness verdict"),
-        CheckReach.Key("15.10 Run", "How last night went, what research spent on the night's day and in its month against their caps"),
-        CheckReach.Key("15.10 Run", "How last night went, the reports carrying fresh prose against reused"),
+        CheckReach.Key("15.10 Run", "Research and spend, from 19.7 what research spent on the night's day and in its month against their caps"),
+        CheckReach.Key("15.10 Run", "Research and spend, the reports carrying fresh prose against reused"),
         CheckReach.Key("15.10 Run", "Reason totals"),
     ];
 

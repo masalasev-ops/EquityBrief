@@ -297,7 +297,8 @@ public static partial class TonightScreen
         IReadOnlyList<CloseRow> closesToTheNight,
         IReadOnlyList<UniverseRow> universe,
         IReadOnlyList<GateResultRow>? gates,
-        IReadOnlyList<ResearchedRow>? researched = null)
+        IReadOnlyList<ResearchedRow>? researched = null,
+        IReadOnlyList<FamilyResultRow>? results = null)
     {
         var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
         var gateByTicker = (gates ?? []).ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
@@ -335,9 +336,41 @@ public static partial class TonightScreen
                     _ => $"excluded: {string.Join(", ", gate.Exclusions)}",
                 };
 
-                return new WatchCell(row, nameByTicker.GetValueOrDefault(one.Ticker), one.AddedOn, said, gate is { Passed: true });
+                return new WatchCell(row, nameByTicker.GetValueOrDefault(one.Ticker), one.AddedOn, said, gate is { Passed: true }, Nearest(one.Ticker, gate, results ?? []), cellByTicker.GetValueOrDefault(one.Ticker));
             }),
         ];
+    }
+
+    // From 19.7 a name's nearest setup across every family on the night: a family that passed it first, then the one
+    // missing the fewest gates, a tie in the one family order; the pullback's off the swing filter's row and every other
+    // family's off its stored answer, each with the first gate it missed; none where no family answered for the name.
+    public static NearestSetup? Nearest(string ticker, GateResultRow? gate, IReadOnlyList<FamilyResultRow> results)
+    {
+        var answers = new List<NearestSetup>();
+
+        if (gate is not null)
+        {
+            var filter = FilterRowOf(gate);
+            var failed = filter.Gates.Where(one => !one.Passed).ToArray();
+
+            answers.Add(gate.Passed
+                ? new NearestSetup(EquityBrief.Core.Families.SetupFamilies.Pullback, 0, null, null)
+                : new NearestSetup(EquityBrief.Core.Families.SetupFamilies.Pullback, Math.Max(failed.Length, gate.Exclusions.Count > 0 ? 1 : 0), failed.FirstOrDefault()?.Name ?? "an exclusion", failed.FirstOrDefault()?.Reason ?? string.Join(", ", gate.Exclusions)));
+        }
+
+        foreach (var result in results.Where(one => one.Ticker == ticker))
+        {
+            var missed = EquityBrief.Core.Families.FamilyRule.GatesOf(result.Gates).FirstOrDefault(one => !one.Passed);
+
+            answers.Add(result.Passed
+                ? new NearestSetup(result.Family, 0, null, null)
+                : new NearestSetup(result.Family, Math.Max(result.Missed, result.Exclusions.Count > 0 ? 1 : 0), missed?.Name ?? "an exclusion", missed?.Reason ?? string.Join(", ", result.Exclusions)));
+        }
+
+        return answers
+            .OrderBy(one => one.Missed)
+            .ThenBy(one => EquityBrief.Core.Families.SetupFamilies.OrderOf(one.Family))
+            .FirstOrDefault();
     }
 
     // A gate row as the list draws it: its rank, the setup's family, the session its trigger arrived on,

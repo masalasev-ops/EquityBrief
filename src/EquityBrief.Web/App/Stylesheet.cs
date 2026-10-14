@@ -428,6 +428,38 @@ span[data-last-asked-at]::before{content:none}
 .paper-years summary{font-size:12px;color:var(--ink-2);cursor:pointer}
 .paper-years table{font-size:12px;margin-top:4px}
 .paper-adopted,.paper-entry{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+/* from 19.7 the remaining screens: the Run page's two headings, its trades line and the monthly run; the Loop page's
+   summary, its p meter and its proposal rows with their paired year bars; the Ledger's edge bars, decile strip and tabs;
+   the Researched page's two orders */
+.run-heading{font:600 13px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:18px 0 6px}
+.run-trades{font-size:14px;color:var(--ink-2);margin:10px 0}
+.monthly-run .mr-state,.monthly-run .mr-shape,.monthly-run .mr-links{font-size:14px;margin:6px 0}
+.monthly-run .mr-links a{margin-right:14px}
+.monthly-table td{vertical-align:top}
+.family-records .family-head th{text-align:left;font-weight:600;padding-top:10px}
+.p-meter{display:inline-block;vertical-align:middle}
+.p-meter .pm-track{fill:var(--s1)}
+.p-meter .pm-bar{stroke:var(--ink);stroke-width:1.5}
+.loop-summary td{vertical-align:top}
+.loop-summary .loop-better{display:block;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.loop-must{font-size:13px;color:var(--ink-2);margin:10px 0 0}
+.loop-row{border-top:1px solid var(--hair);padding:6px 0}
+.loop-row summary{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;cursor:pointer;font-size:14px}
+.loop-row .lr-name{font-weight:600}
+.loop-row .lr-change{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;color:var(--ink-2)}
+.loop-row .lr-years,.loop-row .lr-trimmed,.loop-row .lr-count{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.loop-yearbars,.ledger-edge-bars,.ledger-decile-strip{display:block;margin:6px 0 2px;max-width:100%}
+.loop-yearbars .yb-axis,.ledger-edge-bars .yb-axis{stroke:var(--hair-2);stroke-width:1}
+.loop-yearbars .yb-this{fill:var(--ink-2)}
+.loop-yearbars .yb-that{fill:var(--soft);opacity:.55}
+.loop-yearbars .yb-year,.ledger-edge-bars .yb-year{font:10px var(--sans);fill:var(--soft)}
+.ledger-decile-strip .ds-line{stroke:var(--hair-2);stroke-width:2}
+.ledger-decile-strip .ds-zero{stroke:var(--ink-2);stroke-width:1;stroke-dasharray:2 2}
+.ledger-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.ledger-tabs a[aria-current='true']{outline:2px solid var(--ink-2);outline-offset:1px}
+.ledger-unwritten,.ledger-deciles-said,.watch-add-line{font-size:13px;color:var(--ink-2);margin:6px 0}
+.researched-sort{font-size:13px;margin:4px 0 8px}
+.researched-sort a[aria-current='true']{font-weight:600}
 .paper-heads ul{margin:6px 0 0;padding-left:18px;font-size:13px}
 .paper-heads li{margin:3px 0}
 .account-pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0;max-width:min(100%,560px)}

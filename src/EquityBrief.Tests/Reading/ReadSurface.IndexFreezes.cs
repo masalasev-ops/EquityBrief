@@ -145,11 +145,12 @@ public partial class ReadSurface
         // One row a standing rule, the live rule first, each family's level 0.05 over its own two trials.
         Assert.Equal(
             [
-                $"<tr data-family=\"breakout\" data-rule=\"{live}\" data-live=\"true\" data-trades=\"3\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"breakout\" data-rule=\"{variant}\" data-live=\"false\" data-trades=\"1\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{live}\" data-live=\"true\" data-trades=\"3\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{variant}\" data-live=\"false\" data-trades=\"1\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
             ],
             rows.Select(row => row[..(row.IndexOf('>') + 1)]));
-        Assert.Contains("<td class=\"r num\">3</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>", rows[0], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">3</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"verdict-word\"", rows[0], StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"family-head\" data-family=\"breakout\" data-level=\"0.025\">", records, StringComparison.Ordinal);
 
         // The card names its index, and the setups' table draws the breakout live since its freeze with its variant and its
         // live rule's record in words, the other setups provisional still.

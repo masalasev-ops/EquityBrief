@@ -235,7 +235,7 @@ public static class RunScreen
     // The shadow region, which is a count and a divisor and never a name.
     //
     // A screen shows how many candidate conditions are registered and that each
-    // one's record is withheld until it is promoted. It shows no candidate's pick
+    // one's record is withheld until its look reads it. It shows no candidate's pick
     // of a name, which the comparison of tonight's picks alone draws: seeing a candidate's record before it is
     // promoted is the thing the shadow exists to prevent, and a page that drew
     // one would make the register a formality.
@@ -1925,33 +1925,6 @@ public static class RunScreen
         return gates;
     }
 
-    // Each version at a checkpoint: locked with its setups and blocks until its first look is read, and from
-    // then the last look's share, the break-even its plans needed, what no skill scored from the same starts,
-    // the smallest excess luck alone could not explain, and the verdict in words.
-    // see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
-    public static IReadOnlyList<CheckpointRow> Checkpoints(EdgeView edge) =>
-    [
-        .. edge.Candidates
-            .OrderByDescending(candidate => candidate.Live)
-            .Select(candidate =>
-            {
-                var record = candidate.Record;
-                var look = record.Looks.Count > 0 ? record.Looks[^1] : null;
-
-                return new CheckpointRow(
-                    candidate.Candidate,
-                    candidate.Live,
-                    record.Setups,
-                    record.Blocks,
-                    record.Floor,
-                    look?.Share,
-                    look is null ? null : record.PlannedBreakEven,
-                    look?.NullShare,
-                    look?.SmallestExcess,
-                    record.Verdict);
-            }),
-    ];
-
     // The checklist: each item held, failed with why, or not read where the night stored nothing it could be
     // read from. Whether every step finished is the night's own state, the one region 1 draws, so a command
     // run by hand that day is none of the night's steps. The quarters are read off the night's own quarters
@@ -2055,6 +2028,75 @@ public static class RunScreen
             .. month is null ? Array.Empty<WorryItem>() : [MonthItem(month)],
         ];
     }
+
+    // The newest monthly run as the Run page draws it from 19.7: its newest try's start and state off its steps' rows, its
+    // month, each family in the one order with the proposals the newest tester run on the index tested and passed and the
+    // one put to the operator, the live or provisional rule's verdict in the newest per-rule test and its variants' counted
+    // by their words, and the shape clock's ordinary nights. It reads the rows the monthly run and the tester stored and
+    // works out none of their figures.
+    public static MonthlyRunView Monthly(
+        IReadOnlyList<RunStageRow> steps,
+        IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> proposals,
+        Func<EquityBrief.Core.Loop.LoopProposalRow, bool> heldBack,
+        IReadOnlyList<RuleTestRow> rules,
+        ShapeState? shape)
+    {
+        var item = MonthItem(steps);
+        var month = steps.Count > 0 && steps[0].RunId.Length >= MonthlyPrefix.Length + 7 ? steps[0].RunId.Substring(MonthlyPrefix.Length, 7) : null;
+
+        string Verdict(RuleTestRow row) =>
+            EquityBrief.Core.Loop.RuleVerdict.Of(row.Passed, row.Why, row.Adjusted, row.Gate, row.Stable, row.Trimmed, row.Counts);
+
+        var families = EquityBrief.Core.Families.SetupFamilies.Order
+            .Select(family =>
+            {
+                var own = proposals.Where(proposal => proposal.Family == family).ToArray();
+                var tested = rules.Where(row => row.Family == family).ToArray();
+                var head = tested.FirstOrDefault(row => row.Standing != PaperAccountView.Variant);
+
+                return new MonthlyFamilyView(
+                    family,
+                    own.Length,
+                    own.Count(proposal => proposal.Passed),
+                    EquityBrief.Core.Loop.LoopDecisions.PutOf(own, heldBack)?.Proposal,
+                    head is null ? null : Verdict(head),
+                    [.. tested.Where(row => row.Standing == PaperAccountView.Variant).GroupBy(Verdict).OrderBy(group => EquityBrief.Core.Loop.RuleVerdict.Rank(group.Key)).Select(group => (group.Key, group.Count()))]);
+            })
+            .Where(family => family.Tested > 0 || family.Head is not null || family.Variants.Count > 0)
+            .ToArray();
+
+        return new MonthlyRunView(
+            steps.Count > 0 ? steps[0].StartedAt : null,
+            item.State,
+            item.State == WorryItem.Failed ? item.Why : null,
+            month,
+            families,
+            shape?.Ordinary ?? 0,
+            shape?.Wanted ?? ShapeClock.CalibrationNights,
+            shape is { VersionOpen: true } open ? open.Version : null);
+    }
+
+    // From 19.7 each registered rule's record row named as its card's tab names it, the live rule Live and a variant by the
+    // settings that differ from it, with its verdict in the index's newest per-rule test, or not tested yet where the test
+    // read none of it.
+    public static IReadOnlyList<FamilyRecordRow> Named(IReadOnlyList<FamilyRecordRow> rows, IReadOnlyList<CandidateRow> register, DateOnly night, bool large, string indexName, IReadOnlyList<RuleTestRow> tests) =>
+    [
+        .. rows.Select(row =>
+        {
+            var (_, variants) = RuleScreen.Accounts(row.Family, large, indexName, register, night);
+            var tab = variants.Where(variant => variant.Row.Candidate == row.Rule).Select(variant => variant.Tab).FirstOrDefault();
+            var test = tests.FirstOrDefault(one => one.Family == row.Family && one.Rule == row.Rule)
+                ?? (row.Live ? tests.FirstOrDefault(one => one.Family == row.Family && one.Standing != PaperAccountView.Variant) : null);
+
+            return row with
+            {
+                Short = row.Live ? "Live" : tab,
+                Verdict = test is null
+                    ? EquityBrief.Core.Loop.RuleVerdict.NotTested
+                    : EquityBrief.Core.Loop.RuleVerdict.Of(test.Passed, test.Why, test.Adjusted, test.Gate, test.Stable, test.Trimmed, test.Counts),
+            };
+        }),
+    ];
 
     // The steps' rows of a monthly run carry this before each step's name, as the monthly run writes them.
     public const string MonthlyPrefix = "loop-month-";

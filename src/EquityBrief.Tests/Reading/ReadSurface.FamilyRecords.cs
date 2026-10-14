@@ -98,21 +98,23 @@ public partial class ReadSurface
         // breakouts' two, the neighbour retired unread counted in none, and the drift's one.
         Assert.Equal(
             [
-                $"<tr data-family=\"breakout\" data-rule=\"{LiveBreakout}\" data-live=\"true\" data-trades=\"5\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"breakout\" data-rule=\"{ProvisionalBreakout}\" data-live=\"false\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.5\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
-                $"<tr data-family=\"drift\" data-rule=\"{LiveDrift}\" data-live=\"true\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.05\" data-from=\"2026-01-02\" data-restarted=\"false\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{LiveBreakout}\" data-live=\"true\" data-trades=\"5\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{ProvisionalBreakout}\" data-live=\"false\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.5\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
+                $"<tr data-family=\"drift\" data-rule=\"{LiveDrift}\" data-live=\"true\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.05\" data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">",
             ],
             rows.Select(row => row[..(row.IndexOf('>') + 1)]));
         Assert.DoesNotContain(NeighbourBreakout, records, StringComparison.Ordinal);
 
-        // The cells a reader reads: the rule named and marked live with the session its record counts from, the
-        // trades, the decided ones, the edge to the thousandth, the whole blocks against the eight the first look
-        // reads, and the level.
+        // The cells a reader reads: the rule named by its short words, its full name and the session its record counts
+        // from under the pointer, the trades, the decided ones, the edge to the thousandth, the whole blocks against the
+        // eight the first look reads, and its verdict; the level each setup's rules share stands once in its heading row.
         Assert.Contains(
-            $"<td>{LiveBreakout} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>",
+            $"<td class=\"fam-edge\" data-family=\"breakout\" title=\"{LiveBreakout}. Its record counts from 2026-01-02.\"><span class=\"fam-tag\" data-family=\"breakout\">Live</span></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\"><span class=\"gain\">+0.100</span></td><td class=\"r num\">1 of 8</td><td class=\"verdict-word\"",
             rows[0],
             StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\">none yet</td><td class=\"r num\">0 of 8</td><td class=\"r num\">0.05</td>", rows[2], StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\">none yet</td><td class=\"r num\">0 of 8</td><td class=\"verdict-word\"", rows[2], StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"family-head\" data-family=\"breakout\" data-level=\"0.025\">", records, StringComparison.Ordinal);
+        Assert.Contains("<tr class=\"family-head\" data-family=\"drift\" data-level=\"0.05\">", records, StringComparison.Ordinal);
 
         // The same counts the store gives, by the rule's own rows alone.
         Assert.Equal(["5"], Strings(store, $"SELECT COUNT(*) FROM family_trade WHERE candidate = '{LiveBreakout}' AND session_date <= '{TheSwitch}';"));
@@ -133,7 +135,7 @@ public partial class ReadSurface
 
         Assert.Equal(
             ["0.025", "0.025", "0.05"],
-            Regex.Matches(Assert.Single(Blocks(again, "<table class=\"list-table family-records\".*?</table>")), "data-level=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+            Regex.Matches(Assert.Single(Blocks(again, "<table class=\"list-table family-records\".*?</table>")), "<tr data-family=[^>]* data-level=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
     }
 
     // A trade stopped out before the night whose cap's sessions pass after it: its benchmark, which the recorder
@@ -265,13 +267,14 @@ public partial class ReadSurface
         var variant = Regex.Match(records, $"<tr data-family=\"breakout\" data-rule=\"{Regex.Escape(ProvisionalBreakout)}\".*?</tr>", RegexOptions.Singleline).Value;
 
         // The live rule's record carries on from its first registration; the variant's counts from the Wednesday
-        // it was registered again, with the trade the replay kept that the record did not.
-        Assert.Contains("data-from=\"2026-01-02\" data-restarted=\"false\">", live, StringComparison.Ordinal);
-        Assert.Contains("<span class=\"record-from\">its record counts from 2026-01-02</span>", live, StringComparison.Ordinal);
-        Assert.DoesNotContain("record-restarted", live, StringComparison.Ordinal);
-        Assert.Contains("data-from=\"2026-04-15\" data-restarted=\"true\">", variant, StringComparison.Ordinal);
+        // it was registered again, with the trade the replay kept that the record did not. From 19.7 both stand under the
+        // pointer on the rule's name.
+        Assert.Contains("data-from=\"2026-01-02\" data-restarted=\"false\" data-verdict=\"not tested yet\">", live, StringComparison.Ordinal);
+        Assert.Contains($"title=\"{LiveBreakout}. Its record counts from 2026-01-02.\"", live, StringComparison.Ordinal);
+        Assert.DoesNotContain("It restarted", live, StringComparison.Ordinal);
+        Assert.Contains("data-from=\"2026-04-15\" data-restarted=\"true\" data-verdict=\"not tested yet\">", variant, StringComparison.Ordinal);
         Assert.Contains(
-            "<span class=\"record-from\">its record counts from 2026-04-15</span><span class=\"record-restarted\">it restarted at its registration, since the replay keeps T7 on 2026-03-02 where the record keeps none</span>",
+            $"title=\"{ProvisionalBreakout}. Its record counts from 2026-04-15. It restarted at its registration, since the replay keeps T7 on 2026-03-02 where the record keeps none.\"",
             variant,
             StringComparison.Ordinal);
     }

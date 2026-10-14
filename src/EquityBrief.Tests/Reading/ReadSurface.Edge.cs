@@ -98,7 +98,8 @@ public partial class ReadSurface
         var edge = Assert.Single(Blocks(page, "<section class=\"edge-clock\".*?</section>"));
 
         Assert.Contains("data-candidates=\"9\"", edge, StringComparison.Ordinal);
-        Assert.Contains("Each candidate's first look is read at 8 non-empty blocks, no earlier than 566 sessions after its first night, and it can retire the candidate or leave it and cannot promote it; a promotion can come no earlier than the look at 12 blocks, 818 sessions after its first night.", edge, StringComparison.Ordinal);
+        Assert.Contains("Each candidate's first look is read at 8 non-empty blocks, no earlier than 566 sessions after its first night, and it can retire the candidate or leave it and promotes nothing: a look is monitoring, and a rule changes only through the monthly test and your approval on the Loop page.", edge, StringComparison.Ordinal);
+        Assert.DoesNotContain("promotion can come", edge, StringComparison.Ordinal);
 
         // The live filter first, then the eight in the order registered, each defined against version 1 with
         // the live filter unmoved, two sessions run, no block closed and every figure withheld.

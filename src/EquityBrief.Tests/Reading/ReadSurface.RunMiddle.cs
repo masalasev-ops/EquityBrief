@@ -230,24 +230,19 @@ public partial class ReadSurface
         Assert.Equal(WorryItem.Held, Read([], Call("KO", "1.50"), Call("KO", "0.50"))[6].State);
     }
 
-    // The trades region over Past picks' own summary: below the minimum a dashed ring and the counts it waits on,
-    // and at it the three figures Past picks draws, never before.
+    // From 19.7 the live list's trades in one line linking their trade log over Past picks' own summary: how many it
+    // listed, how many are open and how many decided against the count a share waits on, and no share, which Past picks
+    // draws.
     [Fact]
-    public void TheTradesRegionDrawsTheShareOnlyOnceBothMinimumsAreMet()
+    public void TheTradesLineCountsTheListsTradesAndLinksTheirTradeLog()
     {
-        var marks = new MarkRenderer();
-        var below = WebUtility.HtmlDecode(marks.TradesRegion(new PicksSummary(12, 5, 3, 4, 3, 2, 0, 7, 4, 250, 60, null, null, null), "#/picks"));
+        var line = WebUtility.HtmlDecode(new MarkRenderer().TradesLine(new PicksSummary(300, 70, 10, 140, 120, 30, 0, 260, 64, 250, 60, 53.8, 41.2, 0.21), "#/picks"));
 
-        Assert.Contains("data-open=\"3\" data-target=\"4\" data-stopped=\"3\" data-time=\"2\" data-decided=\"7\" data-needed=\"250\" data-met=\"false\"", below, StringComparison.Ordinal);
-        Assert.Contains("class=\"tr-track tr-unmet\"", below, StringComparison.Ordinal);
-        Assert.Contains("The share that reached the target is drawn once 250 trades are decided over 60 listing nights: 7 and 4 so far.", below, StringComparison.Ordinal);
-        Assert.DoesNotContain("reached the target against", below, StringComparison.Ordinal);
-        Assert.Contains("<a href=\"#/picks\">Every trade on Past picks", below, StringComparison.Ordinal);
-
-        var met = WebUtility.HtmlDecode(marks.TradesRegion(new PicksSummary(300, 70, 10, 140, 120, 30, 0, 260, 64, 250, 60, 53.8, 41.2, 0.21), "#/picks"));
-
-        Assert.Contains("data-met=\"true\"", met, StringComparison.Ordinal);
-        Assert.Contains("<b>53.8%</b> reached the target against <b>41.2%</b> needed to break even, and the average trade came to <b>0.21</b> of its risk.", met, StringComparison.Ordinal);
+        Assert.Equal(
+            "<p class=\"run-trades\" data-listed=\"300\" data-open=\"10\" data-decided=\"260\" data-needed=\"250\">The live list's trades: 300 listed, 10 still open, 260 decided of the 250 a share waits on. <a href=\"#/picks\">Open their trade log &#8594;</a></p>"
+                .Replace("&#8594;", "→", StringComparison.Ordinal),
+            line);
+        Assert.DoesNotContain("53.8", line, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -260,14 +255,19 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-10"));
         var detail = page.IndexOf("<section class=\"run-detail\">", StringComparison.Ordinal);
 
-        foreach (var card in new[] { "trades-picture", "fresh-picture", "research-picture", "worry-picture" })
+        foreach (var card in new[] { "fresh-picture", "research-picture", "worry-picture" })
         {
             var at = page.IndexOf($"data-card=\"{card}\"", StringComparison.Ordinal);
 
             Assert.True(at > 0 && at < detail, $"The run page draws no {card} above the detail.");
         }
 
-        Assert.Contains("<div class=\"trades-picture\" data-listed=\"1\"", page, StringComparison.Ordinal);
+        // From 19.7 the trades are one line above the detail, and the checklist and the research stand under their
+        // headings, Health first.
+        Assert.True(page.IndexOf("<p class=\"run-trades\" data-listed=\"1\"", StringComparison.Ordinal) is var trades && trades > 0 && trades < detail);
+        Assert.DoesNotContain("trades-picture", page, StringComparison.Ordinal);
+        Assert.True(page.IndexOf("data-heading=\"health\"", StringComparison.Ordinal) is var health && health > 0 && health < page.IndexOf("data-card=\"worry-picture\"", StringComparison.Ordinal));
+        Assert.True(page.IndexOf("data-heading=\"research\"", StringComparison.Ordinal) is var research && research > health && research < page.IndexOf("data-card=\"research-picture\"", StringComparison.Ordinal));
         Assert.Matches("<li data-item=\"Every step of the night finished\" data-state=\"failed\">.*?after the close, overnight queue failed: database is locked", page);
         Assert.Contains("<li data-item=\"Every company awaiting a new quarter was asked on schedule\" data-state=\"not read\">", page, StringComparison.Ordinal);
     }

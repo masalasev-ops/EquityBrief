@@ -25,6 +25,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-14 - ARCHITECTURE.html - the remaining screens of 19.7: the Run page without the retired loop's clocks, the Loop's summary, the Ledger's bars and strip, the Watch list's nearest setup and the researched list's columns
+Authorised by: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+Was:
+> 13.8: The list's thresholds move only through shape calibration and the operator's rulings, and the edge clock gathers evidence and changes nothing by itself, its first look after about two years and its second after about three. ...
+> 15.5 Distance row: ... <td>Universe, Tonight</td>
+> 15.5 Trades ring: The trades decided at the target or the stop as an arc around a ring against the minimum a share waits on. ...
+> 15.5 Clock lines: The shape clock as a bar of the ordinary nights against those its calibration waits on ... The edge clock as a line from today to its two checkpoints, the stretch run drawn solid.
+> 15.5 Checkpoint scale: One row per version on a scale from nought to a hundred. ...
+> 15.10 How last night went: ... what research spent on the night's day and in its month against their caps; ... the reports carrying fresh prose against reused ...
+> 15.10 How the list's trades are going: the live list's trades still open ...; a ring of the trades decided against the minimum a share waits on; ...; a link opening Past picks (see: ...)
+> 15.10 How the system learns: the shape clock as the ordinary nights under the open filter version against the sixty its calibration waits on; ...; a link comparing tonight's picks
+> 15.10 At a checkpoint: one row per version on a scale from nought to a hundred; ...; the verdict in words (see: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal)
+> 15.10 Research and spend: the month's spend against the month cap; the reports the paid model wrote on each of the last seven nights; ...
+> 15.10 The edge clock: ... that the first look can retire or leave a candidate and never promote one, when the earliest promotion can come, and each variant ...
+> 15.10 Shadow candidates: ... and one line saying each candidate's record is withheld until it is promoted. ... A candidate's picks are drawn in the comparison of tonight's picks and counted among the versions of how the system learns and nowhere else ...
+> 15.10 The setup families: on a night the setup families drew the page's list: one row a setup in the page's order, ... (see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint)
+> 15.16 Reads: the watch list, and for the newest night the listings, the bars, the gate results and the membership. ...
+> 15.16 Add a name: a box offering the names of the index, which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached, ...
+> 15.19 A family's setups: a card a family drawing each year's setups and the deciles of their results from the summary the ledger refreshes
+> 15.19 Settled setups: the newest settled setups of the family the hash names with each stock a link drawing its path
+> 15.19 paragraph: A family's card draws each year's setups ..., each with a key saying how to read it. ...
+> 15.20 The learned score: from 17.7 beneath a family's proposals of the score the score fitted on all finished data with its weight in words and its hash; ...
+> 15.20 Your word on a proposal: ... and from 17.10 the Approve and Decline presses on the one proposal of each family the run puts to the operator (see: ...)
+> Section 20, phase 19's row: ... 19.0 to 19.9 ...
+Now:
+> 13.8 opens on the sentence the shape clock's code holds, that the edge clock's looks are monitoring and a rule changes only through the monthly test and the operator's approval. 15.5 draws the P meter, the edge bars and the decile strip in the three retired marks' places and the distance row on the Watch list too. 15.10 draws the trades line, the monthly run, and the Health and Research headings in the places of the trades region, how the system learns and a checkpoint; research and spend takes the night's spend and fresh prose from how last night went, which states every length of time in whole minutes and seconds; the edge clock says no look promotes; the shadow candidates' line says a record is withheld until its look reads it and their picks are counted among the background versions' statistics; the setup families group each rule under its setup's heading row with its short words, its pointer and its verdict, and a paragraph says the page holds none of the retired loop's clocks. 15.16 adds a name's nearest setup and its distance and report and adds a name through the header's search. 15.19 adds the business-first family's line, the edge bars, the strip and the tabs. 15.20 adds the summary, what a change must pass, a proposal's row and Figure 15.5 with its key, and names the learned score by its fit month. 15.8 adds a report's staleness, its move, its sections, why it was written and the researched order. Section 20 reads 19.0 to 19.10.
+Why: BUILD_PLAN's 19.7 draws the remaining screens in the read surface's new form, and the Run page's retired loop clocks stated a promotion the decision above had already taken away.
+
+### 2026-10-14 - .claude/rules/checks.md - read-surface, architecture-conformance and fixture-expectations hold the remaining screens
+Authorised by: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
+Was:
+> read-surface: ... and the drain writing the named request alone ahead of an older one, at once and its industry's pass told so where confirmed and at the window's end where not, and nothing for a name with no request |
+> architecture-conformance: ... and from 19.2 Tonight's top's figure's key names every part the figure draws, in the architecture and in the guide, neither figure's text holding any night's figure |
+> fixture-expectations: ... drawn on the queue page as the one report written by hand on its New York day at the cost research-record.json works by hand, outside the window to the suite's own day and behind its link |
+Now:
+> Each row gains its clause from 19.7: the read surface's Run page, Loop summary, Ledger marks, Watch list nearest setup and researched columns; the Loop figure's key; and the fixture's trades line, monthly run and researched row.
+Why: 19.7 adds the remaining screens' assertions and its derived expectation, and the roster states what each check asserts.
+
 ### 2026-10-14 - CLAUDE.md - the off-peak run five minutes after each peak window ends
 Authorised by: The night queues its report requests and starts neither the drain nor the labeller, and the off-peak run starts both five minutes after each peak window ends
 Was:

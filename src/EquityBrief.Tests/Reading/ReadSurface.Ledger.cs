@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -76,23 +77,30 @@ public partial class ReadSurface
         // night wrote picked, thirty settled at a mean of 0.40 risks and an edge of 0.10.
         Assert.Contains("data-card=\"ledger-pullback\"", page, StringComparison.Ordinal);
         Assert.Contains("data-card=\"ledger-heavyweight\"", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-year=\"2026\" data-setups=\"40\" data-live-passes=\"10\" data-picked=\"4\" data-settled=\"30\"><td class=\"num\">2026</td><td class=\"r num\">40</td><td class=\"r num\">25%</td><td class=\"r num\">50% of 8</td><td class=\"r num\">30</td>", page, StringComparison.Ordinal);
-        Assert.Contains("data-result-mean=\"0.4\"><span class=\"gain\">+0.40</span> ×</td>", page, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num\"><span class=\"degraded\">none written by a night</span></td>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-year=\"2026\" data-setups=\"40\" data-live-passes=\"10\" data-picked=\"4\" data-settled=\"30\" data-night-rows=\"8\"><td class=\"num\">2026</td><td class=\"r num\">40</td><td class=\"r num\">25%</td><td class=\"r num\">50% of 8</td><td class=\"r num\">30</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.4\"><span class=\"gain\">+0.40</span></td>", page, StringComparison.Ordinal);
+
+        // From 19.7 the unit is named once in each heading, and a year no night wrote reads none with the line beneath.
+        Assert.Contains("Result, risks", page, StringComparison.Ordinal);
+        Assert.Contains("Result, % of the buy", page, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num\"><span class=\"degraded\">none</span></td>", page, StringComparison.Ordinal);
+        Assert.Contains("None written by a night: the 1 year(s) whose Picked reads none were written by the history build alone, which writes no pick.", page, StringComparison.Ordinal);
 
         // The heavyweights' year read as a share of the buy, 0.12 as 12.0 per cent.
-        Assert.Contains("data-result-mean=\"0.12\"><span class=\"gain\">+12.0</span>%</td>", page, StringComparison.Ordinal);
+        Assert.Contains("data-result-mean=\"0.12\"><span class=\"gain\">+12.0</span></td>", page, StringComparison.Ordinal);
 
-        // The deciles of the pullback's newest year holding settled setups, 2026's, nine cut points, the fourth at 0.25.
+        // The deciles of the pullback's newest year holding settled setups, 2026's, nine cut points, the fourth at 0.25,
+        // each drawn as a row of the table and a dot of the strip.
         Assert.Contains("<table class=\"ledger-deciles\" data-family=\"pullback\" data-year=\"2026\" data-settled=\"30\">", page, StringComparison.Ordinal);
-        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\"><span class=\"gain\">+0.25</span> ×</td>", page, StringComparison.Ordinal);
-        Assert.Equal(2 * LedgerSummaries.CutPoints, page.Split("data-cut=\"", StringSplitOptions.None).Length - 1);
-        Assert.Contains("<b>Setups a year.</b>", page, StringComparison.Ordinal);
-        Assert.Contains("<b>The deciles.</b>", page, StringComparison.Ordinal);
+        Assert.Contains("<tr data-cut=\"4\"><td class=\"num\">40%</td><td class=\"r num\" data-result=\"0.25\"><span class=\"gain\">+0.25</span></td>", page, StringComparison.Ordinal);
+        Assert.Equal(2 * LedgerSummaries.CutPoints, page.Split("<tr data-cut=\"", StringSplitOptions.None).Length - 1);
+        Assert.Equal(2 * LedgerSummaries.CutPoints, Regex.Matches(page, "<circle class=\"(?:gain|loss)\" data-cut=\"").Count);
+        Assert.Contains("<svg class=\"ledger-decile-strip\" data-family=\"pullback\" data-year=\"2026\"", page, StringComparison.Ordinal);
+        Assert.Contains("<svg class=\"ledger-edge-bars\" data-family=\"pullback\"", page, StringComparison.Ordinal);
 
-        // The family chosen named and the others linked, its newest settled setups newest first, each a link.
-        Assert.Contains("<b data-family-chosen=\"pullback\">Pullback</b>", page, StringComparison.Ordinal);
-        Assert.Contains("data-family-link=\"heavyweight\">Sector heavyweights</a>", page, StringComparison.Ordinal);
+        // The family chosen marked among the tabs, each in its tint, its newest settled setups newest first, each a link.
+        Assert.Contains("data-family-link=\"pullback\" href=\"#/ledger?universe=500&family=pullback\" aria-current=\"true\">", page, StringComparison.Ordinal);
+        Assert.Contains("data-family-link=\"heavyweight\" href=\"#/ledger?universe=500&family=heavyweight\"><span class=\"fam-swatch\" data-family=\"heavyweight\"></span>Sector heavyweights</a>", page, StringComparison.Ordinal);
         Assert.True(page.IndexOf("data-ticker=\"AAA\" data-session=\"2026-03-09\"", StringComparison.Ordinal) < page.IndexOf("data-ticker=\"BBB\" data-session=\"2025-02-03\"", StringComparison.Ordinal));
         Assert.Contains("href=\"#/ledger?universe=500&family=pullback&setup=AAA.2026-03-09\">AAA</a>", page, StringComparison.Ordinal);
 
@@ -103,7 +111,7 @@ public partial class ReadSurface
         Assert.Contains("data-stop=\"95\"", page, StringComparison.Ordinal);
         Assert.Contains("data-target=\"110\"", page, StringComparison.Ordinal);
         Assert.Contains("data-bought=\"2026-03-09\"", page, StringComparison.Ordinal);
-        Assert.Contains("<b>A setup's path.</b>", page, StringComparison.Ordinal);
+        Assert.Contains(SinglePageApp.LedgerGuide, page, StringComparison.Ordinal);
 
         // BBB's bars sit in the pulled history, which the page does not read, and it says so; and no setup chosen asks
         // for one.
@@ -149,7 +157,7 @@ public partial class ReadSurface
         Assert.Equal(order, EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name));
         Assert.Equal(order, Regex.Matches(ledger, "data-card=\"ledger-([a-z]+)\"").Select(match => match.Groups[1].Value).Where(card => card != "path"));
         Assert.Equal(order, Regex.Matches(ledger, "data-family-(?:link|chosen)=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<b data-family-chosen=\"pullback\">Pullback</b>", ledger, StringComparison.Ordinal);
+        Assert.Contains("data-family-link=\"pullback\" href=\"#/ledger?universe=500&family=pullback\" aria-current=\"true\">", ledger, StringComparison.Ordinal);
         Assert.Equal(order, Regex.Matches(loop, "<div class=\"loop-alarm\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Equal(order, Regex.Matches(loop, "data-loop-rule=\"none\" data-family=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
     }

@@ -1584,7 +1584,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 // The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from
 // that night's own rows whether or not the list holds it, with what the swing filter said of it.
 // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
-app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page) =>
+app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRenderer marks) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
     var watched = await read.WatchedAsync();
@@ -1607,8 +1607,10 @@ app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page) =>
                 await read.ClosesToTheNightAsync(night),
                 universe,
                 await read.GateResultsAsync(night),
-                await read.ResearchedAsync()),
-            ReadApi.WatchLimit),
+                await read.ResearchedAsync(),
+                await read.FamilyResultsAsync(night)),
+            ReadApi.WatchLimit,
+            marks),
         "text/html; charset=utf-8");
 });
 
@@ -2161,7 +2163,21 @@ app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRender
     var alarms = await read.LoopAlarmsAsync(reading.Code);
     var newest = await read.NewestLoopRunAsync(reading.Code);
 
-    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest)), "text/html; charset=utf-8");
+    // From 19.7 each family's rule standing on the index as its card's chips draw it, for the summary's rule today.
+    var large = reading == Universes.Large;
+    var register = await read.RegisteredCandidatesAsync();
+    var provisional = large || night is not { } stored ? null : await read.IndexNightAsync(reading.Code, stored) is { } indexNight ? IndexRuleSettings.Read(indexNight.Settings) : null;
+    var chips = EquityBrief.Core.Families.SetupFamilies.Order.ToDictionary(
+        family => family,
+        family =>
+        {
+            var (live, _) = RuleScreen.Accounts(family, large, reading.Name, register, night ?? DateOnly.MinValue, provisional);
+
+            return (IReadOnlyList<string>)[.. (live is not null ? RuleScreen.ChipsOf(live) : !large && provisional is not null ? RuleScreen.ProvisionalChips(family, provisional) : []).Select(chip => chip.Words)];
+        },
+        StringComparer.Ordinal);
+
+    return Results.Content(page.LoopRegion(marks, night, reading, selector, months, run, proposals, tests, findings, spreads, models, ranks, new EquityBrief.Web.Marks.LoopDecided(decisions, settings, alarms, newest), chips), "text/html; charset=utf-8");
 });
 
 // The Loop's badge in the menu: the proposals each index's newest run puts to the operator that hold no word yet.
@@ -2195,11 +2211,38 @@ app.MapGet("/screens/researched", async (HttpRequest request, ReadApi read, Sing
         ? !wider.Values.Any(members => members.Contains(ticker))
         : wider[reading.Code].Contains(ticker);
 
+    // From 19.7 each report's staleness by the judge its stock's page calls, the move since it was written off the store's
+    // closes, its sections out of the full set and why it was written, the list sorted by the day written or by staleness.
+    var researched = (await read.ResearchedAsync()).Where(row => Reads(row.Ticker)).ToArray();
+    var requests = await read.WrittenRequestsAsync();
+    var closes = researched.Length == 0 ? new Dictionary<(string, DateOnly), decimal>() : await read.ClosesAsync([.. researched.Select(row => row.Ticker)], researched.Min(row => row.Written).AddDays(-10));
+    var cells = new List<ResearchedCell>();
+
+    foreach (var row in researched)
+    {
+        var staleness = await read.StalenessAsync(row.Ticker);
+
+        cells.Add(new ResearchedCell(
+            row.Ticker,
+            row.Name,
+            row.Sector,
+            row.Written,
+            row.Sections,
+            staleness.State == EquityBrief.Core.Research.ResearchState.Stale,
+            [.. staleness.Fired.Select(fired => fired.Line)],
+            ResearchedScreen.Move(row.Written, closes, row.Ticker),
+            EquityBrief.Core.Research.ClaimRules.Sections.Length,
+            ResearchedScreen.Why(row.Written, [.. requests.Where(request => request.Ticker == row.Ticker)])));
+    }
+
+    var sort = request.Query[ResearchedScreen.SortQuery].FirstOrDefault() == ResearchedScreen.ByStaleness ? ResearchedScreen.ByStaleness : ResearchedScreen.ByWritten;
+
     return Results.Content(
         page.ResearchedRegion(
-            [.. (await read.ResearchedAsync()).Where(row => Reads(row.Ticker)).Select(row => new ResearchedCell(row.Ticker, row.Name, row.Sector, row.Written, row.Sections))],
+            ResearchedScreen.Sorted(cells, sort),
             reading,
-            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.ResearchedRoute) : string.Empty),
+            night is { } counted ? Cards.Universe(reading, await read.MembersByIndexAsync(counted), SinglePageApp.ResearchedRoute) : string.Empty,
+            sort),
         "text/html; charset=utf-8");
 });
 
@@ -2311,7 +2354,13 @@ app.MapGet("/screens/run/{night?}", async (
         var indexRegister = await read.RegisteredCandidatesAsync();
 
         // Each registered rule's record, from the index's first freeze on, and its family's setup row live beside it.
-        var indexRecords = TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated);
+        var indexRecords = RunScreen.Named(
+            TonightScreen.IndexRecordRows(reading, indexRegister, await read.IndexRuleTradesAsync(reading.Code, dated), dated),
+            indexRegister,
+            dated,
+            false,
+            reading.Name,
+            (await read.RuleTestsAsync(reading.Code)).Rules);
 
         return Results.Content(
             page.IndexRunRegion(
@@ -2377,6 +2426,18 @@ app.MapGet("/screens/run/{night?}", async (
     var labellerRuns = await read.LabellerRunsAsync();
     var reports = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week.Count > 0 ? week[0].Night : dated, dated);
 
+    // The shape clock, read once for the Calibration region and the monthly run's line; and from 19.7 the S&P 500's newest
+    // tester run with its proposals and the operator's words, which the monthly run region reads what was put from.
+    var shapeState = RunScreen.Calibration(
+        await read.GateNightsAsync(),
+        await read.MarketRatiosAsync(),
+        RunScreen.Firings(everyListing),
+        await read.OpenFilterVersionAsync(),
+        dated);
+    var monthlyRun = (await read.LoopMonthsAsync(Universes.Large.Code)).FirstOrDefault() is { } newestMonth ? await read.LoopRunAsync(Universes.Large.Code, newestMonth) : null;
+    var monthlyProposals = monthlyRun is null ? [] : await read.LoopProposalsAsync(monthlyRun);
+    var monthlyDecisions = await read.LoopDecisionsAsync(Universes.Large.Code);
+
     return Results.Content(
         page.RunRegion(
             marks,
@@ -2414,12 +2475,7 @@ app.MapGet("/screens/run/{night?}", async (
                 flips.Returns,
                 flips.Nights,
                 dated),
-            RunScreen.Calibration(
-                await read.GateNightsAsync(),
-                await read.MarketRatiosAsync(),
-                RunScreen.Firings(everyListing),
-                await read.OpenFilterVersionAsync(),
-                dated),
+            shapeState,
             market,
             funnel,
             RunScreen.Triggers(await read.TriggerReadsAsync(), priced, NewsScreen.Trigger(labellerRuns)),
@@ -2458,9 +2514,13 @@ app.MapGet("/screens/run/{night?}", async (
                 storeCopy,
                 RuleScreen.Flagged(await read.RuleNightsAsync(index, dated), dated, await read.RegisteredCandidatesAsync()),
                 await read.NewestMonthlyRunAsync()),
-            background: versions,
+            monthly: RunScreen.Monthly(
+                await read.NewestMonthlyRunAsync(),
+                monthlyProposals,
+                one => monthlyRun is { } tested && MarkRenderer.HeldBack(tested, one, new LoopDecided(monthlyDecisions, [], [], null)),
+                (await read.RuleTestsAsync(Universes.Large.Code)).Rules,
+                shapeState),
             compare: compare,
-            checkpoints: RunScreen.Checkpoints(edge),
             reports: reports,
             // The setups the page is drawn from, on a night the families drew its list, and each registered rule
             // of a new setup read over its own trades.
@@ -2473,7 +2533,13 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.RegisteredCandidatesAsync(),
                     await read.FamilyTradesAsync(dated),
                     await read.FamilyReplaysAsync()),
-            familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
+            familyRecords: RunScreen.Named(
+                TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
+                await read.RegisteredCandidatesAsync(),
+                dated,
+                true,
+                Universes.Large.Name,
+                (await read.RuleTestsAsync(Universes.Large.Code)).Rules),
             storeCopy: storeCopy,
             selector: selector,
             // From 19.2 the night's operations and its reason totals, which Tonight drew before.

@@ -219,8 +219,9 @@ public partial class ReadSurface
         // view and the ladder figure on both where the twelve-month picture is drawn no more, the fixture's name
         // trading no exit a tranche's risk is read to, so its reward to risk bars say so in words, and 83 from 18.4,
         // the calendar's timeline on both, and 84 from the 17.10 correction, the checklist's item on the newest
-        // monthly run.
-        Assert.Equal(84, pictures);
+        // monthly run, and 76 from 19.7, which takes the ring, the shape clock's bar and its five ranges and the edge
+        // clock's line off the Run page, the fixture holding no monthly run for its region to draw.
+        Assert.Equal(76, pictures);
 
         var page = screens[3].Item2;
 
@@ -307,8 +308,9 @@ public partial class ReadSurface
         // correction that took the listing history's evenings off the name page and the exported
         // report, and 32 from the 12.3 correction that draws the Run page's versions running in the
         // background. The fixture's name holds no research, so the risks' table is not among them. 34 from 18.3's
-        // table of the plan's shares on the name page and in the exported report.
-        Assert.Equal(34, tables);
+        // table of the plan's shares on the name page and in the exported report. 33 from 19.7, which takes the versions
+        // running in the background off the Run page.
+        Assert.Equal(33, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.
