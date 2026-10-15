@@ -42,7 +42,7 @@ public sealed record LedgerOutcome(DateOnly? Session, IReadOnlyList<LedgerIndex>
 // see: The bars the fetcher drops are kept in a table of their own that no night reads, and a setup is stored as its anchor
 // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
 // see: The nightly run is arithmetic only
-public sealed class SetupLedger : IComponent
+public sealed partial class SetupLedger : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -908,7 +908,7 @@ public sealed class SetupLedger : IComponent
     // the sessions each row's end is dated by, the market's, the context's and the heavyweights' inputs, and what the
     // build reads past the span's end. Once the bar store no longer holds the span's end, no path is replayed past it,
     // and the words say so.
-    async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation)
+    async Task<PreparedHistory> PrepareAsync(SqliteConnection connection, string index, DateOnly through, TextWriter output, CancellationToken cancellation, bool heavyweightsRead = true)
     {
         var history = new SweepHistory(databaseFile);
 
@@ -935,7 +935,7 @@ public sealed class SetupLedger : IComponent
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
-        var heavyweights = index == IndexFamilies.LargeIndex
+        var heavyweights = index == IndexFamilies.LargeIndex && heavyweightsRead
             ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
 
@@ -945,7 +945,7 @@ public sealed class SetupLedger : IComponent
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
     sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<(SetupOutcome Outcome, BenchmarkReading Benchmark)> Reads)> Families);
 
-    sealed class PreparedHistory(
+    sealed partial class PreparedHistory(
         string index,
         DateOnly[] calendar,
         SweepSeries[] series,
@@ -972,6 +972,18 @@ public sealed class SetupLedger : IComponent
         public DateOnly[] Replayed => replayed;
 
         public string Past => past;
+
+        public SweepSeries[] Series => series;
+
+        public SweepBenchmark.Members Members => members;
+
+        public double[][] Closes => closes;
+
+        public bool[] Stopped => stopped;
+
+        public IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> Heavyweights => heavyweights;
+
+        public IReadOnlyDictionary<string, int> Places => nameOf;
 
         // One session's setups on every family, each replayed to its end with its benchmark; on a rebalance of the S&P
         // 500's heavyweights, each member of each sector's size cut held as the rule holds a buy, to the first later

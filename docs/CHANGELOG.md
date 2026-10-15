@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-15 - RUNBOOK.md - the setup ledger's history section gains the next-open check
+Authorised by: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
+Was:
+> It takes 25 of each year's history setups by a fixed seed, rebuilds each one's readings from the history cut at its own session, holding only what stood then, and names every reading that differs from the one stored, exiting non-zero where any does. It reads the history through the session the build read it through, which its row names, and rebuilds a swing setup's own readings by its family's gates, naming a setup those gates do not pass at its session. It reads the store and writes one run log row under `ledger-check`.
+Now:
+> the same, then added without replacing anything: the paragraph and the command line of `ledger-next-open --index GSPC`, which prices every settled setup at the listing night's close and at the next session's open with the same stop, target, trail and cap, its zone the plan's whole range, and writes nothing
+Why: 19.10's read-only check is a command the operator runs, and the plan's range it reads the next open against is the zone the decision gives a plan with none of its own.
+
+### 2026-10-15 - .claude/rules/checks.md - fixture-expectations states 19.10's tests
+Authorised by: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
+Was:
+> and an approved setting read by the night in the provisional one's place over a constructed night and, on the S&P 500, over a constructed store |
+Now:
+> and an approved setting read by the night in the provisional one's place over a constructed night and, on the S&P 500, over a constructed store; and from 19.10 where the session after a listing opened against its plan's range worked by hand at the stop, at the target, a cent inside each and with no open held, a trailing plan having no target to open past; a setup bought at that open selling at the same close under a fixed and a trailing exit with its result in the risk the listing's close put up; the benchmark and the heavyweights' size cut bought each at its own next open, a member opening past its range not entered, one with no next session entered and left out where its prices stopped and one still open leaving it unsettled; each family's means by year over the setups priced both ways with the opens past the range counted; and the next-open check over a constructed store of two members stating the figures worked by hand and writing nothing, and over the fixture's replayed store finding no settled setup |
+Why: the roster names every check that runs and what each asserts, and 19.10's tests join the row of the check that carries them.
+
 ### 2026-10-15 - ARCHITECTURE.html - the setup ledger writes the fundamentals-first family's setups, its loose gates in section 17, and the Ledger page's line saying it held none gone
 Authorised by: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
 Was:

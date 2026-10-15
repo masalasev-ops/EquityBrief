@@ -44852,3 +44852,123 @@ Verified:   `tools/ci.ps1` green over main as 19.9's entry records, the checks r
             tree carrying this entry.
 Carried:    the first night's ledger step on the merged build, read off its run log row against the 49 seconds of
             2026-10-09 and 19.0's estimate of about 15 seconds more, owed to a dated entry once the night has run.
+
+### 19.10 - the next-open check: every settled setup priced at the listing night's close and at the next session's open   2026-10-15
+
+Queue:      done, 19.0 to 19.9 with their corrections and records as PRs 446 to 465; in progress, this checkpoint;
+            next, the operator's word on moving entries to the next session's open, and the sign-offs of phases 16, 17
+            and 18, each by a fresh session.
+Built:      the read-only check 19.10 starts with, the worker's `ledger-next-open --index` verb. It reads the history
+            the build reads, through the bar store's newest session, and prices every settled setup on the index both
+            ways with the same stop, target, trail and cap, the path read over the same closes from the session after
+            the listing, so the exit is the same close and only the buy moves. A result at the open is stated in the
+            risk the plan put up at the listing's close, since a position is sized the night before from that close
+            and its stop, and a heavyweights' as a fraction of the sum that close put to it; stated in the open's own
+            risk instead, an open a cent over the stop swelled one setup's result past any year's mean, which the first
+            run over the S&P 400 showed. The benchmark is the same plan bought at every member's own next open. A
+            family's plan carries no entry zone, so its zone is the plan's whole range (see: An entry is admitted only
+            inside the plan's own range, and a plan with no entry zone takes its whole range as its zone), and the
+            next open past it is counted at or under the stop and at or over the target. It writes nothing, not even a
+            run log row. The runbook and the roster; no decision, since nothing moves on the check alone.
+Measured:   over the operator's store read-only on 2026-10-15, the history read through 2026-10-14, in 16, 13 and 18
+            seconds: every settled setup priced, 89031 on the S&P 500, 56383 on the S&P 400 and 73016 on the S&P 600,
+            none whose stock or session the history lacks, none whose next open was not held; the result at the close
+            worked again as stored to a thousandth for 88983, 56336 and 72925 of them and the edge for 88779, 56127 and
+            72659, the rest the pulled years' rounding at the median ratio. Results and edges in the close's risks,
+            the heavyweights' in fractions; each change the open less the close:
+            S&P 500's pullback, 29475 settled, 29221 priced both ways: result 0.189 at the close, 0.162 at the open
+            (-0.027); edge 0.032, 0.022 (-0.010); under the stop 212, over the target 42; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.037 -0.013 28 3; 2020 -0.042 -0.012 41 8;
+            2021 -0.037 -0.006 31 2; 2022 -0.009 -0.021 13 1; 2023 +0.001 -0.003 19 6; 2024 -0.032 -0.010 36 15; 2025
+            -0.020 -0.009 28 5; 2026 -0.015 -0.009 16 2.
+            S&P 500's breakout, 21876 settled, 21699 priced both ways: result 0.057 at the close, 0.033 at the open
+            (-0.023); edge 0.001, -0.014 (-0.015); under the stop 177, over the target 0; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.034 -0.004 23 0; 2020 -0.020 -0.012 29 0;
+            2021 -0.027 -0.016 21 0; 2022 +0.011 -0.009 9 0; 2023 -0.005 -0.007 30 0; 2024 -0.042 -0.029 32 0; 2025
+            -0.016 -0.015 21 0; 2026 -0.040 -0.032 12 0.
+            S&P 500's drift, 5778 settled, 5414 priced both ways: result 0.303 at the close, 0.220 at the open
+            (-0.083); edge 0.073, 0.043 (-0.030); under the stop 235, over the target 129; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.021 -0.012 23 7; 2020 -0.097 +0.019 44 25;
+            2021 -0.110 -0.036 20 13; 2022 -0.032 -0.031 29 12; 2023 -0.113 -0.070 24 23; 2024 -0.125 -0.026 42 11;
+            2025 -0.085 -0.044 37 22; 2026 -0.094 -0.041 16 16.
+            S&P 500's fundamentals, 21680 settled, 21507 priced both ways: result 0.158 at the close, 0.132 at the
+            open (-0.026); edge 0.015, 0.006 (-0.009); under the stop 148, over the target 25; by year, the result's
+            and the edge's change, under the stop and over the target: 2019 -0.039 -0.015 21 2; 2020 -0.038 -0.011 24
+            2; 2021 -0.039 -0.007 21 1; 2022 -0.011 -0.020 9 1; 2023 +0.001 -0.003 15 4; 2024 -0.034 -0.011 24 9;
+            2025 -0.016 -0.005 22 4; 2026 -0.015 -0.008 12 2.
+            S&P 500's heavyweight, 10222 settled, 10222 priced both ways: result 0.0149 at the close, 0.0148 at the
+            open (-0.0001); edge 0.0009, 0.0009 (0.0000); by year, the result's and the edge's change: 2019 -0.0002
+            0.0000; 2020 -0.0007 0.0000; 2021 -0.0024 0.0000; 2022 -0.0005 0.0000; 2023 +0.0006 0.0000; 2024 +0.0013
+            0.0000; 2025 +0.0002 0.0000; 2026 +0.0009 0.0000.
+            S&P 400's pullback, 22586 settled, 22407 priced both ways: result 0.129 at the close, 0.101 at the open
+            (-0.028); edge 0.022, 0.012 (-0.010); under the stop 145, over the target 34; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.037 -0.013 20 6; 2020 -0.045 -0.011 11 4;
+            2021 -0.044 -0.007 18 8; 2022 +0.001 -0.015 6 0; 2023 +0.003 -0.007 13 1; 2024 -0.037 -0.012 43 11; 2025
+            -0.017 -0.007 22 2; 2026 -0.024 -0.016 12 2.
+            S&P 400's breakout, 15351 settled, 15240 priced both ways: result -0.030 at the close, -0.056 at the open
+            (-0.026); edge -0.014, -0.024 (-0.010); under the stop 111, over the target 0; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.039 -0.020 25 0; 2020 -0.032 -0.003 10 0;
+            2021 -0.045 -0.018 11 0; 2022 +0.012 +0.003 9 0; 2023 -0.023 -0.011 10 0; 2024 -0.025 -0.003 26 0; 2025
+            -0.011 -0.005 11 0; 2026 -0.028 -0.024 9 0.
+            S&P 400's drift, 4284 settled, 4082 priced both ways: result 0.270 at the close, 0.167 at the open
+            (-0.103); edge 0.081, 0.023 (-0.058); under the stop 144, over the target 58; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.062 -0.047 15 2; 2020 -0.088 -0.055 26 15;
+            2021 -0.160 -0.098 13 7; 2022 -0.080 -0.087 20 7; 2023 -0.110 -0.055 12 8; 2024 -0.134 -0.030 19 9; 2025
+            -0.082 -0.032 20 4; 2026 -0.107 -0.065 19 6.
+            S&P 400's fundamentals, 14162 settled, 14045 priced both ways: result 0.083 at the close, 0.056 at the
+            open (-0.027); edge -0.003, -0.014 (-0.010); under the stop 94, over the target 23; by year, the result's
+            and the edge's change, under the stop and over the target: 2019 -0.042 -0.014 14 5; 2020 -0.050 -0.012 8
+            3; 2021 -0.039 -0.005 10 6; 2022 -0.002 -0.014 4 0; 2023 +0.001 -0.011 8 1; 2024 -0.035 -0.010 22 5; 2025
+            -0.015 -0.006 19 1; 2026 -0.023 -0.018 9 2.
+            S&P 600's pullback, 31559 settled, 31337 priced both ways: result 0.170 at the close, 0.148 at the open
+            (-0.022); edge 0.057, 0.051 (-0.006); under the stop 177, over the target 45; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.021 -0.008 8 7; 2020 -0.043 -0.013 24 4;
+            2021 -0.029 0.000 27 4; 2022 -0.003 -0.008 10 1; 2023 +0.004 -0.005 23 6; 2024 -0.035 -0.006 53 11; 2025
+            -0.009 -0.002 20 9; 2026 -0.010 -0.010 12 3.
+            S&P 600's breakout, 19862 settled, 19724 priced both ways: result -0.022 at the close, -0.051 at the open
+            (-0.029); edge -0.013, -0.027 (-0.014); under the stop 138, over the target 0; by year, the result's and
+            the edge's change, under the stop and over the target: 2019 -0.035 -0.031 24 0; 2020 -0.049 -0.024 12 0;
+            2021 -0.043 -0.015 19 0; 2022 +0.003 -0.007 5 0; 2023 -0.030 -0.008 26 0; 2024 -0.025 -0.003 32 0; 2025
+            -0.014 -0.004 5 0; 2026 -0.021 -0.021 15 0.
+            S&P 600's drift, 5566 settled, 5275 priced both ways: result 0.137 at the close, 0.055 at the open
+            (-0.082); edge -0.022, -0.063 (-0.040); under the stop 191, over the target 100; by year, the result's
+            and the edge's change, under the stop and over the target: 2019 -0.034 -0.030 17 6; 2020 -0.072 -0.043 32
+            22; 2021 -0.168 -0.092 18 11; 2022 -0.034 -0.051 24 5; 2023 -0.095 -0.048 21 11; 2024 -0.109 -0.016 33
+            15; 2025 -0.051 +0.004 27 15; 2026 -0.079 -0.052 19 15.
+            S&P 600's fundamentals, 16029 settled, 15917 priced both ways: result 0.237 at the close, 0.217 at the
+            open (-0.021); edge 0.119, 0.114 (-0.005); under the stop 86, over the target 26; by year, the result's
+            and the edge's change, under the stop and over the target: 2019 -0.018 -0.006 4 6; 2020 -0.040 -0.018 15
+            1; 2021 -0.029 +0.001 8 2; 2022 -0.003 -0.003 7 1; 2023 +0.005 0.000 11 4; 2024 -0.035 -0.006 25 4; 2025
+            -0.013 -0.003 9 7; 2026 -0.014 -0.010 7 1.
+            Read across them: the next open costs the pullback, the breakout and the fundamentals-first family 0.021
+            to 0.029 of a risk a setup on every index and the drift 0.082 to 0.103, their edges 0.005 to 0.015 and
+            0.030 to 0.058; it opens past the stop for under one setup in a hundred of the three and about one in
+            twenty-five of the drift's, and past the target for under one in four hundred of the three and about one
+            in fifty of the drift's, the breakout's trail placing no target. The heavyweights' edge does not move,
+            since every member of a size cut is a setup and the cut is its own benchmark.
+Tests:      six new, each figure worked by hand: the open against the plan's range at both edges, a cent inside
+            each and with none held; a setup bought at the open under a fixed and a trailing exit; the benchmark and
+            the heavyweights' size cut at the open; each family's means by year over a constructed ledger; and the
+            command over a constructed store of two members and over the fixture's replayed store, read against
+            `next-open.json`, derived and not frozen.
+Claims:     1313, unchanged: 19.10 adds none until the operator approves moving entries, as 19.0 stated.
+Pins:       none moves: the check's files are pinned by no rule, the readings or the evaluators.
+Remedy:     none: no migration and nothing written.
+Mutated:    the rule, stated before the runs: one mutation a property the check adds, at the line deciding it, each
+            filtered to the six new tests. M1 an open at the stop counted inside; red at the range test. M2 an open at
+            the target counted inside; red, same. M3 the open's result left in its own risk; red at the exit, the
+            benchmark and the command tests. M4 the benchmark entering a member opening past its range; red at the
+            benchmark and the command tests. M5 the benchmark not entering a member with no next session; red at the
+            benchmark test. M6 the heavyweights' result over the open and not the listing's close; red at the
+            heavyweights test. M7 the means over every row holding a result and not the pairs; red at the means and
+            the command tests. M8 the command reading the listing session's own open; red at the command test. Not
+            mutated, and no constructed case reaches them: the command's scaling of a stored plan to the history's
+            close, at a factor of one there, its edge waiting on a settled benchmark, every benchmark there settled,
+            and its reading of a heavyweights setup's size cut, the store holding none. Each reverted before anything
+            was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Carried:    the operator's word on moving entries to the next session's open, which 19.10 builds where it is given,
+            every stored trade priced again from the stored bars in the same change; the first night's ledger step
+            on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a correction of section
+            11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a correction of 19.2; the
+            sign-offs of phases 16, 17 and 18.
