@@ -182,11 +182,12 @@ public partial class ReadSurface
         // Each card's key says the rule today was chosen on these test years.
         Assert.Contains("The rule today was chosen on these same test years, so a proposal reads understated against it.", page, StringComparison.Ordinal);
 
-        // September's run named in the link, its families each saying none was tested.
+        // September's run named in the link, its families each saying none was tested, from 19.9 the business-first
+        // family's card among them.
         var september = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=400&month=2026-09"));
 
         Assert.Contains("data-month=\"2026-09\" data-run=\"loop-test-MID-20260905T120000Z\" data-proposals=\"0\"", september, StringComparison.Ordinal);
-        Assert.Equal(4, september.Split("data-loop-rule=\"none\"").Length - 1);
+        Assert.Equal(EquityBrief.Core.Families.SetupFamilies.Order.Count, september.Split("data-loop-rule=\"none\"").Length - 1);
 
         // An index with no run says so in one line.
         var small = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=600"));

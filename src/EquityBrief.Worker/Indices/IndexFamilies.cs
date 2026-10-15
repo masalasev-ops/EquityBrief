@@ -360,9 +360,14 @@ public sealed class IndexFamilies : IComponent
         // standing rule's hooks read where they state one.
         var tonight = inputs is not null && readingsOf is not null ? await readingsOf(index, cancellation) : null;
 
-        // The setting an approval stored for each family on the index, none on the S&P 500, whose approvals are refused.
+        // The setting an approval stored for each family on the index, on the S&P 500 the fundamentals-first family's alone,
+        // the only one read here, its own families changing through the stored settings their own steps read and a
+        // registration.
         // see: An approved change is applied by the night's own build on the index it was approved on alone
-        var stored = large ? new Dictionary<string, LoopChange>(StringComparer.Ordinal) : await StoredSettingsAsync(connection, index, cancellation);
+        // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+        var stored = (await StoredSettingsAsync(connection, index, cancellation))
+            .Where(pair => families.Contains(pair.Key, StringComparer.Ordinal))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
         var trees = await EquityBrief.Worker.Loop.StoredTrees.ReadAsync(connection, null, cancellation);
 
         // A family whose live rule stands draws the index's page on that rule's settings, one an approval stored a setting
@@ -370,7 +375,7 @@ public sealed class IndexFamilies : IComponent
         // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
         IndexFamilyRead ReadOf(IndexNightInputs prepared, string family) =>
             rules.FirstOrDefault(rule => rule.Live && rule.Family == family) is { } live ? IndexRules.Read(prepared, live, levels)
-            : stored.TryGetValue(family, out var setting) ? IndexNightRead.Stored(prepared, family, setting, tonight, trees)
+            : stored.TryGetValue(family, out var setting) ? Stored(prepared, family, setting, tonight, trees)
             : IndexNightRead.Provisional(prepared, family, tonight);
 
         var read = inputs is null
@@ -506,7 +511,7 @@ public sealed class IndexFamilies : IComponent
             .OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .ToDictionary(pair => pair.Key, pair => pair.Value.Words(), StringComparer.Ordinal),
         heavyweights = IndexHeavyweights.Provisional.Key,
-        fundamentals = new { setting = FundamentalsRule.Provisional.Key, words = FundamentalsRule.Provisional.Words, cap = IndexNightRead.PullbackCap },
+        fundamentals = new { setting = Fundamentals(stored).Short, words = Fundamentals(stored).Words, cap = IndexNightRead.PullbackCap },
         live = (rules ?? [])
             .Where(rule => rule.Live)
             .Select(rule => new
@@ -610,6 +615,20 @@ public sealed class IndexFamilies : IComponent
 
     static int[]? StoredPlaces(IReadOnlyDictionary<string, LoopChange>? stored, string family) =>
         stored is not null && stored.TryGetValue(family, out var setting) && setting.Places is { } places ? [.. places] : null;
+
+    // The fundamentals-first family's setting on an index: the one an approval stored, or its provisional one.
+    static FundamentalsSetting Fundamentals(IReadOnlyDictionary<string, LoopChange>? stored) =>
+        FundamentalsRule.StoredOr(StoredPlaces(stored, FundamentalsRule.Name));
+
+    // A family at the setting an approval stored for it on the index: the fundamentals-first family at the setting of its
+    // 27 the approval named, or its provisional one where it named none, its list kept and ordered by the setting's
+    // hooks; every swing family as the index night reads a stored setting. Read here and not in the index night's own
+    // source, which every index rule's version pins, so a family no rule is registered for moves no rule's version.
+    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+    public static IndexFamilyRead Stored(IndexNightInputs inputs, string family, LoopChange setting, Func<string, IReadOnlyList<double?>?>? readings, Func<long, TreeModel?>? trees = null) =>
+        family == FundamentalsRule.Name
+            ? IndexNightRead.Hooked(inputs, IndexNightRead.Fundamentals(inputs, FundamentalsRule.StoredOr(setting.Places), readings), RuleHooks.Of(setting.Hooks).With(trees), readings)
+            : IndexNightRead.Stored(inputs, family, setting, readings, trees);
 
     // The newest setting an approval stored for each of an index's families.
     const string StoredSettings = @"

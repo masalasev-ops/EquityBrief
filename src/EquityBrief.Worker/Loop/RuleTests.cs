@@ -57,7 +57,7 @@ public sealed record RuleTestInputs(
 // the drift at their places on their sweeps' grids with a market switch read on the listing's session, the sector
 // heavyweights as books at their settings, the S&P 400's and 600's provisional rules and registered rules, a market-off
 // variant's walk reading its check open on every session, and the fundamentals-first family's provisional rule by its
-// search's own walk. Each variant is then read against its live or provisional rule by the proposals' block sign-flip
+// search's own walk at the setting and hooks an approval stored for it. Each variant is then read against its live or provisional rule by the proposals' block sign-flip
 // test of the difference in edge after costs, its family's variants on the index read together by the step-down, and
 // each live or provisional rule against its own benchmark under the same test, every one held to the same bar and
 // screens. A rule the history cannot walk is kept with the reading it lacks and no figure. It adopts and retires nothing.
@@ -173,7 +173,7 @@ public static class RuleTests
             .. large ? LargePullbacks(inputs) : IndexPullbacks(inputs, pullback!, Candidates),
             .. Swings(inputs, BreakoutRule.Name),
             .. Swings(inputs, DriftRule.Name),
-            Fundamentals(inputs, pullback ?? RuleWalk.Pullback(inputs.Read, inputs.Market, inputs.Progress, candidates: Candidates())),
+            Fundamentals(inputs, Candidates()),
             .. Heavyweights(inputs),
         ];
     }
@@ -401,20 +401,26 @@ public static class RuleTests
         return new RuleUnderTest(family, row.Candidate, StandingOf(row), row.Rule, LoopProcedures.Risks, walk.Cap, Units(trades));
     }
 
-    // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's listings kept where the
-    // family's parts pass at its provisional setting.
-    static RuleUnderTest Fundamentals(RuleTestInputs inputs, RuleWalk pullback)
+    // The fundamentals-first family's provisional rule, by its search's own walk: the pullback's base listings kept where
+    // the family's parts pass at the setting an approval stored for it on the index or its provisional one, walked at the
+    // hooks that approval stored and at none of the pullback's.
+    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+    static RuleUnderTest Fundamentals(RuleTestInputs inputs, IdeaReplay candidates)
     {
-        var read = inputs.Read;
+        var standing = inputs.Approved.GetValueOrDefault(FundamentalsRule.Name);
+        var (setting, words) = FundamentalsStanding(standing);
+        var walk = RuleWalk.Fundamentals(inputs.Read, candidates, inputs.Readings, setting, inputs.Progress, standing, inputs.Trees);
 
-        bool Keeps(int at)
-        {
-            var listing = pullback.Listings[at];
+        return new RuleUnderTest(FundamentalsRule.Name, RuleRows.ProvisionalRule, Provisional, words, LoopProcedures.Risks, walk.Cap, Units(walk.Own));
+    }
 
-            return FundamentalsRule.FailsOn(FundamentalsRule.Provisional, inputs.Readings.Of(listing.Name, listing.Bar, listing.Session), read.Income.GetValueOrDefault(read.Ticker(listing.Name)) ?? [], read.Calendar[listing.Session]) is null;
-        }
+    // The setting the family's provisional rule is walked at and its words: the one an approval stored, with the hooks it
+    // stored, or the provisional setting where none was stored.
+    public static (FundamentalsSetting Setting, string Words) FundamentalsStanding(LoopChange? standing)
+    {
+        var setting = FundamentalsRule.StoredOr(standing?.Places);
 
-        return new RuleUnderTest(FundamentalsRule.Name, RuleRows.ProvisionalRule, Provisional, FundamentalsRule.Provisional.Key, LoopProcedures.Risks, pullback.Cap, Units(pullback.Keeping(Keeps)));
+        return (setting, RuleHooks.Of(standing?.Hooks ?? LoopChange.NoHooks).Words() is { } hooked ? setting.Key + "; " + hooked : setting.Key);
     }
 
     // The sector heavyweights: on the S&P 500 each registered book at its setting, on the S&P 400 or 600 its live book

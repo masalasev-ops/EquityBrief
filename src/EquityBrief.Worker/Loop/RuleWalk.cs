@@ -184,6 +184,41 @@ public sealed class RuleWalk(
         return OverListings(read, series, replay.Listings(rule, Keeps), rule, RuleReplay.PullbackWords, progress, standing, readings, trees);
     }
 
+    // The fundamentals-first family at a setting on any index: the pullback's base listings as its record replays them,
+    // held to the index's floors and gate, each kept where every part of the family's rule passes at the setting on the
+    // listing's session, its business read from the facts filed before it, and walked as the pullback's base is walked,
+    // five a night with one open trade a stock, at the hooks an approval stored for it where it stored any.
+    // see: The fundamentals-first family buys an improving business in an uptrend at the pullback's buy point
+    public static RuleWalk Fundamentals(LoopRead read, IdeaReplay candidates, LoopReadings readings, FundamentalsSetting setting, Action<string> progress, LoopChange? standing = null, Func<long, TreeModel?>? trees = null) =>
+        Fundamentals(read, candidates.Series, BaseListings(read, candidates), readings, setting, progress, standing, trees);
+
+    // The pullback's base listings an index's fundamentals-first walks read, read once for every setting.
+    public static IReadOnlyList<IdeaListing> BaseListings(LoopRead read, IdeaReplay candidates)
+    {
+        var series = candidates.Series;
+
+        bool Keeps(int name, int bar) => IndexSweepRunner.Clears(read.Index, series[name], bar, read.Income.GetValueOrDefault(series[name].Name.Ticker) ?? []);
+
+        return candidates.Listings(FundamentalsBase, Keeps);
+    }
+
+    public static RuleWalk Fundamentals(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, LoopReadings readings, FundamentalsSetting setting, Action<string> progress, LoopChange? standing = null, Func<long, TreeModel?>? trees = null)
+    {
+        IReadOnlyList<IdeaListing> kept =
+        [
+            .. listings.Where(listing => FundamentalsRule.FailsOn(
+                setting,
+                readings.Of(listing.Name, listing.Bar, listing.Session),
+                read.Income.GetValueOrDefault(series[listing.Name].Name.Ticker) ?? [],
+                read.Calendar[listing.Session]) is null),
+        ];
+
+        return OverListings(read, series, kept, FundamentalsBase, setting.Words, progress, standing, readings, trees, FundamentalsRule.Name);
+    }
+
+    // The pullback's base as the fundamentals-first family buys at it, five a night.
+    static IdeaRule FundamentalsBase => SweepIdeas.BaseRule with { PerNight = SetupFamilies.ListedANight };
+
     // The S&P 500's pullback: the swing filter at a version's settings read by value over the ideas' run's candidates,
     // every listing kept, five a night in the list's own order or as many as a variant keeps, held on closes to the cap,
     // with the hooks an approval stored for it.
@@ -200,8 +235,9 @@ public sealed class RuleWalk(
             readings,
             trees);
 
-    // A pullback's listings walked as the ideas' run walks them, under the exit the rule stands at or a proposal's.
-    static RuleWalk OverListings(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, IdeaRule rule, string words, Action<string> progress, LoopChange? standing, LoopReadings? readings, Func<long, TreeModel?>? trees)
+    // A pullback's listings walked as the ideas' run walks them, under the exit the rule stands at or a proposal's, under
+    // the family named, the pullback's own or the fundamentals-first family's, which buys at the pullback's base.
+    static RuleWalk OverListings(LoopRead read, IReadOnlyList<SweepSeries> series, IReadOnlyList<IdeaListing> listings, IdeaRule rule, string words, Action<string> progress, LoopChange? standing, LoopReadings? readings, Func<long, TreeModel?>? trees, string family = SetupFamilies.Pullback)
     {
         var tickers = series.Select(one => one.Name.Ticker).ToArray();
         var closes = ClosesOf(series);
@@ -342,10 +378,10 @@ public sealed class RuleWalk(
             ];
         }
 
-        progress(FormattableString.Invariant($"read the pullback's {listings.Count} listing(s) on the {DecisionCards.NameOf(read.Index)}"));
+        progress(FormattableString.Invariant($"read the {family}'s {listings.Count} listing(s) on the {DecisionCards.NameOf(read.Index)}"));
 
         return new RuleWalk(
-            SetupFamilies.Pullback,
+            family,
             WordsOf(words, hooks),
             closes,
             SweepIdeas.Cap,

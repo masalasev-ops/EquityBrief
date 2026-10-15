@@ -105,7 +105,7 @@ public sealed record LedgerContext(
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 public static class LedgerSetups
 {
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
 
     static readonly int LiveHigh = SweepAxes.ReferenceHighs.ToList().IndexOf(SweepDesign.Live.ReferenceHigh);
     static readonly int LiveAge = SweepCandidate.AgeAt(SweepDesign.Live.Trigger, SweepDesign.Live.Support);
@@ -200,16 +200,26 @@ public static class LedgerSetups
         LedgerContext context)
     {
         var closes = series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
+        var (pullbacks, fundamentals) = Pullbacks(indexCode, series, closes, sessions, members, calendar, at, market, context);
 
         return
         [
-            Pullbacks(indexCode, series, closes, sessions, members, calendar, at, market, context),
+            pullbacks,
             Breakouts(indexCode, series, closes, sessions, members, calendar, at, market, context),
             Drifts(indexCode, series, closes, sessions, members, calendar, at, market, context),
+            fundamentals,
         ];
     }
 
-    static FamilySetups Pullbacks(
+    // The fundamentals-first family's setting in words, as its pass is read beside its setups: the provisional setting,
+    // which an approval on the Loop page does not move, at the pullback's base.
+    public static string FundamentalsWords { get; } = FundamentalsRule.Provisional.Key + "; at the pullback's base, " + SweepIdeas.BaseRule.Setting.Describe(SweepGrid.Extended);
+
+    // The pullback's setups, and the fundamentals-first family's among them: each the pullback's whose revenue and cash
+    // clear the family's loose gates, at the pullback's own plan, its pass the provisional rule's as the night reads it,
+    // the pullback's base passing it, the market check open, the index's floors whole and every part of the family's rule.
+    // see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
+    static (FamilySetups Pullbacks, FamilySetups Fundamentals) Pullbacks(
         string indexCode,
         IReadOnlyList<SweepSeries> series,
         double[][] closes,
@@ -228,6 +238,8 @@ public static class LedgerSetups
         var live = LivePullback(indexCode);
         var words = PullbackWords(indexCode);
         var rows = new List<SetupRow>();
+        var business = new List<SetupRow>();
+        var open = sessions[at].Breadth >= FamilySweep.MarketFloor;
 
         foreach (var candidate in found.SelectMany(list => list).Where(candidate => candidate.Session == at))
         {
@@ -271,9 +283,20 @@ public static class LedgerSetups
             readings[LedgerReadings.IndexOf("band_strength")] = candidate.Band[(int)SweepDesign.Live.Support];
 
             rows.Add(new SetupRow(indexCode, SetupFamilies.Pullback, one.Name.Ticker, calendar[at], words, passes, anchor, setupPlan, readings));
+
+            if (SetupGates.Fundamentals(readings[LedgerReadings.IndexOf("revenue_growth")], readings[LedgerReadings.IndexOf("cash_over_income")]))
+            {
+                var listedByTheBase = corner is { } based && based.Passes(SweepIdeas.BaseRule.Setting) && !inTheEarningsWindow;
+                var provisional = open
+                    && listedByTheBase
+                    && ClearsTheWholeFloors(indexCode, one, bar)
+                    && FundamentalsRule.FailsOn(FundamentalsRule.Provisional, readings, context.Income.GetValueOrDefault(one.Name.Ticker) ?? [], calendar[at]) is null;
+
+                business.Add(new SetupRow(indexCode, FundamentalsRule.Name, one.Name.Ticker, calendar[at], FundamentalsWords, provisional, anchor, setupPlan, [.. readings]));
+            }
         }
 
-        return new FamilySetups(SetupFamilies.Pullback, held.Length, Ordered(rows));
+        return (new FamilySetups(SetupFamilies.Pullback, held.Length, Ordered(rows)), new FamilySetups(FundamentalsRule.Name, held.Length, Ordered(business)));
     }
 
     static FamilySetups Breakouts(
@@ -420,6 +443,17 @@ public static class LedgerSetups
         var window = one.Bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(each => (each.Close, each.Volume)).ToArray();
 
         return SetupGates.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window));
+    }
+
+    // The index's floors whole, as the night holds a family's list to them: its close as traded at least the lowest close
+    // and its dollar volume over the 50 sessions to it at least the index's own floor.
+    static bool ClearsTheWholeFloors(string indexCode, SweepSeries one, int bar)
+    {
+        var day = one.Bars[bar];
+        var traded = day.RawClose > 0m ? day.RawClose : day.Close;
+        var window = one.Bars[Math.Max(0, bar - MemberReadings.DollarVolumeSessions + 1)..(bar + 1)].Select(each => (each.Close, each.Volume)).ToArray();
+
+        return MemberReadings.ClearsTheFloors(indexCode, traded, MemberReadings.DollarVolume(window)) && traded >= MemberReadings.LowestPrice;
     }
 
     static IReadOnlyList<SetupRow> Ordered(List<SetupRow> rows)

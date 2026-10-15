@@ -17,8 +17,12 @@ public enum MarginRule
 // have widened, and the least cash from operations over net income.
 public sealed record FundamentalsSetting(double GrowthFloor, MarginRule Margins, double CashFloor)
 {
-    // The setting as the search and a card key it.
+    // The setting as the search and the per-rule test key it.
     public string Key => FormattableString.Invariant($"growth>{GrowthFloor:0.##}|margins={Margins.ToString().ToLowerInvariant()}|cash>={CashFloor:0.##}");
+
+    // The setting as a card's gates and an approval's words state it, each dial and its level, which reads whole once its
+    // bars are commas.
+    public string Short => FormattableString.Invariant($"growth {GrowthFloor:0.##}|margins {Margins.ToString().ToLowerInvariant()}|cash {CashFloor.ToString("0.0#", CultureInfo.InvariantCulture)}");
 
     // The setting in words, as a card states the rule.
     public string Words =>
@@ -70,6 +74,21 @@ public static class FundamentalsRule
     [
         .. GrowthFloors.SelectMany(growth => MarginRules.SelectMany(margins => CashFloors.Select(cash => new FundamentalsSetting(growth, margins, cash)))),
     ];
+
+    // A setting by its place on each dial, the growth floor's first, the margins' and the cash floor's after, as an approval
+    // stores it; and a setting's places.
+    public static FundamentalsSetting At(IReadOnlyList<int> places) =>
+        new(GrowthFloors[places[0]], MarginRules[places[1]], CashFloors[places[2]]);
+
+    public static int[] PlacesOf(FundamentalsSetting setting) =>
+    [
+        GrowthFloors.ToList().IndexOf(setting.GrowthFloor),
+        MarginRules.ToList().IndexOf(setting.Margins),
+        CashFloors.ToList().IndexOf(setting.CashFloor),
+    ];
+
+    // The setting an approval stored by its places, the provisional setting where it stored none.
+    public static FundamentalsSetting StoredOr(IReadOnlyList<int>? places) => places is null ? Provisional : At(places);
 
     static readonly int RevenueGrowth = LedgerReadings.IndexOf("revenue_growth");
     static readonly int GrowthChange = LedgerReadings.IndexOf("growth_change");

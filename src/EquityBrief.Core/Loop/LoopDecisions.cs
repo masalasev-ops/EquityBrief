@@ -37,9 +37,11 @@ public static class LoopDecisions
 
     public const string FrozenRefused = "the family's live rule stands registered on the index and draws its page, and a registered rule changes only by a registration, which waits on the operator's ruling of how an approval registers one";
 
-    // The swing families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14.
+    // The families an approval changes on every index, the S&P 500's pullback by its hooks or a shape move from 17.14, and
+    // from 19.9 the fundamentals-first family by its setting and its hooks on every index, the S&P 500's included.
     // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name];
+    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+    public static IReadOnlyList<string> Families { get; } = [SetupFamilies.Pullback, BreakoutRule.Name, DriftRule.Name, FundamentalsRule.Name];
 
     // The S&P 500's families an approval changes, each by its stored settings and a registration.
     public static IReadOnlyList<string> LargeFamilies { get; } = [BreakoutRule.Name, DriftRule.Name];

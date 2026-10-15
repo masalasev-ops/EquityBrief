@@ -410,7 +410,7 @@ public partial class ReadSurface
 
         Run(store, SmallOctober, "SML", "2026-10");
 
-        foreach (var family in new[] { "pullback", "breakout", "drift", "heavyweight" })
+        foreach (var family in SinglePageApp.LoopFamilies)
         {
             Proposed(store, SmallOctober, "SML", family, "the autopsy's exit, ranked 1", false, Exit(7));
         }

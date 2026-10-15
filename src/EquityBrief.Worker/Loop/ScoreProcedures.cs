@@ -42,12 +42,12 @@ public static class ScoreProcedures
 
     public const string Trees = "trees";
 
-    // Whether a pick's card on a family draws the score's part: the breakout and the drift on every index, and the
-    // pullback on the S&P 400 and 600, as the card's decision names them; the tester fits the score for every family a
-    // rule's hooks reach, the S&P 500's pullback among them from 17.14.
+    // Whether a pick's card on a family draws the score's part: the breakout, the drift and from 19.9 the fundamentals-first
+    // family on every index, and the pullback on the S&P 400 and 600, as the card's decision names them; the tester fits
+    // the score for every family a rule's hooks reach, the S&P 500's pullback among them from 17.14.
     // see: A pick's card draws the setups like it under its rule beneath the rule's record, and the score's rank only once the score passed on its index
     public static bool Reaches(string index, string family) =>
-        family is EquityBrief.Core.Families.BreakoutRule.Name or EquityBrief.Core.Families.DriftRule.Name
+        family is EquityBrief.Core.Families.BreakoutRule.Name or EquityBrief.Core.Families.DriftRule.Name or EquityBrief.Core.Families.FundamentalsRule.Name
         || (family == EquityBrief.Core.Families.SetupFamilies.Pullback && index != WalkForwardTester.LargeIndex);
 
     public static string ProposalName(int rank) => KindName(ProposalPrefix, rank);

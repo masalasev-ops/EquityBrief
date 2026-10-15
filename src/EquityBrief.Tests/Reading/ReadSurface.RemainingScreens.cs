@@ -225,6 +225,7 @@ public partial class ReadSurface
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "pullback", "winners against losers, ranked 1", 0.0001, true, Condition("rsi", 60));
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "pullback", "the grid", 0.5, false, null);
         Tested(store, "loop-test-MID-20261009T120000Z", "MID", "breakout", "the grid", 0.05, false, Exit(7), better: 2, counted: 5);
+        Tested(store, "loop-test-MID-20261009T120000Z", "MID", "fundamentals", "the grid", 0.3, false, EquityBrief.Core.Loop.LoopChange.OfSetting([0, 0, 2], "growth 0|margins either|cash 1.2", 0).Json);
         store.Execute("INSERT INTO loop_test (run_id, index_code, family, proposal, year, complete, chosen, current_units, proposed_units, current_total, proposed_total) VALUES ('loop-test-MID-20261009T120000Z', 'MID', 'pullback', 'winners against losers, ranked 1', 2024, 1, 'rsi above 60', 60, 55, 2.5, 4.0);");
 
         using var host = new Host(store.Root);
@@ -251,7 +252,13 @@ public partial class ReadSurface
         Assert.Equal(new DateOnly(2026, 11, 7), SinglePageApp.NextMonthlyRun("2026-10"));
         Assert.Equal(new DateOnly(2026, 12, 5), SinglePageApp.NextMonthlyRun("2026-11"));
         Assert.Contains("Nothing was tested for this setup in the run for 2026-10; the next monthly run is on 2026-11-07.", summary, StringComparison.Ordinal);
-        Assert.Contains("it waits on 19.9", summary, StringComparison.Ordinal);
+
+        // From 19.9 the business-first family is a row and a card as every family is, its one proposal drawn from the run
+        // and nothing said of 19.9.
+        Assert.Contains("<tr data-family=\"fundamentals\" data-tested=\"1\" data-strongest=\"the grid\" data-put=\"none\">", summary, StringComparison.Ordinal);
+        Assert.Contains("data-card=\"loop-fundamentals\"", page, StringComparison.Ordinal);
+        Assert.Single(Blocks(page, "<details class=\"loop-row\" data-family=\"fundamentals\" data-proposal=\"the grid\">.*?</details>"));
+        Assert.DoesNotContain("19.9", page, StringComparison.Ordinal);
 
         // The line on what a change must pass, each figure its constant.
         Assert.Contains(
@@ -279,7 +286,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheLedgerSaysItHoldsNoBusinessFirstSetupAndDrawsEachYearsEdgeAndTheDecilesAsMarks()
+    public async Task TheLedgerDrawsTheBusinessFirstFamilysCardAndEachYearsEdgeAndTheDecilesAsMarks()
     {
         // The edge a year: 0.2 the largest, drawn 28 high above the line at 30; -0.1 14 beneath it; a year with none a gap.
         LedgerYear Year(int year, double? edge) => new("GSPC", "breakout", year, 10, 4, 0, 0, edge is null ? 0 : 5, 0.1, edge, null, null);
@@ -300,13 +307,30 @@ public partial class ReadSurface
         Assert.Contains("<line class=\"ds-zero\" x1=\"150\"", strip, StringComparison.Ordinal);
         Assert.Equal(string.Empty, MarkRenderer.LedgerDecileStrip(Year(2025, null)));
 
-        // The page says it holds no business-first setup and names 19.9, on an index holding no setup at all.
+        // From 19.9 the ledger writes the business-first family's setups, so the page carries no line saying it holds none,
+        // on an index holding no setup and on one holding the family's: its card stands after the drift's in the one order,
+        // named as every page names it, over summary rows stored in the reverse order.
         using var store = new TemporaryStore().Migrated();
+
+        LedgerYearRow(store, "fundamentals", 2026, 12, 3, 12, 2, 4, "0.3", "0.05", "-1,-0.5,0,0.25,0.5,1,1.5,2,3");
+        LedgerYearRow(store, "drift", 2026, 20, 5, 20, 4, 8, "0.1", "0.02", "-1,-0.5,0,0.25,0.5,1,1.5,2,3");
+
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
+        var empty = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?universe=600"));
+        var held = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?universe=500"));
 
-        Assert.Contains($"<p class=\"notice ledger-business\" data-family=\"fundamentals\">{SinglePageApp.LedgerBusinessLine}</p>", WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger?universe=600")), StringComparison.Ordinal);
-        Assert.Contains("queued as 19.9", SinglePageApp.LedgerBusinessLine, StringComparison.Ordinal);
+        Assert.Contains("data-ledger=\"none\"", empty, StringComparison.Ordinal);
+
+        foreach (var page in new[] { empty, held })
+        {
+            Assert.DoesNotContain("ledger-business", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("19.9", page, StringComparison.Ordinal);
+        }
+
+        Assert.True(held.IndexOf("data-card=\"ledger-drift\"", StringComparison.Ordinal) < held.IndexOf("data-card=\"ledger-fundamentals\"", StringComparison.Ordinal));
+        Assert.Contains($"{EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label} setups", Card(held, "ledger-fundamentals"), StringComparison.Ordinal);
+        Assert.Contains("data-families=\"2\"", held, StringComparison.Ordinal);
     }
 
     [Fact]

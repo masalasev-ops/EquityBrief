@@ -1,0 +1,16 @@
+# The remedy of 19.9 (the ledger writes the business-first family's setups), as its PROGRESS entry prints it. No migration:
+# the setups, setup nights and ledger summaries hold a family by its word. The index families' step now reads an approved
+# setting of the fundamentals-first family on every index, which moves every S&P 400 and 600 rule's version, so the rules
+# standing on those indices, the S&P 600's two heavyweights books and 19.1's six market-off variants, would be skipped and
+# named on the night until they are registered again. Registering the moved rules again first replays each swing rule
+# over every night the store holds since its record began, its record carrying on where every trade is reproduced; a
+# heavyweights rule is named as not replayed and restarts. The S&P 500's rules move no version and are not touched. Each
+# index's ledger history is then built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from
+# 2019-01-02 --through 2026-10-05 --again, which builds main's own commit from a clean copy and so is not a worker command
+# this file can run, so the history holds the fundamentals-first family's setups beside the others; the checks below read
+# each index's history point in time once its build has run. No request to the provider and no model call. Run from main
+# after the merge and before the night, when no night is running, and restart the read surface after it.
+register --moved --evidence "19.9: the index families' step reads an approved setting of the fundamentals-first family on every index, so every S&P 400 and 600 rule's version moves; each standing rule is registered again"
+ledger-check --index GSPC
+ledger-check --index MID
+ledger-check --index SML

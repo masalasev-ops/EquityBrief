@@ -186,7 +186,7 @@ public partial class FixtureExpectations
         var rsi = LoopChange.OfHooks(new Dictionary<string, double>(StringComparer.Ordinal) { ["also_rsi_above"] = 50 }).Json;
 
         // Refused: a grid setting of the S&P 500's drift, a shape move of any family but the S&P 500's pullback, a book, a
-        // family no approval reaches, a proposal stating no change and the pullback's grid setting; from 17.13 the S&P
+        // word no family carries, a proposal stating no change and the pullback's grid setting; from 17.13 the S&P
         // 500's drift takes a change of its hooks, and from 17.14 its pullback a change of its hooks or a shape move.
         var shape = LoopChange.OfShape("strengthFloor", 0.53).Json;
 
@@ -197,7 +197,16 @@ public partial class FixtureExpectations
         Assert.Equal((false, LoopApply.ShapeRefused), Words(LoopApply.Answer("run", "GSPC", "breakout", "p", shape, [])));
         Assert.Equal((false, LoopApply.ShapeRefused), Words(LoopApply.Answer("run", "SML", "pullback", "p", shape, [])));
         Assert.Equal((false, LoopDecisions.BookRefused), Words(LoopApply.Answer("run", "SML", "heavyweight", "p", exit, [])));
-        Assert.Equal((false, LoopDecisions.FamilyRefused), Words(LoopApply.Answer("run", "SML", "fundamentals", "p", exit, [])));
+        Assert.Equal((false, LoopDecisions.FamilyRefused), Words(LoopApply.Answer("run", "SML", "momentum", "p", exit, [])));
+
+        // From 19.9 the fundamentals-first family takes a change of its hooks and of its setting on every index, the S&P
+        // 500's among them, where a grid setting of the S&P 500's own breakout or drift is refused.
+        var business = LoopChange.OfSetting([1, 1, 2], "growth 0.05|margins both|cash 1.2", 0).Json;
+
+        Assert.True(LoopApply.Answer("run", "SML", "fundamentals", "p", exit, []).Applied);
+        Assert.Equal((true, "the family stands from the next night at the setting growth 0.05, margins both, cash 1.2"), Words(LoopApply.Answer("run", "GSPC", "fundamentals", "p", business, [])));
+        Assert.Equal((true, "the family stands from the next night at the setting growth 0.05, margins both, cash 1.2"), Words(LoopApply.Answer("run", "MID", "fundamentals", "p", business, [])));
+        Assert.Equal((false, LoopApply.LargeSettingRefused), Words(LoopApply.Answer("run", "GSPC", "breakout", "p", business, [])));
         Assert.Equal((false, LoopApply.NoChangeRefused), Words(LoopApply.Answer("run", "SML", "breakout", "p", null, [])));
         Assert.False(LoopApply.Answer("run", "SML", "pullback", "p", LoopChange.OfSetting([1, 1], "a=1|b=2", 0).Json, []).Applied);
 
