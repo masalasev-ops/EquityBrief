@@ -44753,7 +44753,11 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             one against none in its table. Not mutated: the
             stylesheet's rules for the card and the market line's link words. Each reverted before anything was
             committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, ac60e950: all six
+            steps, 0 warnings, 0 errors, 2342 of 2342 tests ran with none failed in 17 minutes 48 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 59 tables,
+            1313 claims, 1313 passing, none out of scope and none unexamined, 1324 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    19.9, the ledger writing the business-first family's setups, owed after this report on the operator's
             approval of 2026-10-12, and 19.10 beside it; Figure 11.4's "earliest promotion", owed a correction of
             section 11; the market line drawing the S&P 600's stored breadth of 0.4497 as 45.0% beside "below its
