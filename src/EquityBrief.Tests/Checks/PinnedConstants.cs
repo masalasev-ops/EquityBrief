@@ -145,6 +145,7 @@ public class PinnedConstants
             new("Setup ledger's loose gates", "20", Core.Families.BreakoutRule.RangeSessions, "BreakoutRule.RangeSessions"),
             new("Setup ledger's loose gates", "0.25", (decimal)Core.Ledger.SetupGates.DriftReactionMoves, "SetupGates.DriftReactionMoves"),
             new("Setup ledger's loose gates", "5", Core.Ledger.SetupGates.LowestPrice, "SetupGates.LowestPrice"),
+            new("Setup ledger's loose gates", "0.6", (decimal)Core.Ledger.SetupGates.FundamentalsCash, "SetupGates.FundamentalsCash"),
             new("Setup ledger's loose gates", "252", Core.Ledger.HeavyweightPaths.Cap, "HeavyweightPaths.Cap"),
             new("Setup ledger's history budget", "0.5", (decimal)Core.Ledger.SetupGates.BudgetGigabytes, "SetupGates.BudgetGigabytes"),
             new("Filings refresh", "10", (decimal)EquityBrief.Worker.Ledger.FilingsRefresher.Limit.TotalMinutes, "FilingsRefresher.Limit in minutes"),

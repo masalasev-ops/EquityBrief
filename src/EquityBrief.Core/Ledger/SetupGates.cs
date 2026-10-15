@@ -25,6 +25,14 @@ public static class SetupGates
     // quarter of a typical move.
     public const double DriftReactionMoves = 0.25;
 
+    // The fundamentals-first family: a pullback setup, at the pullback's own plan, whose revenue grew more than -0.05 on
+    // the year-earlier quarter and whose cash from operations is at least 0.6 of its net income, the cash read only where
+    // that income is above nothing, so a member losing money stays out. The profit, the growth's change, the margins and
+    // the trend are not gated; each is a reading the setup carries.
+    // see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
+    public const double FundamentalsGrowth = -0.05;
+    public const double FundamentalsCash = 0.6;
+
     // Every family's floors on every index: a close of at least $5 and a dollar volume of at least half the index's
     // own floor, an index with no floor clearing it.
     public const decimal LowestPrice = Readings.MemberReadings.LowestPrice;
@@ -50,4 +58,7 @@ public static class SetupGates
 
     public static bool Drift(double surprisePercent, double reactionMoves) =>
         surprisePercent > 0 && reactionMoves >= DriftReactionMoves;
+
+    public static bool Fundamentals(double? revenueGrowth, double? cashOverIncome) =>
+        revenueGrowth is { } growth && growth > FundamentalsGrowth && cashOverIncome is { } cash && cash >= FundamentalsCash;
 }

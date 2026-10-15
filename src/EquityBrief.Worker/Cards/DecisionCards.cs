@@ -342,11 +342,14 @@ public sealed class DecisionCards : IComponent
             written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, market, sectors, ranks, null, cancellation, score, Approved(pick.Family));
         }
 
+        // The fundamentals-first family's picks on the S&P 500, which the index families' step lists, each with the score's
+        // part the tester fits for it there.
         foreach (var pick in indexPicks)
         {
             var plan = await IndexPlanAsync(connection, transaction, index, pick, night, indexSettings, cancellation);
+            var score = await ScorePartAsync(connection, transaction, index, pick.Family, pick.Ticker, scores, cancellation);
 
-            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(breadth, floor, true), sectors, ranks, null, cancellation);
+            written += await WriteAsync(connection, transaction, index, night, pick.Family, pick.Ticker, pick.Place, plan, new MarketReading(breadth, floor, true), sectors, ranks, null, cancellation, score);
         }
 
         var place = 0;

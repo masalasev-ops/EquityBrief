@@ -26,6 +26,16 @@ public static class FundamentalsSearch
 {
     public const string Verb = "sweep-fundamentals";
 
+    // The family's 27 settings as a grid of its three dials, the growth floor slowest, the margins by their place in the
+    // rule's order, and the provisional setting's places, as the tester's procedure walks them and an approval stores one.
+    public static FamilyGrid Grid { get; } = new(
+        [
+            ("growth", FundamentalsRule.GrowthFloors),
+            ("margins", [.. FundamentalsRule.MarginRules.Select((_, place) => place + 0.0)]),
+            ("cash", FundamentalsRule.CashFloors),
+        ],
+        FundamentalsRule.PlacesOf(FundamentalsRule.Provisional));
+
     // A setting's figures over the walked trades, the years from the first scored.
     public static FundamentalsFigures Figures(FundamentalsSetting setting, IReadOnlyList<(DateOnly Entry, double Edge)> trades)
     {

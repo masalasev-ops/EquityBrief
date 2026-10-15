@@ -1370,10 +1370,10 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | Column | Type | Notes |
 |---|---|---|
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
-| `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
+| `family` | TEXT | `pullback`, `breakout`, `drift`, from 19.9 `fundamentals`, or, on the S&P 500, `heavyweight`; a `fundamentals` row is a `pullback` row of the same stock and session whose revenue and cash clear the family's loose gates, at that row's own plan |
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
-| `rule` | TEXT | the words of the family's setting in code the pass beside it was read at: the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting, which from 17.9 a change approved on the Loop page does not move, so the ledger keeps one measure across every session it holds |
+| `rule` | TEXT | the words of the family's setting in code the pass beside it was read at: the index's live pullback setting on the extended grid, the breakout's or the drift's frozen setting, or the fundamentals-first family's provisional setting at the pullback's base, which from 17.9 a change approved on the Loop page does not move, so the ledger keeps one measure across every session it holds |
 | `live_pass` | INTEGER | 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not |
 | `picked` | INTEGER | 1 where the night's own list held the stock under the family, 0 where the night listed and did not, null on a row the history build wrote |
 | `entry` | TEXT | decimal in code, the close the setup is bought at |
@@ -1452,7 +1452,7 @@ Grain: one row per index, family and session the ledger read.
 | Column | Type | Notes |
 |---|---|---|
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
-| `family` | TEXT | `pullback`, `breakout` or `drift` |
+| `family` | TEXT | `pullback`, `breakout`, `drift` or, from 19.9, `fundamentals` |
 | `session_date` | TEXT | the session |
 | `members` | INTEGER | the members the gates were read over, those holding a bar on the session with no gap |
 | `setups` | INTEGER | how many of them the family's loose gates passed |
@@ -1731,20 +1731,20 @@ Primary key: `run_id`, `index_code`, `family`, `proposal`.
 **Written once by the apply step**, from 17.9, a row for each approval and, where the adopt setting reads automatic, each proposal it applied with no word; none is answered twice. The Loop page reads it beside each decision.
 
 ### provisional_setting
-Grain: one row per change an approval made to a family of the S&P 400 or 600, from 17.13 to the S&P 500's breakout or drift, and from 17.14 to the S&P 500's pullback's hooks.
+Grain: one row per change an approval made to a family of the S&P 400 or 600, from 17.13 to the S&P 500's breakout or drift, from 17.14 to the S&P 500's pullback's hooks, and from 19.9 to the fundamentals-first family on any index.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | INTEGER | the change's number, counted from one across every index and family |
 | `index_code` | TEXT | `MID` or `SML`, and from 17.13 `GSPC` |
-| `family` | TEXT | `pullback`, `breakout` or `drift`, a `GSPC` row's `pullback` from 17.14 |
-| `change` | TEXT | JSON: the setting the family stands at from then, in the form an approval applies, its places on its sweep's grid with the grid's key and the stop floor a drift reads beside it where it states a setting, and the hooks a registration states |
+| `family` | TEXT | `pullback`, `breakout` or `drift`, a `GSPC` row's `pullback` from 17.14, and from 19.9 `fundamentals` on any index |
+| `change` | TEXT | JSON: the setting the family stands at from then, in the form an approval applies, its places on its sweep's grid with the grid's key and the stop floor a drift reads beside it where it states a setting, a `fundamentals` row's its places on the growth floor, the margins and the cash floor with the setting's short words as its key, and the hooks a registration states |
 | `words` | TEXT | that setting in words |
 | `set_at` | TEXT | UTC instant the apply step wrote it |
 | `run_id` | TEXT | the run whose proposal it came from, or `restore` |
 | `proposal` | TEXT | the proposal it came from, or the restore |
 
-**Written by the apply step alone and never edited**, from 17.9, each change written on top of the setting the family stood at, a restore writing the setting before the change it undoes. A family's newest row is the setting it stands at: the index families read it for the family's list and trades and name it in the night's settings, the rule cards read it for the breakouts forming, the tester tests the family against it, and the Loop page draws every row (see: An approved change is applied by the night's own build on the index it was approved on alone). From 17.13 an S&P 500 row states hooks alone, the breakout and the drift standing at their own settings, and is written in the transaction that registers the change as the family's live rule; the family evaluator reads it for the family's list and each pick's exit, and the decision cards to name the change in the record's place (see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions). From 17.14 an S&P 500 pullback row states hooks alone and is written with no registration, the family lister reading it for the pullback's list and each pick's exit; a shape move the operator approved writes no row here, opening the swing filter's next version in `filter_version` instead (see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources).
+**Written by the apply step alone and never edited**, from 17.9, each change written on top of the setting the family stood at, a restore writing the setting before the change it undoes. A family's newest row is the setting it stands at: the index families read it for the family's list and trades and name it in the night's settings, the rule cards read it for the breakouts forming, the tester tests the family against it, and the Loop page draws every row (see: An approved change is applied by the night's own build on the index it was approved on alone). From 17.13 an S&P 500 row states hooks alone, the breakout and the drift standing at their own settings, and is written in the transaction that registers the change as the family's live rule; the family evaluator reads it for the family's list and each pick's exit, and the decision cards to name the change in the record's place (see: An approved change reaches the S&P 500's breakout and drift through the stored settings and a registration, and the rule it replaces runs beside it for 63 sessions). From 17.14 an S&P 500 pullback row states hooks alone and is written with no registration, the family lister reading it for the pullback's list and each pick's exit; a shape move the operator approved writes no row here, opening the swing filter's next version in `filter_version` instead (see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources). From 19.9 a `fundamentals` row on any index, the S&P 500's among them, states the family's setting, its hooks or both, and is written with no registration; the index families read it for the family's list, trades and night's settings, and the per-rule test and the tester walk the family at it (see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place).
 
 ### loop_alarm
 Grain: one row per index, family and closed period the live alarm read.

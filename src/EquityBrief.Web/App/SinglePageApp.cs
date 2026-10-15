@@ -3320,6 +3320,7 @@ public sealed partial class SinglePageApp : IComponent
             "breakout" => "Breakout",
             "drift" => "Earnings drift",
             "heavyweight" => "Sector heavyweights",
+            EquityBrief.Core.Families.FundamentalsRule.Name => EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label,
             _ => word,
         };
 
@@ -3333,9 +3334,6 @@ public sealed partial class SinglePageApp : IComponent
             $"<span class=\"m-screen\">{Escaped(heading)}</span>",
             night is { } on ? Invariant($"Every near-setup on the {reading.Name}, as of the close of {on:yyyy-MM-dd}") : "No night is stored yet"));
         region.Append(selector);
-
-        // From 19.7 the page says the ledger holds no business-first setup and why, and names the checkpoint that writes them.
-        region.Append(Invariant($"<p class=\"notice ledger-business\" data-family=\"{EquityBrief.Core.Families.FundamentalsRule.Name}\">{Escaped(LedgerBusinessLine)}</p>"));
 
         if (years.Count == 0)
         {
@@ -3387,18 +3385,12 @@ public sealed partial class SinglePageApp : IComponent
     public const string WatchGuide =
         "Each name you follow, drawn every evening whether or not a list holds it. Its nearest setup is the family that passed it tonight, or the one it missed by the fewest gates, a tie going to the family first in the one order, with the first gate it missed and that gate's own words under the pointer. Beside it the distance picture places the close between the nearest bands, and the report column counts the sessions to its next report. Search a name in the bar above to add it here.";
 
-    // Why the ledger holds no business-first setup, and the checkpoint that writes them.
-    public const string LedgerBusinessLine =
-        "The ledger holds no business-first setup yet: its history build and its night step write the families built at 17.3, and the business-first family came at 17.8. Writing its setups is queued as 19.9.";
-
     // How the Ledger page is read, opened from its "?".
     public const string LedgerGuide =
         "Each family's card counts its setups a year on this index, the member-sessions its loose gates passed, with the share the live rule passes, the share the night's list picked of the rows a night wrote, and the mean result and edge of the settled ones, its edge a bar a year in green above nothing and red beneath. A family whose live rule passes few of its setups is choosing, and its edge against the same plan on every member says whether the choice paid. The strip draws the edge at each tenth of the newest year's settled setups; a wide strip is a family whose setups differ a great deal, which is what the loop's engines read. Beneath, a setup's path draws its closes from about ten sessions before it to where its path ended, with its buy, its stop and its target across.";
 
-    // The families the Loop page draws, in the one order every page lists them in, the fundamentals-first family left out
-    // while the ledger holds none of its setups for the tester to read.
-    public static IReadOnlyList<string> LoopFamilies { get; } =
-        [.. EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name)];
+    // The families the Loop page draws, in the one order every page lists them in.
+    public static IReadOnlyList<string> LoopFamilies { get; } = EquityBrief.Core.Families.SetupFamilies.Order;
 
     // How many proposals a run puts to the operator that hold no word of theirs yet: at most one a family, the one the
     // Loop page offers its presses on, read as the page reads it. The menu's badge counts them over each index's newest run.
@@ -3433,6 +3425,7 @@ public sealed partial class SinglePageApp : IComponent
             "breakout" => "Breakout",
             "drift" => "Earnings drift",
             "heavyweight" => "Sector heavyweights",
+            EquityBrief.Core.Families.FundamentalsRule.Name => EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Label,
             _ => word,
         };
 
@@ -3475,15 +3468,6 @@ public sealed partial class SinglePageApp : IComponent
         foreach (var family in EquityBrief.Core.Families.SetupFamilies.Order)
         {
             var own = proposals.Where(proposal => proposal.Family == family).ToArray();
-
-            // The business-first family stands in the summary saying what it waits on, and draws no card of its own.
-            if (!LoopFamilies.Contains(family))
-            {
-                summary.Add(new LoopSummaryRow(family, chips?.GetValueOrDefault(family) ?? [], 0, null, null, string.Empty, LoopWaiting(family, run, own, decided)));
-
-                continue;
-            }
-
             var body = new StringBuilder(marks.LoopRule(family, own.FirstOrDefault()?.Current));
             var put = decided is null ? null : EquityBrief.Core.Loop.LoopDecisions.PutOf(own, one => MarkRenderer.HeldBack(run, one, decided));
             var presses = string.Empty;
@@ -3563,19 +3547,13 @@ public sealed partial class SinglePageApp : IComponent
     public const string LoopGuide =
         "Each month the tester runs a set of procedures for each setup on the years before each test year and scores what they choose on that year against the rule today; a proposal is the procedure run on all finished data. The meter draws a proposal's adjusted p, its chance of a result this strong by luck corrected for every proposal tested beside it, on a scale from a ten-thousandth to one with the bar marked: green at or under the bar, red over it. A proposal passes only where all four parts hold, and the strongest that passes and states a change is put to you; nothing changes a rule until you approve it. Each proposal opens to its four parts and its test years drawn as a pair of bars a year, the rule today's above and the proposal's beneath. The rule today was chosen on these same test years, so a proposal reads understated against it.";
 
-    // Why nothing is put to the operator for a family and when it next can be: the business-first family waiting on the
-    // ledger's setups, a family the run tested nothing for or none of whose proposals passed waiting on the next monthly
-    // run, the first Saturday of the month after the run's, and a passing proposal an earlier decline holds back waiting
-    // on a later run reading a new complete block.
+    // Why nothing is put to the operator for a family and when it next can be: a family the run tested nothing for or none
+    // of whose proposals passed waiting on the next monthly run, the first Saturday of the month after the run's, and a
+    // passing proposal an earlier decline holds back waiting on a later run reading a new complete block.
     // see: A declined proposal is put again once a new complete block has been added since the decline and it passes with that block
     public static string LoopWaiting(string family, EquityBrief.Core.Loop.LoopRunRow run, IReadOnlyList<EquityBrief.Core.Loop.LoopProposalRow> own, LoopDecided? decided)
     {
         var next = NextMonthlyRun(run.Month);
-
-        if (own.Count == 0 && family == EquityBrief.Core.Families.FundamentalsRule.Name)
-        {
-            return "Nothing is tested for the business-first family yet: it waits on 19.9, which writes its setups to the ledger the tester reads.";
-        }
 
         if (own.Count == 0)
         {

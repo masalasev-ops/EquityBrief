@@ -207,6 +207,9 @@ public partial class FixtureExpectations
             ["the learned score, ordering the list", "the learned score, its lowest fifth left off", "the learned score, its lowest two fifths left off"],
             Enumerable.Range(1, 3).Select(ScoreProcedures.ProposalName));
         Assert.True(ScoreProcedures.Reaches("MID", "pullback") && !ScoreProcedures.Reaches("GSPC", "pullback") && ScoreProcedures.Reaches("GSPC", "drift") && !ScoreProcedures.Reaches("SML", "heavyweight"));
+
+        // From 19.9 the tester fits the score for the fundamentals-first family on every index, so its cards draw the part.
+        Assert.True(ScoreProcedures.Reaches("GSPC", "fundamentals") && ScoreProcedures.Reaches("MID", "fundamentals") && ScoreProcedures.Reaches("SML", "fundamentals"));
     }
 
     [Fact]

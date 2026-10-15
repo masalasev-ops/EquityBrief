@@ -135,7 +135,7 @@ public partial class ReadSurface
     public async Task TheLedgerAndTheLoopPagesListTheFamiliesInTonightsOrder()
     {
         using var store = new TemporaryStore().Migrated();
-        string[] reversed = ["heavyweight", "drift", "breakout", "pullback"];
+        string[] reversed = ["heavyweight", "fundamentals", "drift", "breakout", "pullback"];
 
         foreach (var family in reversed)
         {
@@ -152,9 +152,9 @@ public partial class ReadSurface
 
         var ledger = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/ledger"));
         var loop = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/loop?universe=500"));
-        string[] order = ["pullback", "breakout", "drift", "heavyweight"];
+        string[] order = ["pullback", "breakout", "drift", "fundamentals", "heavyweight"];
 
-        Assert.Equal(order, EquityBrief.Core.Families.SetupFamilies.Order.Where(family => family != EquityBrief.Core.Families.SetupFamilies.FundamentalsFirst.Name));
+        Assert.Equal(order, EquityBrief.Core.Families.SetupFamilies.Order);
         Assert.Equal(order, Regex.Matches(ledger, "data-card=\"ledger-([a-z]+)\"").Select(match => match.Groups[1].Value).Where(card => card != "path"));
         Assert.Equal(order, Regex.Matches(ledger, "data-family-(?:link|chosen)=\"([a-z]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("data-family-link=\"pullback\" href=\"#/ledger?universe=500&family=pullback\" aria-current=\"true\">", ledger, StringComparison.Ordinal);

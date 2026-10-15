@@ -25,6 +25,90 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-15 - ARCHITECTURE.html - the setup ledger writes the fundamentals-first family's setups, its loose gates in section 17, and the Ledger page's line saying it held none gone
+Authorised by: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
+Was:
+> (section 7's Setup ledger row, and section 14's step of the ledger) every member-session a family's loose gates pass, the pullback's, the breakout's and the drift's, with the live rule's own pass
+>
+> (13.10) holding every member-session a family's loose gates pass on each of the three indices, the pullback's, the breakout's and the drift's, with the live rule's own pass and the night's list beside it
+>
+> (section 14's step of the ledger, its close) (see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span).
+>
+> (section 17's Setup ledger's loose gates) each at a close of at least $5 and half the index's dollar floor (see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood); and the heavyweights each member ... <b>Judgement:</b> each figure, phase 17's plan of 2026-10-08 as ruled
+>
+> (15.19's region) The business-first family | from 19.7 a line at the page's top saying the ledger holds no business-first setup yet and why; the change named as queued for 19.9
+Now:
+> the pullback's, the breakout's, the drift's and from 19.9 the fundamentals-first family's, in each of the four places; section 14's step closes with the new decision cited beside the history's; 13.10 gains a paragraph on the family's setups; section 17's row gains the family's gates, revenue growing by more than -0.05 and cash at least 0.6 of the income read only where that income is above nothing, and its judgement the ruling of 2026-10-15; 15.19's row reads: from 19.9 a card of its own drawn as every family's is after the drift's in the one order, its setups the pullback's whose revenue and cash clear its loose gates; the line 19.7 drew at the page's top saying the ledger held none of its setups gone
+Why: 19.9 builds the family's setups in the ledger on the operator's ruling of 2026-10-15 on its loose gates, so the places naming the ledger's families name it and the Ledger page's line saying it held none is gone.
+
+### 2026-10-15 - ARCHITECTURE.html - the fundamentals-first family proposed for over its 27 settings and an approval of it applied on every index
+Authorised by: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+Was:
+> (13.12) and the sector heavyweights' six settings in each design, are run inside every fold:
+>
+> (13.13, its last sentence's close) and proposed exits as every family is (see: The S&amp;P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources).
+>
+> (13.15) It lists on its provisional setting, revenue growing at all, either margin widening on the year and cash from operations at least the year's net income, until the operator rules on its search.
+>
+> (13.15's search, its close) so the grid reads a stricter version of each.
+>
+> (13.16) The tester from then on tests every proposal for the family against the rule as it stands, a proposal's hooks set on top of those it stores as an approval sets them. From 17.13
+>
+> (section 14's swing filter step) an S&amp;P 400 or 600 swing family's written as the setting the family reads from tonight on that index alone and from 17.13 ... then read the fundamentals-first family on the S&amp;P 500 alone, over the pullback's base listings with each member's readings as the ledger's catalogue reads them tonight, holding back
+>
+> (section 17's The fundamentals-first search) nothing frozen or registered (see: No family on any index is set aside or hidden by a test result without the operator's word) | ... | fixture-expectations, the grid's settings, a setting's figures worked by hand over constructed trades on both sides of the trade floor and of the latest years, and what luck passes of 27; the figures read off the document against the constants
+>
+> (15.20's summary) or why none is and when one next can be, the business-first family saying it waits on 19.9
+Now:
+> 13.12 adds the family's 27 settings on every index to the procedures run inside every fold, a tie to the fewest dials moved; 13.13 adds the family walked and read by the three engines; 13.15 lists on its provisional setting until an approval moves it on an index, and its search's paragraph closes on the tester's procedure; 13.16 adds the family's change written the same way on any index; section 14's step applies the family's change on any index with no registration and reads it on the S&P 500 at its stored setting; section 17's search row adds the procedure, its check's column the procedure over constructed folds; 15.20's summary row reads: from 19.9 the business-first family a row and a card as every family is, where 19.7 drew it saying it waited
+Why: the operator ruled on 2026-10-15 that approving a proposal for the family applies it, so the tester proposes for it on every index and the night reads the setting an approval stored.
+
+### 2026-10-15 - SCHEMA.md - the setups and setup nights hold the fundamentals-first family, and a provisional setting may be its on any index
+Authorised by: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
+Was:
+> (setup) | `family` | TEXT | `pullback`, `breakout`, `drift` or, on the S&P 500, `heavyweight` |
+>
+> (setup) the index's live pullback setting on the extended grid, or the breakout's or the drift's frozen setting, which from 17.9
+>
+> (setup_night) | `family` | TEXT | `pullback`, `breakout` or `drift` |
+>
+> (provisional_setting) Grain: one row per change an approval made to a family of the S&P 400 or 600, from 17.13 to the S&P 500's breakout or drift, and from 17.14 to the S&P 500's pullback's hooks.
+>
+> (provisional_setting) | `family` | TEXT | `pullback`, `breakout` or `drift`, a `GSPC` row's `pullback` from 17.14 |
+>
+> (provisional_setting) its places on its sweep's grid with the grid's key and the stop floor a drift reads beside it where it states a setting, and the hooks a registration states
+Now:
+> each list adds `fundamentals` from 19.9, a setup's row of the family a pullback row of the same stock and session at that row's own plan, its rule the family's provisional setting at the pullback's base; a provisional setting's grain and family the family on any index, its change its places on its three dials with its short words as its key, and a paragraph on who reads the row (see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place)
+Why: the ledger writes the family's setups from 19.9 and an approval of it writes a provisional setting on every index.
+
+### 2026-10-15 - RUNBOOK.md - the setup ledger's history, the tester, the per-rule test, the apply step and the fundamentals-first family's section name the family's setups and its approvals
+Authorised by: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+Was:
+> Each test year from 2022 is a fold: the procedure, the breakout's or the drift's grid or the sector heavyweights' six settings in either design, chooses a setting
+>
+> the S&P 400's and 600's provisional and registered rules, the market-off variants among them, and the fundamentals-first family's provisional rule.
+>
+> It needs the facts pulled whole first, `filings --whole`, or every listing fails the revenue check. What it finds goes to the operator, and nothing is frozen or registered from it.
+Now:
+> the fold's procedures add the family's 27 settings on every index; the per-rule test walks the family at the setting and hooks an approval stored; the family's section adds the tester's procedure and an approval's effect; and added without replacing anything: the ledger's history section's paragraph on the family's setups and 19.9's remedy, the autopsy's paragraph on the family walked by the three engines, and the apply step's paragraph on the family's change on every index (see: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried)
+Why: what the operator runs and reads changed with 19.9.
+
+### 2026-10-15 - BUILD_PLAN.md - 19.9 states the operator's two rulings of 2026-10-15 and its done condition gains the approval read by the night
+Authorised by: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+Was:
+> **Done when** each loose gate is worked by hand on both sides of its threshold, the night step appends the family's setups over a constructed store, the point-in-time check holds over the family, and the procedure is worked over constructed folds.
+Now:
+> a paragraph stating the loose gates as ruled and that an approval applies on every index, writing besides a decision on the family's approval; and the done condition closing: and the procedure is worked over constructed folds; and an approved setting is applied on the S&P 500 as on the S&P 400 and 600 and read by the night in the provisional setting's place, worked over a constructed night and a constructed store.
+Why: the operator chose that approving a proposal for the family applies it, which widens the checkpoint, and the checkpoint amends its own done condition to hold it, its entry saying so.
+
+### 2026-10-15 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface state 19.9's tests, and read-surface's 19.7 words the Loop and Ledger pages as they now draw the family
+Authorised by: The fundamentals-first family's setups are the pullback's whose revenue and cash clear a grid step past the widest level its search tried
+Was:
+> (read-surface) the business-first family waiting on 19.9, ... the Ledger's edge bars, decile strip, family tabs and business-first line read back over a constructed ledger;
+Now:
+> the business-first family drawn as every family from 19.9, ... the Ledger's edge bars, decile strip and family tabs read back over a constructed ledger, and from 19.9 no business-first line; and each of the three rows closes on what 19.9's tests assert
+Why: the roster states what each check asserts, and 19.9's tests and the pages' change moved it.
+
 ### 2026-10-15 - BUILD_PLAN.md and .claude/rules/checks.md - 19.8's text gains the operator's addendum of Tonight's card of the stocks one gate short, its done condition the addendum's tests, and the roster's two rows the phase report's checks
 Authorised by: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
 Was:

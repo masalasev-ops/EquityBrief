@@ -133,7 +133,11 @@ public sealed class SetupLedger : IComponent
     // The round trip a member's trade pays, in per cent of its close, as the member reader stored it for the night.
     const string Costs = "SELECT ticker, cost FROM member_reading WHERE index_code = $index AND session_date = $night AND cost IS NOT NULL;";
 
-    const string LargePicks = "SELECT ticker, family FROM family_pick WHERE session_date = $night AND state = 'listed';";
+    // The S&P 500's own families' list, and the fundamentals-first family's, which the index families' step draws for it.
+    const string LargePicks = @"
+        SELECT ticker, family FROM family_pick WHERE session_date = $night AND state = 'listed'
+        UNION ALL
+        SELECT ticker, family FROM index_family_pick WHERE index_code = 'GSPC' AND session_date = $night AND state = 'listed';";
 
     const string IndexPicks = "SELECT ticker, family FROM index_family_pick WHERE index_code = $index AND session_date = $night AND state = 'listed';";
 

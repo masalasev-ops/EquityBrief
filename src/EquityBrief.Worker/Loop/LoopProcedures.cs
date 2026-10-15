@@ -188,6 +188,59 @@ public static class LoopProcedures
         };
     }
 
+    // The fundamentals-first family's 27 settings on an index as a procedure, against the rule as it stands, its
+    // provisional setting or the one an approval stored: each setting walked once over the whole history as the family's
+    // search walks it, handed in the grid's order, a fold choosing as the search chooses with the family floors in
+    // proportion to its learning years, ties to the fewest dials moved from the provisional setting, and tested on the
+    // trades its choice and the rule today entered in its year.
+    // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+    public static LoopProposalRead Fundamentals(LoopRead read, IReadOnlyList<IReadOnlyList<ExitProcedures.Walked>> walked, IReadOnlyList<ExitProcedures.Walked> current, FundamentalsSetting standing, int cap)
+    {
+        var grid = FundamentalsSearch.Grid;
+        var settings = grid.Settings;
+        var nights = read.Calendar.Length - read.FirstScored;
+
+        if (walked.Count != settings.Count)
+        {
+            throw new ArgumentException(FormattableString.Invariant($"The fundamentals-first family's procedure reads {settings.Count} walks, one a setting, and was handed {walked.Count}."), nameof(walked));
+        }
+
+        // Each setting's figures over what a fold learns on, read through the fold's view.
+        int[]? ChooseIn(LoopFold fold) => Choose(
+            grid,
+            [
+                .. settings.Select((setting, at) =>
+                {
+                    var learning = new FoldView<ExitProcedures.Walked>(fold, walked[at], one => read.Calendar[one.Entry], one => one.Exit is { } exit ? read.Calendar[exit] : null).Learning;
+
+                    return (setting, FamilySweep.Figures(FundamentalsRule.At(setting).Key, [.. learning.Select(one => one.Trade)], nights));
+                }),
+            ],
+            read.LearningYears(fold),
+            lastTwo: false);
+
+        var chosen = read.Folds.Select(fold => (Fold: fold, Setting: ChooseIn(fold))).ToArray();
+        var proposal = ChooseIn(read.AllFinished);
+        var placeOf = settings.Select((setting, place) => (setting, place)).ToDictionary(pair => grid.Key(pair.setting), pair => pair.place, StringComparer.Ordinal);
+
+        static IReadOnlyList<(int Entry, double? Edge)> Units(IReadOnlyList<ExitProcedures.Walked> trades) => [.. trades.Select(one => (one.Entry, one.Edge))];
+
+        return new LoopProposalRead(
+            FundamentalsRule.Name,
+            Grid,
+            proposal is null ? null : FundamentalsRule.At(proposal).Words,
+            standing.Words,
+            Risks,
+            cap,
+            [.. chosen.Select(one => (one.Fold, one.Setting is null ? null : FundamentalsRule.At(one.Setting).Words))],
+            proposal is null ? 0 : chosen.Count(one => one.Setting is { } setting && setting.Zip(proposal).All(pair => Math.Abs(pair.First - pair.Second) <= 1)),
+            Evidence(read.Folds, read.Calendar, [.. chosen.Select(one => one.Setting is null ? null : Units(walked[placeOf[grid.Key(one.Setting)]]))], Units(current)))
+        {
+            Change = proposal is null ? null : LoopChange.OfSetting(proposal, FundamentalsRule.At(proposal).Short, 0),
+            Reference = Reference(read, Units(current)),
+        };
+    }
+
     // The rule today's units that entered over the test years and hold an edge, as each entered: the live alarm's
     // reference.
     // see: The live alarm flags a rule whose edge stood under its reference's fifth percentile two periods running

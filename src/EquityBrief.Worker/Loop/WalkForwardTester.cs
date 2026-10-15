@@ -230,18 +230,23 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
         var readings = await LoopReadings.ReadAsync(read, databaseFile, through, cancellation);
         var trees = await StoredTreesAsync(databaseFile, cancellation);
         var rules = new List<RuleWalk>();
+        var market = await history.MarketAsync(through, cancellation);
+        IdeaReplay? baseReplay = null;
 
         if (!large)
         {
-            rules.Add(RuleWalk.Pullback(read, await history.MarketAsync(through, cancellation), output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees));
+            baseReplay = SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
+            rules.Add(RuleWalk.Pullback(read, market, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees, candidates: baseReplay));
         }
         else if (await OpenVersionAsync(databaseFile, cancellation) is { } open)
         {
             // The S&P 500's pullback, the swing filter at its open version's settings read by value with the hooks an
             // approval stored, and each move of the newest shape proposal written for that version a proposal of the run.
             // see: The S&P 500's pullback is proposed for and changed through the Loop, the shape clock's moves among its sources
-            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, await history.MarketAsync(through, cancellation), output.WriteLine);
+            var (replay, _, candidates) = SweepIdeasRunner.ReadWithCandidates(read.Inputs, market, output.WriteLine);
             var pullbacks = new LargePullback(replay.Series, candidates);
+
+            baseReplay = replay;
 
             RuleWalk WalkAt(FilterSettings settings) =>
                 RuleWalk.LargeSwingFilter(read, pullbacks, open.Version, settings, output.WriteLine, standing.GetValueOrDefault(SetupFamilies.Pullback), readings, trees);
@@ -258,6 +263,34 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
 
         rules.Add(RuleWalk.Swing(read, BreakoutRule.Name, large, standing.GetValueOrDefault(BreakoutRule.Name), readings, trees));
         rules.Add(RuleWalk.Swing(read, DriftRule.Name, large, standing.GetValueOrDefault(DriftRule.Name), readings, trees));
+
+        // The fundamentals-first family on every index, at the setting an approval stored for it or its provisional one,
+        // over the pullback's base listings read once: its 27 settings a procedure where the rule stands at no hook, and
+        // the rule as it stands handed to the engines.
+        // see: The fundamentals-first family is proposed for on every index over its 27 settings, and an approved setting is read by the night in the provisional one's place
+        var fundamentalsStanding = standing.GetValueOrDefault(FundamentalsRule.Name);
+        var fundamentalsSetting = FundamentalsRule.StoredOr(fundamentalsStanding?.Places);
+        baseReplay ??= SweepIdeasRunner.Read(read.Inputs, market, output.WriteLine).Replay;
+
+        var baseListings = RuleWalk.BaseListings(read, baseReplay);
+        var fundamentals = RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, fundamentalsSetting, output.WriteLine, fundamentalsStanding, trees);
+
+        if (fundamentalsStanding is { Hooks.Count: > 0 })
+        {
+            output.WriteLine($"{Verb}: the {FundamentalsRule.Name}'s grid is not searched on the {DecisionCards.NameOf(index)}, since the rule stands at {fundamentalsStanding.Words()} and the grid's walk reads no hook");
+        }
+        else
+        {
+            output.WriteLine(FormattableString.Invariant($"walking the {FundamentalsRule.Name}'s {FundamentalsSearch.Grid.Settings.Count} setting(s) on the {DecisionCards.NameOf(index)} over the whole history"));
+            proposals.Add(LoopProcedures.Fundamentals(
+                read,
+                [.. FundamentalsSearch.Grid.Settings.Select(setting => RuleWalk.Fundamentals(read, baseReplay.Series, baseListings, readings, FundamentalsRule.At(setting), _ => { }).Own)],
+                fundamentals.Own,
+                fundamentalsSetting,
+                fundamentals.Cap));
+        }
+
+        rules.Add(fundamentals);
 
         var scores = new List<FittedScore>();
 
@@ -645,7 +678,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     }
 
     // The history an index's procedures are run over, which the fundamentals-first family's search reads too.
-    internal static async Task<LoopRead> ReadAsync(string index, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, CancellationToken cancellation)
+    public static async Task<LoopRead> ReadAsync(string index, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, CancellationToken cancellation)
     {
         var companies = await history.HeavyweightAsync(through, cancellation);
         var income = await history.IncomeAsync(through, cancellation);

@@ -44762,3 +44762,69 @@ Carried:    19.9, the ledger writing the business-first family's setups, owed af
             approval of 2026-10-12, and 19.10 beside it; Figure 11.4's "earliest promotion", owed a correction of
             section 11; the market line drawing the S&P 600's stored breadth of 0.4497 as 45.0% beside "below its
             floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.
+
+### 19.9 - the ledger writes the business-first family's setups, the tester proposes for it over its 27 settings, and an approval of it applies on every index   2026-10-15
+
+Queue:      done, 19.0 to 19.8 with their corrections as PRs 446 to 463; in progress, this checkpoint; next, 19.10 on
+            the operator's go, and the sign-offs of phases 16, 17 and 18, each by a fresh session.
+Ruled:      by the operator on 2026-10-15, word for word in `prompts/2026-10-15-19.9-ruling-loose-gates.md`: the loose
+            gates the dials a step wider, the cash read only where the income is above nothing, the margins tested from
+            the two margin changes every setup carries with no column added; and an approval of a proposal for the
+            family applies it. This checkpoint amends its own done condition: the approval read by the night joined
+            19.9's text in `BUILD_PLAN.md`, the prior text in `CHANGELOG.md`.
+Built:      the family's loose gates, a pullback setup at its own plan whose revenue grew by more than -0.05 and whose
+            cash is at least 0.6 of its income, its pass the provisional rule's as the night reads it, written by the
+            night's step, the history build and the point-in-time check through the one function, the S&P 500's pick
+            of the family read off the index families' rows; the tester's procedure over the 27 settings on every
+            index, a tie to the fewest dials moved, and the family's rule handed to the autopsy, winners against losers
+            and the learned score; the apply step taking the family's setting and hooks on every index, the S&P 500's
+            included, the index families' step reading the stored setting there in the provisional one's place and the
+            night's settings naming it, the per-rule test walking it at its stored setting and hooks where it walked
+            the pullback's hooks before; the card's score part reaching the family, the S&P 500's cards of it among
+            them; the Ledger page's 19.7 line gone and the family drawn on the Ledger and the Loop pages as every
+            family is. Two decisions: the family's setups and its approval. Sections 7, 13, 14, 15 and 17, the schema,
+            the runbook, the guide and the roster. The card's gate line read the provisional key as "cash> 1"; the
+            night's settings now carry the setting's short words, which read whole.
+Measured:   no migration, as 19.0 stated: the three tables hold the family by its word. The history's standing span is
+            2019-01-02 to 2026-10-05 on all three indices, built in 875, 641 and 898 seconds on 2026-10-12; the remedy's
+            three builds with `--again` and the first night after the merge measure the family's added time, against
+            19.0's estimates of at most about 58 minutes for the three builds and about 15 seconds a night.
+Tests:      seven new: the gates by hand, the family's setups over a constructed history, the point-in-time check, the
+            procedure over constructed folds, an approved setting read by the night and on the S&P 500 over a store,
+            the night's step over a constructed store, and the tester's walk over the same store. Older tests moved:
+            the ledger's families at four, the apply step's refusal of the family now its acceptance, the Loop and
+            Ledger pages' family order and cards, the badge counting the family's put proposal, and the 19.7 page
+            tests without their notes.
+Claims:     1313, unchanged: 19.9's about 3 landed as words in rows that stood, section 14's two steps, section 17's
+            loose gates and search rows and section 15's Ledger and Loop rows.
+Pins:       the readings' version moves from f3311f905a3e to 859241ef8442, the ledger's filling source changed, so
+            rows written from the merge carry the new pin. The index families' step is a source every S&P 400 and
+            600 rule pins, so their four evaluators move: pullback a748b3a99fb5 to 12e86ab94128, breakout b808c533ad30
+            to f6b437f95a93, drift a7607ebffaea to e3ea42abc2d2, heavyweights 6c6b35c716e1 to cd6e9836b5ef. The S&P
+            500's own evaluators do not move.
+Remedy:     `tools/remedies/2026-10-15-19.9-the-business-first-setups.txt`, from main after the merge and before the
+            night: the three ledger builds with `--again` by hand, then the file, which registers the S&P 400's and
+            600's eight standing rules again, the S&P 600's two heavyweights books and 19.1's six market-off variants,
+            and checks each index's history point in time. No request to the provider and no model call.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, at the line deciding it, each
+            filtered to the tests predicted red. M1 the revenue gate at -0.05 inclusive, at the gates test; red. M2 the
+            cash gate strict at 0.6, at the gates, setups and night tests; red at all three. M3 the provisional pass
+            without the rule's parts, at the setups and night tests; red. M4 the family's row at a cap a session
+            longer than its pullback row's, same; red. M5 the S&P 500's picks read off its own families alone, at the
+            night test; red. M6 the grid's provisional places at [1, 1, 1], at the procedure test; red. M7 the
+            procedure's evidence reading the rule today's trades on both sides, same; red. M8 the S&P 500 refusing the
+            family's grid setting, at the apply step test; red. M9 the family out of the families an approval reaches,
+            same; red. M10 the night reading the provisional setting where one is stored, at the approved setting
+            test; red. M11 the S&P 500's night reading no stored setting, same; red, at the store. M12 the per-rule
+            test ignoring the stored setting, same; red. M13 the tester's walk keeping the listings the rule fails, at
+            the walk test; red. M14 the card's score part not reaching the family, at the score test; red. M15 the
+            Loop's families without the family, at the two Loop page tests; survived, a missing property: since 19.9
+            the list decides only the badge's count, which no test read for the family, so the badge test now puts the
+            family's proposal and the mutation run again turned it red. M16 the Ledger page's name of the family
+            removed, at the Ledger test; red. Not mutated, and no test reads them: the tester's monthly run wiring the
+            procedure and the walk, and the S&P 500's cards of the family drawing the score's part. Each reverted
+            before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Carried:    the remedy's three builds' and the first night's measured times, owed to a dated entry once they are in;
+            19.10; Figure 11.4's "earliest promotion", owed a correction of section 11; the S&P 600's breadth drawn as
+            45.0% beside "below its floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.

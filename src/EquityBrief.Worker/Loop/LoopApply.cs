@@ -412,7 +412,8 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
 
     // What the step does with one proposal: a restore writes again the setting standing before the change it names, or
     // the family's code setting where none stood before it; a swing family's change is written on top of the setting it
-    // stands at, the S&P 500's hooks alone; every other is refused with its reason.
+    // stands at, the S&P 500's hooks alone but for the fundamentals-first family's, whose setting moves there as on the S&P
+    // 400 and 600; every other is refused with its reason.
     public static (bool Applied, string Words, LoopChange? Written) Answer(string run, string index, string family, string proposal, string? change, IReadOnlyList<(long Id, string Change)> standing)
     {
         if (LoopDecisions.Refusal(index, family) is { } refused)
@@ -442,7 +443,7 @@ public sealed class LoopApply(IClock clock, string databaseFile, string? adopt =
             return (false, NoChangeRefused, null);
         }
 
-        if (index == MarketCloses.Index && made.Places is not null)
+        if (index == MarketCloses.Index && made.Places is not null && family != FundamentalsRule.Name)
         {
             return (false, LargeSettingRefused, null);
         }
