@@ -44824,7 +44824,11 @@ Mutated:    the rule, stated before the runs: one mutation a property the checkp
             removed, at the Ledger test; red. Not mutated, and no test reads them: the tester's monthly run wiring the
             procedure and the walk, and the S&P 500's cards of the family drawing the score's part. Each reverted
             before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, bb6cc79c: all six
+            steps, 0 warnings, 0 errors, 2349 of 2349 tests ran with none failed in 18 minutes 45 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 59 tables,
+            1313 claims, 1313 passing, none out of scope and none unexamined, 1324 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the remedy's three builds' and the first night's measured times, owed to a dated entry once they are in;
             19.10; Figure 11.4's "earliest promotion", owed a correction of section 11; the S&P 600's breadth drawn as
             45.0% beside "below its floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.
