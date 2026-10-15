@@ -49,6 +49,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "rule-record" => await RuleRecordRun(args),
     "ledger-build" => await LedgerBuildRun(args),
     "ledger-check" => await LedgerCheckRun(args),
+    "ledger-next-open" => await LedgerNextOpenRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
@@ -70,7 +71,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 37 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 38 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -152,6 +153,9 @@ static int NoVerb()
         "'ledger-check --index <GSPC, MID or SML>' rebuilds a seeded sample of each year's history setups from the " +
         "history read through the build's own end and cut at each one's session, a swing setup's own readings by its " +
         "family's gates, and names every reading that differs from the one stored, " +
+        "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
+        "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
+        "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
@@ -635,6 +639,23 @@ static async Task<int> LedgerCheckRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).CheckAsync(index, Console.Out);
+}
+
+// The ledger's next-open check by hand, over one index's settled setups, reading the store and writing nothing.
+// see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
+static async Task<int> LedgerNextOpenRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("ledger-next-open: give '--index <GSPC, MID or SML>'.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).NextOpenAsync(index, Console.Out);
 }
 
 // The walk-forward tester by hand on the S&P 400 or 600, Part 0's procedures run inside every fold, reading the pulled
