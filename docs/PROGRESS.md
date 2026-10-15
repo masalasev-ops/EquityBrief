@@ -44832,3 +44832,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the remedy's three builds' and the first night's measured times, owed to a dated entry once they are in;
             19.10; Figure 11.4's "earliest promotion", owed a correction of section 11; the S&P 600's breadth drawn as
             45.0% beside "below its floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.
+
+### 19.9 - the remedy run from main and the history builds' measured times   2026-10-15
+
+Not a checkpoint entry: it records 19.9's remedy and what it measured, and lands nothing.
+Ran:        from main's b8059e7e, the merge of PR 464, between 06:16Z and 07:38Z, no night or off-peak run writing: the
+            three ledger builds with `--again` over 2019-01-02 to 2026-10-05, then
+            `tools/remedies/2026-10-15-19.9-the-business-first-setups.txt`. No request to the provider and no model call.
+Measured:   the S&P 500's build 13 minutes 41 seconds, 92,007 setups, 22,678 of them the fundamentals-first family's, 78
+            of those its provisional rule passes; the S&P 400's 10 minutes 39 seconds, 58,306, 14,798 and 317; the S&P
+            600's 14 minutes 37 seconds, 76,048, 16,885 and 357. The three 38 minutes 57 seconds together, against 40
+            minutes 14 seconds for the same span on 2026-10-12 and 19.0's estimate of at most about 58 minutes; the
+            family's setups are 74, 63 and 51 in 100 of each index's pullback setups. The moved rules registered again,
+            8 at one instant, each unchanged: the S&P 600's two heavyweights books and 19.1's six market-off variants.
+            Each index's point-in-time check rebuilt 200 of 200 sampled history setups with every reading the same.
+Screens:    5152 restarted from main's Release; the Ledger and the Loop pages read back on all three indices, each
+            drawing the family's card with no line naming 19.9.
+Verified:   `tools/ci.ps1` green over main as 19.9's entry records, the checks reading this record run filtered over the
+            tree carrying this entry.
+Carried:    the first night's ledger step on the merged build, read off its run log row against the 49 seconds of
+            2026-10-09 and 19.0's estimate of about 15 seconds more, owed to a dated entry once the night has run.
