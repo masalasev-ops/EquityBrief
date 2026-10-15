@@ -44966,7 +44966,11 @@ Mutated:    the rule, stated before the runs: one mutation a property the check 
             close, at a factor of one there, its edge waiting on a settled benchmark, every benchmark there settled,
             and its reading of a heavyweights setup's size cut, the store holding none. Each reverted before anything
             was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, f58e4d1a: all six
+            steps, 0 warnings, 0 errors, 2355 of 2355 tests ran with none failed in 19 minutes 38 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 59 tables,
+            1313 claims, 1313 passing, none out of scope and none unexamined, 1324 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the operator's word on moving entries to the next session's open, which 19.10 builds where it is given,
             every stored trade priced again from the stored bars in the same change; the first night's ledger step
             on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a correction of section
