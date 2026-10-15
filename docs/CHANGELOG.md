@@ -25,6 +25,17 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-15 - BUILD_PLAN.md and .claude/rules/checks.md - 19.8's text gains the operator's addendum of Tonight's card of the stocks one gate short, its done condition the addendum's tests, and the roster's two rows the phase report's checks
+Authorised by: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+Was:
+> BUILD_PLAN.md 19.8: **Done when** the phase report is green with no claim unexamined, the pair is checked against the actual, each figure's key names every part it draws, and every screenshot is read back against the store.
+> checks.md `architecture-conformance`: ... and from 19.7 the Loop page's figure's key names every part the figure draws, in the architecture and in the guide, neither figure's text holding any run's figure |
+> checks.md `read-surface`: ... sorted by the day written or by staleness |
+Now:
+> BUILD_PLAN.md 19.8: a paragraph recording the addendum, and the done condition ending "; and the card's count equals the market line's and the sum of the family cards' tables on all three indices, its rows run in family order each family's nearest first, its press adds a name, reads Watching for one already watched and is refused on a twenty-first and without the page's header, a night before the newest draws no press and no Universe link, and the card folded and opened is read back at 1440 and 390 with nothing cut off on a phone."
+> checks.md: each row ending on the clause from 19.8 that the phase report's checks and the card's checks add.
+Why: the operator issued the addendum to 19.8 on 2026-10-15 while it was being built, and the checkpoint amends its own done condition to carry it; the roster names what the checks added at 19.8 reach.
+
 ### 2026-10-14 - ARCHITECTURE.html - the remaining screens of 19.7: the Run page without the retired loop's clocks, the Loop's summary, the Ledger's bars and strip, the Watch list's nearest setup and the researched list's columns
 Authorised by: A registered rule's looks and its futility are monitoring, and a change is adopted only by the operator's approval of a tested proposal
 Was:

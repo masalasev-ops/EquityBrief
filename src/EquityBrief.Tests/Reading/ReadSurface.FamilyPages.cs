@@ -119,7 +119,7 @@ public partial class ReadSurface
             FormattableString.Invariant($"<p class=\"market-line\" data-index=\"S&P 500\" data-open=\"true\" data-breadth=\"0.6\" data-floor=\"0.5\" data-passed=\"{passed}\" data-members=\"{members}\" data-buy-points=\"7\" data-setups-listing=\"2\" data-setups=\"{families}\" data-close=\"2\" data-open-trades=\"1\">"),
             line[..(line.IndexOf('>') + 1)]);
         Assert.Contains("<b class=\"market-open\">The lists are open</b>: the S&P 500's breadth: 60.0% of its members closed above their 200-day average, at or above its floor of 50%.", line, StringComparison.Ordinal);
-        Assert.Contains(FormattableString.Invariant($"{passed} of {members} S&P 500 members passed a setup · 7 buy points tonight across 2 of {families} setups · 2 close to a buy point · <a href=\"#/picks?status=open\">1 open trade</a>"), line, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"{passed} of {members} S&P 500 members passed a setup · 7 buy points tonight across 2 of {families} setups · <a class=\"close-open\" href=\"#/night/{TheSwitch}?universe=500&close=open\">2 close to a buy point</a> · <a href=\"#/picks?status=open\">1 open trade</a>"), line, StringComparison.Ordinal);
 
         // Read back against the store: the buy points are the listed rows, and the open trade is the one
         // listed trade before the night with no outcome decided by it.

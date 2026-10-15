@@ -909,6 +909,11 @@ static async Task<IReadOnlyList<FamilyCardView>> WithBehindAsync(ReadApi read, I
     return drawn;
 }
 
+// Every name's next dated event on or after a night in one read, which the sessions to a name's next report are counted
+// to on the Watch list and on Tonight's card of the stocks one gate short, as the universe's column counts them.
+static async Task<IReadOnlyDictionary<string, DateOnly>> NextEventsAsync(ReadApi read, DateOnly night) =>
+    (await read.NextEventsAsync(night)).ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
+
 // Each card with its own rows close to a buy point and the numbers its rows draw in place of sentences, read off the
 // index's stored readings once: for each stock a chosen variant picks or that stands close to a buy point.
 // see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed
@@ -1554,6 +1559,17 @@ app.MapGet("/screens/tonight/{night?}", async (
             gates!.Where(gate => gate.Passed).Select(gate => gate.Ticker).Concat(familyResults.Where(result => result.Passed).Select(result => result.Ticker)).Distinct(StringComparer.Ordinal).Count(),
             universe.Count);
 
+    // From 19.8 the stocks one gate short across every setup in one card, open where the link keeps it open, its presses
+    // and its Universe link on the newest night alone, as a stock's page for an earlier night offers no press.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    var watchedNames = await read.WatchedAsync();
+    var closeToBuy = closeAcross is null
+        ? null
+        : TonightScreen.CloseToBuy(
+            closeAcross,
+            UniverseScreen.Rows(universe, null, await NextEventsAsync(read, dated), dated).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            watchedNames.Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal));
+
     return Results.Content(
         notice + page.TonightRegion(
             marks,
@@ -1561,7 +1577,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             universe.Count,
             TonightScreen.Fired(listings),
             rows,
-            (await read.WatchedAsync()).Count,
+            watchedNames.Count,
             selected,
             selection?.Ticker,
             records,
@@ -1577,7 +1593,11 @@ app.MapGet("/screens/tonight/{night?}", async (
             closeAcross: closeAcross,
             heavyweights: heavyweights,
             selector: selector,
-            due: due),
+            due: due,
+            closeToBuy: closeToBuy,
+            closeOpen: request.Query[MarkRenderer.CloseToBuyKey].FirstOrDefault() == MarkRenderer.CloseToBuyOpen,
+            newest: await read.NewestNightAsync() == dated,
+            closeHref: closeToBuy is null ? null : MarkRenderer.CloseToBuyHref(night is { Length: > 0 } ? SinglePageApp.NightRoute + night : "#/", reading.Word)),
         "text/html; charset=utf-8");
 });
 
@@ -1603,7 +1623,7 @@ app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page, MarkRender
                 night,
                 watched,
                 await read.ListingsAsync(night),
-                UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+                UniverseScreen.Rows(universe, null, await NextEventsAsync(read, night), night).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
                 await read.ClosesToTheNightAsync(night),
                 universe,
                 await read.GateResultsAsync(night),

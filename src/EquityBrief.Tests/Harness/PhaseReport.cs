@@ -299,6 +299,10 @@ internal static class PhaseReport
         // holds to name every part the figure draws.
         ["Figure 15.5"] = new Placement(
             "the Loop page drawn with its parts numbered and every figure a placeholder, whose parts section 15.20's rows state and whose meter section 15.5's row claims; a picture of claims placed elsewhere and none of its own"),
+        // 19.8's: paper trading drawn with its parts numbered, its figures placeholders, and a key the conformance check
+        // holds to name every part the figure draws.
+        ["Figure 15.6"] = new Placement(
+            "paper trading drawn with its parts numbered and every figure a placeholder, whose parts section 15.21's rows state; a picture of claims placed elsewhere and none of its own"),
     };
 
     // The placements' own notes, read by the same guard that reads the scope

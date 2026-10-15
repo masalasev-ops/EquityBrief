@@ -331,12 +331,13 @@ public sealed partial class SinglePageApp : IComponent
         "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
 
     // Tonight's buy points as a card of their own, the table across every setup with its key; on a night no setup lists
-    // one, a line saying so with how many members stand one gate short, its guide behind its "?".
-    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "", int? oneShort = null) =>
+    // one, a line saying so with how many members stand one gate short, from 19.8 a link opening the card of them, its
+    // guide behind its "?".
+    static string BuyPointsCard(MarkRenderer marks, IReadOnlyList<BuyPointView> points, string? selected, string plan, DateOnly night, string query = "", int? oneShort = null, string? closeHref = null) =>
         points.Count == 0
             ? LineCard(
                 "buy-points",
-                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is { } shortOf ? Invariant($" · {shortOf} one gate short") : string.Empty)}</p>"),
+                Invariant($"<p class=\"buy-points-none\" data-buy-points=\"0\" data-one-short=\"{(oneShort is { } stated ? stated.ToString(CultureInfo.InvariantCulture) : "none")}\">No buy points tonight{(oneShort is not { } shortOf ? string.Empty : closeHref is { } href ? Invariant($" · <a class=\"close-open\" href=\"{Escaped(href)}\">{shortOf} one gate short</a>") : Invariant($" · {shortOf} one gate short"))}</p>"),
                 BuyPointsGuide)
             : Cards.Computed(
                 "Buy points",
@@ -736,6 +737,29 @@ public sealed partial class SinglePageApp : IComponent
           scrollTo(0, kept);
           const place = screen.querySelector('.watch-said');
           if (place) { place.innerHTML = said; }
+        });
+        // A card folded behind a details element whose open state the link keeps: opening or folding it writes its key
+        // into the link or takes it out, with no redraw, so a view is a link.
+        document.addEventListener('toggle', (event) => {
+          const details = event.target;
+          if (!(details instanceof HTMLDetailsElement) || !details.dataset.linkKey) { return; }
+          const hash = location.hash || '#/';
+          const cut = hash.indexOf('?');
+          const params = new URLSearchParams(cut < 0 ? '' : hash.slice(cut + 1));
+          if (details.open) { params.set(details.dataset.linkKey, '{{{MarkRenderer.CloseToBuyOpen}}}'); } else { params.delete(details.dataset.linkKey); }
+          const next = (cut < 0 ? hash : hash.slice(0, cut)) + (params.toString() ? '?' + params.toString() : '');
+          if (next !== location.hash) { history.replaceState(null, '', next); }
+        }, true);
+        // A count of the stocks one gate short pressed on Tonight opens their card and brings it into view.
+        document.addEventListener('click', (event) => {
+          const link = event.target instanceof Element ? event.target.closest('a.close-open') : null;
+          const card = link ? document.getElementById('{{{MarkRenderer.CloseToBuyId}}}') : null;
+          if (!card) { return; }
+          event.preventDefault();
+          const details = card.querySelector('details');
+          if (details) { details.open = true; }
+          history.replaceState(null, '', link.getAttribute('href'));
+          card.scrollIntoView({ block: 'start' });
         });
         // A pick's card's presses and the account page's: the form's fields sent with the page's own header, the screen
         // drawn again with the card left open, and what the read surface said put in the card's or the page's line.
@@ -2462,7 +2486,11 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<CloseToBuyCell>? closeAcross = null,
         HeavyweightCardView? heavyweights = null,
         string selector = "",
-        string due = "")
+        string due = "",
+        IReadOnlyList<CloseToBuyRow>? closeToBuy = null,
+        bool closeOpen = false,
+        bool newest = true,
+        string? closeHref = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -2518,7 +2546,7 @@ public sealed partial class SinglePageApp : IComponent
             // see: The market check closes every swing family's list together, and the sector heavyweights read none
             if (line is not null)
             {
-                region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching }));
+                region.Append(marks.MarketLine(line with { RunHref = Invariant($"{RunRoute}{night:yyyy-MM-dd}"), Watching = watching, CloseHref = closeHref }));
             }
 
             // Tonight's top: a tile a setup, then one table of tonight's buy points across every setup, the row selected
@@ -2530,7 +2558,14 @@ public sealed partial class SinglePageApp : IComponent
                 : string.Empty;
 
             region.Append(marks.SetupTiles(tiles));
-            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night, oneShort: line is { CloseRead: true } read ? read.Close : null));
+            region.Append(BuyPointsCard(marks, points, selectedTicker, plan, night, oneShort: line is { CloseRead: true } read ? read.Close : null, closeHref: closeHref));
+
+            // From 19.8 the stocks one gate short across every setup in one card beneath the buy points, folded to its line.
+            // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+            if (closeToBuy is not null)
+            {
+                region.Append(marks.CloseToBuy(closeToBuy, closeOpen, newest, Universes.Large.Word));
+            }
 
             // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
             // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them
@@ -2701,6 +2736,10 @@ public sealed partial class SinglePageApp : IComponent
 
         region.Append(marks.SetupTiles(tiles));
         region.Append(BuyPointsCard(marks, points, chosen, string.Empty, night, "&" + Universes.Query + "=" + universe.Word, line.CloseRead ? line.Close : null));
+
+        // From 19.8 the card of the stocks one gate short, which on an index whose night stores only the first part each
+        // member failed says it reads none.
+        region.Append(marks.CloseToBuy(line.CloseRead ? [] : null, false, false, universe.Word));
 
         // One card a setup, its header carrying the guide every setup card is read by in place of a key it repeated.
         // see: Every region is a card ruled down its left by its role, stating where its figures came from and how to read them

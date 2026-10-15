@@ -503,6 +503,23 @@ public static partial class TonightScreen
         return rows;
     }
 
+    // Tonight's one card of the stocks one gate short across every setup, from 19.8: the rows each family's card draws, in
+    // the page's family order with each family's rows in its own card's order, each with the sessions to its next report as
+    // the watch list counts them and whether the watch list holds it.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public static IReadOnlyList<CloseToBuyRow> CloseToBuy(
+        IReadOnlyList<CloseToBuyCell> close,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlySet<string> watched) =>
+        [
+            .. close
+                .OrderBy(cell => SetupFamilies.OrderOf(cell.Family))
+                .Select(cell => new CloseToBuyRow(
+                    cell,
+                    cellByTicker.TryGetValue(cell.Ticker, out var held) ? held.SessionsUntilEarnings : null,
+                    watched.Contains(cell.Ticker))),
+        ];
+
     // The setups whose trades are in no share as of a night: every one but the pullback that no standing
     // registration makes live. The pullback's trades are the live list's, counted from the swing filter's
     // first night whatever the register holds, as Past picks has always counted them.

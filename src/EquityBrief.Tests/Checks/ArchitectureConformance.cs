@@ -1431,7 +1431,8 @@ public partial class ArchitectureConformance
         // 219 at 19.7: the Watch list's nearest setup and its distance and report, the Loop's summary, what a change must
         // pass and a proposal's row, the Ledger's business-first family and the researched list's five columns, the Run
         // page's three new rows each in the place of one it retires.
-        Assert.Equal(219, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 220 at 19.8: Tonight's card of the stocks one gate short across every setup.
+        Assert.Equal(220, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1575,7 +1576,8 @@ public partial class ArchitectureConformance
         // three parts, three marks, the Watch list's two rows, the Loop's three, the Ledger's one and the researched
         // list's five, less the trades region's four parts, how the system learns' five, a checkpoint's four and the
         // three marks they drew.
-        Assert.Equal(620, inDocument.Length);
+        // 621 at 19.8: Tonight's card of the stocks one gate short.
+        Assert.Equal(621, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
