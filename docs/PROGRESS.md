@@ -44700,3 +44700,65 @@ Queue:      done, 19.0 to 19.6 with their corrections as PRs 446 to 460; in prog
             for the operator's go.
 Carried:    Figure 11.4 still labels the edge clock's look at 12 blocks "earliest promotion", a picture the section 11
             worked example generates and holds word for word, owed a correction of section 11.
+
+### 19.8 - the phase 19 report: every screen read back against the store, paper trading's figure and its key, the pair checked against the actual, and Tonight's card of the stocks one gate short with its Watch press   2026-10-15
+
+Queue:      done, 19.0 to 19.7 with their corrections as PRs 446 to 462; in progress, this report; next, 19.9 and
+            19.10 on the operator's go, and the sign-offs of phases 16, 17 and 18, each by a fresh session.
+Built:      Figure 15.6 in section 15.21, paper trading with its parts numbered, every figure a placeholder, and a key a
+            line a part, and the guide's same picture with its list, so the figures of Tonight, paper trading,
+            Universe and the Loop are each keyed and section 15 is final for the phase. On the operator's addendum of
+            2026-10-15, written into 19.8's text in `BUILD_PLAN.md` as it was issued, Tonight's card of the stocks one
+            gate short across every setup beneath the buy points: folded to its line counting them as the market line
+            does, opened to one table in the family order with each family's rows as its own card orders them, each row
+            its setup's tag, the stock and its company, the gate it missed and what it had against the bar in words,
+            the sessions to its next report and the stock page's own Watch press reading Watching for a name held; the
+            market line's count and the no-buy-points line's each open it and scroll to it, the link keeping it open;
+            on the newest night a link to Universe with the one gate short chip lit, and on an earlier night no press
+            and no link; on the S&P 400 and 600, whose nights store only the first part each member failed, a line
+            saying it reads none. Section 15.7's row, the watch list decision's places a name is added from, edited in
+            place on the addendum's word, and the guide's account of Tonight. This checkpoint amends its own done
+            condition: the addendum's tests joined it in `BUILD_PLAN.md`, the prior text in `CHANGELOG.md`. The roster's
+            two rows. No migration and no remedy.
+Screens:    read back on 2026-10-15 between 03:45Z and 04:00Z from the branch's build over the live store, read-only, at
+            1,440 pixels and a true 390 in both palettes, 14 screens and 56 shots with no element past its window
+            outside a box that scrolls, laid out with what each was read back against at
+            https://claude.ai/artifact/9s5jFk71Mw8rBFHhbjbhKR. Night 2026-10-14: the S&P 500's lists open at 51.2% over
+            45%, no buy point and 17 one gate short, the pullback's 8 and the breakout's 3 and the drift's 6; the S&P
+            400's closed at 41.5%; the Queue's 46 settled, 43 written and 3 refused; the night's 32 min 55 s from 23:00:16Z
+            to its close at 23:33:11Z; the Loop's 13, 13 and 2 proposals tested on 2026-10-11, none passing; the Ledger's
+            1,965 settled 2026 pullback setups; 5 watched; 24 researched names of the S&P 500; JNJ's close of 253.91.
+            The read-back found the Watch list's report column reading "no date" for every name, its route building
+            the rows without the calendar, and it now counts to each name's next report as Universe does, the card's
+            column with it.
+Pair:       before phase 19, 1267 claims; the plan's pair after 19.8 1328 within 1290 to 1370; the actual 1313, inside
+            the range and 15 short of the pair by the net of what each part landed fewer or more than its count: 19.2
+            three fewer, 19.3 two fewer, 19.4 two fewer, 19.5 one more, 19.6 one more, 19.7 ten fewer and 19.0, 19.1
+            and 19.8 as counted, each part's rows named with what it landed and took out in
+            `ArchitectureConformance.PhaseNineteenLanded`, the 19 claims 19.7 retired among them, none reached by a
+            claim.
+Operating:  phase 19 opened no operating row; `obligation-reconciles` states phase 19 at none.
+Tests:      six new: the pair, paper trading's figure's key, and four read-surface over constructed stores, the card's
+            count on every index with its order, the press with the report count on the card and the Watch list, an
+            earlier night and the shell's script. Older tests moved: the market line's count as a link, and the stated
+            screen rows at 220, due points at 621 and the families' tuple at 1313.
+Claims:     1313, one more than 1312: section 15.7's row of the card.
+Pins:       none move.
+Mutated:    the rule, stated before the runs: one mutation a property the checkpoint adds, on the line computing it,
+            each filtered to the test it was predicted red at. M1 the card's rows ordered by the family order reversed,
+            predicted red at the card's count and order test; red. M2 the press drawn on every night, at the earlier
+            night test; red. M3 a row's watched flag inverted, at the press test; red. M4 19.7's count of fewer at
+            nine, at the pair test; red. M5 the guide's part 6 of paper trading left out, at the figure's key test;
+            red. M6 phase 19 stated as opening one operating row, at the operating rows test; red, phase 19 stated at
+            one against none in its table. Not mutated: the
+            stylesheet's rules for the card and the market line's link words. Each reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, ac60e950: all six
+            steps, 0 warnings, 0 errors, 2342 of 2342 tests ran with none failed in 17 minutes 48 seconds, migrations 0
+            to 93 with none pending, schema version 93, against `data-ci` and never `data`; the phase report 59 tables,
+            1313 claims, 1313 passing, none out of scope and none unexamined, 1324 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
+Carried:    19.9, the ledger writing the business-first family's setups, owed after this report on the operator's
+            approval of 2026-10-12, and 19.10 beside it; Figure 11.4's "earliest promotion", owed a correction of
+            section 11; the market line drawing the S&P 600's stored breadth of 0.4497 as 45.0% beside "below its
+            floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.

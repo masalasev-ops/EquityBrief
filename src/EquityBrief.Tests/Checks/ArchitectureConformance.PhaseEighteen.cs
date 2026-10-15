@@ -44,7 +44,7 @@ public partial class ArchitectureConformance
     // cards and the heavyweights card, 19.4's two stores of the per-rule test, section 18's rule it cannot walk, paper
     // trading's rows and the trade log's two, 19.5's Universe rows, the Run page's corrections and section 17's two, and
     // 19.6's queue row of the reports written by hand and section 17's window, and its correction's Write now row, and
-    // 19.7's rows of the remaining screens.
+    // 19.7's rows of the remaining screens, 19.8's card of the stocks one gate short, and the rows after phase 19's report.
     internal static string[] AfterPhaseEighteen =>
     [
         .. Reading.ReadSurface.MarketOffRows,
@@ -60,12 +60,14 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.QueueDayRows,
         .. Reading.ReadSurface.WriteNowRows,
         .. Reading.ReadSurface.RemainingScreensRows,
+        .. Reading.ReadSurface.CloseToBuyRows,
+        .. AfterPhaseNineteen,
     ];
 
     // The rows the document loses after phase 18's report: 19.2's night header parts and reason totals on Tonight, which
     // the Run page draws from it under the keys above, the card parts 19.3 retires, the sector strip's parts 19.5
     // retires for its tiles and the Run page's and the Watch list's parts 19.7 retires, which the phases that landed them
-    // still count as landed.
+    // still count as landed, and the rows taken out after phase 19's report.
     internal static string[] TakenOutAfterPhaseEighteen =>
     [
         CheckReach.Key("15.7 Tonight", "Night header, reports carrying fresh prose against reused"),
@@ -76,6 +78,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.RetiredCardRows,
         .. Reading.ReadSurface.RetiredUniverseRows,
         .. Reading.ReadSurface.RetiredRunRows,
+        .. TakenOutAfterPhaseNineteen,
     ];
 
     // How many more rows each part of phase 18 landed than its count in the plan, a negative figure where it landed fewer,

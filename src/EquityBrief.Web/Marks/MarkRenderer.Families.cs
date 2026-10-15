@@ -118,7 +118,8 @@ public sealed record MarketLineView(
     bool CloseRead = true,
     string? Universe = null,
     string? RunHref = null,
-    int? Watching = null);
+    int? Watching = null,
+    string? CloseHref = null);
 
 // One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's
 // word and label, the gate it missed, and that gate's own words.
@@ -361,7 +362,11 @@ public sealed partial class MarkRenderer
         }
 
         body.Append(Invariant, $"{Count(line.BuyPoints, "buy point")} tonight across {line.SetupsListing} of {Count(line.Setups, "setup")} · ");
-        body.Append(line.CloseRead ? Formatted($"{line.Close} close to a buy point · ") : string.Empty);
+        body.Append(!line.CloseRead
+            ? string.Empty
+            : line.CloseHref is { } closeHref
+                ? Formatted($"<a class=\"close-open\" href=\"{Escaped(closeHref)}\">{line.Close} close to a buy point</a> · ")
+                : Formatted($"{line.Close} close to a buy point · "));
         body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}{(line.Universe is { } chosen ? "&amp;universe=" + Uri.EscapeDataString(chosen) : string.Empty)}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");
 
         // Beneath it, what ran tonight and the watch list in one line, where the page hands them in.

@@ -514,6 +514,8 @@ public class ObligationReconciles
         // Two, both opened by the 18.0 planning pass: the day's live quotes under their cap over the first five sessions,
         // and the short version's refusals read at ten reports written after 18.4.
         ["18"] = 2,
+        // None: phase 19 opened no carried obligation of either form.
+        ["19"] = 0,
     };
 
     // The first phase whose report is read for the operating rows it opened.

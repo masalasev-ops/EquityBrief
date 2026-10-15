@@ -329,6 +329,10 @@ span[data-last-asked-at]::before{content:none}
 /* the gate a stock close to a buy point missed, with the trade its plan states on a line of its own beneath */
 .list-table td.missed{font-size:12.5px;line-height:1.35;max-width:320px}
 .list-table td.missed .missed-trade{display:block;color:var(--soft);font-size:12px;margin-top:2px}
+/* Tonight's card of the stocks one gate short: its one line the press that opens it, what each had in words on the row */
+details.close-to-buy>summary{cursor:pointer;font-weight:600}
+.close-to-buy-table td.close-had{font-size:12.5px;line-height:1.35;min-width:180px;max-width:340px}
+.close-to-buy .close-universe{margin:8px 0 0}
 /* the state a member's reported quarters give it, beside the trend word, with what the numbers say while the word is under the pointer or has focus.
    The sentences are fixed to the window rather than to the table, whose box scrolls sideways and would grow a scrollbar
    around them and cut them off, and the shell's script places them beside the word. */

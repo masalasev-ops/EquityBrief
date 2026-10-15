@@ -3201,6 +3201,10 @@ internal static class Scope
             Verdict.Pass,
             "every family's picks in one table in the one order and each family's own, tagged and numbered from one across the table, and a selected row followed by its plan and its pick's card before the next row, the first row selected where the link names none; from 19.3 each row's report state, business and stories read off the row, every other pick's card hidden beneath its row with the control in it, and a row so opened held inside the box the table scrolls in by the stylesheet's rule",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = new Scoped(
+            Verdict.Pass,
+            "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer")] = new Scoped(
             Verdict.Pass,
             "the usual start worked by hand over constructed run ids, the most of the newest seven nights' first tries with a tie to the newest, and a night not yet run drawn with no notice and its time on the date line in New York's time with UTC beneath the pointer",
@@ -5894,6 +5898,9 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The sections held")] = "19.7",
         [CheckReach.Key("15.8 Universe", "Why it was written")] = "19.7",
         [CheckReach.Key("15.8 Universe", "The researched order")] = "19.7",
+
+        // 19.8's, on the operator's addendum of 2026-10-15: Tonight's card of the stocks one gate short.
+        [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = "19.8",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",

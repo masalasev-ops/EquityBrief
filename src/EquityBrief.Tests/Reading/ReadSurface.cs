@@ -145,6 +145,9 @@ public partial class ReadSurface
             // summary, the Ledger's business-first line, the Watch list's nearest setup and the researched list's columns.
             .. RemainingScreensRows,
 
+            // 19.8, Tonight's card of the stocks one gate short across every setup.
+            .. CloseToBuyRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
