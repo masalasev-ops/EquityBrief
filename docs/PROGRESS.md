@@ -45067,3 +45067,38 @@ Carried:    19.10's remedy run from main after the merge and before the night, i
             night's ledger step on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a
             correction of section 11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a
             correction of 19.2; the sign-offs of phases 16, 17 and 18.
+
+### 19.11 ruling - a chart page opened first for every stock, and published price and volume factors added to the ledger's readings   2026-10-16
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-16, word for word in `prompts/2026-10-16-19.11-ruling-chart-page-and-factor-readings.md`:
+            every link that opens a stock opens a chart page first, linking to the report, as 19.11 with every page's
+            time measured; published price and volume factors added to the ledger's readings, choosing, filtering and
+            ranking no stock and changing no rule, as 19.12, with one migration and the three history builds again; the
+            hard rule on the pulled history and the decision it cites amended to name the chart page; no intraday
+            chart, after-hours price or drawing tools; and no paid call, model call or provider request. Asked four
+            questions the same day, the operator chose, word for word in `prompts/2026-10-16-19.11-operator-answers.md`:
+            the timings taken on the operator's store by the branch's read surface on a port of its own outside the
+            regular session; the chart page's own reading made faster within 19.11 where its Monthly is over 300
+            milliseconds; for 19.13, a sale's plan mark read as none for a session whose 90 days reach before
+            2023-04-01; and the winners table stored by 19.12's one migration and worked once by its remedy.
+Plan:       `BUILD_PLAN.md` gains 19.11 and 19.12 after 19.10 with their done conditions, and the claims predicted gain
+            about 18 and about 5 as rows after the report; section 20's row names 19.0 to 19.12. Three decisions are
+            superseded by three naming the chart page, where the ruling named the one the hard rule cites, since each
+            says the name page alone; their old wording stands under Previously decided with its reasoning, each
+            citation in the specs and the code names the new ones, and CLAUDE.md's hard rule names the chart page, its
+            prior wording in `CHANGELOG.md`. The citations in the shipped source are comments, so no pin moves.
+Found:      the member readings store 19.2 added holds a night's readings as one list a row, so 19.12's migration adds
+            the readings' columns to the setups' table alone and the list widens with the catalogue; and the setups
+            table in `SCHEMA.md` still counts forty readings where the catalogue holds forty-six, left to 19.12, which
+            writes the count.
+Queue:      done, 19.10, PR 467, and its remedy file run from main; in progress, this ruling, and 19.10's remedy record,
+            the three ledger histories built again from main and each index's checks; next, 19.13's ruling, then 19.11,
+            19.12 and 19.13, each merged on its gates outside the night, the operator's go of 2026-10-16 standing for
+            each. The sign-offs of phases 16, 17 and 18 stay owed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 88bd3d77, since the
+            citations it names again sit in shipped source: all six steps, 0 warnings, 0 errors, 2363 of 2363 tests ran
+            with none failed in 20 minutes 15 seconds, migrations 0 to 94 with none pending, against `data-ci` and never
+            `data`; the phase report 59 tables, 1316 claims, 1316 passing, none out of scope and none unexamined, 1327
+            placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    nothing new.

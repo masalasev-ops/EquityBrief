@@ -285,7 +285,7 @@ static async Task<int> FilterHistoryRun(string[] args)
 
 // History before the store's rolling year, pulled by hand and never from the night, and removed whole
 // by the pull that wrote it. The verb's work is in `HistoryPull`, so a test runs the verb a person runs.
-// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
 static async Task<int> HistoryPullRun(string[] args)
 {
     var configuration = Configuration();

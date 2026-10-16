@@ -37,7 +37,7 @@ namespace EquityBrief.Worker.Bars;
 // Asked for a wider index's members, the S&P 400's or the S&P 600's, it stores the members its answer lists today,
 // one request an index, marked and removed the same way; every other pull asked for that index reads its names from
 // them, survivors alone, since the answer carries no span of membership.
-// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
 // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
 public sealed class HistoryPull(
     IHistoricalBarFeed bars,

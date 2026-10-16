@@ -989,7 +989,7 @@ public static class SchemaMigrations
     // The chart's averages over the sessions the indicator rows leave empty, read through the sessions before the store's
     // year from the pulled history: a row an average a name, its sessions and values as a list, the pull they came from,
     // or why none was read.
-    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
     const string CreateChartAverages = @"
         CREATE TABLE chart_average (
             ticker    TEXT NOT NULL,
@@ -2374,7 +2374,7 @@ public static class SchemaMigrations
     // The history pulled on the operator's command for the sessions before the store's rolling year,
     // held apart from the bar and calendar tables every night reads. Every row carries the run id of
     // the pull that wrote it, which is what removes a pull whole.
-    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+    // see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
     const string CreatePulledHistory = @"
         CREATE TABLE pulled_bar (
             ticker       TEXT    NOT NULL,

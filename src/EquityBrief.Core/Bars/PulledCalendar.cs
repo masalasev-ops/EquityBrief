@@ -7,7 +7,7 @@ namespace EquityBrief.Core.Bars;
 // and a bar the provider sent for one name on a day the exchange was closed is a stray rather than a session every
 // other name missed. The pull reads its holes by this rule and the name page's typical earnings move reads its prints
 // by the same rule, each over the names it reads.
-// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull
+// see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
 public sealed class PulledCalendar
 {
     readonly DateOnly[] firsts;

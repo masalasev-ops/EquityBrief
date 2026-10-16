@@ -1974,7 +1974,7 @@ public sealed partial class ReadApi : IComponent
 
     // A name's chart averages over the sessions its indicator rows leave empty, each with the pull the sessions before
     // its year were read from, or why none was.
-    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+    // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
     const string ChartAveragesOf = "SELECT name, night, sessions, pull, reason FROM chart_average WHERE ticker = $ticker ORDER BY name;";
 
     public async Task<IReadOnlyList<ChartAverageRow>> ChartAveragesAsync(string ticker)

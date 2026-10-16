@@ -326,7 +326,7 @@ public static class Nightly
             }),
             // The name page's figures over the sessions before the store's year, from the pulled history: the chart's
             // averages, and after them each name's typical earnings move and its long view, which only the page draws.
-            // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+            // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
             new("chart-averages", async () =>
             {
                 var outcome = await new ChartAverager(clock, store.DatabaseFile)

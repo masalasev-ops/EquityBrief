@@ -25,6 +25,50 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - CLAUDE.md - the hard rule on pulled history names the chart page
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
+Was:
+> Bars are append-only and never interpolated: ... History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads but the chart averages step, whose figures, the chart's averages and each stock's typical earnings move and long view, only the name page draws and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, which reads its prices at the store's scale as that step does, held as they stood by the point-in-time check, on the operator's ruling of 2026-10-12; and it is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws) ...
+Now:
+> ... whose figures ... only the name page and the chart page draw and no rule, level, listing or gate reads, and the setup ledger's valuation reading alone, ... on the operator's ruling of 2026-10-12; that no page reads but the chart page, which reads one stock's pulled bars at the store's scale for its weekly and monthly candles and its longer performance and hands them to no rule, level, listing or gate, on the operator's ruling of 2026-10-16; and it is removed whole by the pull that wrote it, citing the two decisions by the names that supersede them.
+Why: the operator ruled on 2026-10-16 that every stock opens on a chart page first, whose weekly and monthly candles read the pulled history, keeping the rule's reasoning that no rule, level, listing or gate reads it.
+
+### 2026-10-16 - ARCHITECTURE.html - the three pulled history decisions cited by the names that supersede them, and section 20's row naming 19.11 and 19.12
+Authorised by: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name and chart pages' figures alone
+Was:
+> Section 4's chart row, the store paragraph of section 5, the chart averager's and the history pull's catalogue rows, the backfill paragraph and the chart averages step of section 14, and the pulled history's store row: ... (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name page's figures alone) ... (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) ... (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws) ...
+> Section 20, phase 19: ... Run, Loop, Ledger, Watch list and Researched brought into line; and after the report the ledger's business-first setups ... the build plan's phase 19 checkpoints, 19.0 to 19.10
+Now:
+> Each citation names the decision that supersedes it, and nothing else in those passages changed: the chart page they will name is written by 19.11. Section 20's row adds after the business-first setups: and on the rulings of 2026-10-16 a chart page every stock opens on first, with every page's time measured, and published price and volume factors added to the ledger's readings with a table of which go with winners; and names 19.0 to 19.12.
+Why: the decisions cited are superseded and kept under Previously decided, and a spec cites none that is; the operator's rulings of 2026-10-16 add 19.11 and 19.12.
+
+### 2026-10-16 - SCHEMA.md - the pulled history's and the chart averages' decisions cited by the names that supersede them
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
+Was:
+> Pulled history: ... (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull) ...
+> Chart averages: ... (see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws) ...
+Now:
+> Each cites the decision that supersedes it, and nothing else changed.
+Why: the decisions cited are superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-16 - RUNBOOK.md - the pulled history's decision cited by the name that supersedes it
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
+Was:
+> Pulling the history: ... nothing a night runs reads it but the chart averages step, for the chart's averages, each stock's typical earnings move and its long view before the store's year (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read on a night for the name page's figures alone and removed whole by that pull):
+Now:
+> It cites (see: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull), and nothing else changed.
+Why: the decision cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-16 - BUILD_PLAN.md - 19.11 and 19.12 added after 19.10, their claims predicted, and the bar store's decision cited by the name that supersedes it
+Authorised by: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name and chart pages' figures alone
+Was:
+> The claims phase 19 predicts: ... 19.10, queued beside 19.9 on the ruling of 2026-10-13, ... adds 3, the fill step's catalogue and matrix rows and its store, named beside the pair as rows after the report.
+> 19.10's done condition was the plan's last checkpoint text before the carried obligations.
+> 11.7's done condition: ... retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements and the name page's figures alone); ...
+Now:
+> Added without replacing anything: a claims paragraph, 19.11 and 19.12 adding about 18 and about 5 named beside the pair as rows after the report; and after 19.10, 19.11, the chart page opened first for every stock with every page's time measured, and 19.12, published price and volume factors as ledger readings with the table of which go with winners, each with its done condition and the operator's answers of 2026-10-16. 11.7's done condition cites the decision that supersedes the one it cited.
+Why: the operator's rulings of 2026-10-16 add the two checkpoints, and a spec cites no superseded decision.
+
 ### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface gain the move of every entry to the next session's open
 Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 Was:
