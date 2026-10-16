@@ -238,7 +238,8 @@ public partial class FixtureExpectations
     // Three constructed members over 28 sessions, each pattern four sessions long: the first opens at 300 and closes a
     // dollar over it on the third and fourth sessions of each four, trading four million, and opens at 100 and closes a
     // dollar under on the first two, trading a million; the third the other way round; the second opens and closes at 200
-    // and trades two million every session.
+    // and trades two million every session. Each low is a dollar under the smaller of the open and the close, but for the
+    // first member's on the newest session, 50, which breaks the pattern there.
     static (SweepSeries[] Series, SweepBenchmark.Members Members) RankedMembers()
     {
         var calendar = Enumerable.Range(0, 28).Select(at => new DateOnly(2026, 1, 1).AddDays(at)).ToArray();
@@ -254,9 +255,13 @@ public partial class FixtureExpectations
 
         SweepName Named(string ticker, SweepBar[] bars) => new(ticker, bars, [(null, null)], []);
 
+        var first = Pattern(true);
+
+        first[27] = first[27] with { Low = 50 };
+
         var series = new[]
         {
-            SweepColumns.Series(Named("AAA", Pattern(true)), sessionAt),
+            SweepColumns.Series(Named("AAA", first), sessionAt),
             SweepColumns.Series(Named("BBB", [.. Enumerable.Range(0, 28).Select(at => Bar(at, 200, 200, 2_000_000))]), sessionAt),
             SweepColumns.Series(Named("CCC", Pattern(false)), sessionAt),
         };
@@ -281,9 +286,10 @@ public partial class FixtureExpectations
         Assert.Null(ranks.Alpha2(1, 27));
 
         // Alpha#4: the first member's low is the highest on the third and fourth sessions of each four and the lowest on the
-        // first two; of its nine places to the twenty-eighth, the fourth of a four, five are five sixths and four a sixth,
-        // so the newest's time-series rank is four under and five level, 4 + 3 = 7, and the formula minus seven.
-        Assert.Equal(-7.0, ranks.Alpha4(0, 27)!.Value, 12);
+        // first two, and the lowest on the newest at 50; of its nine places to the twenty-eighth, four are five sixths and
+        // five a sixth, the newest's among them, so its time-series rank is none under and five level, 0 + 3 = 3, and the
+        // formula minus three. Read off the session before each bar's, the newest would stand five sixths and rank seven.
+        Assert.Equal(-3.0, ranks.Alpha4(0, 27)!.Value, 12);
 
         // Alpha#1: of the first member's five bars to the twenty-eighth, closing 301, 99, 99, 301 and 301, the square of the
         // close is largest on the first and the fourth and fifth, the older taken, place 1; the second's level closes take
