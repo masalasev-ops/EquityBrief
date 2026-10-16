@@ -1780,3 +1780,75 @@ Verified:   `tools/ci.ps1` green over main as 19.13's correction's entry records
             changelog and the plan run filtered over the tree carrying it: 164 of 164 tests, the count the suite's own
             list gave before the run.
 Carried:    nothing new.
+
+### 19.14 - the records archive: the build record's entries before phase 19 and the changelog's before 2026-10-12 moved whole to archives read with their live files as one, and an entry's figures stated before the run that checks them   2026-10-16
+
+Queue:      done, 19.0 to 19.13 with their corrections, records and rulings and the 19.14 ruling, PRs 446 to 475; in
+            progress, 19.14; next, the correction of the chart page's empty figures the operator added on 2026-10-16,
+            after this merges, then the sign-offs of phases 16, 17, 18 and 19, each by a fresh session, then the
+            monthly run of 2026-11-07 and the operator reading its proposals.
+Built:      `docs/archive/PROGRESS-phases-0-to-18.md` holding every entry of `PROGRESS.md` before `### 19.0 planning`
+            and `docs/archive/CHANGELOG-to-2026-10-11.md` every entry of `CHANGELOG.md` dated before 2026-10-12, each
+            moved whole, unchanged and in order, each live file keeping its title with one line beneath it naming its
+            archive and each archive opening on one line naming its live file and saying it takes no new entry. Every
+            check reads a record with its archive as one through the corpus's one reader, which refuses a pair whose
+            opening lines are missing; the citation readers walk both archives, the changelog's quoted prior text left
+            out in its archive as in itself; `record-append-only` joins each pair as the move wrote it against the record
+            at the move's parent, holds each archive byte for byte as written, and holds every entry before the move in
+            its place and every point it landed and citation it held; `changelog-reconciles` counts the pair at every
+            revision from the move on; and the phase report holds the figures the newest entry states for the run over
+            the tree carrying it to the ones it measured, on both surfaces it writes. CLAUDE.md's Document lifecycle
+            reads an archive as the earlier part of its record and the record as append only across the pair, and
+            condition 8 states the figures before the run; two decisions under Process, `scripts.md`'s green, the
+            roster's three rows and the changelog.
+Moved:      by the one-off commands, from the checkout on this branch at main's 4c599ee4, not committed to `tools/`:
+            `mkdir -p docs/archive && sed -n '28,43860p' docs/PROGRESS.md > docs/archive/PROGRESS-phases-0-to-18.md &&
+            sed -i '28,43860d' docs/PROGRESS.md && sed -n '1522,$p' docs/CHANGELOG.md >
+            docs/archive/CHANGELOG-to-2026-10-11.md && sed -i '1522,$d' docs/CHANGELOG.md`, the four opening lines then
+            written in the editor, in a commit of its own, 2290945c.
+Measured:   before the move, at 4c599ee4, `PROGRESS.md` 4,243,406 bytes and 45,614 lines and `CHANGELOG.md` 2,422,751
+            bytes and 15,691 lines. At the move, the live `PROGRESS.md` 187,607 bytes and 1,782 lines, its archive
+            4,056,112 and 43,835; the live `CHANGELOG.md` 235,708 bytes and 1,522 lines, its archive 2,187,351 and 14,172;
+            each pair joined is its record before the move byte for byte. HasLanded reports 152 of the plan's 153
+            checkpoints of phases 0 to 18 landed before the move and after it, 17.2a not landed in both. The decision
+            citations number 44 in the build record and 64 in the changelog before the move, and 5 and 39, 0 and 64 in
+            the live files and archives after it; the obligation citations 23 and 1 before, and 0 and 23, 0 and 1 after;
+            every one resolves. The phase report held 1337 claims, 1337 passing, before the move, over b11ee730, and
+            1337 and 1337 after it, read over this entry's tree with its heading in place. `tools/ci.ps1` took 25 minutes 29 seconds over b11ee730, the code of the commit before
+            the move, on the operator's ruling of 2026-10-16 that a tree differing from one already run by documents
+            alone takes that run's time, and 22 minutes 30 seconds over b407d3d5, the finished tree before this entry,
+            each on the operator's machine with no night or off-peak run writing; the four checks walking the records'
+            history took 4 minutes 3 seconds before and 3 minutes 56 seconds after, since the move leaves the history
+            they read as it was, and the new checks of the pairs 4 seconds.
+Tests:      12 new, 2406 in all: each pair joined at the move against the record before it, each archive as the move
+            wrote it and every earlier entry in its place, over both records; each move's cut; the landed points and the
+            citations; the readers shown to find an archived entry edited, an entry removed from the pair, a new entry
+            in an archive and an entry moved out of its place; the changelog's count needing its archive over
+            constructed revisions; and the report's figures held to its own, each figure one off alone turning it red,
+            with the record's newest entry read.
+Claims:     1337, as before: the move and the checks add no row of a table the harness reads.
+Mutated:    the rule, stated before the runs: one mutation a property 19.14 adds whose failure would let an archived
+            entry change, an entry leave the pair, an archive take a new entry, a citation in an archive go unread or a
+            stated figure stand unchecked, the smallest edit that breaks it, made in this checkout, each run against its
+            own tests. R1 one word of an archived entry edited: red at the archive's own test and the earlier entries'
+            over the build record. R2 phase 19.1's entry removed from the live record: red at the headings ever written,
+            the earlier entries and the landed points. R3 an entry written to the build record's archive: red at the
+            archive's own test. C1 a record read without its archive: red at five tests, `two-platform`'s anchor and the
+            changelog's count among them. C2 the changelog counted without its archive: red at the constructed
+            revisions. C3 the changelog's archive read for citations in its quoted prior text: red at the quoted text's
+            test and the citations kept. C4 the archives left out of the documents the citation readers walk: red at the
+            population's count. C5 a figure one off agreeing: red at the figures' test. C6 green without the record's
+            figures: red, same. C7 the test count not read: red, same. F1, once this entry was written, its stated test count
+            one higher: the phase report over this tree red, naming 2407 tests ran where the run measured 2406. Each
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2406 of 2406 tests ran with none failed,
+            migrations 0 to 96 with none pending, schema version 96, against `data-ci` and never `data`; the phase report
+            60 tables, 1337 claims, 1337 passing, none out of scope and none unexamined, 1348 placements and verdicts
+            reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the chart page's empty figures, the operator's correction of 2026-10-16 in
+            `prompts/2026-10-16-19.11-correction-chart-page-empty-figures.md`, after this merges; the Run page's 4.2
+            seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling of its own the
+            operator is asked for; the first night's fill step and ledger step on 19.10's build; the first night's ledger
+            step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below
+            its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
