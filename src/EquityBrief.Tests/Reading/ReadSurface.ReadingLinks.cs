@@ -67,4 +67,29 @@ public partial class ReadSurface
         Assert.DoesNotContain("0.7", table, StringComparison.Ordinal);
         Assert.DoesNotContain("-0.500", table, StringComparison.Ordinal);
     }
+
+    // The chart of what is behind a stock reads a member's row written before the catalogue gained the published factors
+    // with the readings it lacks as none, and a row holding more readings than the catalogue defines is not read.
+    // see: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+    [Fact]
+    public async Task AMembersReadingsWrittenBeforeTheFactorsAreReadWithTheOnesTheyLackAsNone()
+    {
+        using var store = new TemporaryStore().Migrated();
+        var older = new double?[46];
+        var longer = new double?[EquityBrief.Core.Ledger.LedgerReadings.Count + 1];
+
+        older[0] = 1.05;
+        store.Execute(
+            "INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES "
+            + $"('GSPC', '2026-10-15', 'OLD', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(older)}', '859241ef8442'), "
+            + $"('GSPC', '2026-10-15', 'LONG', '{EquityBrief.Worker.Ledger.SetupLedger.ReadingsText(longer)}', 'x');");
+
+        var read = await new EquityBrief.Api.Reading.ReadApi(store.DatabaseFile, EquityBrief.Core.Time.FixedClock.At(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero), EquityBrief.Core.Time.SessionZones.UnitedStates))
+            .LedgerReadingsAsync("GSPC", new DateOnly(2026, 10, 15));
+
+        Assert.Equal(["OLD"], read.Keys);
+        Assert.Equal(EquityBrief.Core.Ledger.LedgerReadings.Count, read["OLD"].Count);
+        Assert.Equal(1.05, read["OLD"][0]);
+        Assert.All(read["OLD"].Skip(46), reading => Assert.Null(reading));
+    }
 }

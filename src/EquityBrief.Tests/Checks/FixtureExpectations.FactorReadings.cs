@@ -201,6 +201,40 @@ public partial class FixtureExpectations
         Assert.Null(FactorReadings.RelativeReturn(bars, 29, [.. fund.Skip(10)], 21));
     }
 
+    // The ledger reads each member's sector fund among its market series, the eleven funds beside its six, and the
+    // readings' function handed a member whose company files Information Technology reads its returns over 21 and 63
+    // sessions less XLK's between the same days; a member whose company files no sector reads none.
+    [Fact]
+    public void TheLedgerReadsTheFundOfTheSectorAMembersCompanyFilesAndNoneWhereItFilesNone()
+    {
+        Assert.All(Core.Families.GicsSectors.Funds.Values, fund => Assert.Contains(fund, LedgerMarket.Named));
+
+        var calendar = Enumerable.Range(0, 80).Select(at => new DateOnly(2026, 1, 2).AddDays(at)).ToArray();
+        var closes = Enumerable.Range(0, 80).Select(at => 100m + at).ToArray();
+        var bars = calendar.Select((session, at) => new SweepBar(session, closes[at] + 1, closes[at] - 1, closes[at], 1_000_000, closes[at], closes[at])).ToArray();
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new[] { SweepColumns.Series(new SweepName("AAA", bars, [(null, null)], []), sessionAt) };
+        var sessions = SweepColumns.Sessions(series, calendar);
+        var members = SweepBenchmark.On(series, calendar.Length);
+        var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
+        var market = new LedgerMarket(new Dictionary<string, IReadOnlyList<(DateOnly, double)>>(StringComparer.Ordinal)
+        {
+            ["XLK"] = [.. calendar.Select((session, at) => (session, 50.0 + (2 * at)))],
+        });
+
+        double?[] ReadFiling(string? sector) => LedgerSetups.Readings(
+            "GSPC", 0, series[0], [.. bars.Select(bar => Price(bar.Close))], 79, sessions[79], members, calendar, 79, market,
+            new LedgerContext(new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(), new Dictionary<string, string?> { ["AAA"] = sector }, highs, lows));
+
+        var filed = ReadFiling(Core.Families.GicsSectors.InformationTechnology);
+
+        // The member's 179 over 158 against the fund's 208 over 166, and 179 over 116 against 208 over 82.
+        Assert.Equal(((179.0 / 158) - 1) - ((208.0 / 166) - 1), filed[LedgerReadings.IndexOf("sector_month")]!.Value, 12);
+        Assert.Equal(((179.0 / 116) - 1) - ((208.0 / 82) - 1), filed[LedgerReadings.IndexOf("sector_quarter")]!.Value, 12);
+        Assert.Null(ReadFiling(null)[LedgerReadings.IndexOf("sector_month")]);
+        Assert.Null(ReadFiling(Core.Families.GicsSectors.Energy)[LedgerReadings.IndexOf("sector_month")]);
+    }
+
     // Three constructed members over 28 sessions, each pattern four sessions long: the first opens at 300 and closes a
     // dollar over it on the third and fourth sessions of each four, trading four million, and opens at 100 and closes a
     // dollar under on the first two, trading a million; the third the other way round; the second opens and closes at 200
