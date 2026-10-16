@@ -45128,8 +45128,13 @@ Found:      the plan's box on a Form 4 is the filing's and not a transaction's, 
             by hand rather than over three nights, which a done condition may not wait on, the first nights' counts owed
             to a dated entry; and the data set is committed as a cut of the fixture names' rows with the whole file's
             size and checksum stated.
-Queue:      done, the 19.11 ruling and 19.10's remedy record; in progress, this ruling; next, 19.11, 19.12 and 19.13, each merged on its gates outside the night, the operator's go of 2026-10-16 standing for
-            each. The sign-offs of phases 16, 17 and 18 stay owed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL, since the
-            citations it names again sit in shipped source.
+Queue:      done, the 19.11 ruling; in progress, this ruling and 19.10's remedy record; next, 19.11, 19.12 and 19.13,
+            each merged on its gates outside the night, the operator's go of 2026-10-16 standing for each. The sign-offs
+            of phases 16, 17 and 18 stay owed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 021671e0, since the
+            citations it names again sit in shipped source: all six steps, 0 warnings, 0 errors, 2363 of 2363 tests ran
+            with none failed in 18 minutes 49 seconds, migrations 0 to 94 with none pending, against `data-ci` and never
+            `data`; the phase report 59 tables, 1316 claims, 1316 passing, none out of scope and none unexamined, 1327
+            placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed. Set on
+            the merge of PR 468, whose tree is the one this ran over, as edc64bdc.
 Carried:    nothing new.
