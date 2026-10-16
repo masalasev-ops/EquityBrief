@@ -2,7 +2,8 @@ namespace EquityBrief.Core.Ledger;
 
 // Where the session after a setup's listing opened against its plan. A family's plan carries no entry zone of its own,
 // so its zone is its whole range, the stop to the target, and an open at or under the stop, or at or over the target, is
-// past it and places no trade there; a plan whose stop trails has no target to open past.
+// past it; a plan whose stop trails has no target to open past. From the ruling of 2026-10-15 a setup whose open is
+// past its range is still bought there and walked under the same exits, and the gap is counted.
 // see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
 public enum NextOpenGap
 {
@@ -12,8 +13,8 @@ public enum NextOpenGap
     NoOpen,
 }
 
-// One settled setup priced both ways: at the close of the night that listed it, as the ledger prices it, and at the
-// next session's open, each with its result and, where its benchmark is settled, its edge.
+// One settled setup priced both ways: at the close of the night that listed it and at the next session's open, each with
+// its result and, where its benchmark is settled, its edge.
 public sealed record NextOpenPricing(string Family, int Year, NextOpenGap Gap, double? ResultAtClose, double? EdgeAtClose, double? ResultAtOpen, double? EdgeAtOpen);
 
 // One family's settled setups on an index over a year, or over every year where the year is none: the results and the
@@ -38,135 +39,59 @@ public sealed record NextOpenGroup(
     public double? EdgeDifference => EdgeAtOpen - EdgeAtClose;
 }
 
-// The read-only check of what the ledger's results come to when each setup is bought at the next session's open rather
-// than at the close of the night that listed it, which the night computes after that close. The stop, the target, the
-// trail and the cap stay where the plan put them in prices, and the path is read over the same closes from the session
-// after the listing onward, so the cap's close is the same session either way and only the buy moves. Nothing here
-// writes anything.
+// The read-only check of what the ledger's results come to bought at the next session's open rather than at the close of
+// the night that listed it, each priced both ways through the core's one pricing function. Nothing here writes anything.
+// see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 public static class NextOpenCheck
 {
-    public static NextOpenGap Gap(SetupAnchor anchor, double? open)
-    {
-        if (open is not { } price || !(price > 0))
+    public static NextOpenGap Gap(SetupAnchor anchor, double? open) =>
+        open is not { } price || !(price > 0) ? NextOpenGap.NoOpen
+        : TradeFills.PastOf(price, anchor.Stop, anchor.Trails ? null : anchor.Target) switch
         {
-            return NextOpenGap.NoOpen;
-        }
+            FillPast.Stop => NextOpenGap.UnderStop,
+            FillPast.Target => NextOpenGap.OverTarget,
+            _ => NextOpenGap.Inside,
+        };
 
-        if (price <= anchor.Stop)
-        {
-            return NextOpenGap.UnderStop;
-        }
-
-        return !anchor.Trails && price >= anchor.Target ? NextOpenGap.OverTarget : NextOpenGap.Inside;
-    }
-
-    public static SetupAnchor AtOpen(SetupAnchor anchor, double open) => anchor with { Entry = open };
-
-    // The setup's path bought at the open, none where the open falls outside the plan's range or was not held. Its result
-    // is stated in the risk the plan put up at the listing's close, since the position is sized the night before from
-    // that close and its stop: the exit is the same close either way, so a buy dearer than the close lowers the result by
-    // the difference over that risk, and an open a cent over the stop does not swell it as a risk of a cent would.
+    // The setup's path bought at the open: the close's path, its result moved by the gap over the risk the close set,
+    // none where the open was not held. A gap past the stop or the target is bought and ends where the plan ends.
     public static SetupOutcome? Replay(ReadOnlySpan<double> closes, int from, SetupAnchor anchor, double? open)
     {
-        if (Gap(anchor, open) != NextOpenGap.Inside)
+        if (open is not { } price || !(price > 0))
         {
             return null;
         }
 
-        var outcome = SetupReplay.Replay(closes, from, AtOpen(anchor, open!.Value));
+        var outcome = SetupReplay.Replay(closes, from, anchor);
 
-        return outcome.Result is { } result ? outcome with { Result = result * (open.Value - anchor.Stop) / anchor.Risk } : outcome;
+        return outcome with { Result = TradeFills.AtOpen(outcome.Result, anchor.Entry, anchor.Risk, price) };
     }
 
-    // The same plan entered on every member of the session at its own next open, as the benchmark at the close enters it
-    // at each member's close: a member whose next open falls outside its range is not entered, one with no next session
-    // held is entered and left out where its prices stopped, and open otherwise.
+    // The same plan entered on every member of the session and bought at its own next open, the members the close's
+    // benchmark entered, each moved by its own gap over its own risk.
     // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
     public static BenchmarkReading Benchmark(IReadOnlyList<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan)
     {
-        var sum = 0.0;
-        var ended = 0;
-        var entered = 0;
-        var stopped = 0;
+        var (reading, listed) = SetupBenchmark.WithMembers(members, session, plan);
 
-        foreach (var (closes, opens, bar, move, pricesStopped) in members)
-        {
-            if (bar < 0 || bar >= closes.Length || plan.On(session, closes[bar], move) is not { } anchor)
-            {
-                continue;
-            }
-
-            if (bar + 1 >= closes.Length)
-            {
-                entered++;
-                stopped += pricesStopped ? 1 : 0;
-
-                continue;
-            }
-
-            double? open = bar + 1 < opens.Length ? opens[bar + 1] : null;
-
-            if (Replay(closes, bar, anchor, open) is not { } outcome)
-            {
-                continue;
-            }
-
-            entered++;
-
-            if (outcome.Result is { } result)
-            {
-                sum += result;
-                ended++;
-            }
-            else if (pricesStopped)
-            {
-                stopped++;
-            }
-        }
-
-        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped);
+        return reading with { Mean = TradeFills.Benchmark(reading.Mean, listed).Mean };
     }
 
     // A heavyweights' setup bought at the next open and sold at the same close its path ended on, a fraction of the sum
     // the listing's close put to it, which the position is sized from the night before.
     public static double? HeavyweightResult(ReadOnlySpan<double> closes, int from, int sessions, double? open) =>
-        open is { } price && price > 0 && sessions > 0 && from + sessions < closes.Length && closes[from] > 0 ? (closes[from + sessions] - price) / closes[from] : null;
+        open is { } price && price > 0 && sessions > 0 && from + sessions < closes.Length && closes[from] > 0
+            ? TradeFills.AtOpen((closes[from + sessions] / closes[from]) - 1, closes[from], closes[from], price)
+            : null;
 
     // The size cut's return over the same sessions, each member bought at its own next open.
     // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
     public static BenchmarkReading HeavyweightCut(IReadOnlyList<(double[] Closes, double[] Opens, int From, bool Stopped)> members, int sessions)
     {
-        var sum = 0.0;
-        var ended = 0;
-        var entered = 0;
-        var left = 0;
+        var reading = HeavyweightPaths.Cut([.. members.Select(member => (member.Closes, member.From, member.Stopped))], sessions);
+        var listed = HeavyweightPaths.CutMembers([.. members.Select(member => (member.Closes, member.Opens, member.From))], sessions);
 
-        foreach (var (closes, opens, from, stopped) in members)
-        {
-            if (from < 0 || from >= closes.Length || !(closes[from] > 0))
-            {
-                continue;
-            }
-
-            if (from + sessions >= closes.Length)
-            {
-                entered++;
-                left += stopped ? 1 : 0;
-
-                continue;
-            }
-
-            if (HeavyweightResult(closes, from, sessions, from + 1 < opens.Length ? opens[from + 1] : null) is not { } result)
-            {
-                continue;
-            }
-
-            entered++;
-            sum += result;
-            ended++;
-        }
-
-        return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, left);
+        return reading with { Mean = TradeFills.Benchmark(reading.Mean, listed).Mean };
     }
 
     // Each family's figures over every year and then year by year, the families in the order given and any other after

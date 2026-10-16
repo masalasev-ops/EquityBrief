@@ -66,4 +66,18 @@ public static class HeavyweightPaths
 
         return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, left);
     }
+
+    // The size cut's members as the pricing at the next open reads them: each entered member, whether it holds a close the
+    // path's sessions on, its close at the buy, which a book's result is a fraction of, and the open of its next session.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    public static IReadOnlyList<FillMember> CutMembers(IReadOnlyList<(double[] Closes, double[] Opens, int From)> members, int sessions) =>
+    [
+        .. members
+            .Where(member => member.From >= 0 && member.From < member.Closes.Length && member.Closes[member.From] > 0)
+            .Select(member => new FillMember(
+                member.From + sessions < member.Closes.Length,
+                member.Closes[member.From],
+                member.Closes[member.From],
+                member.From + 1 < member.Opens.Length && member.From + 1 < member.Closes.Length ? member.Opens[member.From + 1] : null)),
+    ];
 }

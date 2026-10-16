@@ -164,7 +164,7 @@ public sealed partial class SetupLedger : IComponent
 
     const string Settle = @"
         UPDATE setup SET result = $result, benchmark = $benchmark, edge = $edge, edge_after_cost = $edge_after_cost, sessions = $sessions,
-            end = $end, ended_on = $ended_on, settled = $settled
+            end = $end, ended_on = $ended_on, settled = $settled, fill = $fill, past = $past
         WHERE index_code = $index AND family = $family AND ticker = $ticker AND session_date = $session;";
 
     const string InsertNight = @"
@@ -180,10 +180,10 @@ public sealed partial class SetupLedger : IComponent
     static readonly string InsertSetup =
         "INSERT INTO setup (index_code, family, ticker, session_date, rule, live_pass, picked, entry, stop, target, trail, cap, risk_moves, "
         + string.Join(", ", LedgerReadings.All.Select(reading => reading.Column))
-        + ", result, benchmark, cost, edge, edge_after_cost, sessions, end, ended_on, settled, source, pin) VALUES ("
+        + ", result, benchmark, cost, edge, edge_after_cost, sessions, end, ended_on, settled, source, pin, fill, past) VALUES ("
         + "$index, $family, $ticker, $session, $rule, $live_pass, $picked, $entry, $stop, $target, $trail, $cap, $risk_moves, "
         + string.Join(", ", LedgerReadings.All.Select((_, at) => FormattableString.Invariant($"$r{at}")))
-        + ", $result, $benchmark, $cost, $edge, $edge_after_cost, $sessions, $end, $ended_on, $settled, $source, $pin);";
+        + ", $result, $benchmark, $cost, $edge, $edge_after_cost, $sessions, $end, $ended_on, $settled, $source, $pin, $fill, $past);";
 
     readonly IClock clock;
     readonly string databaseFile;
@@ -361,6 +361,7 @@ public sealed partial class SetupLedger : IComponent
             if (inputs is not null)
             {
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
+                var opens = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Open)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
                 var context = new LedgerContext(income, sectors, highs, lows, facts, before);
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
@@ -373,7 +374,7 @@ public sealed partial class SetupLedger : IComponent
                     {
                         var name = NameOf(inputs.Series, row.Ticker);
                         var at = IndexNightRead.BarOf(inputs.Series[name], inputs.At);
-                        var outcome = Outcome(closes, inputs, name, at, row.Anchor, row.Plan);
+                        var outcome = Outcome(closes, opens, inputs, name, at, row.Anchor, row.Plan);
                         var cost = costs.TryGetValue(row.Ticker, out var percent) ? CostInRisks(percent, row.Anchor) : null;
 
                         await InsertAsync(connection, transaction, row, listed.Contains(row.Ticker), cost, outcome, inputs.Calendar, inputs.At, NightSource, cancellation);
@@ -399,7 +400,7 @@ public sealed partial class SetupLedger : IComponent
                     {
                         double? cost = costs.TryGetValue(row.Ticker, out var percent) ? percent / 100 : null;
 
-                        await InsertAsync(connection, transaction, row, row.LivePass, cost, (new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0)), inputs.Calendar, inputs.At, NightSource, cancellation);
+                        await InsertAsync(connection, transaction, row, row.LivePass, cost, new SetupRead(new SetupOutcome(null, 0, SetupEnds.Open), new BenchmarkReading(null, 0, 0)), inputs.Calendar, inputs.At, NightSource, cancellation);
                     }
 
                     await ExecuteAsync(connection, transaction, InsertNight,
@@ -412,7 +413,7 @@ public sealed partial class SetupLedger : IComponent
                     passes += heavyweights.LivePasses;
                 }
 
-                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, rebalances, cancellation);
+                closed = await SettleAsync(connection, transaction, index, open, inputs, closes, opens, rebalances, cancellation);
 
                 // Every member's readings on the night, read as its setups read theirs, which the chart of what is behind a
                 // stock reads for its percentiles among the members and its push on the learned score.
@@ -456,22 +457,55 @@ public sealed partial class SetupLedger : IComponent
     // ended left out. The build names the members whose prices stopped; the night names none, since every member it reads
     // is a member on the night and one the index let go before it is not read at all.
     // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
-    static (SetupOutcome Outcome, BenchmarkReading Benchmark) Outcome(double[][] closes, IndexNightInputs inputs, int name, int bar, SetupAnchor anchor, SetupPlan plan, bool[]? stopped = null)
+    // From 19.10 the path is bought at the open of the session after the setup's night and the benchmark the same way on
+    // every member, each read through the core's one pricing function at the open.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    static SetupRead Outcome(double[][] closes, double[][] opens, IndexNightInputs inputs, int name, int bar, SetupAnchor anchor, SetupPlan plan, bool[]? stopped = null)
     {
         var outcome = SetupReplay.Replay(closes[name], bar, anchor);
         var at = inputs.Series[name].SessionAt[bar];
-        var members = new List<(double[] Closes, int Bar, double Move, bool Stopped)>();
+        var members = new List<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)>();
 
         for (var place = 0; place < inputs.Members.Names[at].Length; place++)
         {
             var member = inputs.Members.Names[at][place];
             var memberBar = inputs.Members.Bars[at][place];
 
-            members.Add((closes[member], memberBar, inputs.Series[member].Atr[memberBar], stopped is not null && stopped[member]));
+            members.Add((closes[member], opens[member], memberBar, inputs.Series[member].Atr[memberBar], stopped is not null && stopped[member]));
         }
 
-        return (outcome, SetupBenchmark.Of(members, anchor.Session, plan));
+        var (benchmark, listed) = SetupBenchmark.WithMembers(members, anchor.Session, plan);
+
+        return AtOpen(anchor, outcome, benchmark, listed, OpenAfter(closes[name], opens[name], bar), book: false);
     }
+
+    // A setup read at its next session's open: its result, its benchmark and where that open stood against its plan, the
+    // close's figures moved by the gaps; a setup whose path ended with no open stored after its night places no trade.
+    static SetupRead AtOpen(SetupAnchor anchor, SetupOutcome outcome, BenchmarkReading benchmark, IReadOnlyList<FillMember> members, double? open, bool book)
+    {
+        var moved = benchmark with { Mean = TradeFills.Benchmark(benchmark.Mean, members).Mean };
+
+        if (open is not { } price || !(price > 0))
+        {
+            return new SetupRead(outcome.Result is null ? outcome : new SetupOutcome(null, outcome.Sessions, SetupEnds.None), moved);
+        }
+
+        var fill = book
+            ? TradeFills.Holding(anchor.Session, anchor.Entry, price, outcome.Result, benchmark.Mean, members)
+            : TradeFills.Swing(anchor.Session, anchor.Entry, anchor.Stop, anchor.Trails ? null : anchor.Target, price, outcome.Result, benchmark.Mean, members);
+
+        return fill is null
+            ? new SetupRead(outcome.Result is null ? outcome : new SetupOutcome(null, outcome.Sessions, SetupEnds.None), moved)
+            : new SetupRead(outcome with { Result = fill.Result }, moved, fill.Fill, fill.Past);
+    }
+
+    // The open of the session after a bar, none where the series holds none.
+    static double? OpenAfter(double[] closes, double[] opens, int bar) =>
+        bar >= 0 && bar + 1 < closes.Length && bar + 1 < opens.Length && opens[bar + 1] > 0 ? opens[bar + 1] : null;
+
+    // A setup's path and its benchmark as the ledger stores them from 19.10, at the open, with the open it was bought at
+    // and where that open stood against its plan; none bought where the store holds no open after its night.
+    sealed record SetupRead(SetupOutcome Outcome, BenchmarkReading Benchmark, double? Fill = null, string? Past = null);
 
     // The night's stored setups not yet settled, each replayed again over the closes to the night and its benchmark read
     // again, and written where its path ended or its benchmark settled.
@@ -482,6 +516,7 @@ public sealed partial class SetupLedger : IComponent
         IReadOnlyList<OpenSetup> open,
         IndexNightInputs inputs,
         double[][] closes,
+        double[][] opens,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
         CancellationToken cancellation)
     {
@@ -504,11 +539,11 @@ public sealed partial class SetupLedger : IComponent
                 continue;
             }
 
-            (SetupOutcome Outcome, BenchmarkReading Benchmark) read;
+            SetupRead read;
 
             if (setup.Family == HeavyweightRule.Name)
             {
-                if (HeavyweightOutcome(setup, rebalances, inputs, closes, names, name, bar, at) is not { } heavyweight)
+                if (HeavyweightOutcome(setup, rebalances, inputs, closes, opens, names, name, bar, at) is not { } heavyweight)
                 {
                     continue;
                 }
@@ -517,17 +552,17 @@ public sealed partial class SetupLedger : IComponent
             }
             else
             {
-                read = Outcome(closes, inputs, name, bar, setup.Anchor, PlanOf(setup, inputs.Series[name].Atr[bar]));
+                read = Outcome(closes, opens, inputs, name, bar, setup.Anchor, PlanOf(setup, inputs.Series[name].Atr[bar]));
             }
 
-            var (outcome, benchmark) = read;
+            var (outcome, benchmark) = (read.Outcome, read.Benchmark);
 
             if (outcome.Result is null && !benchmark.Settled)
             {
                 continue;
             }
 
-            await ExecuteAsync(connection, transaction, Settle, SettleParameters(index, setup.Family, setup.Ticker, setup.Session, setup.Cost, outcome, benchmark, inputs.Calendar, at), cancellation);
+            await ExecuteAsync(connection, transaction, Settle, [.. SettleParameters(index, setup.Family, setup.Ticker, setup.Session, setup.Cost, outcome, benchmark, inputs.Calendar, at), .. FillParameters(read)], cancellation);
 
             // A window closes once, on the night its path ends; a row waiting on its benchmark alone is written again
             // and counted again under neither.
@@ -540,11 +575,12 @@ public sealed partial class SetupLedger : IComponent
     // A heavyweights' setup's path to the night, read off the rebalances the book stored: sold at the first later one
     // whose buys leave the stock out, the benchmark its sector's size cut on its own session over the same sessions;
     // none where the book's rows of its own session are not held.
-    static (SetupOutcome Outcome, BenchmarkReading Benchmark)? HeavyweightOutcome(
+    static SetupRead? HeavyweightOutcome(
         OpenSetup setup,
         IReadOnlyDictionary<DateOnly, IReadOnlyList<HeavyweightCut>> rebalances,
         IndexNightInputs inputs,
         double[][] closes,
+        double[][] opens,
         IReadOnlyDictionary<string, int> names,
         int name,
         int bar,
@@ -566,11 +602,26 @@ public sealed partial class SetupLedger : IComponent
         var outcome = HeavyweightPaths.Replay(closes[name], bar, notBought);
         var cut = sector.Largest
             .Where(names.ContainsKey)
-            .Select(ticker => (closes[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at), false))
+            .Select(ticker => (closes[names[ticker]], opens[names[ticker]], IndexNightRead.BarOf(inputs.Series[names[ticker]], at)))
             .ToArray();
 
-        return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
+        return HeavyweightRead(setup.Anchor, outcome, [.. cut.Select(member => (member.Item1, member.Item3, false))], cut, closes[name], opens[name], bar);
     }
+
+    // A heavyweights' setup read at its next session's open against its size cut bought the same way.
+    static SetupRead HeavyweightRead(SetupAnchor anchor, SetupOutcome outcome, IReadOnlyList<(double[] Closes, int From, bool Stopped)> cut, IReadOnlyList<(double[] Closes, double[] Opens, int From)> members, double[] closes, double[] opens, int bar)
+    {
+        var benchmark = outcome.Result is null ? new BenchmarkReading(null, 0, cut.Count) : HeavyweightPaths.Cut(cut, outcome.Sessions);
+
+        return AtOpen(anchor, outcome, benchmark, HeavyweightPaths.CutMembers(members, outcome.Sessions), OpenAfter(closes, opens, bar), book: true);
+    }
+
+    // The fill half of a row: the open it was bought at, at the setup's own scale, and where that open stood.
+    static List<(string Name, object Value)> FillParameters(SetupRead read) =>
+    [
+        ("$fill", read.Fill is { } fill ? Money.ToStorage(Statistic.ToPrice(fill)) : DBNull.Value),
+        ("$past", read.Past is { } past ? past : DBNull.Value),
+    ];
 
     // The S&P 500's heavyweights' rebalances over the history, read by the sweep's own replay at the live setting: the
     // first scored session of each month, each sector's size cut by value as it stood with the leaders the rule buys.
@@ -925,7 +976,7 @@ public sealed partial class SetupLedger : IComponent
         var sessions = SweepColumns.Sessions(series, calendar);
         var members = SweepBenchmark.On(series, calendar.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
-        var (closes, stopped, after, extended) = await ClosesAsync(connection, series, through, cancellation);
+        var (closes, opens, stopped, after, extended) = await ClosesAsync(connection, series, through, cancellation);
         var past = after.Length == 0
             ? $"the bar store holding no close after {Stamp(through)}"
             : FormattableString.Invariant($"{extended} name(s) replayed past {Stamp(through)} over the bar store's closes through {Stamp(after[^1])}");
@@ -939,11 +990,11 @@ public sealed partial class SetupLedger : IComponent
             ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
 
-        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts), heavyweights);
+        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts), heavyweights);
     }
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
-    sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<(SetupOutcome Outcome, BenchmarkReading Benchmark)> Reads)> Families);
+    sealed record BuiltSession(IReadOnlyList<(FamilySetups Family, IReadOnlyList<SetupRead> Reads)> Families);
 
     sealed partial class PreparedHistory(
         string index,
@@ -953,6 +1004,7 @@ public sealed partial class SetupLedger : IComponent
         SweepBenchmark.Members members,
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         double[][] closes,
+        double[][] opens,
         bool[] stopped,
         DateOnly[] replayed,
         string past,
@@ -979,6 +1031,8 @@ public sealed partial class SetupLedger : IComponent
 
         public double[][] Closes => closes;
 
+        public double[][] Opens => opens;
+
         public bool[] Stopped => stopped;
 
         public IReadOnlyDictionary<int, IReadOnlyList<HeavyweightCut>> Heavyweights => heavyweights;
@@ -990,7 +1044,7 @@ public sealed partial class SetupLedger : IComponent
         // rebalance whose buys leave it out or its cap, against its size cut.
         public BuiltSession Compute(int at)
         {
-            var families = new List<(FamilySetups, IReadOnlyList<(SetupOutcome, BenchmarkReading)>)>();
+            var families = new List<(FamilySetups, IReadOnlyList<SetupRead>)>();
             var inputsOnTheNight = new IndexNightInputs(index, calendar[at], calendar, at, series, sessions, members, members.Names[at], income);
 
             foreach (var family in LedgerSetups.On(index, series, sessions, members, calendar, at, market, context))
@@ -999,7 +1053,7 @@ public sealed partial class SetupLedger : IComponent
                 {
                     var name = NameOf(series, row.Ticker);
 
-                    return Outcome(closes, inputsOnTheNight, name, IndexNightRead.BarOf(series[name], at), row.Anchor, row.Plan, stopped);
+                    return Outcome(closes, opens, inputsOnTheNight, name, IndexNightRead.BarOf(series[name], at), row.Anchor, row.Plan, stopped);
                 })]));
             }
 
@@ -1020,10 +1074,17 @@ public sealed partial class SetupLedger : IComponent
                     var cut = cuts
                         .First(one => one.Largest.Contains(row.Ticker, StringComparer.Ordinal)).Largest
                         .Where(nameOf.ContainsKey)
-                        .Select(ticker => (closes[nameOf[ticker]], IndexNightRead.BarOf(series[nameOf[ticker]], at), stopped[nameOf[ticker]]))
+                        .Select(ticker => nameOf[ticker])
                         .ToArray();
 
-                    return (outcome, outcome.Result is null ? new BenchmarkReading(null, 0, cut.Length) : HeavyweightPaths.Cut(cut, outcome.Sessions));
+                    return HeavyweightRead(
+                        row.Anchor,
+                        outcome,
+                        [.. cut.Select(member => (closes[member], IndexNightRead.BarOf(series[member], at), stopped[member]))],
+                        [.. cut.Select(member => (closes[member], opens[member], IndexNightRead.BarOf(series[member], at)))],
+                        closes[name],
+                        opens[name],
+                        bar);
                 })]));
             }
 
@@ -1274,7 +1335,7 @@ public sealed partial class SetupLedger : IComponent
 
     const string StoredSpans = "SELECT ticker, MIN(session_date), MAX(session_date) FROM bar GROUP BY ticker;";
 
-    const string StoredAfter = "SELECT ticker, session_date, close FROM bar WHERE session_date > $through ORDER BY ticker, session_date;";
+    const string StoredAfter = "SELECT ticker, session_date, close, open FROM bar WHERE session_date > $through ORDER BY ticker, session_date;";
 
     // Each name's closes over the history, then the bar store's own after the span's end through its newest session,
     // where the history's closes end in the store's own bars and so on its scale, with the sessions those closes stand
@@ -1283,10 +1344,11 @@ public sealed partial class SetupLedger : IComponent
     // close for has not stopped, whatever the history reads of it.
     // see: The history's setups are settled by the build alone, which replays them over the store's own prices after its span
     // see: A setup's benchmark leaves out a member whose prices stop before its trade ends, as the sweeps do
-    static async Task<(double[][] Closes, bool[] Stopped, DateOnly[] After, int Extended)> ClosesAsync(SqliteConnection connection, IReadOnlyList<SweepSeries> series, DateOnly through, CancellationToken cancellation)
+    static async Task<(double[][] Closes, double[][] Opens, bool[] Stopped, DateOnly[] After, int Extended)> ClosesAsync(SqliteConnection connection, IReadOnlyList<SweepSeries> series, DateOnly through, CancellationToken cancellation)
     {
         var spans = new Dictionary<string, (DateOnly First, DateOnly Last)>(StringComparer.Ordinal);
         var after = new Dictionary<string, List<double>>(StringComparer.Ordinal);
+        var afterOpens = new Dictionary<string, List<double>>(StringComparer.Ordinal);
         var sessions = new SortedSet<DateOnly>();
 
         await using (var command = Command(connection, null, StoredSpans, []))
@@ -1308,15 +1370,18 @@ public sealed partial class SetupLedger : IComponent
                 if (!after.TryGetValue(ticker, out var held))
                 {
                     after[ticker] = held = [];
+                    afterOpens[ticker] = [];
                 }
 
                 sessions.Add(Date(reader.GetString(1)));
                 held.Add(Statistic.FromPrice(Money.FromStorage(reader.GetString(2))));
+                afterOpens[ticker].Add(Statistic.FromPrice(Money.FromStorage(reader.GetString(3))));
             }
         }
 
         var newest = spans.Values.Select(span => span.Last).Append(through).Max();
         var closes = new double[series.Count][];
+        var opens = new double[series.Count][];
         var stopped = new bool[series.Count];
         var extended = 0;
 
@@ -1328,6 +1393,7 @@ public sealed partial class SetupLedger : IComponent
             var extends = stored is { } held && held.First <= through && after.ContainsKey(ticker);
 
             closes[name] = extends ? [.. history, .. after[ticker]] : [.. history];
+            opens[name] = extends ? [.. series[name].Bars.Select(bar => Statistic.FromPrice(bar.Open)), .. afterOpens[ticker]] : [.. series[name].Bars.Select(bar => Statistic.FromPrice(bar.Open))];
             extended += extends ? 1 : 0;
 
             var last = series[name].Bars.Length > 0 ? series[name].Bars[^1].Session : DateOnly.MinValue;
@@ -1335,7 +1401,7 @@ public sealed partial class SetupLedger : IComponent
             stopped[name] = (stored is { } kept && kept.Last > last ? kept.Last : last) < newest;
         }
 
-        return (closes, stopped, [.. sessions], extended);
+        return (closes, opens, stopped, [.. sessions], extended);
     }
 
     static int NameOf(IReadOnlyList<SweepSeries> series, string ticker)
@@ -1373,7 +1439,7 @@ public sealed partial class SetupLedger : IComponent
         SetupRow row,
         bool? picked,
         double? cost,
-        (SetupOutcome Outcome, BenchmarkReading Benchmark) outcome,
+        SetupRead outcome,
         IReadOnlyList<DateOnly> calendar,
         int at,
         string source,
@@ -1387,6 +1453,7 @@ public sealed partial class SetupLedger : IComponent
             ("$source", source), ("$pin", LedgerReadings.Version),
             .. SettleParameters(row.Index, row.Family, row.Ticker, row.Session, cost, outcome.Outcome, outcome.Benchmark, calendar, at).Where(parameter => parameter.Name is "$result" or "$benchmark" or "$edge" or "$edge_after_cost" or "$sessions" or "$end" or "$ended_on" or "$settled"),
             ("$cost", cost is { } paid ? paid : DBNull.Value),
+            .. FillParameters(outcome),
         ]);
 
         Money.Bind(command, "$entry", Statistic.ToPrice(row.Anchor.Entry));

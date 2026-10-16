@@ -82,7 +82,7 @@ public sealed partial class SetupLedger
         var nearResult = new bool[settled.Count];
         var nearEdge = new bool[settled.Count];
         var benchmarks = new ConcurrentDictionary<(int At, SetupPlan Plan), (BenchmarkReading Close, BenchmarkReading Open)>();
-        var opens = prepared.Series.Select(series => series.Bars.Select(bar => Statistic.FromPrice(bar.Open)).ToArray()).ToArray();
+        var opens = prepared.Opens;
 
         Parallel.For(0, settled.Count, place =>
         {
@@ -137,12 +137,15 @@ public sealed partial class SetupLedger
                 read.Result is { } result && read.Benchmark is { Settled: true, Mean: { } mean } ? result - mean : null;
 
             var edgeAtClose = Edge(atClose);
+            var edgeAtOpen = Edge(atOpen);
 
-            priced[place] = new NextOpenPricing(setup.Family, setup.Session.Year, gap, atClose.Result, edgeAtClose, atOpen.Result, Edge(atOpen));
-            sameResult[place] = atClose.Result is { } worked && setup.Result is { } stored && Math.Abs(worked - stored) <= SameWithin * Math.Max(1, Math.Abs(stored));
-            sameEdge[place] = setup.Edge is { } storedEdge ? edgeAtClose is { } workedEdge && Math.Abs(workedEdge - storedEdge) <= SameWithin * Math.Max(1, Math.Abs(storedEdge)) : null;
-            nearResult[place] = atClose.Result is { } near && setup.Result is { } held && Math.Abs(near - held) <= NearWithin;
-            nearEdge[place] = setup.Edge is { } heldEdge && edgeAtClose is { } nearEdgeWorked && Math.Abs(nearEdgeWorked - heldEdge) <= NearWithin;
+            // From 19.10's move the ledger stores each setup's result and edge at the open, so those are what the store
+            // is held to.
+            priced[place] = new NextOpenPricing(setup.Family, setup.Session.Year, gap, atClose.Result, edgeAtClose, atOpen.Result, edgeAtOpen);
+            sameResult[place] = atOpen.Result is { } worked && setup.Result is { } stored && Math.Abs(worked - stored) <= SameWithin * Math.Max(1, Math.Abs(stored));
+            sameEdge[place] = setup.Edge is { } storedEdge ? edgeAtOpen is { } workedEdge && Math.Abs(workedEdge - storedEdge) <= SameWithin * Math.Max(1, Math.Abs(storedEdge)) : null;
+            nearResult[place] = atOpen.Result is { } near && setup.Result is { } held && Math.Abs(near - held) <= NearWithin;
+            nearEdge[place] = setup.Edge is { } heldEdge && edgeAtOpen is { } nearEdgeWorked && Math.Abs(nearEdgeWorked - heldEdge) <= NearWithin;
         });
 
         var read = priced.OfType<NextOpenPricing>().ToArray();
@@ -155,7 +158,7 @@ public sealed partial class SetupLedger
         var edges = sameEdge.Count(same => same is not null);
 
         output.WriteLine(FormattableString.Invariant(
-            $"{NextOpenStage}: {read.Length} of {settled.Count} settled setup(s) on the {DecisionCards.NameOf(index)} priced over the history read through {newest}, {settled.Count - read.Length} whose stock or session the history does not hold; {sameResult.Count(same => same)} of {settled.Count} results at the close worked again as stored to a millionth and {nearResult.Count(near => near)} to a thousandth, and {sameEdge.Count(same => same == true)} of the {edges} stored edges to a millionth and {nearEdge.Count(near => near)} to a thousandth; nothing written"));
+            $"{NextOpenStage}: {read.Length} of {settled.Count} settled setup(s) on the {DecisionCards.NameOf(index)} priced over the history read through {newest}, {settled.Count - read.Length} whose stock or session the history does not hold; {sameResult.Count(same => same)} of {settled.Count} results at the open worked again as stored to a millionth and {nearResult.Count(near => near)} to a thousandth, and {sameEdge.Count(same => same == true)} of the {edges} stored edges to a millionth and {nearEdge.Count(near => near)} to a thousandth; nothing written"));
 
         return 0;
     }

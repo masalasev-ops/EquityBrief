@@ -627,9 +627,15 @@ public static class Nightly
                 var outcome = await new ForwardReturnFiller(clock, store.DatabaseFile)
                     .RunAsync(runId, night.Token);
 
+                // Every stored trade priced at the open of the session after its listing, once that session's bar is
+                // stored, the page list's scored plans just written among them; a trade listed tonight waits.
+                // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+                var filled = await new EquityBrief.Worker.Fills.TradeFiller(clock, store.DatabaseFile).RunAsync(runId, cancellation: night.Token);
+
                 return $"{outcome.RowsWritten} row(s) written over {outcome.ListingsExamined} listing(s) and {outcome.PlansExamined} swing plan(s), {outcome.Kept} kept as decided, " +
-                    $"{outcome.Matured} newly matured, {outcome.Immature} not yet matured, {outcome.PlansNotScorable} swing plan(s) not scorable from the night's close";
-            }),
+                    $"{outcome.Matured} newly matured, {outcome.Immature} not yet matured, {outcome.PlansNotScorable} swing plan(s) not scorable from the night's close; " +
+                    EquityBrief.Worker.Fills.TradeFiller.Detail(filled);
+            }, [ForwardReturnFiller.Stage, EquityBrief.Worker.Fills.TradeFiller.Stage]),
             // Section 14's step 21. One dated query, paged until the day is
             // covered, fanned out to names in code.
             new("news-pulse", async () =>

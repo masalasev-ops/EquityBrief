@@ -76,4 +76,43 @@ public static class SetupBenchmark
 
         return new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped);
     }
+
+    // The same benchmark with each member entered beside it as the pricing at the next open reads it: whether its path
+    // ended, its close, the risk its plan put up there and the open of its next session, none where the store holds
+    // none; the members not entered are not listed.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    public static (BenchmarkReading Reading, IReadOnlyList<FillMember> Members) WithMembers(IReadOnlyList<(double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)> members, DateOnly session, SetupPlan plan)
+    {
+        var sum = 0.0;
+        var ended = 0;
+        var entered = 0;
+        var stopped = 0;
+        var listed = new List<FillMember>();
+
+        foreach (var (closes, opens, bar, move, pricesStopped) in members)
+        {
+            if (bar < 0 || bar >= closes.Length || plan.On(session, closes[bar], move) is not { } anchor)
+            {
+                continue;
+            }
+
+            entered++;
+
+            var outcome = SetupReplay.Replay(closes, bar, anchor);
+
+            if (outcome.Result is { } result)
+            {
+                sum += result;
+                ended++;
+            }
+            else if (pricesStopped)
+            {
+                stopped++;
+            }
+
+            listed.Add(new FillMember(outcome.Result is not null, closes[bar], anchor.Risk, bar + 1 < opens.Length && bar + 1 < closes.Length ? opens[bar + 1] : null));
+        }
+
+        return (new BenchmarkReading(ended > 0 ? sum / ended : null, ended, entered, stopped), listed);
+    }
 }
