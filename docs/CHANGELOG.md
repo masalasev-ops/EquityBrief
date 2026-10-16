@@ -26,6 +26,35 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - CLAUDE.md - the Document lifecycle reads an archive as the earlier part of its record and the record as append only across the pair, and condition 8 states the figures before the run
+Authorised by: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
+Was:
+> Layout: /docs ARCHITECTURE.html SCHEMA.md BUILD_PLAN.md DECISIONS.md PROGRESS.md CHANGELOG.md RUNBOOK.md HOW_IT_WORKS.html the reader's guide, not a corpus document
+> | `PROGRESS.md` | record | append only, corrections are new dated entries |
+> | `CHANGELOG.md` | record | prior text of every clean spec edit |
+> 8. The PROGRESS entry of condition 6 is written **before** the run that verifies the checkpoint, not after it, and the figures conditions 2 and 5 record are filled in from that run. The record is what the reconciliation reads: ...
+Now:
+> The layout names `docs/archive/` and what it holds. The two rows read: append only across it and its archive, corrections are new dated entries; and prior text of every clean spec edit, append only across it and its archive. A paragraph after the cap's: an archive is the earlier part of its own record and not a ninth document, holding only entries moved whole and taking no new entry, and a record is append only across its live file and its archive together, an entry moving whole and unchanged to its archive and none edited or removed from the pair, because a record that can be edited after the fact is not a record. Condition 8: the entry states before the run the figures conditions 2 and 5 record, the test count off the suite's own list and the claim and PASS counts off the phase report over the tree with the entry's heading in place, the verifying pass runs over that exact tree, the report is green only where the newest entry stating its own run states the figures measured, and a Verified line states no duration of its own run; the reasoning after it is unchanged.
+Why: the operator's rulings of 2026-10-16 move the records' earlier entries to archives and take the figures-only commit away, and the cap's reasoning and the append-only rule's stand.
+
+### 2026-10-16 - .claude/rules/scripts.md - a green report says the newest entry's figures are the ones measured
+Authorised by: An entry states the figures its verifying run measures before that run, and the phase report holds them to the run
+Was:
+> A phase is not done until that report is green, and green means no claim failed, none is unexamined, no carried check failed or went unrun, and the run behind it was clean.
+Now:
+> ... the run behind it was clean, and the newest entry stating a run over the tree carrying it states the figures the report measured, citing the decision.
+Why: from 19.14 the report holds the figures an entry states before its run to the run.
+
+### 2026-10-16 - .claude/rules/checks.md - record-append-only, changelog-reconciles and architecture-conformance read each record with its archive and the newest entry's figures
+Authorised by: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
+Was:
+> `changelog-reconciles`: Every commit that deleted a line from a spec also changed `CHANGELOG.md`, read from the history
+> `record-append-only`: ... both directions asserted so an exemption cannot outlive what it exempts
+> `architecture-conformance`: ... and paper trading's figure's key names every part the figure draws, in the architecture and in the guide, neither figure's text holding any night's figure
+Now:
+> Added without replacing anything: changelog-reconciles' entries never falling below the most they held, counted over the live file and from the move its archive at every revision; record-append-only's archives joined to their live files at the move as the records stood before it, held byte for byte as the move wrote them, every entry before the move still standing, every point it landed still landing and every citation in it still read, the readers shown to find each fault; and architecture-conformance's phase report holding the newest entry's stated figures to the ones it measured.
+Why: a roster row names what its check asserts, and 19.14 added those assertions.
+
 ### 2026-10-16 - ARCHITECTURE.html - section 20's row naming the records archive and 19.14
 Authorised by: the operator's rulings of 2026-10-16, recorded as the 19.14 ruling "the records archive as phase 19's last checkpoint, then the sign-offs, and no new work until the loop's first proposals are read" in PROGRESS.md
 Was:
