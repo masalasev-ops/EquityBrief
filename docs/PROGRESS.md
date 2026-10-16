@@ -45096,6 +45096,9 @@ Queue:      done, 19.10, PR 467, and its remedy file run from main; in progress,
             the three ledger histories built again from main and each index's checks; next, 19.13's ruling, then 19.11,
             19.12 and 19.13, each merged on its gates outside the night, the operator's go of 2026-10-16 standing for
             each. The sign-offs of phases 16, 17 and 18 stay owed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL, since the
-            citations it names again sit in shipped source.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 88bd3d77, since the
+            citations it names again sit in shipped source: all six steps, 0 warnings, 0 errors, 2363 of 2363 tests ran
+            with none failed in 20 minutes 15 seconds, migrations 0 to 94 with none pending, against `data-ci` and never
+            `data`; the phase report 59 tables, 1316 claims, 1316 passing, none out of scope and none unexamined, 1327
+            placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    nothing new.
