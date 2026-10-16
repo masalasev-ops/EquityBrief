@@ -41,7 +41,7 @@ public sealed record FilingsOutcome(
 // holiday and read as such; the session's own day not yet posted stops the read, which the next night takes up. A
 // refusal or the limit leaves the facts stored as they were, the days not finished unread, and the stage's row naming
 // why. The whole refresh asks every filer the store knows once, which the monthly run's catch-all repeats.
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
 public sealed class FilingsRefresher : IComponent
 {

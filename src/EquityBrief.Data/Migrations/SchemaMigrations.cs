@@ -1200,7 +1200,7 @@ public static class SchemaMigrations
     // whole refresh write and the ledger reads; one row a filer each time its facts were asked for; one row a day of
     // the archive's daily index the refresh has read; and the five business readings a setup reads from the facts.
     // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
-    // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+    // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
     const string CreateFiledFacts = @"
         CREATE TABLE filed_fact (
             cik           TEXT NOT NULL,

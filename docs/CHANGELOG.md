@@ -25,6 +25,47 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - CLAUDE.md - the filings refresh's carve-out names the Form 4 and 4/A filed by a member's insiders
+Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> The nightly hard rule: ... and the filings refresh after the close, which reads the SEC archive's daily index, one free request a day since it last read one, and asks the archive for the facts of each member whose filer filed a quarterly or annual report, an amendment to one or a results announcement, so it follows the filings calendar rather than the index, free, from the SEC rather than the provider and bounded by its own limit, on the operator's ruling of 2026-10-09, ... (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit) ...
+Now:
+> ... a results announcement, and from 19.13 for each Form 4 or 4/A filed by a member's insiders, one request a filing, so it follows the filings calendar rather than the index, free, from the SEC rather than the provider and bounded by its own limit, on the operator's rulings of 2026-10-09 and 2026-10-16, ... citing the decision by the name that supersedes it.
+Why: the operator ruled on 2026-10-16 that insiders' open-market trades are read from the SEC's Form 4 filings through the same refresh, keeping the carve-out's reasoning that it follows the filings calendar rather than the index.
+
+### 2026-10-16 - ARCHITECTURE.html - the filings refresh's decision cited by the name that supersedes it, and section 20's row naming 19.13
+Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> The filings refresher's catalogue row, section 13.10's business readings, section 14's filings step and its note, the facts pulls' and filing days' store rows, section 17's filings refresh row and section 18's two failure rows: ... (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit) ...
+> Section 20, phase 19: ... and on the rulings of 2026-10-16 a chart page every stock opens on first, with every page's time measured, and published price and volume factors added to the ledger's readings with a table of which go with winners ... the build plan's phase 19 checkpoints, 19.0 to 19.12
+Now:
+> Each citation names the decision that supersedes it, and nothing else in those passages changed: the Form 4 reader they will name is written by 19.13. Section 20's row adds after the readings: and insiders' open-market buying and selling read from the SEC's Form 4 filings; and names 19.0 to 19.13.
+Why: the decision cited is superseded and kept under Previously decided, and a spec cites none that is; the operator's ruling of 2026-10-16 adds 19.13.
+
+### 2026-10-16 - SCHEMA.md - the filing days' decision cited by the name that supersedes it
+Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> Filing days: The days the refresh has read, the newest of which it starts the next night's read after (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit).
+Now:
+> It cites the decision that supersedes it, and nothing else changed.
+Why: the decision cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-16 - RUNBOOK.md - the filings refresh's decision cited by the name that supersedes it
+Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> From 17.3 the night refreshes the SEC's facts of the members that filed, ... storing each fact not yet stored as first filed in `filed_fact` (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit).
+Now:
+> It cites the decision that supersedes it, and nothing else changed.
+Why: the decision cited is superseded and kept under Previously decided, and a spec cites none that is.
+
+### 2026-10-16 - BUILD_PLAN.md - 19.13 added after 19.12 and its claims predicted
+Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+Was:
+> 19.12's done condition was the plan's last checkpoint text before the carried obligations, and the claims paragraph's last line named 19.11 and 19.12.
+Now:
+> Added without replacing anything: a claims paragraph, 19.13 adding about 8 named beside the pair as rows after the report; and after 19.12, 19.13, insider trades read from the SEC's Form 4 filings, with its done condition, the operator's answer of 2026-10-16 on the plan's box and what was found while writing the ruling.
+Why: the operator's ruling of 2026-10-16 adds the checkpoint.
+
 ### 2026-10-16 - CLAUDE.md - the hard rule on pulled history names the chart page
 Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
 Was:

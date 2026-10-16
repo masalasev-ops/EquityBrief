@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Checks;
 // nights with an archive the test holds, so what is asked on each night is read off the documents the archive was
 // asked for rather than off what the step says it did. The operator's test of 2026-10-09: a member that filed is
 // refreshed, and one that did not is not asked for.
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 public partial class NightlyCost
 {
     // The rows the filings refresh adds that this check reaches: section 17's row and section 18's two.
@@ -23,7 +23,7 @@ public partial class NightlyCost
 
     // The night's step as section 14 states it, which nightly-run reaches.
     internal const string FilingsStep =
-        "Read the archive's daily index for each weekday since the refresh last read one, through the night's own session where the archive has posted it, and ask the archive for the facts of each member whose filer filed a quarterly or annual report, an amendment to one, or a results announcement whose own page carries item 2.02, storing each fact not yet stored as first filed; a day the archive posted no index for before the session's own is read as none and the session's own, not yet posted, is read on a later night; bounded by its own limit and never by the night's deadline, a refusal leaving the facts as they were and its days for the next night; then read the business readings of tonight's setups again for the members refreshed (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit).";
+        "Read the archive's daily index for each weekday since the refresh last read one, through the night's own session where the archive has posted it, and ask the archive for the facts of each member whose filer filed a quarterly or annual report, an amendment to one, or a results announcement whose own page carries item 2.02, storing each fact not yet stored as first filed; a day the archive posted no index for before the session's own is read as none and the session's own, not yet posted, is read on a later night; bounded by its own limit and never by the night's deadline, a refusal leaving the facts as they were and its days for the next night; then read the business readings of tonight's setups again for the members refreshed (see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit).";
 
     // Every row the filings refresh adds, named after phase 16's report until phase 17's own pair is checked: the
     // component's catalogue and matrix rows, its three stores, the three above and the night's step.

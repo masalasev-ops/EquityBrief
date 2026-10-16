@@ -16,7 +16,7 @@ public sealed record DailyFiling(string Cik, string Company, string Form, DateOn
 // it posted none for, a weekend, a holiday or a day not yet posted, answers 403 with its storage's own refusal in XML,
 // where a request the archive itself refuses answers 403 with a page of its own, so the two are told apart by the
 // body and never by the status.
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 public static class SecEdgarDailyIndex
 {
     public const string Columns = "CIK|Company Name|Form Type|Date Filed|File Name";

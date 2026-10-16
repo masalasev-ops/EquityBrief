@@ -30,7 +30,7 @@ namespace EquityBrief.Core.Providers;
 //
 // The night's filings refresh asks it for a day's index, an 8-K's own index page and a filer's facts, each one
 // document through the same agent and the same transport.
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,

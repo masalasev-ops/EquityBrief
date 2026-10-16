@@ -563,7 +563,7 @@ public partial class NightlyCost
         (nameof(EquityBrief.Worker.Filter.EstimatesFetcher), Feed.CompanyFinancials),
         // The seventh, the filings refresh after the close, which reads the archive's daily index and asks the facts
         // of the members that filed, free and from the SEC rather than the provider, bounded by its own limit.
-        // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+        // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
         (nameof(EquityBrief.Worker.Ledger.FilingsRefresher), Feed.FilingsArchive),
         // The eighth, the second sources the fetch asks for each member whose row the provider's day file refused,
         // once every file is read and at most twenty a night, free and neither the provider's.
