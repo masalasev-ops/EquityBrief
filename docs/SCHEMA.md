@@ -1908,8 +1908,8 @@ Grain: one row per transaction of a Form 4 or 4/A's table of shares, by the fili
 | `form` | TEXT | `4` or `4/A` |
 | `amends` | TEXT | for an amendment, the accession of the one Form 4 its issuer's same owners filed on the day it states its original was filed; null where none or two match, and for an original |
 | `original_filed` | TEXT | the day an amendment states its original was filed, null for an original |
-| `owners` | TEXT | the reporting owners' names as the filing states them, in its order, joined by a semicolon and a space |
-| `owner_ciks` | TEXT | their CIKs padded to ten digits in the same order, joined by commas: the insider a reading counts once, a filing made jointly one insider |
+| `owners` | TEXT | the reporting owners' names in the order the reader that stored the row lists them, joined by a semicolon and a space |
+| `owner_ciks` | TEXT | their CIKs padded to ten digits in the same order, joined by commas, which every reading, the region's totals and an amendment's match take in ordinal order: the insider a reading counts once, a filing made jointly one insider, since the data sets list a joint filing's owners in an order of their own |
 | `director` | INTEGER | 1 where an owner is a director |
 | `officer` | INTEGER | 1 where an owner is an officer |
 | `title` | TEXT | the first officer's title as stated, null where none is |

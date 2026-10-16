@@ -72,8 +72,8 @@ public sealed record InsiderView(
             return new InsiderTotals(
                 InsiderReadings.Dollars(purchases),
                 InsiderReadings.Dollars(sales),
-                purchases.Select(row => row.OwnerKey).Distinct(StringComparer.Ordinal).Count(),
-                sales.Select(row => row.OwnerKey).Distinct(StringComparer.Ordinal).Count());
+                purchases.Select(row => InsiderReadings.Insider(row.OwnerKey)).Distinct(StringComparer.Ordinal).Count(),
+                sales.Select(row => InsiderReadings.Insider(row.OwnerKey)).Distinct(StringComparer.Ordinal).Count());
         }
 
         int Count(IReadOnlyList<string> codes) => year.Count(one => codes.Contains(one.Row.Code, StringComparer.Ordinal));

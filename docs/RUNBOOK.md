@@ -830,7 +830,7 @@ The history before the nightly reader is read by hand from the SEC's quarterly i
 dotnet run --project src/EquityBrief.Worker -- insiders-history
 ```
 
-A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand as the night reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
+A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand for every company the store knows, as the history reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- insiders --from 2026-10-01
@@ -850,6 +850,15 @@ dotnet run --project src/EquityBrief.Worker -- loop-links --index GSPC
 ```
 
 each check and each `loop-links` run for MID and SML as for GSPC. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
+
+19.13's correction of 2026-10-16, from main after its merge and before the night, runs its file, which reads 19.13's days again for every company the store knows, asking only for the filings not stored, and runs the ledger's night step over the newest night; then builds each index's history again, since the readings' version moves:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-16-19.13-correction-every-company-read.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+```
 
 ### The walk-forward tester and the Loop page
 

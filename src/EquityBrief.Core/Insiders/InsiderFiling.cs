@@ -42,7 +42,7 @@ public sealed record InsiderFiling(
 
     public bool Amends => Form == Amendment;
 
-    // The owners as one insider: their CIKs in the filing's order, so a filing made jointly is one insider and the same
-    // owners filing again are the same one.
+    // The owners' CIKs in the order this reader lists them, joined by commas, which every figure takes as one insider in
+    // ordinal order, so a filing made jointly is one insider and the same owners filing again are the same one.
     public string OwnerKey => string.Join(',', Owners.Select(owner => owner.Cik));
 }

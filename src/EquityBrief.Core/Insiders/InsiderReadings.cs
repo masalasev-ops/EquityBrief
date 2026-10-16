@@ -99,12 +99,18 @@ public static class InsiderReadings
 
         return new InsiderFour(
             overValue(Dollars(purchases) - Dollars(sales)),
-            purchases.Select(row => row.OwnerKey).Distinct(StringComparer.Ordinal).Count(),
+            purchases.Select(row => Insider(row.OwnerKey)).Distinct(StringComparer.Ordinal).Count(),
             purchases.Any(row => row.Officer) ? 1 : 0,
             from < PlanBoxFrom ? null : overValue(Dollars(sales.Where(row => row.Planned != true))));
     }
 
     public static decimal Dollars(IEnumerable<InsiderRow> rows) => rows.Sum(row => row.Dollars ?? 0m);
+
+    // One insider: the CIKs of the owners a filing names, in ordinal order and joined by commas, whatever order a reader
+    // lists them in, since the data sets list a joint filing's owners in an order of their own.
+    public static string Insider(IEnumerable<string> ciks) => string.Join(',', ciks.Order(StringComparer.Ordinal));
+
+    public static string Insider(string ownerCiks) => Insider(ownerCiks.Split(','));
 
     // Each transaction read for a session with the day it counts on, from the filings filed before it. An amendment
     // matched to a filing stands in that filing's place and counts on its day, the newest such filed before the session,

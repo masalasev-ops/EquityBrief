@@ -25,6 +25,19 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html, SCHEMA.md, RUNBOOK.md and .claude/rules/checks.md - the insiders' days read by hand for every company the store knows, and an insider whatever order its owners are listed in
+Corrects: the days read by hand read each day's own members, so 2026-10-01 read none of the S&P 400's and 600's members' Form 4s while recording the day as read, and an insider was the owners' CIKs in the order a reader lists them, though the data sets list a joint filing's owners in an order of their own; found by 19.13's remedy comparing 2026q3 both read.
+Was:
+> The Insider trades catalogue row's reads: filings archive, membership, companies, pulled companies, insider trades, insider reads; its words: ... an amendment matched to the one original its issuer's same owners filed on the day it states; ... and reads days as the night does, ...
+> The Insider trades matrix row: Membership R
+> `insider_trade.owners`: the reporting owners' names as the filing states them, in its order, joined by a semicolon and a space
+> `insider_trade.owner_ciks`: their CIKs padded to ten digits in the same order, joined by commas: the insider a reading counts once, a filing made jointly one insider
+> RUNBOOK: The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand as the night reads them, ...
+> `fixture-expectations`: ... and the history reading each quarter once and recording it only once all of it is stored
+Now:
+> The catalogue row reads no membership and its words add "whatever order each lists the owners in" and "reads days for the same companies"; the matrix row's membership cell is blank. `owners` is in the order the reader that stored the row lists them, and `owner_ciks` is taken by every reading, the region's totals and an amendment's match in ordinal order. The RUNBOOK's days are read for every company the store knows, as the history reads them. The roster adds the correction's assertions.
+Why: a figure reading a day must read the companies it is read for, and one insider must stay one whichever reader listed its owners.
+
 ### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-cost and read-surface state 19.13's tests
 Authorised by: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
 Was:

@@ -32,10 +32,11 @@ public sealed record InsiderOutcome(
 // filing asked of the archive once, one request a filing, and its table of shares stored a row a transaction under the
 // issuer the filing names; a filing stored already is not asked again, so a day the refresh's limit stopped is taken up
 // where it stopped. The quarters of the SEC's data sets before the nightly reader, one request a quarter and one for the
-// page listing them, stored the same way for every company the store knows, departed members among them. A span is
-// recorded once every filing of it was read, which is how a reading tells a quiet company's nought from days no reader
-// read. An amendment is matched to the one Form 4 its issuer's same owners filed on the day it states its original was
-// filed, and stands on its own where none or two match. Free and keyless, from the SEC rather than the provider.
+// page listing them, stored the same way for every company the store knows, departed members among them, and the days
+// after them read by hand for the same companies. A span is recorded once every filing of it was read, which is how a
+// reading tells a quiet company's nought from days no reader read. An amendment is matched to the one Form 4 its issuer's
+// same owners filed on the day it states its original was filed, whatever order each lists the owners in, and stands on
+// its own where none or two match. Free and keyless, from the SEC rather than the provider.
 // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
 public sealed class InsiderTrades : IComponent
@@ -43,7 +44,6 @@ public sealed class InsiderTrades : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
             new StoreTouch(Store.InsiderTrade, Touch.Read | Touch.Insert),
@@ -86,24 +86,17 @@ public sealed class InsiderTrades : IComponent
 
     const string Held = "SELECT 1 FROM insider_trade WHERE accession = $accession LIMIT 1;";
 
-    // The originals an amendment may amend: the issuer's Forms 4 its same owners filed on the day the amendment states.
+    // The Forms 4 an amendment may amend: the issuer's filed on the day the amendment states, each with its owners, of
+    // which those naming the amendment's owners are its originals.
     const string Originals = @"
-        SELECT DISTINCT accession FROM insider_trade
-        WHERE cik = $cik AND owner_ciks = $owner_ciks AND filed = $filed AND form = '4';
+        SELECT DISTINCT accession, owner_ciks FROM insider_trade
+        WHERE cik = $cik AND filed = $filed AND form = '4';
     ";
 
     // Every company the store knows, departed members among them, by its filer.
     const string EveryFiler = "SELECT DISTINCT cik FROM company WHERE cik IS NOT NULL UNION SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL;";
 
     const string QuartersRead = "SELECT first_day FROM insider_read WHERE source = 'data-set';";
-
-    // The filers of the members of the three indices on a day.
-    const string MembersOn = @"
-        SELECT DISTINCT c.cik FROM membership m JOIN company c ON c.ticker = m.ticker
-        WHERE c.cik IS NOT NULL
-          AND (m.joined IS NULL OR m.joined <= $session)
-          AND (m.""left"" IS NULL OR m.""left"" > $session);
-    ";
 
     const string StoredRows = @"
         SELECT sequence, security, traded, code, shares, price, acquired, held_after, planned, direct, nature,
@@ -231,18 +224,21 @@ public sealed class InsiderTrades : IComponent
             if (filing.Amends && filing.OriginalFiled is { } day)
             {
                 var originals = new List<string>();
+                var insider = InsiderReadings.Insider(filing.OwnerKey);
 
                 await using var command = Command(connection, transaction, Originals,
                 [
                     ("$cik", filing.IssuerCik),
-                    ("$owner_ciks", filing.OwnerKey),
                     ("$filed", Stamp(day)),
                 ]);
                 await using var reader = await command.ExecuteReaderAsync(cancellation);
 
                 while (await reader.ReadAsync(cancellation))
                 {
-                    originals.Add(reader.GetString(0));
+                    if (InsiderReadings.Insider(reader.GetString(1)) == insider)
+                    {
+                        originals.Add(reader.GetString(0));
+                    }
                 }
 
                 amends = originals.Count == 1 ? originals[0] : null;
@@ -432,10 +428,11 @@ public sealed class InsiderTrades : IComponent
         return outcome;
     }
 
-    // The nightly reader by hand over the weekdays from one day to another, each read whole and recorded as the night
-    // records it, at the archive's pace and under no limit; or with compare, each filing the store holds already read
-    // again and set against its stored rows field by field, writing nothing, every difference counted by its field and
-    // the first of them named.
+    // The nightly reader by hand over the weekdays from one day to another, for every company the store knows as the
+    // history reads them, so a day read by hand holds every filing of a company a later night's members are drawn from,
+    // each day read whole and recorded as the night records it, at the archive's pace and under no limit; or with compare,
+    // each filing the store holds already read again and set against its stored rows field by field, writing nothing,
+    // every difference counted by its field and the first of them named.
     public async Task<InsiderOutcome> DaysAsync(
         IFilingsRefreshFeed feed,
         DateOnly from,
@@ -459,6 +456,8 @@ public sealed class InsiderTrades : IComponent
 
         Task Pace(CancellationToken token) => pause(TimeSpan.FromSeconds(1.0 / RequestsASecond), token);
 
+        var filers = await CiksAsync(connection, EveryFiler, [], cancellation);
+
         try
         {
             for (var day = from; day <= through; day = day.AddDays(1))
@@ -467,8 +466,6 @@ public sealed class InsiderTrades : IComponent
                 {
                     continue;
                 }
-
-                var members = await CiksAsync(connection, MembersOn, [("$session", Stamp(day))], cancellation);
 
                 await Pace(cancellation);
 
@@ -479,7 +476,7 @@ public sealed class InsiderTrades : IComponent
 
                 if (!compare)
                 {
-                    var one = await DayAsync(connection, feed, day, lines, members, () => false, Pace, runId, cancellation);
+                    var one = await DayAsync(connection, feed, day, lines, filers, () => false, Pace, runId, cancellation);
 
                     filings += one.Filings;
                     asked += one.Asked;
@@ -492,7 +489,7 @@ public sealed class InsiderTrades : IComponent
                     continue;
                 }
 
-                foreach (var line in Lines(lines, members))
+                foreach (var line in Lines(lines, filers))
                 {
                     filings++;
 
@@ -582,7 +579,8 @@ public sealed class InsiderTrades : IComponent
 
     // Each field a filing read again gives otherwise than its stored rows, by the field's name with the two values; a
     // figure is set against its stored text as a number, so 29724 and 29724.0 are one, and one the data set holds to two
-    // places and the filing to more is named apart from any other difference.
+    // places and the filing to more is named apart from any other difference; the owners and their CIKs are set against
+    // each other whatever order each lists them in, as every figure reads them.
     public static IReadOnlyList<(string Field, string Words)> Compared(InsiderFiling filing, IReadOnlyList<string[]> stored)
     {
         var found = new List<(string, string)>();
@@ -635,8 +633,8 @@ public sealed class InsiderTrades : IComponent
         Check("filed", Stamp(filing.Filed), first[11]);
         Check("form", filing.Form, first[12]);
         Check("original filed", filing.OriginalFiled is { } original ? Stamp(original) : string.Empty, first[13]);
-        Check("owners", string.Join("; ", filing.Owners.Select(owner => owner.Name)), first[14]);
-        Check("owner ciks", filing.OwnerKey, first[15]);
+        Check("owners", string.Join("; ", filing.Owners.Select(owner => owner.Name).Order(StringComparer.Ordinal)), string.Join("; ", first[14].Split("; ").Order(StringComparer.Ordinal)));
+        Check("owner ciks", InsiderReadings.Insider(filing.OwnerKey), InsiderReadings.Insider(first[15]));
         Check("director", filing.Owners.Any(owner => owner.Director) ? "1" : "0", first[16]);
         Check("officer", filing.Owners.Any(owner => owner.Officer) ? "1" : "0", first[17]);
         Check("title", filing.Owners.Select(owner => owner.Title).FirstOrDefault(title => title is not null) ?? string.Empty, first[18]);
