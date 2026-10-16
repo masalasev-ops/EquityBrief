@@ -281,6 +281,55 @@ public partial class ReadSurface
             Assert.Contains("<a class=\"m-chart\" href=\"#/chart/AAPL\">Its chart</a>", name, StringComparison.Ordinal);
             Assert.Matches("<p class=\"report-line\" data-report=\"written\"[^>]*><a class=\"btn open-report\" href=\"#/name/AAPL\">Open the report</a>|<div class=\"report-line\" data-report=\"none\">.*<form class=\"research-control ask\" method=\"post\" action=\"/passes/AAPL\"", daily);
 
+            // The chart page's masthead is the name page's, drawn by the one function, less the name page's link back.
+            static string Mast(string page) => Regex.Match(page, "<div class=\"screen-mast\".*?<span class=\"m-asof\">.*?</span></div>", RegexOptions.Singleline).Value;
+
+            Assert.StartsWith("<div class=\"screen-mast\" data-title=\"AAPL\"", Mast(daily), StringComparison.Ordinal);
+            Assert.Equal(Mast(name).Replace(" · <a class=\"m-chart\" href=\"#/chart/AAPL\">Its chart</a>", string.Empty, StringComparison.Ordinal), Mast(daily));
+
+            // Each volume bar in the hue of its candle's close on the one before it, worked from the stored closes, the
+            // first flat.
+            Assert.Equal(
+                bars.Select((bar, at) => at == 0 ? "flat" : bar.Close > bars[at - 1].Close ? "up" : bar.Close < bars[at - 1].Close ? "down" : "flat"),
+                Regex.Matches(daily, "<rect class=\"volume vol-([a-z]+)\"").Select(match => match.Groups[1].Value));
+
+            // Each report and ex-dividend mark on the candle holding its session, the marks the name page's chart draws
+            // over the same sessions: AAPL's four reports and four ex-dividend dates in the fixture's stored year.
+            var spans = Regex.Matches(daily, "<g class=\"candle\" data-at=\"([0-9]+)\" data-first=\"([0-9-]+)\" data-last=\"([0-9-]+)\"")
+                .ToDictionary(match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), match => (First: Day(match.Groups[2].Value), Last: Day(match.Groups[3].Value)));
+            var marks = Regex.Matches(daily, "<g class=\"ev-mark (ev-[a-z]+)\" data-kind=\"[^\"]+\" data-session=\"([0-9-]+)\" data-at=\"([0-9]+)\"")
+                .Select(match => (Kind: match.Groups[1].Value, Session: Day(match.Groups[2].Value), At: int.Parse(match.Groups[3].Value, CultureInfo.InvariantCulture)))
+                .ToArray();
+
+            Assert.Equal(4, marks.Count(mark => mark.Kind == "ev-report"));
+            Assert.Equal(4, marks.Count(mark => mark.Kind == "ev-dividend"));
+            Assert.All(marks, mark => Assert.InRange(mark.Session, spans[mark.At].First, spans[mark.At].Last));
+            Assert.Equal(
+                Regex.Matches(name, "<g class=\"ev-mark (ev-[a-z]+)\" data-kind=\"[^\"]+\" data-session=\"([0-9-]+)\"").Select(match => $"{match.Groups[1].Value} {match.Groups[2].Value}").Order(StringComparer.Ordinal),
+                marks.Select(mark => FormattableString.Invariant($"{mark.Kind} {mark.Session:yyyy-MM-dd}")).Order(StringComparer.Ordinal));
+
+            // The line above the chart reads the newest candle, worked from its stored bar, as the candle's own reading
+            // carries it; and the shell's script reads the candle under the pointer and the newest once the pointer leaves.
+            var raw = await client.GetStringAsync("/screens/chart/AAPL");
+            var newest = bars[^1];
+            var reading = Regex.Match(raw, "<p class=\"chart-reading\" aria-live=\"polite\">(.*?)</p>").Groups[1].Value;
+
+            Assert.StartsWith(FormattableString.Invariant($"{newest.Session:yyyy-MM-dd}: open {newest.Open:#,##0.00}, high {newest.High:#,##0.00}, low {newest.Low:#,##0.00}, close {newest.Close:#,##0.00}, volume {newest.Volume:N0}"), reading, StringComparison.Ordinal);
+            Assert.Equal(reading, WebUtility.HtmlDecode(Regex.Matches(raw, "<g class=\"candle\"[^>]* data-reading=\"([^\"]*)\"")[^1].Groups[1].Value));
+
+            var shell = await client.GetStringAsync("/");
+
+            Assert.Contains("reading.innerHTML = candle.getAttribute('data-reading');", shell, StringComparison.Ordinal);
+            Assert.Contains("event.target.closest('.candle-chart .candle')", shell, StringComparison.Ordinal);
+
+            // The night's bands behind the candles, hidden until the page's toggle shows them in the browser.
+            Assert.Equal(
+                Scalar(store, "SELECT COUNT(*) FROM level WHERE ticker = 'AAPL' AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = 'AAPL');"),
+                long.Parse(Regex.Match(daily, "<g class=\"level-bands\" data-bands=\"([0-9]+)\">").Groups[1].Value, CultureInfo.InvariantCulture));
+            Assert.Contains("data-bands-toggle aria-pressed=\"false\">Show the night's levels</button>", daily, StringComparison.Ordinal);
+            Assert.Contains(".candle-chart .level-bands{display:none} .chart-fig.bands-on .candle-chart .level-bands{display:inline}", shell, StringComparison.Ordinal);
+            Assert.Contains("figure.classList.toggle('bands-on', on);", shell, StringComparison.Ordinal);
+
             // The daily chart reads no pulled bar: with sessions pulled before the store's first, the daily chart draws
             // the stored sessions alone and the weekly chart reads the pulled ones; with the pulled bars' table renamed
             // the daily chart still answers and the weekly one does not.
@@ -373,6 +422,48 @@ public partial class ReadSurface
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/tonight"));
 
         Assert.DoesNotMatch("<a class=\"open[^\"]*\" href=\"#/chart/", tonight);
+    }
+
+    // Tonight's plan: where a rule lists the stock on the newest night, its buy, stop and target drawn as lines across the
+    // chart with the rule's name, read off the night's decision cards over the universes' store: the S&P 400's breakout
+    // listing M1 at a buy of 50 and a stop of 47 with a trail and no target, the S&P 600's pullback listing S2 at 50, 48
+    // and 54, and a stock no rule lists drawing no line.
+    [Fact]
+    public async Task TheChartPageDrawsTonightsPlanAsLinesWithTheRulesNameAndAStockNoRuleListsNone()
+    {
+        using var store = UniversesStore();
+
+        // The session before the night for every member, so each chart holds the two candles it draws from.
+        store.Execute(
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+            "SELECT ticker, '2026-10-01', '49', '50', '48', '49', 900000, 'test', '2026-10-01T21:00:00Z', '49' FROM membership;");
+        store.Execute(
+            "INSERT INTO index_family_night (index_code, session_date, members, breadth, market_open, settings, rebalanced) VALUES " +
+            $"('SML', '{IndexNight}', 2, 0.5, 1, '{EquityBrief.Worker.Indices.IndexFamilies.Settings("SML")}', 0);");
+        store.Execute(
+            "INSERT INTO index_family_result (index_code, session_date, ticker, family, passed, place, entry, stop, target, trail, cap, order_by, reason) VALUES " +
+            $"('SML', '{IndexNight}', 'S2', 'pullback', 1, 1, '50', '48', '54', NULL, 20, 2.0, NULL);");
+        store.Execute(
+            "INSERT INTO index_family_pick (index_code, session_date, ticker, family, state, place, also, held_index, held_family, held_night) VALUES " +
+            $"('SML', '{IndexNight}', 'S2', 'pullback', 'listed', 1, '[]', NULL, NULL, NULL);");
+
+        await new EquityBrief.Worker.Cards.DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        async Task<string[]> Lines(string ticker) =>
+        [
+            .. Regex.Matches(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/chart/{ticker}")), "<line class=\"plan-line plan-([a-z]+)\" data-rule=\"([^\"]+)\" data-kind=\"[a-z]+\" data-price=\"([^\"]+)\"")
+                .Select(match => $"{match.Groups[1].Value} {match.Groups[3].Value} {match.Groups[2].Value}"),
+        ];
+
+        var breakout = EquityBrief.Core.Families.SetupFamilies.Named("breakout")!.Label;
+        var pullback = EquityBrief.Core.Families.SetupFamilies.Named("pullback")!.Label;
+
+        Assert.Equal([$"buy 50 {breakout}", $"stop 47 {breakout}"], await Lines("M1"));
+        Assert.Equal([$"buy 50 {pullback}", $"stop 48 {pullback}", $"target 54 {pullback}"], await Lines("S2"));
+        Assert.Empty(await Lines("AAA"));
     }
 
     // The read surface keeps each route's times in memory: the median over an odd and an even count, the newest times

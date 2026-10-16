@@ -244,7 +244,7 @@ public sealed partial class MarkRenderer
                 var x = Centre(at);
                 var report = item.Kind == ChartEvent.Report;
 
-                svg.Append(Invariant, $"<g class=\"ev-mark {(report ? "ev-report" : "ev-dividend")}\" data-kind=\"{Escaped(item.Kind)}\" data-session=\"{item.Session:yyyy-MM-dd}\"><title>{Escaped(item.Says)}</title>");
+                svg.Append(Invariant, $"<g class=\"ev-mark {(report ? "ev-report" : "ev-dividend")}\" data-kind=\"{Escaped(item.Kind)}\" data-session=\"{item.Session:yyyy-MM-dd}\" data-at=\"{at}\"><title>{Escaped(item.Says)}</title>");
                 svg.Append(Invariant, $"<rect class=\"ev-tag\" x=\"{Number(x - 6)}\" y=\"{PriceHeight - 15}\" width=\"12\" height=\"12\" rx=\"2\"/>");
                 svg.Append(Invariant, $"<text class=\"ev-tag-t\" x=\"{Number(x)}\" y=\"{PriceHeight - 5.5}\" text-anchor=\"middle\">{(report ? "R" : "D")}</text></g>");
             }
