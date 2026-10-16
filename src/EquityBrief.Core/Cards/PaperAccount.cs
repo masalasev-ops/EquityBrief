@@ -2,10 +2,12 @@ using EquityBrief.Core.Prices;
 
 namespace EquityBrief.Core.Cards;
 
-// One trade a paper account may take: its stock, the session it was bought on at that close and its price, its stop or
-// none for a book's holding, the session it ended on and its price or none while it is open, its round trip in dollars a
-// share or none where no cost could be read, its place among the session's buys, and for a holding with no stop the most
-// holdings its book can hold.
+// One trade a paper account may take: its stock, the session it was bought on and its price, its stop or none for a book's
+// holding, the session it ended on and its price or none while it is open, its round trip in dollars a share or none where
+// no cost could be read, its place among the session's buys, for a holding with no stop the most holdings its book can
+// hold, and from 19.10, for a trade a list or a book kept, the close its plan was set at, which it is sized from the night
+// before, and the price the bar store holds now for its buy, which an open position is marked from.
+// see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
 public sealed record PaperTrade(
     string Ticker,
     DateOnly Bought,
@@ -15,7 +17,17 @@ public sealed record PaperTrade(
     decimal? Sale,
     decimal? RoundTrip,
     int Place,
-    int? BookHoldings = null);
+    int? BookHoldings = null,
+    decimal? Planned = null,
+    decimal? MarkedFrom = null,
+    DateOnly? Listed = null)
+{
+    // The price the trade is sized from: the close its plan was set at where it was set the night before.
+    public decimal SizedAt => Planned ?? Buy;
+
+    // The night that listed it, which an account's start and its versions are read by.
+    public DateOnly ListedOn => Listed ?? Bought;
+}
 
 // What became of one trade in an account: the shares it bought, none where it was skipped, and why it was skipped.
 public sealed record PaperTaken(PaperTrade Trade, long Shares, string? Skipped);
@@ -58,19 +70,21 @@ public static class PaperAccount
 
     // The price a stored trade ended at: a swing trade's buy and its result in multiples of its risk over the distance
     // to its stop, a book's holding its buy grown by its result, so a split since moves neither; none while it is open
-    // or where its result was not read.
-    public static decimal? SaleOf(decimal buy, decimal? stop, DateOnly? ended, double? result, bool book) =>
+    // or where its result was not read. From 19.10 a trade bought at its next session's open states its result in the
+    // risk its plan's close put up, or as a fraction of that close for a holding, so the distance is read from that
+    // close, `planned`, and the sale is the buy moved by it.
+    public static decimal? SaleOf(decimal buy, decimal? stop, DateOnly? ended, double? result, bool book, decimal? planned = null) =>
         ended is null || result is not { } made ? null
-        : book ? buy * (1m + (Statistic.ToPrice(made * 100) / 100m))
-        : stop is { } floor && buy > floor ? buy + (Statistic.ToPrice(made) * (buy - floor))
+        : book ? buy + ((planned ?? buy) * (Statistic.ToPrice(made * 100) / 100m))
+        : stop is { } floor && (planned ?? buy) > floor ? buy + (Statistic.ToPrice(made) * ((planned ?? buy) - floor))
         : null;
 
     // A trade's round trip in dollars a share: the one its own table stores, in multiples of its risk or as a fraction of
     // its buy; else the member readings' cost on its buy session, in per cent of the buy; else the published table at the
     // company value read on its buy session, a company valued at none read in the table's $1 to 2 billion band; none
     // where the store holds no bar for its buy session.
-    public static decimal? RoundTripOf(decimal buy, decimal? stop, double? storedRisks, double? storedFraction, double? readPercent, bool barHeld, decimal? value) =>
-        storedRisks is { } risks && stop is { } floor && buy > floor ? Statistic.ToPrice(risks) * (buy - floor)
+    public static decimal? RoundTripOf(decimal buy, decimal? stop, double? storedRisks, double? storedFraction, double? readPercent, bool barHeld, decimal? value, decimal? planned = null) =>
+        storedRisks is { } risks && stop is { } floor && (planned ?? buy) > floor ? Statistic.ToPrice(risks) * ((planned ?? buy) - floor)
         : storedFraction is { } fraction ? Statistic.ToPrice(fraction * 100) / 100m * buy
         : readPercent is { } percent ? Statistic.ToPrice(percent) / 100m * buy
         : barHeld ? EquityBrief.Core.Readings.TradeCost.RoundTrip(value, buy, buy)
@@ -103,7 +117,7 @@ public static class PaperAccount
             foreach (var trade in trades.Where(trade => trade.Bought == session).OrderBy(trade => trade.Place).ThenBy(trade => trade.Ticker, StringComparer.Ordinal))
             {
                 var worth = cash + open.Sum(position => position.Shares * position.Trade.Buy);
-                var plan = PositionSize.Of(account with { Size = worth }, trade.Buy, trade.Stop, trade.BookHoldings, null);
+                var plan = PositionSize.Of(account with { Size = worth }, trade.SizedAt, trade.Stop, trade.BookHoldings, null);
 
                 if (plan is not { Shares: > 0 })
                 {
@@ -140,7 +154,7 @@ public static class PaperAccount
 
             foreach (var (trade, shares) in open)
             {
-                if (close(trade.Ticker, session) is { } now && close(trade.Ticker, trade.Bought) is { } then && then > 0m)
+                if (close(trade.Ticker, session) is { } now && (trade.MarkedFrom ?? close(trade.Ticker, trade.Bought)) is { } then && then > 0m)
                 {
                     value += shares * trade.Buy * (now / then);
                 }

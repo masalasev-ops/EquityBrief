@@ -91,7 +91,8 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         double? RiskMoves,
         double? Result,
         double? Benchmark,
-        IReadOnlyList<string>? Cut)
+        IReadOnlyList<string>? Cut,
+        bool Relative = false)
     {
         public bool Book => Cut is not null;
     }
@@ -274,6 +275,12 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             return (null, TradeFills.NoOpen);
         }
 
+        // A plan stated as shares of its close is priced at the night's close as the bars hold it.
+        if (trade.Relative)
+        {
+            trade = trade with { Entry = night.Close, Stop = trade.Stop * night.Close, Target = trade.Target * night.Close };
+        }
+
         // The open at the trade's own scale: the bars as stored now over the close the trade was bought at.
         var scale = trade.Entry / night.Close;
         var open = after.Open * scale;
@@ -360,8 +367,9 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         await ReadAsync(IndexRuleBooks, reader => new StoredTrade("index_heavyweight_rule_holding", reader.GetString(0), reader.GetString(1), reader.GetString(2), Date(reader.GetString(3)),
             Price(reader, 4)!.Value, null, null, null, Real(reader, 5), Real(reader, 6), CutOf(reader, 7)));
 
-        // A scored plan is stated as a share of its close, so it is read at a close of one: its stop that share under it,
-        // its target the reward its break-even states over that risk, and its result its return over its risk.
+        // A scored plan is stated as shares of its close, read here at a close of one and priced at the night's own close
+        // as the bars hold it: its stop its risk's share under it, its target the reward its break-even states over that
+        // risk, and its result its return over its risk.
         await ReadAsync(ScoredPlans, reader =>
         {
             var risk = reader.GetDouble(4) / 100;
@@ -369,7 +377,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
             return new StoredTrade("forward_return", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
                 1, 1 - risk, breakEven is { } even ? 1 + (risk * (1 - even) / even) : null, null,
-                Real(reader, 3) is { } returned ? returned / 100 / risk : null, null, null);
+                Real(reader, 3) is { } returned ? returned / 100 / risk : null, null, null, Relative: true);
         });
 
         return trades;

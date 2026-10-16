@@ -6,10 +6,11 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Api.Reading;
 
 // One trade a list or a book kept, in the one shape every paper account reads: the account it belongs to, by the
-// registered rule's name or the page's own list, its family, its stock, the session it was bought on, its place that
-// night, its buy and its stop, none for a book's holding, the session it ended on, its result, in multiples of its risk
-// for a swing trade and its growth less one for a book's holding, and its round trip as its table stores it, in
-// multiples of its risk or as a fraction of its buy.
+// registered rule's name or the page's own list, its family, its stock, the night it was listed on, its place that night,
+// the close its plan was set at and its stop, none for a book's holding, the session it ended on, its result at its fill,
+// in multiples of the risk its close put up for a swing trade and as a fraction of that close for a book's holding, its
+// round trip as its table stores it, in multiples of its risk or as a fraction of its buy, and from 19.10 its fill at the
+// next session's open, the session of that fill, the open the bar store holds there now, and why it holds no fill.
 public sealed record PaperRow(
     string Account,
     string Family,
@@ -22,7 +23,11 @@ public sealed record PaperRow(
     double? Result,
     bool Book,
     double? CostRisk,
-    double? CostFraction);
+    double? CostFraction,
+    decimal? Fill = null,
+    DateOnly? FilledOn = null,
+    decimal? MarkedFrom = null,
+    string? Unfilled = null);
 
 // One rule's verdict in an index's newest monthly per-rule test, as the tester stored it.
 public sealed record RuleTestRow(
@@ -58,21 +63,30 @@ public sealed partial class ReadApi
     // The page's own list on an index is named by this word before its family.
     public const string PageList = "list";
 
-    const string FamilyTradesOn = "SELECT candidate, family, ticker, session_date, place, entry, stop, ended_on, result, cost FROM family_trade ORDER BY session_date, place;";
+    // From 19.10 every trade is read with its fill at the next session's open: its result is the fill's, and the last four
+    // columns are the fill's price, its session, the open the bar store holds now on that session, which an open position
+    // is marked from, and why a trade holds no fill; a trade with no row waits on its next session.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    static string Filled(string source, string alias, string index, string owner, string session) =>
+        $"LEFT JOIN trade_fill f ON f.source = '{source}' AND f.index_code = {index} AND f.owner = {owner} AND f.ticker = {alias}.ticker AND f.session_date = {alias}.{session}";
 
-    const string RulePicksKept = "SELECT rule, family, ticker, session_date, place, entry, stop, ended_on, result FROM rule_pick WHERE index_code = $index ORDER BY session_date, place;";
+    const string FillColumns = "f.fill, f.filled_on, (SELECT b.open FROM bar b WHERE b.ticker = f.ticker AND b.session_date = f.filled_on), f.reason";
 
-    const string IndexFamilyTradesOn = "SELECT family, ticker, session_date, place, entry, stop, ended_on, result, cost FROM index_family_trade WHERE index_code = $index ORDER BY session_date, place;";
+    static readonly string FamilyTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.cost, {FillColumns} FROM family_trade t {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")} ORDER BY t.session_date, t.place;";
 
-    const string IndexRuleTradesOn = "SELECT candidate, family, ticker, session_date, place, entry, stop, ended_on, result, cost FROM index_rule_trade WHERE index_code = $index ORDER BY session_date, place;";
+    static readonly string RulePicksKept = $"SELECT t.rule, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, {FillColumns} FROM rule_pick t {Filled("rule_pick", "t", "t.index_code", "t.rule", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    const string PageBookOn = "SELECT ticker, entered_on, entry_close, ended_on, result FROM heavyweight_holding ORDER BY entered_on, sector, ticker;";
+    static readonly string IndexFamilyTradesOn = $"SELECT t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.cost, {FillColumns} FROM index_family_trade t {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    const string RuleBooksOn = "SELECT candidate, ticker, entered_on, entry_close, ended_on, result FROM heavyweight_rule_holding ORDER BY entered_on, sector, ticker;";
+    static readonly string IndexRuleTradesOn = $"SELECT t.candidate, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.ended_on, f.result, t.cost, {FillColumns} FROM index_rule_trade t {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")} WHERE t.index_code = $index ORDER BY t.session_date, t.place;";
 
-    const string IndexBookOn = "SELECT ticker, entered_on, entry_close, ended_on, result, cost FROM index_heavyweight_holding WHERE index_code = $index ORDER BY entered_on, sector, ticker;";
+    static readonly string PageBookOn = $"SELECT h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, {FillColumns} FROM heavyweight_holding h {Filled("heavyweight_holding", "h", "'GSPC'", "''", "entered_on")} ORDER BY h.entered_on, h.sector, h.ticker;";
 
-    const string IndexRuleBooksOn = "SELECT candidate, ticker, entered_on, entry_close, ended_on, result, cost FROM index_heavyweight_rule_holding WHERE index_code = $index ORDER BY entered_on, sector, ticker;";
+    static readonly string RuleBooksOn = $"SELECT h.candidate, h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, {FillColumns} FROM heavyweight_rule_holding h {Filled("heavyweight_rule_holding", "h", "'GSPC'", "h.candidate", "entered_on")} ORDER BY h.entered_on, h.sector, h.ticker;";
+
+    static readonly string IndexBookOn = $"SELECT h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, h.cost, {FillColumns} FROM index_heavyweight_holding h {Filled("index_heavyweight_holding", "h", "h.index_code", "''", "entered_on")} WHERE h.index_code = $index ORDER BY h.entered_on, h.sector, h.ticker;";
+
+    static readonly string IndexRuleBooksOn = $"SELECT h.candidate, h.ticker, h.entered_on, h.entry_close, h.ended_on, f.result, h.cost, {FillColumns} FROM index_heavyweight_rule_holding h {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")} WHERE h.index_code = $index ORDER BY h.entered_on, h.sector, h.ticker;";
 
     // The newest per-rule test on an index, by the order the runs were written.
     const string RuleTestsOn = @"
@@ -133,11 +147,18 @@ public sealed partial class ReadApi
             }
         }
 
+        static PaperRow Fill(SqliteDataReader reader, PaperRow row)
+        {
+            var at = reader.FieldCount - 4;
+
+            return row with { Fill = PriceAt(reader, at), FilledOn = DayAt(reader, at + 1), MarkedFrom = PriceAt(reader, at + 2), Unfilled = reader.IsDBNull(at + 3) ? null : reader.GetString(at + 3) };
+        }
+
         static PaperRow Swing(SqliteDataReader reader, string account, string family, int from, bool costed) =>
-            new(account, family, reader.GetString(from), Day(reader.GetString(from + 1)), reader.GetInt32(from + 2), Money.FromStorage(reader.GetString(from + 3)), PriceAt(reader, from + 4), DayAt(reader, from + 5), Optional(reader, from + 6), false, costed ? Optional(reader, from + 7) : null, null);
+            Fill(reader, new(account, family, reader.GetString(from), Day(reader.GetString(from + 1)), reader.GetInt32(from + 2), Money.FromStorage(reader.GetString(from + 3)), PriceAt(reader, from + 4), DayAt(reader, from + 5), Optional(reader, from + 6), false, costed ? Optional(reader, from + 7) : null, null));
 
         static PaperRow Holding(SqliteDataReader reader, string account, int from, bool costed) =>
-            new(account, HeavyweightRule.Name, reader.GetString(from), Day(reader.GetString(from + 1)), 0, Money.FromStorage(reader.GetString(from + 2)), null, DayAt(reader, from + 3), Optional(reader, from + 4), true, null, costed ? Optional(reader, from + 5) : null);
+            Fill(reader, new(account, HeavyweightRule.Name, reader.GetString(from), Day(reader.GetString(from + 1)), 0, Money.FromStorage(reader.GetString(from + 2)), null, DayAt(reader, from + 3), Optional(reader, from + 4), true, null, costed ? Optional(reader, from + 5) : null));
 
         if (large)
         {

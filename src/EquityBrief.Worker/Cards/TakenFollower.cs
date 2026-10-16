@@ -191,9 +191,9 @@ public sealed class TakenFollower : IComponent
 
     sealed record Followed(decimal Fill, bool Provisional, DateOnly? EndedOn, decimal? EndPrice, string? Reason, double? Result);
 
-    // A trade the operator took, or with planned the rule's own pick bought at the plan's buy as its night traded, the
-    // way the rule's own record reads its trades, so the two differ by the operator's choices and fills alone.
-    async Task<Followed> FollowAsync(SqliteConnection connection, SqliteTransaction transaction, Taken trade, IReadOnlyList<Session> sessions, DateOnly night, CancellationToken cancellation, bool planned = false)
+    // A trade the operator took, or the rule's own pick bought at the same next session's open, so the two differ by the
+    // operator's choices and fills alone.
+    async Task<Followed> FollowAsync(SqliteConnection connection, SqliteTransaction transaction, Taken trade, IReadOnlyList<Session> sessions, DateOnly night, CancellationToken cancellation)
     {
         var fill = trade.Fill;
         var provisional = trade.Provisional;
@@ -214,7 +214,7 @@ public sealed class TakenFollower : IComponent
 
         decimal? Scaled(decimal? price) => price * listed.Factor;
 
-        var entry = planned ? fill * listed.Factor : fill * bought.Factor;
+        var entry = fill * bought.Factor;
         var stop = Scaled(trade.Stop);
         var held = sessions.Where(session => session.Day >= trade.FillDate).ToArray();
         var walked = trade.Family == HeavyweightRule.Name
@@ -275,8 +275,8 @@ public sealed class TakenFollower : IComponent
     // The operator's record over every trade taken, one row an index and family: a rule with a target counts its trades
     // won at the target and lost at the stop, a trailing rule and the sector heavyweights each trade ended, and every rule
     // its open trades; the average result over the ended once there are enough of them to read. Beside it the same counts
-    // over the rule's own picks listed on the nights the operator took one, each bought at the plan's buy, which separates
-    // the operator's choices and fills from the market of those weeks.
+    // over the rule's own picks listed on the nights the operator took one, each bought at the next session's open as a
+    // taken trade's fill is, which separates the operator's choices and fills from the market of those weeks.
     async Task<int> RecordAsync(SqliteConnection connection, SqliteTransaction transaction, DateOnly night, CancellationToken cancellation)
     {
         var trades = new List<(string Index, string Family, DateOnly Night, string? Reason, double? Result)>();
@@ -374,7 +374,10 @@ public sealed class TakenFollower : IComponent
                 continue;
             }
 
-            var outcome = await FollowAsync(connection, transaction, card with { FillDate = first.Day }, sessions, night, cancellation, planned: true);
+            // From 19.10 the rule's pick is bought at the open of the session after its night, as a taken trade's fill is,
+            // so the two differ by the operator's picks and fills alone.
+            // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+            var outcome = await FollowAsync(connection, transaction, card with { FillDate = first.Day, Provisional = true }, sessions, night, cancellation);
 
             picks.Add((outcome.Reason, outcome.Result));
         }

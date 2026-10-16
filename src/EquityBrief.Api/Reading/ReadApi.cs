@@ -492,7 +492,16 @@ public sealed record PickRow(
     string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
     IReadOnlyList<string>? Also = null,
     // What the plan put at risk from its fill, as the filler stored it beside the outcome.
-    double? PlannedRisk = null);
+    double? PlannedRisk = null,
+    // From 19.10 the trade's fill at the next session's open: its result there in the risk its close put up, the open it
+    // was bought at, the session of that open, whether that open was past its stop or its target, and why it holds no
+    // fill; all none while it waits on its next session.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    double? FillResult = null,
+    decimal? Fill = null,
+    DateOnly? FilledOn = null,
+    string? Past = null,
+    string? Unfilled = null);
 
 // A pick's card as the night stored it: its index, night, family and stock, its place, the plan's prices, the rule it
 // names, the card's values it was read with, its lines and the rule's record as the card read it, none where the rule had
@@ -584,12 +593,12 @@ public sealed record IndexResultRow(string Ticker, string Family, bool Passed, i
 
 // One trade an index's list kept: where it ended by the night, its result before its cost and its cost, each in
 // multiples of its risk, none while open on the night.
-public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost);
+public sealed record IndexTradeRow(string Index, string Family, string Ticker, DateOnly Listed, int Place, decimal Entry, decimal Stop, decimal? Target, decimal? Trail, int Cap, DateOnly? EndedOn, double? Result, double? Cost, decimal? Fill = null, string? Unfilled = null);
 
 // One holding an index's sector heavyweights kept, as of a night: where it ended by the night, why, its result, its
 // size cut's and its cost, each a fraction of its buy and none while it is held on the night, and the lead it was bought
 // on, none where its book stored none, and its growth carried to the night, none where the book carried it to another.
-public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null, double? Growth = null);
+public sealed record IndexHoldingRow(string Index, string Ticker, DateOnly EnteredOn, string Sector, decimal EntryClose, DateOnly? EndedOn, decimal? ExitClose, string? Reason, double? Result, double? CutReturn, double? Cost, double? Lead = null, double? Growth = null, decimal? Fill = null);
 
 // One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
 // sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
@@ -606,7 +615,8 @@ public sealed record HeavyweightHoldingRow(
     string? Reason,
     double? Result,
     double? CutReturn,
-    double? Growth = null);
+    double? Growth = null,
+    decimal? Fill = null);
 
 // One of a sector's largest companies as the book read it at a rebalance: its place by value, its value, its
 // return over the look-back, the sector's, its lead over the sector's, whether it passed the trend gate,
@@ -1459,7 +1469,8 @@ public sealed partial class ReadApi : IComponent
                f.planned_risk,
                IFNULL(" + EquityBrief.Core.Families.FamilyList.PlaceOn("g.ticker", "g.session_date") + @", 0),
                " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @",
-               g.rank
+               g.rank,
+               tf.result, tf.fill, tf.filled_on, tf.past, tf.reason
         FROM gate_result g
         JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
         LEFT JOIN filter_version v ON v.version = g.version
@@ -1469,6 +1480,7 @@ public sealed partial class ReadApi : IComponent
                                  THEN '" + EquityBrief.Core.Returns.ForwardReturnSeries.MenuExit + @"'
                                  ELSE CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END END
         LEFT JOIN fundamental_reading s ON s.ticker = g.ticker AND s.session_date = g.session_date
+        LEFT JOIN trade_fill tf ON tf.source = 'forward_return' AND tf.index_code = 'GSPC' AND tf.owner = f.horizon AND tf.ticker = g.ticker AND tf.session_date = g.session_date
         WHERE g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
           AND CASE WHEN " + EquityBrief.Core.Families.FamilyList.HasPicks("g.session_date") + @"
                    THEN EXISTS (SELECT 1 FROM family_pick fp
@@ -1492,7 +1504,8 @@ public sealed partial class ReadApi : IComponent
                pf.planned_risk,
                IFNULL(p.place, 0),
                0,
-               0
+               0,
+               ptf.result, ptf.fill, ptf.filled_on, ptf.past, ptf.reason
         FROM family_pick p
         JOIN family_result pr ON pr.session_date = p.session_date AND pr.ticker = p.ticker AND pr.family = p.family
         LEFT JOIN gate_result pg ON pg.ticker = p.ticker AND pg.session_date = p.session_date
@@ -1501,6 +1514,7 @@ public sealed partial class ReadApi : IComponent
             ON pf.ticker = p.ticker AND pf.session_date = p.session_date
             AND pf.horizon = " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @"
         LEFT JOIN fundamental_reading ps ON ps.ticker = p.ticker AND ps.session_date = p.session_date
+        LEFT JOIN trade_fill ptf ON ptf.source = 'forward_return' AND ptf.index_code = 'GSPC' AND ptf.owner = pf.horizon AND ptf.ticker = p.ticker AND ptf.session_date = p.session_date
         WHERE p.state = $listed AND p.family <> $pullback
           AND p.session_date <= $on AND ($ticker IS NULL OR p.ticker = $ticker)
         ORDER BY 2 DESC, 20, 21, 22, 1;
@@ -3325,7 +3339,12 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(15) ? null : reader.GetString(15),
                 reader.GetString(16),
                 reader.IsDBNull(17) ? [] : System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(17)) ?? [],
-                reader.IsDBNull(18) ? null : reader.GetDouble(18)));
+                reader.IsDBNull(18) ? null : reader.GetDouble(18),
+                reader.IsDBNull(22) ? null : reader.GetDouble(22),
+                Price(23),
+                Day(24),
+                reader.IsDBNull(25) ? null : reader.GetString(25),
+                reader.IsDBNull(26) ? null : reader.GetString(26)));
         }
 
         return rows;
@@ -4022,14 +4041,17 @@ public sealed partial class ReadApi : IComponent
     }
 
     // Every trade an index's list kept on or before a night, its end read only where it ended by the night.
-    const string IndexTradesUpTo = @"
-        SELECT index_code, family, ticker, session_date, place, entry, stop, target, trail, cap,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cost END
-        FROM index_family_trade
-        WHERE index_code = $index AND session_date <= $on
-        ORDER BY session_date DESC, place, ticker;
+    // From 19.10 its result is its fill's at the next session's open, with that fill.
+    static readonly string IndexTradesUpTo = $@"
+        SELECT t.index_code, t.family, t.ticker, t.session_date, t.place, t.entry, t.stop, t.target, t.trail, t.cap,
+               CASE WHEN t.ended_on <= $on THEN t.ended_on END,
+               CASE WHEN t.ended_on <= $on THEN f.result END,
+               CASE WHEN t.ended_on <= $on THEN t.cost END,
+               f.fill, f.reason
+        FROM index_family_trade t
+        {Filled("index_family_trade", "t", "t.index_code", "t.family", "session_date")}
+        WHERE t.index_code = $index AND t.session_date <= $on
+        ORDER BY t.session_date DESC, t.place, t.ticker;
     ";
 
     public async Task<IReadOnlyList<IndexTradeRow>> IndexTradesAsync(string index, DateOnly on)
@@ -4062,27 +4084,31 @@ public sealed partial class ReadApi : IComponent
                 reader.GetInt32(9),
                 reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
-                reader.IsDBNull(12) ? null : reader.GetDouble(12)));
+                reader.IsDBNull(12) ? null : reader.GetDouble(12),
+                Price(13),
+                reader.IsDBNull(14) ? null : reader.GetString(14)));
         }
 
         return rows;
     }
 
     // Every holding an index's sector heavyweights bought on or before a night, its end read only where it ended by the
-    // night.
-    const string IndexHoldingsUpTo = @"
-        SELECT index_code, ticker, entered_on, sector, entry_close,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN exit_close END,
-               CASE WHEN ended_on <= $on THEN reason END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN ended_on <= $on THEN cost END,
-               lead,
-               CASE WHEN through = $on THEN growth END
-        FROM index_heavyweight_holding
-        WHERE index_code = $index AND entered_on <= $on
-        ORDER BY entered_on, sector, ticker;
+    // night, and from 19.10 its result and its size cut's at its fill at the next session's open, with that fill.
+    static readonly string IndexHoldingsUpTo = $@"
+        SELECT h.index_code, h.ticker, h.entered_on, h.sector, h.entry_close,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN h.exit_close END,
+               CASE WHEN h.ended_on <= $on THEN h.reason END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
+               CASE WHEN h.ended_on <= $on THEN h.cost END,
+               h.lead,
+               CASE WHEN h.through = $on THEN h.growth END,
+               f.fill
+        FROM index_heavyweight_holding h
+        {Filled("index_heavyweight_holding", "h", "h.index_code", "''", "entered_on")}
+        WHERE h.index_code = $index AND h.entered_on <= $on
+        ORDER BY h.entered_on, h.sector, h.ticker;
     ";
 
     public Task<IReadOnlyList<IndexHoldingRow>> IndexHoldingsAsync(string index, DateOnly on) =>
@@ -4091,19 +4117,21 @@ public sealed partial class ReadApi : IComponent
     // Every holding a registered heavyweights rule of an index bought on or before a night, in its own book, its end read
     // only where it ended by the night.
     // see: A rule of the S&P 400's or 600's sector heavyweights keeps a book of its own in either design, read by the index families' step
-    const string IndexRuleHoldingsUpTo = @"
-        SELECT index_code, ticker, entered_on, sector, entry_close,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN exit_close END,
-               CASE WHEN ended_on <= $on THEN reason END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN ended_on <= $on THEN cost END,
-               lead,
-               CASE WHEN through = $on THEN growth END
-        FROM index_heavyweight_rule_holding
-        WHERE candidate = $candidate AND entered_on <= $on
-        ORDER BY entered_on, sector, ticker;
+    static readonly string IndexRuleHoldingsUpTo = $@"
+        SELECT h.index_code, h.ticker, h.entered_on, h.sector, h.entry_close,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN h.exit_close END,
+               CASE WHEN h.ended_on <= $on THEN h.reason END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
+               CASE WHEN h.ended_on <= $on THEN h.cost END,
+               h.lead,
+               CASE WHEN h.through = $on THEN h.growth END,
+               f.fill
+        FROM index_heavyweight_rule_holding h
+        {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")}
+        WHERE h.candidate = $candidate AND h.entered_on <= $on
+        ORDER BY h.entered_on, h.sector, h.ticker;
     ";
 
     public Task<IReadOnlyList<IndexHoldingRow>> IndexRuleHoldingsAsync(string candidate, DateOnly on) =>
@@ -4124,6 +4152,12 @@ public sealed partial class ReadApi : IComponent
         return await command.ExecuteScalarAsync() is string last ? DateOnly.ParseExact(last, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null;
     }
 
+    // An open holding's growth carried from its fill rather than its buy's close: its growth less the gap over that close,
+    // so its return so far is the one a holding bought at the open has made; none before it is filled.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    static double? GrowthAtFill(double? growth, decimal entry, decimal? fill) =>
+        growth is { } carried && fill is { } bought && entry > 0m ? carried - EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null;
+
     async Task<IReadOnlyList<IndexHoldingRow>> HoldingRowsAsync(string sql, (string Name, string Value) owner, DateOnly on)
     {
         await using var connection = Open();
@@ -4139,12 +4173,15 @@ public sealed partial class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
+            var entry = Money.FromStorage(reader.GetString(4));
+            decimal? fill = reader.IsDBNull(13) ? null : Money.FromStorage(reader.GetString(13));
+
             rows.Add(new IndexHoldingRow(
                 reader.GetString(0),
                 reader.GetString(1),
                 DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(3),
-                Money.FromStorage(reader.GetString(4)),
+                entry,
                 reader.IsDBNull(5) ? null : DateOnly.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
                 reader.IsDBNull(7) ? null : reader.GetString(7),
@@ -4152,7 +4189,8 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
-                reader.IsDBNull(12) ? null : reader.GetDouble(12)));
+                GrowthAtFill(reader.IsDBNull(12) ? null : reader.GetDouble(12), entry, fill),
+                fill));
         }
 
         return rows;
@@ -4246,24 +4284,27 @@ public sealed partial class ReadApi : IComponent
     // the block it ends in, and at its buy while open, with its size cut's return as its benchmark and no cap. The
     // name is not read: a rule's record is over its trades' edges and the sessions they count on.
     // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
-    const string FamilyTradesUpTo = @"
-        SELECT candidate, session_date,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN benchmark END,
-               cap,
-               CASE WHEN ended_on <= $on THEN cost END
-        FROM family_trade
-        WHERE session_date <= $on
+    // From 19.10 each result and benchmark is its fill's at the next session's open.
+    static readonly string FamilyTradesUpTo = $@"
+        SELECT t.candidate, t.session_date,
+               CASE WHEN t.ended_on <= $on THEN t.ended_on END,
+               CASE WHEN t.ended_on <= $on THEN f.result END,
+               CASE WHEN t.ended_on <= $on THEN f.benchmark END,
+               t.cap,
+               CASE WHEN t.ended_on <= $on THEN t.cost END
+        FROM family_trade t
+        {Filled("family_trade", "t", "'GSPC'", "t.candidate", "session_date")}
+        WHERE t.session_date <= $on
         UNION ALL
-        SELECT candidate, CASE WHEN ended_on <= $on THEN ended_on ELSE entered_on END,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
+        SELECT h.candidate, CASE WHEN h.ended_on <= $on THEN h.ended_on ELSE h.entered_on END,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
                0,
                NULL
-        FROM heavyweight_rule_holding
-        WHERE entered_on <= $on
+        FROM heavyweight_rule_holding h
+        {Filled("heavyweight_rule_holding", "h", "'GSPC'", "h.candidate", "entered_on")}
+        WHERE h.entered_on <= $on
         ORDER BY 1, 2;
     ";
 
@@ -4303,24 +4344,26 @@ public sealed partial class ReadApi : IComponent
 
     // Each registered heavyweights rule's holdings beside them, read as the S&P 500's are: by the session a holding ended
     // on, or bought on while open, its size cut's return its benchmark and no cap.
-    const string IndexRuleTradesUpTo = @"
-        SELECT candidate, session_date,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN benchmark END,
-               cap,
-               CASE WHEN ended_on <= $on THEN cost END
-        FROM index_rule_trade
-        WHERE index_code = $index AND session_date <= $on
+    static readonly string IndexRuleTradesUpTo = $@"
+        SELECT t.candidate, t.session_date,
+               CASE WHEN t.ended_on <= $on THEN t.ended_on END,
+               CASE WHEN t.ended_on <= $on THEN f.result END,
+               CASE WHEN t.ended_on <= $on THEN f.benchmark END,
+               t.cap,
+               CASE WHEN t.ended_on <= $on THEN t.cost END
+        FROM index_rule_trade t
+        {Filled("index_rule_trade", "t", "t.index_code", "t.candidate", "session_date")}
+        WHERE t.index_code = $index AND t.session_date <= $on
         UNION ALL
-        SELECT candidate, CASE WHEN ended_on <= $on THEN ended_on ELSE entered_on END,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
+        SELECT h.candidate, CASE WHEN h.ended_on <= $on THEN h.ended_on ELSE h.entered_on END,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
                0,
-               CASE WHEN ended_on <= $on THEN cost END
-        FROM index_heavyweight_rule_holding
-        WHERE index_code = $index AND entered_on <= $on
+               CASE WHEN h.ended_on <= $on THEN h.cost END
+        FROM index_heavyweight_rule_holding h
+        {Filled("index_heavyweight_rule_holding", "h", "h.index_code", "h.candidate", "entered_on")}
+        WHERE h.index_code = $index AND h.entered_on <= $on
         ORDER BY 1, 2;
     ";
 
@@ -4360,17 +4403,19 @@ public sealed partial class ReadApi : IComponent
 
     // Every holding the sector heavyweights bought on or before a night, its end read only where it ended by the
     // night, so a holding that ended after it is read as open on it.
-    const string HeavyweightHoldingsUpTo = @"
-        SELECT ticker, entered_on, sector, company, entry_close,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN exit_close END,
-               CASE WHEN ended_on <= $on THEN reason END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN through = $on THEN growth END
-        FROM heavyweight_holding
-        WHERE entered_on <= $on
-        ORDER BY entered_on, sector, ticker;
+    static readonly string HeavyweightHoldingsUpTo = $@"
+        SELECT h.ticker, h.entered_on, h.sector, h.company, h.entry_close,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN h.exit_close END,
+               CASE WHEN h.ended_on <= $on THEN h.reason END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
+               CASE WHEN h.through = $on THEN h.growth END,
+               f.fill
+        FROM heavyweight_holding h
+        {Filled("heavyweight_holding", "h", "'GSPC'", "''", "entered_on")}
+        WHERE h.entered_on <= $on
+        ORDER BY h.entered_on, h.sector, h.ticker;
     ";
 
     // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
@@ -4378,17 +4423,19 @@ public sealed partial class ReadApi : IComponent
     // A registered heavyweights rule's own book as of a night, read as the page's book is, which its card draws when the
     // card's selector chooses it.
     // see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight
-    const string HeavyweightRuleHoldingsUpTo = @"
-        SELECT ticker, entered_on, sector, company, entry_close,
-               CASE WHEN ended_on <= $on THEN ended_on END,
-               CASE WHEN ended_on <= $on THEN exit_close END,
-               CASE WHEN ended_on <= $on THEN reason END,
-               CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN cut_return END,
-               CASE WHEN through = $on THEN growth END
-        FROM heavyweight_rule_holding
-        WHERE candidate = $candidate AND entered_on <= $on
-        ORDER BY entered_on, sector, ticker;
+    static readonly string HeavyweightRuleHoldingsUpTo = $@"
+        SELECT h.ticker, h.entered_on, h.sector, h.company, h.entry_close,
+               CASE WHEN h.ended_on <= $on THEN h.ended_on END,
+               CASE WHEN h.ended_on <= $on THEN h.exit_close END,
+               CASE WHEN h.ended_on <= $on THEN h.reason END,
+               CASE WHEN h.ended_on <= $on THEN f.result END,
+               CASE WHEN h.ended_on <= $on THEN f.benchmark END,
+               CASE WHEN h.through = $on THEN h.growth END,
+               f.fill
+        FROM heavyweight_rule_holding h
+        {Filled("heavyweight_rule_holding", "h", "'GSPC'", "h.candidate", "entered_on")}
+        WHERE h.candidate = $candidate AND h.entered_on <= $on
+        ORDER BY h.entered_on, h.sector, h.ticker;
     ";
 
     const string HeavyweightRuleReadOn = @"
@@ -4425,18 +4472,22 @@ public sealed partial class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
+            var entry = Money.FromStorage(reader.GetString(4));
+            decimal? fill = reader.IsDBNull(11) ? null : Money.FromStorage(reader.GetString(11));
+
             rows.Add(new HeavyweightHoldingRow(
                 reader.GetString(0),
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(2),
                 reader.GetString(3),
-                Money.FromStorage(reader.GetString(4)),
+                entry,
                 reader.IsDBNull(5) ? null : DateOnly.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                reader.IsDBNull(10) ? null : reader.GetDouble(10)));
+                GrowthAtFill(reader.IsDBNull(10) ? null : reader.GetDouble(10), entry, fill),
+                fill));
         }
 
         return rows;

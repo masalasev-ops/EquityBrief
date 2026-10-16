@@ -113,10 +113,10 @@ public static class PaperScreen
     static PaperAccountSource Split(PaperAccountSource account, IReadOnlyList<(PaperTrade Trade, double? Result)> trades, DateOnly start, string version, IReadOnlyList<CandidateRow> lineage) =>
         account with
         {
-            Trades = [.. trades.Where(one => one.Trade.Bought >= start)],
+            Trades = [.. trades.Where(one => one.Trade.ListedOn >= start)],
             Since = start,
             Version = version,
-            Earlier = [.. trades.Where(one => one.Trade.Bought < start).Select(one => (one.Trade, one.Result, VersionAt(lineage, one.Trade.Bought)))],
+            Earlier = [.. trades.Where(one => one.Trade.ListedOn < start).Select(one => (one.Trade, one.Result, VersionAt(lineage, one.Trade.ListedOn)))],
         };
 
     // Every account on an index in the one family order, each family's live or provisional rule first and its variants
@@ -138,18 +138,24 @@ public static class PaperScreen
         var accounts = new List<PaperAccountSource>();
         var replayed = large ? replays ?? [] : [];
 
+        // A trade is bought at its fill on the session after its night, sized from the close its plan was set at; one
+        // still waiting on that session, or holding none, is bought by no account.
+        // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
         static IReadOnlyList<(PaperTrade, double?)> Of(IEnumerable<PaperRow> rows) =>
         [
-            .. rows.Select(row => (new PaperTrade(
+            .. rows.Where(row => row.Fill is not null && row.FilledOn is not null).Select(row => (new PaperTrade(
                 row.Ticker,
-                row.Bought,
-                row.Entry,
+                row.FilledOn!.Value,
+                row.Fill!.Value,
                 row.Stop,
                 row.Ended,
-                PaperAccount.SaleOf(row.Entry, row.Stop, row.Ended, row.Result, row.Book),
+                PaperAccount.SaleOf(row.Fill!.Value, row.Stop, row.Ended, row.Result, row.Book, row.Entry),
                 null,
                 row.Place,
-                row.Book ? BookHoldings : null), row.Result)),
+                row.Book ? BookHoldings : null,
+                row.Entry,
+                row.MarkedFrom,
+                row.Bought), row.Result)),
         ];
 
         foreach (var family in SetupFamilies.Order)
@@ -177,7 +183,7 @@ public static class PaperScreen
 
             accounts.Add(live is not null
                 ? Started(head, trades, live, replayed, [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
-                : head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.Bought) : null, Version = ProvisionalVersion, Earlier = [] });
+                : head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.ListedOn) : null, Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in variants)
             {
@@ -213,23 +219,28 @@ public static class PaperScreen
         return accounts;
     }
 
-    // The S&P 500's page list of one swing family as its trades: every trade but a repeat listing and one with no outcome
-    // stored, each sold where its result puts it, in the order its night listed them.
+    // The S&P 500's page list of one swing family as its trades: every trade but a repeat listing, one with no outcome
+    // stored and one not filled at its next session's open, each bought at its fill and sold where its result puts it, in
+    // the order its night listed them.
     static IReadOnlyList<(PaperTrade, double?)> PageTrades(IEnumerable<PickCell> cells) =>
     [
         .. cells
-            .Where(cell => cell.RepeatOf is null && cell.Status != PickStatus.Missing && cell.Buy is not null)
+            .Where(cell => cell.RepeatOf is null && cell.Status != PickStatus.Missing && cell.Buy is not null && cell.FilledOn is not null)
             .GroupBy(cell => cell.Night)
             .SelectMany(night => night.Select((cell, place) => (new PaperTrade(
                 cell.Ticker,
-                cell.Night,
+                cell.FilledOn!.Value,
                 cell.Buy!.Value,
                 cell.Stop,
                 cell.EndedOn,
-                PaperAccount.SaleOf(cell.Buy!.Value, cell.Stop, cell.EndedOn, cell.Result, false)
+                PaperAccount.SaleOf(cell.Buy!.Value, cell.Stop, cell.EndedOn, cell.Result, false, cell.Planned)
                     ?? (cell.EndedOn is not null && cell.ReturnPct is { } made ? cell.Buy!.Value * (1m + (Statistic.ToPrice(made) / 100m)) : null),
                 null,
-                place + 1), cell.Result))),
+                place + 1,
+                null,
+                cell.Planned,
+                cell.Buy,
+                cell.Night), cell.Result))),
     ];
 
     // The operator's taken trades on an index as their account's: each bought at its fill on its fill's session, sold at
@@ -274,12 +285,12 @@ public static class PaperScreen
                     .. account.Trades.Select(one =>
                     {
                         var trade = one.Trade;
-                        var row = rows.FirstOrDefault(held => held.Ticker == trade.Ticker && held.Bought == trade.Bought && account.Keeps(held));
+                        var row = rows.FirstOrDefault(held => held.Ticker == trade.Ticker && held.Bought == trade.ListedOn && account.Keeps(held));
                         var member = members.GetValueOrDefault((trade.Ticker, trade.Bought));
 
                         return (trade with
                         {
-                            RoundTrip = PaperAccount.RoundTripOf(trade.Buy, trade.Stop, row?.CostRisk, row?.CostFraction, member.Cost, closes.ContainsKey((trade.Ticker, trade.Bought)), member.Value),
+                            RoundTrip = PaperAccount.RoundTripOf(trade.Buy, trade.Stop, row?.CostRisk, row?.CostFraction, member.Cost, closes.ContainsKey((trade.Ticker, trade.Bought)), member.Value, trade.Planned),
                         }, one.Result);
                     }),
                 ],

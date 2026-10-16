@@ -214,7 +214,16 @@ public sealed record PickCell(
     // Whether the setup that listed the trade runs on provisional settings, no freeze having registered it:
     // the trade is drawn and counted as listed, and is in no share and no average until the freeze.
     // see: A family lists on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
-    bool Provisional = false);
+    bool Provisional = false,
+    // From 19.10 the buy above is the trade's fill at the next session's open: the plan's own buy at its close, whether
+    // that open was past its stop or its target, why it holds no fill, and whether it still waits on its next session,
+    // which the row says it buys at.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    decimal? Planned = null,
+    string? Past = null,
+    string? Unfilled = null,
+    bool Waiting = false,
+    DateOnly? FilledOn = null);
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
 // earlier night is still open, with that trade as Past picks draws it as of the night.
