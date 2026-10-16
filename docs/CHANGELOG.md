@@ -38,7 +38,7 @@ Authorised by: Every link that opens a stock opens its chart page first, and the
 Was:
 > `read-surface`: ... and Tonight's buy points saying once beneath the table that each pick buys at the next open with its plan, read back off the rendered pages over constructed stores
 Now:
-> Added without replacing anything: the week's and the month's candles, the pulled sessions at the store's scale and each span's return worked by hand over constructed bars; a fixture name's chart page worked by hand with its grid's figures the name page's own, and every fixture name's chart page at each interval read for its signed figures; every link that opens a stock opening its chart page counted page by page; and the read surface timing every request with the Run page drawing the slowest routes.
+> Added without replacing anything: the week's and the month's candles, the pulled sessions at the store's scale and each span's return worked by hand over constructed bars; a fixture name's chart page worked by hand with its grid's figures the name page's own, its masthead, volume hues, marks, reading and levels' toggle read back off it, and every fixture name's chart page at each interval read for its signed figures; tonight's plan drawn from the night's cards over a constructed store; every link that opens a stock opening its chart page counted page by page; and the read surface timing every request with the Run page drawing the slowest routes.
 Why: a roster row names what its check asserts, and 19.11 added those assertions.
 
 ### 2026-10-16 - SCHEMA.md - the pulled bars' note names the read API's read of one stock's rows for the chart page
