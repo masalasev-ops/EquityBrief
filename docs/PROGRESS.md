@@ -45434,7 +45434,12 @@ Mutated:    the rule, stated before the runs: one mutation a property this check
             to the first of two originals; red at the store's matching test, which gained that case before the runs. M15
             an unreadable filing not caught; red at its test. Not mutated: the chart page's group, read off the region's
             own view, and the history's quarter written in one transaction. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 6d5343ab: all six
+            steps, 0 warnings, 0 errors, 2392 of 2392 tests ran with none failed in 25 minutes 1 second, migrations 0
+            to 96 with none pending, schema version 96, against `data-ci` and never `data`; the phase report 60 tables,
+            1337 claims, 1337 passing, none out of scope and none unexamined, 1348 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed. The run before it, over 9ecc9341, failed one
+            test, three keys of the expectations no test read, which 6d5343ab reads.
 Carried:    19.13's remedy run from main and its record: the history's and the days' requests and times, the comparison,
             the builds' times and the checks; the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693
             at their medians, each a ruling of its own the operator is asked for; the first night's fill step and ledger
