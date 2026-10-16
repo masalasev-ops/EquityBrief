@@ -45057,7 +45057,11 @@ Mutated:    the rule, stated before the runs: one mutation a property this chang
             the fill step's typical move read off the stock where a table keeps no distance in typical moves, every
             constructed trade keeping one, and a book's size cut moved by its members' gaps, the fill step's
             constructed store holding no book. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 90617e9a: all six
+            steps, 0 warnings, 0 errors, 2363 of 2363 tests ran with none failed in 19 minutes 1 second, migrations 0
+            to 94 with none pending, schema version 94, against `data-ci` and never `data`; the phase report 59 tables,
+            1316 claims, 1316 passing, none out of scope and none unexamined, 1327 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    19.10's remedy run from main after the merge and before the night, its counts and each index's ledger and
             records at the open recorded in a dated entry; the first night's fill step, owed to that entry; the first
             night's ledger step on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a
