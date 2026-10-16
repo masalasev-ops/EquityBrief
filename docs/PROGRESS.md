@@ -44976,3 +44976,90 @@ Carried:    the operator's word on moving entries to the next session's open, wh
             on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a correction of section
             11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a correction of 19.2; the
             sign-offs of phases 16, 17 and 18.
+
+### 19.10 - every entry bought at the next session's open, by a fill step of its own   2026-10-16
+
+Queue:      done, 19.0 to 19.9 with their corrections and records and 19.10's next-open check as PRs 446 to 466; in
+            progress, this checkpoint; next, 19.10's remedy run from main and its record, then the sign-offs of phases
+            16, 17 and 18, each by a fresh session.
+Built:      on the operator's rulings of 2026-10-15, route B: every rule's entry on every family and index bought at the
+            open of the session after the night that listed it, the stop, the target, the cap and the exits where the
+            plan set them at the close (see: A trade's entry is priced at the next session's open by a fill step of its
+            own, and no rule's version moves because of it). One pricing function in the core: where the open sat
+            against the plan, the result at the open the result at the close less the gap over the risk the close set,
+            a holding's over its close, the benchmark each ended member moved by its own gap over its own risk, an open
+            past the stop or the target still bought and walked under the same exits, and a scored plan whose risk the
+            forward return filler has not written yet, a plan still open, bought at its open with nothing read against
+            its range until it is. The fill step, a component of its own run in the forward returns step after the
+            filler and by hand as `fill`, writing migration 94's `trade_fill`, a trade with no next session, no open on
+            it or no risk at its close written with why; the setup's `fill` and `past`; the ledger, the rule records'
+            replays, the loop's walks and the next-open check priced through the same function. Every page and figure
+            reporting a trade's result reads the fill: Past picks, a name's picks before, the Run page's records, paper
+            trading, the live alarm and the rule's own picks beneath the operator's trades; Past picks says a trade
+            waiting on its next session buys at the next open and one with no fill why, and Tonight says each pick
+            buys at the next open. The decision, sections 11.4, 13.10, 14, 15.17 and 15.21, the catalogue, the matrix
+            and the stores, the schema, the runbook, the guide, the roster and the remedy file. No source a rule pins
+            changes, so no rule's version moves and no registration, record or paper account restarts.
+Measured:   over the operator's store read-only on 2026-10-16, the bars through 2026-10-15, nothing written. The fill
+            step's own functions over every stored trade of the nine tables: 8860 trades, 8488 priced again at the
+            next open, 2 whose stock holds no bar on its next session, none with no open on it or no risk at its close,
+            and 370 listed on 2026-10-15 waiting on its next session. By table, priced of stored: the registered rules'
+            trades 18 of 37, 19 waiting; the S&P 500 page list's scored plans 8360 of 8711, 349 waiting and 2 with no
+            next session, of which the clear plan 2184 of 2343 with 11 opens past the stop and 2 past the target, the
+            nearest bands' plan 3138 of 3328 with 303 and 42, the drift 6 of 8 and the reasons' setups 3032 of 3032
+            with 44 and 7; the S&P 500's heavyweights book 5 of 5 and its rules' books 35 of 35; the S&P 400's and
+            600's lists 16 of 17 and their rules' trades 6 of 7, one each waiting; their books 15 of 15 and their
+            rules' books 13 of 13; the S&P 500 variants' picks 20 of 20, one past its stop.
+            Each family's record on each index, the rule's record its card draws: before, as the rule recorder stored
+            it on 2026-10-07 for the S&P 500 and 2026-10-09 for the S&P 400 and 600; after, replayed read-only by this
+            change's code at the open over the history through 2026-10-15, 13269 trades in all, the counts differing
+            by the trades that ended in between. Trades, then the mean result in risks after each trade's cost, the
+            heavyweights' in per cent:
+            S&P 500's pullback 1877 at 0.190 before, 1891 at 0.171 after; breakout 1009 at 0.115, 1012 at 0.120;
+            drift 2244 at 0.218, 2251 at 0.021; heavyweights 374 at 4.01, 374 at 3.88.
+            S&P 400's pullback 1172 at 0.105, 1173 at 0.067; breakout 637 at -0.070, 638 at -0.100; drift 1639 at
+            -0.017, 1640 at 0.027; heavyweights 446 at 2.22, 446 at 2.22.
+            S&P 600's pullback 1251 at 0.067, 1260 at 0.072; breakout 713 at -0.056, 713 at -0.092; drift 1414 at
+            -0.249, 1416 at -0.218; heavyweights 455 at 2.05, 455 at 1.97.
+            Read across them: the S&P 500's drift moves the most, 0.197 of a risk down, while the S&P 400's and 600's
+            drift move up 0.044 and 0.030; the breakout moves up 0.006 on the S&P 500 and down 0.030 and 0.035 on the
+            S&P 400 and 600; the pullback down 0.019 and 0.038 on the S&P 500 and 400 and up 0.005 on the S&P 600;
+            the heavyweights down 0.13 points on the S&P 500 and 0.09 on the S&P 600 and not moving on the S&P 400.
+Tests:      8 new, 2363 in all: the pricing function's cases at the open and the benchmark worked by hand, a plan whose
+            stop is not stored yet and one putting up no risk among them; the fill step over a constructed store pricing
+            each trade as the next-open check prices the same setup on the ledger, an open scored plan priced and priced
+            again once its risk is written, each reason counted and every trade holding a fill or a reason; no pinned
+            source naming the fill; the scan of every statement reading a trade's table on the read surface, the paper
+            accounts and the live alarm, 22 at least stated in advance; a paper account's start; the fill step's row
+            over the fixture's whole night; and Past picks and Tonight read back off the rendered pages. The screen
+            tests whose subject is not the fill give each constructed trade a fill at its own buy holding its writer's
+            figures.
+Claims:     1316, three more than 1313: the fill step's catalogue and matrix rows and its store, named beside phase
+            19's pair as rows after its report, each passing.
+Pins:       none moves: no source an evaluator, the hooks or the readings pin names the fill, asserted.
+Remedy:     `tools/remedies/2026-10-16-19.10-entries-at-the-next-open.txt`, from main after the merge and before the
+            night: the migration, `fill --again` and `rule-record`; then each index's ledger history built again with
+            `--again`, its check and its next-open check, by hand as the runbook states. It asks the provider for
+            nothing.
+Amended:    this checkpoint amends its own done condition: the rulings' tests were added to it by the commit carrying
+            the rulings, recorded in the changelog.
+Mutated:    the rule, stated before the runs: one mutation a property this change adds, at the line deciding it, each
+            run against the change's fill tests and the screens reading them. M1 an open at the stop not past it; red at
+            the range test. M2 the gap added to the result; red at five. M3 the benchmark averaging members whose paths
+            have not ended; red at the benchmark test. M4 a plan with no stop stored given no fill; red at the pricing
+            and the fill step's tests. M5 a fill not priced again once its result arrives; red at the fill step's
+            test. M6 the fill step reading only plans whose risk is written; red, same. M7 a plan putting up no risk
+            written with no reason; red, same. M8 a scored plan's stop not scaled to the night's close; red, same. M9
+            the registered rules' records drawing the trade's own result; red at the scan. M10 a trade with no outcome
+            row said to wait; red at the Past picks test. M11 a waiting trade drawn with no words; red at the new
+            screen test. M12 a provisional account starting at its first filled trade; red at the paper start test.
+            M13 Tonight's line hidden; red at the new screen test. Not mutated, and no constructed case reaches them:
+            the fill step's typical move read off the stock where a table keeps no distance in typical moves, every
+            constructed trade keeping one, and a book's size cut moved by its members' gaps, the fill step's
+            constructed store holding no book. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Carried:    19.10's remedy run from main after the merge and before the night, its counts and each index's ledger and
+            records at the open recorded in a dated entry; the first night's fill step, owed to that entry; the first
+            night's ledger step on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion", owed a
+            correction of section 11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a
+            correction of 19.2; the sign-offs of phases 16, 17 and 18.
