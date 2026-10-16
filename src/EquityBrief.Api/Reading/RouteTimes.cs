@@ -16,8 +16,9 @@ public sealed class RouteTimes(IClock clock)
 {
     public const int KeptARoute = SinglePageApp.RouteTimesKept;
 
-    // How many routes the Run page draws, the slowest first.
-    public const int Drawn = 12;
+    // How many routes the Run page draws, the slowest first: enough for every page a reader opens, the chart page's three
+    // intervals among them, with the presses and the marks the pages ask for.
+    public const int Drawn = 24;
 
     readonly ConcurrentDictionary<string, ConcurrentQueue<double>> times = new(StringComparer.Ordinal);
 
