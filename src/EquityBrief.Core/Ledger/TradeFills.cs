@@ -37,6 +37,8 @@ public static class TradeFills
 
     public const string NoOpen = "no open on its next session";
 
+    public const string NoRisk = "no risk at its close";
+
     public static string? PastOf(double open, double stop, double? target) =>
         open <= stop ? FillPast.Stop : target is { } aimed && open >= aimed ? FillPast.Target : null;
 
@@ -68,9 +70,13 @@ public static class TradeFills
         return count > 0 ? (mean - (sum / count), count) : (null, 0);
     }
 
-    // A swing trade's fill, none where the open is not held or the plan put up no risk.
-    public static TradeFill? Swing(DateOnly on, double close, double stop, double? target, double? open, double? resultAtClose, double? benchmarkAtClose, IReadOnlyList<FillMember> members) =>
-        Price(on, close, close - stop, PastOf(open ?? 0, stop, target), open, resultAtClose, benchmarkAtClose, members);
+    // A swing trade's fill, none where the open is not held or the plan put up no risk. A plan whose stop is not stored
+    // yet, a scored plan still open before its risk is written, is bought at the open with nothing read against its range
+    // and no result until it is.
+    public static TradeFill? Swing(DateOnly on, double close, double? stop, double? target, double? open, double? resultAtClose, double? benchmarkAtClose, IReadOnlyList<FillMember> members) =>
+        stop is not { } floor
+            ? open is { } price && price > 0 ? new TradeFill(on, price, null, null, null, 0, null) : null
+            : Price(on, close, close - floor, PastOf(open ?? 0, floor, target), open, resultAtClose, benchmarkAtClose, members);
 
     // A book's holding's fill: no stop and no target to open past.
     public static TradeFill? Holding(DateOnly on, double close, double? open, double? resultAtClose, double? benchmarkAtClose, IReadOnlyList<FillMember> members) =>

@@ -64,7 +64,8 @@ internal static class ComponentVocabulary
     // Treasury's 10-year a session, a fetched series of sessions as the market series are, and the fundamentals column the
     // estimate trend each quarters fetch keeps and each dividend kept, each a provider's answer about a company. From 18.3
     // the computed tables column holds each name's typical earnings move and its long view, figures the night works out
-    // for the name page as it works out the chart's averages.
+    // for the name page as it works out the chart's averages. From 19.10 the forward returns column holds each stored
+    // trade's fill at the next session's open beside the trades, each a record of what became of one.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -73,7 +74,7 @@ internal static class ComponentVocabulary
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.PulledIncome, DataStore.PulledSnapshot, DataStore.PulledHolding]),
         ("Computed tables", [DataStore.Indicator, DataStore.ChartAverage, DataStore.EarningsMove, DataStore.LongView, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult, DataStore.IndexFamilyResult, DataStore.MemberReading, DataStore.SwitchReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight, DataStore.IndexFamilyNight, DataStore.IndexFamilyPick, DataStore.IndexHeavyweightRuleNight, DataStore.SweepAnswer, DataStore.DecisionCard, DataStore.RuleNight, DataStore.FormingRow]),
-        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
+        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding, DataStore.IndexFamilyTrade, DataStore.IndexHeavyweightHolding, DataStore.IndexRuleTrade, DataStore.IndexHeavyweightRuleHolding, DataStore.RuleRecord, DataStore.RulePick, DataStore.TradeFill, DataStore.Setup, DataStore.SetupNight, DataStore.LedgerSummary, DataStore.LedgerReading, DataStore.LoopRun, DataStore.LoopProposal, DataStore.LoopTest, DataStore.LoopFinding, DataStore.LoopReading, DataStore.LoopModel, DataStore.LoopReference, DataStore.LoopRule, DataStore.LoopRuleYear, DataStore.LoopApplied, DataStore.ProvisionalSetting, DataStore.LoopAlarm]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company, DataStore.EstimateReading, DataStore.DividendReading, DataStore.EstimateTrend, DataStore.DividendEvent, DataStore.FiledFact, DataStore.FiledFactPull, DataStore.FilingDay]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
@@ -229,6 +230,7 @@ internal static class ComponentVocabulary
         ["rule records"] = DataStore.RuleRecord,
         ["rule nights"] = DataStore.RuleNight,
         ["rule picks"] = DataStore.RulePick,
+        ["trade fills"] = DataStore.TradeFill,
         ["forming rows"] = DataStore.FormingRow,
         ["setups"] = DataStore.Setup,
         ["setup nights"] = DataStore.SetupNight,

@@ -6045,18 +6045,18 @@ public sealed partial class MarkRenderer : IComponent
     public static IReadOnlyList<(string Heading, string Says)> PicksHeadings(bool named) =>
     [
         ("Night listed", named
-            ? "The evening the live list recommended the trade. It is taken as bought at that evening's close."
-            : "The evening the live list recommended the trade. It is taken as bought at that evening's close, and the date opens this stock's page as it stood that night."),
+            ? "The evening the live list recommended the trade. It is bought at the open of the session after that evening."
+            : "The evening the live list recommended the trade. It is bought at the open of the session after that evening, and the date opens this stock's page as it stood that night."),
         .. named ? new[] { ("Stock", "The stock, which opens its page as it stood on the night listed.") } : Array.Empty<(string, string)>(),
         ("Business that night", "The state the company's reported quarters gave it on the evening it was listed, or not read that night where none was stored yet."),
         ("Setup", "The setup the page listed the trade under. A trade listed before the page drew setups was the pullback's."),
-        ("Buy", "The price the plan buys at."),
+        ("Buy", "The open it was bought at, the session after its night. A trade whose next session is not stored yet says it buys at the next open."),
         ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
         ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
         ("Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
-        ("Result", "What the trade came to in multiples of the risk it took, the fall from the buy to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
+        ("Result", "What the trade came to from its buy in multiples of the risk its plan put up, the fall from the evening's close to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
     ];
 
     // How many typical days either side of the close the distance row draws before a band becomes an arrow.
@@ -6892,7 +6892,14 @@ public sealed partial class MarkRenderer : IComponent
             {
                 var none = name == "target" && row.Trailing ? "trailing" : "<span class=\"degraded\">none</span>";
 
-                table.Append(Invariant, $"<td class=\"r num\" data-{name}=\"{StoredPrice(price)}\">{(price is { } held ? Price(held) : none)}</td>");
+                // From 19.10 the buy is the trade's fill at the next session's open; one still waiting on that session
+                // says it buys at the next open, and one holding no fill says why.
+                // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+                var drawn = name == "buy" && row.Waiting ? $"<span class=\"degraded\">{Escaped(EquityBrief.Core.Ledger.TradeFills.Waiting)}</span>"
+                    : name == "buy" && row.Unfilled is { } why ? $"<span class=\"degraded\">{Escaped(why)}</span>"
+                    : price is { } held ? Price(held) : none;
+
+                table.Append(Invariant, $"<td class=\"r num\" data-{name}=\"{StoredPrice(price)}\"{(name == "buy" && row.Past is { } past ? $" data-past=\"{Escaped(past)}\"" : string.Empty)}>{drawn}</td>");
             }
 
             table.Append(Invariant, $"<td>{TradeLine(row)}</td>");

@@ -63,6 +63,7 @@ public partial class ReadSurface
         store.Execute(
             "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES " +
             "('AAA', 'thesis', 1, '2026-10-02', 'a writer', 'accepted', 'A sentence.', '[]', NULL), ('M1', 'thesis', 1, '2026-10-02', 'a writer', 'accepted', 'A sentence.', '[]', NULL);");
+        FillAtTheirOwnBuy(store);
 
         return store;
     }
@@ -131,7 +132,7 @@ public partial class ReadSurface
         // The heavyweights' card names its design and the sector comparison its index reads, against the 400's fund.
         Assert.Contains(
             "<p class=\"rule-words\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the S&P 400 by value, the 2 whose 251-session returns beat their sector's members' mean in the S&P 400 by the most, where they beat it at all, " +
-            "their close above their 50-day average and that above their 200-day, their beta against IJH at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it. " +
+            "their close above their 50-day average and that above their 200-day, their beta against IJH at least one, bought at the next session's open. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it. " +
             "Design (a): a sector's return is its members' mean within the S&P 400, since no sector fund is read at the index's level. Unlike the S&P 500's rules,",
             page,
             StringComparison.Ordinal);
@@ -280,7 +281,7 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num\"><span class=\"gain\">+2.00</span></td><td class=\"r num\">0.02</td><td class=\"r num\"><span class=\"gain\">+1.98</span></td>", picks, StringComparison.Ordinal);
         Assert.Contains("Showing 2 of 2 S&P 400 trades, 1 open", picks, StringComparison.Ordinal);
         Assert.Contains(
-            "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector among the S&P 400's members, or at its last close as a member.",
+            "A holding is chosen at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, bought at the next session's open, and sold at the close of a later month's rebalance where it no longer leads its sector among the S&P 400's members, or at its last close as a member.",
             picks,
             StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", picks, StringComparison.Ordinal);

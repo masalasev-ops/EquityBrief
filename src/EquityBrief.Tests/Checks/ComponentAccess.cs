@@ -58,6 +58,10 @@ public partial class ComponentAccess
             // 18.3, the page history reader.
             .. PageHistoryRows,
 
+            // 19.10, the fill step.
+            CheckReach.Key(Scope.CatalogueTable, "Trade filler"),
+            CheckReach.Key(Scope.MatrixTable, "Trade filler"),
+
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),
             CheckReach.Key(Scope.MatrixTable, "Chart averager"),

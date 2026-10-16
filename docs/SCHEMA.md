@@ -89,6 +89,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `rule_record` | RuleRecorder | RuleRecorder | none |
 | `rule_night` | RuleCards | none | RuleCards |
 | `rule_pick` | RuleCards | RuleCards | RuleCards |
+| `trade_fill` | TradeFiller | TradeFiller | none |
 | `forming_row` | RuleCards | none | RuleCards |
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
@@ -942,7 +943,7 @@ Grain: one row per registered family rule, stock and session the rule's own list
 |---|---|---|
 | `candidate` | TEXT | the registered rule's name, as the register holds it |
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the session the rule listed the stock on, the trade bought at that close |
+| `session_date` | TEXT | the session the rule listed the stock on, the trade's plan set at that close and from 19.10 bought at the next session's open, its fill in `trade_fill` |
 | `family` | TEXT | the family the rule belongs to, by the word it is stored under |
 | `place` | INTEGER | the trade's place on the rule's own list that night, counted from one, at most five |
 | `entry` | TEXT | the price the trade is bought at, the night's close |
@@ -1123,7 +1124,7 @@ Grain: one row per index, family, stock and session the index's list kept a trad
 | `index_code` | TEXT | the index whose list kept the trade |
 | `family` | TEXT | the family that listed it |
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the session it was listed on, bought at that close |
+| `session_date` | TEXT | the session it was listed on, its plan set at that close and from 19.10 bought at the next session's open, its fill in `trade_fill` |
 | `place` | INTEGER | its place down the index's page that night |
 | `entry` | TEXT | the night's close it was bought at |
 | `stop` | TEXT | its stop as the night placed it, the first level of a stop that trails |
@@ -1176,7 +1177,7 @@ Grain: one row per registered rule of an S&P 400's or 600's swing family, stock 
 | `index_code` | TEXT | the index the rule reads |
 | `family` | TEXT | the swing family it is a rule of |
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the session it was kept on, bought at that close |
+| `session_date` | TEXT | the session it was kept on, its plan set at that close and from 19.10 bought at the next session's open, its fill in `trade_fill` |
 | `place` | INTEGER | its place on the rule's own list that night, counted from one |
 | `entry` | TEXT | the night's close it was bought at |
 | `stop` | TEXT | its stop as the night placed it, the first level of a stop that trails |
@@ -1324,7 +1325,7 @@ Grain: one row per index, rule, stock and night a rule whose list no other table
 | `index_code` | TEXT | `GSPC` |
 | `rule` | TEXT | the variant's name as the register holds it |
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the night the pick was kept on, bought at that close |
+| `session_date` | TEXT | the night the pick was kept on, its plan set at that close and from 19.10 bought at the next session's open, its fill in `trade_fill` |
 | `family` | TEXT | `pullback` |
 | `place` | INTEGER | the pick's place on the variant's own list, counted from one, at most five |
 | `entry` | TEXT | decimal in code, the night's close |
@@ -1339,6 +1340,30 @@ Grain: one row per index, rule, stock and night a rule whose list no other table
 Primary key: `index_code`, `rule`, `ticker`, `session_date`.
 
 **The rule cards stage writes and ends them, and is its own deleter: a night run again removes its own picks and clears the ends it wrote at its close, which the walk writes again** (see: A variant's picks are shown on its card when chosen and its results on paper trading beside its verdict, never on Tonight).
+
+### trade_fill
+Grain: one row per stored trade the fill step has priced at the next session's open, keyed by the table the trade is stored in and that table's own key, from 19.10.
+
+| Column | Type | Notes |
+|---|---|---|
+| `source` | TEXT | the table the trade is stored in: `family_trade`, `index_family_trade`, `index_rule_trade`, `rule_pick`, `heavyweight_holding`, `heavyweight_rule_holding`, `index_heavyweight_holding`, `index_heavyweight_rule_holding` or `forward_return` |
+| `index_code` | TEXT | the trade's index, `GSPC` for a table that keeps none |
+| `owner` | TEXT | the trade's rule, family or horizon as its table keys it: a registered rule's name, an index list's family, a variant's name or a scored plan's horizon, and empty for a page's book |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night that listed it, or the rebalance that bought a holding |
+| `filled_on` | TEXT | the session after that night, whose open it is bought at, null where it holds no fill |
+| `fill` | TEXT | decimal in code, that open at the trade's own scale, the bars as stored now over the close the trade's plan was set at; null where it holds no fill |
+| `past` | TEXT | `stop` where that open sat at or under the plan's stop, `target` where at or over its target, null inside its range, where a book's holding places neither and for a scored plan still open, whose risk the forward return filler writes once it resolves |
+| `result` | REAL | the trade's result bought at that open, in multiples of the risk its close set for a swing trade and as a fraction of that close for a holding; null while its trade is open and where it holds no fill |
+| `benchmark` | REAL | the same plan bought at each member's own next open on the night, its stored benchmark less the members' mean gap over their own risk, a holding's size cut's the same over each member's close; null while its trade's benchmark is not written and for a table that keeps none |
+| `members` | INTEGER | how many members that move was averaged over, null where none was |
+| `edge` | REAL | the result less the benchmark, null until both are read |
+| `reason` | TEXT | why the trade holds no fill: its stock holds no bar on its listing night or the session after, no open on that session, or its plan put up no risk at its close; null where it holds one |
+| `filled_at` | TEXT | UTC instant the row was written |
+
+Primary key: `source`, `index_code`, `owner`, `ticker`, `session_date`.
+
+**The fill step writes it and is its own updater, and nothing deletes from it** (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it). Each night, after the forward returns, and by hand with `fill`, it reads each stored trade whose next session's bar is stored and writes its row, and writes a row again only while the trade's own figures it was priced from are still arriving, its result or its benchmark, so a scored plan bought at its open while it is still open is priced again with where its open sat and its result once its risk is written; `fill --again` writes every row again. A trade waiting on its next session has no row. The writers of the nine tables keep their trades' close-priced figures as they wrote them, and every page and figure that reports a trade's result reads this table's in their place. The fill is the one money column, TEXT as every price is; the figures beside it are statistics.
 
 ### forming_row
 Grain: one row per index, night, breakout rule and place a member forming a breakout under the rule stands at.
@@ -1372,11 +1397,11 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `index_code` | TEXT | `GSPC`, `MID` or `SML` |
 | `family` | TEXT | `pullback`, `breakout`, `drift`, from 19.9 `fundamentals`, or, on the S&P 500, `heavyweight`; a `fundamentals` row is a `pullback` row of the same stock and session whose revenue and cash clear the family's loose gates, at that row's own plan |
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
+| `session_date` | TEXT | the session the setup was read on, its plan set at its close and from 19.10 bought at the open of the session after |
 | `rule` | TEXT | the words of the family's setting in code the pass beside it was read at: the index's live pullback setting on the extended grid, the breakout's or the drift's frozen setting, or the fundamentals-first family's provisional setting at the pullback's base, which from 17.9 a change approved on the Loop page does not move, so the ledger keeps one measure across every session it holds |
 | `live_pass` | INTEGER | 1 where that setting passes the member-session as the sweep replays it, the market check included, 0 where it does not |
 | `picked` | INTEGER | 1 where the night's own list held the stock under the family, 0 where the night listed and did not, null on a row the history build wrote |
-| `entry` | TEXT | decimal in code, the close the setup is bought at |
+| `entry` | TEXT | decimal in code, the close the setup's plan is set at, which its risk is read from; from 19.10 it is bought at `fill` |
 | `stop` | TEXT | decimal in code, the plan's stop |
 | `target` | TEXT | decimal in code, the plan's target, null where the stop trails |
 | `trail` | TEXT | decimal in code, the distance the stop follows the highest close by, null where it does not |
@@ -1422,8 +1447,8 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `credit_over_fifty` | REAL | HYG's close over its 50-session average |
 | `profit` | REAL | 1 where the four newest quarters filed before the session sum their net income above nothing, 0 otherwise |
 | `coverage` | REAL | 1 where those quarters' operating income is at least twice their interest expense or the company is a financial one, 0 otherwise; the last of the forty readings migration 77 created |
-| `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open; a heavyweights' setup, which holds no stop and whose `stop` is nothing, its close at the end over the buy less one, a fraction of the buy |
-| `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended, a member whose prices stopped before its path ended left out and a session with none ended holding none; a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction |
+| `result` | REAL | what the path came to in multiples of the risk under the plan's exit, null while open; a heavyweights' setup, which holds no stop and whose `stop` is nothing, its close at the end over the buy less one, a fraction of the buy; from 19.10 bought at `fill` and stated in the risk its close set, or as a fraction of that close, null where no open is held after its session |
+| `benchmark` | REAL | the mean of the same plan entered on every member of the index that session, in risks, null until every member's path has ended, a member whose prices stopped before its path ended left out and a session with none ended holding none; a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction; from 19.10 each member bought at its own next open |
 | `cost` | REAL | the round trip in risks at the member's own cost on the night, null where the night stored none and on a history row |
 | `edge` | REAL | the result less the benchmark, null until both are read |
 | `edge_after_cost` | REAL | the edge less the cost, null where either is |
@@ -1439,6 +1464,8 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `operating_margin_change` | REAL | the newest quarter's operating income over its revenue less the same quarter's a year before |
 | `cash_over_income` | REAL | the newest fiscal year's cash from operations over its net income, null where that income is not above nothing |
 | `value_place` | REAL | from migration 88, the valuation reading: the four newest quarters' net income as first filed before the session over the company's value, the share count its filings' covers state times the close, as the share of the same figure at the ends of its own twelve quarters before the session that it stands above, a tie counting half, null where a part of it is missing; a row written before the migration holds none, and the history's rows read it once the history is built again |
+| `fill` | TEXT | from migration 94, decimal in code, the open of the session after the setup's own that it is bought at, at the setup's own scale; null while that session is not stored and where its open is not held |
+| `past` | TEXT | from migration 94, `stop` where that open sat at or under the plan's stop, `target` where at or over its target, null inside its range and on a heavyweights' setup |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 

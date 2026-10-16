@@ -90,6 +90,7 @@ public partial class ReadSurface
             $"VALUES ('{TheSwitch}', 10, 10, 6, 0.6, 10, 5, 0.5, 10, 0.9);");
 
         await RedrawTheFamilies(store);
+        FillAtTheirOwnBuy(store);
 
         return store;
     }

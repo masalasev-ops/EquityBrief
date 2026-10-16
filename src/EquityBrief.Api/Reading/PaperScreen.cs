@@ -181,9 +181,15 @@ public static class PaperScreen
             IReadOnlyList<(PaperTrade, double?)> trades = pageList ? PageTrades(pageCells.Where(cell => cell.Family == family)) : Of(rows.Where(head.Keeps));
             var registrations = RuleScreen.Registrations(family, large, indexName, register);
 
+            // A provisional account starts at the first night its list kept a trade, filled at the next open or not, so
+            // pricing entries at the open moves no account's start.
+            var first = pageList
+                ? pageCells.Where(cell => cell.Family == family && cell.RepeatOf is null && cell.Status != PickStatus.Missing && cell.Buy is not null).Select(cell => (DateOnly?)cell.Night).Min()
+                : rows.Where(head.Keeps).Select(row => (DateOnly?)row.Bought).Min();
+
             accounts.Add(live is not null
                 ? Started(head, trades, live, replayed, [.. registrations.Where(row => FamilyRecords.IsLive(row.Candidate))])
-                : head with { Trades = trades, Since = trades.Count > 0 ? trades.Min(trade => trade.Item1.ListedOn) : null, Version = ProvisionalVersion, Earlier = [] });
+                : head with { Trades = trades, Since = first, Version = ProvisionalVersion, Earlier = [] });
 
             foreach (var (row, tab) in variants)
             {

@@ -657,7 +657,7 @@ static async Task<int> FillRun(string[] args)
 
     foreach (var source in outcome.Sources)
     {
-        Console.WriteLine(FormattableString.Invariant($"fill: {source.Source}: {source.Filled} priced at the next open, {source.NoNextSession} with no next session, {source.NoOpen} with no open on it, {source.Waiting} waiting, {source.Standing} standing"));
+        Console.WriteLine(FormattableString.Invariant($"fill: {source.Source}: {source.Filled} priced at the next open, {source.NoNextSession} with no next session, {source.NoOpen} with no open on it, {source.NoRisk} with no risk at its close, {source.Waiting} waiting, {source.Standing} standing"));
     }
 
     Console.WriteLine("fill: " + EquityBrief.Worker.Fills.TradeFiller.Detail(outcome));

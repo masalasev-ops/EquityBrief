@@ -80,6 +80,8 @@ public partial class ReadSurface
             PickBar(store, ticker, TheSwitch, close);
         }
 
+        FillAtTheirOwnBuy(store);
+
         return store;
     }
 

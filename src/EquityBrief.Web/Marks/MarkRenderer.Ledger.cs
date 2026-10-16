@@ -182,7 +182,7 @@ public sealed partial class MarkRenderer
         var table = new StringBuilder();
 
         table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"ledger-settled\" data-rows=\"{rows.Count}\"><thead><tr>");
-        table.Append(TippedHeading("Session", "the session the setup was read on and bought at the close of"));
+        table.Append(TippedHeading("Session", "the session the setup was read on, bought at the next session's open"));
         table.Append(TippedHeading("Stock", "the member, which opens the setup's path below"));
         table.Append(TippedHeading("Live rule", "whether the live rule's own setting passed it"));
         table.Append(TippedHeading("End", "how its path ended"));

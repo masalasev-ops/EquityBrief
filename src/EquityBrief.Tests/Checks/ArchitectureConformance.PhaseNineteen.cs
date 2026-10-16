@@ -143,8 +143,9 @@ public partial class ArchitectureConformance
     ];
 
     // The rows the document gains and loses after phase 19's report, named beside the pair and never counted in it, which
-    // 19.9's and 19.10's own entries name: none yet.
-    internal static string[] AfterPhaseNineteen => [];
+    // 19.9's and 19.10's own entries name: 19.9's none, its three landing as words in rows that stood, and 19.10's three on
+    // the operator's rulings of 2026-10-15, the fill step's catalogue and matrix rows and its store.
+    internal static string[] AfterPhaseNineteen => [.. FixtureExpectations.TradeFillRows];
 
     internal static string[] TakenOutAfterPhaseNineteen => [];
 

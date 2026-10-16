@@ -127,6 +127,8 @@ public class SchemaColumns
             // 19.4, the per-rule test's rows and its year rows.
             CheckReach.Key(Scope.StoresTable, "Rule tests"),
             CheckReach.Key(Scope.StoresTable, "Rule test years"),
+            // 19.10, the fill step's own table.
+            CheckReach.Key(Scope.StoresTable, "Trade fills"),
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

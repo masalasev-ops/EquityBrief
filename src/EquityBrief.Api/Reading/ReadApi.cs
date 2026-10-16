@@ -827,6 +827,7 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.IndexRuleTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleNight, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.TradeFill, Touch.Read),
             new StoreTouch(Store.DecisionCard, Touch.Read),
             new StoreTouch(Store.RuleNight, Touch.Read),
             new StoreTouch(Store.RulePick, Touch.Read),
@@ -4155,8 +4156,8 @@ public sealed partial class ReadApi : IComponent
     // An open holding's growth carried from its fill rather than its buy's close: its growth less the gap over that close,
     // so its return so far is the one a holding bought at the open has made; none before it is filled.
     // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
-    static double? GrowthAtFill(double? growth, decimal entry, decimal? fill) =>
-        growth is { } carried && fill is { } bought && entry > 0m ? carried - EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null;
+    static double? GrowthAtFill(double? growth, double? gap) =>
+        growth is { } carried && gap is { } moved ? carried - moved : null;
 
     async Task<IReadOnlyList<IndexHoldingRow>> HoldingRowsAsync(string sql, (string Name, string Value) owner, DateOnly on)
     {
@@ -4189,7 +4190,7 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
                 reader.IsDBNull(10) ? null : reader.GetDouble(10),
                 reader.IsDBNull(11) ? null : reader.GetDouble(11),
-                GrowthAtFill(reader.IsDBNull(12) ? null : reader.GetDouble(12), entry, fill),
+                GrowthAtFill(reader.IsDBNull(12) ? null : reader.GetDouble(12), fill is { } bought && entry > 0m ? EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null),
                 fill));
         }
 
@@ -4486,7 +4487,7 @@ public sealed partial class ReadApi : IComponent
                 reader.IsDBNull(7) ? null : reader.GetString(7),
                 reader.IsDBNull(8) ? null : reader.GetDouble(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9),
-                GrowthAtFill(reader.IsDBNull(10) ? null : reader.GetDouble(10), entry, fill),
+                GrowthAtFill(reader.IsDBNull(10) ? null : reader.GetDouble(10), fill is { } bought && entry > 0m ? EquityBrief.Core.Prices.Statistic.FromRatio((bought - entry) / entry) : null),
                 fill));
         }
 

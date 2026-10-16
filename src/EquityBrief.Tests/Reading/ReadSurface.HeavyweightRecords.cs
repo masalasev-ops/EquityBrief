@@ -20,13 +20,17 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "The setup families, the sector heavyweights' registered rules among them, each holding's edge its percent return less its size cut's and counted in the block of the session it ended on"),
     ];
 
-    // One holding a rule's book kept, ended or not, with its result and its size cut's return where it ended.
-    static void HeldByRule(TemporaryStore store, string candidate, string ticker, string entered, string? ended, double? result, double? cut) =>
+    // One holding a rule's book kept, ended or not, with its result and its size cut's return where it ended, and its
+    // fill at its own buy.
+    static void HeldByRule(TemporaryStore store, string candidate, string ticker, string entered, string? ended, double? result, double? cut)
+    {
         store.Execute(
             "INSERT INTO heavyweight_rule_holding (candidate, ticker, entered_on, sector, company, entry_close, growth, cut, through, ended_on, exit_close, reason, result, cut_return) VALUES " +
             $"('{Doubled(candidate)}', '{ticker}', '{entered}', 'Energy', 'CIK 0000000101', '100', 1.0, '[]', '{ended ?? entered}', " +
             $"{(ended is null ? "NULL" : $"'{ended}'")}, {(ended is null ? "NULL" : "'101'")}, {(ended is null ? "NULL" : "'no longer the leader'")}, " +
             $"{(result is { } made ? made.ToString(CultureInfo.InvariantCulture) : "NULL")}, {(cut is { } its ? its.ToString(CultureInfo.InvariantCulture) : "NULL")});");
+        FillAtTheirOwnBuy(store);
+    }
 
     [Fact]
     public async Task EachRegisteredHeavyweightsRuleIsReadOnTheRunPageOverItsOwnBookByTheSessionEachHoldingEnded()

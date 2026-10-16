@@ -227,7 +227,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheRulesOwnPicksOnTheNightsTheOperatorTookOneAreFollowedFromThePlansBuyBesideTheRecord()
+    public async Task TheRulesOwnPicksOnTheNightsTheOperatorTookOneAreBoughtAtTheSameOpenBesideTheRecord()
     {
         using var store = new TemporaryStore().Migrated();
 
@@ -287,11 +287,12 @@ public partial class FixtureExpectations
         // nineteen ended, so no average; Q's night is not one the operator took a trade on.
         Assert.Equal("1 0 1 0 - | 1 20 12 7 19 -", await Record());
 
-        // P19 closes at 56.10 on 2026-10-06 and the twentieth ends. From the plan's buy of 50.00 with a risk of 3.00, a
-        // win is (56.10 - 50.00) / 3.00 and a loss (46.90 - 50.00) / 3.00: (13 x 6.10 - 7 x 3.10) / (20 x 3.00), 0.9600.
-        // Bought at the next session's open of 50.60, as the operator's fill was, it would read 0.6333.
+        // P19 closes at 56.10 on 2026-10-06 and the twentieth ends. From 19.10 each pick is bought at the next session's
+        // open of 50.60, as the operator's fill was, its risk the 3.60 down to its stop as the operator's is read: a win is
+        // (56.10 - 50.60) / 3.60 and a loss (46.90 - 50.60) / 3.60, (13 x 5.50 - 7 x 3.70) / (20 x 3.60), 0.6333; from the
+        // plan's buy of 50.00 it read 0.9600.
         Bar("P19", "2026-10-06", "52", "56.10");
 
-        Assert.Equal("1 0 1 0 - | 1 20 13 7 20 0.9600", await Record());
+        Assert.Equal("1 0 1 0 - | 1 20 13 7 20 0.6333", await Record());
     }
 }

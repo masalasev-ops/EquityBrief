@@ -287,6 +287,7 @@ public partial class ReadSurface
             PickBar(store, ticker, session, close);
         }
 
+        FillAtTheirOwnBuy(store);
         AccountFile.Write(store.Root, new AccountSettings(10_000m, 1.5m, 1m));
 
         var trades = Strings(store, "SELECT ticker || session_date FROM family_trade ORDER BY rowid;");

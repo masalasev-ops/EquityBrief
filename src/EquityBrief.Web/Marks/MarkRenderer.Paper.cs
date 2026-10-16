@@ -57,7 +57,8 @@ public sealed record PaperTradeView(string Ticker, DateOnly Bought, decimal Buy,
 public sealed partial class MarkRenderer
 {
     // The line every page about paper accounts carries about entries.
-    public const string EntryPriceLine = "Entries are priced at the close of the night that listed them; a trade placed after the signal would fill at the next session's open.";
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    public const string EntryPriceLine = "Each entry is bought at the open of the session after the night that listed it.";
 
     // The line beneath the table saying how a variant is adopted.
     public const string AdoptedLine = "A variant is adopted only through the monthly test and your approval on the Loop page.";

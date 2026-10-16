@@ -231,7 +231,7 @@ public static class PicksScreen
         // From 19.10 a trade is bought at its fill at the next session's open: its result is the fill's, in the risk its
         // close put up, its move and the price line are read from the fill, and the share reaching its target and the
         // break-even it is held to stay its plan's, which the fill does not move. A trade waiting on its next session
-        // draws its plan's buy and says it buys at the next open.
+        // draws its plan's buy and says it buys at the next open; one with no outcome row draws its plan's buy alone.
         // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
         var buy = row.Fill ?? row.Entry;
         double? returned = finished && row.ReturnPct is { } made && row.ListingClose is { } close && close > 0 && row.Fill is { } fill && fill > 0
@@ -268,7 +268,7 @@ public static class PicksScreen
             Planned: row.Entry,
             Past: row.Past,
             Unfilled: row.Unfilled,
-            Waiting: row.Fill is null && row.Unfilled is null,
+            Waiting: row.OutcomeStored && row.Fill is null && row.Unfilled is null,
             FilledOn: row.FilledOn);
     }
 }

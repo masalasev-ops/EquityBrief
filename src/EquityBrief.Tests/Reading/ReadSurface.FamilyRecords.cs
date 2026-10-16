@@ -47,12 +47,15 @@ public partial class ReadSurface
 
     static string Doubled(string text) => text.Replace("'", "''", StringComparison.Ordinal);
 
-    // One trade a rule kept, ended or not, with its result and benchmark where written.
-    static void Kept(TemporaryStore store, string candidate, string family, string ticker, string session, string? endedOn, double? result, double? benchmark) =>
+    // One trade a rule kept, ended or not, with its result and benchmark where written, and its fill at its own buy.
+    static void Kept(TemporaryStore store, string candidate, string family, string ticker, string session, string? endedOn, double? result, double? benchmark)
+    {
         store.Execute(
             "INSERT INTO family_trade (candidate, ticker, session_date, family, place, entry, stop, target, risk_moves, reward_to_risk, cap, ended_on, result, benchmark, members) VALUES " +
             $"('{candidate}', '{ticker}', '{session}', '{family}', 1, '100', '97', NULL, 1.5, NULL, 63, " +
             $"{(endedOn is null ? "NULL" : $"'{endedOn}'")}, {Number(result)}, {Number(benchmark)}, {(benchmark is null ? "NULL" : "400")});");
+        FillAtTheirOwnBuy(store);
+    }
 
     static string Number(double? value) => value is { } held ? held.ToString(CultureInfo.InvariantCulture) : "NULL";
 

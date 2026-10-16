@@ -4,6 +4,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Returns;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -11,8 +12,9 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Worker.Fills;
 
 // What the fill step did with one table's trades: how many it priced at the open, how many hold no next session or no
-// open on it, how many still wait on their next session, and how many it left as an earlier night priced them.
-public sealed record FillCount(string Source, int Filled, int NoNextSession, int NoOpen, int Waiting, int Standing);
+// open on it, how many still wait on their next session, how many it left as an earlier night priced them, and how many
+// whose plan put up no risk at its close.
+public sealed record FillCount(string Source, int Filled, int NoNextSession, int NoOpen, int Waiting, int Standing, int NoRisk = 0);
 
 public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
 {
@@ -25,6 +27,8 @@ public sealed record FillOutcome(IReadOnlyList<FillCount> Sources)
     public int Waiting => Sources.Sum(one => one.Waiting);
 
     public int Standing => Sources.Sum(one => one.Standing);
+
+    public int NoRisk => Sources.Sum(one => one.NoRisk);
 }
 
 // The fill step. A trade is bought at the open of the session after the night that listed it, and every stored trade's
@@ -120,10 +124,14 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
     const string IndexRuleBooks = "SELECT index_code, candidate, ticker, entered_on, entry_close, result, cut_return, cut FROM index_heavyweight_rule_holding;";
 
     // The S&P 500 page list's scored plans: each a plan bought at the listing's close, its risk a share of that close and
-    // its result its return over that risk, its target where its break-even states one.
-    const string ScoredPlans = @"
+    // its result its return over that risk, its target where its break-even states one. The filler writes a plan's risk
+    // once the plan resolves, so a plan the list traded that is still open is read with none; the market's two session
+    // horizons and the twenty-session context carry no plan, and a reason's setup is read only where its risk is written.
+    static readonly string ScoredPlans = $@"
         SELECT horizon, ticker, session_date, return_pct, planned_risk, break_even
-        FROM forward_return WHERE planned_risk IS NOT NULL AND planned_risk > 0;";
+        FROM forward_return
+        WHERE planned_risk > 0
+           OR horizon NOT IN ('{ForwardReturnSeries.FiveSessions}', '{ForwardReturnSeries.TwentyOneSessions}', '{ForwardReturnSeries.Setup}', '{ForwardReturnSeries.SwingTwenty}', '{ForwardReturnSeries.ClearTwenty}');";
 
     const string Members = "SELECT index_code, ticker, joined, \"left\" FROM membership;";
 
@@ -167,7 +175,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             .Distinct()
             .ToDictionary(session => session, session => NextOf(calendar, session));
         var read = await PricesAsync(connection, due, next, cancellation);
-        var counts = Sources.ToDictionary(source => source, _ => new int[5], StringComparer.Ordinal);
+        var counts = Sources.ToDictionary(source => source, _ => new int[6], StringComparer.Ordinal);
 
         foreach (var trade in trades)
         {
@@ -193,7 +201,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
             var (fill, reason) = Price(trade, on, read);
 
-            counts[trade.Source][fill is not null ? 0 : reason == TradeFills.NoOpen ? 2 : 1]++;
+            counts[trade.Source][fill is not null ? 0 : reason == TradeFills.NoOpen ? 2 : reason == TradeFills.NoRisk ? 5 : 1]++;
 
             await ExecuteAsync(connection, transaction, UpsertFill,
             [
@@ -212,7 +220,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
             written++;
         }
 
-        var outcome = new FillOutcome([.. Sources.Select(source => new FillCount(source, counts[source][0], counts[source][1], counts[source][2], counts[source][3], counts[source][4]))]);
+        var outcome = new FillOutcome([.. Sources.Select(source => new FillCount(source, counts[source][0], counts[source][1], counts[source][2], counts[source][3], counts[source][4], counts[source][5]))]);
 
         await ExecuteAsync(connection, transaction, AppendRun,
         [
@@ -225,10 +233,10 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
         return outcome;
     }
 
-    // The step's row in words: the trades priced at the open, those holding no next session or no open on it, those
-    // waiting on their next session, and those an earlier night priced in full.
+    // The step's row in words: the trades priced at the open, those holding no next session or no open on it, those whose
+    // plan put up no risk, those waiting on their next session, and those an earlier night priced in full.
     public static string Detail(FillOutcome outcome) => FormattableString.Invariant(
-        $"{outcome.Filled} trade(s) priced at the next session's open, {outcome.NoNextSession} whose stock holds no bar on its next session, {outcome.NoOpen} with no open on it, {outcome.Waiting} buying at the next open, {outcome.Standing} standing as priced before");
+        $"{outcome.Filled} trade(s) priced at the next session's open, {outcome.NoNextSession} whose stock holds no bar on its next session, {outcome.NoOpen} with no open on it, {outcome.NoRisk} whose plan put up no risk at its close, {outcome.Waiting} buying at the next open, {outcome.Standing} standing as priced before");
 
     // A trade is priced again while it holds no row, or while its own figures have arrived since its row was written: a
     // result, or a benchmark, that its row holds none of.
@@ -293,7 +301,7 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
                     : new FillMember(false, 0, 0, null))
                 .ToArray();
 
-            return (TradeFills.Holding(on, trade.Entry, open, trade.Result, trade.Benchmark, cut), null);
+            return Priced(TradeFills.Holding(on, trade.Entry, open, trade.Result, trade.Benchmark, cut));
         }
 
         // The stop's distance in typical moves: the trade's own where its table keeps one, else read off its stock's
@@ -310,8 +318,11 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
                     : new FillMember(false, 0, 0, null))
                 .ToArray();
 
-        return (TradeFills.Swing(on, trade.Entry, trade.Stop ?? trade.Entry, trade.Target, open, trade.Result, trade.Benchmark, members), null);
+        return Priced(TradeFills.Swing(on, trade.Entry, trade.Stop, trade.Target, open, trade.Result, trade.Benchmark, members));
     }
+
+    // An open held and no fill is a plan that put up no risk at its close.
+    static (TradeFill? Fill, string? Reason) Priced(TradeFill? fill) => fill is null ? (null, TradeFills.NoRisk) : (fill, null);
 
     static (string, string, string, string, DateOnly) Key(StoredTrade trade) => (trade.Source, trade.Index, trade.Owner, trade.Ticker, trade.Session);
 
@@ -369,14 +380,20 @@ public sealed class TradeFiller(IClock clock, string databaseFile) : IComponent
 
         // A scored plan is stated as shares of its close, read here at a close of one and priced at the night's own close
         // as the bars hold it: its stop its risk's share under it, its target the reward its break-even states over that
-        // risk, and its result its return over its risk.
+        // risk, and its result its return over its risk. One whose risk is not written yet has no stop and no result.
         await ReadAsync(ScoredPlans, reader =>
         {
-            var risk = reader.GetDouble(4) / 100;
-            var breakEven = Real(reader, 5) is { } share && share > 0 && share < 100 ? share / 100 : (double?)null;
+            if (Real(reader, 4) is not { } planned || !(planned > 0))
+            {
+                return new StoredTrade("forward_return", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
+                    1, null, null, null, null, null, null, Relative: true);
+            }
+
+            var risk = planned / 100;
+            double? target = Real(reader, 5) is { } share && share > 0 && share < 100 ? 1 + (risk * (1 - (share / 100)) / (share / 100)) : null;
 
             return new StoredTrade("forward_return", LargeIndex, reader.GetString(0), reader.GetString(1), Date(reader.GetString(2)),
-                1, 1 - risk, breakEven is { } even ? 1 + (risk * (1 - even) / even) : null, null,
+                1, 1 - risk, target, null,
                 Real(reader, 3) is { } returned ? returned / 100 / risk : null, null, null, Relative: true);
         });
 

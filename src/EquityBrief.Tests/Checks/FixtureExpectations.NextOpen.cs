@@ -51,9 +51,11 @@ public partial class FixtureExpectations
         Assert.Equal(1.8, atOpen.Result!.Value, 12);
         Assert.Equal((2, SetupEnds.Target), (atOpen.Sessions, atOpen.End));
 
-        // An open over the target or under the stop buys nothing.
-        Assert.Null(NextOpenCheck.Replay(closes, 0, fixedPlan, 111));
-        Assert.Null(NextOpenCheck.Replay(closes, 0, fixedPlan, 94));
+        // From the ruling of 2026-10-15 an open over the target or under the stop is still bought and ends where the plan
+        // ends: at 111 it sells at the same 111, nothing; at 94 it sells at 111 too, (111 - 94) / 5. An open not held buys
+        // nothing.
+        Assert.Equal(0.0, NextOpenCheck.Replay(closes, 0, fixedPlan, 111)!.Result!.Value, 12);
+        Assert.Equal(3.4, NextOpenCheck.Replay(closes, 0, fixedPlan, 94)!.Result!.Value, 12);
         Assert.Null(NextOpenCheck.Replay(closes, 0, fixedPlan, null));
 
         // A trail of 3 under the highest close: 106 lifts the stop to 103, 104 holds over it, and 99 sells, the third
@@ -67,14 +69,15 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheBenchmarkAtTheNextOpenEntersEachMemberAtItsOwnOpenAndLeavesOutAnOpenPastItsRange()
+    public void TheBenchmarkAtTheNextOpenEntersEachMemberAtItsOwnOpenAndBuysOnePastItsRange()
     {
         // A plan of 2 moves under the buy and a target at 2 risks, on members whose move is 2: each stop 4 under its close
         // and each target 8 over it.
         var plan = new SetupPlan(2, 2, null, 10);
 
         // The first opens at 102 inside 96 to 108 and sells at 109, (109 - 102) / 4; the second opens at 45 under its stop
-        // of 46 and the third at 89 over its target of 88, neither entered; the fourth's prices stopped on its session.
+        // of 46 and sells at 45, nothing; the third opens at 89 over its target of 88 and sells at 90, (90 - 89) / 4; the
+        // fourth's prices stopped on its session. The ruling of 2026-10-15 buys a member past its range as any other.
         (double[] Closes, double[] Opens, int Bar, double Move, bool Stopped)[] members =
         [
             ([100, 103, 109], [100, 102, 109], 0, 2, false),
@@ -85,12 +88,12 @@ public partial class FixtureExpectations
 
         var reading = NextOpenCheck.Benchmark(members, NextOpenDay, plan);
 
-        Assert.Equal((1.75, 1, 2, 1, true), (reading.Mean!.Value, reading.Ended, reading.Entered, reading.Stopped, reading.Settled));
+        Assert.Equal((Math.Round((1.75 + 0 + 0.25) / 3, 12), 3, 4, 1, true), (Math.Round(reading.Mean!.Value, 12), reading.Ended, reading.Entered, reading.Stopped, reading.Settled));
 
         // A member entered inside its range whose path is still open keeps the benchmark unsettled.
         var open = NextOpenCheck.Benchmark([.. members, ([40, 41], [40, 40.5], 0, 2, false)], NextOpenDay, plan);
 
-        Assert.Equal((1.75, 1, 3, false), (open.Mean!.Value, open.Ended, open.Entered, open.Settled));
+        Assert.Equal((3, 5, false), (open.Ended, open.Entered, open.Settled));
 
         // Bought at the close, the first two end and the third gaps over its target before it starts: (109 - 100) / 4,
         // (45 - 50) / 4 and (90 - 80) / 4 over the three.
@@ -121,7 +124,7 @@ public partial class FixtureExpectations
 
         var reading = NextOpenCheck.HeavyweightCut(cut, 2);
 
-        Assert.Equal(((0.16 + 0.24) / 2, 2, 3, 1, true), (reading.Mean!.Value, reading.Ended, reading.Entered, reading.Stopped, reading.Settled));
+        Assert.Equal((0.2, 2, 3, 1, true), (Math.Round(reading.Mean!.Value, 12), reading.Ended, reading.Entered, reading.Stopped, reading.Settled));
 
         // A member still open whose prices did not stop keeps it unsettled.
         Assert.False(NextOpenCheck.HeavyweightCut([.. cut, ([10, 11], [10, 11], 0, false)], 2).Settled);
@@ -207,11 +210,13 @@ public partial class FixtureExpectations
             }
         }
 
-        foreach (var (ticker, entry, stop, target, result, edge, end) in new[] { ("AAA", 100, 96, 108, 2.25, 1.75, "target"), ("BBB", 50, 46, 58, -1.25, -1.75, "stop") })
+        // From 19.10 the ledger stores each setup's figures at the open: AAA bought at 102 makes 1.75, BBB bought at 45 under
+        // its stop sells at 45 for nothing, the benchmark their mean 0.875.
+        foreach (var (ticker, entry, stop, target, result, edge, end) in new[] { ("AAA", 100, 96, 108, 1.75, 0.875, "target"), ("BBB", 50, 46, 58, 0.0, -0.875, "stop") })
         {
             store.Execute(
                 "INSERT INTO setup (index_code, family, ticker, session_date, rule, live_pass, entry, stop, target, cap, result, benchmark, edge, sessions, end, ended_on, settled, source, pin) "
-                + $"VALUES ('GSPC', 'pullback', '{ticker}', '{Stamp(20)}', 'the pullback', 1, '{entry}', '{stop}', '{target}', 10, {result.ToString(System.Globalization.CultureInfo.InvariantCulture)}, 0.5, {edge.ToString(System.Globalization.CultureInfo.InvariantCulture)}, 2, '{end}', '{Stamp(22)}', 1, 'history', '{LedgerReadings.Version}');");
+                + $"VALUES ('GSPC', 'pullback', '{ticker}', '{Stamp(20)}', 'the pullback', 1, '{entry}', '{stop}', '{target}', 10, {result.ToString("R", System.Globalization.CultureInfo.InvariantCulture)}, 0.875, {edge.ToString("R", System.Globalization.CultureInfo.InvariantCulture)}, 2, '{end}', '{Stamp(22)}', 1, 'history', '{LedgerReadings.Version}');");
         }
 
         var before = Query(store, "SELECT COUNT(*) FROM run_log;").Single();
@@ -226,11 +231,11 @@ public partial class FixtureExpectations
 
         Assert.Contains($"{SetupLedger.NextOpenStage}: {line}", said, StringComparison.Ordinal);
         Assert.Contains($"{SetupLedger.NextOpenStage}: {line.Replace("every year", "2026", StringComparison.Ordinal)}", said, StringComparison.Ordinal);
-        Assert.Contains($"2 of 2 settled setup(s) on the S&P 500 priced over the history read through {Stamp(29)}, 0 whose stock or session the history does not hold; 2 of 2 results at the close worked again as stored to a millionth and 2 to a thousandth, and 2 of the 2 stored edges to a millionth and 2 to a thousandth; nothing written", said, StringComparison.Ordinal);
+        Assert.Contains($"2 of 2 settled setup(s) on the S&P 500 priced over the history read through {Stamp(29)}, 0 whose stock or session the history does not hold; 2 of 2 results at the open worked again as stored to a millionth and 2 to a thousandth, and 2 of the 2 stored edges to a millionth and 2 to a thousandth; nothing written", said, StringComparison.Ordinal);
 
         // It writes nothing: no run log row, and every setup as it was.
         Assert.Equal(before, Query(store, "SELECT COUNT(*) FROM run_log;").Single());
-        Assert.Equal(["AAA|2.25|1.75", "BBB|-1.25|-1.75"], Query(store, "SELECT ticker || '|' || result || '|' || edge FROM setup ORDER BY ticker;"));
+        Assert.Equal(["AAA|1.75|0.875", "BBB|0.0|-0.875"], Query(store, "SELECT ticker || '|' || result || '|' || edge FROM setup ORDER BY ticker;"));
 
         // Over the fixture's replayed store every setup the night appended is open on its night, so none is priced.
         using var replayed = await FixtureReplay.ReplayedAsync();
