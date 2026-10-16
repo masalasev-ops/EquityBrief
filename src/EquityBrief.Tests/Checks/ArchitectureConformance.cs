@@ -1434,7 +1434,8 @@ public partial class ArchitectureConformance
         // 220 at 19.8: Tonight's card of the stocks one gate short across every setup.
         // 231 at 19.11: the chart page's ten rows and the Run page's time of every page.
         // 232 at 19.12: the Ledger page's table of which readings go with winners.
-        Assert.Equal(232, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 233 at 19.13: the report's Insiders region.
+        Assert.Equal(233, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1581,7 +1582,8 @@ public partial class ArchitectureConformance
         // 621 at 19.8: Tonight's card of the stocks one gate short.
         // 632 at 19.11: the chart page's ten rows and the Run page's time of every page.
         // 633 at 19.12: the Ledger page's table of which readings go with winners.
-        Assert.Equal(633, inDocument.Length);
+        // 634 at 19.13: the report's Insiders region.
+        Assert.Equal(634, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

@@ -224,6 +224,11 @@ public class PriceStorageForm
         // member readings' cost in per cent, or the company value the published table reads in, its round trip in dollars a
         // share out; each through `Statistic.ToPrice`. They are what every paper account's trade is priced at.
         // see: A paper account draws its test years verdict and its record since registration apart, and never merges them
+        //
+        // `ValuationReading.OverValue` joined it at 19.13: the insiders' dollars on a session in, those dollars over the
+        // company's value as the valuation reading works it out, through `Yield` and so through `Statistic.FromRatio`. It
+        // is what the insiders' net buying and unplanned selling are read in.
+        // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -243,6 +248,7 @@ public class PriceStorageForm
                 "TradeCost.cs: InRisk",
                 "TrailingExit.cs: RiskPct",
                 "UniverseScreen.cs: Distance",
+                "ValuationReading.cs: OverValue",
                 "ValuationReading.cs: Yield",
             ],
             crossings);

@@ -20,4 +20,22 @@ public interface IFilingsRefreshFeed
         string cik,
         IReadOnlyList<string> concepts,
         CancellationToken cancellation = default);
+
+    // From 19.13 one insider's Form 4 or 4/A whole, as the archive serves its submission under the filer its index line
+    // names, none where it holds no such filing.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default);
+}
+
+// The SEC's quarterly insider transactions data sets: the page listing every quarter's file and one quarter's file
+// whole, each one request, free and keyless; none where the archive holds no such document, and a refusal throws.
+// see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+public interface IInsiderDataSetFeed
+{
+    // The documents asked for, each one request.
+    int Documents { get; }
+
+    Task<string?> ListingAsync(CancellationToken cancellation = default);
+
+    Task<byte[]?> QuarterAsync(string path, CancellationToken cancellation = default);
 }

@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -45,8 +46,9 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
-        string ticker) =>
-        Read(cut, income, sectors, facts, ticker) is { } read
+        string ticker,
+        LedgerInsiders? insiders = null) =>
+        Read(cut, income, sectors, facts, ticker, insiders) is { } read
             ? LedgerSetups.Readings(index, read.Name, read.Series[read.Name], Closes(read.Series[read.Name]), read.Bar, read.Sessions[read.At], read.Members, read.Calendar, read.At, market, read.Context)
             : null;
 
@@ -62,9 +64,10 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
         string family,
-        string ticker)
+        string ticker,
+        LedgerInsiders? insiders = null)
     {
-        if (Read(cut, income, sectors, facts, ticker) is not { } read)
+        if (Read(cut, income, sectors, facts, ticker, insiders) is not { } read)
         {
             return (false, null);
         }
@@ -89,7 +92,8 @@ public static class LedgerPointInTime
         IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income,
         IReadOnlyDictionary<string, string?> sectors,
         IReadOnlyDictionary<string, IReadOnlyList<FiledFactRow>> facts,
-        string ticker)
+        string ticker,
+        LedgerInsiders? insiders)
     {
         var calendar = cut.Sessions;
 
@@ -121,7 +125,12 @@ public static class LedgerPointInTime
         var members = SweepBenchmark.On(series, calendar.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
 
-        return new CutRead(series, SweepColumns.Sessions(series, calendar), members, calendar, at, name, bar, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
+        return new CutRead(series, SweepColumns.Sessions(series, calendar), members, calendar, at, name, bar, new LedgerContext(income, sectors, highs, lows, facts)
+        {
+            Ranks = new FactorRanks(series, members),
+            Insiders = insiders?.Rows,
+            InsiderSpans = insiders?.Spans ?? InsiderCoverage.None,
+        });
     }
 
     static double[] Closes(SweepSeries series) => [.. series.Bars.Select(held => Statistic.FromPrice(held.Close))];

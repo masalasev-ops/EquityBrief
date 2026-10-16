@@ -1,0 +1,19 @@
+# The remedy of 19.13 (insider trades, read from the SEC's Form 4 filings), as its PROGRESS entry prints it. Migration 96
+# creates the insiders' two tables and adds the setups' four insider readings, every row kept in place. The insiders'
+# history is then read from the SEC's quarterly data sets from 2018q1 through the newest quarter posted, one request a
+# quarter and one for the page listing them, and the days after it through the newest day the filings refresh has read,
+# each Form 4 and 4/A of a member's filer asked of the archive at its pace, the asks and the time of each day printed;
+# then 2026q3, which both read, is compared filing by filing and nothing written. The ledger's night step then runs by
+# hand over the newest night the store holds, so that night's setups and members' readings carry the insiders' four. Each
+# index's ledger history is then built again by hand with tools/ledger-build.ps1 --index <GSPC, MID or SML> --from
+# 2019-01-02 --through 2026-10-05 --again, which builds main's own commit from a clean copy and so is not a worker command
+# this file can run, checked with ledger-check --index <GSPC, MID or SML>, and worked again with loop-links --index
+# <GSPC, MID or SML> so the Ledger page draws the insiders' readings among the rest. No source a rule's version pins
+# moves, so nothing is registered again. Free and keyless requests of the SEC's archive alone; no request to the provider
+# and no model call. Run from main after the merge and before the night, when no night is running, and restart the read
+# surface after it.
+migrate
+insiders-history
+insiders --from 2026-10-01
+insiders --from 2026-07-01 --through 2026-09-30 --compare
+ledger-night

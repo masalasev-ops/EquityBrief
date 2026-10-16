@@ -5,6 +5,7 @@ using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Insiders;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Ledger;
@@ -15,7 +16,8 @@ public sealed record FilingDayRead(DateOnly Day, bool Posted, int Filings, int M
 
 // What one refresh did: the days it read, the first day the archive had not posted where it stopped, the members it
 // refreshed, the facts it stored, the documents it asked for of each kind, the members a limit left and the archive's
-// refusal where one stopped it.
+// refusal where one stopped it; from 19.13 the insiders' filings it asked for, the transactions it stored and the filings
+// it could not read with why.
 public sealed record FilingsOutcome(
     IReadOnlyList<FilingDayRead> Days,
     DateOnly? NotYetPosted,
@@ -26,9 +28,16 @@ public sealed record FilingsOutcome(
     int FactsAsked,
     int LeftAtTheLimit,
     string? Refusal,
-    double Seconds)
+    double Seconds,
+    int Ownerships = 0,
+    int Trades = 0,
+    IReadOnlyList<string>? Unread = null,
+    DateOnly? InsidersLeftOn = null)
 {
-    public int Documents => Indexes + Pages + FactsAsked;
+    public int Documents => Indexes + Pages + FactsAsked + Ownerships;
+
+    // Whether a refusal or the limit left anything the refresh set out to read.
+    public bool Whole => Refusal is null && LeftAtTheLimit == 0 && InsidersLeftOn is null;
 }
 
 // The filings refresh. After the close and the quarters fetch, it reads the archive's daily index for each weekday
@@ -40,7 +49,10 @@ public sealed record FilingsOutcome(
 // own row apart from the provider's requests. A day the archive posted no index for before the session's own is a
 // holiday and read as such; the session's own day not yet posted stops the read, which the next night takes up. A
 // refusal or the limit leaves the facts stored as they were, the days not finished unread, and the stage's row naming
-// why. The whole refresh asks every filer the store knows once, which the monthly run's catch-all repeats.
+// why. The whole refresh asks every filer the store knows once, which the monthly run's catch-all repeats. From 19.13
+// each day's Form 4 and 4/A filings of the members' filers are read after its facts by the insiders' reader, one request
+// a filing under the same limit, and a day is recorded read once both are done; a filing stored already is not asked
+// again, so a day the limit stopped is read again from where it stopped.
 // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
 public sealed class FilingsRefresher : IComponent
@@ -138,6 +150,15 @@ public sealed class FilingsRefresher : IComponent
         this.pause = pause ?? Task.Delay;
     }
 
+    // The newest day of the archive's index the refresh has read, none where it has read none.
+    public static async Task<DateOnly?> NewestDayReadAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await ScalarDateAsync(connection, NewestDay, cancellation);
+    }
+
     // The weekdays a refresh reads: from the day after the newest it read, or the week before the session where it
     // has read none, through the session's own day, at most the days a night reads.
     public static IReadOnlyList<DateOnly> DaysToRead(DateOnly? newestRead, DateOnly session)
@@ -210,9 +231,13 @@ public sealed class FilingsRefresher : IComponent
 
         var days = new List<FilingDayRead>();
         var refreshed = new List<string>();
-        var (facts, indexes, pages, asked, left) = (0, 0, 0, 0, 0);
+        var unread = new List<string>();
+        var (facts, indexes, pages, asked, left, ownerships, trades) = (0, 0, 0, 0, 0, 0, 0);
         DateOnly? notYetPosted = null;
+        DateOnly? insidersLeftOn = null;
         string? refusal = null;
+
+        Task Pace(CancellationToken token) => pause(TimeSpan.FromSeconds(1.0 / RequestsASecond), token);
 
         try
         {
@@ -234,6 +259,7 @@ public sealed class FilingsRefresher : IComponent
                     if (day < session)
                     {
                         await DayAsync(connection, new FilingDayRead(day, false, 0, 0, 0), runId, cancellation);
+                        await InsiderTrades.CoverAsync(connection, null, day, day, InsiderTrades.FilingSource, runId, clock.UtcNow, 0, 0, cancellation);
                         days.Add(new FilingDayRead(day, false, 0, 0, 0));
 
                         continue;
@@ -275,9 +301,24 @@ public sealed class FilingsRefresher : IComponent
                     break;
                 }
 
+                // The day's Form 4 and 4/A filings of the members' filers, after its facts and under the same limit.
+                var insiders = await InsiderTrades.DayAsync(connection, feed, day, filings, memberFilers, () => watch.Elapsed >= limit, Pace, runId, cancellation);
+
+                ownerships += insiders.Asked;
+                trades += insiders.Stored;
+                unread.AddRange(insiders.Unread);
+
+                if (!insiders.Finished)
+                {
+                    insidersLeftOn = day;
+
+                    break;
+                }
+
                 var dayRead = new FilingDayRead(day, true, filings.Count, members, dayRefreshed);
 
                 await DayAsync(connection, dayRead, runId, cancellation);
+                await InsiderTrades.CoverAsync(connection, null, day, day, InsiderTrades.FilingSource, runId, clock.UtcNow, insiders.Filings, insiders.Stored, cancellation);
                 days.Add(dayRead);
             }
         }
@@ -296,7 +337,11 @@ public sealed class FilingsRefresher : IComponent
             asked,
             left,
             refusal,
-            watch.Elapsed.TotalSeconds);
+            watch.Elapsed.TotalSeconds,
+            ownerships,
+            trades,
+            unread,
+            insidersLeftOn);
 
         await RecordAsync(connection, runId, Stage, startedAt, outcome, Detail(outcome), cancellation);
 
@@ -377,9 +422,12 @@ public sealed class FilingsRefresher : IComponent
 
         return span
             + FormattableString.Invariant($"; {posted.Sum(day => day.Members)} member filer(s) setting a refresh off, {outcome.Refreshed.Count} member(s) refreshed, {outcome.Facts} fact(s) stored")
-            + FormattableString.Invariant($"; {outcome.Documents} document(s) asked of the archive: {outcome.Indexes} index(es), {outcome.Pages} 8-K page(s) and {outcome.FactsAsked} filer(s)' facts")
+            + FormattableString.Invariant($"; {outcome.Trades} insider transaction(s) stored")
+            + FormattableString.Invariant($"; {outcome.Documents} document(s) asked of the archive: {outcome.Indexes} index(es), {outcome.Pages} 8-K page(s), {outcome.FactsAsked} filer(s)' facts and {outcome.Ownerships} Form 4 filing(s)")
             + (outcome.NotYetPosted is { } waiting ? $"; {Stamp(waiting)} not yet posted, read on a later night" : string.Empty)
             + (outcome.LeftAtTheLimit > 0 ? FormattableString.Invariant($"; {outcome.LeftAtTheLimit} member(s) left at the step's limit, their day read again on the next night") : string.Empty)
+            + (outcome.InsidersLeftOn is { } stopped ? $"; the Form 4 filings of {Stamp(stopped)} left at the step's limit, read on the next night from the first not stored" : string.Empty)
+            + (outcome.Unread is { Count: > 0 } unread ? FormattableString.Invariant($"; {unread.Count} Form 4 filing(s) not read, none of their rows stored: ") + string.Join("; ", unread.Take(5)) : string.Empty)
             + (outcome.Refusal is { } refused ? "; stopped on the archive's refusal, facts left as they were: " + refused : string.Empty);
     }
 
@@ -458,7 +506,7 @@ public sealed class FilingsRefresher : IComponent
         command.Parameters.AddWithValue("$stage", stage);
         command.Parameters.AddWithValue("$started_at", Instant(startedAt));
         command.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
-        command.Parameters.AddWithValue("$outcome", outcome.Refusal is null && outcome.LeftAtTheLimit == 0 ? "ok" : "partial");
+        command.Parameters.AddWithValue("$outcome", outcome.Whole ? "ok" : "partial");
         command.Parameters.AddWithValue("$rows_written", outcome.Facts);
         command.Parameters.AddWithValue("$network_requests", outcome.Documents);
         command.Parameters.AddWithValue("$detail", detail);

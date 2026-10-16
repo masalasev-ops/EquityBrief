@@ -3,6 +3,7 @@ using System.Globalization;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Providers;
@@ -64,13 +65,15 @@ public sealed partial class SetupLedger : IComponent
             new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.MemberReading, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.InsiderTrade, Touch.Read),
+            new StoreTouch(Store.InsiderRead, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.IndexFamilyPick, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.SetupNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.LedgerSummary, Touch.Insert | Touch.Delete),
-            new StoreTouch(Store.LedgerReading, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.LedgerReading, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -110,12 +113,39 @@ public sealed partial class SetupLedger : IComponent
 
     const string FactsOfFiler = "SELECT concept, period_start, period_end, dollars, filed, form, accession FROM filed_fact WHERE cik = $cik;";
 
+    // From 19.13 the insiders' transactions the four readings read, filed on or after a day: every open-market purchase
+    // and sale, and every row of an amendment, which may stand in for an original's; and the spans the insider history
+    // holds.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    const string InsiderRowsFrom = @"
+        SELECT cik, accession, filed, form, amends, original_filed, owner_ciks, officer, sequence, traded, code, shares, price, acquired, planned, direct
+        FROM insider_trade
+        WHERE filed >= $from AND (code IN ('P', 'S') OR form = '4/A');
+    ";
+
+    const string InsiderSpansRead = "SELECT first_day, last_day FROM insider_read;";
+
     const string BusinessAgain = @"
         UPDATE setup
         SET revenue_growth = $revenue_growth, growth_change = $growth_change, gross_margin_change = $gross_margin_change,
             operating_margin_change = $operating_margin_change, cash_over_income = $cash_over_income, value_place = $value_place
         WHERE ticker = $ticker AND session_date = $session AND source = $source;
     ";
+
+    // From 19.13 the four insider readings of the night's setups and its members' readings, read again once the filings
+    // refresh has stored the session before's filings.
+    const string InsidersAgain = @"
+        UPDATE setup
+        SET insider_net_buy = $insider_net_buy, insider_buyers = $insider_buyers, insider_officer_buy = $insider_officer_buy,
+            insider_unplanned_sale = $insider_unplanned_sale
+        WHERE ticker = $ticker AND session_date = $session AND source = $source;
+    ";
+
+    const string NightsSetupTickers = "SELECT DISTINCT ticker FROM setup WHERE session_date = $session AND source = $source;";
+
+    const string NightsReadings = "SELECT index_code, ticker, readings FROM ledger_reading WHERE session_date = $session;";
+
+    const string ReadingsAgain = "UPDATE ledger_reading SET readings = $readings WHERE index_code = $index AND ticker = $ticker AND session_date = $session;";
 
     // A member's closes on the night, which the valuation reading reads again once the filings refresh has stored its facts.
     const string StoredCloses = "SELECT session_date, close, raw_close FROM bar WHERE ticker = $ticker AND session_date <= $night ORDER BY session_date;";
@@ -272,8 +302,14 @@ public sealed partial class SetupLedger : IComponent
         var sectors = await SectorsAsync(connection, Sectors, names, cancellation);
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
+        var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
         var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-        var context = new LedgerContext(income, sectors, highs, lows, facts, before) { Ranks = new FactorRanks(inputs.Series, inputs.Members) };
+        var context = new LedgerContext(income, sectors, highs, lows, facts, before)
+        {
+            Ranks = new FactorRanks(inputs.Series, inputs.Members),
+            Insiders = insiders.Rows,
+            InsiderSpans = insiders.Spans,
+        };
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
         IReadOnlyList<double?>? Of(string ticker)
@@ -314,9 +350,19 @@ public sealed partial class SetupLedger : IComponent
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
 
-        return (market, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
+        return (market, new LedgerContext(income, sectors, highs, lows, facts)
+        {
+            Ranks = new FactorRanks(series, members),
+            Insiders = insiders.Rows,
+            InsiderSpans = insiders.Spans,
+        });
     }
+
+    // The first day a history's insider readings read a filing on: the window before its first session.
+    static DateOnly FirstInsiderDay(IReadOnlyList<DateOnly> sessions) =>
+        sessions.Count == 0 ? DateOnly.MinValue : sessions[0].AddDays(-InsiderReadings.WindowDays);
 
     // The row states counts and no timing, so two nights over one fixture write the same row; the step's
     // time is the row's own started_at to ended_at, and an index's seconds stay on the outcome alone.
@@ -337,6 +383,7 @@ public sealed partial class SetupLedger : IComponent
         var open = await OpenAsync(connection, index, night, cancellation);
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
+        var insiders = await InsidersAsync(connection, [Filers], names.Select(name => name.Ticker), night.AddDays(-InsiderReadings.WindowDays), cancellation);
 
         // The S&P 500's heavyweights' rebalances the book stored from the oldest open heavyweights' setup to the night:
         // tonight's size cut is tonight's setups, and each later rebalance's buys end the setups the rule did not buy.
@@ -363,7 +410,12 @@ public sealed partial class SetupLedger : IComponent
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var opens = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Open)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var context = new LedgerContext(income, sectors, highs, lows, facts, before) { Ranks = new FactorRanks(inputs.Series, inputs.Members) };
+                var context = new LedgerContext(income, sectors, highs, lows, facts, before)
+                {
+                    Ranks = new FactorRanks(inputs.Series, inputs.Members),
+                    Insiders = insiders.Rows,
+                    InsiderSpans = insiders.Spans,
+                };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
 
                 foreach (var family in families)
@@ -989,8 +1041,15 @@ public sealed partial class SetupLedger : IComponent
         var heavyweights = index == IndexFamilies.LargeIndex && heavyweightsRead
             ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
+        var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(calendar), cancellation);
+        var context = new LedgerContext(income, sectors, highs, lows, facts)
+        {
+            Ranks = new FactorRanks(series, members),
+            Insiders = insiders.Rows,
+            InsiderSpans = insiders.Spans,
+        };
 
-        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) }, heavyweights);
+        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, context, heavyweights);
     }
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
@@ -1246,6 +1305,7 @@ public sealed partial class SetupLedger : IComponent
         var market = await MarketAsync(connection, PulledMarketBars, through, cancellation);
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
+        var insiders = await InsidersAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), FirstInsiderDay(inputs.Sessions), cancellation);
         var findings = new List<string>();
         var read = 0;
 
@@ -1256,7 +1316,7 @@ public sealed partial class SetupLedger : IComponent
 
             foreach (var row in session)
             {
-                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker);
+                var (held, rebuilt) = LedgerPointInTime.Setup(index, cut, cutMarket, income, sectors, facts, row.Family, row.Ticker, insiders);
 
                 if (!held)
                 {
@@ -1641,6 +1701,91 @@ public sealed partial class SetupLedger : IComponent
         return facts;
     }
 
+    // Each ticker's insiders' transactions the four readings read, through its filer as the facts are read and filed on or
+    // after the day given, the columns the readings read alone; and the spans the store's insider history holds.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    static async Task<LedgerInsiders> InsidersAsync(
+        SqliteConnection connection,
+        IReadOnlyList<string> filerQueries,
+        IEnumerable<string> tickers,
+        DateOnly from,
+        CancellationToken cancellation)
+    {
+        var filerOf = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var sql in filerQueries)
+        {
+            await using var command = Command(connection, null, sql, []);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                filerOf[reader.GetString(0)] = SecEdgarArchive.Padded(reader.GetString(1));
+            }
+        }
+
+        var wanted = tickers.Distinct(StringComparer.Ordinal).Where(filerOf.ContainsKey).ToArray();
+        var ciks = wanted.Select(ticker => filerOf[ticker]).ToHashSet(StringComparer.Ordinal);
+        var byFiler = new Dictionary<string, List<InsiderRow>>(StringComparer.Ordinal);
+
+        await using (var command = Command(connection, null, InsiderRowsFrom, [("$from", Stamp(from))]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var cik = reader.GetString(0);
+
+                if (!ciks.Contains(cik))
+                {
+                    continue;
+                }
+
+                if (!byFiler.TryGetValue(cik, out var rows))
+                {
+                    byFiler[cik] = rows = [];
+                }
+
+                rows.Add(new InsiderRow(
+                    reader.GetString(1),
+                    Date(reader.GetString(2)),
+                    reader.GetString(3),
+                    reader.IsDBNull(4) ? null : reader.GetString(4),
+                    reader.IsDBNull(5) ? null : Date(reader.GetString(5)),
+                    reader.GetString(6),
+                    string.Empty,
+                    false,
+                    reader.GetInt64(7) == 1,
+                    null,
+                    false,
+                    reader.GetInt32(8),
+                    Date(reader.GetString(9)),
+                    reader.GetString(10),
+                    Money.FromStorage(reader.GetString(11)),
+                    reader.IsDBNull(12) ? null : Money.FromStorage(reader.GetString(12)),
+                    reader.GetInt64(13) == 1,
+                    reader.IsDBNull(14) ? null : reader.GetInt64(14) == 1,
+                    reader.GetInt64(15) == 1));
+            }
+        }
+
+        var spans = new List<(DateOnly First, DateOnly Last)>();
+
+        await using (var command = Command(connection, null, InsiderSpansRead, []))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                spans.Add((Date(reader.GetString(0)), Date(reader.GetString(1))));
+            }
+        }
+
+        return new LedgerInsiders(
+            wanted.ToDictionary(ticker => ticker, ticker => (IReadOnlyList<InsiderRow>)(byFiler.GetValueOrDefault(filerOf[ticker]) ?? []), StringComparer.Ordinal),
+            new InsiderCoverage(spans));
+    }
+
     // The business readings and the valuation reading of the night's setups read again for the tickers given, once the
     // filings refresh has stored what the archive posted before the session; the night's rows alone, each from the facts
     // filed before the setup's session and the valuation reading over the closes the night's step read. It returns how
@@ -1694,7 +1839,118 @@ public sealed partial class SetupLedger : IComponent
 
     // A member's valuation reading on the night over its stored closes and those before its year, as the night's step
     // reads it.
-    static async Task<double?> ValuePlaceAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation)
+    static async Task<double?> ValuePlaceAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation) =>
+        await PricesOnAsync(connection, ticker, facts, night, cancellation) is { } prices
+            ? ValuationReading.Place(ValuationReading.PartsOf(facts, night), prices, night)
+            : null;
+
+    // The four insider readings of the night's setups and of every member's readings on the night read again, once the
+    // filings refresh has stored the session before's filings and recorded its day: each from the filings filed before
+    // the session over the company's value as the night's step reads it, from its stored closes and those before its year.
+    // It returns how many rows it read again.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    public async Task<int> InsidersAgainAsync(DateOnly session, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var tickers = new SortedSet<string>(StringComparer.Ordinal);
+        var memberRows = new List<(string Index, string Ticker, string Readings)>();
+
+        await using (var command = Command(connection, null, NightsSetupTickers, [("$session", Stamp(session)), ("$source", NightSource)]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                tickers.Add(reader.GetString(0));
+            }
+        }
+
+        await using (var command = Command(connection, null, NightsReadings, [("$session", Stamp(session))]))
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                memberRows.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+                tickers.Add(reader.GetString(1));
+            }
+        }
+
+        if (tickers.Count == 0)
+        {
+            return 0;
+        }
+
+        var facts = await FactsAsync(connection, [Filers], tickers, cancellation);
+        var insiders = await InsidersAsync(connection, [Filers], tickers, session.AddDays(-InsiderReadings.WindowDays), cancellation);
+        var four = new Dictionary<string, InsiderFour>(StringComparer.Ordinal);
+
+        foreach (var ticker in tickers)
+        {
+            var filed = facts.GetValueOrDefault(ticker) ?? [];
+            var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
+            var parts = ValuationReading.PartsOf(filed, session);
+
+            four[ticker] = InsiderReadings.Read(
+                insiders.Rows.GetValueOrDefault(ticker) ?? [],
+                insiders.Spans,
+                session,
+                dollars => prices is null ? null : ValuationReading.OverValue(dollars, parts, prices, session));
+        }
+
+        var columns = new[] { "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale" }.Select(LedgerReadings.IndexOf).ToArray();
+        var read = 0;
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (ticker, readings) in four)
+        {
+            await using var command = Command(connection, transaction, InsidersAgain,
+            [
+                ("$ticker", ticker),
+                ("$session", Stamp(session)),
+                ("$source", NightSource),
+                ("$insider_net_buy", (object?)readings.NetBuy ?? DBNull.Value),
+                ("$insider_buyers", (object?)readings.Buyers ?? DBNull.Value),
+                ("$insider_officer_buy", (object?)readings.OfficerBuy ?? DBNull.Value),
+                ("$insider_unplanned_sale", (object?)readings.UnplannedSale ?? DBNull.Value),
+            ]);
+
+            read += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        foreach (var (index, ticker, stored) in memberRows)
+        {
+            if (System.Text.Json.JsonSerializer.Deserialize<double?[]>(stored) is not { Length: var length } values || length != LedgerReadings.Count)
+            {
+                continue;
+            }
+
+            var readings = four[ticker];
+
+            (values[columns[0]], values[columns[1]], values[columns[2]], values[columns[3]]) = (readings.NetBuy, readings.Buyers, readings.OfficerBuy, readings.UnplannedSale);
+
+            await using var command = Command(connection, transaction, ReadingsAgain,
+            [
+                ("$index", index),
+                ("$ticker", ticker),
+                ("$session", Stamp(session)),
+                ("$readings", System.Text.Json.JsonSerializer.Serialize(values)),
+            ]);
+
+            read += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return read;
+    }
+
+    // A member's closes on the night and those before its year that its valuation reading reaches, as the night's step
+    // reads them; none where the store holds no bar of it.
+    static async Task<PriceHistory?> PricesOnAsync(SqliteConnection connection, string ticker, IReadOnlyList<FiledFactRow> facts, DateOnly night, CancellationToken cancellation)
     {
         var bars = new List<SweepBar>();
 
@@ -1715,7 +1971,7 @@ public sealed partial class SetupLedger : IComponent
 
         var before = await BeforeTheYearAsync(connection, [(ticker, bars[0].Session, bars[0].Close)], new Dictionary<string, IReadOnlyList<FiledFactRow>>(StringComparer.Ordinal) { [ticker] = facts }, night, cancellation);
 
-        return ValuationReading.Place(ValuationReading.PartsOf(facts, night), (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars)), night);
+        return (before.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(bars));
     }
 
     // Each name's first stored session and its close there.

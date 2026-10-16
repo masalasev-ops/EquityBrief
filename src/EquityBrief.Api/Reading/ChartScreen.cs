@@ -169,6 +169,7 @@ public static class ChartScreen
                 Dividend(inputs),
                 Technical(inputs, close, latest, stored),
                 Performance(inputs, stored),
+                Insiders(inputs),
             ];
         }
         finally
@@ -343,6 +344,32 @@ public static class ChartScreen
             .. ChartSeries.Performance(stored, monthEnds).Select(span => span.Return is { } fraction && span.From is { } from
                 ? new GridFigure(Capitalised(span.Span), (Math.Round(fraction * 100, 2) == 0 ? 0 : fraction * 100).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + FormattableString.Invariant($"% since {from:yyyy-MM-dd}"), fraction.ToString(CultureInfo.InvariantCulture), MarkRenderer.Hue(fraction * 100))
                 : Missing(Capitalised(span.Span))),
+        ]);
+    }
+
+    // From 19.13 the insiders' open-market buying as the report's region works it: the net over 90 days and over the year,
+    // the insiders who bought, and the newest purchase's day; each not stored where the store holds no insider history
+    // reaching the night.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    static GridGroup Insiders(ChartInputs inputs)
+    {
+        var view = inputs.Report.Insiders;
+
+        GridFigure Net(string label, EquityBrief.Core.Insiders.InsiderTotals? totals) =>
+            totals is { } held
+                ? new GridFigure(label, (held.Net > 0 ? "+" : string.Empty) + Figures.Money(held.Net), held.Net.ToString(CultureInfo.InvariantCulture), MarkRenderer.Hue(Statistic.FromPrice(held.Net), 0))
+                : Missing(label);
+
+        return new GridGroup("insiders", "Insiders",
+        [
+            Net("Net bought in the open market over 90 days", view?.Ninety),
+            Net("Net bought in the open market over the year", view?.Year),
+            view is { } buyers
+                ? new GridFigure("Insiders who bought", FormattableString.Invariant($"{buyers.Year.Buyers} in the year, {buyers.Ninety.Buyers} in 90 days"), buyers.Year.Buyers.ToString(CultureInfo.InvariantCulture))
+                : Missing("Insiders who bought"),
+            view is { } newest
+                ? new GridFigure("Newest purchase", newest.NewestPurchase is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none in the year", newest.NewestPurchase?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                : Missing("Newest purchase"),
         ]);
     }
 

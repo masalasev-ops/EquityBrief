@@ -151,6 +151,8 @@ public partial class FixtureExpectations
             .. RuleTestClaims,
             // 19.12, which readings go with winners: section 17's row.
             .. ReadingLinkClaims,
+            // 19.13, the insiders' trades: section 17's row and section 18's.
+            .. InsiderClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

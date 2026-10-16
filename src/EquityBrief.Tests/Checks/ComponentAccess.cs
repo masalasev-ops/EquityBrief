@@ -45,6 +45,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Page history reader"),
     ];
 
+    // 19.13's one: the insiders' trades.
+    internal static string[] InsiderTradeRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Insider trades"),
+        CheckReach.Key(Scope.MatrixTable, "Insider trades"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -61,6 +68,9 @@ public partial class ComponentAccess
             // 19.10, the fill step.
             CheckReach.Key(Scope.CatalogueTable, "Trade filler"),
             CheckReach.Key(Scope.MatrixTable, "Trade filler"),
+
+            // 19.13, the insiders' trades.
+            .. InsiderTradeRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

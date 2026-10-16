@@ -86,6 +86,8 @@ public enum Store
     FiledFact,
     FiledFactPull,
     FilingDay,
+    InsiderTrade,
+    InsiderRead,
     LedgerSummary,
     LedgerReading,
     LoopRun,

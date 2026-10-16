@@ -1391,6 +1391,139 @@
       "query": "https://api.nasdaq.com/api/quote/LUMN/historical?assetclass=stocks&fromdate=2026-10-07&todate=2026-10-12&limit=10",
       "fetchedAt": "2026-10-12T23:48:47Z",
       "trimmedTo": "nothing. Nasdaq's historical table for LUMN as sent the evening of 2026-10-12: three sessions to 2026-10-09 and none for 2026-10-12, which the table had not posted yet, so on a session's own evening the check reads the quote instead. Its 2026-10-08 low is $5.465, the provider's own figure, where Yahoo writes 5.47."
+    },
+    {
+      "file": "ownership-0001268406-26-000009.txt",
+      "endpoint": "Archives/edgar/data/1268406/0001268406-26-000009.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/1268406/0001268406-26-000009.txt",
+      "fetchedAt": "2026-10-16T10:45:01Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Vistra filed 2026-09-02 reporting two open-market purchases, code P, held indirectly through a partnership, asked under its reporting owner's CIK, which the daily index lists it under beside the issuer's. Its header's label lines, such as ISSUER:, closed on a tab the file was written without; the ownership document between <XML> and </XML> is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0000789019-26-000161.txt",
+      "endpoint": "Archives/edgar/data/789019/0000789019-26-000161.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/789019/0000789019-26-000161.txt",
+      "fetchedAt": "2026-10-16T10:45:02Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Microsoft filed 2026-09-02 by its chief executive reporting eight sales, code S, its Rule 10b5-1 box ticked. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0000789019-26-000153.txt",
+      "endpoint": "Archives/edgar/data/789019/0000789019-26-000153.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/789019/0000789019-26-000153.txt",
+      "fetchedAt": "2026-10-16T10:45:02Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Microsoft filed 2026-09-01 reporting an award of 29,724 shares at no price, code A, and the 18,080.548 shares withheld for its tax at 513.53, code F. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0000789019-26-000154.txt",
+      "endpoint": "Archives/edgar/data/789019/0000789019-26-000154.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/789019/0000789019-26-000154.txt",
+      "fetchedAt": "2026-10-16T10:52:25Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Microsoft filed 2026-09-01 reporting shares withheld for tax alone, code F. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001140361-26-035362.txt",
+      "endpoint": "Archives/edgar/data/320193/0001140361-26-035362.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/0001140361-26-035362.txt",
+      "fetchedAt": "2026-10-16T10:52:25Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Apple holding only the derivatives' table and no row of the table of shares, its flags written true and false rather than 1 and 0. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001065280-26-000259.txt",
+      "endpoint": "Archives/edgar/data/1065280/0001065280-26-000259.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/1065280/0001065280-26-000259.txt",
+      "fetchedAt": "2026-10-16T10:52:26Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Netflix holding only the derivatives' table. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001104659-26-104794.txt",
+      "endpoint": "Archives/edgar/data/1065280/0001104659-26-104794.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/1065280/0001104659-26-104794.txt",
+      "fetchedAt": "2026-10-16T10:52:26Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Netflix filed by an agent, its accession the agent's, holding only the derivatives' table. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001140361-26-035636.txt",
+      "endpoint": "Archives/edgar/data/320193/0001140361-26-035636.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/320193/0001140361-26-035636.txt",
+      "fetchedAt": "2026-10-16T10:52:27Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Apple reporting a sale, code S, its Rule 10b5-1 box written true. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0000080424-26-000158.txt",
+      "endpoint": "Archives/edgar/data/80424/0000080424-26-000158.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/80424/0000080424-26-000158.txt",
+      "fetchedAt": "2026-10-16T10:57:47Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Procter & Gamble filed 2026-08-24 reporting a sale, the original its amendment of the next capture restates. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0000080424-26-000160.txt",
+      "endpoint": "Archives/edgar/data/80424/0000080424-26-000160.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/80424/0000080424-26-000160.txt",
+      "fetchedAt": "2026-10-16T10:57:48Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4/A of Procter & Gamble stating its original's day as 2026-08-24 and restating the sale with its day corrected, naming the original by that day and not by its accession. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001683168-26-006001.txt",
+      "endpoint": "Archives/edgar/data/27904/0001683168-26-006001.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/27904/0001683168-26-006001.txt",
+      "fetchedAt": "2026-10-16T10:57:48Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4 of Delta Air Lines filed 2026-08-05 reporting 35,000 shares acquired by exercising options, code M, and their sale at 92.719, code S, the original its amendment of the next capture corrects. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "ownership-0001683168-26-006059.txt",
+      "endpoint": "Archives/edgar/data/27904/0001683168-26-006059.txt",
+      "query": "https://www.sec.gov/Archives/edgar/data/27904/0001683168-26-006059.txt",
+      "fetchedAt": "2026-10-16T10:57:49Z",
+      "trimmedTo": "nothing of the content: the submission whole, a Form 4/A of Delta Air Lines correcting its original's derivatives' table alone and carrying no row of the table of shares, so its original's sale stands. Its header's label lines closed on a tab the file was written without; the ownership document is the archive's byte for byte."
+    },
+    {
+      "file": "insider-data-sets.htm",
+      "endpoint": "data-research/sec-markets-data/insider-transactions-data-sets",
+      "query": "https://www.sec.gov/data-research/sec-markets-data/insider-transactions-data-sets",
+      "fetchedAt": "2026-10-16T10:41:35Z",
+      "trimmedTo": "the table of quarters alone, from <table to </table>, of a page of 131,586 bytes listing 83 quarters, cut to six of its rows: 2026q3 and 2026q2, posted under files/datastandardsinnovation/data/insider-transactions-data-sets/, and 2026q1, 2018q1, 2017q4 and 2006q1, posted under files/structureddata/data/insider-transactions-data-sets/, each row's link and size as sent."
+    },
+    {
+      "file": "insider-data-set-2026q3/SUBMISSION.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "fetchedAt": "2026-10-16T10:42:19Z",
+      "trimmedTo": "the header and 118 of the 38,152 rows of SUBMISSION.tsv in a zip of 8,660,776 bytes whose SHA-256 is a4e6a681cfcfa43a3d9e4ca9cfec1fd26a59d0a01eac7e9f7b5a0122092c90f3: every filing of the quarter naming Apple, Keysight, Microsoft or Netflix as issuer, their Forms 3 and 4, and Vistra's purchase, Procter & Gamble's and Delta's Form 4 each with its 4/A, one Form 3 of TPG and one Form 5 of Verde Resources, in the file's own order. The tab closing a row whose last field is empty was written off; the reader takes a field a row stops short of as empty."
+    },
+    {
+      "file": "insider-data-set-2026q3/REPORTINGOWNER.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "fetchedAt": "2026-10-16T10:42:19Z",
+      "trimmedTo": "the header and 119 of the 41,346 rows of REPORTINGOWNER.tsv in the same zip: every reporting owner of the filings the cut of SUBMISSION.tsv keeps, in the file's own order, a relationship written as a comma list as sent. The tab closing a row whose last field is empty was written off."
+    },
+    {
+      "file": "insider-data-set-2026q3/NONDERIV_TRANS.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q3_form345.zip",
+      "fetchedAt": "2026-10-16T10:42:19Z",
+      "trimmedTo": "the header and 116 of the 59,885 rows of NONDERIV_TRANS.tsv in the same zip: every row of the table of shares of the filings the cut of SUBMISSION.tsv keeps, in the file's own order, which is not the filings' own, each figure to the two places the data set states. The tab closing a row whose last field is empty was written off."
+    },
+    {
+      "file": "insider-data-set-2026q2/SUBMISSION.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "fetchedAt": "2026-10-16T11:04:22Z",
+      "trimmedTo": "the header and 94 of the 56,102 rows of SUBMISSION.tsv in a zip of 11,498,860 bytes whose SHA-256 is 11f1b2bbbdcbe6347a34437c02d04202fda0eca1dbb023726e4b56504b802e27: every filing of the quarter naming Apple, Keysight, Microsoft or Netflix as issuer, in the file's own order. The tab closing a row whose last field is empty was written off; the reader takes a field a row stops short of as empty."
+    },
+    {
+      "file": "insider-data-set-2026q2/REPORTINGOWNER.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "fetchedAt": "2026-10-16T11:04:22Z",
+      "trimmedTo": "the header and 94 of the 60,153 rows of REPORTINGOWNER.tsv in the same zip: every reporting owner of the filings the cut of SUBMISSION.tsv keeps, in the file's own order. The tab closing a row whose last field is empty was written off."
+    },
+    {
+      "file": "insider-data-set-2026q2/NONDERIV_TRANS.tsv",
+      "endpoint": "files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
+      "fetchedAt": "2026-10-16T11:04:22Z",
+      "trimmedTo": "the header and 108 of the 78,328 rows of NONDERIV_TRANS.tsv in the same zip: every row of the table of shares of the filings the cut of SUBMISSION.tsv keeps, in the file's own order. The tab closing a row whose last field is empty was written off."
     }
   ]
 }

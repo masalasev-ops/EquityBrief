@@ -38,6 +38,13 @@ public enum ArchiveDocument
     PreviousFilingIndex,
 
     PreviousReleaseExhibit,
+
+    // From 19.13 an insider's Form 4 or 4/A whole, the page listing the quarterly insider data sets, and one quarter's file.
+    Ownership,
+
+    InsiderDataSetListing,
+
+    InsiderDataSet,
 }
 
 // One document the archive is asked for.

@@ -154,6 +154,9 @@ public partial class ReadSurface
             // 19.12, the Ledger page's table of which readings go with winners.
             .. ReadingLinkRows,
 
+            // 19.13, the report's Insiders region.
+            .. InsiderRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 

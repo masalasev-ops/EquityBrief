@@ -1,4 +1,5 @@
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -61,6 +62,10 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
     };
 }
 
+// From 19.13 each member's insiders' transactions by ticker and the spans the store's insider history holds, as the
+// ledger read them for its four insider readings.
+public sealed record LedgerInsiders(IReadOnlyDictionary<string, IReadOnlyList<InsiderRow>> Rows, InsiderCoverage Spans);
+
 // What the ledger reads of one index on one session besides its series: each member's quarters as filed, its sector as
 // filed, the members at a new high and a new low on each session, each member's filer's facts as first filed, read for
 // a session from those filed before it, and on a night each member's closes before the store's year that its valuation
@@ -83,6 +88,27 @@ public sealed record LedgerContext(
     // From 19.12 the members' places on each session over the series the readings are read from, which the four of
     // Kakushadze's formulas that rank across the index read; none where the readings are read without them.
     public FactorRanks? Ranks { get; init; }
+
+    // From 19.13 each member's insiders' transactions by ticker, its filer's, and the spans the store's insider history
+    // holds, which the four insider readings read from the filings filed before the session; none where the readings are
+    // read without them, and the readings none with them.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    public IReadOnlyDictionary<string, IReadOnlyList<InsiderRow>>? Insiders { get; init; }
+
+    public InsiderCoverage InsiderSpans { get; init; } = InsiderCoverage.None;
+
+    // A member's four insider readings on a session, each dollar figure over the company's value as the valuation
+    // reading works it from the same facts and closes.
+    public InsiderFour InsidersOf(SweepSeries one, DateOnly session)
+    {
+        var ticker = one.Name.Ticker;
+        var facts = Facts?.GetValueOrDefault(ticker) ?? [];
+        var filed = facts.Count(fact => fact.Filed < session);
+        var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
+        var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars)));
+
+        return InsiderReadings.Read(Insiders?.GetValueOrDefault(ticker) ?? [], InsiderSpans, session, dollars => ValuationReading.OverValue(dollars, parts, history, session));
+    }
 
     public BusinessReading Business(string ticker, DateOnly session)
     {
@@ -575,6 +601,16 @@ public static class LedgerSetups
         Set("alpha_three", context.Ranks?.Alpha3(name, bar));
         Set("alpha_four", context.Ranks?.Alpha4(name, bar));
         Set("alpha_six", FactorReadings.Alpha6(bars, bar));
+
+        // The insiders' four, from the filings filed in the 90 days before the session, none where the store's insider
+        // history does not hold those days.
+        // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+        var insiders = context.InsidersOf(one, day);
+
+        Set("insider_net_buy", insiders.NetBuy);
+        Set("insider_buyers", insiders.Buyers);
+        Set("insider_officer_buy", insiders.OfficerBuy);
+        Set("insider_unplanned_sale", insiders.UnplannedSale);
 
         return readings;
     }

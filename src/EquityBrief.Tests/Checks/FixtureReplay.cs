@@ -138,17 +138,26 @@ public class FixtureReplay
             night,
             store.DatabaseFile).RunAsync(Index, "replay-quarters");
 
+        // The insiders' history, from 19.13, read by hand before the first nightly reader as the remedy reads it, over the
+        // fixture's cuts of the SEC's quarterly data sets for 2026q2 and 2026q3, so the refresh after it asks the archive
+        // only for the members' Form 4s the data sets hold no row of the table of shares of.
+        await new EquityBrief.Worker.Insiders.InsiderTrades(night, store.DatabaseFile, (_, _) => Task.CompletedTask)
+            .HistoryAsync(RecordedInsiderDataSetFeed.FromFolder(Folder()), "2026q2", "2026q3", "replay-insiders-history", TextWriter.Null);
+
         // The filings refresh, after the quarters fetch as the night runs it, over the archive's daily indexes of the
         // week before the night and the filings they set off, from 17.3; then the ledger's business readings of the
-        // night's setups read again for the members it refreshed.
+        // night's setups read again for the members it refreshed, and from 19.13 the insiders' readings of the night's
+        // setups and members.
         var filings = await new EquityBrief.Worker.Ledger.FilingsRefresher(
             RecordedFilingsRefreshFeed.FromFolder(Folder()),
             night,
             store.DatabaseFile,
             pause: (_, _) => Task.CompletedTask).NightAsync(Index, "replay-filings");
 
-        await new EquityBrief.Worker.Ledger.SetupLedger(night, store.DatabaseFile)
-            .BusinessAgainAsync(new DateOnly(2026, 9, 8), filings.Refreshed);
+        var ledgerAgain = new EquityBrief.Worker.Ledger.SetupLedger(night, store.DatabaseFile);
+
+        await ledgerAgain.BusinessAgainAsync(new DateOnly(2026, 9, 8), filings.Refreshed);
+        await ledgerAgain.InsidersAgainAsync(new DateOnly(2026, 9, 8));
 
         // The Treasury's 10-year, after the filings refresh as the night reads it, from 18.2.
         await new EquityBrief.Worker.Treasury.TreasuryReader(night, store.DatabaseFile)

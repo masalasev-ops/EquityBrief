@@ -542,7 +542,8 @@ public static partial class NameScreen
                 readings?.Valuation.Position,
                 readings?.Valuation.Absent ?? (readings is null ? "no reading of its quarters was stored on the night" : null),
                 EquityBrief.Core.Report.QuarterLines.Multiples(inputs.Quarters),
-                peers));
+                peers),
+            EquityBrief.Core.Insiders.InsiderView.Of(inputs.Insiders ?? [], inputs.InsiderSpans ?? EquityBrief.Core.Insiders.InsiderCoverage.None, night));
     }
 
     // The figures a reader wants first, a figure to a row in two columns: the newest quarter's

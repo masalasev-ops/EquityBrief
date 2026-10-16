@@ -18,7 +18,8 @@ public sealed record ReportView(
     SegmentReading? Segments,
     AnalystReading? Analysts,
     DividendSafetyReading? Dividend,
-    ValuationView? Valuation);
+    ValuationView? Valuation,
+    EquityBrief.Core.Insiders.InsiderView? Insiders = null);
 
 // The valuation as the page draws it: the night's multiple, the low and high of its own quarters' multiples and where it
 // sits among them, as the night's reading stored them, each quarter's multiple, and the peer table.

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Insiders;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Report;
@@ -11,7 +12,8 @@ namespace EquityBrief.Api.Reading;
 // What the name page's quarter, margins, analysts, dividend and valuation regions read, as the store holds it on or before
 // the page's night: the newest fetch's quarters, the revenue estimate a fetch kept before the newest quarter's report, the
 // newest fetch's estimate trend, every fetch's rating counts, mean and target, every dividend kept, the Treasury's
-// 10-year over the year, and the night's readings of the stock's industry's S&P 500 members.
+// 10-year over the year, and the night's readings of the stock's industry's S&P 500 members; from 19.13 its filer's
+// insiders' transactions filed in the year to the night and the spans the store's insider history holds.
 public sealed record ReportInputs(
     IReadOnlyList<QuarterRow> Quarters,
     DateOnly? FetchedOn,
@@ -22,7 +24,9 @@ public sealed record ReportInputs(
     IReadOnlyList<KeptDividend> Dividends,
     IReadOnlyList<(DateOnly Session, double TenYear)> TenYears,
     string? Industry,
-    IReadOnlyList<PeerValue> Peers);
+    IReadOnlyList<PeerValue> Peers,
+    IReadOnlyList<InsiderRow>? Insiders = null,
+    InsiderCoverage? InsiderSpans = null);
 
 // The reads of the regions phase 18 added between the card and the earnings reactions. The page draws what they return
 // through the core's functions and computes none of it.
@@ -282,7 +286,91 @@ public sealed partial class ReadApi
             }
         }
 
-        return new ReportInputs(quarters, fetchedOn, estimate, trend, trendOn, ratings, dividends, tenYears, industry, peers);
+        var (insiders, spans) = await InsidersAsync(connection, ticker, night);
+
+        return new ReportInputs(quarters, fetchedOn, estimate, trend, trendOn, ratings, dividends, tenYears, industry, peers, insiders, spans);
+    }
+
+    // The stock's filer's insiders' transactions filed in the year to the night, every code, and the spans the store's
+    // insider history holds; none for a stock no fetch filed a filer for.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    const string FilerOf = "SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1;";
+
+    const string InsiderRowsOf = @"
+        SELECT accession, filed, form, amends, original_filed, owner_ciks, owners, director, officer, title, ten_percent,
+               sequence, traded, code, shares, price, acquired, planned, direct
+        FROM insider_trade
+        WHERE cik = $cik AND filed >= $from AND filed <= $night
+        ORDER BY filed, accession, sequence;
+    ";
+
+    const string InsiderSpansOf = "SELECT first_day, last_day FROM insider_read;";
+
+    async Task<(IReadOnlyList<InsiderRow> Rows, InsiderCoverage Spans)> InsidersAsync(SqliteConnection connection, string ticker, DateOnly night)
+    {
+        var spans = new List<(DateOnly First, DateOnly Last)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = InsiderSpansOf;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                spans.Add((Parse(reader.GetString(0)), Parse(reader.GetString(1))));
+            }
+        }
+
+        string? cik;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = FilerOf;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            cik = await command.ExecuteScalarAsync() as string;
+        }
+
+        var rows = new List<InsiderRow>();
+
+        if (cik is not null && night.DayNumber > InsiderView.YearDays)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = InsiderRowsOf;
+            command.Parameters.AddWithValue("$cik", EquityBrief.Core.Providers.SecEdgarArchive.Padded(cik));
+            command.Parameters.AddWithValue("$from", Day(night.AddDays(-InsiderView.YearDays)));
+            command.Parameters.AddWithValue("$night", Day(night));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                rows.Add(new InsiderRow(
+                    reader.GetString(0),
+                    Parse(reader.GetString(1)),
+                    reader.GetString(2),
+                    reader.IsDBNull(3) ? null : reader.GetString(3),
+                    reader.IsDBNull(4) ? null : Parse(reader.GetString(4)),
+                    reader.GetString(5),
+                    reader.GetString(6),
+                    reader.GetInt64(7) == 1,
+                    reader.GetInt64(8) == 1,
+                    reader.IsDBNull(9) ? null : reader.GetString(9),
+                    reader.GetInt64(10) == 1,
+                    reader.GetInt32(11),
+                    Parse(reader.GetString(12)),
+                    reader.GetString(13),
+                    Money.FromStorage(reader.GetString(14)),
+                    MoneyAt(reader, 15),
+                    reader.GetInt64(16) == 1,
+                    reader.IsDBNull(17) ? null : reader.GetInt64(17) == 1,
+                    reader.GetInt64(18) == 1));
+            }
+        }
+
+        return (rows, new InsiderCoverage(spans));
     }
 
     static decimal? MoneyAt(SqliteDataReader reader, int column) =>

@@ -45330,3 +45330,118 @@ Carried:    19.12's remedy run from main and its record: the builds' times, the 
             first night's fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build;
             Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%";
             the sign-offs of phases 16, 17 and 18.
+
+### 19.12 - the remedy run from main, the three ledger histories built again, each index's checks and which readings go with winners   2026-10-16
+
+Not a checkpoint entry: it records 19.12's remedy and what it measured, and lands nothing.
+Ran:        from main's 47ed6b1d, the merge of PR 472: `tools/remedies/2026-10-16-19.12-the-published-factors.txt`
+            between 11:23:25Z and 11:23:53Z with no night or off-peak run writing, migration 95 applied and the ledger's
+            night step run by hand over the night of 2026-10-15; then the three ledger builds with `--again` over
+            2019-01-02 to 2026-10-05 between 11:24:08Z and 12:05:51Z, each index's point-in-time check between 12:06:11Z
+            and 12:58:36Z and `loop-links` on each by 12:59:26Z, all from main's clean copy. No request to the provider
+            and no model call.
+Measured:   the ledger's night step over the night of 2026-10-15 by hand took 11 seconds with the sixty-eight readings,
+            its row's own start and end, against 26 seconds for that night's own step with forty-six, both well inside
+            the night's hour, writing the 43, 25 and 41 setups the night wrote. The S&P 500's build took 13 minutes 53
+            seconds, 92,006 setups, 9,345 passing the live rule; the S&P 400's 10 minutes 39 seconds, 58,304 and 5,116;
+            the S&P 600's 17 minutes 11 seconds, 76,051 and 6,571; 41 minutes 43 seconds together against 40 minutes 46
+            seconds for 19.10's builds of the same counts. Each index's point-in-time check rebuilt 200 of 200 sampled
+            history setups with every reading the same, the factors among them. `loop-links` stored on the S&P 500 51
+            readings going with winners, 38 with losers, 226 with no link beyond the shuffle and 25 too few over five
+            families, and on the S&P 400 20, 11, 222 and 19 and on the S&P 600 15, 21, 217 and 19 over four. The
+            within-night shuffle's 95th percentile of winners against losers, read-only over each rule's finished
+            listings as the tester reads them, over the first 46 readings and over all 68: on the S&P 500 the pullback's
+            +0.5548 and +0.5404, the breakout's +0.4334 and +0.4791 and the drift's +0.9069 and +0.9819, the
+            fundamentals-first family's 78 listings under the floor of 263; on the S&P 400 +0.5461 and +0.5595, +0.2652
+            and +0.2760, +1.0741 and +1.1516 and the fundamentals-first family's +0.2465 and +0.2849; on the S&P 600
+            +0.5418 and +0.5702, +0.2707 and +0.3363, +1.9767 and +2.0816 and +0.2901 and +0.3043. The wider search
+            raised the bar in ten of the eleven and lowered it in the S&P 500's pullback; the conditions above it and the
+            rule's own mean stayed one on the S&P 500, the drift's giving way to the breakout's, rose from none to one on
+            the S&P 400, the drift's, and stayed none on the S&P 600.
+Verified:   `tools/ci.ps1` green over main as 19.12's entry records, and over the tree carrying this record with 19.13's
+            entry as that entry records.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
+            beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
+
+### 19.13 - insider trades, read from the SEC's Form 4 filings, for the reports and as ledger readings   2026-10-16
+
+Queue:      done, 19.0 to 19.12 with their corrections and records and the rulings of 19.11 and 19.13, PRs 446 to 472;
+            in progress, this checkpoint; next, its remedy from main and its record, then the sign-offs of phases 16, 17
+            and 18, each by a fresh session.
+Built:      on the operator's ruling of 2026-10-16 and their answer on the plan's box, insiders' open-market buying and
+            selling read from their Forms 4 and 4/A (see: Insiders' trades are read from their Form 4 filings, and only
+            open-market purchases and sales are counted). Twelve filings, the 2026q2 and 2026q3 data sets' cuts and the
+            page listing them were captured and committed before either reader was written, beside the fixture's four
+            daily indexes. A reader of a filing's whole submission and a reader of a quarter's three files give the same
+            filing; the night's filings refresh hands each day it reads to the insider trades, which ask the archive for
+            each Form 4 and 4/A of a member's filer not yet stored, one request a filing at its pace under the refresh's
+            limit, store its table of shares in `insider_trade` under the issuer it names, record each day read whole in
+            `insider_read`, and then the ledger reads the night's four insider readings again. `insiders-history` reads
+            the data sets from 2018q1, each quarter once and its originals before its amendments; `insiders` reads days
+            by hand, and with `--compare` sets each held filing against its stored rows and writes nothing. Four readings
+            after the published factors, under analyst sentiment: the net bought, the buyers, an officer buying and the
+            unplanned sales over the 90 days filed before the session, the dollars over the company's value through the
+            valuation reading's own count and close, none where the spans do not hold the days and the last none for a
+            session whose days reach before 2023-04-01. The report's Insiders region after the analysts and the chart
+            page's Insiders group. Migration 96 creates the two tables and adds the setups' four columns, every row kept.
+            The decision, sections 4, 13.10, 13.11, 15.1's figure, 15.9, 15.22, 16, 17 and 18, the catalogue, the
+            matrix, the schema, the runbook, the guide's figure, region and readings, the roster and the remedy file.
+Found:      the plan writes one table, and a second, `insider_read`, holds the spans read whole, since a reading must tell
+            a quiet company's nought from days no reader read. The readings stand under analyst sentiment, the nearest of
+            the seven headings the operator ruled on 2026-10-13, an eighth being the operator's to add. Only the table of
+            shares is stored, a derivative's exercise reaching the shares as a row of their own. The data sets hold
+            shares, prices and the shares held after to two places, so a difference past two is named apart: of the
+            fixture's four filings both hold, Apple's sale is equal and Microsoft's three differ there alone. A Form 4 is
+            listed under its issuer and each owner, so it is asked once an accession. The captures were written without
+            the tab closing some header label lines and the data sets' rows ending in an empty field, which the manifest
+            states; every ownership document is the archive's byte for byte. And a stock holding no bar drew its name
+            page on the first day there is, which the insiders' year ran off; the view holds none for such a night.
+Pins:       the readings' version moves from 894ed2775fe4 to c0c43a1c0279, the insiders' readings' source among those it
+            pins; no source a rule, the hooks, the learned score or a candidate pins changes, asserted by the pins' own
+            tests, so nothing is registered again and no record or paper account restarts.
+Tests:      12 new, 2392 in all: each captured Form 4 parsed by hand; the data sets' cut to two places; awards and
+            withholding in neither total; the coverage and the box's day; an amendment in its original's place and
+            Delta's leaving its original standing; the store matching an amendment to one original and to none of two;
+            a filing on or after the session and one before its ninety days read by none over a constructed store;
+            Keysight's four readings worked by hand from the cut; the history compared with the archive's filings; an
+            unreadable filing named; the history reading each quarter once; and the report's region and the chart's
+            group read back. The fixture's refresh asks 12 documents where it asked 9, the cost test's night one Form 4
+            more, and the catalogue's count, the readings' pin and the score's floor of 670 rows move with it.
+Claims:     1337, seven more than 1330: the catalogue's and the matrix's Insider trades, section 16's Insider trades and
+            Insider reads, section 17's Insiders' trades, section 18's An insider's filing the refresh cannot read and
+            15.9's Insiders, named beside phase 19's pair as rows after its report, each passing. The plan's about 8
+            counted the chart page's group, which landed as words in 15.22's figures row, and section 4's region, outside
+            the claims; the second store and section 17's row were not counted.
+Remedy:     `tools/remedies/2026-10-16-19.13-insider-trades.txt`, from main after the merge and before the night: the
+            migration; the history from 2018q1; the days since read by hand, each day's asks and time printed; 2026q3
+            compared; and the ledger's night step over the newest night; then each index's history built again with
+            `--again`, its check and `loop-links` by hand, as the runbook states. It asks the SEC's archive alone and
+            calls no model. The history's and the days' requests and times, the comparison, the builds' times and the
+            checks are owed to its dated entry.
+Mutated:    the rule, stated before the runs: one mutation a property this checkpoint adds whose failure a reader, a
+            reading or the store would see, the smallest edit to shipped source that breaks it, each run against 19.13's
+            tests. M1 a filing on the session read by its readings; red at the constructed store's readings. M2 the
+            ninetieth day left out; red, same. M3 an amended original read beside its amendment; red at the amendment's
+            test. M4 an amendment counted on its own day; red, same. M5 the box's reading none on its first day; red at
+            the coverage test. M6 a buyer counted once a purchase; red at the awards test. M7 the data sets' rows in the
+            file's order; red at the cut's test and the comparison. M8 two places read as three in the comparison; red
+            there. M9 a stored filing asked again by the night; red at the fixture's refresh. M10 a quarter read again;
+            red at the history's test. M11 the members' readings not read again; red at Keysight's readings and the
+            constructed store's. M12 the region's lines oldest first; red at the read surface's test. M13 the box read
+            inverted; red at the parser's, the coverage, the awards and the comparison's tests. M14 an amendment matched
+            to the first of two originals; red at the store's matching test, which gained that case before the runs. M15
+            an unreadable filing not caught; red at its test. Not mutated: the chart page's group, read off the region's
+            own view, and the history's quarter written in one transaction. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 6d5343ab: all six
+            steps, 0 warnings, 0 errors, 2392 of 2392 tests ran with none failed in 25 minutes 1 second, migrations 0
+            to 96 with none pending, schema version 96, against `data-ci` and never `data`; the phase report 60 tables,
+            1337 claims, 1337 passing, none out of scope and none unexamined, 1348 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed. The run before it, over 9ecc9341, failed one
+            test, three keys of the expectations no test read, which 6d5343ab reads.
+Carried:    19.13's remedy run from main and its record: the history's and the days' requests and times, the comparison,
+            the builds' times and the checks; the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693
+            at their medians, each a ruling of its own the operator is asked for; the first night's fill step and ledger
+            step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the
+            S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.

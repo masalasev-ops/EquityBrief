@@ -37,6 +37,13 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Long views"),
     ];
 
+    // 19.13's two: the insiders' trades and the spans their readers read whole.
+    internal static string[] InsiderStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "Insider trades"),
+        CheckReach.Key(Scope.StoresTable, "Insider reads"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -131,6 +138,8 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Trade fills"),
             // 19.12, which readings go with winners.
             CheckReach.Key(Scope.StoresTable, "Reading links"),
+            // 19.13, the insiders' trades and the spans their readers read whole.
+            .. InsiderStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),

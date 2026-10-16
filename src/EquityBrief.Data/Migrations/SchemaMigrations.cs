@@ -716,7 +716,64 @@ public static class SchemaMigrations
         new Migration(93, "create loop_rule and loop_rule_year", CreateLoopRules),
         new Migration(94, "create trade_fill, and add setup's fill and past", CreateTradeFills),
         new Migration(95, "add setup's published factor readings, and create loop_link", AddFactorReadings),
+        new Migration(96, "create insider_trade and insider_read, and add setup's insider readings", AddInsiderTrades),
     ];
+
+    // The insiders' trades from 19.13: a row a transaction of a Form 4 or 4/A's table of shares, under its filing's
+    // accession and its place in the table, append-only; a row a span its readers read whole, a quarter of the SEC's data
+    // sets or a day of the archive's index; and the setup ledger's four insider readings, a column a reading after every
+    // column before them, null on a row written before them until the history is built again. Created and added empty,
+    // nothing copied and nothing dropped.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    const string AddInsiderTrades = @"
+        CREATE TABLE insider_trade (
+            cik             TEXT    NOT NULL,
+            ticker          TEXT,
+            accession       TEXT    NOT NULL,
+            filed           TEXT    NOT NULL,
+            form            TEXT    NOT NULL,
+            amends          TEXT,
+            original_filed  TEXT,
+            owners          TEXT    NOT NULL,
+            owner_ciks      TEXT    NOT NULL,
+            director        INTEGER NOT NULL,
+            officer         INTEGER NOT NULL,
+            title           TEXT,
+            ten_percent     INTEGER NOT NULL,
+            sequence        INTEGER NOT NULL,
+            security        TEXT    NOT NULL,
+            traded          TEXT    NOT NULL,
+            code            TEXT    NOT NULL,
+            shares          TEXT    NOT NULL,
+            price           TEXT,
+            acquired        INTEGER NOT NULL,
+            held_after      TEXT,
+            planned         INTEGER,
+            direct          INTEGER NOT NULL,
+            nature          TEXT,
+            source          TEXT    NOT NULL,
+            run_id          TEXT    NOT NULL,
+            PRIMARY KEY (accession, sequence)
+        ) STRICT;
+
+        CREATE INDEX insider_trade_by_filer ON insider_trade (cik, filed);
+
+        CREATE TABLE insider_read (
+            first_day  TEXT    NOT NULL,
+            last_day   TEXT    NOT NULL,
+            source     TEXT    NOT NULL,
+            run_id     TEXT    NOT NULL,
+            read_at    TEXT    NOT NULL,
+            filings    INTEGER NOT NULL,
+            stored     INTEGER NOT NULL,
+            PRIMARY KEY (first_day, source)
+        ) STRICT;
+
+        ALTER TABLE setup ADD COLUMN insider_net_buy REAL;
+        ALTER TABLE setup ADD COLUMN insider_buyers REAL;
+        ALTER TABLE setup ADD COLUMN insider_officer_buy REAL;
+        ALTER TABLE setup ADD COLUMN insider_unplanned_sale REAL;
+    ";
 
     // The setup ledger's published price and volume factors from 19.12, a column a reading after every column before
     // them, each a statistic as every reading is and null on a row written before them until the history is built
