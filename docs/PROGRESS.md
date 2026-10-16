@@ -45319,7 +45319,11 @@ Mutated:    the rule, stated before the runs: one mutation a property this check
             test. M15 the sector funds left out of the ledger's series; red at the sector test. Not mutated: the
             `ledger-night` verb, which calls the night's own step and is shown dispatched, shown and in the help. Each
             reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, ca1b35d0: all six
+            steps, 0 warnings, 0 errors, 2380 of 2380 tests ran with none failed in 20 minutes 4 seconds, migrations 0
+            to 95 with none pending, schema version 95, against `data-ci` and never `data`; the phase report 60 tables,
+            1330 claims, 1330 passing, none out of scope and none unexamined, 1341 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    19.12's remedy run from main and its record: the builds' times, the checks, the ledger step's time before
             and after and the shuffle's 95th percentile before and after; the Run page's 4.2 seconds, Tonight's 786
             milliseconds and a name page's 693 at their medians, each a ruling of its own the operator is asked for; the
