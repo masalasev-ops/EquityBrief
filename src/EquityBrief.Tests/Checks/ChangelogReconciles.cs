@@ -139,9 +139,11 @@ public class ChangelogReconciles
             Assert.Fail("No git on PATH. This check reads the history, so it cannot run without one.");
         }
 
-        // Only the commits that touched the file, so the walk is over the
-        // population that can move the count rather than over every commit.
-        var log = Shell.Run(git, ["log", "--format=%H", "--reverse", "--", Changelog]);
+        // Only the commits that touched the file or its archive, so the walk is
+        // over the population that can move the count rather than over every
+        // commit.
+        var archive = Corpus.ArchiveOf(Changelog)!;
+        var log = Shell.Run(git, ["log", "--format=%H", "--reverse", "--", Changelog, archive.File]);
 
         Assert.Equal(0, log.ExitCode);
 
@@ -156,6 +158,19 @@ public class ChangelogReconciles
             "A shallow clone returns one, and a walk that cannot see the history must fail " +
             "rather than assert over what it can see.");
 
+        // From the commit that wrote the archive on, a revision's entries are its
+        // live file's and its archive's together.
+        var move = RecordAppendOnly.MoveOf(git, archive);
+        var since = Shell.Run(git, ["rev-list", "--ancestry-path", $"{move}..HEAD"]);
+
+        Assert.Equal(0, since.ExitCode);
+
+        var holding = since.StandardOutput
+            .Split((char)10, StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Trim())
+            .Append(move)
+            .ToHashSet(StringComparer.Ordinal);
+
         // The property is asserted against the high-water mark rather than
         // against each revision's predecessor. Both would have gone red at
         // 8ac2442, but a per-revision comparison stays red forever, because that
@@ -164,30 +179,17 @@ public class ChangelogReconciles
         // Against the high-water mark the check goes red when entries are lost
         // and green again when they are put back, which is a check on the record
         // as it stands rather than on a commit that cannot be unmade.
-        var highest = 0;
-        var setAt = string.Empty;
         var read = 0;
 
-        foreach (var commit in commits)
+        var (highest, setAt) = HighestOf(commits.Select(commit =>
         {
-            var show = Shell.Run(git, ["show", $"{commit}:{Changelog}"]);
-
-            Assert.True(
-                show.ExitCode == 0,
-                $"git show exited {show.ExitCode} for {commit}:{Changelog}. A revision whose content " +
-                $"could not be read is not a revision that lost nothing. {show.StandardError}");
-
-            var entries = EntriesIn(show.StandardOutput);
             read++;
 
-            if (entries <= highest)
-            {
-                continue;
-            }
-
-            highest = entries;
-            setAt = commit;
-        }
+            return (
+                commit,
+                RecordAppendOnly.Show(git, commit, Changelog),
+                holding.Contains(commit) ? RecordAppendOnly.Show(git, commit, archive.File) : null);
+        }));
 
         var now = EntriesIn(Corpus.Read(Changelog));
 
@@ -202,6 +204,53 @@ public class ChangelogReconciles
             $"{Changelog} holds {now} entries and held {highest} at {setAt}. An entry is prior text " +
             "and prior text is never edited, so a record that has lost entries is a defect on its " +
             "face. Restore them from the revision named rather than lowering this expectation.");
+    }
+
+    // The most entries the changelog held at any revision and the revision that held them, a revision's entries its
+    // live file's and, where it holds the archive, the archive's beside them, so an entry written after the move and
+    // removed later stands below a revision that held it.
+    internal static (int Highest, string At) HighestOf(IEnumerable<(string Commit, string Live, string? Archive)> revisions)
+    {
+        var highest = 0;
+        var at = string.Empty;
+
+        foreach (var (commit, live, archive) in revisions)
+        {
+            var entries = EntriesIn(live) + (archive is null ? 0 : EntriesIn(archive));
+
+            if (entries <= highest)
+            {
+                continue;
+            }
+
+            highest = entries;
+            at = commit;
+        }
+
+        return (highest, at);
+    }
+
+    [Fact]
+    public void TheHighWaterMarkCountsTheArchiveBesideTheLiveFileFromTheMoveOn()
+    {
+        const string Template = "```" + "\n### YYYY-MM-DD - <file> - <what changed>\n" + "```\n";
+
+        static string Entries(params string[] days) =>
+            string.Concat(days.Select(day => $"### {day} - a.md - an edit\n"));
+
+        // Three entries before the move; the move keeps one and archives two; one is written after it.
+        (string, string, string?)[] revisions =
+        [
+            ("before", Template + Entries("2026-10-12", "2026-10-11", "2026-10-10"), null),
+            ("move", Template + Entries("2026-10-12"), Entries("2026-10-11", "2026-10-10")),
+            ("later", Template + Entries("2026-10-17", "2026-10-12"), Entries("2026-10-11", "2026-10-10")),
+        ];
+
+        Assert.Equal((4, "later"), HighestOf(revisions));
+
+        // Read over the live file alone the mark stays at the revision before the move, so the entry written after
+        // it could be removed again with nothing falling below the mark.
+        Assert.Equal((3, "before"), HighestOf(revisions.Select(revision => (revision.Item1, revision.Item2, (string?)null))));
     }
 
     [Fact]

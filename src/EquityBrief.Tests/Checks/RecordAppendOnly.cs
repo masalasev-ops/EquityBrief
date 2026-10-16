@@ -1,4 +1,6 @@
+using System.Text;
 using System.Text.RegularExpressions;
+using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Checks;
 
@@ -486,5 +488,305 @@ public class RecordAppendOnly
         Assert.DoesNotContain(
             "99",
             Regex.Matches(mismatched.Body, @"(?<count>\d+) of \k<count> tests\b").Select(match => match.Groups["count"].Value));
+    }
+
+    // The record and the changelog each hold their earlier entries in an archive, read with the live file as one
+    // record, and the record is append only across the pair: an entry moves whole and unchanged to its archive, an
+    // archive takes no new entry, and no entry is edited or removed from the pair.
+    // see: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
+    public static IEnumerable<object[]> Archived() =>
+        Corpus.Archives.Select(archive => new object[] { archive.Record });
+
+    internal static string Git()
+    {
+        var git = Shell.Locate("git");
+
+        if (git is null)
+        {
+            Assert.Fail("No git on PATH. This check reads the history, so it cannot run without one.");
+        }
+
+        return git!;
+    }
+
+    // A file as a revision holds it, read as the repository's own bytes so it compares with the working tree's.
+    internal static string Show(string git, string revision, string path)
+    {
+        var show = Shell.Run(git, ["show", $"{revision}:{path}"], output: Encoding.UTF8);
+
+        Assert.True(
+            show.ExitCode == 0,
+            $"git show exited {show.ExitCode} for {revision}:{path}. A revision whose content could not be read is not " +
+            $"one that lost nothing. {show.StandardError}");
+
+        return show.StandardOutput;
+    }
+
+    // The commit that wrote an archive, the oldest of those adding it, whose parent holds the record before the move.
+    // A history holding none refuses, as a shallow clone holds none, since a check that cannot see the move must fail
+    // rather than pass over nothing.
+    internal static string MoveOf(string git, Corpus.Archive archive)
+    {
+        var log = Shell.Run(git, ["log", "--diff-filter=A", "--format=%H", "--", archive.File]);
+
+        Assert.Equal(0, log.ExitCode);
+
+        var adding = log.StandardOutput
+            .Split((char)10, StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.Trim())
+            .ToArray();
+
+        Assert.True(adding.Length >= 1, $"No commit the history holds writes {archive.File}, so the move cannot be read.");
+
+        return adding[^1];
+    }
+
+    // Each entry's text from its heading to the next, the blank lines ending it set aside, since the blank line after
+    // an entry divides it from the next and belongs to neither.
+    internal static IReadOnlyList<string> RawEntries(string record) =>
+        [.. Regex
+            .Matches(record, @"^### [^\r\n]*(?:(?!^### )[\s\S])*", RegexOptions.Multiline)
+            .Select(match => match.Value.TrimEnd('\n'))];
+
+    // The entries a record held that it does not now hold unchanged and in their order, each named by its heading's
+    // line: an entry edited, removed or moved out of its place.
+    internal static IReadOnlyList<string> Missing(string before, string now)
+    {
+        var standing = RawEntries(now);
+        var missing = new List<string>();
+        var from = 0;
+
+        foreach (var entry in RawEntries(before))
+        {
+            var at = from;
+
+            while (at < standing.Count && !string.Equals(standing[at], entry, StringComparison.Ordinal))
+            {
+                at++;
+            }
+
+            if (at == standing.Count)
+            {
+                missing.Add(entry.Split('\n')[0]);
+
+                continue;
+            }
+
+            from = at + 1;
+        }
+
+        return missing;
+    }
+
+    // The headings an archive holds that it did not hold as the move wrote it.
+    internal static IReadOnlyList<string> Added(string written, string now) =>
+        [.. HeadingsIn(now).Except(HeadingsIn(written), StringComparer.Ordinal)];
+
+    static int FirstApart(string left, string right)
+    {
+        var at = 0;
+
+        while (at < left.Length && at < right.Length && left[at] == right[at])
+        {
+            at++;
+        }
+
+        return at;
+    }
+
+    [Theory]
+    [MemberData(nameof(Archived))]
+    public void EachArchiveAndItsLiveFileJoinedAtTheMoveAreTheRecordAsItStoodBefore(string record)
+    {
+        var git = Git();
+        var archive = Corpus.ArchiveOf(record)!;
+        var move = MoveOf(git, archive);
+        var before = Show(git, $"{move}^", record);
+        var joined = Corpus.Joined(archive, Show(git, move, record), Show(git, move, archive.File));
+
+        Assert.True(
+            string.Equals(before, joined, StringComparison.Ordinal),
+            $"{record} and {archive.File} joined as {move} wrote them are not {record} at its parent byte for byte: " +
+            $"{joined.Length} characters against {before.Length}, first apart at {FirstApart(before, joined)}.");
+    }
+
+    [Fact]
+    public void EachMoveCutItsRecordWhereTheRulingSaid()
+    {
+        var git = Git();
+
+        // The build record's live entries open on phase 19's planning entry, every earlier one in its archive.
+        var progress = Corpus.ArchiveOf("docs/PROGRESS.md")!;
+        var move = MoveOf(git, progress);
+        var live = Show(git, move, progress.Record);
+
+        Assert.StartsWith(
+            "### 19.0 planning - ",
+            RawEntries(live[live.IndexOf("\n## Entries\n", StringComparison.Ordinal)..])[0],
+            StringComparison.Ordinal);
+
+        // The changelog's live entries are each dated from 2026-10-12 and its archive's each before, read as the
+        // headings' own text, which is ordered as the days are.
+        var changelog = Corpus.ArchiveOf("docs/CHANGELOG.md")!;
+        var cut = MoveOf(git, changelog);
+
+        static IReadOnlyList<string> Days(string text) =>
+            [.. Regex.Matches(text, @"^### (\d{4}-\d{2}-\d{2}) ", RegexOptions.Multiline).Select(match => match.Groups[1].Value)];
+
+        var kept = Days(Show(git, cut, changelog.Record));
+        var moved = Days(Show(git, cut, changelog.File));
+
+        Assert.True(kept.Count >= 100 && moved.Count >= 1000, $"Read {kept.Count} live and {moved.Count} archived changelog entries.");
+        Assert.All(kept, day => Assert.True(string.CompareOrdinal(day, "2026-10-12") >= 0, $"The live changelog holds an entry of {day}."));
+        Assert.All(moved, day => Assert.True(string.CompareOrdinal(day, "2026-10-12") < 0, $"The changelog's archive holds an entry of {day}."));
+    }
+
+    [Theory]
+    [MemberData(nameof(Archived))]
+    public void EachArchiveStandsByteForByteAsTheMoveWroteIt(string record)
+    {
+        var git = Git();
+        var archive = Corpus.ArchiveOf(record)!;
+        var move = MoveOf(git, archive);
+        var written = Show(git, move, archive.File);
+        var now = Corpus.ReadAlone(archive.File);
+        var added = Added(written, now);
+
+        Assert.True(
+            string.Equals(written, now, StringComparison.Ordinal),
+            $"{archive.File} is not as {move} wrote it, first apart at {FirstApart(written, now)}" +
+            (added.Count > 0 ? $", holding entries it did not: {string.Join("; ", added)}" : string.Empty) +
+            ". An archive takes no new entry and its entries are never edited.");
+    }
+
+    [Theory]
+    [MemberData(nameof(Archived))]
+    public void EveryEntryTheRecordHeldBeforeTheMoveStandsInItUnchangedAndInOrder(string record)
+    {
+        var git = Git();
+        var archive = Corpus.ArchiveOf(record)!;
+        var before = Show(git, $"{MoveOf(git, archive)}^", record);
+        var missing = Missing(before, Corpus.Read(record));
+
+        // Scope, stated in advance: every entry the record held before the move, over six hundred in each.
+        Assert.True(RawEntries(before).Count >= 600, $"Read {RawEntries(before).Count} entries of {record} before the move, expected at least 600.");
+
+        Assert.True(
+            missing.Count == 0,
+            $"{record} no longer holds {missing.Count} entr(ies) it held before the move, unchanged and in their order: " +
+            $"{string.Join("; ", missing)}. A record is append only across its live file and its archive.");
+    }
+
+    [Fact]
+    public void EveryCheckpointTheRecordLandedBeforeTheMoveStillLandsAndEveryCitationInEitherRecordIsStillRead()
+    {
+        var git = Git();
+        var progress = Corpus.ArchiveOf("docs/PROGRESS.md")!;
+        var before = Show(git, $"{MoveOf(git, progress)}^", progress.Record);
+        var now = Corpus.Read(progress.Record);
+
+        var landed = DuePoints.Built(before)
+            .Concat(DuePoints.Planned(before))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        // Scope, stated in advance: every point the record landed before the move, the plan's 152 checkpoints of
+        // phases 0 to 18 among them.
+        Assert.True(landed.Length >= 150, $"Read {landed.Length} points landed before the move, expected at least 150.");
+
+        var (built, planned) = (DuePoints.Built(now), DuePoints.Planned(now));
+
+        Assert.All(landed, point => Assert.True(DuePoints.HasLanded(point, built, planned), $"{point} landed before the move and does not now."));
+
+        // Each record's citations of either kind, read at the move from its live file and its archive, are the ones
+        // read from the record before it, the changelog's quoted prior text left out in its archive as in itself.
+        var read = 0;
+
+        foreach (var archive in Corpus.Archives)
+        {
+            var move = MoveOf(git, archive);
+            var held = Show(git, $"{move}^", archive.Record);
+            var live = Show(git, move, archive.Record);
+            var earlier = Show(git, move, archive.File);
+
+            foreach (var marker in new[] { Corpus.Decision, Corpus.Obligation })
+            {
+                var then = Corpus.Citations(marker, held, archive.Record).Select(citation => citation.Detail).ToArray();
+                var split = Corpus.Citations(marker, live, archive.Record)
+                    .Concat(Corpus.Citations(marker, earlier, archive.File))
+                    .Select(citation => citation.Detail)
+                    .ToArray();
+
+                Assert.Equal(then.Order(StringComparer.Ordinal), split.Order(StringComparer.Ordinal));
+
+                read += then.Length;
+            }
+        }
+
+        Assert.True(read >= 120, $"Read {read} citations in the two records before the move, expected at least 120.");
+    }
+
+    [Fact]
+    public void TheReadersFindAnArchivedEntryEditedAnEntryRemovedAndANewEntryWrittenToAnArchive()
+    {
+        var archive = new Corpus.Archive("docs/RECORD.md", "docs/archive/RECORD-before.md", Before: true);
+
+        const string Before =
+            "# RECORD.md\n\nA preamble.\n\n## Entries\n\n" +
+            "### 1.1 - one   2026-09-08\nbuilt one\n\n" +
+            "### 1.2 - two   2026-09-09\nbuilt two\n\n" +
+            "### 2.0 planning - three   2026-09-10\nplanned\n";
+
+        const string Live =
+            "# RECORD.md\nIts entries before 2.0 stand in `docs/archive/RECORD-before.md`, read with this file as one record.\n\n" +
+            "A preamble.\n\n## Entries\n\n" +
+            "### 2.0 planning - three   2026-09-10\nplanned\n";
+
+        var earlier =
+            "The entries of `docs/RECORD.md` before 2.0, moved here whole. " + Corpus.TakesNoNewEntry + "\n\n" +
+            "### 1.1 - one   2026-09-08\nbuilt one\n\n" +
+            "### 1.2 - two   2026-09-09\nbuilt two\n\n";
+
+        Assert.Equal(Before, Corpus.Joined(archive, Live, earlier));
+        Assert.Empty(Missing(Before, Corpus.Joined(archive, Live, earlier)));
+
+        // An archived entry edited: the pair is no longer the record before the move, and the entry is named.
+        var edited = earlier.Replace("built one", "built 1", StringComparison.Ordinal);
+
+        Assert.NotEqual(Before, Corpus.Joined(archive, Live, edited));
+        Assert.Equal(["### 1.1 - one   2026-09-08"], Missing(Before, Corpus.Joined(archive, Live, edited)));
+
+        // An entry removed from the pair: its entry and its heading are gone.
+        var removed = earlier.Replace("### 1.2 - two   2026-09-09\nbuilt two\n\n", string.Empty, StringComparison.Ordinal);
+
+        Assert.Equal(["### 1.2 - two   2026-09-09"], Missing(Before, Corpus.Joined(archive, Live, removed)));
+        Assert.DoesNotContain("1.2 - two 2026-09-09", HeadingsIn(Corpus.Joined(archive, Live, removed)));
+
+        // A new entry written to the archive: the archive is not as the move wrote it and names what it gained.
+        var gained = earlier + "### 1.3 - four   2026-09-11\nbuilt four\n";
+
+        Assert.NotEqual(earlier, gained);
+        Assert.Equal(["1.3 - four 2026-09-11"], Added(earlier, gained));
+        Assert.Empty(Added(earlier, earlier));
+
+        // An entry moved out of its place is missing where it stood.
+        var reordered = Before.Replace(
+            "### 1.1 - one   2026-09-08\nbuilt one\n\n### 1.2 - two   2026-09-09\nbuilt two\n\n",
+            "### 1.2 - two   2026-09-09\nbuilt two\n\n### 1.1 - one   2026-09-08\nbuilt one\n\n",
+            StringComparison.Ordinal);
+
+        Assert.Single(Missing(Before, reordered));
+
+        // The changelog's order sets the archive's entries after the live file's last.
+        Assert.EndsWith(
+            "### 2.0 planning - three   2026-09-10\nplanned\n### 1.1 - one   2026-09-08\nbuilt one\n\n### 1.2 - two   2026-09-09\nbuilt two\n\n",
+            Corpus.Joined(archive with { Before = false }, Live, earlier),
+            StringComparison.Ordinal);
+
+        // A live file not naming its archive beneath its title, and an archive not opening on one line naming its
+        // live file and saying it takes no new entry, are refused rather than read as a record.
+        Assert.Throws<InvalidOperationException>(() => Corpus.Joined(archive, Before, earlier));
+        Assert.Throws<InvalidOperationException>(() => Corpus.Joined(archive, Live, earlier[(earlier.IndexOf("\n\n", StringComparison.Ordinal) + 2)..]));
+        Assert.Throws<InvalidOperationException>(() => Corpus.Joined(archive, Live, earlier.Replace(Corpus.TakesNoNewEntry, string.Empty, StringComparison.Ordinal)));
     }
 }
