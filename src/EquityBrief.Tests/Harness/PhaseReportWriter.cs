@@ -77,6 +77,20 @@ internal static class PhaseReportWriter
                     placements = report.Reconciled,
                     floor = Reconciliation.Floor,
                 },
+
+                // The figures the newest entry wrote before this run, each beside the one it measured.
+                record = new
+                {
+                    entry = report.Record.Entry,
+                    statesItsOwnRun = report.Record.StatesItsOwnRun,
+                    agree = report.Record.Agree,
+                    figures = report.Record.Figures.Select(figure => new
+                    {
+                        name = figure.Name,
+                        stated = figure.Stated,
+                        measured = figure.Measured,
+                    }),
+                },
                 coverage = report.Coverage.Select(check => new
                 {
                     check = check.Check,
@@ -150,6 +164,10 @@ internal static class PhaseReportWriter
         page.Append(Escape(report.Suite.Describe()));
         page.Append($". {report.ChecksNotPassing} carried check(s) did not run or did not hold. ");
         page.Append("A claim is PASS only where the check reaching it ran and held.</p>");
+
+        page.Append("<h2>The record's figures</h2><p>");
+        page.Append(Escape(report.Record.Describe()));
+        page.Append(".</p>");
 
         page.Append("<h2>Fixture</h2>");
         page.Append($"<p><b>{Escape(report.Fixture.State)}</b>, {report.Fixture.Folders} captured, ");

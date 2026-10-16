@@ -25,13 +25,16 @@ internal static class PhaseReportCommand
             ? SuiteOutcomes.FromTrx(args[1])
             : SuiteOutcomes.NothingRan;
 
-        var report = PhaseReport.Build(
+        var built = PhaseReport.Build(
             ArchitectureTables.In(document),
             ArchitectureFigures.In(document),
             NightlyRunSteps.In(document),
             Fixtures.Of(root),
             CoverageReported.Coverage(),
             outcomes);
+
+        // The figures the newest entry wrote before this run, held to the ones it measured.
+        var report = built with { Record = RecordFigures.Of(Corpus.Read("docs/PROGRESS.md"), built) };
 
         // The clock, because nothing else in the system may read the machine.
         PhaseReportWriter.Write(report, root, SystemClock.ForUnitedStatesSessions().UtcNow);
@@ -56,6 +59,7 @@ internal static class PhaseReportCommand
         // populations and the first line alone said the suite was clean over a
         // run with a failing test in a class that carries no check.
         Console.WriteLine($"suite        {report.Suite.Describe()}");
+        Console.WriteLine($"record       {report.Record.Describe()}");
         Console.WriteLine(PhaseReportWriter.HtmlPath(root));
         Console.WriteLine(PhaseReportWriter.JsonPath(root));
 
@@ -69,9 +73,9 @@ internal static class PhaseReportCommand
             ? "verify-phase: green"
             : $"verify-phase: not green. {report.Count(Verdict.Fail)} claim(s) were checked and "
                 + $"did not hold, {report.Count(Verdict.Unexamined)} were not checked, "
-                + $"{report.ChecksNotPassing} carried check(s) did not run or did not hold, and "
-                + $"{report.Suite.Describe()}. A phase is not done while any of those is above "
-                + "zero.");
+                + $"{report.ChecksNotPassing} carried check(s) did not run or did not hold, "
+                + $"{report.Suite.Describe()}, and {report.Record.Describe()}. A phase is not done while "
+                + "any of those is above zero or the record's figures are not the run's.");
 
         return green ? 0 : 1;
     }
