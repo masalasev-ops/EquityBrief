@@ -18,6 +18,14 @@ namespace EquityBrief.Tests.Reading;
 // see: Each request's route and server time is kept in memory for the read surface's life and drawn on the Run page, and no store holds it
 public partial class ReadSurface
 {
+    // The rows 19.11 adds that this check reaches: the chart page's ten and the Run page's time of every page.
+    internal static readonly string[] ChartRows =
+    [
+        .. new[] { "Masthead", "The report line", "The interval and the levels", "The chart", "The averages", "Volume", "The marks", "Tonight's plan", "Under the pointer", "The figures" }
+            .Select(row => CheckReach.Key("15.22 Chart", row)),
+        CheckReach.Key("15.10 Run", "Every page's time"),
+    ];
+
     static DateOnly Day(string day) => DateOnly.ParseExact(day, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static SessionBar Session(string day, decimal open, decimal high, decimal low, decimal close, long volume) =>

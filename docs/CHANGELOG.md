@@ -25,6 +25,44 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - .claude/rules/checks.md - read-surface states 19.11's tests
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report
+Was:
+> `read-surface`: ... and Tonight's buy points saying once beneath the table that each pick buys at the next open with its plan, read back off the rendered pages over constructed stores
+Now:
+> Added without replacing anything: the week's and the month's candles, the pulled sessions at the store's scale and each span's return worked by hand over constructed bars; a fixture name's chart page worked by hand with its grid's figures the name page's own; every link that opens a stock opening its chart page counted page by page; and the read surface timing every request with the Run page drawing the slowest routes.
+Why: a roster row names what its check asserts, and 19.11 added those assertions.
+
+### 2026-10-16 - SCHEMA.md - the pulled bars' note names the read API's read of one stock's rows for the chart page
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
+Was:
+> **This is not the bar table, and no night reads it but the chart averages step and the setup ledger's step**, ... the one reading of the ledger's that reads them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). The operator's history pull asks ...
+Now:
+> ... the one reading of the ledger's that reads them (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). From 19.11 the read API reads one stock's rows by the table's key, the pull holding its first stored session and its sessions before it, when the chart page draws a weekly or monthly chart, never on a night, and brings them to the store's scale by the two closes of that session. The operator's history pull asks ...
+Why: 19.11's chart page reads the pulled bars for its weekly and monthly candles, which the operator's ruling of 2026-10-16 allows to the chart page's figures alone.
+
+### 2026-10-16 - ARCHITECTURE.html - the chart page named where the pulled history's readers are stated, and the read API reading the pulled bars
+Authorised by: The history pulled before the store's year sits apart from its bars under the pull that wrote it, read for the name and chart pages' figures alone and removed whole by that pull
+Was:
+> Section 2's store paragraph: ... no night or page reads but the name page's figures before the store's year, the chart's averages and each stock's typical earnings move and long view (see: ...)
+> The chart averager's catalogue row: ... drawn by the chart alone and read by no rule, level, listing, gate or card (see: ...)
+> The read API's catalogue row, its reads: every store but the pulled history and the market series
+> Section 14's chart averages step: ... a reader that cannot finish named on its own row while the night goes on; figures the name page alone draws (see: ...)
+> The read and write matrix's Read API row: its Pulled history cell blank.
+> The pulled history store row: ... and nothing a night or a page read but the name page's figures before the store's year, the chart's averages, the typical earnings move and the long view, and that reading, which the next night reads again from the newest pull still holding them (see: ...)
+Now:
+> Section 2: ... the name and chart pages' figures before the store's year, the chart's averages and each stock's typical earnings move and long view, and from 19.11 the chart page's weekly and monthly candles. The chart averager: drawn by the name and chart pages' charts alone. The read API's reads: every store but the market series and the pulled history, its bars read from 19.11 for the chart page. Section 14: figures the name and chart pages alone draw. The matrix's Pulled history cell for the Read API: R. The pulled history store row: the name and chart pages' figures, and from 19.11 the chart page reading one stock's pulled bars when it draws a weekly or monthly chart, never on a night, which its next drawing reads again from the newest pull holding them.
+Why: 19.11's chart page reads the pulled bars when it draws its weekly and monthly candles, and the operator's ruling of 2026-10-16 allows it to the chart page's figures alone.
+
+### 2026-10-16 - ARCHITECTURE.html - section 15.22 Chart added, the masthead, the name page's opening, the search and the routes naming it, and section 15.10's every page's time
+Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report
+Was:
+> 15.9's Masthead row: ... elsewhere the last stored close as of its session (see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it)
+> 15.13: Any name is found from a search box in the header of every screen, in its menu from 19.2, by its ticker or its company's name, and a name found is opened on its own route. Text matching no name says so rather than opening an empty page.
+Now:
+> 15.9's Masthead row adds that from 19.11 the chart page's masthead is drawn by the same function, with a link after the sector opening the stock's chart page. 15.13: a name found is opened on its chart page from 19.11, and a bullet added naming the chart route and every link that opens it. Added without replacing anything: 15.12's paragraph that a stock opens on its chart page first; section 15.22 Chart, its answer, route and reads, a table of ten regions and its closing paragraph; and 15.10's row Every page's time (see: Each request's route and server time is kept in memory for the read surface's life and drawn on the Run page, and no store holds it).
+Why: the operator's ruling of 2026-10-16 opens every stock on its chart page first, with every page's time measured on the Run page.
+
 ### 2026-10-16 - CLAUDE.md - the filings refresh's carve-out names the Form 4 and 4/A filed by a member's insiders
 Authorised by: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 Was:

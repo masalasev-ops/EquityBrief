@@ -148,6 +148,9 @@ public partial class ReadSurface
             // 19.8, Tonight's card of the stocks one gate short across every setup.
             .. CloseToBuyRows,
 
+            // 19.11, the chart page every stock opens on first and the Run page's time of every page.
+            .. ChartRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
