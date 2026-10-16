@@ -45245,3 +45245,84 @@ Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name pa
             a dated entry once the night has run; the first night's ledger step on 19.9's build, owed to its dated
             entry; Figure 11.4's "earliest promotion", owed a correction of section 11; the S&P 600's breadth drawn as
             45.0% beside "below its floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.
+
+### 19.12 - the published price and volume factors as ledger readings, and which readings go with winners   2026-10-16
+
+Queue:      done, 19.0 to 19.11 with their corrections and records and the rulings of 19.11 and 19.13, PRs 446 to 471;
+            in progress, this checkpoint; next, its remedy from main and its record, then 19.13, then the sign-offs of
+            phases 16, 17 and 18, each by a fresh session.
+Built:      on the operator's rulings and answers of 2026-10-16, twenty-two published price and volume factors appended
+            to the ledger's catalogue after its forty-six readings, so each keeps its place, as places for the engines to
+            look (see: The published price and volume factors are ledger readings for the engines to search, and no
+            factor chooses a stock): the returns over 5 and 21 sessions; the month's largest daily return; its
+            deviation; the deviation of the quarter's residuals on the index's own series and the slope of the year's
+            returns on it; the quarter's skewness; the close's place in its range over 10 sessions; the share of 20
+            sessions' volume on rising days; the correlation of the close's change with the volume; Amihud's
+            illiquidity; the overnight less the intraday returns; the returns over 21 and 63 sessions less the GICS
+            sector fund's; the close over the year's lowest low; the signed run of closes; on-balance volume's slope; and
+            Kakushadze's formulas 1, 2, 3, 4 and 6, the first five reading only the day's prices and volume, built as the
+            paper writes them, their ranks the members' places on each session, worked once a session from the bars to
+            it. Each was checked against the readings standing and none is one of them under another name. The core's
+            factor readings and the worker's members' places sit in files of their own, so no file a rule pins moves;
+            the ledger loads the eleven sector funds beside its six series; migration 95 adds the setups' twenty-two
+            columns, every row kept in place, and creates `loop_link`; the member readings' list takes them with no
+            column. Which readings go with winners (see: Which readings go with winners is worked by the monthly run and
+            stored, and the words move no rule): for each family and reading, the Spearman correlation at entry with the
+            result within each test year from 2022 holding at least 30 setups, the mean of those years and how many
+            point its way, beside the 95th percentile of the same mean's size with the results shuffled within each
+            night, every arrangement where they number no more than 199 and 199 drawn at seed 20261016 otherwise, worked
+            by the tester's `loop-links` step, which the monthly run runs on each index after its checks, stored and
+            drawn on the Ledger page beneath the setup's path. `ledger-night` runs the ledger's night step by hand over
+            the newest night. The two decisions, 13.10, 13.12, 15.19, sections 16 and 17, the catalogue rows, the schema,
+            the runbook, the guide, the roster and the remedy file.
+Found:      the ruling names section 4's readings, and section 4 states none of the ledger's readings, so they are
+            written in 13.10 where the catalogue is described. The schema's reader admits no digit in a column, so the
+            five formulas' columns are named in words, `alpha_one` to `alpha_six`, as the catalogue names its readings.
+            The learned score's floor of ten rows a weight moves with the catalogue from 410 rows to 630, its tests
+            worked again over 680. And the chart of what is behind a stock read only a list of the catalogue's own
+            length, which would have drawn nothing on the nights before the remedy; it now reads an older row with the
+            readings it lacks as none.
+Pins:       the readings' version moves from 859241ef8442 to 894ed2775fe4, stored on every row the ledger writes from
+            the remedy; no source a rule, the hooks, the learned score or a candidate pins changes, asserted by the pins'
+            own tests, so nothing is registered again and no record or paper account restarts.
+Tests:      10 new, 2380 in all: each factor worked by hand over constructed bars at its window's edge with none one bar
+            short; a beta of two over an index moving half as far and a sector fund's return; the ledger reading the
+            fund of the sector a company files; Kakushadze's four ranked formulas over three constructed members; three
+            factors, Alpha#6 among them, worked from MSFT's bars on the fixture's night; the engines reading the whole
+            catalogue, the learned score's three named lists the only readings an engine's source names; which readings
+            go with winners worked by hand with its shuffle's percentile over every arrangement; the tester's step over a
+            constructed store; the Ledger page drawing the newest run as stored; and an older row of member readings read
+            with the factors it lacks as none. The constructed night's ledger step stores the factors its bars do not
+            reach as null, and the learned score's tests are worked again over the higher floor.
+Claims:     1330, three more than 1327: 15.19's Which readings go with winners, section 16's Reading links and section
+            17's row, named beside phase 19's pair as rows after its report, each passing. The plan's about 5 counted
+            the monthly run's step as a row; it landed as words in the monthly run's and the tester's catalogue rows.
+Remedy:     `tools/remedies/2026-10-16-19.12-the-published-factors.txt`, from main after the merge and before the night:
+            the migration and the ledger's night step by hand over the newest night; then each index's history built
+            again with `--again`, its check and `loop-links` by hand, as the runbook states. It asks for nothing and
+            calls no model. The builds' times, the checks, the night step's time against the night's own and how the
+            within-night shuffle's 95th percentile moved with the wider search over the stored history are owed to its
+            dated entry.
+Mutated:    the rule, stated before the runs: one mutation a property this checkpoint adds whose failure a reader or an
+            engine would see, the smallest edit to shipped source that breaks it, each run against 19.12's tests. M1 the
+            deviation over the count; red at the factors' test and the fixture's night. M2 the largest return read as
+            the smallest; red at the factors' test. M3 a run of closes reaching the first bar counted; red, same. M4 a
+            tie counted under in a place; red at the factors' test and the ranked formulas. M5 a place read on the
+            session before each bar's; it survived the ranked formulas, whose four-session patterns repeat under the
+            shift, so the first member's newest low breaks the pattern, Alpha#4 worked again at minus three, and it is red
+            there. M6 the fund's return added; red at the sector and the series' tests. M7 the beta as the index's slope on
+            the member; red at the series' test. M8 Alpha#6 without its minus; red at the factors' test and the fixture's
+            night. M9 the results shuffled across the year as one night; red at the winners' test. M10 the percentile a
+            place high; red at the winners' test and the tester's step. M11 the floor read as more than 30; red, same.
+            M12 the step writing only the readings beyond the shuffle; red at the tester's step. M13 the Ledger page
+            reading the oldest run; red at the page's test. M14 a shorter list of member readings dropped; red at its
+            test. M15 the sector funds left out of the ledger's series; red at the sector test. Not mutated: the
+            `ledger-night` verb, which calls the night's own step and is shown dispatched, shown and in the help. Each
+            reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Carried:    19.12's remedy run from main and its record: the builds' times, the checks, the ledger step's time before
+            and after and the shuffle's 95th percentile before and after; the Run page's 4.2 seconds, Tonight's 786
+            milliseconds and a name page's 693 at their medians, each a ruling of its own the operator is asked for; the
+            first night's fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build;
+            Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%";
+            the sign-offs of phases 16, 17 and 18.
