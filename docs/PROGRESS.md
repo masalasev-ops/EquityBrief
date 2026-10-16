@@ -45539,3 +45539,25 @@ Carried:    the correction's remedy run from main and its record; the Run page's
             fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's
             "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of
             phases 16, 17 and 18.
+
+### 19.13 - the correction's remedy run from main: the insiders' days read again for every company the store knows, the ledger's night step and the three ledger histories built again   2026-10-16
+
+Not a checkpoint entry: it records the remedy of 19.13's correction and what it measured, and lands nothing.
+Ran:        from main's 17a7d1c1, the merge of PR 474: `tools/remedies/2026-10-16-19.13-correction-every-company-read.txt`
+            from 17:56:30Z with no night or off-peak run writing, then the three ledger builds with `--again` over
+            2019-01-02 to 2026-10-05 from main's clean copy, as the runbook states. Requests of the SEC's archive alone,
+            free and keyless; none of the provider and no model call. The read surface restarted from main's Release.
+Measured:   the days from 2026-10-01 to 2026-10-14 read again in 293 seconds: 2,727 Forms 4 and 4/A of every company the
+            store knows over 10 weekdays, 2026-10-12 a holiday holding no index, 1,031 of them not stored before and
+            asked, 550 transactions stored, from 1,041 requests. 2026-10-01 asked 275 of its 353 and stored 223
+            transactions, the S&P 400's and 600's members' among them, which 19.13's remedy had read none of. The
+            ledger's night step over the night of 2026-10-15 by hand took 10 seconds, writing the 43, 25 and 41 setups
+            the night wrote. The S&P 500's build took 14 minutes 52 seconds, 92,006 setups, 9,345 passing the live rule;
+            the S&P 400's 13 minutes 20 seconds, 58,304 and 5,116; the S&P 600's 20 minutes 45 seconds, 76,051 and 6,571;
+            48 minutes 57 seconds together, the same counts as 19.13's remedy's builds.
+Verified:   `tools/ci.ps1` green over the tree 19.13's correction's entry records, and the checks reading this record
+            run filtered over the tree carrying it.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
+            beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
