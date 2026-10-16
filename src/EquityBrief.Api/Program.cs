@@ -85,6 +85,7 @@ builder.Services.AddSingleton(_ => SpendCaps.From(
     builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
 builder.Services.AddSingleton<ReportExporter>();
+builder.Services.AddSingleton<RouteTimes>();
 
 // What a press starts once its request is written: the worker's drain, from a copy of the
 // worker's build beside the surface's own. A surface running from any build but its own,
@@ -105,6 +106,18 @@ builder.Services.AddSingleton<IDrainLauncher>(services =>
 });
 
 var app = builder.Build();
+
+// Every request's route and its server time, from 19.11, kept in memory for the Run page and written to no store, timed
+// around everything after it so a page's time is the whole of what the server did for it.
+// see: Each request's route and server time is kept in memory for the read surface's life and drawn on the Run page, and no store holds it
+app.Use(async (context, next) =>
+{
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+
+    await next();
+
+    context.RequestServices.GetRequiredService<RouteTimes>().Record(RouteTimes.Of(context), watch.Elapsed.TotalMilliseconds);
+});
 
 // Every answer is drawn from the store as it stands, so the browser keeps none: a screen drawn again
 // after a press, or after a night, reads the store again rather than an earlier answer.
@@ -237,6 +250,73 @@ app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, R
     var name = await NameAsync(read, marks, page, caps, clock, ticker, index, export: false, on: await read.NewestNightAsync(asked) ?? asked);
 
     return Results.Content(name.Region, "text/html; charset=utf-8");
+});
+
+// A stock's chart page, section 15.22, which every link that opens a stock opens first: the name page's masthead, the
+// chart at the interval the link names and the grid of stored figures, each read as tonight's page reads it so the two
+// pages draw one figure alike. Only the interval shown is read, so the daily chart reads no pulled bar.
+// see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, string? universe, ReadApi read, MarkRenderer marks, SinglePageApp page, IClock clock) =>
+{
+    var shown = EquityBrief.Core.Chart.ChartSeries.Read(interval);
+    var today = clock.SessionDateAt(clock.UtcNow);
+    var session = RegularSession.On(today, clock.SessionZone);
+    var bars = await read.BarsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue);
+    var night = await read.NewestNightAsync();
+    var through = night ?? (bars.Count > 0 ? bars[^1].SessionDate : today);
+    var indexCode = await read.IndexOfAsync(ticker, night ?? today);
+    var member = indexCode is null ? null : (await read.UniverseAsync(indexCode, night)).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal));
+    var quote = session is { } open ? await read.NewestQuoteAsync(ticker, open.Open, open.Close) : null;
+    var quoteSession = session is { } window ? new QuoteSession(window.Open, window.Close, RegularSession.IsOpen(clock.UtcNow, clock.SessionZone)) : null;
+    var live = quoteSession is { IsOpen: true } ? quote : null;
+    var reportInputs = await read.ReportInputsAsync(ticker, null, through);
+    var fundamentals = await read.FundamentalsAsync(ticker);
+    var report = NameScreen.Report(
+        ticker,
+        reportInputs,
+        fundamentals,
+        await read.FundamentalReadingAsync(ticker),
+        live?.Price ?? (bars.Count > 0 ? bars[^1].Close : null),
+        await read.ForwardRateAsync(ticker, null),
+        bars,
+        night ?? (bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue));
+
+    var view = ChartScreen.View(new ChartInputs(
+        ticker,
+        shown,
+        bars,
+        await read.IndicatorsAsync(ticker, DateOnly.MinValue, DateOnly.MaxValue),
+        await read.ChartAveragesAsync(ticker),
+        shown != EquityBrief.Core.Chart.ChartInterval.Daily && bars.Count > 0 ? await read.PulledSeriesAsync(ticker, bars[0].SessionDate) : null,
+        await read.LevelsAsync(ticker),
+        night is { } listed ? await read.DecisionCardsOfAsync(ticker, listed) : [],
+        NameScreen.Events(bars, await read.ReactionsAsync(ticker), reportInputs.Dividends, await read.RawClosesAsync(ticker)),
+        member,
+        Universes.ByCode(indexCode ?? string.Empty)?.Name,
+        fundamentals,
+        await read.FiledFactsAsync(ticker, through.AddDays(-EquityBrief.Core.Report.FiguresChecked.DaysRead)),
+        report,
+        await read.YearExtremesAsync(ticker),
+        await read.LongViewAsync(ticker),
+        NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
+        await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
+        member?.Researched));
+
+    var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);
+    var drawn = bars.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)).ToArray();
+
+    return Results.Content(
+        page.ChartRegion(
+            marks,
+            view,
+            drawn,
+            mast,
+            quote,
+            quoteSession,
+            NameScreen.Suspect((await read.SuspectSeriesAsync()).FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal))),
+            (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
+            universe),
+        "text/html; charset=utf-8");
 });
 
 // One name's report as a file to hand to someone, section 15.4's second surface: the name
@@ -2330,7 +2410,8 @@ app.MapGet("/screens/run/{night?}", async (
     SinglePageApp page,
     SpendCaps caps,
     IClock clock,
-    StoreLocation store) =>
+    StoreLocation store,
+    RouteTimes times) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -2571,7 +2652,10 @@ app.MapGet("/screens/run/{night?}", async (
             listedByFilter: await read.ListRuleAsync(dated) == ListRules.Filter,
             // From 19.5 the sessions written before a correction, folded here once the notice is past its age.
             // see: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
-            oldCorrections: TonightScreen.WrittenBeforeTheCorrection(everyListing.Where(listing => listing.SessionDate <= dated))),
+            oldCorrections: TonightScreen.WrittenBeforeTheCorrection(everyListing.Where(listing => listing.SessionDate <= dated)),
+            // From 19.11 every page's time since the read surface started, kept in memory alone.
+            routeTimes: times.Slowest(),
+            routeTimesSince: times.Since),
         "text/html; charset=utf-8");
 });
 

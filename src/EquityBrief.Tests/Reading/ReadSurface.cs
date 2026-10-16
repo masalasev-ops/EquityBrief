@@ -4622,7 +4622,7 @@ public partial class ReadSurface
         foreach (var row in rows)
         {
             Assert.Matches($"<tr data-ticker=\"{row.Ticker}\"[^>]* data-selects=\"{row.Ticker}\" data-select-href=\"#/night/{on}\\?name={row.Ticker}\">", list);
-            Assert.Contains($"<td class=\"c-nm\"><a class=\"name-link\" href=\"{SinglePageApp.NameRoute}{row.Ticker}\">{row.Ticker}</a>", list, StringComparison.Ordinal);
+            Assert.Contains($"<td class=\"c-nm\"><a class=\"name-link\" href=\"{SinglePageApp.ChartRoute}{row.Ticker}\">{row.Ticker}</a>", list, StringComparison.Ordinal);
             Assert.DoesNotContain($" href=\"#/night/{on}?name={row.Ticker}\"", list, StringComparison.Ordinal);
         }
 

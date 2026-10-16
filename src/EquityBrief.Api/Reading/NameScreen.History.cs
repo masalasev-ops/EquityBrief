@@ -287,7 +287,7 @@ public static partial class NameScreen
     // The chart's marks: each print on the session its reaction is read on, and each ex-dividend date, a kept dividend's
     // and before the first kept one the session the adjusted close's step shows, over the sessions the chart draws.
     // see: The chart marks each report and each ex-dividend date over its sessions, the ex-dates a kept dividend's and before the first kept one the steps the dividends leave in the bars
-    static IReadOnlyList<ChartEvent> Events(IReadOnlyList<BarRow> bars, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<KeptDividend> dividends, IReadOnlyList<RawCloseRow> rawCloses)
+    internal static IReadOnlyList<ChartEvent> Events(IReadOnlyList<BarRow> bars, IReadOnlyList<ReactionRow> reactions, IReadOnlyList<KeptDividend> dividends, IReadOnlyList<RawCloseRow> rawCloses)
     {
         if (bars.Count == 0)
         {

@@ -656,8 +656,9 @@ public class HistoryPullTests
         // refresh by hand, and on the night the night's own companies; and the walk-forward tester declares the pulled
         // tables its procedures read through the sweep's history, by hand and never on the night. The chart averager and
         // the page history reader are the readers on the night, of the pulled bars and the pulled earnings, for figures
-        // only the name page draws.
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Indicators/ChartAverager.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Moves/PageHistoryReader.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
+        // only the name and chart pages draw; and from 19.11 the read API declares the pulled bars and reads one stock's
+        // when the chart page draws a weekly or monthly chart, never on a night.
+        Assert.Equal(["src/EquityBrief.Api/Reading/ReadApi.Chart.cs", "src/EquityBrief.Api/Reading/ReadApi.cs", "src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Cards/RuleRecorder.cs", "src/EquityBrief.Worker/Indicators/ChartAverager.cs", "src/EquityBrief.Worker/Ledger/FilingsRefresher.cs", "src/EquityBrief.Worker/Ledger/SetupLedger.cs", "src/EquityBrief.Worker/Loop/WalkForwardTester.cs", "src/EquityBrief.Worker/Moves/PageHistoryReader.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

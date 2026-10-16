@@ -70,7 +70,7 @@ public partial class ReadSurface
 
         // Each member's ticker opens its own page and carries its year beside it, the company named,
         // and the name's own row links nowhere.
-        Assert.Contains("<a class=\"peer-link\" href=\"#/name/ZZAA\">ZZAA</a> <span class=\"co\">Zed Ay</span>", drawn[1].Markup, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"peer-link\" href=\"#/chart/ZZAA\">ZZAA</a> <span class=\"co\">Zed Ay</span>", drawn[1].Markup, StringComparison.Ordinal);
         Assert.Matches("<span class=\"peer-pop\" role=\"tooltip\"><svg[^>]*class=\"year-line\" data-ticker=\"ZZAA\" data-closes=\"4\">", drawn[1].Markup);
         Assert.Contains("ZZCC holds 0 stored closes, too few to draw its year.", drawn[2].Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("peer-link", drawn[0].Markup, StringComparison.Ordinal);
@@ -239,7 +239,7 @@ public partial class ReadSurface
 
                     Assert.Equal(chosen[ticker].GetProperty("likeness").GetDouble(), double.Parse(likeness.Groups[1].Value, CultureInfo.InvariantCulture));
                     Assert.Equal(chosen[ticker].GetProperty("sessions").GetInt32().ToString(CultureInfo.InvariantCulture), likeness.Groups[2].Value);
-                    Assert.Contains($"<a class=\"peer-link\" href=\"#/name/{ticker}\">{ticker}</a>", markup, StringComparison.Ordinal);
+                    Assert.Contains($"<a class=\"peer-link\" href=\"#/chart/{ticker}\">{ticker}</a>", markup, StringComparison.Ordinal);
                     Assert.Contains($"class=\"year-line\" data-ticker=\"{ticker}\" data-closes=\"{Rows(store, $"SELECT COUNT(*) FROM bar WHERE ticker = '{ticker}';")[0][0]}\"", markup, StringComparison.Ordinal);
                 }
 

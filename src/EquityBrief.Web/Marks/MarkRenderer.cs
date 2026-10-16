@@ -3068,7 +3068,7 @@ public sealed partial class MarkRenderer : IComponent
         foreach (var (row, place) in rows.Select((row, at) => (row, at + 1)))
         {
             var trade = row.Trade;
-            var page = Formatted($"#/name/{Uri.EscapeDataString(row.Ticker)}/{DayOf(trade.Night)}");
+            var page = ChartOf(row.Ticker);
 
             region.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(trade.Night)}\" data-status=\"{trade.Status}\">");
             region.Append(Invariant, $"<td class=\"place\" data-place=\"{place}\">{place}</td>");
@@ -3252,7 +3252,7 @@ public sealed partial class MarkRenderer : IComponent
 
             // The name, a link opening the name's own page, which is what a reader following a ticker
             // expects.
-            list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"{ChartOf(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
 
             // Where the row repeats a trade still open, the mark saying so, until the rule reaches the filter
             // and the stock is excluded rather than listed.
@@ -5643,7 +5643,7 @@ public sealed partial class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-own=\"{(row.Own ? "true" : "false")}\">");
             table.Append(row.Own
                 ? Formatted($"<td class=\"peer own\"><b>{Escaped(row.Ticker)}</b> <span class=\"own-mark\">this name</span>{company}</td>")
-                : Formatted($"<td class=\"peer\"><a class=\"peer-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{company}{industry}<span class=\"peer-pop\" role=\"tooltip\">{YearLine(row.Ticker, row.Year, row.Distance?.NearestSupport, row.Distance?.NearestResistance)}</span></td>"));
+                : Formatted($"<td class=\"peer\"><a class=\"peer-link\" href=\"{ChartOf(row.Ticker)}\">{Escaped(row.Ticker)}</a>{company}{industry}<span class=\"peer-pop\" role=\"tooltip\">{YearLine(row.Ticker, row.Year, row.Distance?.NearestSupport, row.Distance?.NearestResistance)}</span></td>"));
             table.Append(row.Likeness switch
             {
                 null => "<td class=\"r num likeness\" data-likeness=\"\" data-sessions=\"\"></td>",
@@ -6108,7 +6108,7 @@ public sealed partial class MarkRenderer : IComponent
             // The ticker is the way to the name's page, with the company's name beneath it, the
             // day its research was written where it holds any, and its year line with its nearest
             // bands, which the stylesheet shows while the pointer is over the cell or it has focus.
-            table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"{ChartOf(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
             table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty);
             table.Append(row.Researched is { } written
                 ? $"<span class=\"researched-on\" data-researched=\"{written.ToString("yyyy-MM-dd", Invariant)}\">researched {written.ToString("yyyy-MM-dd", Invariant)}</span>"
@@ -6870,11 +6870,12 @@ public sealed partial class MarkRenderer : IComponent
 
         foreach (var row in rows)
         {
+            // A stock's ticker opens its chart page, and on the name page's own table each night its page that night.
             var page = Formatted($"#/name/{Uri.EscapeDataString(row.Ticker)}/{DayOf(row.Night)}");
 
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(row.Night)}\" data-status=\"{row.Status}\" data-plan=\"{Escaped(row.Plan)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");
             table.Append(named
-                ? Formatted($"<td class=\"num\">{DayOf(row.Night)}</td><td class=\"c-nm\"><a class=\"nm\" href=\"{page}\"><span class=\"tk\">{Escaped(row.Ticker)}</span>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</a></td>")
+                ? Formatted($"<td class=\"num\">{DayOf(row.Night)}</td><td class=\"c-nm\"><a class=\"nm\" href=\"{ChartOf(row.Ticker)}\"><span class=\"tk\">{Escaped(row.Ticker)}</span>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</a></td>")
                 : Formatted($"<td class=\"num\"><a href=\"{page}\">{DayOf(row.Night)}</a></td>"));
 
             // The state the trade carried on its listing night, and a night before the readings existed says

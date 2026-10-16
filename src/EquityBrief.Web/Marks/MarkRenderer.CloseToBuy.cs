@@ -69,7 +69,7 @@ public sealed partial class MarkRenderer
 
             html.Append(Invariant, $"<tr data-ticker=\"{Escaped(cell.Ticker)}\" data-family=\"{Escaped(cell.Family)}\" data-gate=\"{Escaped(cell.Gate)}\" data-watched=\"{Flag(row.Watched)}\">");
             html.Append(Invariant, $"<td><span class=\"fam-tag\" data-family=\"{Escaped(cell.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(cell.Family)}\"></span>{Escaped(cell.Setup)}</span></td>");
-            html.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(cell.Ticker)}\">{Escaped(cell.Ticker)}</a>{(cell.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            html.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(cell.Ticker)}\">{Escaped(cell.Ticker)}</a>{(cell.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
             html.Append(Invariant, $"<td class=\"missed-gate\"><b>{Escaped(cell.Gate)}</b></td>");
             html.Append(Invariant, $"<td class=\"close-had\">{Escaped(cell.Words)}</td>");
             html.Append(row.SessionsToReport is { } sessions

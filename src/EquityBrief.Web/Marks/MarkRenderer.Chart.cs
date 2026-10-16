@@ -15,6 +15,13 @@ public sealed record ChartPlan(string Rule, decimal Buy, decimal? Stop, decimal?
 // see: Marks are defined once and every screen draws from that list
 public sealed partial class MarkRenderer
 {
+    // The chart page's route, which every link that opens a stock opens first.
+    // see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+    public const string ChartRoute = "#/chart/";
+
+    // A link opening a stock's chart page.
+    public static string ChartOf(string ticker) => ChartRoute + Uri.EscapeDataString(ticker);
+
     // The averages the chart page draws, each with the words its legend names it by.
     static readonly (string Name, string Words)[] PageAverages =
     [
@@ -43,8 +50,8 @@ public sealed partial class MarkRenderer
     {
         var candle = candles[at];
         var sessions = candle.First == candle.Last
-            ? Formatted($"{candle.Last:yyyy-MM-dd}")
-            : Formatted($"{candle.First:yyyy-MM-dd} to {candle.Last:yyyy-MM-dd}");
+            ? FormattableString.Invariant($"{candle.Last:yyyy-MM-dd}")
+            : FormattableString.Invariant($"{candle.First:yyyy-MM-dd} to {candle.Last:yyyy-MM-dd}");
         var change = ChangeOf(candles, at) is { } moved
             ? Formatted($", {SignedFigure(moved.Percent, 2, Formatted($"{(moved.Change > 0 ? "+" : string.Empty)}{Price(moved.Change)} ({Change2(moved.Percent)})"))}")
             : string.Empty;
@@ -80,7 +87,7 @@ public sealed partial class MarkRenderer
         var prices = candles
             .SelectMany(candle => new[] { PlotValue(candle.High), PlotValue(candle.Low) })
             .Concat(PageAverages.SelectMany(average => candles.Select(candle => AverageOf(candle, average.Name))).OfType<double>())
-            .Concat(plans.SelectMany(plan => new[] { (decimal?)plan.Buy, plan.Stop, plan.Target }).OfType<decimal>().Select(PlotValue))
+            .Concat(plans.SelectMany(plan => new decimal?[] { plan.Buy, plan.Stop, plan.Target }).OfType<decimal>().Select(PlotValue))
             .ToArray();
         var axis = new PriceAxis(prices.Min(), prices.Max());
         var loudest = candles.Max(candle => candle.Volume);
@@ -89,7 +96,6 @@ public sealed partial class MarkRenderer
         var body = Math.Max(1, Math.Min(11, slot * 0.62));
 
         double Centre(int index) => Margin + (slot * index) + (slot / 2);
-        double Y(decimal price) => At(axis, PlotValue(price));
 
         var svg = new StringBuilder();
 
@@ -108,8 +114,7 @@ public sealed partial class MarkRenderer
         for (var line = 0; line < PageAverages.Length; line++)
         {
             var (name, words) = PageAverages[line];
-            var value = AverageOf(candles[^1], name);
-            var text = value is { } at ? Formatted($"{words} {at.ToString("#,##0.00", Invariant)}") : Formatted($"{words} not stored");
+            var text = LegendWords(words, AverageOf(candles[^1], name));
 
             svg.Append(Invariant, $"<line class=\"m-legend-swatch\" x1=\"{Number(legendAt)}\" y1=\"12\" x2=\"{Number(legendAt + 20)}\" y2=\"12\" ");
             svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-opacity=\"{Number(0.34 + (0.22 * line))}\" stroke-width=\"1.4\"/>");
@@ -129,8 +134,8 @@ public sealed partial class MarkRenderer
 
             foreach (var band in bands)
             {
-                var top = Y(band.HighEdge);
-                var bottom = Y(band.LowEdge);
+                var top = At(axis, PlotValue(band.HighEdge));
+                var bottom = At(axis, PlotValue(band.LowEdge));
                 var support = band.Role == "support";
 
                 svg.Append(Invariant, $"<rect class=\"level-band\" data-role=\"{Escaped(band.Role)}\" data-low-edge=\"{band.LowEdge.ToString(Invariant)}\" data-high-edge=\"{band.HighEdge.ToString(Invariant)}\" ");
@@ -173,14 +178,24 @@ public sealed partial class MarkRenderer
         {
             var candle = candles[index];
             var centre = Centre(index);
-            var openY = Y(candle.Open);
-            var closeY = Y(candle.Close);
+            var openY = At(axis, PlotValue(candle.Open));
+            var closeY = At(axis, PlotValue(candle.Close));
             var height = Math.Abs(openY - closeY);
             var left = centre - (body / 2);
 
-            svg.Append(Invariant, $"<g class=\"candle\" data-at=\"{index}\" data-first=\"{candle.First:yyyy-MM-dd}\" data-last=\"{candle.Last:yyyy-MM-dd}\" data-reading=\"{Escaped(ChartReading(candles, index))}\">");
+            svg.Append(Invariant, $"<g class=\"candle\" data-at=\"{index}\" data-first=\"{candle.First:yyyy-MM-dd}\" data-last=\"{candle.Last:yyyy-MM-dd}\" ");
+            svg.Append(Invariant, $"data-open=\"{candle.Open.ToString(Invariant)}\" data-high=\"{candle.High.ToString(Invariant)}\" data-low=\"{candle.Low.ToString(Invariant)}\" data-close=\"{candle.Close.ToString(Invariant)}\" data-volume=\"{candle.Volume}\" ");
+            svg.Append(Invariant, $"data-average20=\"{(candle.Sma20 is { } a20 ? a20.ToString("R", Invariant) : "none")}\" data-average50=\"{(candle.Sma50 is { } a50 ? a50.ToString("R", Invariant) : "none")}\" data-average200=\"{(candle.Sma200 is { } a200 ? a200.ToString("R", Invariant) : "none")}\" ");
+            svg.Append(Invariant, $"data-reading=\"{Escaped(ChartReading(candles, index))}\"");
+
+            foreach (var (name, words) in PageAverages)
+            {
+                svg.Append(Invariant, $" data-{name}=\"{Escaped(LegendWords(words, AverageOf(candle, name)))}\"");
+            }
+
+            svg.Append('>');
             svg.Append(Invariant, $"<rect class=\"candle-hit\" x=\"{Number(centre - (slot / 2))}\" y=\"0\" width=\"{Number(slot)}\" height=\"{PriceHeight}\" fill=\"transparent\"/>");
-            svg.Append(Invariant, $"<line x1=\"{Number(centre)}\" y1=\"{Number(Y(candle.High))}\" x2=\"{Number(centre)}\" y2=\"{Number(Y(candle.Low))}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>");
+            svg.Append(Invariant, $"<line x1=\"{Number(centre)}\" y1=\"{Number(At(axis, PlotValue(candle.High)))}\" x2=\"{Number(centre)}\" y2=\"{Number(At(axis, PlotValue(candle.Low)))}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>");
             svg.Append(height < 1
                 ? Formatted($"<line x1=\"{Number(left)}\" y1=\"{Number(closeY)}\" x2=\"{Number(left + body)}\" y2=\"{Number(closeY)}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>")
                 : Formatted($"<rect x=\"{Number(left)}\" y=\"{Number(Math.Min(openY, closeY))}\" width=\"{Number(body)}\" height=\"{Number(height)}\" fill=\"{(candle.Close > candle.Open ? "none" : "var(--ink, #1c1c1c)")}\" stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1\"/>"));
@@ -193,9 +208,9 @@ public sealed partial class MarkRenderer
 
         foreach (var plan in plans)
         {
-            foreach (var (kind, price, words) in new[]
+            foreach (var (kind, price, words) in new (string Kind, decimal? Price, string Words)[]
             {
-                ("buy", (decimal?)plan.Buy, Formatted($"{plan.Rule} buys at the next open, planned from {Price(plan.Buy)}")),
+                ("buy", plan.Buy, Formatted($"{plan.Rule} buys at the next open, planned from {Price(plan.Buy)}")),
                 ("stop", plan.Stop, plan.Stop is { } stop ? Formatted($"{plan.Rule} stop {Price(stop)}") : string.Empty),
                 ("target", plan.Target, plan.Target is { } target ? Formatted($"{plan.Rule} target {Price(target)}") : string.Empty),
             })
@@ -205,7 +220,7 @@ public sealed partial class MarkRenderer
                     continue;
                 }
 
-                var y = Y(at);
+                var y = At(axis, PlotValue(at));
 
                 svg.Append(Invariant, $"<line class=\"plan-line plan-{kind}\" data-rule=\"{Escaped(plan.Rule)}\" data-kind=\"{kind}\" data-price=\"{at.ToString(Invariant)}\" ");
                 svg.Append(Invariant, $"x1=\"{Margin}\" y1=\"{Number(y)}\" x2=\"{Width - Margin}\" y2=\"{Number(y)}\"{(kind == "buy" ? " stroke-dasharray=\"6 3\"" : string.Empty)}><title>{Escaped(words)}</title></line>");
@@ -238,7 +253,7 @@ public sealed partial class MarkRenderer
         }
 
         // The newest close as a rule and a tag in the column, and the plan's prices named beside it.
-        var now = Y(candles[^1].Close);
+        var now = At(axis, PlotValue(candles[^1].Close));
 
         svg.Append(Invariant, $"<line class=\"m-now\" x1=\"{Margin}\" y1=\"{Number(now)}\" x2=\"{Width - Margin}\" y2=\"{Number(now)}\" stroke-dasharray=\"4 3\"/>");
         svg.Append(Invariant, $"<g class=\"price-column\" data-close=\"{candles[^1].Close.ToString(Invariant)}\">");
@@ -297,6 +312,10 @@ public sealed partial class MarkRenderer
 
         return svg.ToString();
     }
+
+    // An average as the legend names it at a candle: its words and its value there, or that none is stored.
+    static string LegendWords(string words, double? value) =>
+        value is { } at ? Formatted($"{words} {at.ToString("#,##0.00", Invariant)}") : Formatted($"{words} not stored");
 
     // The candle whose first and last sessions hold a day, or none.
     static int IndexHolding(IReadOnlyList<ChartCandle> candles, DateOnly session)

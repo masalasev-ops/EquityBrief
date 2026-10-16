@@ -46,7 +46,7 @@ public sealed partial class SinglePageApp
             foreach (var day in days.Settled)
             {
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(day.Ticker)}\" data-asked-at=\"{Escaped(day.AskedAt)}\" data-state=\"{Escaped(day.State)}\" data-day=\"{Escaped(day.Day)}\" data-asked=\"{day.Asked}\">"));
-                body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(day.Ticker)}\">{Escaped(day.Ticker)}</a></td>"));
+                body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{ChartRoute}{Uri.EscapeDataString(day.Ticker)}\">{Escaped(day.Ticker)}</a></td>"));
                 body.Append(Invariant($"<td class=\"q-day\">{Escaped(day.Day)}</td><td class=\"q-asked\">{(day.Asked == 1 ? "once" : Invariant($"{day.Asked} times"))}</td>"));
                 body.Append(Invariant($"<td class=\"q-state\">{Escaped(day.State)}</td>"));
                 body.Append(Invariant($"<td class=\"q-when\">{day.Settled ?? "<span class=\"degraded\">no time stored</span>"}</td>"));

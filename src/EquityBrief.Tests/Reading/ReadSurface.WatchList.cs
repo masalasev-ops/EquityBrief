@@ -182,7 +182,7 @@ public partial class ReadSurface
             var trend = WatchRows(store, $"SELECT trend_state FROM ladder WHERE ticker = '{ticker}' AND as_of <= '{night}' ORDER BY as_of DESC LIMIT 1;").Single();
             var company = WatchRows(store, $"SELECT MAX(name) FROM membership WHERE ticker = '{ticker}';").Single();
 
-            Assert.Contains($"<a href=\"{SinglePageApp.NameRoute}{ticker}\"><b>{ticker}</b></a>", row, StringComparison.Ordinal);
+            Assert.Contains($"<a href=\"{SinglePageApp.ChartRoute}{ticker}\"><b>{ticker}</b></a>", row, StringComparison.Ordinal);
             Assert.Contains(company == "none" ? "</b></a></td>" : $"<span class=\"co\">{company}</span>", row, StringComparison.Ordinal);
             Assert.Contains(FormattableString.Invariant($"<td class=\"r num\">{closes[0]:0.00}</td><td class=\"r num {MarkRenderer.Hue(change)}\">{change:+0.00;-0.00;0.00}%</td><td>{trend}</td>"), row, StringComparison.Ordinal);
             Assert.Contains(ratio == "none" ? "</td><td class=\"r\"><span class=\"degraded\">none</span></td><td class=" : $"<td class=\"r num\">{ratio}</td>", row, StringComparison.Ordinal);

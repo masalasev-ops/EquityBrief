@@ -949,6 +949,25 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .m-mark{fill:var(--ink)} .m-mark-t{font-size:9.5px;font-weight:700;fill:var(--surface)}
 .level-chart .m-legend-t,.level-chart .m-tick,.level-chart .m-nowtag-t,.level-chart .m-cap,.volume-profile .m-tick{font-size:15px}
 .level-chart .m-mark-t{font-size:12px}
+/* The chart page, from 19.11: the chart at the column's width above everything else, its interval links and its levels'
+   toggle, the volume in the gain's and the loss's hue, a listing rule's lines, and the grid of figures in groups. */
+.candle-chart .m-legend-t,.candle-chart .m-tick,.candle-chart .m-nowtag-t,.candle-chart .m-cap{font-size:15px}
+.candle-chart .level-bands{display:none} .chart-fig.bands-on .candle-chart .level-bands{display:inline}
+.candle-chart .vol-up{fill:var(--up)} .candle-chart .vol-down{fill:var(--down)} .candle-chart .vol-flat{fill:var(--muted)}
+.candle-chart .plan-line{stroke-width:1.6} .candle-chart .plan-buy,.candle-chart .plan-target{stroke:var(--up)} .candle-chart .plan-stop{stroke:var(--down)}
+.candle-chart .plan-tick-buy,.candle-chart .plan-tick-target{fill:var(--up)} .candle-chart .plan-tick-stop{fill:var(--down)}
+.candle-chart .candle-hit{cursor:crosshair}
+.chart-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 8px}
+.chart-controls .intervals{display:flex;gap:4px}
+.chart-controls .interval{padding:3px 10px;border:1px solid var(--hair);border-radius:4px;text-decoration:none}
+.chart-controls .interval.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.chart-reading{font-variant-numeric:tabular-nums;margin:4px 0 8px;min-height:1.4em}
+.report-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
+.grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;margin:0}
+.grid-group dt{color:var(--ink-2)} .grid-group dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.route-times code{font-size:12.5px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
 .sw{display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px}
 .sw-sup{background:var(--sup-fill);border-top:1.5px solid var(--sup);border-bottom:1.5px solid var(--sup)}

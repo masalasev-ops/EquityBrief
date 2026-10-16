@@ -119,7 +119,7 @@ public partial class ReadSurface
         var dm = PickRowOf(region, "DM", EarlierNight);
 
         Assert.Contains($"<td class=\"num\">{EarlierNight}</td>", ag, StringComparison.Ordinal);
-        Assert.Contains($"<a class=\"name-link\" href=\"#/name/AG/{EarlierNight}\">AG</a>", ag, StringComparison.Ordinal);
+        Assert.Contains("<a class=\"name-link\" href=\"#/chart/AG\">AG</a>", ag, StringComparison.Ordinal);
         Assert.Contains($"<td class=\"stands\" data-now=\"104\" data-stop=\"96\" data-target=\"110\">104.00 on {TheSwitch}, against a stop of 96.00 and a target of 110.00</td>", ag, StringComparison.Ordinal);
         Assert.Contains("<circle class=\"tl-open\" cx=\"90\" cy=\"15\" r=\"4.5\"/>", ag, StringComparison.Ordinal);
         Assert.Contains("stopped out at this close, against a stop of 96.00 and a target of 110.00; free again from the next night</td>", bs, StringComparison.Ordinal);
