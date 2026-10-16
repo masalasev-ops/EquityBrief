@@ -1350,42 +1350,9 @@ public sealed partial class SinglePageApp : IComponent
             ? Invariant($"<p class=\"notice earlier-night\" data-night=\"{evening:yyyy-MM-dd}\" role=\"status\">This is {Escaped(ticker)} as the store held it after the close of {evening:yyyy-MM-dd}. <a href=\"{NameRoute}{Escaped(ticker)}\">Tonight's page</a></p>")
             : string.Empty);
 
-        // The line the masthead carries: the ticker, the company, the index that holds it and its sector, and the price
-        // now. In the regular session that is the provider's delayed quote with its own time and its change on the
-        // previous close, which the worker's quote job asked for and the page's script asks for again at most every
-        // five minutes while the page is open; outside it, the last stored close with its change on the day and the
-        // session it is from. Levels and the plan are read from completed sessions whichever is shown, and say so.
-        // see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it
-        // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
-        var identity = new StringBuilder();
-        var live = night is null && quoteSession is { IsOpen: true } && quote is not null ? quote : null;
-
-        identity.Append(Invariant($"<span class=\"m-tk\">{Escaped(ticker)}</span>"));
-        identity.Append(mast?.Company is { Length: > 0 } name ? Invariant($"<span class=\"m-co\">{Escaped(name)}</span>") : string.Empty);
-        identity.Append(mast?.Index is { Length: > 0 } || mast?.Sector is { Length: > 0 }
-            ? Invariant($"<span class=\"m-ix\">{string.Join(" · ", new[] { mast?.Index, mast?.Sector }.Where(part => part is { Length: > 0 }).Select(part => Escaped(part!)))}</span>")
-            : string.Empty);
-        identity.Append(Invariant($"<span class=\"m-price\" data-live=\"{(live is null ? "no" : "yes")}\">{PriceNow(bars, mast, live)}</span>"));
-        identity.Append(watched is { } held ? WatchControl(ticker, held) : string.Empty);
-
-        var asOf = "<span class=\"m-when\">" + (live is { } quoted
-            ? QuoteAsOf(quoted, session)
-            : session is { } last
-                ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}. Levels and the plan come from completed sessions to {last:yyyy-MM-dd}")
-                : "No session is stored for this name") + "</span>";
-
-        asOf += mast?.Sector is { Length: > 0 } sector
-            ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
-            : string.Empty;
-
-        // Where the page asks for its quote: its route, and the session's open and close, so the shell's script asks
-        // only inside it, while the page is shown, and no more often than the interval. A page about an earlier night
-        // and the exported file ask for none.
-        var asks = night is null && quoteSession is { } window && asksForQuotes
-            ? Invariant($" data-quote-route=\"{QuoteRoute}{Escaped(ticker)}\" data-session-open=\"{window.Open.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-session-close=\"{window.Close.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-interval-minutes=\"{EquityBrief.Core.Quotes.QuoteLimits.IntervalMinutes}\" data-asked=\"{(quote is { } stored ? Invariant($"{stored.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}") : string.Empty)}\"")
-            : string.Empty;
-
-        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf, asks));
+        // The masthead the chart page draws as well, with a link back to the stock's chart from 19.11.
+        // see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+        region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes, night, suspect, watched, Invariant($" · <a class=\"m-chart\" href=\"{ChartRoute}{Uri.EscapeDataString(ticker)}\">Its chart</a>")));
 
         // The headline and the four tiles under the masthead, before the contents: one sentence carrying no figure, and the
         // quarter's earnings, the year's growth, the yield and the distance from the year's high, each worked from stored
