@@ -1289,7 +1289,7 @@ public static partial class NameScreen
 
         // A session the indicator rows leave empty draws the value the night read through the sessions before the
         // store's year, where it read one; the rows themselves, and what the bands read, are left as stored.
-        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
         var before = (warmed ?? []).ToDictionary(
             average => average.Name,
             average => average.Values.ToDictionary(value => value.Session, value => value.Value),

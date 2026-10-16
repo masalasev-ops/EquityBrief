@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Bars;
 
 // The chart's averages over the sessions before the store's year, read from the pulled history at the store's scale,
 // worked by hand over constructed stores.
-// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
 public class ChartAveragerTests
 {
     // The exchange's sessions from a day, as many as asked for.

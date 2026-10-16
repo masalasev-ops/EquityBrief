@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, the 3.1 correction: the chart's averages drawn on the sessions the indicators leave empty from what the
 // night read through the sessions before the store's year, with the line beneath naming the pull or why none was read.
-// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+// see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
 public partial class ReadSurface
 {
     // A constant, since the scope's own tables read it while they are built.

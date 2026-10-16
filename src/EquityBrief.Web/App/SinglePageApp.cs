@@ -1591,7 +1591,7 @@ public sealed partial class SinglePageApp : IComponent
         chart.Append("</div>");
 
         // Where the averages over the chart's first sessions came from, or why they start partway across it.
-        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name page draws
+        // see: The chart's averages are read over the sessions before the store's year from the pulled history at the store's scale, by a step whose figures only the name and chart pages draw
         if (averagesFrom is { } from)
         {
             chart.Append(from.Pull is { } pull
