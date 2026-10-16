@@ -25,7 +25,7 @@ namespace EquityBrief.Worker.Loop;
 // see: A change is adopted only on test years the proposal never saw, and a search is judged as a procedure run year by year
 // see: A proposal passes the tester on a block sign-flip test of its total edge after costs against the current rule, corrected within a run and held to a fixed bar across runs
 // see: Each family on each index is proposed for, tested on and approved separately, on its own index's history alone
-public sealed class WalkForwardTester(IClock clock, string databaseFile, string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task>? pause = null) : IComponent
+public sealed partial class WalkForwardTester(IClock clock, string databaseFile, string dataRoot, TextWriter output, Func<TimeSpan, CancellationToken, Task>? pause = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -59,6 +59,7 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
             new StoreTouch(Store.LoopReference, Touch.Insert),
             new StoreTouch(Store.LoopRule, Touch.Insert),
             new StoreTouch(Store.LoopRuleYear, Touch.Insert),
+            new StoreTouch(Store.LoopLink, Touch.Insert),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.ProvisionalSetting, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
@@ -363,6 +364,12 @@ public sealed class WalkForwardTester(IClock clock, string databaseFile, string 
     const string InsertRuleYear = @"
         INSERT INTO loop_rule_year (run_id, index_code, family, rule, year, complete, units, total, compared_units, compared_total)
         VALUES ($run_id, $index_code, $family, $rule, $year, $complete, $units, $total, $compared_units, $compared_total);
+    ";
+
+    // A row of which readings go with winners, which the readings' step writes with its run.
+    const string InsertLink = @"
+        INSERT INTO loop_link (run_id, month, index_code, family, reading, setups, years, correlation, same_way, shuffled, words)
+        VALUES ($run_id, $month, $index_code, $family, $reading, $setups, $years, $correlation, $same_way, $shuffled, $words);
     ";
 
     // The monthly per-rule test on an index for a month: every family rule standing on the index when the run begins
