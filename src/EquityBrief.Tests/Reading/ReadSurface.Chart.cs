@@ -220,10 +220,17 @@ public partial class ReadSurface
             var daily = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAPL"));
             var weekly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAPL?interval=weekly"));
 
-            // A week of the stored year worked by hand from its daily bars.
+            // A week of the stored year worked by hand from its daily bars: a whole week whose highest high and lowest low
+            // fall on neither its first session nor its last, so a candle reading either end's figures for the week's is
+            // another candle.
             static DateOnly Monday(DateOnly day) => day.AddDays(-(((int)day.DayOfWeek + 6) % 7));
 
-            var week = bars.Where(bar => Monday(bar.Session) == Monday(bars[20].Session)).ToArray();
+            var week = bars
+                .GroupBy(bar => Monday(bar.Session))
+                .Select(days => days.ToArray())
+                .First(days => days.Length == 5
+                    && days.Max(bar => bar.High) is var high && days[0].High != high && days[^1].High != high
+                    && days.Min(bar => bar.Low) is var low && days[0].Low != low && days[^1].Low != low);
 
             Assert.Contains(
                 FormattableString.Invariant($"data-first=\"{week[0].Session:yyyy-MM-dd}\" data-last=\"{week[^1].Session:yyyy-MM-dd}\" data-open=\"{week[0].Open}\" data-high=\"{week.Max(bar => bar.High)}\" data-low=\"{week.Min(bar => bar.Low)}\" data-close=\"{week[^1].Close}\" data-volume=\"{week.Sum(bar => bar.Volume)}\""),
