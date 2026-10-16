@@ -45529,7 +45529,11 @@ Mutated:    the rule, stated before the runs: one mutation a property the correc
             counted the same way; red, same. C3 an amendment matched by its owners as listed; red, same. C4 the comparison
             setting the owners' CIKs as listed; red, same. C5 the days read by hand reading only the companies a
             membership holds; red at the days' test. Each reverted before anything was committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, b11ee730: all six
+            steps, 0 warnings, 0 errors, 2394 of 2394 tests ran with none failed in 24 minutes 47 seconds, migrations 0
+            to 96 with none pending, schema version 96, against `data-ci` and never `data`; the phase report 60 tables,
+            1337 claims, 1337 passing, none out of scope and none unexamined, 1348 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the correction's remedy run from main and its record; the Run page's 4.2 seconds, Tonight's 786 milliseconds
             and a name page's 693 at their medians, each a ruling of its own the operator is asked for; the first night's
             fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's
