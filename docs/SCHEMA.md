@@ -104,6 +104,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `loop_reference` | WalkForwardTester | none | none |
 | `loop_rule` | WalkForwardTester | none | none |
 | `loop_rule_year` | WalkForwardTester | none | none |
+| `loop_link` | WalkForwardTester | none | none |
 | `loop_decision` | ReadApi | none | none |
 | `loop_applied` | LoopApply | none | none |
 | `provisional_setting` | LoopApply | none | none |
@@ -1466,6 +1467,28 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `value_place` | REAL | from migration 88, the valuation reading: the four newest quarters' net income as first filed before the session over the company's value, the share count its filings' covers state times the close, as the share of the same figure at the ends of its own twelve quarters before the session that it stands above, a tie counting half, null where a part of it is missing; a row written before the migration holds none, and the history's rows read it once the history is built again |
 | `fill` | TEXT | from migration 94, decimal in code, the open of the session after the setup's own that it is bought at, at the setup's own scale; null while that session is not stored and where its open is not held |
 | `past` | TEXT | from migration 94, `stop` where that open sat at or under the plan's stop, `target` where at or over its target, null inside its range and on a heavyweights' setup |
+| `return_week` | REAL | from migration 95, the first of the published price and volume factors, each as the catalogue in the core defines it, as it stood on the session over the member's own bars and null where they do not reach, a row written before them null until the history is built again: the return over 5 sessions |
+| `return_month` | REAL | the return over 21 sessions |
+| `largest_return` | REAL | the largest daily return of the 21 sessions to the session |
+| `volatility_month` | REAL | the sample standard deviation of the daily returns of the 21 sessions to the session |
+| `residual_volatility` | REAL | the sample standard deviation of the residuals of the daily returns of the 63 sessions to the session on the index's own series' over the same days |
+| `beta` | REAL | the slope of the daily returns of the 251 sessions to the session on the index's own series' over the same days |
+| `skewness` | REAL | the skewness of the daily returns of the 63 sessions to the session |
+| `close_place` | REAL | the mean over the 10 sessions to the session of the close's place in the session's range, a session whose high is its low left out |
+| `up_volume_share` | REAL | the share of the 20 sessions' volume traded on sessions closing above the close before |
+| `price_volume_correlation` | REAL | the correlation of the daily close change with the daily volume over the 20 sessions to the session |
+| `illiquidity` | REAL | the base-10 logarithm of the mean over the 21 sessions to the session of the absolute daily return over the close times the volume |
+| `overnight_less_intraday` | REAL | the sum over the 21 sessions to the session of the overnight returns less the sum of the intraday returns |
+| `sector_month` | REAL | the return over 21 sessions less its GICS sector fund's between the same two days |
+| `sector_quarter` | REAL | the return over 63 sessions less its GICS sector fund's between the same two days |
+| `low_ratio` | REAL | the close over the lowest low of the 252 sessions ending on the session |
+| `streak` | REAL | the signed count of the consecutive sessions to the session closing the same way on the close before, nought where the session closed level |
+| `volume_slope` | REAL | the slope of on-balance volume over the 20 sessions to the session over the mean volume of those sessions |
+| `alpha_one` | REAL | Kakushadze's Alpha#1, its rank a member's place among the index's members on the session |
+| `alpha_two` | REAL | Kakushadze's Alpha#2 |
+| `alpha_three` | REAL | Kakushadze's Alpha#3 |
+| `alpha_four` | REAL | Kakushadze's Alpha#4 |
+| `alpha_six` | REAL | Kakushadze's Alpha#6, the last of the published factors |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 
@@ -1526,7 +1549,7 @@ Grain: one row per index, member and night the ledger read, from 19.2.
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's forty-six sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score.
+**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none.
 
 ### loop_run
 Grain: one row per tester run on an index.
@@ -1722,6 +1745,27 @@ Grain: one row per per-rule test run, index, family, rule and test year.
 Primary key: `run_id`, `index_code`, `family`, `rule`, `year`.
 
 **Written once by the walk-forward tester's per-rule test with its run**, a row a test year for each rule it walked and none for a rule it could not, so paper trading's test years read each year as the run read it (see: Every registered rule is tested each month on the test years, each variant against its live rule and each live rule against its benchmark).
+
+### loop_link
+Grain: one row per run, index, family and reading of which readings go with winners, from migration 95.
+
+| Column | Type | Notes |
+|---|---|---|
+| `run_id` | TEXT | the run, named `loop-links` with its index and the instant it began |
+| `month` | TEXT | the month the run is for, as `yyyy-MM` |
+| `index_code` | TEXT | `GSPC`, `MID` or `SML` |
+| `family` | TEXT | the ledger's family, as `setup` carries it |
+| `reading` | TEXT | the reading's column in the catalogue |
+| `setups` | INTEGER | the settled setups of the family on the index holding the reading in the test years |
+| `years` | INTEGER | the test years holding at least the floor of them, with a reading and a result that vary |
+| `correlation` | REAL | the mean over those years of the reading's Spearman correlation at entry with the setup's result, null where no year counts |
+| `same_way` | REAL | the share of those years whose correlation points the mean's way, null where no year counts |
+| `shuffled` | REAL | the 95th percentile of the mean's size with the results shuffled among each night's setups holding the reading, null where no year counts |
+| `words` | TEXT | `goes with winners`, `goes with losers`, `no link beyond the shuffle` or `too few settled setups in a test year to read` |
+
+Primary key: `run_id`, `index_code`, `family`, `reading`.
+
+**Written once by the walk-forward tester's monthly step with its run log row**, a row for every reading of the catalogue for each family the index's ledger holds settled setups of, so the Ledger page draws the newest run's rows and works none of them; no engine reads it, and its words move no rule (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule).
 
 ### loop_decision
 Grain: one row per word the operator gave on a proposal of a run, or on a restore.

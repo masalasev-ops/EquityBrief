@@ -372,9 +372,10 @@ public partial class ArchitectureConformance
         // and parts of the remaining screens less the nineteen it retires, and 1313 from 19.8, Tonight's card of the stocks
         // one gate short, and 1316 from 19.10 on the operator's rulings of 2026-10-15, the fill step's catalogue and matrix
         // rows and its store, and 1327 from 19.11 on the rulings of 2026-10-16, the chart page's ten rows and the Run page's
-        // time of every page.
+        // time of every page, and 1330 from 19.12 on the same rulings, which readings go with winners on the Ledger page,
+        // its store and section 17's row.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1327),
+            (789, 853, 6, 4, 855, 876, 1330),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

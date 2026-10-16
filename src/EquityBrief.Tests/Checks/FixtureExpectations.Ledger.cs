@@ -84,7 +84,7 @@ public partial class FixtureExpectations
 
         // The catalogue names each column once.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(46, LedgerReadings.Count);
+        Assert.Equal(68, LedgerReadings.Count);
     }
 
     [Fact]
@@ -253,6 +253,8 @@ public partial class FixtureExpectations
         Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "LedgerSetups.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "FiledFacts.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "ValuationReading.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "FactorReadings.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "FactorRanks.cs"),
     ];
 
     [Fact]

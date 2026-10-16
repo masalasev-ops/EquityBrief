@@ -80,7 +80,7 @@ public partial class FixtureExpectations
             calendar,
             at,
             market,
-            new LedgerContext(NoIncome, NoSectors, highs, lows, NoFacts));
+            new LedgerContext(NoIncome, NoSectors, highs, lows, NoFacts) { Ranks = new FactorRanks(series, members) });
 
         // Rebuilt from the history cut at that session: the same readings, the VIX's and the index's among them.
         var rebuilt = LedgerPointInTime.Rebuilt(
@@ -124,7 +124,7 @@ public partial class FixtureExpectations
         var members = SweepBenchmark.On(series, calendar.Count);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Count);
         var at = 64;
-        var stored = LedgerSetups.On(IndexFamilies.LargeIndex, series, columns, members, calendar, at, market, new LedgerContext(NoIncome, NoSectors, highs, lows, NoFacts))
+        var stored = LedgerSetups.On(IndexFamilies.LargeIndex, series, columns, members, calendar, at, market, new LedgerContext(NoIncome, NoSectors, highs, lows, NoFacts) { Ranks = new FactorRanks(series, members) })
             .Single(setups => setups.Family == BreakoutRule.Name)
             .Rows
             .Single(row => row.Ticker == "AAA");

@@ -50,10 +50,12 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-build" => await LedgerBuildRun(args),
     "ledger-check" => await LedgerCheckRun(args),
     "ledger-next-open" => await LedgerNextOpenRun(args),
+    "ledger-night" => await LedgerNightRun(),
     "fill" => await FillRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
+    "loop-links" => await LoopLinksRun(args),
     "loop-apply" => await LoopApplyRun(),
     "loop-month" => await LoopMonthRun(args),
     "sweep-fundamentals" => await SweepFundamentalsRun(args),
@@ -72,7 +74,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 39 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 41 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -157,6 +159,9 @@ static int NoVerb()
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
+        "'ledger-night' runs the setup ledger's night step over the newest night the store holds, as the night does, " +
+        "writing that night's setups and every member's readings again and stating its time, refused while a night holds " +
+        "the store, " +
         "'fill' prices every stored trade whose next session is stored at that session's open, as the night's step " +
         "does, with '--again' pricing every one again over what an earlier run wrote, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
@@ -171,11 +176,14 @@ static int NoVerb()
         "the test years and stores each variant's verdict against its live or provisional rule and each of those against " +
         "its benchmark, a rule the history cannot walk stored with why, with '--month <yyyy-MM>' and '--print' as " +
         "'loop-test' reads them, " +
+        "'loop-links --index <GSPC, MID or SML>' works which readings go with winners over each family's settled setups " +
+        "on the index and stores every reading's row, with '--month <yyyy-MM>' and '--print' as 'loop-test' reads them, " +
         "'loop-apply' applies each change the operator approved on the Loop page that no apply has answered, as the " +
         "night does before the S&P 400's and 600's families, an S&P 400 or 600 swing family's written as the setting it " +
         "stands at from the next night and every other refused with why, " +
         "'loop-month' runs the month's steps in order, the SEC's facts asked whole, the history written again beside the " +
         "standing one and kept where a family would lose its benchmarks, each index's point-in-time check, " +
+        "which readings go with winners on each index, " +
         "each index's tester run, each index's per-rule test and the month's report naming the one proposal a family an " +
         "index puts to you, with " +
         "'--month <yyyy-MM>' naming the month, and run again goes on from the first step no try of the month held, as " +
@@ -665,6 +673,32 @@ static async Task<int> FillRun(string[] args)
     return 0;
 }
 
+// The setup ledger's night step by hand over the newest night the store holds, as the night runs it after the families:
+// that night's setups and every member's readings written again on each index, a night run again replacing its own
+// rows, and the windows closed, its run log row carrying its time; refused while a night holds the store.
+// see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
+static async Task<int> LedgerNightRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+
+    if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"ledger-night: the night holds the store ({holder}); run it once the night has finished.");
+
+        return 2;
+    }
+
+    var watch = System.Diagnostics.Stopwatch.StartNew();
+    var outcome = await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile)
+        .NightAsync(FormattableString.Invariant($"ledger-night-{clock.UtcNow:yyyyMMddTHHmmssZ}"));
+
+    Console.WriteLine(FormattableString.Invariant($"ledger-night: {(outcome.Session is { } night ? night.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : "no night")}, {EquityBrief.Worker.Ledger.SetupLedger.Detail(outcome.Indices)}, in {watch.Elapsed.TotalSeconds:0} s"));
+
+    return outcome.Indices.Any(index => index.Fault is not null) ? 1 : 0;
+}
+
 // The ledger's next-open check by hand, over one index's settled setups, reading the store and writing nothing.
 // see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
 static async Task<int> LedgerNextOpenRun(string[] args)
@@ -720,6 +754,25 @@ static async Task<int> LoopRulesRun(string[] args)
         .RulesAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
 }
 
+// Which readings go with winners by hand on one index, every family's settled setups read from the ledger and every
+// reading's row worked over them, writing its own table.
+// see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+static async Task<int> LoopLinksRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (VerbArguments.Value(args, "--index") is not { } index)
+    {
+        Console.Error.WriteLine("loop-links: give '--index <GSPC, MID or SML>', with '--month <yyyy-MM>' to name the month the run is for.");
+
+        return 1;
+    }
+
+    return await new EquityBrief.Worker.Loop.WalkForwardTester(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile, store.DataRoot, Console.Out)
+        .LinksAsync(index, VerbArguments.Value(args, "--month"), print: args.Contains("--print", StringComparer.Ordinal));
+}
+
 // The apply step by hand, as the night runs it before the S&P 400's and 600's families: every change the operator
 // approved on the Loop page that no apply has answered, applied or refused with why, under the configured adopt setting.
 // see: An approved change is applied by the night's own build on the index it was approved on alone
@@ -742,9 +795,10 @@ static async Task<int> LoopApplyRun()
 }
 
 // The monthly run, by hand or from tools/monthly on the first Saturday of the month: the SEC's facts asked whole, the
-// indices' history written again beside the standing one, each index's point-in-time check, each index's tester run
-// and the month's report, a step at a time, going on from the first step no try of the month held. The history's and
-// the testers' steps take the drain's lock themselves as they write.
+// indices' history written again beside the standing one, each index's point-in-time check, which readings go with
+// winners on each index, each index's tester run and per-rule test, and the month's report, a step at a time, going on
+// from the first step no try of the month held. The history's, the readings' and the testers' steps take the drain's
+// lock themselves as they write.
 // see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator
 static async Task<int> LoopMonthRun(string[] args)
 {
@@ -782,6 +836,17 @@ static async Task<int> LoopMonthRun(string[] args)
             await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile).CheckAsync(index, Console.Out, cancellation: cancellation) == 0
                 ? (true, "the point-in-time check named no difference")
                 : (false, "the point-in-time check named a difference, so the tester does not read the ledger this month")));
+    }
+
+    foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)
+    {
+        steps.Add(new(
+            "links-" + index,
+            async (_, cancellation) =>
+                await new EquityBrief.Worker.Loop.WalkForwardTester(clock, store.DatabaseFile, store.DataRoot, Console.Out).LinksAsync(index, month, cancellation) == 0
+                    ? (true, $"which readings go with winners was worked for {month}")
+                    : (false, "which readings go with winners was not worked"),
+            TakesTheLock: true));
     }
 
     foreach (var index in EquityBrief.Worker.Loop.MonthlyRun.Indices)

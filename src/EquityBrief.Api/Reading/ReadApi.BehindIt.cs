@@ -21,7 +21,9 @@ public sealed partial class ReadApi
 
     const string RidgePassed = "SELECT COUNT(*) FROM loop_proposal WHERE run_id = $run AND family = $family AND proposal LIKE $prefix AND passed = 1;";
 
-    // Every member's readings on the night, by ticker, the catalogue's in its order; none for a night the ledger stored none of.
+    // Every member's readings on the night, by ticker, the catalogue's in its order; none for a night the ledger stored none
+    // of. A row written before the catalogue gained readings holds the readings before them, and the ones it lacks read as
+    // none; a row holding more than the catalogue defines is not read.
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<double?>>> LedgerReadingsAsync(string index, DateOnly night)
     {
         await using var connection = Open();
@@ -37,9 +39,12 @@ public sealed partial class ReadApi
 
         while (await reader.ReadAsync())
         {
-            if (JsonSerializer.Deserialize<double?[]>(reader.GetString(1)) is { Length: var length } readings && length == LedgerReadings.Count)
+            if (JsonSerializer.Deserialize<double?[]>(reader.GetString(1)) is { Length: var length } readings && length <= LedgerReadings.Count)
             {
-                read[reader.GetString(0)] = readings;
+                var whole = new double?[LedgerReadings.Count];
+
+                readings.CopyTo(whole, 0);
+                read[reader.GetString(0)] = whole;
             }
         }
 

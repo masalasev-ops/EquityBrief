@@ -8,16 +8,16 @@ public sealed record LedgerReading(string Column, string Definition);
 // rules' own functions, the valuation reading on a night reading the closes before the store's year from the history
 // pulled for those years at the store's scale as the history's merged bars hold them, so a row written on the night
 // and a row rebuilt from the history for the same session carry the same figures. A reading the inputs do not reach is
-// stored as none and never as nought. The version is the pin of this file, of the facts' and the valuation reading's
-// definitions and of the worker's source that fills the columns, stored on every row, so a row written under another
-// definition can be told apart.
+// stored as none and never as nought. The version is the pin of this file, of the facts', the valuation reading's and the
+// published factors' definitions and of the worker's sources that fill the columns and work the members' places, stored
+// on every row, so a row written under another definition can be told apart.
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "859241ef8442";
+    public const string Version = "894ed2775fe4";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -79,6 +79,32 @@ public static class LedgerReadings
         new("operating_margin_change", "the newest quarter's operating income over its revenue less the same quarter's a year before"),
         new("cash_over_income", "the newest fiscal year's cash from operations over its net income, both as first filed before the session, where that income is above nothing"),
         new("value_place", "the four newest quarters' net income as first filed before the session over the company's value, the share count its filings' covers state times the close, as the share of the same figure at the ends of its own twelve quarters before it that it stands above, a tie counting half"),
+
+        // From 19.12 the published price and volume factors, appended so every reading before them keeps its place, each
+        // over the member's own bars to the session through the definitions of the core's factor readings.
+        // see: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+        new("return_week", "the return over 5 sessions"),
+        new("return_month", "the return over 21 sessions"),
+        new("largest_return", "the largest daily return of the 21 sessions to the session, after Bali, Cakici and Whitelaw (2011)"),
+        new("volatility_month", "the sample standard deviation of the daily returns of the 21 sessions to the session"),
+        new("residual_volatility", "the sample standard deviation of the residuals of the daily returns of the 63 sessions to the session on the index's own series' over the same days, after Ang, Hodrick, Xing and Zhang (2006)"),
+        new("beta", "the slope of the daily returns of the 251 sessions to the session on the index's own series' over the same days, the 252 closes of the year the night holds, after Frazzini and Pedersen (2014)"),
+        new("skewness", "the skewness of the daily returns of the 63 sessions to the session, their mean cubed deviation over their population standard deviation cubed"),
+        new("close_place", "the mean over the 10 sessions to the session of the close's place in the session's range, close less low over high less low, a session whose high is its low left out"),
+        new("up_volume_share", "the share of the 20 sessions' volume traded on sessions closing above the close before"),
+        new("price_volume_correlation", "the correlation of the daily close change with the daily volume over the 20 sessions to the session"),
+        new("illiquidity", "the base-10 logarithm of the mean over the 21 sessions to the session of the absolute daily return over the close times the volume, a session trading nothing left out, after Amihud (2002)"),
+        new("overnight_less_intraday", "the sum over the 21 sessions to the session of the overnight returns, the open over the close before less one, less the sum of the intraday returns, the close over the open less one, after Lou, Polk and Skouras (2019)"),
+        new("sector_month", "the return over 21 sessions less its GICS sector fund's between the same two days, the sector its company files as it stood on the session"),
+        new("sector_quarter", "the return over 63 sessions less its GICS sector fund's between the same two days"),
+        new("low_ratio", "the close over the lowest low of the 252 sessions ending on the session"),
+        new("streak", "the signed count of the consecutive sessions to the session closing the same way on the close before, plus for rises and minus for falls, nought where the session closed level"),
+        new("volume_slope", "the slope of on-balance volume over the 20 sessions to the session, each session's volume added on a rise and taken off on a fall, over the mean volume of those sessions"),
+        new("alpha_one", "Kakushadze's Alpha#1, rank(Ts_ArgMax(SignedPower(((returns < 0) ? stddev(returns, 20) : close), 2.), 5)) - 0.5, rank a member's place among the index's members on the session and Ts_ArgMax the place of the largest of the 5 sessions to it, 1 for the oldest"),
+        new("alpha_two", "Kakushadze's Alpha#2, -1 * correlation(rank(delta(log(volume), 2)), rank(((close - open) / open)), 6), each rank a member's place among the index's members on each of the 6 sessions"),
+        new("alpha_three", "Kakushadze's Alpha#3, -1 * correlation(rank(open), rank(volume), 10), each rank a member's place among the index's members on each of the 10 sessions"),
+        new("alpha_four", "Kakushadze's Alpha#4, -1 * Ts_Rank(rank(low), 9), Ts_Rank the place of the session's own among the 9 sessions' places, 1 for the lowest"),
+        new("alpha_six", "Kakushadze's Alpha#6, -1 * correlation(open, volume, 10)"),
     ];
 
     public static int Count => All.Count;

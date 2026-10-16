@@ -121,7 +121,7 @@ public static class LedgerPointInTime
         var members = SweepBenchmark.On(series, calendar.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
 
-        return new CutRead(series, SweepColumns.Sessions(series, calendar), members, calendar, at, name, bar, new LedgerContext(income, sectors, highs, lows, facts));
+        return new CutRead(series, SweepColumns.Sessions(series, calendar), members, calendar, at, name, bar, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
     }
 
     static double[] Closes(SweepSeries series) => [.. series.Bars.Select(held => Statistic.FromPrice(held.Close))];

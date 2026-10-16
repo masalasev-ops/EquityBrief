@@ -3320,7 +3320,8 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<EquityBrief.Core.Ledger.LedgerYear> years,
         string? family,
         IReadOnlyList<EquityBrief.Core.Ledger.LedgerSetupRow> settled,
-        EquityBrief.Core.Ledger.LedgerPath? path)
+        EquityBrief.Core.Ledger.LedgerPath? path,
+        EquityBrief.Core.Ledger.LinkTable? links = null)
     {
         static string Named(string word) => word switch
         {
@@ -3380,6 +3381,19 @@ public sealed partial class SinglePageApp : IComponent
             title: family is null ? "Settled setups" : Escaped(Named(family)) + ": newest settled setups",
             stamp: Cards.Night(night),
             region: "ledger-path"));
+
+        // From 19.12 which readings go with winners for the family the tabs above chose, as the monthly run stored it.
+        // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+        region.Append(Cards.Computed(
+            "Setup ledger",
+            marks.LedgerLinks(links)
+                + Cards.Key(
+                    "How to read it.",
+                    "Each row is one of the ledger's readings on this family's settled setups: how strongly its value at entry ranked with the setup's result in each test year, the mean of those years, how many of them pointed the same way, and how large the same mean comes out with the results shuffled among the setups of each night. A reading goes with winners where higher values went with better results beyond that shuffle, and with losers where they went with worse.",
+                    "The words inform only: no reading is removed and no rule or proposal changes because of them, and the loop's engines read every reading whatever its row says."),
+            title: family is null ? "Which readings go with winners" : "Which readings go with winners: " + Escaped(Named(family)),
+            stamp: Cards.Night(night),
+            region: "reading-links"));
         region.Append("</section>");
 
         return region.ToString();

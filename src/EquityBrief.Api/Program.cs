@@ -2240,7 +2240,9 @@ app.MapGet("/screens/ledger", async (HttpRequest request, ReadApi read, MarkRend
         path = await read.LedgerPathAsync(reading.Code, family, chosen[..cut], session, night ?? session);
     }
 
-    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path), "text/html; charset=utf-8");
+    var links = family is null ? null : await read.LedgerLinksAsync(reading.Code, family);
+
+    return Results.Content(page.LedgerRegion(marks, night, reading, selector, years, family, settled, path, links), "text/html; charset=utf-8");
 });
 
 app.MapGet("/screens/loop", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>

@@ -212,7 +212,7 @@ public partial class FixtureExpectations
         var members = SweepBenchmark.On(series, inputs.Sessions.Length);
         var (highs, lows) = SweepIdeas.HighsAndLows(series, members, inputs.Sessions.Length);
 
-        return LedgerSetups.On(IndexFamilies.LargeIndex, series, columns, members, inputs.Sessions, at, LedgerMarket.None, new LedgerContext(BusinessFirstHistory.Income(), NoSectors, highs, lows, facts));
+        return LedgerSetups.On(IndexFamilies.LargeIndex, series, columns, members, inputs.Sessions, at, LedgerMarket.None, new LedgerContext(BusinessFirstHistory.Income(), NoSectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
     }
 
     [Fact]

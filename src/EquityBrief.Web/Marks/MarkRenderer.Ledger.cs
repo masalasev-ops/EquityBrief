@@ -205,6 +205,61 @@ public sealed partial class MarkRenderer
         return table.ToString();
     }
 
+    // Which readings go with winners for the family chosen, as the walk-forward tester stored them: the readings beyond
+    // the shuffle first by their size and then every other in the catalogue's order, each with its heading on the chart of
+    // what is behind a stock, the settled setups holding it, the test years counted, the mean correlation in its hue, how
+    // many of those years pointed its way, the shuffle's 95th percentile and the words; or why no table is drawn. It draws
+    // the stored rows and works none of them.
+    // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+    public string LedgerLinks(LinkTable? table)
+    {
+        if (table is null || table.Rows.Count == 0)
+        {
+            return "<p class=\"degraded\" data-links=\"none\">No monthly run has worked which readings go with winners for this family on this index yet.</p>";
+        }
+
+        static int Beyond(ReadingLink row) => row.Words is ReadingLinks.Winners or ReadingLinks.Losers ? 0 : 1;
+
+        var ordered = table.Rows
+            .Select((row, at) => (Row: row, At: at))
+            .OrderBy(pair => Beyond(pair.Row))
+            .ThenByDescending(pair => Beyond(pair.Row) == 0 ? Math.Abs(pair.Row.Correlation ?? 0) : 0)
+            .ThenBy(pair => pair.At)
+            .Select(pair => pair.Row)
+            .ToArray();
+        var text = new StringBuilder();
+
+        text.Append(Invariant, $"<p class=\"ledger-links-said\" data-run=\"{Escaped(table.RunId)}\" data-month=\"{Escaped(table.Month)}\">Worked by the monthly run for {Escaped(table.Month)}: {table.Rows.Count(row => row.Words == ReadingLinks.Winners)} reading{(table.Rows.Count(row => row.Words == ReadingLinks.Winners) == 1 ? string.Empty : "s")} going with winners and {table.Rows.Count(row => row.Words == ReadingLinks.Losers)} with losers beyond the shuffle, of {table.Rows.Count}.</p>");
+        text.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"ledger-links\" data-rows=\"{table.Rows.Count}\"><thead><tr>");
+        text.Append(TippedHeading("Reading", "the ledger's reading, its definition under the pointer"));
+        text.Append(TippedHeading("Heading", "the heading it stands under on the chart of what is behind a stock"));
+        text.Append(TippedHeading("Setups", "the settled setups holding it in the test years", "r"));
+        text.Append(TippedHeading("Years", "the test years holding enough of them to count", "r"));
+        text.Append(TippedHeading("Correlation", "the mean over those years of its rank correlation at entry with the setup's result", "r"));
+        text.Append(TippedHeading("Same way", "how many of those years pointed the way the mean does", "r"));
+        text.Append(TippedHeading("Shuffle's 95th", "the 95th percentile of the mean's size with the results shuffled within each night", "r"));
+        text.Append(TippedHeading("Says", "whether its size stands above the shuffle's"));
+        text.Append("</tr></thead><tbody>");
+
+        foreach (var row in ordered)
+        {
+            var place = LedgerReadings.All.Select((reading, at) => (reading, at)).FirstOrDefault(pair => pair.reading.Column == row.Reading);
+            var definition = place.reading?.Definition ?? string.Empty;
+            var heading = place.reading is null ? string.Empty : LedgerHeadings.All[LedgerHeadings.HeadingOf(place.at)].Name;
+            var correlation = row.Correlation is { } mean ? SignedFigure(mean, 3, Formatted($"{(mean > 0 ? "+" : string.Empty)}{mean:0.000}")) : "none";
+            var sameWay = row.SameWay is { } share ? Formatted($"{Math.Round(share * row.Years, MidpointRounding.AwayFromZero):0} of {row.Years}") : "none";
+            var shuffled = row.Shuffled is { } bar ? Formatted($"{bar:0.000}") : "none";
+
+            text.Append(Invariant, $"<tr data-reading=\"{Escaped(row.Reading)}\" data-words=\"{Escaped(row.Words)}\" data-correlation=\"{(row.Correlation is { } value ? value.ToString("R", Invariant) : "none")}\" data-shuffled=\"{(row.Shuffled is { } held ? held.ToString("R", Invariant) : "none")}\">");
+            text.Append(Invariant, $"<td><span title=\"{Escaped(definition)}\">{Escaped(row.Reading)}</span></td><td>{Escaped(heading)}</td>");
+            text.Append(Invariant, $"<td class=\"r num\">{row.Setups:N0}</td><td class=\"r num\">{row.Years}</td><td class=\"r num\">{correlation}</td><td class=\"r num\">{sameWay}</td><td class=\"r num\">{shuffled}</td><td>{Escaped(row.Words)}</td></tr>");
+        }
+
+        text.Append("</tbody></table></div>");
+
+        return text.ToString();
+    }
+
     // A chosen setup's closes from ten sessions before it to where its path ended, with its buy, its stop where it holds
     // one and its target where it names one drawn across, and the session it was bought on marked.
     public string LedgerPath(LedgerPath? path)

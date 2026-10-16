@@ -35,7 +35,8 @@ public sealed record FamilySetups(string Family, int Members, IReadOnlyList<Setu
 public sealed record HeavyweightCut(string Sector, IReadOnlyList<string> Largest, IReadOnlySet<string> Leaders);
 
 // The market series the readings take, each over its own sessions: the index's own series, or its fund's on the S&P
-// 400 and 600, the VIX, SPY, IJH, IJR and HYG, any of them absent where the store holds none.
+// 400 and 600, the VIX, SPY, IJH, IJR and HYG, and from 19.12 the eleven GICS sector funds, any of them absent where the
+// store holds none.
 public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>> Series)
 {
     public const string Index = "GSPC";
@@ -45,7 +46,7 @@ public sealed record LedgerMarket(IReadOnlyDictionary<string, IReadOnlyList<(Dat
     public const string Small = "IJR";
     public const string Credit = "HYG";
 
-    public static IReadOnlyList<string> Named { get; } = [Index, Vix, Large, Mid, Small, Credit];
+    public static IReadOnlyList<string> Named { get; } = [Index, Vix, Large, Mid, Small, Credit, .. GicsSectors.Funds.Values.Order(StringComparer.Ordinal)];
 
     public static LedgerMarket None { get; } = new(new Dictionary<string, IReadOnlyList<(DateOnly, double)>>(StringComparer.Ordinal));
 
@@ -78,6 +79,10 @@ public sealed record LedgerContext(
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), BusinessReading> business = new();
     readonly System.Collections.Concurrent.ConcurrentDictionary<(string Ticker, int Filed), ValuationParts> valuation = new();
     readonly System.Runtime.CompilerServices.ConditionalWeakTable<SweepSeries, PriceHistory> prices = new();
+
+    // From 19.12 the members' places on each session over the series the readings are read from, which the four of
+    // Kakushadze's formulas that rank across the index read; none where the readings are read without them.
+    public FactorRanks? Ranks { get; init; }
 
     public BusinessReading Business(string ticker, DateOnly session)
     {
@@ -540,6 +545,36 @@ public static class LedgerSetups
         Set("operating_margin_change", business.OperatingMarginChange);
         Set("cash_over_income", business.CashOverIncome);
         Set("value_place", context.ValuePlace(one, day));
+
+        // The published factors, each over the member's own bars to the session, the index's own series and the fund of
+        // the sector its company filed as it stood on the session; the four of Kakushadze's formulas that rank across the
+        // index read the members' places the context works, and none where it works none.
+        // see: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+        var bars = one.Bars;
+        var fund = GicsSectors.On(ticker, sector, day) is { } stood && GicsSectors.Funds.TryGetValue(stood, out var code) ? market.Of(code) : null;
+
+        Set("return_week", FactorReadings.ReturnOver(bars, bar, FactorReadings.WeekSessions));
+        Set("return_month", FactorReadings.ReturnOver(bars, bar, FactorReadings.MonthSessions));
+        Set("largest_return", FactorReadings.LargestReturn(bars, bar, FactorReadings.MonthSessions));
+        Set("volatility_month", FactorReadings.DeviationOver(bars, bar, FactorReadings.MonthSessions));
+        Set("residual_volatility", indexSeries is null ? null : FactorReadings.ResidualDeviation(bars, bar, indexSeries, FactorReadings.QuarterSessions));
+        Set("beta", indexSeries is null ? null : FactorReadings.Beta(bars, bar, indexSeries, FactorReadings.YearBars - 1));
+        Set("skewness", FactorReadings.Skewness(bars, bar, FactorReadings.QuarterSessions));
+        Set("close_place", FactorReadings.ClosePlace(bars, bar, FactorReadings.PlaceSessions));
+        Set("up_volume_share", FactorReadings.UpVolumeShare(bars, bar, FactorReadings.VolumeSessions));
+        Set("price_volume_correlation", FactorReadings.PriceVolumeCorrelation(bars, bar, FactorReadings.VolumeSessions));
+        Set("illiquidity", FactorReadings.Illiquidity(bars, bar, FactorReadings.MonthSessions));
+        Set("overnight_less_intraday", FactorReadings.OvernightLessIntraday(bars, bar, FactorReadings.MonthSessions));
+        Set("sector_month", fund is null ? null : FactorReadings.RelativeReturn(bars, bar, fund, FactorReadings.MonthSessions));
+        Set("sector_quarter", fund is null ? null : FactorReadings.RelativeReturn(bars, bar, fund, FactorReadings.QuarterSessions));
+        Set("low_ratio", FactorReadings.LowRatio(bars, bar, FactorReadings.YearBars));
+        Set("streak", FactorReadings.Streak(bars, bar));
+        Set("volume_slope", FactorReadings.VolumeSlope(bars, bar, FactorReadings.VolumeSessions));
+        Set("alpha_one", context.Ranks?.Alpha1(name, bar));
+        Set("alpha_two", context.Ranks?.Alpha2(name, bar));
+        Set("alpha_three", context.Ranks?.Alpha3(name, bar));
+        Set("alpha_four", context.Ranks?.Alpha4(name, bar));
+        Set("alpha_six", FactorReadings.Alpha6(bars, bar));
 
         return readings;
     }

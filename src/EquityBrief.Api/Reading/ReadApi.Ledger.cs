@@ -34,6 +34,48 @@ public sealed partial class ReadApi
           AND NOT EXISTS (SELECT 1 FROM bar b WHERE b.ticker = k.ticker AND b.session_date = k.session_date)
         ORDER BY 1;";
 
+    // Which readings go with winners for a family on an index: the rows of the newest run the walk-forward tester stored
+    // for the index, in the catalogue's order, and none where no run is stored; the page works none of it.
+    // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+    const string NewestLinksOf = @"
+        SELECT run_id, month, reading, setups, years, correlation, same_way, shuffled, words
+        FROM loop_link
+        WHERE index_code = $index AND family = $family
+          AND run_id = (SELECT run_id FROM loop_link WHERE index_code = $index ORDER BY rowid DESC LIMIT 1)
+        ORDER BY rowid;";
+
+    public async Task<LinkTable?> LedgerLinksAsync(string index, string family)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestLinksOf;
+        command.Parameters.AddWithValue("$index", index);
+        command.Parameters.AddWithValue("$family", family);
+
+        string? run = null;
+        string? month = null;
+        var rows = new List<ReadingLink>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            run ??= reader.GetString(0);
+            month ??= reader.GetString(1);
+            rows.Add(new ReadingLink(
+                reader.GetString(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                reader.GetString(8)));
+        }
+
+        return run is null || month is null ? null : new LinkTable(run, month, rows);
+    }
+
     public async Task<IReadOnlyList<LedgerYear>> LedgerYearsAsync(string index)
     {
         await using var connection = Open();

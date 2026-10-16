@@ -102,6 +102,11 @@ public partial class NightlyRun
         Assert.Equal(["1|1|1"], Texts(store, "SELECT (high_ratio IS NULL) || '|' || (close_over_long IS NULL) || '|' || (return_twelve_less_one IS NULL) FROM setup WHERE family = 'breakout';"));
         Assert.Equal(["0|0"], Texts(store, "SELECT (close_over_twenty IS NULL) || '|' || (liquidity IS NULL) FROM setup WHERE family = 'breakout';"));
 
+        // From 19.12 the published factors the bars do not reach, the year's lowest low and the slope on the index's
+        // returns over the year, are null as well and never nought, where the five sessions' return is a figure.
+        // see: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+        Assert.Equal(["1|1|0"], Texts(store, "SELECT (low_ratio IS NULL) || '|' || (beta IS NULL) || '|' || (return_week IS NULL) FROM setup WHERE family = 'breakout';"));
+
         // The drift: anchored on the reaction session, stopped at its low of 109 for a risk of one point, its target
         // within two and a half risks of the buy, the surprise and the rise stored, not picked, and passed by the live
         // rule only where the night's market check is open, which no breadth closes here.

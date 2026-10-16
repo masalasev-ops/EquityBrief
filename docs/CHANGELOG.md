@@ -25,6 +25,59 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface state 19.12's tests
+Authorised by: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+Was:
+> `fixture-expectations`: ... each trade bought at its fill on its fill's session and sized from its plan's close
+> `nightly-run`: ... and the ledger's step storing each setup's fill and whether its open was past its stop or its target, its figures read at the open
+> `read-surface`: ... the Run page drawing the slowest routes since it started with each one's requests, median and slowest
+Now:
+> Added without replacing anything: each factor worked by hand over constructed bars, the ranked formulas over constructed members, three factors off the fixture's night, the engines reading the whole catalogue and which readings go with winners worked by hand with the tester's step over a constructed store, on `fixture-expectations`; the factors the bars do not reach stored as null, on `nightly-run`; and the Ledger page's table drawn as the newest run stored it, on `read-surface` (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule).
+Why: a roster row names what its check asserts, and 19.12 added those assertions.
+
+### 2026-10-16 - ARCHITECTURE.html - the published price and volume factors in 13.10 and the setups' store row
+Authorised by: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+Was:
+> 13.10: Every reading is defined once, in the core's catalogue, and read as it stood: the forty-six readings of the stock, its business and the market, from the bars to the session, ...
+> Section 16's Setups row: ... a heavyweights' setup holding no stop, the forty-six readings as they stood, and the path's result, ...
+Now:
+> 13.10: ... the sixty-eight readings of the stock, its business and the market, the twenty-two published factors among them from 19.12, ...; and a paragraph added after the valuation reading's naming each factor, the five of Kakushadze's formulas and how their rank, Ts_ArgMax, Ts_Rank and deviation are read, and that no gate, list, order or card reads one.
+> Section 16's Setups row: ... the sixty-eight readings as they stood, the twenty-two published factors among them from 19.12, ...
+Why: the operator's ruling of 2026-10-16 adds the published factors to the ledger's readings as places for the engines to look.
+
+### 2026-10-16 - ARCHITECTURE.html - which readings go with winners in 13.12, 15.19, section 16, section 17 and the tester's and the monthly run's catalogue rows
+Authorised by: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+Was:
+> The walk-forward tester's catalogue row, its writes: loop runs, loop proposals, loop tests, loop findings, loop readings, loop models, loop references, rule tests, rule test years, run log
+> The monthly run's catalogue row: ... each index's point-in-time check by the setup ledger and each index's tester run by the walk-forward tester with its engines inside it, ...; ... but for the history's, the testers' and the per-rule tests', which take it themselves as they write; ...
+Now:
+> The tester's writes add reading links, and its row adds from 19.12 its readings' step, the loop-links verb, reading each family's settled setups from the ledger alone and writing every reading's row with its run log row under the drain's lock. The monthly run's row adds which readings go with winners on each index after every check, and the readings' step among those taking the lock themselves. Added without replacing anything: 13.12's paragraph on the step; 15.19's row Which readings go with winners; section 16's row Reading links; and section 17's row Which readings go with winners with its floor, draws, seed and quantile.
+Why: the operator's ruling of 2026-10-16, with their answer of the same day, has the monthly run work the table and store it for the Ledger page.
+
+### 2026-10-16 - SCHEMA.md - the setups' published factor columns and the member readings' longer lists
+Authorised by: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+Was:
+> `ledger_reading`: ... The readings are statistics, stored as text only because the catalogue's forty-six sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score.
+Now:
+> ... stored as text only because the catalogue's readings sit in one cell; ...; and from 19.12 the list holds the published factors after every reading before them, with no column added, a row written before them read with the ones it lacks as none. Added without replacing anything: `setup`'s twenty-two columns from migration 95, `return_week` to `alpha_six`, after `past`.
+Why: migration 95 adds the factors' columns, which the operator approved for 19.12 alone.
+
+### 2026-10-16 - SCHEMA.md - loop_link declared, written once by the walk-forward tester
+Authorised by: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+Was:
+> (no such table)
+Now:
+> The ownership summary's row for `loop_link`, written by WalkForwardTester, and its table: its grain, its eleven columns, its key and that the Ledger page draws its newest run and no engine reads it.
+Why: the operator's answer of 2026-10-16 has the one 19.12 migration create the table's store.
+
+### 2026-10-16 - RUNBOOK.md - ledger-night, loop-links, the monthly run's links steps and 19.12's remedy
+Authorised by: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+Was:
+> The monthly run: ... each index's point-in-time check, each index's tester run, from 19.4 each index's per-rule test, ...; its stages: `facts`, `history`, `check-GSPC`, `check-MID` and `check-SML`, `test-GSPC`, `test-MID` and `test-SML`, ...
+Now:
+> ... each index's point-in-time check, from 19.12 which readings go with winners on each index, each index's tester run, ...; the stages from 19.12 `links-GSPC`, `links-MID` and `links-SML` after the checks. Added without replacing anything: the factors and `ledger-night` beneath the ledger's history with 19.12's remedy, the file, the three builds, each index's check and `loop-links`; and `loop-links` beneath the per-rule test (see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule).
+Why: 19.12's readings need the history built again and the table worked once by hand, and the night's ledger step's time is read by hand against the night's own.
+
 ### 2026-10-16 - ARCHITECTURE.html - 15.22's figures name the price's distance from the year's high in its hue
 Corrects: the chart page's grid wrote the distance from the year's high with its sign in ink beside the words below it, found on a screenshot of the chart page drawn over the operator's store before the merge; it is drawn as a figure of its own in the gain's or the loss's hue, as the name page's tile draws it.
 Was:
