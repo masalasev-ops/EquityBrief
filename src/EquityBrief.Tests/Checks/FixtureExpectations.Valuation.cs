@@ -336,7 +336,7 @@ public partial class FixtureExpectations
                 calendar,
                 at,
                 LedgerMarket.None,
-                new LedgerContext(NoIncome, NoSectors, highs, lows, facts));
+                new LedgerContext(NoIncome, NoSectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
         }
 
         double?[] Rebuilt(DateOnly session) =>

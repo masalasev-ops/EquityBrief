@@ -3229,6 +3229,15 @@ internal static class Scope
             Verdict.Pass, "the year's high and low, the relative strength and the market value read off a fixture name's chart page equal to its name page's; a figure the store holds none of drawn not stored; and each span's return worked by hand over constructed sessions and month-end closes with the fixture's quarter read off the page", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Every page's time")] = new Scoped(
             Verdict.Pass, "the median over an odd and an even count, a route keeping its newest times alone and the slowest first worked by hand, and the Run page drawing each route the surface answered since it started with its count, median and slowest over a hosted surface", ByReadSurface),
+
+        // 19.12's, on the operator's rulings of 2026-10-16: the Ledger page's table of which readings go with winners, its
+        // store and section 17's row.
+        [CheckReach.Key(LedgerPage, "Which readings go with winners")] = new Scoped(
+            Verdict.Pass, "the newest run's rows the tester stored for the index and the family chosen read back off the rendered page as stored, the readings beyond the shuffle first by their size, an older run's and another index's rows not drawn, and a line where no run has worked it", ByReadSurface),
+        [CheckReach.Key(StoresTable, "Reading links")] = new Scoped(
+            Verdict.Pass, "the table's columns and types are asserted against SCHEMA.md", ByMigration),
+        [CheckReach.Key(LimitsTable, "Which readings go with winners")] = new Scoped(
+            Verdict.Pass, "one row worked by hand over a constructed ledger with its shuffle's percentile over every arrangement, a reading going with losers, too few in a year and a reading held level, and two years drawn at the seed; the figures read off the document against the constants", ByExpectations),
         [CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer")] = new Scoped(
             Verdict.Pass,
             "the usual start worked by hand over constructed run ids, the most of the newest seven nights' first tries with a tie to the newest, and a night not yet run drawn with no notice and its time on the date line in New York's time with UTC beneath the pointer",
@@ -5529,6 +5538,8 @@ internal static class Scope
         ["Rule test years"] = "19.4",
         // 19.10's one, which the plan names as the fill step's own table.
         ["Trade fills"] = "19.10",
+        // 19.12's one, which the plan names as the store of the table of which readings go with winners.
+        ["Reading links"] = "19.12",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5955,6 +5966,7 @@ internal static class Scope
         [CheckReach.Key("15.22 Chart", "Under the pointer")] = "19.11",
         [CheckReach.Key("15.22 Chart", "The figures")] = "19.11",
         [CheckReach.Key("15.10 Run", "Every page's time")] = "19.11",
+        [CheckReach.Key(LedgerPage, "Which readings go with winners")] = "19.12",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",

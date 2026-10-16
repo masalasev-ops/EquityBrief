@@ -149,6 +149,8 @@ public partial class FixtureExpectations
             .. MonthlyClaims,
             // 19.4, the per-rule test: section 18's rule it cannot walk.
             .. RuleTestClaims,
+            // 19.12, which readings go with winners: section 17's row.
+            .. ReadingLinkClaims,
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 

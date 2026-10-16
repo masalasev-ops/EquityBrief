@@ -145,8 +145,16 @@ public partial class ArchitectureConformance
     // The rows the document gains and loses after phase 19's report, named beside the pair and never counted in it, which
     // 19.9's, 19.10's and 19.11's own entries name: 19.9's none, its three landing as words in rows that stood, 19.10's three
     // on the operator's rulings of 2026-10-15, the fill step's catalogue and matrix rows and its store, and 19.11's eleven on
-    // the rulings of 2026-10-16, the chart page's ten and the Run page's time of every page.
-    internal static string[] AfterPhaseNineteen => [.. FixtureExpectations.TradeFillRows, .. Reading.ReadSurface.ChartRows];
+    // the rulings of 2026-10-16, the chart page's ten and the Run page's time of every page, and 19.12's three on the same
+    // rulings, which readings go with winners on the Ledger page, its store and section 17's row.
+    internal static string[] AfterPhaseNineteen =>
+    [
+        .. FixtureExpectations.TradeFillRows,
+        .. Reading.ReadSurface.ChartRows,
+        .. Reading.ReadSurface.ReadingLinkRows,
+        CheckReach.Key(Harness.Scope.StoresTable, "Reading links"),
+        .. FixtureExpectations.ReadingLinkClaims,
+    ];
 
     internal static string[] TakenOutAfterPhaseNineteen => [];
 

@@ -151,6 +151,9 @@ public partial class ReadSurface
             // 19.11, the chart page every stock opens on first and the Run page's time of every page.
             .. ChartRows,
 
+            // 19.12, the Ledger page's table of which readings go with winners.
+            .. ReadingLinkRows,
+
             // 17.5, the sector heavyweights' card's selector.
             .. HeavyweightSelectorClaims,
 
