@@ -206,6 +206,23 @@ public partial class FixtureExpectations
         Assert.Contains(FormattableString.Invariant($"{pages.Length} 8-K page(s)"), Query(store, "SELECT detail FROM run_log WHERE run_id = 'replay-filings';").Single(), StringComparison.Ordinal);
         Assert.All(pages, accession => Assert.True(File.Exists(Path.Combine(Folder(), $"filing-page-{accession}.htm")), accession));
 
+        // From 19.13 the Form 4s asked of the archive: worked here from the captured indexes, every Form 4 or 4/A line
+        // naming a member's filer, less those the insiders' history stored rows of, each a capture of the fixture.
+        var filers = Query(store, "SELECT DISTINCT cik FROM company WHERE cik IS NOT NULL;").ToHashSet(StringComparer.Ordinal);
+        var stored = Query(store, "SELECT DISTINCT accession FROM insider_trade;").ToHashSet(StringComparer.Ordinal);
+        var lines = Directory.GetFiles(Folder(), "daily-index-*.idx")
+            .SelectMany(File.ReadAllLines)
+            .Select(line => line.Split('|'))
+            .Where(fields => fields.Length == 5 && fields[2] is "4" or "4/A" && filers.Contains(fields[0].PadLeft(10, '0')))
+            .Select(fields => Path.GetFileNameWithoutExtension(fields[4]))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        var ownerships = expected.GetProperty("ownershipsAsked").EnumerateArray().Select(accession => accession.GetString()!).ToArray();
+
+        Assert.Equal(7, lines.Length);
+        Assert.Equal(lines.Where(accession => !stored.Contains(accession)).Order(StringComparer.Ordinal), ownerships.Order(StringComparer.Ordinal));
+        Assert.All(ownerships, accession => Assert.True(File.Exists(Path.Combine(Folder(), $"ownership-{accession}.txt")), accession));
+
         // Keysight alone refreshed, its filer the one its quarters' company names.
         Assert.Equal(["0001601046"], Query(store, "SELECT cik FROM filed_fact_pull;"));
         Assert.Equal(["0001601046"], Query(store, "SELECT DISTINCT cik FROM filed_fact;"));

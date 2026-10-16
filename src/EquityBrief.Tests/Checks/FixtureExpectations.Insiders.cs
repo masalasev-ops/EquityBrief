@@ -435,8 +435,13 @@ public partial class FixtureExpectations
 
         using var store = await FixtureReplay.ReplayedAsync();
 
-        // The two quarters the history read as spans of their own, beside the days the refresh read, and the four
-        // companies the store knows a filer of, no other.
+        // The two quarters the history read as spans of their own, each a quarter's first and last day, beside the days
+        // the refresh read, and the four companies the store knows a filer of, no other.
+        var quarters = expected.GetProperty("quartersRead").EnumerateArray().Select(quarter => SecEdgarInsiderDataSet.Span(quarter.GetString()!)).ToArray();
+
+        Assert.Equal(
+            quarters.Select(span => FormattableString.Invariant($"{span.First.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}|{span.Last.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}|data-set")),
+            expected.GetProperty("spansRead").EnumerateArray().Select(span => span.GetString()!));
         Assert.Equal(
             expected.GetProperty("spansRead").EnumerateArray().Select(span => span.GetString()!).ToArray(),
             Query(store, "SELECT first_day || '|' || last_day || '|' || source FROM insider_read WHERE source = 'data-set' ORDER BY first_day;"));
@@ -450,6 +455,7 @@ public partial class FixtureExpectations
         // The window worked by the suite from the cut itself: Keysight's Forms 4 filed from ninety days before the session
         // to the day before it, each sale and the ones whose filing ticks no box, read off the cut's own files.
         var session = DateOnly.Parse(expected.GetProperty("session").GetString()!, CultureInfo.InvariantCulture);
+        var ticker = expected.GetProperty("ticker").GetString()!;
         var from = session.AddDays(-InsiderReadings.WindowDays);
 
         Assert.Equal(expected.GetProperty("windowFrom").GetString(), from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
@@ -460,7 +466,7 @@ public partial class FixtureExpectations
         {
             var folder = Path.Combine(Folder(), "insider-data-set-" + quarter);
             var submissions = File.ReadAllLines(Path.Combine(folder, "SUBMISSION.tsv")).Skip(1).Select(line => line.Split('\t'))
-                .Where(fields => fields[11] == "KEYS" && fields[8] == "4")
+                .Where(fields => fields[11] == ticker && fields[8] == "4")
                 .Select(fields => (Accession: fields[0], Filed: DateOnly.ParseExact(fields[1], "dd-MMM-yyyy", CultureInfo.InvariantCulture), Box: fields.Length > 13 ? fields[13] : string.Empty))
                 .Where(filing => filing.Filed >= from && filing.Filed < session)
                 .ToDictionary(filing => filing.Accession, StringComparer.Ordinal);
@@ -493,12 +499,12 @@ public partial class FixtureExpectations
             + "AND filed < '" + day + "' AND period_end < '" + day + "' ORDER BY period_end DESC, filed, accession LIMIT 1;").Single().Split('|');
         var countDay = count[0];
         var shares = decimal.Parse(count[1], CultureInfo.InvariantCulture);
-        var onCount = Query(store, $"SELECT close || '|' || raw_close FROM bar WHERE ticker = 'KEYS' AND session_date <= '{countDay}' ORDER BY session_date DESC LIMIT 1;").Single().Split('|');
-        var atSession = decimal.Parse(Query(store, "SELECT close FROM bar WHERE ticker = 'KEYS' AND session_date = '" + day + "';").Single(), CultureInfo.InvariantCulture);
+        var onCount = Query(store, $"SELECT close || '|' || raw_close FROM bar WHERE ticker = '{ticker}' AND session_date <= '{countDay}' ORDER BY session_date DESC LIMIT 1;").Single().Split('|');
+        var atSession = decimal.Parse(Query(store, $"SELECT close FROM bar WHERE ticker = '{ticker}' AND session_date = '" + day + "';").Single(), CultureInfo.InvariantCulture);
         var value = shares * decimal.Parse(onCount[1], CultureInfo.InvariantCulture) * atSession / decimal.Parse(onCount[0], CultureInfo.InvariantCulture);
 
         // Read back off the member's stored readings, read again by the night once the refresh had stored the session's eve.
-        var readings = JsonSerializer.Deserialize<double?[]>(Query(store, "SELECT readings FROM ledger_reading WHERE ticker = 'KEYS' AND session_date = '" + day + "';").Single())!;
+        var readings = JsonSerializer.Deserialize<double?[]>(Query(store, $"SELECT readings FROM ledger_reading WHERE ticker = '{ticker}' AND session_date = '" + day + "';").Single())!;
 
         Assert.Equal(Statistic.FromRatio(-sales / value), readings[LedgerReadings.IndexOf("insider_net_buy")]!.Value, 12);
         Assert.Equal(Statistic.FromRatio(unplanned / value), readings[LedgerReadings.IndexOf("insider_unplanned_sale")]!.Value, 12);
