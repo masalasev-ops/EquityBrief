@@ -224,6 +224,9 @@ public partial class ReadSurface
         Assert.Contains($"<span data-verdict=\"{RuleVerdict.WithinLuck}\">{RuleVerdict.WithinLuck}</span>", log, StringComparison.Ordinal);
         Assert.Contains("too few trades (2 of 300)", log, StringComparison.Ordinal);
         Assert.Equal(["T6", "T1", "T7"], Regex.Matches(log, "<tr data-ticker=\"([^\"]+)\" data-bought=").Select(match => match.Groups[1].Value));
+
+        // From 19.11 each trade's stock opens its chart page.
+        Assert.Equal(["T6", "T1", "T7"], Regex.Matches(log, "<td><a href=\"#/chart/([^\"]+)\">").Select(match => match.Groups[1].Value));
         Assert.Matches("<tr data-ticker=\"T6\" data-bought=\"2026-10-01\" data-open=\"true\">.*?<span class=\"gain\">\\+1\\.00</span> risks <span class=\"degraded\">so far</span>", log);
         Assert.Contains("<figure class=\"paper-running\" data-total=\"0.5\" data-ended=\"2\">", log, StringComparison.Ordinal);
         Assert.Contains(", not evidence yet", log, StringComparison.Ordinal);

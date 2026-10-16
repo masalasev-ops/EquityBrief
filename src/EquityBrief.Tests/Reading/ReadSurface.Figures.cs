@@ -155,7 +155,7 @@ public partial class ReadSurface
         var list = await client.GetStringAsync("/screens/researched");
 
         Assert.Contains("<tr data-ticker=\"AAPL\" data-written=\"2026-09-05\" data-sections=\"2\" data-stale=", list, StringComparison.Ordinal);
-        Assert.Contains($"href=\"{SinglePageApp.NameRoute}AAPL\"", list, StringComparison.Ordinal);
+        Assert.Contains($"href=\"{SinglePageApp.ChartRoute}AAPL\"", list, StringComparison.Ordinal);
         Assert.DoesNotContain("data-ticker=\"MSFT\"", list, StringComparison.Ordinal);
 
         // The universe table says so under the name.

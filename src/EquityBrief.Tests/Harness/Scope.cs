@@ -3205,6 +3205,30 @@ internal static class Scope
             Verdict.Pass,
             "the card's count read off the rendered page against the market line's and the family cards' own tables on all three indices, the S&P 400 and 600 saying they read none; its rows in the family order each family's as its card orders them; folded by default and open where the link keeps it; its Watch press adding a name, the row then reading Watching and the market line's count moving, refused for a name held, on a twenty-first and without the page's header; a night before the newest drawing no press and no link to Universe; and the shell's script keeping its open state in the link and opening it from a count pressed",
             ByReadSurface),
+
+        // 19.11's, on the operator's rulings of 2026-10-16: the chart page and the Run page's time of every page.
+        [CheckReach.Key("15.22 Chart", "Masthead")] = new Scoped(
+            Verdict.Pass, "the chart page's masthead drawn by the one function the name page's is, read back off the fixture's chart page, and the name page's masthead linking back to the chart", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The report line")] = new Scoped(
+            Verdict.Pass, "Open the report to the name page or that none is written with the list's own request, read off the fixture's chart page", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The interval and the levels")] = new Scoped(
+            Verdict.Pass, "the daily, weekly and monthly charts read over the fixture's store by the interval the link names, the daily where it names none or one unknown, and the levels' toggle read off the shell's script", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The chart")] = new Scoped(
+            Verdict.Pass, "a week and a month rolled into one candle worked by hand over constructed sessions with a stretch holding none named; a fixture name's week worked by hand from its daily bars and read off the weekly chart; the pulled sessions brought to the store's scale by the close both hold, the store read where it holds the session; and the daily chart reading no pulled bar, answering with the pulled bars' table renamed where the weekly one does not", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The averages")] = new Scoped(
+            Verdict.Pass, "a fixture name's 50-session average at its newest session worked by hand from its 50 newest closes and read off the newest candle", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "Volume")] = new Scoped(
+            Verdict.Pass, "each candle's volume and the hue of its close on the one before read off the rendered chart", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The marks")] = new Scoped(
+            Verdict.Pass, "the chart page's marks taken from the name page's own function over the same reads and drawn on the candle holding their session", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "Tonight's plan")] = new Scoped(
+            Verdict.Pass, "a listing rule's buy, stop and target drawn from the night's decision cards as lines with the rule's name", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "Under the pointer")] = new Scoped(
+            Verdict.Pass, "each candle carrying its reading and its averages' words, the newest read above the chart, and the shell's script reading the candle under the pointer", ByReadSurface),
+        [CheckReach.Key("15.22 Chart", "The figures")] = new Scoped(
+            Verdict.Pass, "the year's high and low, the relative strength and the market value read off a fixture name's chart page equal to its name page's; a figure the store holds none of drawn not stored; and each span's return worked by hand over constructed sessions and month-end closes with the fixture's quarter read off the page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Every page's time")] = new Scoped(
+            Verdict.Pass, "the median over an odd and an even count, a route keeping its newest times alone and the slowest first worked by hand, and the Run page drawing each route the surface answered since it started with its count, median and slowest over a hosted surface", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The night's state, a night not yet run drawing no notice but the date line saying when tonight's night runs in New York's time with UTC beneath the pointer")] = new Scoped(
             Verdict.Pass,
             "the usual start worked by hand over constructed run ids, the most of the newest seven nights' first tries with a tie to the newest, and a night not yet run drawn with no notice and its time on the date line in New York's time with UTC beneath the pointer",
@@ -5918,6 +5942,19 @@ internal static class Scope
 
         // 19.8's, on the operator's addendum of 2026-10-15: Tonight's card of the stocks one gate short.
         [CheckReach.Key("15.7 Tonight", "Tonight's stocks one gate short")] = "19.8",
+
+        // 19.11's, on the operator's rulings of 2026-10-16: the chart page's ten and the Run page's time of every page.
+        [CheckReach.Key("15.22 Chart", "Masthead")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The report line")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The interval and the levels")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The chart")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The averages")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "Volume")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The marks")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "Tonight's plan")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "Under the pointer")] = "19.11",
+        [CheckReach.Key("15.22 Chart", "The figures")] = "19.11",
+        [CheckReach.Key("15.10 Run", "Every page's time")] = "19.11",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
@@ -6911,6 +6948,7 @@ internal static class Scope
         "15.19 The setup ledger",
         "15.20 The Loop page",
         "15.21 Paper trading",
+        "15.22 Chart",
         "15.11 How a reason's record is displayed",
     ];
 

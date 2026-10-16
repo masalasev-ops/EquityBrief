@@ -492,6 +492,12 @@ public sealed partial class SinglePageApp : IComponent
             view = 'loop';
             const loop = await fetch('/screens/loop' + (query ? '?' + query : ''));
             screen.innerHTML = await loop.text();
+          } else if (path.startsWith('{{{ChartRoute}}}')) {
+            view = 'chart';
+            // A stock's chart page, which every link opening a stock opens first, at the interval its link names.
+            const ticker = encodeURIComponent(path.slice('{{{ChartRoute}}}'.length));
+            const response = await fetch('/screens/chart/' + ticker + (query ? '?' + query : ''));
+            screen.innerHTML = await response.text();
           } else if (path.startsWith('{{{NameRoute}}}')) {
             view = 'name';
             // A name alone is tonight's page for it, and a name and a date is that evening's.
@@ -926,6 +932,36 @@ public sealed partial class SinglePageApp : IComponent
           group.classList.toggle('open', open);
           named.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
+        // The chart page's toggle shows or hides the night's levels behind the candles, in the browser alone.
+        document.addEventListener('click', (event) => {
+          const toggle = event.target.closest('[data-bands-toggle]');
+          if (!toggle) { return; }
+          const figure = toggle.closest('.card').querySelector('.chart-fig');
+          const on = !figure.classList.contains('bands-on');
+          figure.classList.toggle('bands-on', on);
+          toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+          toggle.textContent = on ? 'Hide the night\'s levels' : 'Show the night\'s levels';
+        });
+        // The line above the chart reads the candle under the pointer, and the newest again once the pointer leaves.
+        function readCandle(candle) {
+          const chart = candle.closest('.candle-chart');
+          const reading = candle.closest('.card').querySelector('.chart-reading');
+          if (reading) { reading.innerHTML = candle.getAttribute('data-reading'); }
+          for (const label of chart.querySelectorAll('[data-legend]')) {
+            const words = candle.getAttribute('data-' + label.getAttribute('data-legend'));
+            if (words) { label.textContent = words; }
+          }
+        }
+        document.addEventListener('pointerover', (event) => {
+          const candle = event.target.closest && event.target.closest('.candle-chart .candle');
+          if (candle) { readCandle(candle); }
+        });
+        document.addEventListener('pointerout', (event) => {
+          const chart = event.target.closest && event.target.closest('.candle-chart');
+          if (!chart || (event.relatedTarget && chart.contains(event.relatedTarget))) { return; }
+          const candles = chart.querySelectorAll('.candle');
+          if (candles.length > 0) { readCandle(candles[candles.length - 1]); }
+        });
         menuButton.addEventListener('click', () => {
           const open = menuButton.getAttribute('aria-expanded') !== 'true';
           menuButton.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -1168,7 +1204,7 @@ public sealed partial class SinglePageApp : IComponent
             find.value = '';
             find.blur();
             fresh = true;
-            location.hash = '{{{NameRoute}}}' + encodeURIComponent(ticker);
+            location.hash = '{{{ChartRoute}}}' + encodeURIComponent(ticker);
             return;
           }
           const line = document.createElement('p');
@@ -1350,42 +1386,9 @@ public sealed partial class SinglePageApp : IComponent
             ? Invariant($"<p class=\"notice earlier-night\" data-night=\"{evening:yyyy-MM-dd}\" role=\"status\">This is {Escaped(ticker)} as the store held it after the close of {evening:yyyy-MM-dd}. <a href=\"{NameRoute}{Escaped(ticker)}\">Tonight's page</a></p>")
             : string.Empty);
 
-        // The line the masthead carries: the ticker, the company, the index that holds it and its sector, and the price
-        // now. In the regular session that is the provider's delayed quote with its own time and its change on the
-        // previous close, which the worker's quote job asked for and the page's script asks for again at most every
-        // five minutes while the page is open; outside it, the last stored close with its change on the day and the
-        // session it is from. Levels and the plan are read from completed sessions whichever is shown, and say so.
-        // see: The masthead carries the index and sector beside the price the page draws, a delayed quote in the session and the last stored close outside it
-        // see: The name page draws a delayed quote in the regular session, asked by a worker job at most every five minutes under a day's cap
-        var identity = new StringBuilder();
-        var live = night is null && quoteSession is { IsOpen: true } && quote is not null ? quote : null;
-
-        identity.Append(Invariant($"<span class=\"m-tk\">{Escaped(ticker)}</span>"));
-        identity.Append(mast?.Company is { Length: > 0 } name ? Invariant($"<span class=\"m-co\">{Escaped(name)}</span>") : string.Empty);
-        identity.Append(mast?.Index is { Length: > 0 } || mast?.Sector is { Length: > 0 }
-            ? Invariant($"<span class=\"m-ix\">{string.Join(" · ", new[] { mast?.Index, mast?.Sector }.Where(part => part is { Length: > 0 }).Select(part => Escaped(part!)))}</span>")
-            : string.Empty);
-        identity.Append(Invariant($"<span class=\"m-price\" data-live=\"{(live is null ? "no" : "yes")}\">{PriceNow(bars, mast, live)}</span>"));
-        identity.Append(watched is { } held ? WatchControl(ticker, held) : string.Empty);
-
-        var asOf = "<span class=\"m-when\">" + (live is { } quoted
-            ? QuoteAsOf(quoted, session)
-            : session is { } last
-                ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}. Levels and the plan come from completed sessions to {last:yyyy-MM-dd}")
-                : "No session is stored for this name") + "</span>";
-
-        asOf += mast?.Sector is { Length: > 0 } sector
-            ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
-            : string.Empty;
-
-        // Where the page asks for its quote: its route, and the session's open and close, so the shell's script asks
-        // only inside it, while the page is shown, and no more often than the interval. A page about an earlier night
-        // and the exported file ask for none.
-        var asks = night is null && quoteSession is { } window && asksForQuotes
-            ? Invariant($" data-quote-route=\"{QuoteRoute}{Escaped(ticker)}\" data-session-open=\"{window.Open.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-session-close=\"{window.Close.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}\" data-interval-minutes=\"{EquityBrief.Core.Quotes.QuoteLimits.IntervalMinutes}\" data-asked=\"{(quote is { } stored ? Invariant($"{stored.AskedAt.UtcDateTime:yyyy-MM-ddTHH:mm:ssZ}") : string.Empty)}\"")
-            : string.Empty;
-
-        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf, asks));
+        // The masthead the chart page draws as well, with a link back to the stock's chart from 19.11.
+        // see: Every link that opens a stock opens its chart page first, and the chart page links to its report
+        region.Append(Masthead(ticker, bars, mast, quote, quoteSession, asksForQuotes, night, suspect, watched, Invariant($" · <a class=\"m-chart\" href=\"{ChartRoute}{Uri.EscapeDataString(ticker)}\">Its chart</a>")));
 
         // The headline and the four tiles under the masthead, before the contents: one sentence carrying no figure, and the
         // quarter's earnings, the year's growth, the yield and the distance from the year's high, each worked from stored
@@ -2245,7 +2248,7 @@ public sealed partial class SinglePageApp : IComponent
             foreach (var row in rows)
             {
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-written=\"{Cards.Day(row.Written)}\" data-sections=\"{row.Sections}\" data-stale=\"{(row.Stale is { } stale ? (stale ? "true" : "false") : "none")}\" data-why=\"{Escaped(row.Why ?? "none")}\" data-move=\"{(row.Move is { } moved ? moved.ToString("R", CultureInfo.InvariantCulture) : "none")}\">"));
-                body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
+                body.Append(Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{ChartRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>"));
                 body.Append(row.Name is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span></td>") : "</td>");
                 body.Append(Invariant($"<td>{Escaped(row.Sector ?? "sector not filed")}</td><td class=\"num\">{Cards.Day(row.Written)}</td><td>{Escaped(row.Why ?? "not read")}</td>"));
                 body.Append(row.Stale switch
@@ -2418,7 +2421,7 @@ public sealed partial class SinglePageApp : IComponent
     // either, the instant it was asked at marked where the read surface marked it.
     static string Row(QueuedCell row) =>
         Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-asked-at=\"{Escaped(row.AskedAt)}\" data-state=\"{Escaped(row.State)}\">")
-        + Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>")
+        + Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{ChartRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>")
         + Invariant($"<td>{row.Asked ?? Escaped(row.AskedAt)}</td><td>{Escaped(row.AskedFrom)}</td><td>{Escaped(row.Lane)}</td>");
 
     // What the selected name's region offers to open, in the words of what it opens: the
@@ -2849,7 +2852,9 @@ public sealed partial class SinglePageApp : IComponent
         IReadOnlyList<ReasonTrackRow>? totals = null,
         int fired = 0,
         bool listedByFilter = true,
-        IReadOnlyList<DateOnly>? oldCorrections = null)
+        IReadOnlyList<DateOnly>? oldCorrections = null,
+        IReadOnlyList<RouteTime>? routeTimes = null,
+        DateTimeOffset? routeTimesSince = null)
     {
         var region = new StringBuilder();
         var heading = "Run evidence: " + Universes.Large.Titled;
@@ -3163,6 +3168,9 @@ public sealed partial class SinglePageApp : IComponent
             region: "harness"));
         region.Append(Folded);
 
+        // From 19.11 every page's time, kept by the read surface in memory since it started.
+        region.Append(RouteTimesRegion(routeTimes, routeTimesSince));
+
         // From 19.5 the correction notices older than their age, folded at the page's end.
         // see: A correction notice older than thirty days by the newest session it affects is folded onto the Run page
         region.Append(CorrectionsRegion(oldCorrections, night));
@@ -3259,7 +3267,7 @@ public sealed partial class SinglePageApp : IComponent
                 var row = one.Row;
 
                 body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\" data-nearest=\"{Escaped(one.Nearest?.Family ?? "none")}\" data-missed=\"{(one.Nearest is { } near ? near.Missed.ToString(CultureInfo.InvariantCulture) : "none")}\"><td class=\"num\">{at + 1}</td>"));
-                body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
+                body.Append(Invariant($"<td><a href=\"{ChartRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
                 body.Append(one.Nearest is { } nearest
                     ? Invariant($"<td><span class=\"fam-tag\" data-family=\"{Escaped(nearest.Family)}\"><span class=\"fam-swatch\" data-family=\"{Escaped(nearest.Family)}\"></span>{Escaped(FamilyLabel(nearest.Family))}</span> ")
                         + (nearest.Missed == 0

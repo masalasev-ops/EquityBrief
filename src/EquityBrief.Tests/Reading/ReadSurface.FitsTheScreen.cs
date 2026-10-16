@@ -309,8 +309,9 @@ public partial class ReadSurface
         // report, and 32 from the 12.3 correction that draws the Run page's versions running in the
         // background. The fixture's name holds no research, so the risks' table is not among them. 34 from 18.3's
         // table of the plan's shares on the name page and in the exported report. 33 from 19.7, which takes the versions
-        // running in the background off the Run page.
-        Assert.Equal(33, tables);
+        // running in the background off the Run page. 34 from 19.11's table of every page's time on the Run page, which
+        // the requests for Tonight and Universe before it fill.
+        Assert.Equal(34, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

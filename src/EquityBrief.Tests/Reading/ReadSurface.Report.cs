@@ -436,8 +436,8 @@ public partial class ReadSurface
         ])!);
 
         Assert.Equal(["BBB", "AAA", "OWN", "CCC"], Regex.Matches(peers, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.Contains("<tr data-ticker=\"OWN\" class=\"key-row\" data-own=\"yes\"><td><a href=\"#/name/OWN\">OWN</a></td><td class=\"num\" data-multiple=\"25\">25.0</td><td class=\"num\" data-yield=\"3\">3.00%</td><td class=\"num\"><span class=\"gain\" data-sales-growth=\"7\">+7.0%</span></td></tr>", peers, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"CCC\"><td><a href=\"#/name/CCC\">CCC</a></td><td class=\"num degraded\">none read</td><td class=\"num\" data-yield=\"1\">1.00%</td><td class=\"num degraded\">none read</td></tr>", peers, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"OWN\" class=\"key-row\" data-own=\"yes\"><td><a href=\"#/chart/OWN\">OWN</a></td><td class=\"num\" data-multiple=\"25\">25.0</td><td class=\"num\" data-yield=\"3\">3.00%</td><td class=\"num\"><span class=\"gain\" data-sales-growth=\"7\">+7.0%</span></td></tr>", peers, StringComparison.Ordinal);
+        Assert.Contains("<tr data-ticker=\"CCC\"><td><a href=\"#/chart/CCC\">CCC</a></td><td class=\"num degraded\">none read</td><td class=\"num\" data-yield=\"1\">1.00%</td><td class=\"num degraded\">none read</td></tr>", peers, StringComparison.Ordinal);
         Assert.Contains("<tr class=\"group-row\" data-row=\"median\"><td>The median</td><td class=\"num\">20.0 of 3</td><td class=\"num\">2.00% of 3</td><td class=\"num\">7.0% of 3</td></tr>", peers, StringComparison.Ordinal);
     }
 

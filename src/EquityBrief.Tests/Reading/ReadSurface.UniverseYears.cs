@@ -32,7 +32,7 @@ public partial class ReadSurface
 
         // The ticker still opens the name's page with the company beneath it, and the year follows in
         // the same cell, over the name's closes with its nearest bands across it and its last close marked.
-        Assert.StartsWith("<a class=\"tk\" href=\"#/name/ZZAA\">ZZAA</a><span class=\"co\">Zed Ay</span><span class=\"peer-pop\" role=\"tooltip\"><svg", cells[0], StringComparison.Ordinal);
+        Assert.StartsWith("<a class=\"tk\" href=\"#/chart/ZZAA\">ZZAA</a><span class=\"co\">Zed Ay</span><span class=\"peer-pop\" role=\"tooltip\"><svg", cells[0], StringComparison.Ordinal);
         Assert.Contains("class=\"year-line\" data-ticker=\"ZZAA\" data-closes=\"5\"", cells[0], StringComparison.Ordinal);
         Assert.Contains("data-support=\"96\"", cells[0], StringComparison.Ordinal);
         Assert.Contains("data-resistance=\"114\"", cells[0], StringComparison.Ordinal);

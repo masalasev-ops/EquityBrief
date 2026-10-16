@@ -1744,7 +1744,7 @@ public static partial class NameScreen
 
     // The change on the day the masthead states, off the two newest stored closes, by the
     // rule tonight's list takes a row's change by.
-    static double? DayChange(string ticker, IReadOnlyList<BarRow> bars) =>
+    internal static double? DayChange(string ticker, IReadOnlyList<BarRow> bars) =>
         bars.Count < 2
             ? null
             : TonightScreen.DayChange(

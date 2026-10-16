@@ -729,7 +729,7 @@ public sealed partial class MarkRenderer
 
         foreach (var row in peers.Rows)
         {
-            table.Append(Formatted($"<tr data-ticker=\"{Escaped(row.Ticker)}\"{(row.Own ? " class=\"key-row\" data-own=\"yes\"" : string.Empty)}><td><a href=\"#/name/{Escaped(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>"));
+            table.Append(Formatted($"<tr data-ticker=\"{Escaped(row.Ticker)}\"{(row.Own ? " class=\"key-row\" data-own=\"yes\"" : string.Empty)}><td><a href=\"{ChartOf(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>"));
             table.Append(row.Multiple is { } multiple ? Formatted($"<td class=\"num\" data-multiple=\"{multiple.ToString(Invariant)}\">{multiple.ToString("0.0", Invariant)}</td>") : "<td class=\"num degraded\">none read</td>");
             table.Append(row.Yield is { } yield ? Formatted($"<td class=\"num\" data-yield=\"{yield.ToString(Invariant)}\">{yield.ToString("0.00", Invariant)}%</td>") : "<td class=\"num\">none</td>");
             table.Append(row.SalesGrowth is { } growth ? "<td class=\"num\">" + Signed(growth, "sales-growth") + "</td>" : "<td class=\"num degraded\">none read</td>");

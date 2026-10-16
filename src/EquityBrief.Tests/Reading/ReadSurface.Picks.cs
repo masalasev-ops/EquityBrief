@@ -235,7 +235,7 @@ public partial class ReadSurface
             var row = PickRowOf(page, ticker, night);
 
             Assert.Contains($"data-plan=\"{plan}\"", row, StringComparison.Ordinal);
-            Assert.Contains($"<td class=\"num\">{night}</td><td class=\"c-nm\"><a class=\"nm\" href=\"#/name/{ticker}/{night}\"><span class=\"tk\">{ticker}</span><span class=\"co\">{ticker} Company</span></a></td>", row, StringComparison.Ordinal);
+            Assert.Contains($"<td class=\"num\">{night}</td><td class=\"c-nm\"><a class=\"nm\" href=\"#/chart/{ticker}\"><span class=\"tk\">{ticker}</span><span class=\"co\">{ticker} Company</span></a></td>", row, StringComparison.Ordinal);
             Assert.Contains("<td class=\"r num\" " + prices, row, StringComparison.Ordinal);
         }
 

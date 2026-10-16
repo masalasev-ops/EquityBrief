@@ -203,7 +203,7 @@ public sealed partial class MarkRenderer
         {
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-index=\"{Escaped(index)}\" data-family=\"{Escaped(row.Family)}\" data-listed=\"{DayOf(row.Listed)}\" data-ended=\"{(row.EndedOn is { } end ? DayOf(end) : "open")}\" ");
             body.Append(Invariant, $"data-result=\"{Stated(row.Result)}\" data-cost=\"{Stated(row.Cost)}\" data-after-cost=\"{Stated(row.AfterCost)}\">");
-            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
             body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\">{Escaped(row.Setup)} · {Escaped(index)}</td>");
             body.Append(Invariant, $"<td>{DayOf(row.Listed)}</td>");
             body.Append(PriceCell("buy", row.Entry, null));
@@ -659,7 +659,7 @@ public sealed partial class MarkRenderer
         foreach (var pick in picks)
         {
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(pick.Ticker)}\" data-variant-pick=\"true\"><td class=\"place\">{pick.Place}</td>");
-            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(pick.Ticker)}\">{Escaped(pick.Ticker)}</a></td>");
             body.Append(Invariant, $"<td class=\"r\" data-entry=\"{pick.Entry.ToString(Invariant)}\">{Price(pick.Entry)}</td>");
             body.Append(Invariant, $"<td class=\"r\" data-stop=\"{pick.Stop.ToString(Invariant)}\">{Price(pick.Stop)}</td>");
             body.Append(Invariant, $"<td class=\"r\">{(pick.Target is { } target ? Price(target) : "trails")}</td>");
@@ -694,7 +694,7 @@ public sealed partial class MarkRenderer
         foreach (var (row, at) in rows.Select((row, at) => (row, at + 1)))
         {
             body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-gate=\"{Escaped(row.Gate)}\"><td class=\"place\">{at}</td>");
-            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
             body.Append(Invariant, $"<td class=\"missed-gate\" title=\"{Escaped(row.Words)}\"><b>{Escaped(row.Gate)}</b></td>");
             body.Append(NumberCells(family, row.Ticker, numbers));
             body.Append("</tr>");
@@ -810,7 +810,7 @@ public sealed partial class MarkRenderer
             foreach (var row in forming.Rows)
             {
                 body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-forming-row=\"true\" data-high=\"{row.High.ToString(Invariant)}\" data-volume-needed=\"{row.VolumeNeeded.ToString("0", Invariant)}\"><td class=\"place\">{row.Place}</td>");
-                body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>");
+                body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>");
                 body.Append(Invariant, $"<td class=\"r\">{Price(row.Close)}</td><td class=\"r\">{Price(row.High)}</td>");
                 body.Append(Invariant, $"<td class=\"r\">{row.MovesUnder.ToString("0.00", Invariant)}</td>");
                 body.Append(Invariant, $"<td class=\"r\">{Shares(row.VolumeNeeded)}</td><td class=\"r\">{Shares(row.Volume)}</td>");
@@ -840,7 +840,7 @@ public sealed partial class MarkRenderer
         var row = pick.Row;
         var cells = new StringBuilder();
 
-        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+        cells.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
 
         foreach (var also in pick.Also)
         {

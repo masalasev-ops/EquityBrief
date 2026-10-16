@@ -45167,3 +45167,81 @@ Carried:    the first night's fill step and ledger step on 19.10's build, owed t
             the first night's ledger step on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion",
             owed a correction of section 11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a
             correction of 19.2; the sign-offs of phases 16, 17 and 18.
+
+### 19.11 - the chart page every stock opens first, and every page's time measured   2026-10-16
+
+Queue:      done, 19.0 to 19.10 with their corrections and records and the rulings of 19.11 and 19.13, PRs 446 to 470;
+            in progress, this checkpoint; next, 19.12, then 19.13, then the sign-offs of phases 16, 17 and 18, each by a
+            fresh session.
+Built:      on the operator's rulings and answers of 2026-10-16, a chart page every link that opens a stock opens first,
+            `#/chart/<ticker>` (see: Every link that opens a stock opens its chart page first, and the chart page links
+            to its report): the name page's masthead drawn by the one function both pages call, with Open the report or
+            the list's own request; candles at Daily, Weekly or Monthly rolled up in the core, the weekly and monthly
+            reading one stock's pulled bars by the table's key at the store's scale and the daily none; the 20, 50 and
+            200 session averages named with their values at the candle under the pointer; volume in the gain's and the
+            loss's hue; the name page's report and ex-dividend marks; the night's bands behind a toggle; tonight's plan
+            as lines with the rule's name; and a grid of stored figures in six groups, a figure the name page draws
+            worked by its own function and one fetched and not held saying not stored. Every stock link on Tonight, the
+            buy points, the setup cards, Universe, Researched, the Queue, the Watch list, Past picks, paper trading's
+            trade log, the peers and the search opens the chart page; a report's links keep the name page, whose
+            masthead links back. Every page's time: the read surface keeps each route's server times in memory, the
+            newest thousand a route, and the Run page draws the slowest routes with their requests, median and slowest
+            (see: Each request's route and server time is kept in memory for the read surface's life and drawn on the
+            Run page, and no store holds it). Section 15.22 with its ten regions, 15.9, 15.10, 15.12 and 15.13, the read
+            API's catalogue and matrix rows, the schema's note, the guide, the roster and the placements.
+Found:      before the merge, and fixed in this checkpoint. Screenshots of the branch's chart page over the operator's
+            store showed the grid's labels squeezed to one letter by a value column taking the whole width, dates
+            broken at their hyphens, the distance from the year's high written with its sign in ink beside the words
+            below it, and one year read off the month-end of 2025-09-30, since the store keeps a year to the day, 252
+            sessions, and that reading needed 253. One year now reads the store's own session on or before the day a
+            year back, the distance is a figure of its own in its hue, and the signed-figures check reads every fixture
+            name's chart page at each interval. At a viewport of 390 pixels the page holds the screen's width. And six
+            of the eleven placements claimed a pass no test read: the masthead, the levels' toggle, the volume's hue,
+            the marks, tonight's plan and the reading under the pointer; each now has its assertion.
+Measured:   over the operator's store on 2026-10-16 from 08:09 to 08:11 UTC, outside the regular session, by a Release
+            build of 63472820 run from a clean copy on a port of its own, the one change to shipped code after it adding
+            an attribute to each mark: each page opened ten times, Tonight ten times on each index, its median and
+            slowest server time in milliseconds read off the Run page's own table. The Run page 4,212 and 4,529; Tonight
+            786 and 1,513; a name page 693 and 1,037; the Watch list 366 and 414; Universe 268 and 295; the chart page's
+            Daily 124.1 and 157.3, Weekly 132.0 and 151.0 and Monthly 126.4 and 138.5, on AAPL, which holds 1,957
+            sessions pulled before the store's year, tied for the most; Researched 121 and 146; Past picks 68 and 135;
+            paper trading 59 and 79; the Queue 25 and 46; the Loop 7 and 39; the Ledger 2 and 23. The Monthly is under
+            300 at its slowest, so its reading is as built. The surface's five starts wrote five run log rows and
+            nothing else.
+Tests:      7 new, 2370 in all: a week's and a month's candles and a stretch holding none worked by hand; the pulled
+            sessions at the store's scale; each span's return worked by hand, one year off the store's own session a
+            year back and off the month-ends where it holds none; the fixture's AAPL chart page, its week a whole one
+            with its high and low inside it, its 50-session average and its quarter worked by hand, its grid's figures
+            the name page's and not stored where none is held, the quote's route its only one, the daily chart reading
+            no pulled bar, its masthead, each volume bar's hue, its four report and four ex-dividend marks, its reading
+            and its levels' toggle; tonight's plan over a constructed store; every stock link over seven pages; and the
+            route times. The signed-figures check reads every fixture name's chart page at each interval.
+Claims:     1327, eleven more than 1316: the ten rows of section 15.22's region table and 15.10's Every page's time,
+            named beside phase 19's pair as rows after its report, each passing. The plan's about 18 counted a catalogue
+            and a matrix row for the page, which the read API serves with no component of its own, and its route, which
+            landed as words in 15.13's list.
+Pins:       none moves: no source a rule, the hooks or the readings pin is touched.
+Mutated:    the rule, stated before the runs: one mutation a property this checkpoint adds whose failure a reader would
+            see on the page, the smallest edit to shipped source that breaks it, each run against the chart page's tests
+            and the signed-figures check. M1 a week's high read off its first session; red at the roll-up test, and the
+            fixture page's week survived it, its first session holding the week's high, so that week is chosen whole
+            with its high and low inside it and is red there too. M2 the scale inverted; red at the scale test. M3 the
+            daily chart reading the pulled bars; red at the fixture page's test. M4 one year never read off the store's
+            own session; red at the span test. M5 Universe's stock link opening the name page; red at the link test. M6
+            a full route keeping its oldest times; red at the route times test. M7 the distance from the year's high
+            drawn with no hue; red at the signed-figures check. Under the same rule once the six placements' assertions
+            were written: M8 the volume hues swapped, M9 each mark a candle late, M11 the masthead's watch press dropped
+            and M12 the reading line reading the first candle, each red at the fixture page's test; M10 the stop's line
+            drawn at the buy, red at the plan test. Not mutated: the toggle and the pointer's handlers, which run in the
+            browser and are read off the shell's script, the suite having no browser. Each reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 930a8fa3: all six
+            steps, 0 warnings, 0 errors, 2370 of 2370 tests ran with none failed in 20 minutes 2 seconds, migrations 0
+            to 94 with none pending, schema version 94, against `data-ci` and never `data`; the phase report 60 tables,
+            1327 claims, 1327 passing, none out of scope and none unexamined, 1338 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build, owed to
+            a dated entry once the night has run; the first night's ledger step on 19.9's build, owed to its dated
+            entry; Figure 11.4's "earliest promotion", owed a correction of section 11; the S&P 600's breadth drawn as
+            45.0% beside "below its floor of 45%", owed a correction of 19.2; the sign-offs of phases 16, 17 and 18.
