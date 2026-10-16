@@ -97,6 +97,7 @@ public enum Store
     LoopReference,
     LoopRule,
     LoopRuleYear,
+    LoopLink,
     LoopDecision,
     LoopApplied,
     ProvisionalSetting,

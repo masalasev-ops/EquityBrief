@@ -715,7 +715,54 @@ public static class SchemaMigrations
         new Migration(92, "create ledger_reading", CreateLedgerReadings),
         new Migration(93, "create loop_rule and loop_rule_year", CreateLoopRules),
         new Migration(94, "create trade_fill, and add setup's fill and past", CreateTradeFills),
+        new Migration(95, "add setup's published factor readings, and create loop_link", AddFactorReadings),
     ];
+
+    // The setup ledger's published price and volume factors from 19.12, a column a reading after every column before
+    // them, each a statistic as every reading is and null on a row written before them until the history is built
+    // again; every row is kept in place. And the table of which readings go with winners, a row a run, index, family and
+    // reading, which the walk-forward tester's monthly step writes. Added and created empty, nothing dropped.
+    // see: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
+    // see: Which readings go with winners is worked by the monthly run and stored, and the words move no rule
+    const string AddFactorReadings = @"
+        ALTER TABLE setup ADD COLUMN return_week REAL;
+        ALTER TABLE setup ADD COLUMN return_month REAL;
+        ALTER TABLE setup ADD COLUMN largest_return REAL;
+        ALTER TABLE setup ADD COLUMN volatility_month REAL;
+        ALTER TABLE setup ADD COLUMN residual_volatility REAL;
+        ALTER TABLE setup ADD COLUMN beta REAL;
+        ALTER TABLE setup ADD COLUMN skewness REAL;
+        ALTER TABLE setup ADD COLUMN close_place REAL;
+        ALTER TABLE setup ADD COLUMN up_volume_share REAL;
+        ALTER TABLE setup ADD COLUMN price_volume_correlation REAL;
+        ALTER TABLE setup ADD COLUMN illiquidity REAL;
+        ALTER TABLE setup ADD COLUMN overnight_less_intraday REAL;
+        ALTER TABLE setup ADD COLUMN sector_month REAL;
+        ALTER TABLE setup ADD COLUMN sector_quarter REAL;
+        ALTER TABLE setup ADD COLUMN low_ratio REAL;
+        ALTER TABLE setup ADD COLUMN streak REAL;
+        ALTER TABLE setup ADD COLUMN volume_slope REAL;
+        ALTER TABLE setup ADD COLUMN alpha_one REAL;
+        ALTER TABLE setup ADD COLUMN alpha_two REAL;
+        ALTER TABLE setup ADD COLUMN alpha_three REAL;
+        ALTER TABLE setup ADD COLUMN alpha_four REAL;
+        ALTER TABLE setup ADD COLUMN alpha_six REAL;
+
+        CREATE TABLE loop_link (
+            run_id       TEXT    NOT NULL,
+            month        TEXT    NOT NULL,
+            index_code   TEXT    NOT NULL,
+            family       TEXT    NOT NULL,
+            reading      TEXT    NOT NULL,
+            setups       INTEGER NOT NULL,
+            years        INTEGER NOT NULL,
+            correlation  REAL,
+            same_way     REAL,
+            shuffled     REAL,
+            words        TEXT    NOT NULL,
+            PRIMARY KEY (run_id, index_code, family, reading)
+        ) STRICT;
+    ";
 
     // Every stored trade's fill at the next session's open, a row a trade the fill step has priced, keyed by the table
     // the trade is stored in and that table's own key: the session it was bought on, the open as a price at the trade's

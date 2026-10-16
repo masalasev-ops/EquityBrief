@@ -273,7 +273,7 @@ public sealed partial class SetupLedger : IComponent
         var facts = await FactsAsync(connection, [Filers], names.Select(name => name.Ticker), cancellation);
         var before = await BeforeTheYearAsync(connection, FirstSessions(names), facts, night, cancellation);
         var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-        var context = new LedgerContext(income, sectors, highs, lows, facts, before);
+        var context = new LedgerContext(income, sectors, highs, lows, facts, before) { Ranks = new FactorRanks(inputs.Series, inputs.Members) };
         var read = new Dictionary<string, IReadOnlyList<double?>?>(StringComparer.Ordinal);
 
         IReadOnlyList<double?>? Of(string ticker)
@@ -315,7 +315,7 @@ public sealed partial class SetupLedger : IComponent
         var sectors = await SectorsAsync(connection, PulledSectors, inputs.Names, cancellation);
         var facts = await FactsAsync(connection, [PulledFilers, Filers], inputs.Names.Select(name => name.Ticker), cancellation);
 
-        return (market, new LedgerContext(income, sectors, highs, lows, facts));
+        return (market, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) });
     }
 
     // The row states counts and no timing, so two nights over one fixture write the same row; the step's
@@ -363,7 +363,7 @@ public sealed partial class SetupLedger : IComponent
                 var closes = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray()).ToArray();
                 var opens = inputs.Series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Open)).ToArray()).ToArray();
                 var (highs, lows) = SweepIdeas.HighsAndLows(inputs.Series, inputs.Members, inputs.Calendar.Length);
-                var context = new LedgerContext(income, sectors, highs, lows, facts, before);
+                var context = new LedgerContext(income, sectors, highs, lows, facts, before) { Ranks = new FactorRanks(inputs.Series, inputs.Members) };
                 var families = LedgerSetups.On(index, inputs.Series, inputs.Sessions, inputs.Members, inputs.Calendar, inputs.At, market, context);
 
                 foreach (var family in families)
@@ -990,7 +990,7 @@ public sealed partial class SetupLedger : IComponent
             ? await HeavyweightHistoryAsync(history, inputs, through, output, cancellation)
             : new Dictionary<int, IReadOnlyList<HeavyweightCut>>();
 
-        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts), heavyweights);
+        return new PreparedHistory(index, calendar, series, sessions, members, income, closes, opens, stopped, [.. calendar, .. after], past, market, new LedgerContext(income, sectors, highs, lows, facts) { Ranks = new FactorRanks(series, members) }, heavyweights);
     }
 
     // One session the history build computed: each family's setups with each one's path and benchmark beside it.
