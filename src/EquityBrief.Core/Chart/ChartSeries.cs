@@ -207,11 +207,15 @@ public static class ChartSeries
             }
 
             // A year or more back every month has ended, so the newest month-end on or before the day is its month's last
-            // session.
+            // session; one of a month before the month that ended last by the day is no close of that month, which the
+            // long view does not hold, and the span reads none rather than an older close.
             var day = newest.Session.AddYears(-years);
             var month = ends.LastOrDefault(end => end.Session <= day);
+            var lastEnded = new DateOnly(day.Year, day.Month, 1).AddMonths(-1);
 
-            spans.Add(month.Session == default ? new SpanReturn(span, null, null) : From(span, month.Session, month.Close));
+            spans.Add(month.Session == default || new DateOnly(month.Session.Year, month.Session.Month, 1) < lastEnded
+                ? new SpanReturn(span, null, null)
+                : From(span, month.Session, month.Close));
         }
 
         return spans;

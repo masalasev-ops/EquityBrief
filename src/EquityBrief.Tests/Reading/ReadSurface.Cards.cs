@@ -133,6 +133,10 @@ public partial class ReadSurface
         Assert.Contains($"data-select-href=\"#/night/{IndexNight}?name=S1&universe=600\" class=\"sel\" aria-selected=\"true\">", points, StringComparison.Ordinal);
         Assert.Matches("<tr class=\"plan-row\" data-plan-for=\"S1\"><td colspan=\"9\"><div class=\"row-open\"><div class=\"decision-card\" data-index=\"SML\" data-family=\"breakout\" data-ticker=\"S1\"", points);
 
+        // From 19.11 the row's stock opens its chart page, and its report link the report.
+        Assert.Contains("<a class=\"name-link\" href=\"#/chart/S1\">S1</a>", points, StringComparison.Ordinal);
+        Assert.Matches("<a class=\"open[^\"]*\" href=\"#/name/S1\"", points);
+
         // With S3 listed second, a link naming S3 selects its row and draws its plan's row beneath it and no other, and a
         // link naming a stock no row holds selects the first.
         store.Execute(
