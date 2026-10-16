@@ -53,12 +53,17 @@ public class DecisionCitations
     // carries one story about.
     internal static IReadOnlyList<CorpusFinding> CitedOutsideTheRecords()
     {
-        var records = Corpus.Records
-            .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var records = RecordFiles();
 
         return [.. Cited().Where(citation => !records.Contains(citation.File))];
     }
+
+    // The three records and the archives holding their earlier entries, each a dated statement of what the corpus held.
+    static HashSet<string> RecordFiles() =>
+        Corpus.Records
+            .Concat(Corpus.Archives.Select(archive => archive.File))
+            .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     [Fact]
     public void NoCitationInASpecOrInCodeResolvesToASupersededDecision()
@@ -81,9 +86,7 @@ public class DecisionCitations
         // superseded decision, and every one of them sits in a record.
         var superseded = Corpus.SupersededNames(Corpus.Read("docs/DECISIONS.md")).ToHashSet(StringComparer.Ordinal);
 
-        var records = Corpus.Records
-            .Select(record => Path.Combine(Repository.Root, record.Replace('/', Path.DirectorySeparatorChar)))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var records = RecordFiles();
 
         var removed = Cited()
             .Where(citation => superseded.Contains(citation.Detail))
@@ -183,9 +186,12 @@ public class DecisionCitations
         // A citation that a narrowed population cannot see is a citation nothing
         // resolves, which is the failure the widening exists to prevent. Asserted
         // as the count it is: eight files before, twelve after, and the four are
-        // the ones carrying the moved text.
+        // the ones carrying the moved text; and the two archives beside them,
+        // which carry the records' earlier entries.
         Assert.Equal(8, beforeTheWidening.Length);
-        Assert.Equal(beforeTheWidening.Length + rules.Count, documents.Count);
+        Assert.Equal(2, Corpus.Archives.Length);
+        Assert.Equal(beforeTheWidening.Length + rules.Count + Corpus.Archives.Length, documents.Count);
+        Assert.All(Corpus.Archives, archive => Assert.Contains(archive.File, documents));
     }
 
     [Fact]
@@ -268,5 +274,10 @@ public class DecisionCitations
         Assert.Single(Corpus.Citations(line, "docs/ARCHITECTURE.html"));
         Assert.Single(Corpus.Citations(line[2..], "docs/CHANGELOG.md"));
         Assert.Empty(Corpus.Citations(line, @"E:\a\docs\CHANGELOG.md"));
+
+        // The changelog's archive quotes prior text as the changelog does, and the build record's archive quotes none.
+        Assert.Empty(Corpus.Citations(line, "docs/archive/CHANGELOG-to-2026-10-11.md"));
+        Assert.Single(Corpus.Citations(line[2..], "docs/archive/CHANGELOG-to-2026-10-11.md"));
+        Assert.Single(Corpus.Citations(line, "docs/archive/PROGRESS-phases-0-to-18.md"));
     }
 }

@@ -51,7 +51,7 @@ public class ObligationReconciles
     // architecture, so no placement and no verdict names it.
     internal static CheckReach Reach => new(
         "obligation-reconciles",
-        ["docs/BUILD_PLAN.md", "docs/PROGRESS.md"],
+        ["docs/BUILD_PLAN.md", "docs/PROGRESS.md", "docs/archive/PROGRESS-phases-0-to-18.md"],
         []);
 
     const int RowFloor = 13;

@@ -14,6 +14,24 @@ internal static class Corpus
     internal static readonly string[] Records =
         ["docs/DECISIONS.md", "docs/PROGRESS.md", "docs/CHANGELOG.md"];
 
+    // A record's earlier entries, moved whole into a file of their own that takes no new entry, and read with the
+    // live file as one record wherever the record is read. Before says where they stand in it: before the live
+    // file's entries, as the build record's oldest do, or after them, as the changelog's do beneath its newest.
+    // see: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
+    internal sealed record Archive(string Record, string File, bool Before);
+
+    internal static readonly Archive[] Archives =
+    [
+        new("docs/PROGRESS.md", "docs/archive/PROGRESS-phases-0-to-18.md", Before: true),
+        new("docs/CHANGELOG.md", "docs/archive/CHANGELOG-to-2026-10-11.md", Before: false),
+    ];
+
+    internal static Archive? ArchiveOf(string record) =>
+        Archives.FirstOrDefault(archive => string.Equals(archive.Record, record, StringComparison.Ordinal));
+
+    // The words each archive's opening line carries beside its live file's path.
+    internal const string TakesNoNewEntry = "This file takes no new entry.";
+
     // The path-scoped rules, read from the directory rather than listed, so a
     // fifth rules file cannot be added outside every check at once. A list here
     // would be a second statement of what the directory holds, and the whole
@@ -59,10 +77,65 @@ internal static class Corpus
     // through two members would be two keys of one name.
     internal static IReadOnlyList<string> SpecsAndRules => [.. Specs, .. Rules];
 
-    internal static IReadOnlyList<string> Documents => [.. Specs, .. Rules, .. Records];
+    internal static IReadOnlyList<string> Documents => [.. Specs, .. Rules, .. Records, .. Archives.Select(archive => archive.File)];
 
+    // A record with an archive is read whole, its archive's entries in their place, so no check reading it can read
+    // the live file alone; every other file is read as it stands.
     internal static string Read(string relative) =>
+        ArchiveOf(relative) is { } archive
+            ? Joined(archive, ReadAlone(relative), ReadAlone(archive.File))
+            : ReadAlone(relative);
+
+    // One file as it stands, a live record without its archive among them.
+    internal static string ReadAlone(string relative) =>
         File.ReadAllText(Path.Combine(Repository.Root, relative.Replace('/', Path.DirectorySeparatorChar)));
+
+    // The record whole, from its live file and its archive: the live file without the line beneath its title naming
+    // the archive, and the archive's entries without its opening line and the blank line after it, set before the
+    // live file's first entry or after its last. A live file not naming its archive there, or an archive not opening
+    // on one line naming its live file and saying it takes no new entry, is refused rather than read as a record.
+    internal static string Joined(Archive archive, string live, string earlier)
+    {
+        var title = live.IndexOf('\n');
+        var named = title < 0 ? -1 : live.IndexOf('\n', title + 1);
+
+        if (named < 0 || !live[(title + 1)..named].Contains(archive.File, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"{archive.Record} does not name {archive.File} on the line beneath its title.");
+        }
+
+        var opening = earlier.IndexOf("\n\n", StringComparison.Ordinal);
+        var first = opening < 0 ? string.Empty : earlier[..opening];
+
+        if (first.Length == 0
+            || first.Contains('\n')
+            || !first.Contains(archive.Record, StringComparison.Ordinal)
+            || !first.EndsWith(TakesNoNewEntry, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"{archive.File} does not open with one line naming {archive.Record} and saying it takes no new entry.");
+        }
+
+        var record = live[..(title + 1)] + live[(named + 1)..];
+        var entries = earlier[(opening + 2)..];
+
+        if (!archive.Before)
+        {
+            return record + entries;
+        }
+
+        var marker = record.IndexOf("\n## Entries\n", StringComparison.Ordinal);
+
+        if (marker < 0)
+        {
+            throw new InvalidOperationException($"{archive.Record} holds no entries section to set its archive's entries in.");
+        }
+
+        var next = Regex.Match(record[marker..], "^### ", RegexOptions.Multiline);
+        var at = next.Success ? marker + next.Index : record.Length;
+
+        return record.Insert(at, entries);
+    }
 
     // Every decision name, in document order, and which of them sit under
     // "Previously decided".
@@ -118,7 +191,7 @@ internal static class Corpus
         // the format requires verbatim, or editing a record that is append only.
         // The reader is what was wrong, and it was wrong in the direction this
         // harness names, reading a record of a thing as the thing.
-        var record = file.Replace('\\', '/').EndsWith("docs/CHANGELOG.md", StringComparison.Ordinal);
+        var record = IsChangelog(file);
 
         for (var index = 0; index < lines.Length; index++)
         {
@@ -150,6 +223,15 @@ internal static class Corpus
         }
 
         return found;
+    }
+
+    // The changelog's live file and its archive, each of which quotes prior text.
+    static bool IsChangelog(string file)
+    {
+        var path = file.Replace('\\', '/');
+
+        return path.EndsWith("docs/CHANGELOG.md", StringComparison.Ordinal)
+            || path.EndsWith(ArchiveOf("docs/CHANGELOG.md")!.File, StringComparison.Ordinal);
     }
 
     internal static IReadOnlyList<string> SourceAndDocuments()

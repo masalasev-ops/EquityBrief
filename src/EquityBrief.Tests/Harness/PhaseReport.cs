@@ -46,6 +46,11 @@ internal sealed record PhaseReportModel(
     // claims because a check can fail with no claim attached to it.
     internal int ChecksNotPassing { get; init; }
 
+    // What the newest entry of the record states of the run over the tree
+    // carrying it, held to the figures this report measured. The command reads
+    // it; a report the suite builds reads none.
+    internal RecordFigures Record { get; init; } = RecordFigures.NotRead;
+
     internal int Count(Verdict verdict) => Claims.Count(claim => claim.Verdict == verdict);
 
     // Stated once. It was written out twice, in the command that returns the
@@ -53,16 +58,19 @@ internal sealed record PhaseReportModel(
     // statements of one fact and the pair could disagree with nothing to
     // reconcile them.
     //
-    // Four conditions and each covers what the others cannot. No claim was
+    // Five conditions and each covers what the others cannot. No claim was
     // checked and found wanting; none went unchecked; every carried check ran
-    // and held, which catches one that reaches no claim; and the run behind it
+    // and held, which catches one that reaches no claim; the run behind it
     // was clean, which is the only one that can see a failure in a class
-    // carrying no check at all.
+    // carrying no check at all; and the figures the newest entry wrote before
+    // the run are the ones it measured, which is what lets no commit after the
+    // run fill one in.
     internal bool Green =>
         Count(Verdict.Fail) == 0
         && Count(Verdict.Unexamined) == 0
         && ChecksNotPassing == 0
-        && Suite.Clean;
+        && Suite.Clean
+        && Record.Agree;
 }
 
 // How a table that makes no claims is placed: the reason it makes none and,

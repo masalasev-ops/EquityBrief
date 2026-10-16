@@ -20,7 +20,7 @@ public partial class ArchitectureConformance
     // `.claude/rules/checks.md`, so that is the file named here.
     internal static CheckReach Reach => new(
         "architecture-conformance",
-        [".claude/rules/checks.md", "docs/ARCHITECTURE.html", "docs/BUILD_PLAN.md", "docs/PROGRESS.md"],
+        [".claude/rules/checks.md", "docs/ARCHITECTURE.html", "docs/BUILD_PLAN.md", "docs/PROGRESS.md", "docs/archive/PROGRESS-phases-0-to-18.md"],
         [
             CheckReach.Key(Scope.CatalogueTable, "Verification harness"),
             CheckReach.Key(Scope.FailureTable, "The harness cannot parse this document"),

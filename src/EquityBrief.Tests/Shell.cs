@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace EquityBrief.Tests;
 
@@ -130,11 +131,14 @@ internal static class Shell
         return result;
     }
 
+    // The output is read in the encoding given, where a caller compares it byte for byte with a file the repository
+    // holds: left to the platform it is the console's code page on Windows, which reads a UTF-8 character as two.
     internal static ShellResult Run(
         string executable,
         IReadOnlyList<string> arguments,
         string? workingDirectory = null,
-        IReadOnlyDictionary<string, string>? environment = null)
+        IReadOnlyDictionary<string, string>? environment = null,
+        Encoding? output = null)
     {
         var start = new ProcessStartInfo(executable)
         {
@@ -142,6 +146,7 @@ internal static class Shell
             RedirectStandardError = true,
             UseShellExecute = false,
             WorkingDirectory = workingDirectory ?? Repository.Root,
+            StandardOutputEncoding = output,
         };
 
         foreach (var argument in arguments)
