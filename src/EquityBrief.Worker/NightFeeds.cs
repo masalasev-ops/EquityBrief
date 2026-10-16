@@ -52,7 +52,7 @@ public sealed record NightFeeds(
     // index since its last read and the facts of the members that filed, free and keyless, its documents counted on
     // its own row apart from the provider's requests and so in neither figure below. A set of feeds built without it
     // refreshes nothing, and the step's row says so.
-    // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+    // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
     public IFilingsRefreshFeed? Filings { get; init; }
 
     // The twelfth is the Treasury's daily par yield curve for the session's year, one request a night after the close,

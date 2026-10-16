@@ -834,7 +834,7 @@ static async Task<int> SweepFundamentalsRun(string[] args)
 // The filings refresh by hand: the night's step over the three indices' members, or with '--whole' every filer the
 // store knows asked once, over the archive through the configured contact. A run without a contact is refused before
 // any request, as the archive refuses a request that names none.
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 static async Task<int> FilingsRun(string[] args)
 {
     var configuration = Configuration();

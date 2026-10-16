@@ -717,7 +717,7 @@ public static class Nightly
             // were and never touches the arithmetic. The ledger then reads the business readings of tonight's setups
             // again for the members refreshed, so they read every filing the archive posted before the session. A
             // night run again for an earlier session refreshes nothing, since the days it would read are today's.
-            // see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+            // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
             new("filings", async () =>
             {
                 if (!askForTheFirstName)

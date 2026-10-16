@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Checks;
 // before a session, the night's setups reading them again once the refresh has stored them, and the fixture's night
 // refreshing the one member that filed a report and asking nothing for the others.
 // see: The SEC's facts are stored as first filed in a table the night reads, and a setup's business readings read those filed before its session
-// see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit
+// see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
 public partial class FixtureExpectations
 {
     [Fact]

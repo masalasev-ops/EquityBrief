@@ -45102,3 +45102,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             `data`; the phase report 59 tables, 1316 claims, 1316 passing, none out of scope and none unexamined, 1327
             placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    nothing new.
+
+### 19.13 ruling - insider buying and selling read from the SEC's Form 4 filings, for the reports and as ledger readings   2026-10-16
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-16, word for word in `prompts/2026-10-16-19.13-ruling-insider-trades.md`:
+            insiders' open-market buying and selling read from the SEC's Form 4 filings, free, dated by the day filed and
+            from the archive the night already reads, with no web search for insider activity; the filings refresh's
+            carve-out in CLAUDE.md and its decision amended to name the Form 4 and 4/A filed by a member's insiders,
+            read from the same daily index, one request a filing, free, from the SEC and not the provider, under the
+            refresh's own limit; one migration for the insider trades table and the new readings' columns, with the
+            three history builds again; the history before the nightly refresh from the SEC's quarterly insider
+            transactions data sets, one request a quarter; and no paid call, model call or provider request. The
+            operator's answer of the same day on the plan's box stands in `prompts/2026-10-16-19.11-operator-answers.md`.
+Plan:       `BUILD_PLAN.md` gains 19.13 after 19.12 with its done condition, built only once 19.11 and 19.12 have merged,
+            and the claims predicted gain about 8 as rows after the report; section 20's row names 19.0 to 19.13. The
+            refresh's decision is superseded by one naming the insiders' trades, its old wording under Previously
+            decided with its reasoning, each citation in the specs and the code names the new one, and CLAUDE.md's
+            carve-out names the Form 4 and 4/A, its prior wording in `CHANGELOG.md`. The citations in the shipped source
+            are comments, so no pin moves.
+Found:      the plan's box on a Form 4 is the filing's and not a transaction's, so every transaction a filing ticking it
+            reports is read as planned; a 4/A names its original's filing day and not its accession, so it is matched to
+            its original by the issuer, the reporting owner and that day, and stands on its own rows where none or two
+            match; the night's Form 4 asks are counted over the newest days the archive posted by the night's reader run
+            by hand rather than over three nights, which a done condition may not wait on, the first nights' counts owed
+            to a dated entry; and the data set is committed as a cut of the fixture names' rows with the whole file's
+            size and checksum stated.
+Queue:      done, the 19.11 ruling; in progress, this ruling and 19.10's remedy record; next, 19.11, 19.12 and 19.13,
+            each merged on its gates outside the night, the operator's go of 2026-10-16 standing for each. The sign-offs
+            of phases 16, 17 and 18 stay owed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 021671e0, since the
+            citations it names again sit in shipped source: all six steps, 0 warnings, 0 errors, 2363 of 2363 tests ran
+            with none failed in 18 minutes 49 seconds, migrations 0 to 94 with none pending, against `data-ci` and never
+            `data`; the phase report 59 tables, 1316 claims, 1316 passing, none out of scope and none unexamined, 1327
+            placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed. Set on
+            the merge of PR 468, whose tree is the one this ran over, as edc64bdc.
+Carried:    nothing new.

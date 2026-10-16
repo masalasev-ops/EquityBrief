@@ -1844,7 +1844,7 @@ Grain: one row per day of the archive's daily index the refresh read.
 
 Primary key: `day`.
 
-**The days the refresh has read, the newest of which it starts the next night's read after** (see: The night refreshes the facts of the members that filed since its last read of the archive's daily index, after the close under its own limit). A day is written only once every member it set off was refreshed, so a refusal or the step's limit leaves the day to be read again; the night's own session, not yet posted when the night runs, is never written by that night.
+**The days the refresh has read, the newest of which it starts the next night's read after** (see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit). A day is written only once every member it set off was refreshed, so a refusal or the step's limit leaves the day to be read again; the night's own session, not yet posted when the night runs, is never written by that night.
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
