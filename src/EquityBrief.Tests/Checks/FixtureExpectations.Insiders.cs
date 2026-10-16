@@ -586,6 +586,94 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task AJointFilingsOwnersInEitherOrderAreOneInsiderAndAnAmendmentStillFindsItsOriginal()
+    {
+        // From the 19.13 correction of 2026-10-16: the data sets list a joint filing's owners in an order of their own, as
+        // Woltosz's of 2026-07-06 lists the wife before the husband the filing names first.
+        (string Cik, string Name, bool Director, bool Officer, string? Title) husband = ("0001222526", "WOLTOSZ WALTER S", true, true, "Chief Executive Officer");
+        (string Cik, string Name, bool Director, bool Officer, string? Title) wife = ("0001222527", "WOLTOSZ VIRGINIA E", false, false, null);
+
+        var first = SecEdgarOwnership.Parse(Submission("0001222526-26-000101", "20260810", "0001023459", "SLP", [husband, wife], [("2026-08-07", "P", "1000", "20", true)]));
+        var second = SecEdgarOwnership.Parse(Submission("0001222526-26-000102", "20260824", "0001023459", "SLP", [wife, husband], [("2026-08-21", "P", "500", "22", true)]));
+        var both = RowsOf(first).Concat(RowsOf(second)).ToArray();
+
+        // Two purchases by the same two owners, listed in two orders: one insider, in the readings and in the region.
+        Assert.NotEqual(first.OwnerKey, second.OwnerKey);
+        Assert.Equal(1.0, InsiderReadings.Read(both, Whole, new DateOnly(2026, 9, 1), Dollars).Buyers);
+        Assert.Equal(1, InsiderView.Of(both, Whole, new DateOnly(2026, 8, 31))!.Ninety.Buyers);
+        Assert.Equal("0001222526,0001222527", InsiderReadings.Insider(second.OwnerKey));
+
+        // The amendment of the first, its owners listed as the data set lists them, finds its original.
+        using var store = new TemporaryStore().Migrated();
+        await using var connection = store.Open();
+        var amendment = SecEdgarOwnership.Parse(Submission("0001222526-26-000103", "20260812", "0001023459", "SLP", [wife, husband], [("2026-08-07", "P", "1000", "20.5", true)], form: "4/A", original: "2026-08-10"));
+
+        await InsiderTrades.StoreAsync(connection, null, first, InsiderTrades.DataSetSource, "run-a", CancellationToken.None);
+        await InsiderTrades.StoreAsync(connection, null, amendment, InsiderTrades.FilingSource, "run-a", CancellationToken.None);
+
+        Assert.Equal(["0001222526-26-000101"], Query(store, "SELECT amends FROM insider_trade WHERE accession = '0001222526-26-000103';"));
+
+        // And the comparison names no difference where the two readers list the same owners in two orders, read back as the
+        // comparison reads a filing's stored rows.
+        var held = new List<string[]>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT sequence, security, traded, code, shares, price, acquired, COALESCE(held_after, ''), COALESCE(planned, ''), direct, COALESCE(nature, ''), filed, form, COALESCE(original_filed, ''), owners, owner_ciks, director, officer, COALESCE(title, ''), ten_percent, cik FROM insider_trade WHERE accession = '0001222526-26-000101' ORDER BY sequence;";
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                held.Add([.. Enumerable.Range(0, reader.FieldCount).Select(at => Convert.ToString(reader.GetValue(at), CultureInfo.InvariantCulture)!)]);
+            }
+        }
+
+        var reordered = first with { Owners = [first.Owners[1], first.Owners[0]] };
+
+        Assert.DoesNotContain(InsiderTrades.Compared(reordered, held), one => one.Field is "owners" or "owner ciks");
+        Assert.Contains(InsiderTrades.Compared(reordered with { Owners = [first.Owners[0]] }, held), one => one.Field == "owner ciks");
+    }
+
+    [Fact]
+    public async Task TheDaysReadByHandReadEveryCompanyTheStoreKnowsAsTheHistoryDoes()
+    {
+        // From the 19.13 correction of 2026-10-16: a company of the S&P 400 the store's membership joins on 2026-10-02,
+        // whose insider files on 2026-10-01, is read on that day by hand, as the history reads every company the store
+        // knows and as the night of the next session would read it with that session's members; and a company the store
+        // knows a filer of and no membership holds is read too.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('MID', 'LATE', '2026-10-02', NULL, '2026-10-02T23:30:00Z');");
+
+        foreach (var (ticker, cik) in new[] { ("LATE", "0000000301"), ("KNOWN", "0000000302") })
+        {
+            store.Execute($"INSERT INTO company (ticker, fetched_at, cik, sector) VALUES ('{ticker}', '2026-10-02T23:40:00.000Z', '{cik}', 'Industrials');");
+        }
+
+        var day = new DateOnly(2026, 10, 1);
+        var feed = RecordedFilingsRefreshFeed.Of(
+            new Dictionary<DateOnly, string>
+            {
+                [day] = NightlyCost.DayIndex(day, ("0000000301", "LATE INC", "4", "0000000301-26-000001"), ("0000000302", "KNOWN INC", "4", "0000000302-26-000001"), ("0000000999", "UNKNOWN INC", "4", "0000000999-26-000001")),
+            },
+            ownerships: new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000301-26-000001"] = Submission("0000000301-26-000001", "20261001", "0000000301", "LATE", [("0000009301", "A DIRECTOR", true, false, null)], [("2026-09-30", "P", "100", "10", true)]),
+                ["0000000302-26-000001"] = Submission("0000000302-26-000001", "20261001", "0000000302", "KNOWN", [("0000009302", "AN OFFICER", false, true, "Chief Financial Officer")], [("2026-09-30", "S", "200", "30", false)]),
+            });
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var read = await new InsiderTrades(clock, store.DatabaseFile, (_, _) => Task.CompletedTask).DaysAsync(feed, day, day, compare: false, "insiders-by-hand", TextWriter.Null);
+
+        // Both companies' filings asked and stored, nothing of a filer the store knows no company of, and the day recorded.
+        Assert.Equal((1, 2, 2, 2), (read.Spans, read.Filings, read.Asked, read.Stored));
+        Assert.Equal(["0000000301", "0000000302"], Query(store, "SELECT DISTINCT cik FROM insider_trade ORDER BY cik;"));
+        Assert.Equal(["2026-10-01|filing|2|2"], Query(store, "SELECT first_day || '|' || source || '|' || filings || '|' || stored FROM insider_read;"));
+        Assert.DoesNotContain("0000000999-26-000001", feed.Asked);
+    }
+
+    [Fact]
     public async Task TheHistoryReadsEachQuarterOnceAndRecordsItOnlyOnceAllOfItIsStored()
     {
         using var store = new TemporaryStore().Migrated();

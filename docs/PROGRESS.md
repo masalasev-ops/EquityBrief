@@ -45445,3 +45445,97 @@ Carried:    19.13's remedy run from main and its record: the history's and the d
             at their medians, each a ruling of its own the operator is asked for; the first night's fill step and ledger
             step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the
             S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
+
+### 19.13 - the remedy run from main: the insiders' history and days read, 2026q3 compared, the three ledger histories built again and each index's checks   2026-10-16
+
+Not a checkpoint entry: it records 19.13's remedy and what it measured, and lands nothing.
+Ran:        from main's a7fee0bc, the merge of PR 473: `tools/remedies/2026-10-16-19.13-insider-trades.txt` between
+            14:47:03Z and 15:37:38Z with no night or off-peak run writing, migration 96 applied, the history and the days
+            since read, 2026q3 compared and the ledger's night step run by hand over the newest night; then the three
+            ledger builds with `--again` over 2019-01-02 to 2026-10-05 between 15:37:38Z and 16:23:24Z, each index's
+            point-in-time check and `loop-links` by 17:09:38Z, all from main. Requests of the SEC's archive alone, free
+            and keyless; none of the provider and no model call.
+Measured:   the history read 35 quarters, 2018q1 to 2026q3, in 562 seconds from 36 requests, the page and a quarter
+            each: 869,015 Forms 4 and 4/A of the 2,104 companies' filers the store knows, 1,483,096 transactions stored.
+            The days from 2026-10-01 to 2026-10-14, the newest the refresh had read, took 1,329 seconds: 2,294 member
+            filings asked over 10 weekdays, 2026-10-12 a holiday holding no index, 3,162 transactions stored from 2,304
+            requests. A filing took about 0.58 seconds, the request and its own commit on this disk, where the
+            archive's pace alone allows 0.1: the heaviest day, 2026-10-02, asked 723 in 372 seconds, inside the
+            refresh's 10 minutes, so a night reads about 1,000 such filings before its limit leaves the rest of a day
+            to the next night. 2026q3 compared in 1,098 seconds from 4,420 requests: 5,625 member Forms 4 and 4/A over
+            its 66 weekdays, the members being the S&P 500's, since the store's S&P 400 and 600 members join it on
+            2026-10-02; 4,354 the data set holds rows of read again and 2,560 of them equal, the derivatives' own
+            filings held by neither. The rest differed past the two places the data set states, the shares held after
+            on 1,022, a price on 781 and the shares on 468; on 82 the data set lists a joint filing's owners in another
+            order than the filing, Woltosz's 0001222526-26-000012 and Biglari's 0000921895-26-001763 among them; and on
+            96 it states a holding's nature on a row the filing states none for, Wells Fargo's 0000072971-26-000290
+            putting its trust on the direct row, which no reading or page reads. No other field differed. The ledger's
+            night step over the night of 2026-10-15 by hand took 27 seconds with the insiders' readings, against 11 for
+            19.12's run of the same night, writing the 43, 25 and 41 setups the night wrote, inside the night's hour.
+            The S&P 500's build took 19 minutes 15 seconds, 92,006 setups, 9,345 passing the live rule; the S&P 400's
+            11 minutes 41 seconds, 58,304 and 5,116; the S&P 600's 14 minutes 50 seconds, 76,051 and 6,571; 45 minutes
+            46 seconds together against 41 minutes 43 seconds for 19.12's of the same counts, the insiders' rows read
+            beside the history. Each index's point-in-time check rebuilt 200 of 200 sampled history setups with every
+            reading the same, the insiders' four among them, in 12 minutes 57 seconds, 11 minutes 42 seconds and 20
+            minutes 47 seconds. `loop-links` stored on the S&P 500 56 readings going with winners, 39 with losers, 240
+            with no link beyond the shuffle and 25 too few over five families, and on the S&P 400 20, 11, 238 and 19
+            and on the S&P 600 16, 23, 230 and 19 over four. Of the insiders' readings, on the S&P 500 the buyers and an
+            officer buying go with winners for the pullback and the fundamentals-first family and the net bought for the
+            breakout, the unplanned sales with losers for the breakout; on the S&P 600 an officer buying goes with
+            winners for the breakout and the unplanned sales with losers for the pullback and the fundamentals-first
+            family; and on the S&P 400 none beyond the shuffle.
+Found:      the days read by hand read each day's own members, so 2026-10-01 read none of the S&P 400's and 600's
+            members' Form 4s, which the night would have read on the next session with that session's members, while
+            recording the day as read; and an insider is the owners' CIKs in the order a reader lists them, so one
+            joint filing read from both readers, or two the data set lists in two orders, count two insiders and an
+            amendment of one misses its original. Both are 19.13's correction, its entry below.
+Verified:   `tools/ci.ps1` green over the tree 19.13's entry records, and over the tree carrying this record with 19.13's
+            correction as that entry records.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
+            beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
+
+### 19.13 - correction: the insiders' days read by hand for every company the store knows, and an insider whatever order its owners are listed in   2026-10-16
+
+Queue:      done, 19.0 to 19.13 with their corrections and records and the rulings of 19.11 and 19.13, PRs 446 to 473;
+            in progress, this correction; next, its remedy from main and its record, then the sign-offs of phases 16, 17
+            and 18, each by a fresh session.
+Built:      the days read by hand are read for every company the store knows, the night's and the pulled companies', as
+            the history reads them, in place of each day's members, which on 2026-10-01 held none of the S&P 400's and
+            600's members, whom the store's membership joins on 2026-10-02, while the day was recorded as read; the night
+            keeps its own session's members. And an insider is the owners' CIKs in ordinal order whatever order a reader
+            lists them in, in the readings' buyers, the region's buyers and sellers, an amendment's match to its original
+            and the comparison of the two readers, since the data sets list a joint filing's owners in an order of their
+            own; each row keeps the order the reader that stored it lists. The catalogue's and the matrix's Insider trades
+            rows read no membership; the schema's two owner columns, the runbook's days and the correction's remedy, the
+            roster and the remedy file.
+Found:      by 19.13's remedy comparing 2026q3 both read, as its record above states.
+Pins:       the readings' version moves from c0c43a1c0279 to 9223ff040777 with the insiders' readings' source; no source a
+            rule, the hooks, the learned score or a candidate pins changes, asserted by the pins' own tests.
+Tests:      2 new, 2394 in all: a joint filing's owners in two orders one insider in the readings and the region, an
+            amendment listing them in another order than its original finding it, and the comparison naming no
+            difference for the order alone; and the days read by hand reading a company the membership joins the day
+            after and one it holds no membership of, and no filer the store knows no company of.
+Claims:     1337, as before: the correction moves words in the catalogue's row and a cell of the matrix's.
+Remedy:     `tools/remedies/2026-10-16-19.13-correction-every-company-read.txt`, from main after the merge and before the
+            night: 19.13's days read again for every company the store knows, asking only for the filings not stored,
+            and the ledger's night step over the newest night; then each index's history built again with `--again`, as
+            the runbook states. It asks the SEC's archive alone and calls no model. Its requests and times are owed to
+            its dated entry.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds whose failure a reading or the
+            store would see, the smallest edit to shipped source that breaks it, each run against 19.13's tests. C1 the
+            readings' buyers counted by the owners' CIKs as stored; red at the joint owners' test. C2 the region's buyers
+            counted the same way; red, same. C3 an amendment matched by its owners as listed; red, same. C4 the comparison
+            setting the owners' CIKs as listed; red, same. C5 the days read by hand reading only the companies a
+            membership holds; red at the days' test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, b11ee730: all six
+            steps, 0 warnings, 0 errors, 2394 of 2394 tests ran with none failed in 24 minutes 47 seconds, migrations 0
+            to 96 with none pending, schema version 96, against `data-ci` and never `data`; the phase report 60 tables,
+            1337 claims, 1337 passing, none out of scope and none unexamined, 1348 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the correction's remedy run from main and its record; the Run page's 4.2 seconds, Tonight's 786 milliseconds
+            and a name page's 693 at their medians, each a ruling of its own the operator is asked for; the first night's
+            fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's
+            "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of
+            phases 16, 17 and 18.
