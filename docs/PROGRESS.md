@@ -45235,7 +45235,11 @@ Mutated:    the rule, stated before the runs: one mutation a property this check
             drawn at the buy, red at the plan test. Not mutated: the toggle and the pointer's handlers, which run in the
             browser and are read off the shell's script, the suite having no browser. Each reverted before anything was
             committed.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 930a8fa3: all six
+            steps, 0 warnings, 0 errors, 2370 of 2370 tests ran with none failed in 20 minutes 2 seconds, migrations 0
+            to 94 with none pending, schema version 94, against `data-ci` and never `data`; the phase report 60 tables,
+            1327 claims, 1327 passing, none out of scope and none unexamined, 1338 placements and verdicts reconciled
+            against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
             of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build, owed to
             a dated entry once the night has run; the first night's ledger step on 19.9's build, owed to its dated
