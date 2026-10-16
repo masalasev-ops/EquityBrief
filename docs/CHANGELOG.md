@@ -25,6 +25,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - section 20's row naming the records archive and 19.14
+Authorised by: the operator's rulings of 2026-10-16, recorded as the 19.14 ruling "the records archive as phase 19's last checkpoint, then the sign-offs, and no new work until the loop's first proposals are read" in PROGRESS.md
+Was:
+> Section 20, phase 19: ... and insiders' open-market buying and selling read from the SEC's Form 4 filings ... the build plan's phase 19 checkpoints, 19.0 to 19.13
+Now:
+> Section 20's row adds after the insiders: and, last, the build's record before phase 19 and the changelog's entries before 2026-10-12 moved whole into archives read with their live files as one; and names 19.0 to 19.14.
+Why: the operator's rulings of 2026-10-16 add 19.14 as the phase's last checkpoint.
+
+### 2026-10-16 - BUILD_PLAN.md - 19.14 added after 19.13, its claims predicted, and a section for the ideas tabled for phase 21
+Authorised by: the operator's rulings of 2026-10-16, recorded as the 19.14 ruling "the records archive as phase 19's last checkpoint, then the sign-offs, and no new work until the loop's first proposals are read" in PROGRESS.md
+Was:
+> 19.13's done condition was the plan's last checkpoint text before the carried obligations, the claims paragraph's last line named 19.13, and the plan ended on the carried obligations' discharged paragraphs.
+Now:
+> Added without replacing anything: a claims paragraph, 19.14 adding none; after 19.13, 19.14, the records archive, with its done condition and the mechanism the ruling chose for the figures-only commit; and at the plan's end a section headed Tabled for phase 21, empty, where an idea raised while new work is paused is written as one line.
+Why: the operator's rulings of 2026-10-16 add the checkpoint and pause new work until the proposals of the monthly run of 2026-11-07 are read.
+
 ### 2026-10-16 - ARCHITECTURE.html, SCHEMA.md, RUNBOOK.md and .claude/rules/checks.md - the insiders' days read by hand for every company the store knows, and an insider whatever order its owners are listed in
 Corrects: the days read by hand read each day's own members, so 2026-10-01 read none of the S&P 400's and 600's members' Form 4s while recording the day as read, and an insider was the owners' CIKs in the order a reader lists them, though the data sets list a joint filing's owners in an order of their own; found by 19.13's remedy comparing 2026q3 both read.
 Was:

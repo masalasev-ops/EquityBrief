@@ -45539,3 +45539,76 @@ Carried:    the correction's remedy run from main and its record; the Run page's
             fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's
             "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of
             phases 16, 17 and 18.
+
+### 19.13 - the correction's remedy run from main: the insiders' days read again for every company the store knows, the ledger's night step and the three ledger histories built again   2026-10-16
+
+Not a checkpoint entry: it records the remedy of 19.13's correction and what it measured, and lands nothing.
+Ran:        from main's 17a7d1c1, the merge of PR 474: `tools/remedies/2026-10-16-19.13-correction-every-company-read.txt`
+            from 17:56:30Z with no night or off-peak run writing, then the three ledger builds with `--again` over
+            2019-01-02 to 2026-10-05 from main's clean copy, as the runbook states. Requests of the SEC's archive alone,
+            free and keyless; none of the provider and no model call. The read surface restarted from main's Release.
+Measured:   the days from 2026-10-01 to 2026-10-14 read again in 293 seconds: 2,727 Forms 4 and 4/A of every company the
+            store knows over 10 weekdays, 2026-10-12 a holiday holding no index, 1,031 of them not stored before and
+            asked, 550 transactions stored, from 1,041 requests. 2026-10-01 asked 275 of its 353 and stored 223
+            transactions, the S&P 400's and 600's members' among them, which 19.13's remedy had read none of. The
+            ledger's night step over the night of 2026-10-15 by hand took 10 seconds, writing the 43, 25 and 41 setups
+            the night wrote. The S&P 500's build took 14 minutes 52 seconds, 92,006 setups, 9,345 passing the live rule;
+            the S&P 400's 13 minutes 20 seconds, 58,304 and 5,116; the S&P 600's 20 minutes 45 seconds, 76,051 and 6,571;
+            48 minutes 57 seconds together, the same counts as 19.13's remedy's builds.
+Verified:   `tools/ci.ps1` green over the tree 19.13's correction's entry records, and the checks reading this record
+            run filtered over the tree carrying it.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
+            beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
+
+### 19.14 ruling - the records archive as phase 19's last checkpoint, then the sign-offs, and no new work until the loop's first proposals are read   2026-10-16
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-16, word for word in `prompts/2026-10-16-19.14-ruling-records-archive-and-pause.md`,
+            with the operator's answers of the same day to the reading in `prompts/2026-10-16-19.14-operator-answers.md`.
+            19.14, the records archive, is phase 19's last checkpoint. Then the sign-offs of phases 16, 17, 18 and 19,
+            each in a fresh session, one at a time, as the 16.1 ruling set them, each of phases 16 to 18 reading its
+            entries from the archive and phase 19's from the live record. Then the monthly run of 2026-11-07, which
+            reads 19.12's and 19.13's readings, and the operator reading its proposals on the Loop page. Until then no
+            checkpoint is added and phase 20 is not planned, an idea raised meanwhile going to the plan's Tabled for
+            phase 21 as one line with no checkpoint text, and a defect found meanwhile is still fixed as a correction:
+            the pause stops new work, not fixes. The archive was approved by the operator in conversation on 2026-10-03
+            and deferred on 2026-10-04 until phase 14 was done, recorded here as the operator's word of today. Its blocks
+            move by a one-off command copying each by line number into its archive and removing it from the live file,
+            not committed to `tools/` and recorded word for word in 19.14's entry, every other change going through the
+            editor; CLAUDE.md's Document lifecycle section alone is amended, `.claude/rules/corpus-edits.md` stating no
+            append-only rule; the decision is filed under Process beside "Specifications are edited clean; the changelog
+            records what they said before"; the changelog's block of entries before 2026-10-12 moves as it stands, not
+            reordered; and the CI times before and after are recorded though the gain wanted is what each session reads.
+Figures:    the figures-only commit goes. A checkpoint's entry states the figures its verifying run is to measure before
+            that run: the test count read off the suite's own list of its tests, and the claim and PASS counts read off
+            the phase report run over the tree with the entry's heading in place, since the heading is what lands the
+            checkpoint and brings its claims into scope. The verifying pass then runs over that exact tree, and from
+            19.14 the phase report is green only where the newest entry stating a run over the tree carrying it states
+            the figures the report measured, a mutation recorded in 19.14's entry showing it red where one differs.
+            Chosen over the stamp accepting a tree whose only difference from the stamped commit is the newest entry's
+            figure lines, because the checks reading the record read those lines: `two-platform` reads the Verified
+            line's words, `record-append-only` holds a sweep's stated baseline to the entry's own test count and
+            `banned-prose` reads every line, so a stamp accepting a figure-only difference would vouch for verdicts the
+            suite never reached over that tree. The stamp is unchanged, still naming the commit the suite ran over with
+            the tree clean at both runs, and the tree merged is the tree verified, where until now it was that tree
+            with its figures filled in after. A Verified line states no duration of its own run. Condition 8 is amended
+            to match at 19.14, its reasoning kept. The suite's own list held 2394 tests over 17a7d1c1, the count its
+            run over the same code measured.
+Plan:       `BUILD_PLAN.md` gains 19.14 after 19.13 with its done condition, the claims predicted gain none, and a
+            section at its end headed Tabled for phase 21, empty; section 20's row names the archive and 19.0 to 19.14.
+Found:      read against the repository before building, on the ruling's instruction: 152 of the plan's 153 checkpoints
+            of phases 0 to 18 land today, 17.2a not landed while it waits on the operator's approval; every entry of
+            phases 16, 17 and 18 stands before phase 19's planning entry and every phase 19 entry after it, beside a 2.1
+            and two 11.4 corrections written since; the changelog runs newest first to 2026-09-08 and oldest first from
+            2026-09-05 to 2026-10-08, every entry before 2026-10-12 below those dated from it; the plan held no list for
+            phase 21 and the decisions no records topic; and four checks walk every past revision of the two records,
+            about four of the suite's 25 minutes, which the move leaves as they are.
+Queue:      done, 19.0 to 19.13 with their corrections, records and rulings, PRs 446 to 474; in progress, this ruling
+            and the record of 19.13's correction's remedy; next, 19.14, then the sign-offs of phases 16, 17, 18 and 19,
+            each by a fresh session, then the monthly run of 2026-11-07 and the operator reading its proposals.
+Verified:   `tools/ci.ps1` green over main as 19.13's correction's entry records, and the checks reading this record, the
+            changelog and the plan run filtered over the tree carrying it: 164 of 164 tests, the count the suite's own
+            list gave before the run.
+Carried:    nothing new.
