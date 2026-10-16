@@ -45330,3 +45330,37 @@ Carried:    19.12's remedy run from main and its record: the builds' times, the 
             first night's fill step and ledger step on 19.10's build; the first night's ledger step on 19.9's build;
             Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%";
             the sign-offs of phases 16, 17 and 18.
+
+### 19.12 - the remedy run from main, the three ledger histories built again, each index's checks and which readings go with winners   2026-10-16
+
+Not a checkpoint entry: it records 19.12's remedy and what it measured, and lands nothing.
+Ran:        from main's 47ed6b1d, the merge of PR 472: `tools/remedies/2026-10-16-19.12-the-published-factors.txt`
+            between 11:23:25Z and 11:23:53Z with no night or off-peak run writing, migration 95 applied and the ledger's
+            night step run by hand over the night of 2026-10-15; then the three ledger builds with `--again` over
+            2019-01-02 to 2026-10-05 between 11:24:08Z and 12:05:51Z, each index's point-in-time check between 12:06:11Z
+            and 12:58:36Z and `loop-links` on each by 12:59:26Z, all from main's clean copy. No request to the provider
+            and no model call.
+Measured:   the ledger's night step over the night of 2026-10-15 by hand took 11 seconds with the sixty-eight readings,
+            its row's own start and end, against 26 seconds for that night's own step with forty-six, both well inside
+            the night's hour, writing the 43, 25 and 41 setups the night wrote. The S&P 500's build took 13 minutes 53
+            seconds, 92,006 setups, 9,345 passing the live rule; the S&P 400's 10 minutes 39 seconds, 58,304 and 5,116;
+            the S&P 600's 17 minutes 11 seconds, 76,051 and 6,571; 41 minutes 43 seconds together against 40 minutes 46
+            seconds for 19.10's builds of the same counts. Each index's point-in-time check rebuilt 200 of 200 sampled
+            history setups with every reading the same, the factors among them. `loop-links` stored on the S&P 500 51
+            readings going with winners, 38 with losers, 226 with no link beyond the shuffle and 25 too few over five
+            families, and on the S&P 400 20, 11, 222 and 19 and on the S&P 600 15, 21, 217 and 19 over four. The
+            within-night shuffle's 95th percentile of winners against losers, read-only over each rule's finished
+            listings as the tester reads them, over the first 46 readings and over all 68: on the S&P 500 the pullback's
+            +0.5548 and +0.5404, the breakout's +0.4334 and +0.4791 and the drift's +0.9069 and +0.9819, the
+            fundamentals-first family's 78 listings under the floor of 263; on the S&P 400 +0.5461 and +0.5595, +0.2652
+            and +0.2760, +1.0741 and +1.1516 and the fundamentals-first family's +0.2465 and +0.2849; on the S&P 600
+            +0.5418 and +0.5702, +0.2707 and +0.3363, +1.9767 and +2.0816 and +0.2901 and +0.3043. The wider search
+            raised the bar in ten of the eleven and lowered it in the S&P 500's pullback; the conditions above it and the
+            rule's own mean stayed one on the S&P 500, the drift's giving way to the breakout's, rose from none to one on
+            the S&P 400, the drift's, and stayed none on the S&P 600.
+Verified:   `tools/ci.ps1` green over main as 19.12's entry records, and over the tree carrying this record with 19.13's
+            entry as that entry records.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
+            beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
