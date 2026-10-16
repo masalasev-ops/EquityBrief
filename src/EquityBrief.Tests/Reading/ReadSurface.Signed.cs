@@ -89,7 +89,8 @@ public partial class ReadSurface
     {
         var pages = new List<(string Page, string Html)>();
 
-        // The replayed fixture: Tonight, the Run page, Past picks, Universe, the Watch list and every name's page.
+        // The replayed fixture: Tonight, the Run page, Past picks, Universe, the Watch list, every name's page and from
+        // 19.11 its chart page at each interval.
         using (var replayed = await FixtureReplay.ReplayedAsync())
         {
             using var host = new Host(replayed.Root);
@@ -104,6 +105,11 @@ public partial class ReadSurface
             {
                 pages.Add(($"/screens/name/{ticker}", await client.GetStringAsync($"/screens/name/{ticker}")));
                 pages.Add(($"/exports/name/{ticker}", await client.GetStringAsync($"/exports/name/{ticker}")));
+
+                foreach (var interval in new[] { "daily", "weekly", "monthly" })
+                {
+                    pages.Add(($"/screens/chart/{ticker}?interval={interval}", await client.GetStringAsync($"/screens/chart/{ticker}?interval={interval}")));
+                }
             }
         }
 

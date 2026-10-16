@@ -143,7 +143,7 @@ public sealed partial class SinglePageApp
 
         chart.Append("</nav>");
         chart.Append(view.Bands.Count > 0
-            ? "<button type=\"button\" class=\"bands-toggle\" data-bands-toggle aria-pressed=\"false\">Show the night's levels</button>"
+            ? "<button type=\"button\" class=\"btn-2 bands-toggle\" data-bands-toggle aria-pressed=\"false\">Show the night's levels</button>"
             : "<span class=\"muted bands-none\">No level stored for the night</span>");
         chart.Append("</div>");
 
@@ -180,8 +180,8 @@ public sealed partial class SinglePageApp
                 var shown = figure.Links is { Count: > 0 } links
                     ? string.Join(", ", links.Select(link => FormattableString.Invariant($"<a href=\"{Escaped(link.Href)}{kept.Replace("&", "?", StringComparison.Ordinal)}\">{Escaped(link.Text)}</a>")))
                     : figure.Href is { } href
-                        ? FormattableString.Invariant($"<a href=\"{Escaped(href)}\">{Escaped(figure.Shown)}</a>")
-                        : Escaped(figure.Shown);
+                        ? FormattableString.Invariant($"<a href=\"{Escaped(href)}\">{Whole(Escaped(figure.Shown))}</a>")
+                        : Whole(Escaped(figure.Shown));
                 var classes = string.Join(' ', new[] { figure.Hue, figure.Shown == NotStored ? "degraded" : null }.Where(part => part is not null));
 
                 grid.Append(FormattableString.Invariant($"<dt>{Escaped(figure.Label)}</dt><dd{(classes.Length > 0 ? FormattableString.Invariant($" class=\"{classes}\"") : string.Empty)}{(figure.Value is { } value ? FormattableString.Invariant($" data-value=\"{Escaped(value)}\"") : string.Empty)}>{shown}</dd>"));
@@ -204,6 +204,10 @@ public sealed partial class SinglePageApp
 
     // What a figure EquityBrief fetches and holds none of for a stock says.
     public const string NotStored = "not stored";
+
+    // A figure's text with each date in it held on one line, since a browser breaks a line at a date's hyphens.
+    static string Whole(string escaped) =>
+        System.Text.RegularExpressions.Regex.Replace(escaped, @"\b\d{4}-\d{2}-\d{2}\b", date => "<span class=\"nw\">" + date.Value + "</span>");
 
     // Every page's time on the Run page, from 19.11: the slowest routes since the read surface started, each with how
     // many of its times are read, their median and their slowest, kept in memory and read off no store.

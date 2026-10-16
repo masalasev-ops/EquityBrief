@@ -311,8 +311,11 @@ public static class ChartScreen
         return new GridGroup("technical", "Technical",
         [
             high is { } tile
-                ? new GridFigure("Year's high", FormattableString.Invariant($"{Figures.Price(tile.High)} on {tile.HighOn:yyyy-MM-dd}, {tile.FromHigh:0.0}% below it"), tile.High.ToString(CultureInfo.InvariantCulture))
+                ? new GridFigure("Year's high", FormattableString.Invariant($"{Figures.Price(tile.High)} on {tile.HighOn:yyyy-MM-dd}"), tile.High.ToString(CultureInfo.InvariantCulture))
                 : Missing("Year's high"),
+            high is { } under
+                ? new GridFigure("From the year's high", (Math.Round(under.FromHigh, 1) == 0 ? 0 : under.FromHigh).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "%", under.FromHigh.ToString(CultureInfo.InvariantCulture), MarkRenderer.Hue(under.FromHigh))
+                : Missing("From the year's high"),
             high is { } low
                 ? new GridFigure("Year's low", FormattableString.Invariant($"{Figures.Price(low.Low)} on {low.LowOn:yyyy-MM-dd}"), low.Low.ToString(CultureInfo.InvariantCulture))
                 : Missing("Year's low"),

@@ -25,12 +25,20 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - 15.22's figures name the price's distance from the year's high in its hue
+Corrects: the chart page's grid wrote the distance from the year's high with its sign in ink beside the words below it, found on a screenshot of the chart page drawn over the operator's store before the merge; it is drawn as a figure of its own in the gain's or the loss's hue, as the name page's tile draws it.
+Was:
+> the technicals: the year's high and low; the typical daily move; ...
+Now:
+> the technicals: the year's high and low and the price's distance from the high in its hue; the typical daily move; ...
+Why: a figure that rose or fell is drawn green or red with its sign on every page, and the signed-figures check now reads the chart page at each interval.
+
 ### 2026-10-16 - .claude/rules/checks.md - read-surface states 19.11's tests
 Authorised by: Every link that opens a stock opens its chart page first, and the chart page links to its report
 Was:
 > `read-surface`: ... and Tonight's buy points saying once beneath the table that each pick buys at the next open with its plan, read back off the rendered pages over constructed stores
 Now:
-> Added without replacing anything: the week's and the month's candles, the pulled sessions at the store's scale and each span's return worked by hand over constructed bars; a fixture name's chart page worked by hand with its grid's figures the name page's own; every link that opens a stock opening its chart page counted page by page; and the read surface timing every request with the Run page drawing the slowest routes.
+> Added without replacing anything: the week's and the month's candles, the pulled sessions at the store's scale and each span's return worked by hand over constructed bars; a fixture name's chart page worked by hand with its grid's figures the name page's own, and every fixture name's chart page at each interval read for its signed figures; every link that opens a stock opening its chart page counted page by page; and the read surface timing every request with the Run page drawing the slowest routes.
 Why: a roster row names what its check asserts, and 19.11 added those assertions.
 
 ### 2026-10-16 - SCHEMA.md - the pulled bars' note names the read API's read of one stock's rows for the chart page

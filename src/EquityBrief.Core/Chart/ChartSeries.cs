@@ -55,9 +55,9 @@ public static class ChartSeries
 
     public const string YearToDate = "year to date";
 
-    // The spans read in years, one year off the stored sessions where they reach 252 back and every span otherwise off
-    // the long view's month-end closes, which the night stores over the pulled history and the stored year at the
-    // store's scale, so no span reads a pulled bar when the page is drawn.
+    // The spans read in years, one year off the stored sessions where they reach the day a year back and every span
+    // otherwise off the long view's month-end closes, which the night stores over the pulled history and the stored year
+    // at the store's scale, so no span reads a pulled bar when the page is drawn.
     public static IReadOnlyList<(string Span, int Years)> YearSpans { get; } =
     [
         ("one year", 1),
@@ -65,8 +65,6 @@ public static class ChartSeries
         ("five years", 5),
         ("ten years", 10),
     ];
-
-    public const int SessionsAYear = 252;
 
     // A pulled price brought to the store's scale: the ratio of the store's close to the pull's on the store's first
     // session, the session both hold, as the chart averages step brings its warm-up, rounded to the places the store
@@ -164,8 +162,8 @@ public static class ChartSeries
     // The return over each span, the newest stored close over the close it is measured from, less one: a session span's
     // that many sessions back; the year to date's the last close of the year before; and a year span's the month-end
     // close of the last month ending on or before the day that many years before the newest session, one year read off
-    // the stored sessions where they reach it. None where the stored figures are short of the span, so a stock whose
-    // history reaches eight years states no return over ten.
+    // the stored session on or before that day where the store holds one. None where the stored figures are short of the
+    // span, so a stock whose history reaches eight years states no return over ten.
     public static IReadOnlyList<SpanReturn> Performance(IReadOnlyList<SessionBar> stored, IReadOnlyList<(DateOnly Session, decimal Close)> monthEnds)
     {
         var ordered = stored.OrderBy(bar => bar.Session).ToArray();
@@ -199,9 +197,15 @@ public static class ChartSeries
 
         foreach (var (span, years) in YearSpans)
         {
-            if (years == 1 && ordered.Length > SessionsAYear)
+            var day = newest.Session.AddYears(-years);
+
+            // The store keeps a year to the day, so one year reads its own close of the newest session on or before the day
+            // where the store holds one.
+            if (years == 1 && ordered[0].Session <= day)
             {
-                spans.Add(From(span, ordered[^(SessionsAYear + 1)].Session, ordered[^(SessionsAYear + 1)].Close));
+                var back = ordered.Last(bar => bar.Session <= day);
+
+                spans.Add(From(span, back.Session, back.Close));
 
                 continue;
             }
@@ -209,7 +213,6 @@ public static class ChartSeries
             // A year or more back every month has ended, so the newest month-end on or before the day is its month's last
             // session; one of a month before the month that ended last by the day is no close of that month, which the
             // long view does not hold, and the span reads none rather than an older close.
-            var day = newest.Session.AddYears(-years);
             var month = ends.LastOrDefault(end => end.Session <= day);
             var lastEnded = new DateOnly(day.Year, day.Month, 1).AddMonths(-1);
 

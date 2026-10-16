@@ -103,9 +103,9 @@ public partial class ReadSurface
     }
 
     // Each span is the newest close over the close it reaches back to, less one, worked by hand: the sessions spans over
-    // the stored sessions, the year to date over the last close of the year before, one year over the month-end closes
-    // where the stored sessions are short of 252, three years over them, and five and ten years none where they reach
-    // no further.
+    // the stored sessions, the year to date over the last close of the year before, one year over the store's own session
+    // a year back where it holds one and over the month-end closes where it does not, three years over them, and five and
+    // ten years none where they reach no further.
     [Fact]
     public void EachSpanIsTheNewestCloseOverTheCloseItReachesBackToAndNoneWhereTheStoredFiguresAreShort()
     {
@@ -156,6 +156,26 @@ public partial class ReadSurface
         Assert.Equal(Day("2021-04-30"), spans["five years"].From);
         Assert.Null(spans["ten years"].Return);
         Assert.Equal(Over(80m), ChartSeries.Performance(stored, [.. monthEnds, (Day("2025-04-30"), 80m)]).Single(span => span.Span == "one year").Return!.Value, 12);
+
+        // A store holding the day a year back reads one year off its own close of that session, as the store keeps a year
+        // to the day, and one starting the session after it reads the month-ends.
+        var year = new List<SessionBar>();
+
+        for (var day = Day("2025-05-29"); day <= Day("2026-05-29"); day = day.AddDays(1))
+        {
+            if (day.DayOfWeek is not DayOfWeek.Saturday and not DayOfWeek.Sunday)
+            {
+                year.Add(new SessionBar(day, 100m + year.Count, 100m + year.Count, 100m + year.Count, 100m + year.Count, 1));
+            }
+        }
+
+        var reached = ChartSeries.Performance(year, monthEnds).Single(span => span.Span == "one year");
+        var after = ChartSeries.Performance(year.Skip(1).ToList(), [.. monthEnds, (Day("2025-04-30"), 80m)]).Single(span => span.Span == "one year");
+
+        Assert.Equal(Day("2025-05-29"), reached.From);
+        Assert.Equal((double)((year[^1].Close / year[0].Close) - 1), reached.Return!.Value, 12);
+        Assert.Equal(Day("2025-04-30"), after.From);
+        Assert.Equal((double)((year[^1].Close / 80m) - 1), after.Return!.Value, 12);
     }
 
     // The fixture's night: AAPL's chart page draws a week worked by hand from the daily bars it rolls up, its 50-session

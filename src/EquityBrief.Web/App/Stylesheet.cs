@@ -963,9 +963,10 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .chart-controls .interval.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .chart-reading{font-variant-numeric:tabular-nums;margin:4px 0 8px;min-height:1.4em}
 .report-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}
+.report-line .open-report{display:inline-flex;align-items:center;text-decoration:none}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
 .grid-group h3{font-size:13px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2)}
-.grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;margin:0}
+.grid-group dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:3px 10px;margin:0}
 .grid-group dt{color:var(--ink-2)} .grid-group dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
 .route-times code{font-size:12.5px}
 .m-barlab-in{font-size:11px;font-weight:600;fill:var(--surface);font-variant-numeric:tabular-nums} .m-barlab-out{font-size:11px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums}
