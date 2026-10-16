@@ -45138,3 +45138,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, 43 checks on the roster run and passed. Set on
             the merge of PR 468, whose tree is the one this ran over, as edc64bdc.
 Carried:    nothing new.
+
+### 19.10 - the remedy run from main, the three ledger histories built again and each index's checks   2026-10-16
+
+Not a checkpoint entry: it records 19.10's remedy and what it measured, and lands nothing.
+Ran:        from main's 7b228f0c, the merge of PR 467: `tools/remedies/2026-10-16-19.10-entries-at-the-next-open.txt`
+            between 03:20Z and 04:04Z with no night or off-peak run writing, migration 94 applied, the fill step run
+            again and the rule records replayed; then, the off-peak run's drain done, the three ledger builds with
+            `--again` over 2019-01-02 to 2026-10-05 between 04:45Z and 05:26Z, and each index's point-in-time check and
+            next-open check from the same build. No request to the provider and no model call.
+Measured:   the fill step priced 8,488 trades at the next session's open: 8,360 of the page list's scored plans, 18 of
+            the families' trades, 16 and 6 of the index families' and rules' trades, 20 of the variants' picks, and 5,
+            35, 15 and 13 of the four heavyweights tables' holdings; 2 whose stock holds no bar on its next session, none
+            with no open on it or whose plan put up no risk, and 370 buying at the next open. The rule records replayed
+            at the open are those 19.10's entry states. The S&P 500's build took 14 minutes 15 seconds, 92,006 setups,
+            9,345 passing the live rule; the S&P 400's 10 minutes 41 seconds, 58,304 and 5,116; the S&P 600's 15 minutes
+            50 seconds, 76,051 and 6,571; 40 minutes 46 seconds together against 38 minutes 57 seconds on 2026-10-15, the
+            setups 1 fewer, 2 fewer and 3 more than 19.9's builds wrote, the night between them refetching 19 members'
+            years after 296 corporate actions. Each index's point-in-time check rebuilt 200 of 200 sampled history setups
+            with every reading the same. The next-open check priced every settled setup both ways, 89,100, 56,420 and
+            73,067, none whose stock or session the history lacks, and worked again 71,449, 43,526 and 55,342 of the
+            results at the open as stored to a millionth and 89,052, 56,373 and 72,977 to a thousandth, the proportions
+            its run of 2026-10-15 found for the results at the close, since it reads the history to a later day than the
+            build; it wrote nothing.
+Verified:   `tools/ci.ps1` green over main as 19.10's entry records, the checks reading this record run filtered over the
+            tree carrying this entry.
+Carried:    the first night's fill step and ledger step on 19.10's build, owed to a dated entry once the night has run;
+            the first night's ledger step on 19.9's build, owed to its dated entry; Figure 11.4's "earliest promotion",
+            owed a correction of section 11; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%", owed a
+            correction of 19.2; the sign-offs of phases 16, 17 and 18.
