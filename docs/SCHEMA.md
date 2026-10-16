@@ -94,7 +94,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `setup` | SetupLedger | SetupLedger | SetupLedger |
 | `setup_night` | SetupLedger | none | SetupLedger |
 | `ledger_summary` | SetupLedger | none | SetupLedger |
-| `ledger_reading` | SetupLedger | none | SetupLedger |
+| `ledger_reading` | SetupLedger | SetupLedger | SetupLedger |
 | `loop_run` | WalkForwardTester | none | none |
 | `loop_proposal` | WalkForwardTester | none | none |
 | `loop_test` | WalkForwardTester | none | none |
@@ -112,6 +112,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `filed_fact` | FilingsRefresher | none | none |
 | `filed_fact_pull` | FilingsRefresher | none | none |
 | `filing_day` | FilingsRefresher | none | none |
+| `insider_trade` | InsiderTrades | none | none |
+| `insider_read` | InsiderTrades | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1489,6 +1491,10 @@ Grain: one row per index, family, stock and session a family's loose gates passe
 | `alpha_three` | REAL | Kakushadze's Alpha#3 |
 | `alpha_four` | REAL | Kakushadze's Alpha#4 |
 | `alpha_six` | REAL | Kakushadze's Alpha#6, the last of the published factors |
+| `insider_net_buy` | REAL | from 19.13, the dollars of the insiders' open-market purchases less their sales filed in the 90 days before the session, over the company's value as the valuation reading works it |
+| `insider_buyers` | REAL | the insiders with an open-market purchase filed in those 90 days, counted once each |
+| `insider_officer_buy` | REAL | 1 where an officer bought in the open market in those 90 days, 0 where none did |
+| `insider_unplanned_sale` | REAL | the dollars of the open-market sales filed in those 90 days whose filing does not tick the Rule 10b5-1 box, over the company's value, null where the days reach before 2023-04-01 |
 
 Primary key: `index_code`, `family`, `ticker`, `session_date`. Indexed on `index_code`, `settled` and `session_date`, which the step closing the windows reads by.
 
@@ -1549,7 +1555,7 @@ Grain: one row per index, member and night the ledger read, from 19.2.
 
 Primary key: `index_code`, `session_date`, `ticker`.
 
-**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none.
+**Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** (see: A pick's card and a stock's page draw what is behind it by heading, its percentiles always and its push where the score passed). A member the night holds no bar for has no row, and the history's build writes none. The readings are statistics, stored as text only because the catalogue's readings sit in one cell; each reads back as the double it was. The read surface reads them for the chart of what is behind a stock, its percentiles among the members and its push on the learned score. From 19.12 the list holds the published factors after every reading before them, with no column added, and a row written before them holds the readings before them alone, which the read surface reads with the ones it lacks as none. From 19.13 it holds the four insider readings after them, and the setup ledger is its updater too: once the night's filings refresh has stored the session before's filings, it writes the night's rows' four insider readings again in place, every other reading left as the step wrote it (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted).
 
 ### loop_run
 Grain: one row per tester run on an index.
@@ -1888,7 +1894,60 @@ Grain: one row per day of the archive's daily index the refresh read.
 
 Primary key: `day`.
 
-**The days the refresh has read, the newest of which it starts the next night's read after** (see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit). A day is written only once every member it set off was refreshed, so a refusal or the step's limit leaves the day to be read again; the night's own session, not yet posted when the night runs, is never written by that night.
+**The days the refresh has read, the newest of which it starts the next night's read after** (see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit). A day is written only once every member it set off was refreshed, and from 19.13 once its members' Form 4 and 4/A filings were read too, so a refusal or the step's limit leaves the day to be read again; the night's own session, not yet posted when the night runs, is never written by that night.
+
+### insider_trade
+Grain: one row per transaction of a Form 4 or 4/A's table of shares, by the filing's accession and the transaction's place in it, from 19.13.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the issuer's CIK padded to ten digits, as the filing names it |
+| `ticker` | TEXT | the issuer's trading symbol as the filing states it, null where it states none; a reader matches a stock by its filer and never by this |
+| `accession` | TEXT | the filing's accession number |
+| `filed` | TEXT | the day the filing was filed, from the archive's header or the data set's filing date |
+| `form` | TEXT | `4` or `4/A` |
+| `amends` | TEXT | for an amendment, the accession of the one Form 4 its issuer's same owners filed on the day it states its original was filed; null where none or two match, and for an original |
+| `original_filed` | TEXT | the day an amendment states its original was filed, null for an original |
+| `owners` | TEXT | the reporting owners' names as the filing states them, in its order, joined by a semicolon and a space |
+| `owner_ciks` | TEXT | their CIKs padded to ten digits in the same order, joined by commas: the insider a reading counts once, a filing made jointly one insider |
+| `director` | INTEGER | 1 where an owner is a director |
+| `officer` | INTEGER | 1 where an owner is an officer |
+| `title` | TEXT | the first officer's title as stated, null where none is |
+| `ten_percent` | INTEGER | 1 where an owner holds ten per cent |
+| `sequence` | INTEGER | the transaction's place in the filing's table of shares, from 1: the document's order, and the data set's key's order |
+| `security` | TEXT | the security's title as stated |
+| `traded` | TEXT | the day the transaction was made |
+| `code` | TEXT | the transaction code as stated, P an open-market purchase and S an open-market sale, empty where the filing states none |
+| `shares` | TEXT | decimal in code, the shares the transaction moved, as the filing states them or as the data set holds them to two places |
+| `price` | TEXT | decimal in code, the price a share, null where none is stated |
+| `acquired` | INTEGER | 1 where the shares were acquired, 0 where disposed of |
+| `held_after` | TEXT | decimal in code, the shares held after it, null where the filing states a value instead |
+| `planned` | INTEGER | 1 where the filing ticks the Rule 10b5-1 box, 0 where it does not, null where it carries no box, as every filing before 2023-04-01 does |
+| `direct` | INTEGER | 1 where the holding is direct, 0 where indirect |
+| `nature` | TEXT | the nature of an indirect holding as stated, null for a direct one |
+| `source` | TEXT | `filing` where the nightly reader read the filing itself, `data-set` where a quarter of the SEC's data sets held it |
+| `run_id` | TEXT | the read that stored it |
+
+Primary key: `accession`, `sequence`. Indexed on `cik` and `filed`, which every reader reads by.
+
+**The insiders' trades the four insider readings, the report's Insiders region and the chart page's Insiders group read** (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). Append-only: a filing stored once is not asked or stored again, whichever reader read it first, and an amendment is stored as rows of its own naming the filing it amends, which readers read in that filing's place where the amendment carries a row. Written by the filings refresh after the close, the night's and by hand, and by the history read of the SEC's quarterly data sets, the Forms 4 and 4/A of every company the store knows; a filing's table of derivatives is not stored, since its exercises and vestings reach the shares as rows of this table, and a filing whose table of shares holds no transaction stores nothing.
+
+### insider_read
+Grain: one row per span the insiders' readers read whole: a quarter of the SEC's data sets, or a day of the archive's daily index, from 19.13.
+
+| Column | Type | Notes |
+|---|---|---|
+| `first_day` | TEXT | the span's first day: a quarter's first, or the day read |
+| `last_day` | TEXT | the span's last day: a quarter's last, or the day read |
+| `source` | TEXT | `data-set` for a quarter, `filing` for a day |
+| `run_id` | TEXT | the read that recorded it |
+| `read_at` | TEXT | UTC instant it was recorded |
+| `filings` | INTEGER | the Form 4 and 4/A filings it held of the companies read |
+| `stored` | INTEGER | the transactions it stored that were not stored before |
+
+Primary key: `first_day`, `source`.
+
+**What the insiders' history holds, so a reading tells a quiet company's nought from days no reader read** (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). Append-only, a span written once every filing of it was read: a day the refresh's limit stopped is not written and is read again on the next night from the filings not yet stored, and a weekday the archive posted no index for, a day it was closed, is written with no filing. A reading is none where these spans do not hold every weekday of its days.
 
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.

@@ -53,6 +53,8 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-night" => await LedgerNightRun(),
     "fill" => await FillRun(args),
     "filings" => await FilingsRun(args),
+    "insiders-history" => await InsidersHistoryRun(args),
+    "insiders" => await InsidersRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
     "loop-links" => await LoopLinksRun(args),
@@ -74,7 +76,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 41 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 43 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -168,6 +170,12 @@ static int NoVerb()
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
         "not yet stored as first filed, " +
+        "'insiders-history' reads each quarter of the SEC's insider data sets from 2018q1 through the newest posted that " +
+        "no earlier read recorded, one request a quarter and one for the page listing them, and stores every company's " +
+        "Forms 4 and 4/A, with '--from <quarter>' and '--through <quarter>' as 2026q3 bounding the quarters, and " +
+        "'insiders --from <yyyy-MM-dd>' reads the members' Form 4 and 4/A filings of each weekday's index through " +
+        "'--through <yyyy-MM-dd>' or the newest day the refresh has read, as the night's refresh does, with '--compare' " +
+        "setting each filing the store holds already against its stored rows and writing nothing, " +
         "'loop-test --index <MID or SML>' runs the walk-forward tester over Part 0's procedures, each run inside every " +
         "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
         "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
@@ -933,6 +941,108 @@ static async Task<int> FilingsRun(string[] args)
         [.. EquityBrief.Worker.Indices.IndexFamilies.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)]);
 
     Console.WriteLine("filings: " + EquityBrief.Worker.Ledger.FilingsRefresher.Detail(outcome));
+
+    return outcome.Refusal is null ? 0 : 1;
+}
+
+// The insiders' history by hand: each quarter of the SEC's insider data sets the listing page links, from 2018q1 or the
+// quarter '--from' names through the newest posted or the one '--through' names, that no earlier read recorded, one
+// request a quarter and one for the page, each quarter's Forms 4 and 4/A of every company the store knows stored and the
+// quarter recorded; refused while a night holds the store.
+// see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+static async Task<int> InsidersHistoryRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var contact = configuration[ArchiveAgent.ContactName];
+
+    if (string.IsNullOrWhiteSpace(contact))
+    {
+        Console.Error.WriteLine($"insiders-history: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+        return 1;
+    }
+
+    if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"insiders-history: the night holds the store ({holder}); run it once the night has finished.");
+
+        return 2;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var outcome = await new EquityBrief.Worker.Insiders.InsiderTrades(clock, store.DatabaseFile).HistoryAsync(
+        SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)),
+        VerbArguments.Value(args, "--from"),
+        VerbArguments.Value(args, "--through"),
+        FormattableString.Invariant($"insiders-history-{clock.UtcNow:yyyyMMddTHHmmssZ}"),
+        Console.Out);
+
+    return outcome.Refusal is null ? 0 : 1;
+}
+
+// The insiders' nightly reader by hand over the weekdays from '--from' through '--through', the newest day the filings
+// refresh has read where none is named, each day's members' Form 4 and 4/A filings asked and stored and the day recorded,
+// at the archive's pace and under no limit; with '--compare', each filing the store holds already read again and set
+// against its stored rows, writing nothing; refused while a night holds the store.
+// see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+static async Task<int> InsidersRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var contact = configuration[ArchiveAgent.ContactName];
+
+    if (string.IsNullOrWhiteSpace(contact))
+    {
+        Console.Error.WriteLine($"insiders: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+        return 1;
+    }
+
+    if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"insiders: the night holds the store ({holder}); run it once the night has finished.");
+
+        return 2;
+    }
+
+    if (!DateOnly.TryParseExact(VerbArguments.Value(args, "--from") ?? string.Empty, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var from))
+    {
+        Console.Error.WriteLine("insiders: name the first day with '--from <yyyy-MM-dd>'.");
+
+        return 2;
+    }
+
+    DateOnly through;
+
+    if (VerbArguments.Value(args, "--through") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out through))
+        {
+            Console.Error.WriteLine($"insiders: '--through' takes a day as yyyy-MM-dd, not '{named}'.");
+
+            return 2;
+        }
+    }
+    else if (await EquityBrief.Worker.Ledger.FilingsRefresher.NewestDayReadAsync(store.DatabaseFile) is { } newest)
+    {
+        through = newest;
+    }
+    else
+    {
+        Console.Error.WriteLine("insiders: the refresh has read no day of the archive's index, so name the last day with '--through <yyyy-MM-dd>'.");
+
+        return 2;
+    }
+
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var outcome = await new EquityBrief.Worker.Insiders.InsiderTrades(clock, store.DatabaseFile).DaysAsync(
+        SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)),
+        from,
+        through,
+        args.Contains("--compare", StringComparer.Ordinal),
+        FormattableString.Invariant($"insiders-by-hand-{clock.UtcNow:yyyyMMddTHHmmssZ}"),
+        Console.Out);
 
     return outcome.Refusal is null ? 0 : 1;
 }

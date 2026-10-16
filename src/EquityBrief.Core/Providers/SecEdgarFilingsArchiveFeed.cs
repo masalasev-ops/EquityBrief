@@ -31,10 +31,14 @@ namespace EquityBrief.Core.Providers;
 // The night's filings refresh asks it for a day's index, an 8-K's own index page and a filer's facts, each one
 // document through the same agent and the same transport.
 // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+//
+// From 19.13 the refresh asks it for an insider's Form 4 or 4/A whole, and the history read for the page listing the
+// quarterly insider data sets and each quarter's file, one document a request through the same agent and transport.
+// see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,
-    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed, IFilingsRefreshFeed
+    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed, IFilingsRefreshFeed, IInsiderDataSetFeed
 {
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -134,16 +138,32 @@ public sealed class SecEdgarFilingsArchiveFeed(
         return body is null ? null : ConceptAnswers.FromFacts(body, padded, concepts);
     }
 
+    public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default) =>
+        FetchAsync(new ArchiveRequest(ArchiveDocument.Ownership, SecEdgarArchive.DocumentHost, SecEdgarOwnership.PathOf(cik, accession)), cancellation);
+
+    public Task<string?> ListingAsync(CancellationToken cancellation = default) =>
+        FetchAsync(new ArchiveRequest(ArchiveDocument.InsiderDataSetListing, SecEdgarArchive.DocumentHost, SecEdgarInsiderDataSet.ListingPath), cancellation);
+
+    public async Task<byte[]?> QuarterAsync(string path, CancellationToken cancellation = default)
+    {
+        Documents++;
+
+        return await request
+            .SendAsync(token => SendAsync(new ArchiveRequest(ArchiveDocument.InsiderDataSet, SecEdgarArchive.DocumentHost, path), (content, inner) => content.ReadAsByteArrayAsync(inner), token), cancellation)
+            .ConfigureAwait(false);
+    }
+
     async Task<string?> FetchAsync(ArchiveRequest wanted, CancellationToken cancellation)
     {
         Documents++;
 
         return await request
-            .SendAsync(token => SendAsync(wanted, token), cancellation)
+            .SendAsync(token => SendAsync(wanted, (content, inner) => content.ReadAsStringAsync(inner), token), cancellation)
             .ConfigureAwait(false);
     }
 
-    async Task<string?> SendAsync(ArchiveRequest wanted, CancellationToken cancellation)
+    async Task<T?> SendAsync<T>(ArchiveRequest wanted, Func<HttpContent, CancellationToken, Task<T>> read, CancellationToken cancellation)
+        where T : class
     {
         var address = new Uri($"https://{wanted.Host}/{wanted.Path}");
 
@@ -183,7 +203,7 @@ public sealed class SecEdgarFilingsArchiveFeed(
             }
 
             return response.IsSuccessStatusCode
-                ? await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false)
+                ? await read(response.Content, cancellation).ConfigureAwait(false)
                 : throw new ProviderRefusal(
                     agent.Redact($"The archive refused {wanted.Document} with status {(int)response.StatusCode}."),
                     transient: (int)response.StatusCode is 429 or >= 500);

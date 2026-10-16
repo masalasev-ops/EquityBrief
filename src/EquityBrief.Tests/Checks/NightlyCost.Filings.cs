@@ -105,8 +105,9 @@ public partial class NightlyCost
         var tuesday = new DateOnly(2026, 10, 6);
 
         // On the Tuesday, the session before the night: AAA files a 10-Q, BBB an 8-K whose page carries results, CCC an
-        // 8-K whose page does not, DDD an insider's form, and a filer that is no member a 10-K. The archive has posted
-        // no index for the Monday or the week before it, and none yet for the night's own session.
+        // 8-K whose page does not, DDD an insider's Form 4, a director's purchase, and a filer that is no member a 10-K and
+        // a Form 4. The archive has posted no index for the Monday or the week before it, and none yet for the night's own
+        // session.
         var first = RecordedFilingsRefreshFeed.Of(
             new Dictionary<DateOnly, string>
             {
@@ -116,7 +117,8 @@ public partial class NightlyCost
                     ("0000000101", "AAA INC", "10-Q", "0000000101-26-000001"),
                     ("0000000102", "BBB INC", "8-K", "0000000102-26-000002"),
                     ("0000000103", "CCC INC", "8-K", "0000000103-26-000003"),
-                    ("0000000104", "DDD INC", "4", "0000000104-26-000004")),
+                    ("0000000104", "DDD INC", "4", "0000000104-26-000004"),
+                    ("0000000999", "NOT A MEMBER INC", "4", "0000000999-26-000019")),
             },
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -127,6 +129,11 @@ public partial class NightlyCost
             {
                 ["0000000101"] = OneQuarter("0000000101", "2026-10-06"),
                 ["0000000102"] = OneQuarter("0000000102", "2026-10-06"),
+            },
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["0000000104-26-000004"] = FixtureExpectations.Submission(
+                    "0000000104-26-000004", "20261006", "0000000104", "DDD", [("0000009104", "A DIRECTOR", true, false, null)], [("2026-10-05", "P", "100", "50", true)]),
             });
 
         var night = FixedClock.At(new DateTimeOffset(2026, 10, 7, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates);
@@ -134,19 +141,24 @@ public partial class NightlyCost
 
         // Read from the week before the session through the session, the days the archive posted none for recorded
         // as such, the session's own stopping the read: the two pages asked, the facts of the two that filed a report
-        // or results, and nothing for the member whose announcement carried none, the member that filed neither, or
-        // the filer that is no member.
+        // or results, from 19.13 the Form 4 of the member whose insider filed one, after the day's facts, and nothing for
+        // the member whose announcement carried none or the filer that is no member, its Form 4 among them.
         Assert.Equal(
-            ["2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "0000000102-26-000002", "0000000103-26-000003", "0000000101", "0000000102", "2026-10-07"],
+            ["2026-09-30", "2026-10-01", "2026-10-02", "2026-10-05", "2026-10-06", "0000000102-26-000002", "0000000103-26-000003", "0000000101", "0000000102", "0000000104-26-000004", "2026-10-07"],
             first.Asked);
         Assert.Equal(["AAA", "BBB"], outcome.Refreshed);
         Assert.Equal(FilingsSession, outcome.NotYetPosted);
-        Assert.Equal((6, 2, 2, 10), (outcome.Indexes, outcome.Pages, outcome.FactsAsked, outcome.Documents));
+        Assert.Equal((6, 2, 2, 1, 11), (outcome.Indexes, outcome.Pages, outcome.FactsAsked, outcome.Ownerships, outcome.Documents));
+        Assert.Equal(1, outcome.Trades);
         Assert.Equal(["0000000101|Revenues|2026-06-30|1000", "0000000102|Revenues|2026-06-30|1000"], FilingRows(store, "SELECT cik || '|' || concept || '|' || period_end || '|' || dollars FROM filed_fact ORDER BY cik;"));
+        Assert.Equal(["0000000104|DDD|P|100|50"], FilingRows(store, "SELECT cik || '|' || ticker || '|' || code || '|' || shares || '|' || price FROM insider_trade;"));
         Assert.Equal(
             ["2026-09-30|0|0|0", "2026-10-01|0|0|0", "2026-10-02|0|0|0", "2026-10-05|0|0|0", "2026-10-06|1|2|2"],
             FilingRows(store, "SELECT day || '|' || posted || '|' || members || '|' || refreshed FROM filing_day ORDER BY day;"));
-        Assert.Equal(["ok|10|2"], FilingRows(store, $"SELECT outcome || '|' || network_requests || '|' || rows_written FROM run_log WHERE run_id = 'night-first' AND stage = '{FilingsRefresher.Stage}';"));
+        Assert.Equal(
+            ["2026-09-30|0|0", "2026-10-01|0|0", "2026-10-02|0|0", "2026-10-05|0|0", "2026-10-06|1|1"],
+            FilingRows(store, "SELECT first_day || '|' || filings || '|' || stored FROM insider_read WHERE source = 'filing' ORDER BY first_day;"));
+        Assert.Equal(["ok|11|2"], FilingRows(store, $"SELECT outcome || '|' || network_requests || '|' || rows_written FROM run_log WHERE run_id = 'night-first' AND stage = '{FilingsRefresher.Stage}';"));
         Assert.Contains("2026-10-07 not yet posted, read on a later night", FilingRows(store, $"SELECT detail FROM run_log WHERE run_id = 'night-first';").Single(), StringComparison.Ordinal);
 
         // The next session's night: the archive has now posted Wednesday's index, where CCC files its 10-K. Only that
@@ -207,6 +219,9 @@ public partial class NightlyCost
 
         public Task<IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>?> FactsAsync(string cik, IReadOnlyList<string> concepts, CancellationToken cancellation = default) =>
             throw new InvalidOperationException("no facts are asked of a refusing archive");
+
+        public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default) =>
+            throw new InvalidOperationException("no insider's filing is asked of a refusing archive");
     }
 
     [Fact]

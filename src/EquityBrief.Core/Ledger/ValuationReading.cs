@@ -136,6 +136,24 @@ public static class ValuationReading
         return (yields.Count(yield => yield < current) + (0.5 * yields.Count(yield => yield == current))) / Quarters;
     }
 
+    // Dollars over the company's value on a session as the reading works it: the newest count the filings' covers state
+    // for a day before the session, times the session's close brought to that count's basis; none where the prices hold
+    // no such session or no count stands before it. The insiders' readings read it.
+    // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+    public static double? OverValue(decimal dollars, ValuationParts parts, PriceHistory prices, DateOnly session)
+    {
+        var counts = parts.Counts.Where(count => count.Day < session).ToArray();
+
+        if (counts.Length == 0 || prices.AtOrBefore(session) is not { } today || prices.Sessions[today] != session)
+        {
+            return null;
+        }
+
+        var (day, shares) = counts[^1];
+
+        return Yield(dollars, day, shares, prices, today);
+    }
+
     // Earnings over the value at a session: the earnings a share of the count, over the session's close brought to the
     // count's basis by the close as traded on the count's day against the close at the store's scale that day.
     static double? Yield(decimal earnings, DateOnly countDay, decimal shares, PriceHistory prices, int at)

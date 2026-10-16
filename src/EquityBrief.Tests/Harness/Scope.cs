@@ -3304,6 +3304,36 @@ internal static class Scope
             Verdict.Pass,
             "over constructed nights a weekday before the session the archive holds no index for is written as none posted and the session's own stops the read, read on the next night",
             ByCost),
+        // 19.13, the insiders' trades: their catalogue and matrix rows, their two stores, section 17's row, section 18's
+        // and 15.9's region; section 4's region is held by read-surface's own reading of the section against the pages.
+        [CheckReach.Key(CatalogueTable, "Insider trades")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the filings archive, the membership, companies, pulled companies, insider trades and insider reads it reads, and the insider trades, insider reads and run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Insider trades")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Insider trades")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Insider reads")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Insiders' trades")] = new Scoped(
+            Verdict.Pass,
+            "Keysight's four readings on the fixture's session worked by hand from the cut of the data sets, a filing on or after the session and one before the ninety days read by none, the box's reading none for a session whose days reach before its day, an amendment counted in its original's place and one holding no row of the table of shares leaving it standing, awards and withholding in neither total, and the history and the archive's filings compared field by field with a difference past two places named apart; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An insider's filing the refresh cannot read")] = new Scoped(
+            Verdict.Pass,
+            "over constructed nights a Form 4 whose document the reader cannot read stores none of its rows, is named on the step's row with why and leaves its day read and the day's other filings stored",
+            ByExpectations),
+        [CheckReach.Key("15.9 Name", "Insiders")] = new Scoped(
+            Verdict.Pass,
+            "Keysight's open-market sales read back off the replayed fixture's page against the store, newest first with the planned ones marked, the totals over ninety days and the year and the line counting what neither counts worked from the stored rows, and a page whose store holds no history reaching the night drawing the line saying so",
+            ByReadSurface),
         [CheckReach.Key(NightlyRunSteps.Heading, EquityBrief.Tests.Checks.NightlyCost.FilingsStep)] = new Scoped(
             Verdict.Pass,
             "the night runs the refresh after the quarters step and before the queue, on its output and its run log's order, and over the fixture's week it refreshes the one member that filed a report and asks nothing for the others",
@@ -5540,6 +5570,9 @@ internal static class Scope
         ["Trade fills"] = "19.10",
         // 19.12's one, which the plan names as the store of the table of which readings go with winners.
         ["Reading links"] = "19.12",
+        // 19.13's second, the spans read whole beside the table of the insiders' transactions, which the plan names
+        // and so supplies its own.
+        ["Insider reads"] = "19.13",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -5967,6 +6000,7 @@ internal static class Scope
         [CheckReach.Key("15.22 Chart", "The figures")] = "19.11",
         [CheckReach.Key("15.10 Run", "Every page's time")] = "19.11",
         [CheckReach.Key(LedgerPage, "Which readings go with winners")] = "19.12",
+        [CheckReach.Key("15.9 Name", "Insiders")] = "19.13",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
@@ -7106,6 +7140,8 @@ internal static class Scope
         // The filings refresh, 17.3.
         ["The archive refuses or does not answer the filings refresh"] = "17.3",
         ["The archive has not posted a day's index"] = "17.3",
+        // The insiders' trades, 19.13.
+        ["An insider's filing the refresh cannot read"] = "19.13",
         // The fundamentals-first family, 17.8.
         ["A member no filed fact reaches"] = "17.8",
         // The market switches, the operator's ruling of 2026-10-03.

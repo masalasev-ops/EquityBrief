@@ -60,7 +60,7 @@ public partial class FixtureExpectations
 
     // Six hundred and eighty setups on an index, a hundred and seventy at each liquidity of 0, 1, 2 and 3, every other
     // reading the same for all, each one's edge twice its liquidity and one more on the S&P 400, at a risk of one move: more
-    // than the floor of ten rows a weight the score could fit, which the catalogue's sixty-eight readings put at 630.
+    // than the floor of ten rows a weight the score could fit, which the catalogue's seventy-two readings put at 670.
     static void SixHundredEighty(ScoreRows rows, string index)
     {
         for (var at = 0; at < 680; at++)

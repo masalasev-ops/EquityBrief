@@ -8,8 +8,9 @@ namespace EquityBrief.Core.Providers;
 // A day's index is the capture named for its day, and a day no capture is named for is a day the archive posted no
 // index for, which is the archive's own answer for a weekend, a holiday or a day not yet posted. A filing's page is
 // the capture named for its accession, and a filer's facts the capture whose own CIK is the one asked for, read off
-// the capture rather than off its name. A page or a filer the refresh asks for that no capture holds refuses by name,
-// since a replay runs over a set that should be complete and an absence there is a fault in the fixture.
+// the capture rather than off its name; from 19.13 an insider's Form 4 or 4/A is the capture named for its accession.
+// A page, a filer or a Form 4 the refresh asks for that no capture holds refuses by name, since a replay runs over a set
+// that should be complete and an absence there is a fault in the fixture.
 public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 {
     public const string DayPrefix = "daily-index-";
@@ -22,22 +23,30 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
 
     public const string FactsPrefix = "company-facts-";
 
+    public const string OwnershipPrefix = "ownership-";
+
+    public const string OwnershipExtension = ".txt";
+
     readonly IReadOnlyDictionary<DateOnly, string> days;
 
     readonly IReadOnlyDictionary<string, string> pages;
 
     readonly IReadOnlyDictionary<string, string> facts;
 
+    readonly IReadOnlyDictionary<string, string> ownerships;
+
     readonly List<string> asked = [];
 
     RecordedFilingsRefreshFeed(
         IReadOnlyDictionary<DateOnly, string> days,
         IReadOnlyDictionary<string, string> pages,
-        IReadOnlyDictionary<string, string> facts)
+        IReadOnlyDictionary<string, string> facts,
+        IReadOnlyDictionary<string, string> ownerships)
     {
         this.days = days;
         this.pages = pages;
         this.facts = facts;
+        this.ownerships = ownerships;
     }
 
     public int Documents => asked.Count;
@@ -74,21 +83,39 @@ public sealed class RecordedFilingsRefreshFeed : IFilingsRefreshFeed
             }
         }
 
-        return new(days, pages, facts);
+        var ownerships = Directory.GetFiles(folder, OwnershipPrefix + "*" + OwnershipExtension).ToDictionary(
+            path => Path.GetFileNameWithoutExtension(path)[OwnershipPrefix.Length..],
+            File.ReadAllText,
+            StringComparer.Ordinal);
+
+        return new(days, pages, facts, ownerships);
     }
 
-    // A refresh over constructed answers: the days' indexes, the pages by accession and the facts by CIK.
+    // A refresh over constructed answers: the days' indexes, the pages by accession, the facts by CIK and the insiders'
+    // filings by accession.
     public static RecordedFilingsRefreshFeed Of(
         IReadOnlyDictionary<DateOnly, string> days,
         IReadOnlyDictionary<string, string>? pages = null,
-        IReadOnlyDictionary<string, string>? facts = null) =>
+        IReadOnlyDictionary<string, string>? facts = null,
+        IReadOnlyDictionary<string, string>? ownerships = null) =>
         new(
             days,
             pages ?? new Dictionary<string, string>(StringComparer.Ordinal),
             (facts ?? new Dictionary<string, string>(StringComparer.Ordinal)).ToDictionary(
                 pair => SecEdgarArchive.Padded(pair.Key),
                 pair => pair.Value,
-                StringComparer.Ordinal));
+                StringComparer.Ordinal),
+            ownerships ?? new Dictionary<string, string>(StringComparer.Ordinal));
+
+    public Task<string?> OwnershipAsync(string cik, string accession, CancellationToken cancellation = default)
+    {
+        asked.Add(accession);
+
+        return ownerships.TryGetValue(accession, out var submission)
+            ? Task.FromResult<string?>(submission)
+            : throw new InvalidOperationException(
+                $"The refresh asked for the insider's filing {accession} and the fixture holds no capture of it.");
+    }
 
     public Task<string?> DailyIndexAsync(DateOnly day, CancellationToken cancellation = default)
     {

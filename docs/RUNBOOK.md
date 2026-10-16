@@ -822,6 +822,35 @@ It records one run log row under `filings-whole`. Run without `--whole`, `filing
 
 From 17.12 the refresh stores beside the six measures the share count each filing's cover states, a row a day it stands for, which the ledger's valuation reading reads with each quarter's net income (see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years). A filer stating its count a class at a time holds none in the archive's facts, and its reading is none. 17.12's remedy runs the whole refresh once after its migration and then builds each index's history again with `--again` from 2019-01-02 to 2026-10-05, since a row the build wrote before holds no such reading; the night's rows written before the migration keep none. The reading reaches twelve quarters back, about three years, where the bar store holds one: the build reads the closes before the store's year off the pulled bars merged with the store's, and the night off the newest pull holding each member's first stored session, brought to the store's scale, so a purge of that pull leaves the night's reading none for the members it held until a pull holds those years again.
 
+From 19.13 the same refresh reads the Form 4 and 4/A lines of each day's index it reads and asks the archive for each such filing whose line names a member's filer, one request a filing under the refresh's own limit, storing its table of shares a row a transaction in `insider_trade` under the issuer it names (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). A filing stored already is not asked again, so a day the limit stopped is read again the next night from the filings it had not reached, and each day read whole is recorded in `insider_read`; a filing the reader cannot read is named on the step's row with why and stores nothing. Once the refresh has stored its days, the ledger reads the four insider readings again for every setup of the night and every member's readings. The step's row counts the Form 4 filings asked beside the indexes, the 8-K pages and the facts.
+
+The history before the nightly reader is read by hand from the SEC's quarterly insider transactions data sets, one request a quarter and one for the page that lists them, from 2018q1 through the newest quarter posted, each quarter's Forms 4 and 4/A of every company the store knows, the night's and the pulled companies', stored and the quarter recorded once all of it is:
+
+```
+dotnet run --project src/EquityBrief.Worker -- insiders-history
+```
+
+A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand as the night reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
+
+```
+dotnet run --project src/EquityBrief.Worker -- insiders --from 2026-10-01
+```
+
+`--through <yyyy-MM-dd>` stops at that day. With `--compare` the same read sets each filing the store holds already against its stored rows field by field and writes nothing, printing every field that differed with how many filings it differed on and the first 40 differences; a figure the data set holds to two places and the filing to more is named apart as past two places. Each asks nothing of the provider and calls no model, and each is refused while a night holds the store.
+
+19.13's remedy, from main after the merge and before the night, runs the file, which migrates to 96, reads the history and the days since by hand, compares 2026q3, which both read, and runs the ledger's night step over the newest night; then builds each index's history again so every setup carries the four insider readings, checks it and works which readings go with winners again on each index:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-16-19.13-insider-trades.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+dotnet run --project src/EquityBrief.Worker -- loop-links --index GSPC
+```
+
+each check and each `loop-links` run for MID and SML as for GSPC. No source a rule's version pins moves, so nothing is registered again and no record or paper account restarts.
+
 ### The walk-forward tester and the Loop page
 
 From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, and from 17.5 the trade autopsy's exits on every index, one index a run:

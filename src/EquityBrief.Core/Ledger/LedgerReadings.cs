@@ -8,16 +8,16 @@ public sealed record LedgerReading(string Column, string Definition);
 // rules' own functions, the valuation reading on a night reading the closes before the store's year from the history
 // pulled for those years at the store's scale as the history's merged bars hold them, so a row written on the night
 // and a row rebuilt from the history for the same session carry the same figures. A reading the inputs do not reach is
-// stored as none and never as nought. The version is the pin of this file, of the facts', the valuation reading's and the
-// published factors' definitions and of the worker's sources that fill the columns and work the members' places, stored
-// on every row, so a row written under another definition can be told apart.
+// stored as none and never as nought. The version is the pin of this file, of the facts', the valuation reading's, the
+// published factors' and the insiders' definitions and of the worker's sources that fill the columns and work the
+// members' places, stored on every row, so a row written under another definition can be told apart.
 // see: A setup is every member-session a family's loose gates pass, and its readings are defined once and read as they stood
 // see: The valuation reading reads the prices before the store's year at the store's scale from the history pulled for those years
 public static class LedgerReadings
 {
     public const string VersionDeclaration = "public const string Version =";
 
-    public const string Version = "894ed2775fe4";
+    public const string Version = "c0c43a1c0279";
 
     // The reference high the pullback's readings are taken at, the live design's twenty sessions.
     public const int ReferenceHighSessions = 20;
@@ -105,6 +105,15 @@ public static class LedgerReadings
         new("alpha_three", "Kakushadze's Alpha#3, -1 * correlation(rank(open), rank(volume), 10), each rank a member's place among the index's members on each of the 10 sessions"),
         new("alpha_four", "Kakushadze's Alpha#4, -1 * Ts_Rank(rank(low), 9), Ts_Rank the place of the session's own among the 9 sessions' places, 1 for the lowest"),
         new("alpha_six", "Kakushadze's Alpha#6, -1 * correlation(open, volume, 10)"),
+
+        // From 19.13 the insiders' readings, appended so every reading before them keeps its place, each read from the
+        // Form 4 and 4/A filings filed in the 90 days before the session through the core's insider readings, and none
+        // where the store's insider history does not hold those days.
+        // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+        new("insider_net_buy", "the dollars of the insiders' open-market purchases, code P, less those of their open-market sales, code S, filed in the 90 days before the session, over the company's value as the valuation reading works it, after Lakonishok and Lee (2001)"),
+        new("insider_buyers", "the insiders with an open-market purchase filed in those 90 days, counted once each"),
+        new("insider_officer_buy", "1 where an officer bought in the open market in those 90 days, 0 where none did"),
+        new("insider_unplanned_sale", "the dollars of the open-market sales filed in those 90 days whose filing does not tick the Rule 10b5-1 box, over the company's value, none where the days reach before 2023-04-01, after Cohen, Malloy and Pomorski (2012)"),
     ];
 
     public static int Count => All.Count;

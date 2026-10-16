@@ -1,7 +1,7 @@
 {
   "stage": "filings",
   "derivation": "derived",
-  "derivedFrom": "the archive's four captured daily indexes of 2026-09-01 to 2026-09-04, its two captured 8-K pages and Keysight's captured facts, not a run: the night of 2026-09-08 has read no day before, so it reads the weekdays from 2026-09-01, finds the archive posted none for 2026-09-07, Labor Day, and stops at 2026-09-08, its own session, not yet posted; of the four names only Keysight filed a report, its 10-Q on 2026-09-02, while Apple's 8-K/A and Microsoft's 8-K carry no item 2.02 and Netflix filed neither, so Keysight alone is refreshed and its stored facts are each period of a quarter, nine months or a year ending on or after 2015-01-01 of the six measures' concepts the capture holds, as first filed, which the suite works out from the capture with its own reading",
+  "derivedFrom": "the archive's four captured daily indexes of 2026-09-01 to 2026-09-04, its two captured 8-K pages and Keysight's captured facts, not a run: the night of 2026-09-08 has read no day before, so it reads the weekdays from 2026-09-01, finds the archive posted none for 2026-09-07, Labor Day, and stops at 2026-09-08, its own session, not yet posted; of the four names only Keysight filed a report, its 10-Q on 2026-09-02, while Apple's 8-K/A and Microsoft's 8-K carry no item 2.02 and Netflix filed neither, so Keysight alone is refreshed and its stored facts are each period of a quarter, nine months or a year ending on or after 2015-01-01 of the six measures' concepts the capture holds, as first filed, which the suite works out from the capture with its own reading; and from 19.13 the four indexes list seven Form 4s of the members' filers, of which the insiders' history, read before the refresh from the fixture's cut of the 2026q3 data set, holds rows of four, so the refresh asks the archive for the other three alone, Apple's and Netflix's filings holding no row of the table of shares, nine documents for the facts and three for the insiders",
   "tables": ["filed_fact", "filed_fact_pull", "filing_day"],
   "daysRead": ["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-07"],
   "dayNotPosted": "2026-09-07",
@@ -9,5 +9,6 @@
   "pagesAsked": ["0001140361-26-035325", "0001193125-26-380280"],
   "refreshed": ["KEYS"],
   "notAskedFor": ["AAPL", "MSFT", "NFLX"],
-  "documents": 9
+  "ownershipsAsked": ["0001140361-26-035362", "0001065280-26-000259", "0001104659-26-104794"],
+  "documents": 12
 }

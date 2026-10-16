@@ -2310,9 +2310,10 @@ public partial class NightlyRun
         // reads an index's members on today's session, whose dividends its history
         // run asks for; and from 19.3 the read surface reads an index's members on
         // the night with their sectors, over which a heavyweights card reads a
-        // sector's members' mean tonight.
+        // sector's members' mean tonight; and from 19.13 the insiders' days read by
+        // hand read the three indices' members' filers on each day they read.
         Assert.Equal(
-            ["CalendarFetcher", "DecisionCards", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
+            ["CalendarFetcher", "DecisionCards", "DividendKeeper", "FamilyRecorder", "FilingsRefresher", "FundamentalReader", "HeavyweightBook", "IndexFamilies", "InsiderTrades", "LadderBuilder", "MemberReader", "MembershipLoader", "MoveAnnotator", "NewsPulseCounter", "NightClose", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi", "ReadApi.Standing", "ShortlistBuilder", "SwingFilter", "SwingReader", "TakenFollower"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

@@ -715,9 +715,12 @@ public static class Nightly
             // from the SEC rather than the provider, its documents on its own row. It is handed no token from the
             // night's deadline and is bounded by its own limit, so a slow or refused archive leaves the facts as they
             // were and never touches the arithmetic. The ledger then reads the business readings of tonight's setups
-            // again for the members refreshed, so they read every filing the archive posted before the session. A
-            // night run again for an earlier session refreshes nothing, since the days it would read are today's.
+            // again for the members refreshed, so they read every filing the archive posted before the session, and
+            // from 19.13 the four insider readings of every setup and member's readings of the night, since the
+            // refresh's day is what lets the insider history reach the session. A night run again for an earlier
+            // session refreshes nothing, since the days it would read are today's.
             // see: The night refreshes the facts and the insiders' trades of the members that filed since its last read of the archive's daily index, after the close under its own limit
+            // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
             new("filings", async () =>
             {
                 if (!askForTheFirstName)
@@ -733,10 +736,11 @@ public static class Nightly
                 var outcome = await new FilingsRefresher(archive, clock, store.DatabaseFile)
                     .NightAsync(indexCode, runId, wider);
 
-                var readAgain = await new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile)
-                    .BusinessAgainAsync(clock.SessionDateAt(clock.UtcNow), outcome.Refreshed);
+                var ledger = new EquityBrief.Worker.Ledger.SetupLedger(clock, store.DatabaseFile);
+                var readAgain = await ledger.BusinessAgainAsync(clock.SessionDateAt(clock.UtcNow), outcome.Refreshed);
+                var insidersAgain = await ledger.InsidersAgainAsync(clock.SessionDateAt(clock.UtcNow));
 
-                return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again");
+                return FilingsRefresher.Detail(outcome) + FormattableString.Invariant($"; {readAgain} of tonight's setup(s) read again; {insidersAgain} setup and member reading row(s) given their insider readings again");
             }),
             // Section 14's step 26, after the filings refresh. The Treasury's 10-year par yield for the session's year, one free
             // request to the Treasury and none to the provider, every session to the night's kept that the store does not

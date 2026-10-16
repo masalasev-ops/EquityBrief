@@ -1,0 +1,16 @@
+{
+  "stage": "insiders",
+  "derivation": "derived",
+  "derivedFrom": "the fixture's cuts of the SEC's insider data sets for 2026q2 and 2026q3, its captured daily indexes and its twelve captured Form 4s, not a run: the insiders' history reads both cuts and stores each Form 4 and 4/A naming Apple, Keysight, Microsoft or Netflix as issuer a row a transaction of its table of shares, the companies the quarters step stored, and nothing of Vistra, Procter & Gamble, Delta, TPG or Verde Resources, which the store knows no filer of, nor of a Form 3 or 5; it records each quarter as a span read, 2026-04-01 to 2026-06-30 and 2026-07-01 to 2026-09-30, and the refresh records each weekday it reads; Keysight's readings on the session of 2026-09-08 read the filings filed from 2026-06-10, ninety days before, to 2026-09-07: four sales, of 507 shares at 361.32, 2000 at 340.87, 2000 at 314.66 and 3000 at 319.22, an award of 1474 and one of 435 at no price, and 32 shares withheld for tax, so the sales come to 2451909.24 dollars, the one sale whose filing ticks no plan's box to 957660, no insider bought and no officer bought; the sale of 3000 filed 2026-06-04 falls before the ninety days and the sale of 2000 filed 2026-09-09 after the session; each figure over the company's value is the dollars over the newest share count Keysight's facts filed before the session times the session's close brought to that count's basis, which the suite works out from the stored rows with its own arithmetic",
+  "tables": ["insider_trade", "insider_read"],
+  "quartersRead": ["2026q2", "2026q3"],
+  "spansRead": ["2026-04-01|2026-06-30|data-set", "2026-07-01|2026-09-30|data-set"],
+  "issuersStored": ["0000320193", "0000789019", "0001065280", "0001601046"],
+  "ticker": "KEYS",
+  "session": "2026-09-08",
+  "windowFrom": "2026-06-10",
+  "salesDollars": "2451909.24",
+  "unplannedSalesDollars": "957660",
+  "buyers": 0,
+  "officerBuy": 0
+}

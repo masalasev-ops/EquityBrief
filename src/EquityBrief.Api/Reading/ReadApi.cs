@@ -835,6 +835,8 @@ public sealed partial class ReadApi : IComponent
             new StoreTouch(Store.FormingRow, Touch.Read),
             new StoreTouch(Store.Setup, Touch.Read),
             new StoreTouch(Store.FiledFact, Touch.Read),
+            new StoreTouch(Store.InsiderTrade, Touch.Read),
+            new StoreTouch(Store.InsiderRead, Touch.Read),
             new StoreTouch(Store.LedgerSummary, Touch.Read),
             new StoreTouch(Store.LedgerReading, Touch.Read),
             new StoreTouch(Store.LoopRun, Touch.Read),

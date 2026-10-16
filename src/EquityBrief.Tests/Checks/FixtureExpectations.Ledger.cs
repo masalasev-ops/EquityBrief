@@ -84,7 +84,7 @@ public partial class FixtureExpectations
 
         // The catalogue names each column once.
         Assert.Equal(LedgerReadings.All.Count, LedgerReadings.All.Select(reading => reading.Column).Distinct(StringComparer.Ordinal).Count());
-        Assert.Equal(68, LedgerReadings.Count);
+        Assert.Equal(72, LedgerReadings.Count);
     }
 
     [Fact]
@@ -241,10 +241,11 @@ public partial class FixtureExpectations
         Assert.Equal(LedgerReadings.Version, SourcePin.Of(sources, LedgerReadings.VersionDeclaration));
 
         // A line of the filling source moved moves the pin, and a comment added does not; and from 17.12 a line of the
-        // valuation reading's definition moved moves it too.
+        // valuation reading's definition moved moves it too, and from 19.13 a line of the insiders' readings.
         Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\nvar moved = 1;\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
         Assert.Equal(LedgerReadings.Version, SourcePin.Of([sources[0], sources[1] + "\n// a comment\n", .. sources[2..]], LedgerReadings.VersionDeclaration));
-        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..3], sources[3] + "\nvar moved = 1;\n"], LedgerReadings.VersionDeclaration));
+        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..3], sources[3] + "\nvar moved = 1;\n", .. sources[4..]], LedgerReadings.VersionDeclaration));
+        Assert.NotEqual(LedgerReadings.Version, SourcePin.Of([.. sources[..6], sources[6] + "\nvar moved = 1;\n"], LedgerReadings.VersionDeclaration));
     }
 
     internal static IReadOnlyList<string> LedgerSources { get; } =
@@ -255,6 +256,7 @@ public partial class FixtureExpectations
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "ValuationReading.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Ledger", "FactorReadings.cs"),
         Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Ledger", "FactorRanks.cs"),
+        Path.Combine(Repository.Root, "src", "EquityBrief.Core", "Insiders", "InsiderReadings.cs"),
     ];
 
     [Fact]

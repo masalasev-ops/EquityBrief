@@ -25,6 +25,41 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-cost and read-surface state 19.13's tests
+Authorised by: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+Was:
+> `fixture-expectations`: ... and the tester's readings' step writing every reading's row for each family with its run log row and print writing nothing
+> `nightly-cost`: ... and the one file holding its two clients is among the shipped files that may hold a client
+> `read-surface`: ... an older run's and another index's rows not drawn and a line where no run has worked it
+Now:
+> Added without replacing anything: each captured Form 4 parsed by hand, the data sets' cut to two places, awards and withholding in neither total, a filing on or after the session read by none, the box's none before its day, Keysight's four readings worked by hand from the cut, an amendment in its original's place, the history and the archive's filings compared and an unreadable filing named, on `fixture-expectations`; the refresh's Form 4 asks, on `nightly-cost`; and the report's Insiders region and the chart page's Insiders group read back off the replayed fixture's pages, on `read-surface`.
+Why: a roster row names what its check asserts, and 19.13 added those assertions.
+
+### 2026-10-16 - ARCHITECTURE.html - the insiders' trades in sections 4, 13.10, 13.11, 15.1, 15.9, 15.22, 16, 17 and 18 and the catalogue and the matrix
+Authorised by: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+Was:
+> Section 4: ... Then the contents, in two columns, numbering from one up to twenty-five regions in the order of this table, ...
+> 13.10: Every reading is defined once, in the core's catalogue, and read as it stood: the sixty-eight readings of the stock, its business and the market, the twenty-two published factors among them from 19.12, ...
+> 13.11: ... After the close the filings refresh stores the facts of the members that filed, the ledger reads the business readings of the night's setups again from them, and the summary the Ledger page draws is rewritten. ...
+> Figure 15.1: twenty-eight parts, the twelfth Dividend safety and the twenty-eighth Where the research stands, in a drawing 1180 high, and its key's twenty-eight lines.
+> 15.22's The figures row: ... the dividend: ...; the technicals: ...; and its performance ...
+> The Setup ledger's catalogue row: ... reported quarters, companies, member readings, filed facts, family picks, index family picks, heavyweight nights, setups, setup nights ...
+> The Filings refresher's catalogue row: ... and by hand asks every filer the store knows once, the whole refresh the monthly run repeats ...
+> Section 16's Setups row: ... the sixty-eight readings as they stood, the twenty-two published factors among them from 19.12, ...
+Now:
+> Section 4 gains the Insiders region after the analysts and counts up to twenty-six regions. 13.10 counts seventy-two readings, the four insiders' among them from 19.13, with a paragraph on how they are read; 13.11 names the insiders' readings read again after the refresh. Figure 15.1 gains Insiders as its twelfth part, the parts after it numbered thirteen to twenty-nine in a drawing 1216 high, and its key a line for it. 15.9 gains the Insiders row and 15.22's The figures row the Insiders group. The Setup ledger's row reads insider trades and insider reads and writes ledger readings again after the refresh; the Filings refresher's row hands each day's Form 4 lines to the insider trades. The catalogue and the matrix gain Insider trades; section 16 gains Insider trades and Insider reads and its Setups row the four readings; section 17 gains Insiders' trades; section 18 gains An insider's filing the refresh cannot read.
+Why: the operator's ruling of 2026-10-16 reads insiders' open-market buying and selling from their Form 4 filings into the ledger, the report and the chart page.
+
+### 2026-10-16 - SCHEMA.md - the insiders' two tables, the setups' four insider readings and the member readings read again
+Authorised by: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+Was:
+> Ownership: | `ledger_reading` | SetupLedger | none | SetupLedger |
+> `ledger_reading`: **Every member's readings on a night, written by the setup ledger's night step beside its setups and its own deleter: a night run again replaces its own rows** ... From 19.12 the list holds the published factors ...
+> `filing_day`: **The days the refresh has read, the newest of which it starts the next night's read after** ... A day is written only once every member it set off was refreshed, ...
+Now:
+> Ownership: | `ledger_reading` | SetupLedger | SetupLedger | SetupLedger |, and two rows, | `insider_trade` | InsiderTrades | none | none | and | `insider_read` | InsiderTrades | none | none |. `ledger_reading`'s note adds that from 19.13 the ledger updates a night's rows with the insiders' four readings once the refresh has stored its days, and `filing_day`'s that a day is written only once its Form 4 filings are read as well. `setup` gains `insider_net_buy`, `insider_buyers`, `insider_officer_buy` and `insider_unplanned_sale` after `alpha_six`, and the sections `insider_trade` and `insider_read` are added.
+Why: the operator's ruling of 2026-10-16 stores the insiders' transactions and the spans read, and migration 96 creates them.
+
 ### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface state 19.12's tests
 Authorised by: The published price and volume factors are ledger readings for the engines to search, and no factor chooses a stock
 Was:

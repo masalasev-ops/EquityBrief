@@ -1903,6 +1903,31 @@ public sealed partial class SinglePageApp : IComponent
                 analysts.FetchedOn);
         }
 
+        // The insiders' open-market trades, after the analysts, from 19.13: the year's purchases and sales as filed, the
+        // totals over 90 days and the year, and the line counting the awards, exercises and withholding neither counts; or
+        // that the store holds no insider history reaching the night.
+        // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
+        if (report is not null)
+        {
+            var insiderBody = report.Insiders is { } insiders
+                ? marks.InsiderTrades(insiders) + Cards.Key(
+                    "How to read it.",
+                    "Each row is one open-market purchase, code P, or sale, code S, an insider of the company reported on a Form 4 at the SEC: who, their role as the filing states it, the day traded, the day filed and the shares, price and dollars. A purchase is green and a sale red, and a sale whose filing ticks the box for a Rule 10b5-1 plan, set up in advance, is marked planned. Awards, exercises, tax withheld, gifts and every other code are counted on the last line and in neither total.",
+                    "Purchases in the open market are the trades the studies find informative; a planned sale says less than an unplanned one, and nothing on the page reads either.")
+                : "<p class=\"degraded\" data-absent=\"insiders\">The store holds no insider history reaching this night, so no insider's trade is drawn.</p>";
+
+            Card("insiders", "insiders", "Insiders", Cards.Dated(
+                "Insiders",
+                "Filed to",
+                session,
+                insiderBody,
+                title: "What the company's own insiders bought and sold",
+                filed: true,
+                note: "the insiders' Form 4 filings",
+                id: "insiders"),
+                session);
+        }
+
         // The dividend's safety for a payer, after the analysts.
         // see: A payer's dividend is read for its safety against its earnings and free cash flow and against the Treasury's 10-year, with every year it raised
         if (report?.Dividend is { } dividend)
@@ -2080,15 +2105,15 @@ public sealed partial class SinglePageApp : IComponent
 
     // The places of the name page's regions, in the order the page draws them, which is section 4's: how to read the
     // page, the short version, the card, the latest quarter, what management said, the segments, the margins, the
-    // analysts, the dividend's safety, the valuation, the earnings reactions, the chart, the long view, how it got here,
-    // the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by price, the news, the
-    // calendar, the sources, and where the research stands.
+    // analysts, from 19.13 the insiders, the dividend's safety, the valuation, the earnings reactions, the chart, the long
+    // view, how it got here, the levels, the plan, how the rules read it, the risks, the two cases, the cycle, its group by
+    // price, the news, the calendar, the sources, and where the research stands.
     // see: The name page answers a buyer's questions in the order a buyer asks them
     public static readonly string[] RegionOrder =
     [
-        "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "dividend", "valuation",
-        "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases", "cycle", "peers",
-        "news", "calendar", "sources", "research",
+        "how-to-read", "short", "card", "quarter", "management", "segments", "margins", "analysts", "insiders", "dividend",
+        "valuation", "reactions", "chart", "long-view", "how-it-got-here", "levels", "plan", "rules", "risks", "two-cases",
+        "cycle", "peers", "news", "calendar", "sources", "research",
     ];
 
     // Where each written section is drawn, which is section 4's order: the short version
