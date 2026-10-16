@@ -245,6 +245,9 @@ public sealed class RuleWalk(
         var hooks = standing?.Hooks ?? LoopChange.NoHooks;
         var standingExit = RuleHooks.Of(hooks).ExitChoice;
 
+        // From 19.10 each trade and its benchmark are bought at the next session's open.
+        var fills = new OpenFills(series, read.Members);
+
         // A listing as the family's walk states one.
         FamilyListing PlanOf(IdeaListing listing)
         {
@@ -268,8 +271,12 @@ public sealed class RuleWalk(
             double? result = plan.Code[ownExit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved && !float.IsNaN(plan.Multiple[ownExit])
                 ? plan.Multiple[ownExit]
                 : null;
+            var entry = closes[listing.Name][listing.Bar];
 
-            return (result, plan.Ends[ownExit], plan.Benchmark[ownExit]);
+            return (
+                fills.Result(result, listing.Name, listing.Bar, entry, listing.StopMoves * series[listing.Name].Atr[listing.Bar]),
+                plan.Ends[ownExit],
+                fills.Benchmark(plan.Benchmark[ownExit], listing.Session, listing.StopMoves));
         }
 
         // A listing's trade under an exit of the menu and the same plan under it on every member that session.
@@ -284,7 +291,7 @@ public sealed class RuleWalk(
             var sessions = bar + outcome.Sessions < sessionAt.Length ? sessionAt[bar + outcome.Sessions] - sessionAt[bar] : outcome.Sessions;
             var benchmark = ExitMenu.Benchmark(closes, read.Members.Names[listing.Session], read.Members.Bars[listing.Session], (member, at) => series[member].Atr[at], listing.StopMoves, listing.RewardToRisk, null, SweepIdeas.Cap, exit).Average;
 
-            return (outcome.Result, sessions, outcome.End, benchmark);
+            return (fills.Result(outcome.Result, name, bar, entry, risk), sessions, outcome.End, fills.Benchmark(benchmark, listing.Session, listing.StopMoves));
         }
 
         // A listing's trade under the exit the rule stands at, its own or the menu's an approval set.

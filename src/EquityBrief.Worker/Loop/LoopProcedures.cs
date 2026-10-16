@@ -364,10 +364,12 @@ public static class LoopProcedures
     {
         var tickers = read.Series.Select(one => one.Name.Ticker).ToArray();
         var held = new ConcurrentDictionary<(int Name, int Session), int>();
+        var fills = new OpenFills(read.Series, read.Members);
 
+        // From 19.10 each trade and its benchmark are bought at the next session's open.
         (double? Result, int Sessions) Exit(FamilyListing listing)
         {
-            var walked = adapter.Exit(listing);
+            var walked = fills.Exit(adapter.Exit(listing), listing);
 
             held[(listing.Name, listing.Session)] = walked.Sessions;
 
@@ -378,7 +380,7 @@ public static class LoopProcedures
 
         var listings = adapter.Listings(setting)
             .Where(listing => IndexSweepRunner.Clears(read.Index, read.Series[listing.Name], listing.Bar, read.Income.GetValueOrDefault(tickers[listing.Name]) ?? []));
-        var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, adapter.Benchmark);
+        var trades = FamilySweep.Walk(listings, tickers, YearOf, Exit, listing => fills.Benchmark(adapter.Benchmark(listing), listing));
 
         return
         [
