@@ -45364,3 +45364,79 @@ Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name pa
             of its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
             night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0%
             beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
+
+### 19.13 - insider trades, read from the SEC's Form 4 filings, for the reports and as ledger readings   2026-10-16
+
+Queue:      done, 19.0 to 19.12 with their corrections and records and the rulings of 19.11 and 19.13, PRs 446 to 472;
+            in progress, this checkpoint; next, its remedy from main and its record, then the sign-offs of phases 16, 17
+            and 18, each by a fresh session.
+Built:      on the operator's ruling of 2026-10-16 and their answer on the plan's box, insiders' open-market buying and
+            selling read from their Forms 4 and 4/A (see: Insiders' trades are read from their Form 4 filings, and only
+            open-market purchases and sales are counted). Twelve filings, the 2026q2 and 2026q3 data sets' cuts and the
+            page listing them were captured and committed before either reader was written, beside the fixture's four
+            daily indexes. A reader of a filing's whole submission and a reader of a quarter's three files give the same
+            filing; the night's filings refresh hands each day it reads to the insider trades, which ask the archive for
+            each Form 4 and 4/A of a member's filer not yet stored, one request a filing at its pace under the refresh's
+            limit, store its table of shares in `insider_trade` under the issuer it names, record each day read whole in
+            `insider_read`, and then the ledger reads the night's four insider readings again. `insiders-history` reads
+            the data sets from 2018q1, each quarter once and its originals before its amendments; `insiders` reads days
+            by hand, and with `--compare` sets each held filing against its stored rows and writes nothing. Four readings
+            after the published factors, under analyst sentiment: the net bought, the buyers, an officer buying and the
+            unplanned sales over the 90 days filed before the session, the dollars over the company's value through the
+            valuation reading's own count and close, none where the spans do not hold the days and the last none for a
+            session whose days reach before 2023-04-01. The report's Insiders region after the analysts and the chart
+            page's Insiders group. Migration 96 creates the two tables and adds the setups' four columns, every row kept.
+            The decision, sections 4, 13.10, 13.11, 15.1's figure, 15.9, 15.22, 16, 17 and 18, the catalogue, the
+            matrix, the schema, the runbook, the guide's figure, region and readings, the roster and the remedy file.
+Found:      the plan writes one table, and a second, `insider_read`, holds the spans read whole, since a reading must tell
+            a quiet company's nought from days no reader read. The readings stand under analyst sentiment, the nearest of
+            the seven headings the operator ruled on 2026-10-13, an eighth being the operator's to add. Only the table of
+            shares is stored, a derivative's exercise reaching the shares as a row of their own. The data sets hold
+            shares, prices and the shares held after to two places, so a difference past two is named apart: of the
+            fixture's four filings both hold, Apple's sale is equal and Microsoft's three differ there alone. A Form 4 is
+            listed under its issuer and each owner, so it is asked once an accession. The captures were written without
+            the tab closing some header label lines and the data sets' rows ending in an empty field, which the manifest
+            states; every ownership document is the archive's byte for byte. And a stock holding no bar drew its name
+            page on the first day there is, which the insiders' year ran off; the view holds none for such a night.
+Pins:       the readings' version moves from 894ed2775fe4 to c0c43a1c0279, the insiders' readings' source among those it
+            pins; no source a rule, the hooks, the learned score or a candidate pins changes, asserted by the pins' own
+            tests, so nothing is registered again and no record or paper account restarts.
+Tests:      12 new, 2392 in all: each captured Form 4 parsed by hand; the data sets' cut to two places; awards and
+            withholding in neither total; the coverage and the box's day; an amendment in its original's place and
+            Delta's leaving its original standing; the store matching an amendment to one original and to none of two;
+            a filing on or after the session and one before its ninety days read by none over a constructed store;
+            Keysight's four readings worked by hand from the cut; the history compared with the archive's filings; an
+            unreadable filing named; the history reading each quarter once; and the report's region and the chart's
+            group read back. The fixture's refresh asks 12 documents where it asked 9, the cost test's night one Form 4
+            more, and the catalogue's count, the readings' pin and the score's floor of 670 rows move with it.
+Claims:     1337, seven more than 1330: the catalogue's and the matrix's Insider trades, section 16's Insider trades and
+            Insider reads, section 17's Insiders' trades, section 18's An insider's filing the refresh cannot read and
+            15.9's Insiders, named beside phase 19's pair as rows after its report, each passing. The plan's about 8
+            counted the chart page's group, which landed as words in 15.22's figures row, and section 4's region, outside
+            the claims; the second store and section 17's row were not counted.
+Remedy:     `tools/remedies/2026-10-16-19.13-insider-trades.txt`, from main after the merge and before the night: the
+            migration; the history from 2018q1; the days since read by hand, each day's asks and time printed; 2026q3
+            compared; and the ledger's night step over the newest night; then each index's history built again with
+            `--again`, its check and `loop-links` by hand, as the runbook states. It asks the SEC's archive alone and
+            calls no model. The history's and the days' requests and times, the comparison, the builds' times and the
+            checks are owed to its dated entry.
+Mutated:    the rule, stated before the runs: one mutation a property this checkpoint adds whose failure a reader, a
+            reading or the store would see, the smallest edit to shipped source that breaks it, each run against 19.13's
+            tests. M1 a filing on the session read by its readings; red at the constructed store's readings. M2 the
+            ninetieth day left out; red, same. M3 an amended original read beside its amendment; red at the amendment's
+            test. M4 an amendment counted on its own day; red, same. M5 the box's reading none on its first day; red at
+            the coverage test. M6 a buyer counted once a purchase; red at the awards test. M7 the data sets' rows in the
+            file's order; red at the cut's test and the comparison. M8 two places read as three in the comparison; red
+            there. M9 a stored filing asked again by the night; red at the fixture's refresh. M10 a quarter read again;
+            red at the history's test. M11 the members' readings not read again; red at Keysight's readings and the
+            constructed store's. M12 the region's lines oldest first; red at the read surface's test. M13 the box read
+            inverted; red at the parser's, the coverage, the awards and the comparison's tests. M14 an amendment matched
+            to the first of two originals; red at the store's matching test, which gained that case before the runs. M15
+            an unreadable filing not caught; red at its test. Not mutated: the chart page's group, read off the region's
+            own view, and the history's quarter written in one transaction. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, FILL
+Carried:    19.13's remedy run from main and its record: the history's and the days' requests and times, the comparison,
+            the builds' times and the checks; the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693
+            at their medians, each a ruling of its own the operator is asked for; the first night's fill step and ledger
+            step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the
+            S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17 and 18.
