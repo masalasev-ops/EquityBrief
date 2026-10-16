@@ -485,11 +485,16 @@ public partial class FixtureExpectations
 
         JsonElement At(string read) => figures.RootElement.GetProperty(read).EnumerateArray().Single(one => one.GetProperty("Key").GetString() == key);
 
-        // A's breakout alone trades: sold at the fourth session's close, 3 under its buy and its lowest close since, so its
-        // worst close before costs is its result before costs, and the trailing rule sets no target and has no win.
+        // A's breakout alone trades: sold at the fourth session's close, 3 under its buy close and its lowest close since.
+        // From 19.10 the record buys it at the open of the session after, a point over that close, as every trade is
+        // bought, while the sweep still reads its settings at the close: so it loses 4 where the sweep's trade lost 3, a
+        // third more of the same risk, its worst close is its result at the open, and its cost, read on the close's plan,
+        // comes off as before.
+        var beforeCosts = At("beforeCosts").GetProperty("Result").GetDouble();
+
         Assert.Equal((1, 1), (record.Trades, At("afterCosts").GetProperty("Trades").GetInt32()));
-        Assert.Equal(At("afterCosts").GetProperty("Result").GetDouble(), record.Average!.Value, 12);
-        Assert.Equal(At("beforeCosts").GetProperty("Result").GetDouble(), record.WorstClose!.Value, 12);
+        Assert.Equal(At("afterCosts").GetProperty("Result").GetDouble() + (beforeCosts / 3), record.Average!.Value, 12);
+        Assert.Equal(beforeCosts * 4 / 3, record.WorstClose!.Value, 12);
         Assert.True(record.Average < record.WorstClose, "the trade's cost comes off its result.");
         Assert.Equal((4, (double?)null), (record.MedianSessions, record.Won));
         Assert.Equal([0, 0, 0, 1], record.EndedBy);

@@ -318,10 +318,17 @@ public partial class FixtureExpectations
 
         // Five page trades ended in July at 0.3 less a cost of 0.1, five in August at 0.2 with none, each against a
         // benchmark of nothing; in September five settled and one whose benchmark is not yet written; and one in October.
-        void Trade(string ticker, string listed, string ended, double result, double cost, bool settled) =>
+        // From 19.10 the alarm reads each trade's fill at the next open, so each trade's own close-priced result is stored
+        // a risk higher than its fill's, which no period may read.
+        void Trade(string ticker, string listed, string ended, double result, double cost, bool settled)
+        {
             store.Execute(
                 "INSERT INTO index_family_trade (index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, ended_on, result, cost, benchmark, members) "
-                + FormattableString.Invariant($"VALUES ('MID', 'breakout', '{ticker}', '{listed}', 1, '100', '97', NULL, '3', 63, '{ended}', {result}, {cost}, {(settled ? "0" : "NULL")}, {(settled ? "7" : "NULL")});"));
+                + FormattableString.Invariant($"VALUES ('MID', 'breakout', '{ticker}', '{listed}', 1, '100', '97', NULL, '3', 63, '{ended}', {result + 1}, {cost}, {(settled ? "0" : "NULL")}, {(settled ? "7" : "NULL")});"));
+            store.Execute(
+                "INSERT INTO trade_fill (source, index_code, owner, ticker, session_date, filled_on, fill, past, result, benchmark, members, edge, reason, filled_at) "
+                + FormattableString.Invariant($"VALUES ('index_family_trade', 'MID', 'breakout', '{ticker}', '{listed}', '{listed}', '100', NULL, {result}, {(settled ? "0" : "NULL")}, {(settled ? "7" : "NULL")}, {(settled ? result.ToString(System.Globalization.CultureInfo.InvariantCulture) : "NULL")}, NULL, '2026-10-02T21:00:00Z');"));
+        }
 
         for (var at = 0; at < 5; at++)
         {
@@ -346,6 +353,7 @@ public partial class FixtureExpectations
         // Once the September trade's benchmark is written, September is read at the low and over it, and the run breaks; a
         // later night writes nothing twice.
         store.Execute("UPDATE index_family_trade SET benchmark = 0, members = 7 WHERE ticker = 'SX';");
+        store.Execute("UPDATE trade_fill SET benchmark = 0, members = 7, edge = result WHERE ticker = 'SX';");
         await new LiveAlarmReader(ApprovalClock, store.DatabaseFile).RunAsync("night-alarm-2");
         await new LiveAlarmReader(ApprovalClock, store.DatabaseFile).RunAsync("night-alarm-3");
 

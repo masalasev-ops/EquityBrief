@@ -80,7 +80,7 @@ public static class PicksScreen
                 trade.Family,
                 SetupFamilies.Named(trade.Family)?.Label ?? trade.Family,
                 trade.Listed,
-                trade.Entry,
+                trade.Fill ?? trade.Entry,
                 trade.Stop,
                 trade.Target,
                 trade.Trail is not null,
@@ -101,7 +101,8 @@ public static class PicksScreen
             holding.ExitClose,
             holding.Reason,
             holding.Result,
-            holding.CutReturn))]);
+            holding.CutReturn,
+            Fill: holding.Fill))]);
 
     // The operator's trades taken from one index's cards as "Your trades" draws them: ended where the night's follower or
     // the operator's own exit ended them, its rule named by its family's words, and a holding's result in per cent.
@@ -134,7 +135,7 @@ public static class PicksScreen
                 holding.Ticker,
                 holding.Sector,
                 holding.EnteredOn,
-                holding.EntryClose,
+                holding.Fill ?? holding.EntryClose,
                 holding.EndedOn,
                 holding.ExitClose,
                 holding.Reason,
@@ -227,14 +228,19 @@ public static class PicksScreen
 
         var finished = status is PickStatus.Target or PickStatus.Stopped or PickStatus.Time;
 
-        // The risk as a percentage of the buy, which a finished trade's return is stated in multiples of.
-        double? risk = row.Entry is { } buy && row.Stop is { } stop && buy > 0 && stop < buy
-            ? Statistic.FromRatio((buy - stop) / buy) * 100
+        // From 19.10 a trade is bought at its fill at the next session's open: its result is the fill's, in the risk its
+        // close put up, its move and the price line are read from the fill, and the share reaching its target and the
+        // break-even it is held to stay its plan's, which the fill does not move. A trade waiting on its next session
+        // draws its plan's buy and says it buys at the next open; one with no outcome row draws its plan's buy alone.
+        // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+        var buy = row.Fill ?? row.Entry;
+        double? returned = finished && row.ReturnPct is { } made && row.ListingClose is { } close && close > 0 && row.Fill is { } fill && fill > 0
+            ? (Statistic.FromRatio(close / fill) * (1 + (made / 100)) - 1) * 100
             : null;
 
         double? along = finished
-            ? row.ReturnPct is { } made ? 1 + (made / 100) : null
-            : status == PickStatus.Open && row.NowClose is { } now && row.ListingClose is { } then && then > 0
+            ? returned is { } moved ? 1 + (moved / 100) : null
+            : status == PickStatus.Open && row.NowClose is { } now && (row.Fill ?? row.ListingClose) is { } then && then > 0
                 ? Statistic.FromRatio(now / then)
                 : null;
 
@@ -243,21 +249,26 @@ public static class PicksScreen
             row.Company,
             row.Night,
             row.Plan,
-            row.Entry,
+            buy,
             row.Stop,
             row.Target,
             status,
             ExchangeClosures.SessionsUntil(row.Night, finished ? row.ResolvedOn!.Value : asOf),
-            finished && row.ReturnPct is { } returned && risk is { } risked ? returned / risked : null,
+            finished ? row.FillResult : null,
             along,
             finished ? row.ResolvedOn : null,
-            finished ? row.ReturnPct : null,
+            returned,
             status == PickStatus.Open ? row.NowOn : null,
             status == PickStatus.Open ? row.NowClose : null,
             row.BreakEven,
             row.State,
             Family: row.Family,
             Setup: family?.Label ?? row.Family,
-            Trailing: family?.Trails ?? false);
+            Trailing: family?.Trails ?? false,
+            Planned: row.Entry,
+            Past: row.Past,
+            Unfilled: row.Unfilled,
+            Waiting: row.OutcomeStored && row.Fill is null && row.Unfilled is null,
+            FilledOn: row.FilledOn);
     }
 }

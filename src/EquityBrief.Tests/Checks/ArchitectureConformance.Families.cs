@@ -370,9 +370,10 @@ public partial class ArchitectureConformance
         // from the second 19.4 correction of 2026-10-13, paper trading's start and the version an account counts, and 1307
         // from the 19.6 correction of 2026-10-14, the Queue's Write now press, and 1312 from 19.7, its twenty-four rows
         // and parts of the remaining screens less the nineteen it retires, and 1313 from 19.8, Tonight's card of the stocks
-        // one gate short.
+        // one gate short, and 1316 from 19.10 on the operator's rulings of 2026-10-15, the fill step's catalogue and matrix
+        // rows and its store.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 1313),
+            (789, 853, 6, 4, 855, 876, 1316),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

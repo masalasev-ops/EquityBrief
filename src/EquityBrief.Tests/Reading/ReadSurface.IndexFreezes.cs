@@ -40,12 +40,16 @@ public partial class ReadSurface
 
     static readonly IReadOnlyDictionary<string, double> FourTimesTheVolume = new Dictionary<string, double> { [IndexBreakoutCandidate.HighVolumeParameter] = 3 };
 
-    // One trade an S&P 400 breakout rule kept, ended or not, with its result, its round trip and its benchmark where written.
-    static void KeptOnTheIndex(TemporaryStore store, string candidate, string ticker, string session, string? endedOn, double? result, double? cost, double? benchmark) =>
+    // One trade an S&P 400 breakout rule kept, ended or not, with its result, its round trip and its benchmark where
+    // written, and its fill at its own buy.
+    static void KeptOnTheIndex(TemporaryStore store, string candidate, string ticker, string session, string? endedOn, double? result, double? cost, double? benchmark)
+    {
         store.Execute(
             "INSERT INTO index_rule_trade (candidate, index_code, family, ticker, session_date, place, entry, stop, target, trail, cap, risk_moves, reward_to_risk, ended_on, result, cost, benchmark, members) VALUES " +
             $"('{Doubled(candidate)}', 'MID', 'breakout', '{ticker}', '{session}', 1, '100', '97', NULL, '3', 63, 1.5, NULL, " +
             $"{(endedOn is null ? "NULL" : $"'{endedOn}'")}, {Number(result)}, {Number(cost)}, {Number(benchmark)}, {(benchmark is null ? "NULL" : "400")});");
+        FillAtTheirOwnBuy(store);
+    }
 
     [Fact]
     public async Task AnSAndP400FamilyFrozenIsDrawnByItsLiveRuleFromTheNightOfItsFreezeAndItsSweepLineGoesThenAndNotBefore()
@@ -196,6 +200,7 @@ public partial class ReadSurface
             "INSERT INTO index_heavyweight_rule_holding (candidate, index_code, ticker, entered_on, sector, entry_close, growth, cut, through, ended_on, exit_close, reason, result, cut_return, cost) VALUES " +
             $"('{Doubled(live)}', 'MID', 'M1', '{IndexNight}', 'Energy', '50', 1.0, '[]', '{IndexNight}', NULL, NULL, NULL, NULL, NULL, NULL), " +
             $"('{Doubled(live)}', 'MID', 'M3', '2026-09-01', 'Energy', '40', 1.05, '[]', '{IndexNight}', '{IndexNight}', '42', '{IndexHeavyweights.NoLongerTheLeader}', 0.05, 0.01, 0.002);");
+        FillAtTheirOwnBuy(store);
 
         if (readByIt)
         {

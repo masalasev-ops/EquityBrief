@@ -1466,9 +1466,9 @@ internal static class Scope
             Verdict.Pass,
             "each reason's firings and its resolved count are recomputed in the suite from the stored listings and forward returns, and the state each record is drawn in follows from the count against the minimum rather than from a value the test supplies",
             ByReadSurface),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads); and from 19.10 price every stored trade of the lists and books whose next session's bar is stored at that session's open, its fill, where it opened against its plan and its result, benchmark and edge there, a trade listed tonight waiting and one with no next session counted (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it).")] = new Scoped(
             Verdict.Pass,
-            "the night runs the stage once rather than per name, and its run log row records the listings, the rows written, the rows kept as decided, the newly matured and the ones not yet matured apart",
+            "the night runs the stage once rather than per name, and its run log row records the listings, the rows written, the rows kept as decided, the newly matured and the ones not yet matured apart; and from 19.10 the fixture's whole night writes the fill step's row after the filler's in the same step",
             ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally).")] = new Scoped(
             Verdict.Pass,
@@ -3614,6 +3614,19 @@ internal static class Scope
             Verdict.Pass, "the press drawn on each outstanding request and on no other, carrying the window's end and the price's multiple only inside a peak window; refused without the page's header and for a stock holding no outstanding request, refused at peak without the confirmation naming the window's end and the multiple, and starting the drain on that one request at the peak price with it and at once off-peak, read back off the route over a constructed store and a clock at each side of a window; and the drain writing the named request alone ahead of an older one, waiting for the window's end without the confirmation", ByReadSurface),
         [CheckReach.Key(LimitsTable, "Queue window")] = new Scoped(
             Verdict.Pass, "a stock asked on the window's first New York day drawn and one asked the day before it behind the link, the link drawing both; the figure read off the document against the constant", ByReadSurface),
+        // 19.10, on the operator's rulings of 2026-10-15: the fill step's catalogue and matrix rows and its store.
+        [CheckReach.Key(CatalogueTable, "Trade filler")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, the bars, the kept bars, the typical moves and the nine tables of trades it reads and the fills and the run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Trade filler")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Trade fills")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator")] = new Scoped(
             Verdict.Pass, "the tabs read back off the rendered card over a constructed store, the live rule's first and each variant's words worked by hand from its registration, every registered variant of the S&P 500's families differing from its live rule on a chip, and each kind of rule's short words worked by hand against its settings", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the chosen rule's settings as chips with its sentence a click away")] = new Scoped(
@@ -5381,6 +5394,8 @@ internal static class Scope
         ["Treasury reader"] = "18.2",
         // 18.3's one, which the plan describes as the night's own step reading the typical move and the long view.
         ["Page history reader"] = "18.3",
+        // 19.10's one, which the plan describes as the fill step.
+        ["Trade filler"] = "19.10",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -5488,6 +5503,8 @@ internal static class Scope
         // 19.4's two, which the plan names as the per-rule test's rows and its year rows.
         ["Rule tests"] = "19.4",
         ["Rule test years"] = "19.4",
+        // 19.10's one, which the plan names as the fill step's own table.
+        ["Trade fills"] = "19.10",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming

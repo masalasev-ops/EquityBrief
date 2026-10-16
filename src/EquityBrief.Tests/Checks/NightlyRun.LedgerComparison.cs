@@ -51,11 +51,12 @@ public partial class NightlyRun
 
         // AAA's own path ends at its stop the next session. BBB's and CCC's reach the cap's close at their buy and EEE's
         // its trail at its buy, each for nothing, and DDD's is still open where its prices stop, so it is left out and
-        // the benchmark is AAA's result over the four that ended.
+        // the benchmark is AAA's result over the four that ended. From 19.10 AAA is bought at the next session's open of
+        // 100, under its stop, and sold at that session's close of 100, so it made nothing.
         var aaa = Breakout(built, "AAA", 70);
 
         Assert.Equal((1, SetupEnds.Stop, LedgerStamp(71)), (aaa.Settled, aaa.End, aaa.EndedOn));
-        Assert.True(aaa.Result < 0);
+        Assert.Equal(0.0, aaa.Result!.Value, 12);
         Assert.Equal(aaa.Result!.Value / 4, aaa.Benchmark!.Value, 12);
         Assert.Equal(aaa.Result.Value - aaa.Benchmark.Value, aaa.Edge!.Value, 12);
 

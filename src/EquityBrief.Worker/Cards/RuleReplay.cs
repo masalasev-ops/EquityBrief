@@ -1,5 +1,6 @@
 using EquityBrief.Core.Cards;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
 using EquityBrief.Core.Sweep;
@@ -150,10 +151,15 @@ public static class RuleReplay
             var stop = entry - (listing.StopMoves * one.Atr[listing.Bar]);
             int held = listing.Plan.Ends[exit];
 
+            if (OpenAfter(one, listing.Bar) is not { } open || TradeFills.AtOpen(result, entry, entry - stop, open) is not { } atOpen)
+            {
+                continue;
+            }
+
             kept.Add(new RecordTrade(
-                result - IndexSweepRunner.CostInRisk(one, listing.Bar, entry, stop, result, read.Companies, 1),
+                atOpen - IndexSweepRunner.CostInRisk(one, listing.Bar, entry, stop, result, read.Companies, 1),
                 held,
-                Worst(one, listing.Bar, held, entry, entry - stop),
+                Worst(one, listing.Bar, held, open, entry - stop),
                 listing.Plan.Code[exit] == SweepPlanOutcomes.Win));
         }
 
@@ -224,10 +230,15 @@ public static class RuleReplay
             var risk = listing.Entry - listing.Stop;
             var sessionsHeld = held[(listing.Name, listing.Session)];
 
+            if (OpenAfter(read.Series[listing.Name], listing.Bar) is not { } open || TradeFills.AtOpen(result, listing.Entry, risk, open) is not { } atOpen)
+            {
+                continue;
+            }
+
             kept.Add(new RecordTrade(
-                result - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, result, read.Companies, 1),
+                atOpen - IndexSweepRunner.CostInRisk(read.Series[listing.Name], listing, result, read.Companies, 1),
                 sessionsHeld,
-                Worst(read.Series[listing.Name], listing.Bar, sessionsHeld, listing.Entry, risk),
+                Worst(read.Series[listing.Name], listing.Bar, sessionsHeld, open, risk),
                 listing.Trails ? null : result >= ((listing.Target - listing.Entry) / risk) - Tolerance));
         }
 
@@ -299,16 +310,24 @@ public static class RuleReplay
             var value = CompanyValue.On(new SessionClose(bought.Session, bought.Close, entry), read.Companies.Counts.GetValueOrDefault(ticker) ?? [], read.Companies.Splits.GetValueOrDefault(ticker) ?? []);
             var closes = tape.Close[trade.Name];
             var lowest = 0.0;
+            var close = Statistic.FromPrice(bought.Close);
+
+            // From 19.10 the holding is bought at the open of the session after its rebalance, its result a fraction of
+            // the sum the rebalance's close put to it.
+            if (OpenAfter(read.Series[trade.Name], buy) is not { } open || TradeFills.AtOpen(result, close, close, open) is not { } atOpen)
+            {
+                continue;
+            }
 
             for (var session = trade.Entry + 1; session <= end && session < closes.Length; session++)
             {
                 if (closes[trade.Entry] > 0 && !double.IsNaN(closes[session]))
                 {
-                    lowest = Math.Min(lowest, ((closes[session] / closes[trade.Entry]) - 1) * 100);
+                    lowest = Math.Min(lowest, ((closes[session] * close / closes[trade.Entry] / open) - 1) * 100);
                 }
             }
 
-            kept.Add(new RecordTrade(((result * 100) - TradeCost.InPercent(value, entry, exit)), end - trade.Entry, lowest, null));
+            kept.Add(new RecordTrade(((atOpen * 100) - TradeCost.InPercent(value, entry, exit)), end - trade.Entry, lowest, null));
         }
 
         return new Replayed(
@@ -325,6 +344,11 @@ public static class RuleReplay
 
     // How near a result may sit under its target's multiple and still be read as the close that reached it.
     const double Tolerance = 1e-9;
+
+    // The open of the session after a bar, which a trade is bought at from 19.10, none where the series holds none.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    static double? OpenAfter(SweepSeries series, int bar) =>
+        bar >= 0 && bar + 1 < series.Bars.Length && series.Bars[bar + 1].Open > 0m ? Statistic.FromPrice(series.Bars[bar + 1].Open) : null;
 
     // The lowest close a trade was held through, from the session after its buy to the one it ended on, in multiples of its
     // risk from its buy, and nothing where it never closed under its buy.

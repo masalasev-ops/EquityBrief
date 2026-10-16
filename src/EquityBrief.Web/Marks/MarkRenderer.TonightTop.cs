@@ -22,7 +22,7 @@ public sealed partial class MarkRenderer
         ("#", "The row's place in the table, counted from one across every setup, each setup's picks in its own order."),
         ("Stock", "The ticker selects the row and draws its plan and its card beneath it. Beside it, card opens the pick's card, report opens the stock's written report or not written its page, and the company is named beneath. A label names another setup the stock also qualified under tonight."),
         ("Business", "The state the company's reported quarters gave it on the night, with what its numbers say under the pointer. It removes no stock from the table."),
-        ("Buy", "The price the plan buys at, which is the evening's close."),
+        ("Buy", "The evening's close the plan is set at and sized from. The pick buys at the next open, the open of the session after tonight."),
         ("Stop", "The price a close beneath ends the trade at a loss, or the first level of a stop that trails the price."),
         ("Target", "The price a close at or above ends the trade at a gain. A setup that trails its stop names none."),
         ("Reward to risk", "How far the target sits above the buy against how far the stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything."),
@@ -110,6 +110,10 @@ public sealed partial class MarkRenderer
         }
 
         body.Append("</tbody></table></div>");
+
+        // From 19.10 each pick is bought at the next session's open, its plan standing where tonight's close set it.
+        // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+        body.Append(Invariant, $"<p class=\"buys-next\">Each pick {Escaped(EquityBrief.Core.Ledger.TradeFills.Waiting)}, the open of the session after this night, with its stop and target where this night's close set them.</p>");
 
         return body.ToString();
     }

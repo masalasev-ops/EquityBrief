@@ -25,6 +25,81 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface gain the move of every entry to the next session's open
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> `fixture-expectations`: ... the benchmark and the heavyweights' size cut bought each at its own next open, a member opening past its range not entered, one with no next session entered ...
+Now:
+> a member opening past its range entered there from the operator's rulings of 2026-10-15; and added without replacing anything: the pricing function's cases worked by hand, the benchmark at the open, the fill step over a constructed store, the pins naming no fill, the scan of the close-priced columns and the paper account's start, on `fixture-expectations`; the fill step's row over the fixture's whole night and the ledger's fill and past, on `nightly-run`; and the screens buying at the fill and saying where a trade waits or holds none, on `read-surface`
+Why: the operator's rulings of 2026-10-15 moved every entry to the next session's open, and the benchmark of the next-open check buys a member past its range as the trade is bought.
+
+### 2026-10-16 - ARCHITECTURE.html - every entry priced at the next session's open: the setup ledger, the night's forward returns step, the trade filler's catalogue and matrix rows, the stores, Past picks and paper trading
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> 13.10: A setup stores its anchor rather than its path: the session, the buy at the close, the stop, the target or the trail's distance, and the sessions the trade is given, with the stop's distance in the member's typical moves.
+>
+> section 14: Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads).
+>
+> the live alarm reader's catalogue row: bar store, candidate register, loop runs, loop references, alarm periods, provisional settings, family trades, heavyweight nights, heavyweight holdings, index family trades, index heavyweight holdings ... a period of fewer than five units neither counting nor breaking the run, a rule two counted periods running under the floor flagged; reads no market data, makes no request and calls no model
+>
+> section 16's setups row: ... with its source and the readings' pin
+>
+> 15.17: Each is bought at the close of the night it was listed, so none goes unentered, and is followed on its forward return: open while the row carries no outcome, reached target on a win, stopped out on a loss and ran out of time where the cap passed first. Its result is the stored return over the risk as a share of the buy, measured on closes as the outcome is, so a close through the stop can read below minus one.
+>
+> 15.17's trade log's account row: the line that entries are priced at the close of the night that listed them and a trade placed after the signal would fill at the next session's open
+>
+> 15 (reads and renders): each trade sized off the account's value at its buy by the card's own sizing,
+>
+> 15.21: then the session's buys in their stored place order, each sized off the account's value at its buy,
+>
+> 15.21's lines beneath: that entries are priced at the close of the night that listed them and a trade placed after the signal would fill at the next session's open
+>
+> the paper trading figure: Entries are priced at the close of the night that listed them. ... and entries are priced at the close of the night that listed them.
+>
+> 11.4's sector heavyweights: ... the leaders are the stated count whose return over a stated look-back beats their sector's by the most, bought at that close where the lead is above nothing, ...
+>
+> 11.4's breakouts: It is bought at the close with its stop a stated count of typical moves beneath, and the stop trails ...
+>
+> 11.4's earnings drift: It is bought at the close and stopped at that low, ...
+Now:
+> 13.10: the close its plan is set at, and from 19.10 bought at the open of the session after, stored as its fill with whether that open sat past its stop or its target, its result, benchmark and edge read at the open through the core's one pricing function; section 14's forward returns step prices every stored trade of the lists and books at the next session's open from 19.10; the live alarm reads its units' fills; the trade filler's catalogue row and matrix row and the trade fills' store row added without replacing anything; the setups row names the fill; 15.17 buys each trade at its fill with the waiting and the unfilled saying so, its result the fill's and its share and break-even its plan's; paper trading buys each trade at its fill sized from its plan's close; the lines beneath and the figure say each entry is bought at the next session's open; and 11.4's breakouts and earnings drift set their plans at the close and are bought at the next session's open, and its sector heavyweights are chosen at the rebalance's close and bought at the next session's open
+Why: the operator's rulings of 2026-10-15 moved every entry to the next session's open by a fill step of its own.
+
+### 2026-10-16 - SCHEMA.md - the trade fills table, and the setups' fill and past
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> | `session_date` | TEXT | the session the setup was read on, the one it is bought at the close of |
+> | `entry` | TEXT | decimal in code, the close the setup is bought at |
+> `result`: ... its close at the end over the buy less one, a fraction of the buy |
+> `benchmark`: ... a heavyweights' setup's, its sector's size cut's mean return over the same sessions, as a fraction |
+> | `session_date` | TEXT | the session the rule listed the stock on, the trade bought at that close |
+> | `session_date` | TEXT | the session it was listed on, bought at that close |
+> | `session_date` | TEXT | the session it was kept on, bought at that close |
+> | `session_date` | TEXT | the night the pick was kept on, bought at that close |
+Now:
+> the session its plan is set at the close of and from 19.10 bought at the open of the session after; the entry the close its plan is set at, which its risk is read from; the result and the benchmark bought at the open from 19.10; the four trade tables' sessions, `family_trade`'s, `index_family_trade`'s, `index_rule_trade`'s and `rule_pick`'s, each its plan set at that close and from 19.10 bought at the next session's open with its fill in `trade_fill`; and added without replacing anything: the setup's `fill` and `past` columns and the `trade_fill` table with its ownership
+Why: migration 94 creates the fill table and adds the two columns 19.10's move stores.
+
+### 2026-10-16 - BUILD_PLAN.md - 19.10 states the operator's two rulings of 2026-10-15 and its done condition gains the move's tests
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> **Done when** the check's differences by family, index and year and its counts of next opens gapping past the entry zone and past the target are stated in the entry, each figure worked by hand over a constructed ledger; and, where the operator approves the move, every stored trade is priced again from the stored bars in the change that moves the entry, worked by hand over a constructed store, with no paper account's start moved by it.
+>
+> 19.10, queued beside 19.9 on the ruling of 2026-10-13, adds none until the operator approves moving entries to the next session's open.
+Now:
+> the count of claims: 19.10 adds 3 with the approval of 2026-10-15, the fill step's catalogue and matrix rows and its store, named beside the pair as rows after the report; and the done condition the same, after a paragraph stating the two rulings, and ending: and, the move approved, a trade whose open gaps under its stop, one over its target and one with no next session are each worked by hand through the same exits, the benchmark priced at the same open, the fill table's figures equal to the next-open check's over the same trades, no stored trade left without a fill or a counted reason after the remedy, no rule's code version changed, and a test fails where any read surface or record draws a result from the close-priced columns.
+Why: the operator's rulings name the tests the move is done by.
+
+### 2026-10-16 - RUNBOOK.md - the fill step, its verb and 19.10's remedy
+Authorised by: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+Was:
+> From 19.10, check what the ledger's results come to when each setup is bought at the next session's open rather than at the close of the night that listed it, which the night computes after that close:
+>
+> ... and an open at or under the stop or at or over the target buys nothing there (see: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone). ... then how many results and edges at the close it worked again as the ledger stored them, to a millionth and to a thousandth. ... Nothing moves on its figures alone: moving entries to the next open is the operator's decision, and 19.10 reprices every stored trade only where the operator approves it.
+Now:
+> the check's figures at the open against the close; an open past the plan's range still bought there under the same exits and counted by where it opened; the results and edges worked again at the open, as the ledger stores them from 19.10; the sentence on the operator's decision gone; then added without replacing anything: the paragraph on every entry bought at the next session's open, the `fill --again` command line and 19.10's remedy with its three ledger builds and checks
+Why: the operator runs the remedy and the verb.
+
 ### 2026-10-15 - RUNBOOK.md - the setup ledger's history section gains the next-open check
 Authorised by: An entry is admitted only inside the plan's own range, and a plan with no entry zone takes its whole range as its zone
 Was:

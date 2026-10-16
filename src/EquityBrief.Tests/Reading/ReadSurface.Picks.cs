@@ -149,6 +149,8 @@ public partial class ReadSurface
             PickListing(store, "PA", session);
         }
 
+        FillAtTheirOwnBuy(store);
+
         return store;
     }
 
@@ -348,6 +350,7 @@ public partial class ReadSurface
         store.Execute("INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, trigger_pass, trade, swing_entry, swing_stop, swing_target, exclusions, passed, rank, gates) VALUES " + gates + ";");
         store.Execute("INSERT INTO forward_return (ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even) VALUES " + outcomes + ";");
         PickListing(store, "T000", Day(sessions[^1]));
+        FillAtTheirOwnBuy(store);
 
         return store;
     }

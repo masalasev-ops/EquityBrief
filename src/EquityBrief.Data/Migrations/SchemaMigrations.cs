@@ -714,7 +714,38 @@ public static class SchemaMigrations
         new Migration(91, "rebuild loop_model with its kind", LoopModelKinds),
         new Migration(92, "create ledger_reading", CreateLedgerReadings),
         new Migration(93, "create loop_rule and loop_rule_year", CreateLoopRules),
+        new Migration(94, "create trade_fill, and add setup's fill and past", CreateTradeFills),
     ];
+
+    // Every stored trade's fill at the next session's open, a row a trade the fill step has priced, keyed by the table
+    // the trade is stored in and that table's own key: the session it was bought on, the open as a price at the trade's
+    // own scale, where that open stood against the plan, and its result, benchmark and edge at the open in the risk the
+    // close set; or, for a trade whose stock holds no next session or no open on it, why it holds none. A trade still
+    // waiting on its next session has no row. And the ledger's setups gain their fill and where it stood, their result,
+    // benchmark and edge read at the open from 19.10. Created and added empty, nothing copied and nothing dropped.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    const string CreateTradeFills = @"
+        CREATE TABLE trade_fill (
+            source        TEXT NOT NULL CHECK (source IN ('family_trade', 'index_family_trade', 'index_rule_trade', 'rule_pick', 'heavyweight_holding', 'heavyweight_rule_holding', 'index_heavyweight_holding', 'index_heavyweight_rule_holding', 'forward_return')),
+            index_code    TEXT NOT NULL,
+            owner         TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            filled_on     TEXT,
+            fill          TEXT,
+            past          TEXT CHECK (past IN ('stop', 'target')),
+            result        REAL,
+            benchmark     REAL,
+            members       INTEGER,
+            edge          REAL,
+            reason        TEXT,
+            filled_at     TEXT NOT NULL,
+            PRIMARY KEY (source, index_code, owner, ticker, session_date)
+        ) STRICT;
+
+        ALTER TABLE setup ADD COLUMN fill TEXT;
+        ALTER TABLE setup ADD COLUMN past TEXT;
+    ";
 
     // The monthly per-rule test's results, written once by the walk-forward tester: a row a run, index, family and rule,
     // each variant read against its live or provisional rule and each live or provisional rule against its own

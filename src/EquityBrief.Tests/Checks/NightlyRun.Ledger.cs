@@ -152,9 +152,11 @@ public partial class NightlyRun
             Assert.All(Enumerable.Range(0, stored.Length), at => Assert.Equal(read[at] is { } value ? value.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : "none", stored[at] is { } held ? held.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : "none"));
         }
 
-        // The night after: AAA falls to 100, through both stops; the others hold at 100, so the same plan on them is
-        // still open and neither benchmark is settled. Both windows are closed at the stop with their result, their
-        // sessions and the session they ended on, settled no.
+        // The night after: AAA opens and closes at 100, through both stops; the others hold at 100, so the same plan on them
+        // is still open and neither benchmark is settled. Both windows are closed at the stop with their result, their
+        // sessions and the session they ended on, settled no. From 19.10 each is bought at that open of 100, under its
+        // stop, and sold at the same close, so each made nothing in the risk its close set, and each stores its fill and
+        // that it opened past its stop.
         foreach (var ticker in new[] { "AAA", "BBB", "CCC" })
         {
             LedgerBar(store, ticker, 71, 100m, 1_000_000);
@@ -169,8 +171,9 @@ public partial class NightlyRun
 
         Assert.Equal(2, closed.Count);
         Assert.StartsWith($"breakout|{SetupEnds.Stop}|1|{LedgerStamp(71)}|0|1|", closed[0], StringComparison.Ordinal);
-        Assert.Equal($"drift|{SetupEnds.Stop}|1|{LedgerStamp(71)}|0|1|-10.0", closed[1]);
-        Assert.Equal(-10 / (110 - stop), double.Parse(closed[0].Split('|')[6], System.Globalization.CultureInfo.InvariantCulture), 9);
+        Assert.Equal($"drift|{SetupEnds.Stop}|1|{LedgerStamp(71)}|0|1|0.0", closed[1]);
+        Assert.Equal(0.0, double.Parse(closed[0].Split('|')[6], System.Globalization.CultureInfo.InvariantCulture), 9);
+        Assert.Equal(["breakout|100|stop", "drift|100|stop"], Texts(store, $"SELECT family || '|' || fill || '|' || past FROM setup WHERE session_date = '{LedgerStamp(70)}' ORDER BY family;"));
 
         // Tonight itself holds no setup: nothing broke out and no print landed.
         Assert.Equal(["0", "0", "0", "0"], Texts(store, $"SELECT setups FROM setup_night WHERE index_code = 'GSPC' AND session_date = '{LedgerStamp(71)}' ORDER BY family;"));

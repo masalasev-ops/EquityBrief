@@ -82,6 +82,7 @@ public partial class ReadSurface
         store.Execute(
             "INSERT OR REPLACE INTO indicator (ticker, session_date, name, value, bar_count) VALUES " +
             $"('F1', '{TheSwitch}', 'sma200', 90.5, 200), ('X3', '{TheSwitch}', 'sma200', 35.25, 200);");
+        FillAtTheirOwnBuy(store);
     }
 
     static string HeavyweightCardOf(string page) =>
@@ -114,7 +115,7 @@ public partial class ReadSurface
         // Its rule in words, written from the settings its live rule runs at: each sector's 10 largest, a 251-session
         // look-back, 2 leaders against the sector fund, a beta of at least one, and sold when it no longer leads at a later
         // month's rebalance, the session the book reads it on.
-        Assert.Contains("<p class=\"rule-words\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.</p>", card, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"rule-words\">On each month's first session, or the first after it whose stored year holds the closes its readings need, among each sector's 10 largest companies of the index by value, the 2 whose 251-session returns beat the sector fund's by the most, where they beat it at all, their close above their 50-day average and that above their 200-day, their beta against the index at least one, bought at the next session's open. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.</p>", card, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"guide-b\">{EquityBrief.Web.Marks.MarkRenderer.HeavyweightCardGuide}</p>", card, StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", page, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"status-pill provisional\" title=\"{SetupFamilies.ProvisionalStatus}\">Provisional</span> <span class=\"fam-count\">3 holdings tonight</span>", card, StringComparison.Ordinal);
@@ -320,7 +321,7 @@ public partial class ReadSurface
         Assert.Contains("<p class=\"list-count\" data-holdings=\"5\" data-ended=\"2\">5 holdings, 2 sold and 3 held</p>", picks, StringComparison.Ordinal);
         Assert.Contains("<p class=\"provisional-count heavyweight-book\">The page's own book, at the setting the family froze at: each registered rule's record is read off a book of its own, on the run page.</p>", picks, StringComparison.Ordinal);
         Assert.Contains(
-            "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector, or at its last close as a member of the index.",
+            "A holding is chosen at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, bought at the next session's open, and sold at the close of a later month's rebalance where it no longer leads its sector, or at its last close as a member of the index.",
             picks,
             StringComparison.Ordinal);
         Assert.DoesNotContain("month's first close", picks, StringComparison.Ordinal);
@@ -358,15 +359,15 @@ public partial class ReadSurface
             Words(HeavyweightRule.Live),
             StringComparison.Ordinal);
         Assert.EndsWith(
-            "bought at that close. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.",
+            "bought at the next session's open. Held while it leads: sold at the close of a later month's rebalance where the rule would no longer buy it.",
             Words(HeavyweightRule.Live),
             StringComparison.Ordinal);
         Assert.EndsWith(
-            "bought at that close. Sold at the close of a later month's rebalance where it no longer leads, or at a close under its 200-day average.",
+            "bought at the next session's open. Sold at the close of a later month's rebalance where it no longer leads, or at a close under its 200-day average.",
             Words(HeavyweightRule.Live with { SoldUnderAverage = true }),
             StringComparison.Ordinal);
         Assert.EndsWith(
-            "bought at that close. Sold at a close under its 200-day average.",
+            "bought at the next session's open. Sold at a close under its 200-day average.",
             Words(HeavyweightRule.Live with { SoldOnLeading = false, SoldUnderAverage = true }),
             StringComparison.Ordinal);
 

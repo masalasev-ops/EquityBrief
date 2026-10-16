@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using EquityBrief.Core.Families;
+using EquityBrief.Core.Ledger;
 using EquityBrief.Core.Loop;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Readings;
@@ -106,8 +107,8 @@ public sealed class HeavyweightLay
                 trade.Entry,
                 trade.End,
                 Cost(trade),
-                (from, to) => Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
-                (from, to) => CutReturn(CutOf(rebalances, trade), from, to)))
+                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => CutReturn(CutOf(rebalances, trade), from, to, bought: from == trade.Entry)))
             .ToArray();
 
         return new HeavyweightBook(setting, trades, [.. trades.Select(Costed)], BookMonths.Edges(months, holdings));
@@ -134,8 +135,8 @@ public sealed class HeavyweightLay
                 trade.Entry,
                 trade.End,
                 Cost(trade),
-                (from, to) => Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
-                (from, to) => CutReturn(CutOf(rebalances, trade), from, to)))
+                (from, to) => from == trade.Entry ? FromFill(trade.Name, from, tape.LastMemberClose[trade.Name][to]) : Return(trade.Name, from, tape.LastMemberClose[trade.Name][to]),
+                (from, to) => CutReturn(CutOf(rebalances, trade), from, to, bought: from == trade.Entry)))
             .ToArray();
 
         return new HeavyweightBook(new HeavyweightSixSetting(0, words, false, IndexQuality.Profit, false, setting), trades, [.. trades.Select(Costed)], BookMonths.Edges(months, holdings));
@@ -153,10 +154,26 @@ public sealed class HeavyweightLay
             ? (tape.Close[name][to] / tape.Close[name][from]) - 1.0
             : null;
 
+    // From 19.10 a holding is bought at the open of the session after its rebalance: its return from that open, a fraction
+    // of the sum the rebalance's close put to it, read through the core's one pricing function; none where no open is held.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+    double? FromFill(int name, int from, int to) =>
+        Return(name, from, to) is { } made && FillOver(name, from) is { } fill ? TradeFills.AtOpen(made, 1, 1, fill) : null;
+
+    // The open a name is bought at after a session, over that session's close; none where the store holds no open after it.
+    double? FillOver(int name, int session)
+    {
+        var series = read.Series[name];
+
+        return Array.BinarySearch(series.SessionAt, session) is var bar && bar >= 0 && series.Bars[bar].Close > 0m && OpenFills.OpenAfter(series, bar) is { } open
+            ? open / Statistic.FromPrice(series.Bars[bar].Close)
+            : null;
+    }
+
     // The size cut's return over the same sessions, each member read to its last close as a member and one holding none
-    // counted as nothing, as the walk scores a holding's cut.
-    double? CutReturn(int[] cut, int from, int to) =>
-        cut.Length > 0 ? cut.Average(one => Return(one, from, tape.LastMemberClose[one][to]) ?? 0.0) : null;
+    // counted as nothing, as the walk scores a holding's cut; from the rebalance each member's from its own open after it.
+    double? CutReturn(int[] cut, int from, int to, bool bought = false) =>
+        cut.Length > 0 ? cut.Average(one => (bought ? FromFill(one, from, tape.LastMemberClose[one][to]) : Return(one, from, tape.LastMemberClose[one][to])) ?? 0.0) : null;
 
     // A holding's round trip as a fraction of its buy, its company valued on the buy and its prices read as they traded;
     // a holding still held is charged at its buy's price at both ends.
@@ -191,9 +208,13 @@ public sealed class HeavyweightLay
     {
         var series = read.Series[trade.Name];
 
-        return trade.Result is { } result && trade.End is { } end
-            && Array.BinarySearch(series.SessionAt, trade.Entry) >= 0 && Array.BinarySearch(series.SessionAt, end) >= 0
-                ? trade with { Result = result - Cost(trade) }
-                : trade;
+        if (trade.Result is not { } result || trade.End is not { } end
+            || Array.BinarySearch(series.SessionAt, trade.Entry) < 0 || Array.BinarySearch(series.SessionAt, end) < 0)
+        {
+            return trade;
+        }
+
+        // From 19.10 bought at the next session's open, and none where no open is held after its rebalance.
+        return trade with { Result = FillOver(trade.Name, trade.Entry) is { } fill ? TradeFills.AtOpen(result, 1, 1, fill) - Cost(trade) : null };
     }
 }

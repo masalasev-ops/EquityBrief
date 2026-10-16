@@ -175,8 +175,8 @@ public sealed partial class MarkRenderer
     [
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
         ("Setup", "The setup that listed it, on the index's provisional settings."),
-        ("Listed", "The night its list drew it, bought at that evening's close."),
-        ("Buy", "The close it was bought at."),
+        ("Listed", "The night its list drew it, bought at the open of the session after."),
+        ("Buy", "The open it was bought at, the session after its night, or its plan's close while it buys at the next open."),
         ("Stop", "The price a close beneath ends it at a loss, or the first level of a stop that trails."),
         ("Target", "The price a close at or above ends it at a gain; a setup that trails its stop names none."),
         ("Status", "Open, or the session it ended on."),

@@ -328,7 +328,7 @@ public sealed partial class SinglePageApp : IComponent
 
     // How tonight's buy points are read, written once for the table and for the line drawn in its place.
     public const string BuyPointsGuide =
-        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
+        "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it. A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything.";
 
     // Tonight's buy points as a card of their own, the table across every setup with its key; on a night no setup lists
     // one, a line saying so with how many members stand one gate short, from 19.8 a link opening the card of them, its
@@ -343,7 +343,7 @@ public sealed partial class SinglePageApp : IComponent
                 "Buy points",
                 marks.BuyPoints(points, selected, plan, query) + Cards.Key(
                     "How to read the table.",
-                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
+                    "Each row is one stock a setup lists tonight, tagged with its setup in the setup's hue, its plan set at the evening's close and bought at the next session's open. The stop is the price that says the plan was wrong and the target the price that says it was right. Select a row to draw its plan and its card just beneath it.",
                     "A stock is listed once, under the first setup it qualified for in the page's order, and never while a trade for it is still open. The reward to risk is a fact about the chart and not a chance of anything."),
                 title: "Tonight's buy points",
                 lede: Invariant($"{points.Count} across every setup tonight."),
@@ -1727,7 +1727,7 @@ public sealed partial class SinglePageApp : IComponent
                 Invariant($"On the list before: the nights the live list picked {Escaped(ticker)} before"),
                 marks.OnTheListBefore(ticker, picked) + Cards.Key(
                     "How to read it.",
-                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: bought at that night's close and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: planned at that night's close, bought at the next session's open and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
                     "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen.")));
         }
 
@@ -3887,7 +3887,7 @@ public sealed partial class SinglePageApp : IComponent
                     + marks.HeavyweightPicks(holdings)
                     + Cards.Key(
                         "How to read it.",
-                        $"A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
+                        $"A holding is chosen at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, bought at the next session's open, and sold at the close of a later month's rebalance where it no longer leads its sector among the {Escaped(universe.Possessive)} members, or at its last close as a member. Its result is what it made in percent beside what its sector's largest members made over the same sessions.",
                         "Provisional like every rule of this index: followed, and in no record until its freeze."),
                 title: Invariant($"The {universe.Possessive} sector heavyweights, newest first"),
                 lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
@@ -3920,7 +3920,7 @@ public sealed partial class SinglePageApp : IComponent
                 + marks.HeavyweightPicks(holdings)
                 + Cards.Key(
                     "How to read it.",
-                    "A holding is bought at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, and sold at the close of a later month's rebalance where it no longer leads its sector, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
+                    "A holding is chosen at the close of a month's rebalance, its first session or the first after it whose stored year holds the closes the readings need, bought at the next session's open, and sold at the close of a later month's rebalance where it no longer leads its sector, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
                     "The difference is what leading its sector was worth over being merely large, which is what each rule's record asks; a holding still held has neither yet."),
             title: "Sector heavyweights, newest first",
             lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",

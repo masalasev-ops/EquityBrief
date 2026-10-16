@@ -78,6 +78,7 @@ public enum Store
     RuleRecord,
     RuleNight,
     RulePick,
+    TradeFill,
     FormingRow,
     KeptBar,
     Setup,

@@ -49,6 +49,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.IndexFamilyTrade, Touch.Read),
             new StoreTouch(Store.IndexHeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.TradeFill, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -72,28 +73,40 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
     const string SettingSince = @"
         SELECT set_at FROM provisional_setting WHERE index_code = $index AND family = $family ORDER BY id DESC LIMIT 1;";
 
+    // From 19.10 every unit's result and benchmark are its fill's at the next session's open, and a unit is settled once
+    // its fill holds its benchmark or says why the trade holds no fill; one ended at the close and not yet filled waits.
+    // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+
     // The S&P 500's breakout's or drift's trades its registered rules kept that ended with a result.
     const string LargeTrades = @"
-        SELECT candidate, ended_on, result, cost, benchmark, members FROM family_trade
-        WHERE family = $family AND ended_on IS NOT NULL AND result IS NOT NULL;";
+        SELECT t.candidate, t.ended_on, f.result, t.cost, f.benchmark, CASE WHEN f.reason IS NOT NULL OR f.members IS NOT NULL THEN 1 ELSE 0 END
+        FROM family_trade t
+        LEFT JOIN trade_fill f ON f.source = 'family_trade' AND f.index_code = 'GSPC' AND f.owner = t.candidate AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE t.family = $family AND t.ended_on IS NOT NULL AND t.result IS NOT NULL;";
 
     // The S&P 500's sector heavyweights' holdings sold with a result, beside the company's value on the rebalance that
     // bought each.
     const string LargeBook = @"
-        SELECT h.ended_on, h.result, h.cut_return, h.entry_close, h.exit_close,
-            (SELECT n.company_value FROM heavyweight_night n WHERE n.session_date = h.entered_on AND n.ticker = h.ticker LIMIT 1)
+        SELECT h.ended_on, f.result, f.benchmark, h.entry_close, h.exit_close,
+            (SELECT n.company_value FROM heavyweight_night n WHERE n.session_date = h.entered_on AND n.ticker = h.ticker LIMIT 1),
+            CASE WHEN f.reason IS NOT NULL OR f.benchmark IS NOT NULL THEN 1 ELSE 0 END
         FROM heavyweight_holding h
+        LEFT JOIN trade_fill f ON f.source = 'heavyweight_holding' AND f.index_code = 'GSPC' AND f.owner = '' AND f.ticker = h.ticker AND f.session_date = h.entered_on
         WHERE h.ended_on IS NOT NULL AND h.result IS NOT NULL AND h.cut_return IS NOT NULL;";
 
     // An S&P 400's or 600's page trades of a family that ended with a result, each with the session it was kept on.
     const string IndexTrades = @"
-        SELECT session_date, ended_on, result, cost, benchmark, members FROM index_family_trade
-        WHERE index_code = $index AND family = $family AND ended_on IS NOT NULL AND result IS NOT NULL;";
+        SELECT t.session_date, t.ended_on, f.result, t.cost, f.benchmark, CASE WHEN f.reason IS NOT NULL OR f.members IS NOT NULL THEN 1 ELSE 0 END
+        FROM index_family_trade t
+        LEFT JOIN trade_fill f ON f.source = 'index_family_trade' AND f.index_code = t.index_code AND f.owner = t.family AND f.ticker = t.ticker AND f.session_date = t.session_date
+        WHERE t.index_code = $index AND t.family = $family AND t.ended_on IS NOT NULL AND t.result IS NOT NULL;";
 
     // An S&P 400's or 600's book's holdings sold with a result.
     const string IndexBook = @"
-        SELECT ended_on, result, cost, cut_return FROM index_heavyweight_holding
-        WHERE index_code = $index AND ended_on IS NOT NULL AND result IS NOT NULL AND cut_return IS NOT NULL;";
+        SELECT h.ended_on, f.result, h.cost, f.benchmark, CASE WHEN f.reason IS NOT NULL OR f.benchmark IS NOT NULL THEN 1 ELSE 0 END
+        FROM index_heavyweight_holding h
+        LEFT JOIN trade_fill f ON f.source = 'index_heavyweight_holding' AND f.index_code = h.index_code AND f.owner = '' AND f.ticker = h.ticker AND f.session_date = h.entered_on
+        WHERE h.index_code = $index AND h.ended_on IS NOT NULL AND h.result IS NOT NULL AND h.cut_return IS NOT NULL;";
 
     const string InsertPeriod = @"
         INSERT INTO loop_alarm (index_code, family, period, trades, edge, edge_floor, counted, under, streak, flagged, reference, run_id)
@@ -246,7 +259,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             {
                 var cost = TradeCost.InPercent(row.IsDBNull(5) ? null : Money.FromStorage(row.GetString(5)), Money.FromStorage(row.GetString(3)), Money.FromStorage(row.GetString(4))) / 100.0;
 
-                units.Add(new LiveUnit(Date(row.GetString(0)), HeavyweightRule.Edge(row.GetDouble(1) - cost, row.GetDouble(2)), true));
+                units.Add(Holding(Date(row.GetString(0)), Optional(row, 1), cost, Optional(row, 2), row.GetInt64(6) == 1));
             }
         }
         else if (index == WalkForwardTester.LargeIndex)
@@ -255,7 +268,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             {
                 if (drawing is not null && row.GetString(0) == drawing)
                 {
-                    units.Add(Trade(Date(row.GetString(1)), row.GetDouble(2), Optional(row, 3), Optional(row, 4), !row.IsDBNull(5)));
+                    units.Add(Trade(Date(row.GetString(1)), Optional(row, 2), Optional(row, 3), Optional(row, 4), row.GetInt64(5) == 1));
                 }
             }
         }
@@ -263,7 +276,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
         {
             await foreach (var row in RowsAsync(connection, transaction, IndexBook, [("$index", index)], cancellation))
             {
-                units.Add(new LiveUnit(Date(row.GetString(0)), HeavyweightRule.Edge(row.GetDouble(1) - (Optional(row, 2) ?? 0), row.GetDouble(3)), true));
+                units.Add(Holding(Date(row.GetString(0)), Optional(row, 1), Optional(row, 2) ?? 0, Optional(row, 3), row.GetInt64(4) == 1));
             }
         }
         else
@@ -277,7 +290,7 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
             {
                 if (Date(row.GetString(0)) >= since)
                 {
-                    units.Add(Trade(Date(row.GetString(1)), row.GetDouble(2), Optional(row, 3), Optional(row, 4), !row.IsDBNull(5)));
+                    units.Add(Trade(Date(row.GetString(1)), Optional(row, 2), Optional(row, 3), Optional(row, 4), row.GetInt64(5) == 1));
                 }
             }
         }
@@ -287,8 +300,12 @@ public sealed class LiveAlarmReader(IClock clock, string databaseFile) : ICompon
 
     // A trade's unit: its result less its round trip and its benchmark once the benchmark is written, settled with none
     // where none could be entered.
-    static LiveUnit Trade(DateOnly ended, double result, double? cost, double? benchmark, bool benchmarked) =>
-        new(ended, benchmarked && benchmark is { } average ? result - (cost ?? 0) - average : null, benchmarked);
+    static LiveUnit Trade(DateOnly ended, double? result, double? cost, double? benchmark, bool benchmarked) =>
+        new(ended, benchmarked && result is { } made && benchmark is { } average ? made - (cost ?? 0) - average : null, benchmarked);
+
+    // A holding's unit: its result at the open less its round trip against its size cut bought the same way.
+    static LiveUnit Holding(DateOnly ended, double? result, double cost, double? cut, bool settled) =>
+        new(ended, settled && result is { } made && cut is { } against ? HeavyweightRule.Edge(made - cost, against) : null, settled);
 
     static double? Optional(SqliteDataReader reader, int column) => reader.IsDBNull(column) ? null : reader.GetDouble(column);
 

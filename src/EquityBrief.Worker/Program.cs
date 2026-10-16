@@ -50,6 +50,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "ledger-build" => await LedgerBuildRun(args),
     "ledger-check" => await LedgerCheckRun(args),
     "ledger-next-open" => await LedgerNextOpenRun(args),
+    "fill" => await FillRun(args),
     "filings" => await FilingsRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
@@ -71,7 +72,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 38 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 39 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -156,6 +157,8 @@ static int NoVerb()
         "'ledger-next-open --index <GSPC, MID or SML>' prices each settled setup at the close of the night that listed " +
         "it and at the next session's open with the same stop, target, trail and cap, and states the differences by " +
         "family and year with how often the next open fell under the stop or over the target, writing nothing, " +
+        "'fill' prices every stored trade whose next session is stored at that session's open, as the night's step " +
+        "does, with '--again' pricing every one again over what an earlier run wrote, " +
         "'filings' reads the archive's daily index for the days since the refresh last read one and asks the facts of " +
         "the members of the three indices that filed a report, an amendment or a results announcement, as the night's " +
         "step does, and 'filings --whole' asks every filer the store knows for its facts once, each storing every fact " +
@@ -639,6 +642,27 @@ static async Task<int> LedgerCheckRun(string[] args)
     }
 
     return await new EquityBrief.Worker.Ledger.SetupLedger(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile).CheckAsync(index, Console.Out);
+}
+
+// The fill step by hand, over every stored trade, writing the fills and its run log row alone; the remedy runs it with
+// '--again'.
+// see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
+static async Task<int> FillRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var runId = FormattableString.Invariant($"{EquityBrief.Worker.Fills.TradeFiller.Stage}-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+    var outcome = await new EquityBrief.Worker.Fills.TradeFiller(clock, store.DatabaseFile).RunAsync(runId, args.Contains("--again", StringComparer.Ordinal));
+
+    foreach (var source in outcome.Sources)
+    {
+        Console.WriteLine(FormattableString.Invariant($"fill: {source.Source}: {source.Filled} priced at the next open, {source.NoNextSession} with no next session, {source.NoOpen} with no open on it, {source.NoRisk} with no risk at its close, {source.Waiting} waiting, {source.Standing} standing"));
+    }
+
+    Console.WriteLine("fill: " + EquityBrief.Worker.Fills.TradeFiller.Detail(outcome));
+
+    return 0;
 }
 
 // The ledger's next-open check by hand, over one index's settled setups, reading the store and writing nothing.
