@@ -871,6 +871,18 @@ tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --agai
 tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
 ```
 
+The chart page correction of 2026-10-16, from main after its merge and with no night or off-peak run writing, runs its file, which migrates to 97, reads the SEC's ticker file, asks again on each index the members whose newest company row carries no filer, asks every filer's facts whole, reads the insiders' history again and the days since 2026-10-01 for every company the store knows, keeps each index's dividends from 2018 and runs the ledger's night step over the newest night; then builds each index's history again, since the filers newly matched bring their facts and their Forms 4, and checks it:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-16-19.11-correction-chart-page-figures.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+each check run for MID and SML as for GSPC. It asks the provider about 1,901 weighted calls, 396 for the 36 members' quarters at eleven an ask and about 1,505 for the dividends at one a member, and the SEC's archive the rest, free and keyless; no model call. No source a rule's version or the readings' version pins moves, so nothing is registered again.
+
 ### The walk-forward tester and the Loop page
 
 From 17.4 the tester judges Part 0's procedures on the S&P 400 or 600 on years they never saw, and from 17.5 the trade autopsy's exits on every index, one index a run:
