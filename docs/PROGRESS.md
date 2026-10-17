@@ -2072,3 +2072,54 @@ Carried:    the remedy of the chart page's four corrections, BNY's and MRSH's fi
             ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest
             promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16,
             17, 18 and 19.
+
+### 19.11 - the corrections' remedy run from main: the SEC's ticker file, the members' filers, their facts and Forms 4, the dividends from 2018, the three ledger histories built again and each index's checks   2026-10-17
+
+Not a checkpoint entry: it records the remedy of the chart page's four corrections of 2026-10-16 and what it measured,
+and lands nothing.
+Ran:        `tools/remedies/2026-10-16-19.11-correction-chart-page-figures.txt` from main's fccddcee, the merge of PR 477,
+            from 01:44:48Z to 02:22:43Z, migration 97 applied. The refetch asks a member once a New York session, and
+            BNY and MRSH, which the night of 2026-10-16 had asked as reporting with the new quarter not yet posted, were
+            asked again by hand at 04:00Z from main's 9d1b968d, on the session of 2026-10-17. Then from main's 4d30679c,
+            the merge of PR 479, every filer's facts asked whole again, the insiders' history read again and the days
+            since 2026-10-01, the ledger's night step over the newest night, the three ledger builds with `--again` over
+            2019-01-02 to 2026-10-05 from main's clean copy and each index's point-in-time check, from 04:25:34Z to
+            06:27:02Z. No night or off-peak run was writing at any step, the off-peak run of 04:05Z running between the
+            two parts to 04:16:43Z. No model call.
+Measured:   the SEC's ticker file listed 10,443 tickers in one request and named all 38 members the provider filed no
+            CIK for. The refetch asked 9, 3 and 22 members of the S&P 500, 400 and 600, 374 weighted calls, and then BNY
+            and MRSH, 22 more, each company row taking the SEC's filer; every member of the three indices holding a
+            company row now carries a filer, 11, 3 and 22 of them the SEC's. The first facts pass asked 2,119 filers and
+            stored 1,274 facts in 1,698 seconds and the second 2,121 and 689 in 1,648; the insiders' history read 35
+            quarters, about 870,000 Forms 4 and 4/A each time, storing 1,928 transactions in 112 seconds and then 1,342
+            in 57; the days from 2026-10-01 to 2026-10-15 asked 773 filings and stored 16 transactions in 161 seconds,
+            then 767 and 4 in 149. The dividends history asked 503, 400 and 602 members, 1,505 weighted calls, and kept
+            13,374, 8,766 and 11,147 dividends new to the store, 1,901 weighted calls with the refetch, as stated. The
+            ledger's night step over 2026-10-16 wrote 24, 17 and 40 setups in 10 seconds. The S&P 500's build took 14
+            minutes 0 seconds, 92,158 setups, 9,345 passing the live rule; the S&P 400's 10 minutes 46 seconds, 58,483
+            and 5,118; the S&P 600's 21 minutes 46 seconds, 76,174 and 6,575; 46 minutes 32 seconds together, 152, 179
+            and 123 setups more than the 19.13 correction's builds and 2 and 4 more passing on the S&P 400 and 600, the
+            matched filers' facts reaching the fundamentals-first family. Each index's point-in-time check rebuilt 200 of
+            200 sampled history setups with every reading the same, in 12 minutes 48 seconds, 12 minutes 1 second and 18
+            minutes 53 seconds.
+Also:       carried since 19.9 and 19.10, read off the run log: the first night on 19.9's build, 2026-10-15 on
+            ba9ddde5, ran the ledger step in 26 seconds against 49 on 2026-10-09; the first night carrying 19.10's fill
+            step, 2026-10-16 on 93ce591a, priced 943 trades at the next session's open in 3 seconds and ran the ledger
+            step in 12.
+After:      every member's chart page for 2026-10-16 read again through the read surface restarted from main's 4d30679c
+            in Release, the S&P 500's 503, the 400's 400 and the 600's 602, against the read of 2026-10-15 the 19.11
+            correction's entry records: shares outstanding not stored on 1, 0 and 1, VYLR's and HOS's, which the provider
+            answers nothing for and whose companies hold no row, where 69, 50 and 98 were before, the provider's count
+            drawn on 58, 47 and 78; paid in its last whole year not stored on 101, 143 and 264, where every page was;
+            raised in a row a figure on 307, 178 and 197, nought on 91, 78 and 135, two whole years compared and the newer
+            not raised, and not stored on 105, 144 and 270, where nought stood on 401, 258 and 341; five years the longest
+            span on every page and no ten-year row on any; and the four insider rows not stored on 1, 0 and 1, VYLR's and
+            HOS's, where they were on every page. BNY's page: shares outstanding 678.5M as of 2026-06-30, its filer's
+            count filed 2026-07-31; paid 2.00 in 2025 over 4 payments, 35 dividends kept from 2018-01-29; raised 7 years
+            in a row; five years +216.93% and no ten-year row; and its insiders' net bought -$6.0M over 90 days and
+            -$12.6M over the year, none buying and no purchase, each read off the store by a query of its own.
+Verified:   `tools/ci.ps1` green over the tree PR 479's entry records, and the checks reading this record run filtered
+            over the tree carrying it.
+Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
+            of its own the operator is asked for; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as
+            45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
