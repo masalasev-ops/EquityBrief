@@ -342,8 +342,8 @@ public sealed class TakenFollower : IComponent
         }
     }
 
-    // Each pick the rule listed on a night, followed to tonight from the plan's buy, its fill session the first stored after
-    // the night; a pick no session has followed yet is listed and open.
+    // Each pick the rule listed on a night, bought at the open of the first session stored after the night and followed to
+    // tonight; a pick no session has followed yet is listed and open.
     async Task<IReadOnlyList<(string? Reason, double? Result)>> ListedAsync(SqliteConnection connection, SqliteTransaction transaction, string index, string family, DateOnly on, DateOnly night, CancellationToken cancellation)
     {
         var cards = new List<Taken>();
@@ -374,8 +374,8 @@ public sealed class TakenFollower : IComponent
                 continue;
             }
 
-            // From 19.10 the rule's pick is bought at the open of the session after its night, as a taken trade's fill is,
-            // so the two differ by the operator's picks and fills alone.
+            // The rule's pick is bought at the open of the session after its night, as a taken trade's fill is, so the two
+            // differ by the operator's picks and fills alone.
             // see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it
             var outcome = await FollowAsync(connection, transaction, card with { FillDate = first.Day, Provisional = true }, sessions, night, cancellation);
 

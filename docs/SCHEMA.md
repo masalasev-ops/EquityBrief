@@ -2013,7 +2013,7 @@ Grain: one row per index and family the operator has taken a trade under.
 | `average` | REAL | the mean result over the ended, in the unit, once twenty have ended; null before |
 | `same_nights` | INTEGER | the nights the operator took a trade of the family on the index |
 | `rule_listed` | INTEGER | the rule's own picks listed on those nights, each a card the night stored |
-| `rule_won` | INTEGER | those picks ended at their target, followed from the plan's buy; none for a rule setting no target |
+| `rule_won` | INTEGER | those picks ended at their target, each bought at the next session's open; none for a rule setting no target |
 | `rule_lost` | INTEGER | those picks ended at their stop; none for a rule setting no target |
 | `rule_ended` | INTEGER | those picks ended, however |
 | `rule_average` | REAL | the mean result over those ended, in the unit, once twenty have ended; null before |
@@ -2021,7 +2021,7 @@ Grain: one row per index and family the operator has taken a trade under.
 
 Primary key: `index_code`, `family`.
 
-**The night's follower writes it whole each night over every trade the operator took, and nothing that makes a pick reads it** (see: The operator's own record states its average result once twenty of its trades in a family and index have ended). Beside the operator's counts it writes the same counts over the rule's own picks listed on the nights the operator took one, each followed under the same management from the plan's buy as its night traded, so the two rows differ by the operator's choices and fills and not by the market of those weeks.
+**The night's follower writes it whole each night over every trade the operator took, and nothing that makes a pick reads it** (see: The operator's own record states its average result once twenty of its trades in a family and index have ended). Beside the operator's counts it writes the same counts over the rule's own picks listed on the nights the operator took one, each bought at the next session's open as a taken trade's fill is and followed under the same management, so the two rows differ by the operator's choices and fills and not by the market of those weeks.
 
 ### dividend_reading
 Grain: one row per member and fetch the quarters fetch stored, where the answer files a dividend part.

@@ -50,7 +50,7 @@ public partial class ReadSurface
         // it; the stock's page for an earlier night draws none of it.
         Assert.Contains(
             "<section class=\"card-mine outline\"><h5>Your trades of the breakout on the S&P 400</h5><p>3 ended and 1 open.</p><p class=\"degraded\" data-average=\"none\">3 of 20 ended: the average is drawn once 20 have.</p>" +
-            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The rule's own 6 picks on the same 2 nights, each bought at the plan's buy: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
+            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The rule's own 6 picks on the same 2 nights, each bought at the next session's open: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
             card,
             StringComparison.Ordinal);
         Assert.DoesNotContain("card-mine", System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}")), StringComparison.Ordinal);

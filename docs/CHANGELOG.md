@@ -26,6 +26,35 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - the rule's own picks beside the operator's record are bought at the next session's open
+Corrects: from 19.10 the follower buys the rule's own picks on the nights the operator took one at the next session's open, as a taken trade's fill is (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it), while 15.18, the card's figure and its key, and section 16's Taken records row still said each was bought at or followed from the plan's buy, and the card drew the same words; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, the operator's record: Beneath it stand the rule's own picks listed on the same nights, each followed from the plan's buy under the same management and counted the same way, ...
+> Figure 15.2's sixth part: The rule's own nn picks on the same n nights, each bought at the plan's buy: n won, n lost
+> Its key's part 6: ... and beneath them the rule's own picks on the same nights, each bought at the plan's buy.
+> 16, Taken records: ... and the same over the rule's own picks listed on the nights the operator took one, each followed from the plan's buy
+Now:
+> Each says the rule's own picks are bought at the next session's open, 15.18 adding as a taken trade's fill is, followed under the same management and counted the same way.
+Why: the card states how the rule's picks beside the operator's were bought, and since 19.10 that is the next session's open.
+
+### 2026-10-17 - SCHEMA.md - taken_record's rule columns are over picks bought at the next session's open
+Corrects: the table's `rule_won` note and its paragraph still said the rule's own picks were followed from the plan's buy, as the architecture's entry above states.
+Was:
+> `rule_won`: those picks ended at their target, followed from the plan's buy; none for a rule setting no target
+> ... each followed under the same management from the plan's buy as its night traded, so the two rows differ ...
+Now:
+> `rule_won`: those picks ended at their target, each bought at the next session's open; none for a rule setting no target
+> ... each bought at the next session's open as a taken trade's fill is and followed under the same management, so the two rows differ ...
+Why: the schema states what the follower writes.
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states the rule's own picks bought at the next session's open
+Corrects: the 16.3 clause said each pick was followed from the plan's buy and not the next session's open, where from 19.10 its test works each pick bought at the next session's open.
+Was:
+> `fixture-expectations`: ... and beside it the rule's own picks listed on the nights the operator took one, each followed from the plan's buy and not the next session's open, worked by hand at nineteen ended and at twenty ...
+Now:
+> ... each bought at the next session's open as a taken trade's fill is, worked by hand at nineteen ended and at twenty ...
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - a Taken press refuses a fill dated on no session or before the session after the pick's night, and an exit before its fill or on a trade the follower ended
 Corrects: a Taken press checked an entered date only for being a day, so a Saturday, the pick's own night and a day before it were stored, and the follower, which reads a trade only from its fill's own session after the night, never followed them, leaving the record counting them open for good; and an exit press checked only that no exit was recorded, so an exit dated before the fill ended the trade before it began and one on a trade the follower had ended was recorded, where section 18's row said an exit press on a trade already ended writes nothing; found by phase 16's first sign-off review on 2026-10-17.
 Was:
