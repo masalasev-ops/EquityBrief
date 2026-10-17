@@ -115,7 +115,7 @@ public partial class ReadSurface
         Assert.Contains($"<p class=\"rule-words\">{MidBreakoutWords}</p>", breakout, StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", PickRowOf(page, "M1"), StringComparison.Ordinal);
         Assert.Contains("<span class=\"co\">Mid One</span>", PickRowOf(page, "M1"), StringComparison.Ordinal);
-        Assert.Equal(["M1"], Regex.Matches(Assert.Single(Blocks(breakout, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        Assert.Equal(["M1"], CardPicksOf(breakout));
 
         // The pullback passed M3 and holds it back for its trade on the S&P 500's list, naming that list.
         var pullback = FamilyCardOf(page, "pullback");

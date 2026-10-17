@@ -83,10 +83,10 @@ public partial class ReadSurface
         // at 0.85 of the 20 sessions before and a stop 1.5 typical moves under, a click away beneath its chips.
         Assert.Contains("<p class=\"rule-words\">A stock closes above its highest price of the 126 sessions before on 1.5 times its average volume, after its daily ranges narrowed to at most 0.85 of those over the 20 sessions before them. Stop 1.5 typical moves below, raised as the price climbs and never lowered; no target.</p>", card, StringComparison.Ordinal);
 
-        // Its picks named by their place among the buy points, K1 and K2, and no name for F1 or K3; their rows in the
-        // buy points, K1 sixth and K2 seventh.
-        Assert.Equal(["K1", "K2"], Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.All(new[] { "F1", "K3" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\" href", card, StringComparison.Ordinal));
+        // Its picks drawn as rows of its own, K1 and K2, and no row for F1 or K3; their rows in the buy points, K1 sixth and
+        // K2 seventh.
+        Assert.Equal(["K1", "K2"], CardPicksOf(card));
+        Assert.All(new[] { "F1", "K3" }, ticker => Assert.DoesNotContain($"<tr data-ticker=\"{ticker}\" data-card-pick", card, StringComparison.Ordinal));
         Assert.Contains("<td class=\"place\" data-place=\"6\">6</td>", PickRowOf(page, "K1"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"place\" data-place=\"7\">7</td>", PickRowOf(page, "K2"), StringComparison.Ordinal);
 
@@ -97,12 +97,14 @@ public partial class ReadSurface
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"50\">50.00</td><td class=\"r num plan-stop\" data-stop=\"47\">47.00</td><td class=\"r num plan-target\" data-target=\"none\">trailing</td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", first, StringComparison.Ordinal);
 
-        // F1, which both families passed, is drawn once, in tonight's buy points tagged with the pullback, with the
-        // breakout's label and the pullback's own trade, and the breakout's card names it in a note.
+        // F1, which both families passed, is drawn once in tonight's buy points tagged with the pullback, with the
+        // breakout's label and the pullback's own trade, and from the 19.3 correction of 2026-10-17 once as a row of the
+        // pullback's card and of no other card; the breakout's card names it in a note.
         var points = Regex.Match(page, "<table class=\"list-table buy-points\".*?</table>", RegexOptions.Singleline).Value;
         var shared = PickRowOf(page, "F1");
 
-        Assert.Empty(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
+        Assert.Single(Regex.Matches(page.Replace(points, string.Empty, StringComparison.Ordinal), "<tr data-ticker=\"F1\""));
+        Assert.Contains("F1", CardPicksOf(FamilyCardOf(page, SetupFamilies.Pullback)));
         Assert.Single(Regex.Matches(points, "<tr data-ticker=\"F1\" data-family=\"pullback\""));
         Assert.DoesNotContain("data-family=\"breakout\" data-selects=\"F1\"", points, StringComparison.Ordinal);
         Assert.Contains("<span class=\"also-family\" data-also=\"Breakout\">also a breakout</span>", shared, StringComparison.Ordinal);
@@ -118,7 +120,7 @@ public partial class ReadSurface
         {
             Assert.Equal(
                 Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND family = '{family}' AND state = 'listed' ORDER BY place;"),
-                Regex.Matches(Assert.Single(Blocks(FamilyCardOf(page, family), "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+                CardPicksOf(FamilyCardOf(page, family)));
         }
 
         Assert.Equal(["F1"], Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'under another' AND place IS NULL;"));

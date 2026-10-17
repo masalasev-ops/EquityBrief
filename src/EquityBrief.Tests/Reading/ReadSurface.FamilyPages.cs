@@ -263,8 +263,8 @@ public partial class ReadSurface
         Assert.DoesNotContain("family-table", page, StringComparison.Ordinal);
         Assert.Equal(
             ["pullback F1,F2,F3,F4,F5", "breakout K1,K2"],
-            Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\".*?<p class=\"card-picks\" data-picks=\"\\d+\">(.*?)</p>", RegexOptions.Singleline)
-                .Select(match => $"{match.Groups[1].Value} {string.Join(",", Regex.Matches(match.Groups[2].Value, "data-ticker=\"([^\"]+)\"").Select(one => one.Groups[1].Value))}"));
+            Regex.Matches(page, "<section class=\"family-card\" data-family=\"([^\"]+)\".*?<table class=\"list-table card-picks\" data-picks=\"\\d+\">(.*?)</table>", RegexOptions.Singleline)
+                .Select(match => $"{match.Groups[1].Value} {string.Join(",", Regex.Matches(match.Groups[2].Value, "<tr data-ticker=\"([^\"]+)\" data-card-pick=\"true\">").Select(one => one.Groups[1].Value))}"));
     }
 
     [Fact]

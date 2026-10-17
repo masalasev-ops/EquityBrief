@@ -1865,8 +1865,8 @@ internal static class Scope
             Verdict.Pass, "the header read off the card with the setup's tag in its tint and the pill reading Live with the day beneath the pointer, Provisional with the ruling's words, or the chosen variant's number", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card, a reading guide for every setup card behind a press, where the key it repeated stood")] = new Scoped(
             Verdict.Pass, "the guide the code holds once read off the card's header and the card's old key in no card", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "A family's card, its live rule's picks named by their place among tonight's buy points, each opening its row there")] = new Scoped(
-            Verdict.Pass, "the picks named on the card read back against the stocks the page's list holds as listed in their places, each linking its buy point's row, and the card drawing no row of a pick of its own", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, its live rule's picks drawn as rows of its own in the setup's order, each ticker opening the stock's chart page with the company beneath it")] = new Scoped(
+            Verdict.Pass, "the card's own rows read back against the stocks the page's list holds as listed in their places, each ticker linking its chart page and no link on the card selecting a buy point's row, each row's plan and business the buy point's own", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card, the stock with a label for each other family it qualified under")] = new Scoped(
             Verdict.Pass, "a stock two families passed drawn once on the buy points' row of the earlier with the other's label, read off the page", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card, the state its reported quarters give it")] = new Scoped(
@@ -3711,8 +3711,8 @@ internal static class Scope
             Verdict.Pass, "a chosen variant's chips read off the rendered card with the ones it differs on marked and no other, and the live rule's none marked", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the picks it shares with the live rule's passes tonight and those it adds and drops")] = new Scoped(
             Verdict.Pass, "the picks a chosen variant shares, adds and drops worked by hand over a constructed night and read off the rendered card's line", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's picks named by place")] = new Scoped(
-            Verdict.Pass, "a chosen variant's own picks read off the rendered card with their plans and no pick named by place, and each family's three numbers worked by hand from the ledger's readings the night stored, one stored as none drawn so", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = new Scoped(
+            Verdict.Pass, "a chosen variant's own picks read off the rendered card with their plans and none of the live rule's rows, and each family's three numbers worked by hand from the ledger's readings the night stored, one stored as none drawn so", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = new Scoped(
             Verdict.Pass, "the largest drop picked by hand over constructed funnels, the earlier gate taking a tie and none where no gate stops one, read off the rendered card marked and named, and a first gate passing none marked so with no line saying no gate stopped a member", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, behind an expander naming the count forming")] = new Scoped(
@@ -5877,19 +5877,19 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Research and spend, the reports carrying fresh prose against reused")] = "19.7",
         [CheckReach.Key("15.10 Run", "Reason totals")] = "19.2",
 
-        // 19.3's: every setup card built one way, its header, guide, picks named by place, one line and stocks one gate
+        // 19.3's: every setup card built one way, its header, guide, picks as rows of its own, one line and stocks one gate
         // short, its rule's tabs, chips, share line, numbers, funnel bar and expander, and the heavyweights card's tiles,
         // sectors, empty sectors' reasons, return since bought and standing tonight.
         [CheckReach.Key("15.7 Tonight", "A family's card, a header naming the setup in its tint with a pill for its standing")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card, a reading guide for every setup card behind a press, where the key it repeated stood")] = "19.3",
-        [CheckReach.Key("15.7 Tonight", "A family's card, its live rule's picks named by their place among tonight's buy points, each opening its row there")] = "19.3",
+        [CheckReach.Key("15.7 Tonight", "A family's card, its live rule's picks drawn as rows of its own in the setup's order, each ticker opening the stock's chart page with the company beneath it")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card, one line naming the gate that stopped the most of the members reaching it and its empty stretch against its usual longest or the completed stretches it holds of the thirty a usual stretch waits for")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card, behind an expander naming their count the stocks one gate short of its buy point, each with the gate it missed and its words beneath the pointer and the family's three numbers")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a tab a rule beneath the card's header naming the live rule or the provisional rule first and then each registered variant by the number of its first registration and the settings it differs on in short words written by code from the register's parameters through one table of short words an evaluator")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the chosen rule's settings as chips with its sentence a click away")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, a chosen variant's differing chips marked")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, one line naming the picks it shares with the live rule's passes tonight and those it adds and drops")] = "19.3",
-        [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's picks named by place")] = "19.3",
+        [CheckReach.Key("15.7 Tonight", "A family's card's rule, its own picks with their plans and the family's three numbers in place of the live rule's rows")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "A family's card's rule, behind an expander naming the count forming")] = "19.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, four tiles counting its holdings and the sectors of the eleven holding one and stating its return since the last rebalance beside the equal-weighted return of the funds of the sectors it holds over the same sessions and the sessions to the next rebalance")] = "19.3",
@@ -6432,8 +6432,9 @@ internal static class Scope
             "a key saying it is not a new trade",
         ],
         // 13.1. A family's card on tonight's page, as the parts its row enumerates and states; from 19.3 its header, its
-        // guide, its picks named by place, its one line and its stocks one gate short, its rows' place, the buy's place
-        // between the stop and the target, the why in words and its key retired.
+        // guide, its picks, its one line and its stocks one gate short, its rows' place, the buy's place between the stop
+        // and the target, the why in words and its key retired; from the 19.3 correction of 2026-10-17 its picks as rows of
+        // its own.
         [CheckReach.Key("15.7 Tonight", "A family's card")] =
         [
             "one card a family in the page's order",
@@ -6442,7 +6443,7 @@ internal static class Scope
             "how many it lists tonight with how many variants are scored beside it",
             "a reading guide for every setup card behind a press, where the key it repeated stood",
             "the family's rule in a sentence",
-            "its live rule's picks named by their place among tonight's buy points, each opening its row there",
+            "its live rule's picks drawn as rows of its own in the setup's order, each ticker opening the stock's chart page with the company beneath it",
             "the stock with a label for each other family it qualified under",
             "the state its reported quarters give it",
             "the buy and the stop and the target",
@@ -6470,7 +6471,7 @@ internal static class Scope
             "a variant chosen redraws the card from that rule's rows under the band saying it is scored in the background and not the live rule and its picks are not tonight's list",
             "its words written by code from its parameters with the clauses the live rule's words lack marked",
             "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
-            "its own picks with their plans and the family's three numbers in place of the live rule's picks named by place",
+            "its own picks with their plans and the family's three numbers in place of the live rule's rows",
             "the chosen rule's funnel with each gate and how many members passed it and every gate before, or that the night did not evaluate the rule",
             "the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
             "behind an expander naming the count forming",

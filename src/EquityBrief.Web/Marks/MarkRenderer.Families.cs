@@ -401,7 +401,7 @@ public sealed partial class MarkRenderer
     // How a setup card is read, written once for every setup card on every index and opened from its header's "?",
     // where each card once repeated its key.
     public const string SetupCardGuide =
-        "The header names the setup in its hue with its standing and tonight's count. The tabs choose the rule the card is drawn by: the live or provisional rule first, then each registered variant named by the settings it differs from the live rule on, the full rule in the tab's tooltip. The chips are the chosen rule's settings, the ones a variant differs on marked, and the rule in a sentence opens beneath them. The live rule's picks are drawn once, in tonight's buy points above, and the card names them by their place there; a chosen variant draws its own picks under the band with what it shares with the live rule's passes tonight, adds and drops. The bar beneath is the rule's funnel, the members reaching each gate, with the gate that stopped the most named. Breakouts forming and stocks one gate short of a buy point open beneath it, and neither is a pick. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes name what was held back and on which index's list. On the S&P 400 and 600 a rule runs on provisional settings until its freeze, read on its own index's members, and its record starts at the freeze. The reward to risk is a fact about the chart and not a chance of anything.";
+        "The header names the setup in its hue with its standing and tonight's count. The tabs choose the rule the card is drawn by: the live or provisional rule first, then each registered variant named by the settings it differs from the live rule on, the full rule in the tab's tooltip. The chips are the chosen rule's settings, the ones a variant differs on marked, and the rule in a sentence opens beneath them. The live rule's picks are drawn as rows in the card, each ticker opening the stock's chart page, as they are in tonight's buy points above; a chosen variant draws its own picks in their place under the band with what it shares with the live rule's passes tonight, adds and drops. The bar beneath is the rule's funnel, the members reaching each gate, with the gate that stopped the most named. Breakouts forming and stocks one gate short of a buy point open beneath it, and neither is a pick. A stock is listed once across every card of every index, and never while a trade for it is still open on any of them; the notes name what was held back and on which index's list. On the S&P 400 and 600 a rule runs on provisional settings until its freeze, read on its own index's members, and its record starts at the freeze. The reward to risk is a fact about the chart and not a chance of anything.";
 
     // A card's header: the setup's word in its tint beside its swatch, its standing as a pill, tonight's count, and the
     // "?" opening the guide its kind of card is read by.
@@ -424,8 +424,8 @@ public sealed partial class MarkRenderer
     // Whether a card draws folded to one line: it lists nothing tonight and no variant is chosen on it.
     public static bool Folded(FamilyCardView card) => card.Picks.Count == 0 && card.RuleChoice is not { Chosen.Live: false };
 
-    // One family's card: its header, the rule's tabs and chips with its sentence a click away, the live rule's picks
-    // named by their place among tonight's buy points or a chosen variant's own picks, the notes, the funnel as one bar,
+    // One family's card: its header, the rule's tabs and chips with its sentence a click away, the live rule's picks as
+    // rows of its own or a chosen variant's own picks, the notes, the funnel as one bar,
     // and the breakouts forming and the stocks one gate short behind expanders. A card listing nothing with no variant
     // chosen folds to one line, its name, its standing and why it lists nothing, every other part behind it.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
@@ -473,7 +473,7 @@ public sealed partial class MarkRenderer
         }
         else if (card.Picks.Count > 0)
         {
-            body.Append(PicksByPlace(card.Picks));
+            body.Append(LivePicks(card.Picks));
         }
 
         foreach (var note in card.Notes)
@@ -506,11 +506,54 @@ public sealed partial class MarkRenderer
         return body.ToString();
     }
 
-    // The live rule's picks named by their place among tonight's buy points, each selecting its row there.
-    static string PicksByPlace(IReadOnlyList<FamilyPickCell> picks) =>
-        Formatted($"<p class=\"card-picks\" data-picks=\"{picks.Count}\">Tonight's picks, drawn in the buy points above: ")
-        + string.Join(", ", picks.Select(pick => Formatted($"<a class=\"card-pick\" data-ticker=\"{Escaped(pick.Row.Ticker)}\" href=\"#/night/{DayOf(pick.Row.SessionDate)}?name={Uri.EscapeDataString(pick.Row.Ticker)}\">{Escaped(pick.Row.Ticker)}</a>")))
-        + ".</p>";
+    // What each column of a card's own picks holds, the plan's columns in the buy points' own words.
+    public static IReadOnlyList<(string Heading, string Says)> CardPickHeadings =>
+    [
+        ("#", "The pick's place in this setup's own order tonight."),
+        ("Stock", "The ticker opens the stock's chart page, and the company is named beneath it."),
+        .. BuyPointHeadings.Where(heading => heading.Heading is "Business" or "Buy" or "Stop" or "Target" or "Reward to risk"),
+    ];
+
+    // The live rule's picks as rows of the card's own, the way the heavyweights card draws its holdings: each in the
+    // setup's own order with its ticker opening the stock's chart page, its business state and its plan, read from the
+    // same pick cells the buy points draw so the two tables state the same figures.
+    // see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
+    string LivePicks(IReadOnlyList<FamilyPickCell> picks)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table card-picks\" data-picks=\"{picks.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in CardPickHeadings)
+        {
+            body.Append(TippedHeading(heading, says, heading switch
+            {
+                "#" => "place",
+                "Buy" or "Stop" or "Target" or "Reward to risk" => "r",
+                _ => null,
+            }));
+        }
+
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var (pick, place) in picks.Select((pick, at) => (pick, at + 1)))
+        {
+            var row = pick.Row;
+
+            body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-card-pick=\"true\"><td class=\"place\" data-place=\"{place}\">{place}</td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/chart/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Distance?.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(PickBusinessCell(pick));
+            body.Append(PriceCell("buy", pick.Buy, null));
+            body.Append(PriceCell("stop", pick.Stop, null));
+            body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
+            body.Append(RewardCell(pick));
+            body.Append("</tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+
+        return body.ToString();
+    }
 
     // A card listing nothing tonight in one line: why it lists nothing, the gate that stopped the most of the members
     // reaching it, and its empty stretch against its usual longest, or that no usual stretch is read yet under the floors.

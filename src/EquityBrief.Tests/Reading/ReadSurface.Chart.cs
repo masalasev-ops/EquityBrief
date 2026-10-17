@@ -443,6 +443,10 @@ public partial class ReadSurface
             var markup = WebUtility.HtmlDecode(await client.GetStringAsync(route));
 
             Assert.DoesNotMatch("<a class=\"(name-link|tk|nm|peer-link)\" href=\"#/name/", markup);
+
+            // From the 19.3 correction of 2026-10-17 no link names a stock to select its row: a row selects itself, and its
+            // ticker opens the chart page.
+            Assert.DoesNotMatch("<a [^>]*href=\"#/night/[^\"]*\\?name=", markup);
             counts.Add($"{route} {Regex.Matches(markup, "href=\"#/chart/[A-Z.]+[\"?]").Count}");
         }
 

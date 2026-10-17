@@ -575,8 +575,7 @@ p.no-variant{margin:0 0 8px;font-size:12.5px;color:var(--soft)}
 .rule-chip.differs{border-color:var(--warn);color:var(--ink);background:var(--warn-fill);font-weight:600}
 .rule-sentence{margin:0 0 10px}
 .rule-sentence>summary{cursor:pointer;font-size:12.5px;color:var(--ink-2)}
-.rule-share,.card-picks,.family-empty-line{margin:6px 0;font-size:13.5px;color:var(--ink-2)}
-.card-picks .card-pick{font-weight:600}
+.rule-share,.family-empty-line{margin:6px 0;font-size:13.5px;color:var(--ink-2)}
 .family-empty-line.flagged{color:var(--ink);font-weight:600}
 /* a card listing nothing folds to one line, its rule, funnel and rows behind it; a card of one line holds its guide */
 .card.folded{padding:12px 18px;margin-top:12px}

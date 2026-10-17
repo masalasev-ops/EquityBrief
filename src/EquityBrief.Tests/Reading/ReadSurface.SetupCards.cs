@@ -18,7 +18,7 @@ namespace EquityBrief.Tests.Reading;
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 public partial class ReadSurface
 {
-    // The rows 19.3 adds: a family's card's header, guide, picks named by place, one line and stocks one gate short; its
+    // The rows 19.3 adds: a family's card's header, guide, picks as rows of its own, one line and stocks one gate short; its
     // rule's tabs, chips, marked chips, share line, a variant's picks with their numbers, the funnel's bar and the forming
     // list's expander; and the heavyweights card's tiles, sectors, empty sectors' reasons, return since bought and standing.
     internal static readonly string[] SetupCardRows =
@@ -27,7 +27,7 @@ public partial class ReadSurface
         {
             "a header naming the setup in its tint with a pill for its standing",
             "a reading guide for every setup card behind a press, where the key it repeated stood",
-            "its live rule's picks named by their place among tonight's buy points, each opening its row there",
+            "its live rule's picks drawn as rows of its own in the setup's order, each ticker opening the stock's chart page with the company beneath it",
             "one line naming the gate that stopped the most of the members reaching it and its empty stretch against its usual longest or the completed stretches it holds of the thirty a usual stretch waits for",
             "behind an expander naming their count the stocks one gate short of its buy point, each with the gate it missed and its words beneath the pointer and the family's three numbers",
         }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "A family's card, " + part)),
@@ -37,7 +37,7 @@ public partial class ReadSurface
             "the chosen rule's settings as chips with its sentence a click away",
             "a chosen variant's differing chips marked",
             "one line naming the picks it shares with the live rule's passes tonight and those it adds and drops",
-            "its own picks with their plans and the family's three numbers in place of the live rule's picks named by place",
+            "its own picks with their plans and the family's three numbers in place of the live rule's rows",
             "the funnel drawn as one bar a gate with the gate that stopped the most of those reaching it marked and named, or a first gate passing no member marked so",
             "behind an expander naming the count forming",
         }.Select(part => Harness.CheckReach.Key("15.7 Tonight", "A family's card's rule, " + part)),
