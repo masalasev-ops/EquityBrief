@@ -279,7 +279,7 @@ public sealed partial class MarkRenderer
         body.Append(hits.DividendDate is { } paid
             ? Formatted($"<li data-hit=\"dividend\" data-declared=\"{(hits.DividendDeclared ? "yes" : "no")}\">Ex-dividend {DayOf(paid)}, {(hits.DividendDeclared ? "declared" : "estimated from the company's last declared date and its usual interval")}{Paid(hits)}.</li>")
             : hits.DividendUnread
-                ? "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one from, so one later in the hold is not ruled out.</li>"
+                ? "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>"
                 : "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>");
 
         foreach (var (date, name) in hits.Events)

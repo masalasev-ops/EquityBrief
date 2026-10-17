@@ -160,14 +160,26 @@ public partial class FixtureExpectations
         Assert.Equal((new DateOnly(2026, 11, 5), true), (Read(22, [], null).HoldThrough, Read(22, [], null).DividendUnread));
         Assert.True(Read(63, [], null).DividendUnread);
 
-        // A date the calendar declares is drawn whatever is kept, and a dividend kept estimates a date or reads none, so
-        // neither leaves one unread.
+        // A date the calendar declares is drawn whatever is kept, and a dividend kept with a rate, an ex-date and a whole
+        // year's count estimates a date, and one paying none reads none, so none of them leaves one unread.
         Assert.Equal((new DateOnly(2026, 10, 20), false), (Read(63, [new DateOnly(2026, 10, 20)], null).Dividend!.Date, Read(63, [new DateOnly(2026, 10, 20)], null).DividendUnread));
 
         var kept = new DividendKept(1.08m, new DateOnly(2026, 8, 10), [new DividendsInYear(2025, 4), new DividendsInYear(2026, 3)]);
 
         Assert.Equal((new DateOnly(2026, 11, 9), false), (Read(63, [], kept).Dividend!.Date, Read(63, [], kept).DividendUnread));
         Assert.Equal(((DividendAhead?)null, false), (Read(63, [], new DividendKept(0m, null, [])).Dividend, Read(63, [], new DividendKept(0m, null, [])).DividendUnread));
+
+        // A kept dividend paying three times in the night's year and in no whole year before it reads no count of its own:
+        // with no payments a year from its bars nothing carries a date forward, so a later one is unread, and with its
+        // bars' four a year 2026-08-10 plus 91 days is 2026-11-09, estimated. A kept dividend holding no ex-date or no rate
+        // leaves it unread the same way.
+        var partial = new DividendKept(1.08m, new DateOnly(2026, 8, 10), [new DividendsInYear(2026, 3)]);
+
+        Assert.Equal((false, true), (CardHitsReading.WholeYearPaid(HitsNight, partial), CardHitsReading.WholeYearPaid(HitsNight, kept)));
+        Assert.Equal(((DividendAhead?)null, true), (Read(63, [], partial).Dividend, Read(63, [], partial).DividendUnread));
+        Assert.Equal((new DateOnly(2026, 11, 9), false), (Read(63, [], partial with { PaymentsAYear = 4 }).Dividend!.Date, Read(63, [], partial with { PaymentsAYear = 4 }).DividendUnread));
+        Assert.True(Read(63, [], kept with { LastExDate = null }).DividendUnread);
+        Assert.True(Read(63, [], kept with { ForwardRate = null }).DividendUnread);
 
         // Read with no count of the calendar's sessions, as a caller stating none, nothing is unread.
         Assert.False(CardHitsReading.Read(HitsNight, 63, reactions, [], null, 100.00m, 97.00m).DividendUnread);

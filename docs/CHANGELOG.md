@@ -26,6 +26,23 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - a kept dividend paying in no whole year is read at its bars' steps, and a later date is unread where nothing kept carries one forward
+Corrects: a dividend the quarters fetch kept, paying above nothing, whose years held no whole year that paid estimated nothing, and the card marked a later date unread only where nothing was kept, so it said no ex-dividend date fell inside the hold, the shape the 16.3 correction of 2026-10-07 fixed for a company with nothing kept; 7 of the 1,001 kept payers on the store of 2026-10-16, PLMR, RNG, VTOL, MBGL, VGNT and VSNT on the S&P 600 and SOLS on the S&P 400; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, what could hit the trade: ... the dividend the quarters fetch kept, its interval a year over the count of its last whole year that paid, or where it has kept none the dividend part of the newest fundamentals fetch, ... Where the calendar declares none and the store holds no dividend of the company's to estimate from, the quarters fetch keeping one from the night after the company next reports and a fundamentals fetch standing in only where the bars show its interval, a hold running past the sessions the calendar is asked for says a later date is not ruled out, ...
+Now:
+> ... its interval a year over the count of its last whole year that paid, or where its years hold no whole one that paid, over the payments a year its bars' steps show, or where it has kept none ... Where the calendar declares none and the store holds no dividend of the company's with a last date and an interval to estimate from, the quarters fetch keeping one from the night after the company next reports, a fundamentals fetch standing in only where the bars show its interval, and a kept one holding no rate or no ex-date or showing no interval in its years or its bars, a hold running past the sessions the calendar is asked for says a later date is not ruled out, ...
+Why: a dividend kept that cannot be carried forward says nothing about the hold, as the decision says of a fetch filing no rate or no ex-date and of bars showing fewer than two steps (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars).
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations and read-surface state a kept dividend with no whole year read at its steps or left unread
+Corrects: the roster named none of the 16.3 correction's assertions of 2026-10-17.
+Was:
+> `fixture-expectations`: ... where a filer filing nothing in it reads nought on its buyers and its officer |
+> `read-surface`: ... an exit on a trade the follower ended each refused with why and nothing written |
+Now:
+> Added without replacing anything: a kept dividend paying in no whole year before the night's read at the payments a year its bars' steps show, and one holding no rate, no ex-date or no count leaving a later date unread; and a card whose kept dividend pays in no whole year before the night's drawing the date estimated at its bars' steps, and a later date unread where they show no interval or the dividend holds no ex-date.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - the rule's own picks beside the operator's record are bought at the next session's open
 Corrects: from 19.10 the follower buys the rule's own picks on the nights the operator took one at the next session's open, as a taken trade's fill is (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it), while 15.18, the card's figure and its key, and section 16's Taken records row still said each was bought at or followed from the plan's buy, and the card drew the same words; found by phase 16's first sign-off review on 2026-10-17.
 Was:

@@ -14,13 +14,13 @@ public sealed record DividendAhead(DateOnly Date, bool Declared, decimal? Amount
 
 // What could hit a pick's trade before it ends: the hold's last session, the reactions, the next ex-dividend date inside
 // the hold, and the market events inside it with each kind whose table ends before the hold does. Where no date is found
-// and the hold runs past the sessions the calendar is asked for with no dividend of the company's kept to estimate from,
-// a later date is unread rather than ruled out.
+// and the hold runs past the sessions the calendar is asked for with no dividend of the company's to estimate from, none
+// kept or one holding no rate, no ex-date or no count a year, a later date is unread rather than ruled out.
 public sealed record CardHits(DateOnly HoldThrough, ReactionFigures Reactions, DividendAhead? Dividend, IReadOnlyList<MarketEvent> Events, IReadOnlyList<string> PastTheTable, bool DividendUnread = false);
 
 // The company's dividend as the quarters fetch kept it: the forward rate a share, the last declared ex-date and each year's
-// count. Where the newest fundamentals fetch stands in for it, no year's count is filed and the payments a year are the
-// ones the bars' steps show.
+// count. Where the newest fundamentals fetch stands in for it, or the kept years hold no whole one that paid, the payments a
+// year are the ones the bars' steps show.
 public sealed record DividendKept(decimal? ForwardRate, DateOnly? LastExDate, IReadOnlyList<DividendsInYear> ByYear)
 {
     public int? PaymentsAYear { get; init; }
@@ -133,13 +133,20 @@ public static class CardHitsReading
         return steps;
     }
 
+    // Whether the kept years hold a whole year before the night's that paid, whose count the interval is read from.
+    public static bool WholeYearPaid(DateOnly night, DividendKept kept) => kept.ByYear.Any(year => year.Year < night.Year && year.Count > 0);
+
+    // How many times a year a dividend pays: the count of its last whole year that paid, or where the kept years hold
+    // none, the payments a year its bars' steps show; none where neither is read.
+    public static int? TimesAYear(DateOnly night, DividendKept? kept) =>
+        kept?.ByYear.Where(year => year.Year < night.Year && year.Count > 0).OrderBy(year => year.Year).LastOrDefault()?.Count ?? kept?.PaymentsAYear;
+
     // The next ex-date inside the hold: the first the calendar declares after the night, and where it declares none the
-    // company's last declared ex-date carried forward by its usual interval, a year over the count of its last whole
-    // year that paid or over the payments a year its bars' steps show, to the first date after the night. None where
-    // neither falls inside the hold or the company pays none.
+    // company's last declared ex-date carried forward by its usual interval, a year over the times a year it pays, to the
+    // first date after the night. None where neither falls inside the hold or the company pays none.
     public static DividendAhead? Dividend(DateOnly night, DateOnly through, IReadOnlyList<DateOnly> declared, DividendKept? kept, decimal? buy, decimal? stop)
     {
-        var count = kept?.ByYear.Where(year => year.Year < night.Year && year.Count > 0).OrderBy(year => year.Year).LastOrDefault()?.Count ?? kept?.PaymentsAYear;
+        var count = TimesAYear(night, kept);
         decimal? amount = kept?.ForwardRate is { } rate && rate > 0m && count is { } paid ? rate / paid : null;
 
         DividendAhead Ahead(DateOnly on, bool isDeclared) => new(
@@ -171,14 +178,16 @@ public static class CardHitsReading
     }
 
     // A hold running past the last of the sessions the calendar is asked for, the count the night's ask states, finds no date
-    // the calendar does not declare unless the company's dividend is kept to estimate one from; with none kept, a date after
-    // those sessions is unread, and the card says so rather than that there is none.
+    // the calendar does not declare unless the company's dividend can be carried forward, a rate, an ex-date and a count a
+    // year; with none kept, or one holding no rate, no ex-date or no count, a date after those sessions is unread, and the
+    // card says so rather than that there is none. A rate of nothing is a company paying none, which leaves nothing unread.
     public static CardHits Read(DateOnly night, int? cap, ReactionFigures reactions, IReadOnlyList<DateOnly> declared, DividendKept? kept, decimal? buy, decimal? stop, IReadOnlyList<MarketEvent>? table = null, int? declaredSessions = null)
     {
         var through = HoldThrough(night, cap);
         var (events, past) = MarketEvents.Within(night.AddDays(1), through, table);
         var dividend = Dividend(night, through, declared, kept, buy, stop);
-        var unread = dividend is null && kept is null && declaredSessions is { } asked && through > HoldThrough(night, asked);
+        var estimable = kept?.ForwardRate is <= 0m || (kept?.ForwardRate is > 0m && kept.LastExDate is not null && TimesAYear(night, kept) is not null);
+        var unread = dividend is null && !estimable && declaredSessions is { } asked && through > HoldThrough(night, asked);
 
         return new CardHits(through, reactions, dividend, events, past, unread);
     }
