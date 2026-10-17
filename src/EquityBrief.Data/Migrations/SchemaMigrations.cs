@@ -717,7 +717,26 @@ public static class SchemaMigrations
         new Migration(94, "create trade_fill, and add setup's fill and past", CreateTradeFills),
         new Migration(95, "add setup's published factor readings, and create loop_link", AddFactorReadings),
         new Migration(96, "create insider_trade and insider_read, and add setup's insider readings", AddInsiderTrades),
+        new Migration(97, "create sec_ticker, and add company.cik_source", AddSecTickers),
     ];
+
+    // From the 17.3 correction of 2026-10-16: the SEC's own ticker file a read at a time, a row a ticker it lists, which
+    // the quarters fetch reads for a member the provider files no CIK for; and the column saying where a company row's
+    // CIK came from, the provider's answer or the SEC's file, null on a row written before it. Created and added empty,
+    // nothing copied and nothing dropped.
+    // see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+    const string AddSecTickers = @"
+        CREATE TABLE sec_ticker (
+            ticker   TEXT NOT NULL,
+            cik      TEXT NOT NULL,
+            title    TEXT NOT NULL,
+            run_id   TEXT NOT NULL,
+            read_at  TEXT NOT NULL,
+            PRIMARY KEY (ticker, run_id)
+        ) STRICT;
+
+        ALTER TABLE company ADD COLUMN cik_source TEXT CHECK (cik_source IS NULL OR cik_source IN ('provider', 'sec'));
+    ";
 
     // The insiders' trades from 19.13: a row a transaction of a Form 4 or 4/A's table of shares, under its filing's
     // accession and its place in the table, append-only; a row a span its readers read whole, a quarter of the SEC's data

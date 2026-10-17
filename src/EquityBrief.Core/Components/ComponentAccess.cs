@@ -88,6 +88,7 @@ public enum Store
     FilingDay,
     InsiderTrade,
     InsiderRead,
+    SecTicker,
     LedgerSummary,
     LedgerReading,
     LoopRun,

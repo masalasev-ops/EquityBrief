@@ -26,6 +26,42 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - a member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> Quarter fetcher: reads "... reported quarters, quarter asks, companies"; "... and from the same answer the member's company, its filer and its GICS classification, with no request of its own, and from 18.2 ..."; "... and <code>quarters --refetch-lines</code> every member whose newest fetch read none of the gross profit and the cash flow lines in the same way (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap). It records every ask ..."
+> Monthly run: "runs the month's steps in order, the SEC's facts asked whole by the filings refresher, every index's history ..."
+> The loop, once a month: "Its steps run in order: the SEC's facts asked whole; every index's history computed again ..."
+Now:
+> The Quarter fetcher reads the SEC tickers, takes the filer the SEC's own ticker file names at its newest read where the answer files none with the row saying which it took, and `quarters --refetch-unfiled` asks every member whose newest company row carries no filer; a catalogue row, a matrix row and a stores row for the SEC tickers step and its store; and the monthly run reads the ticker file before it asks the facts whole.
+Why: the provider files no CIK for a ticker changed since it last read the company, and 36 members of the three indices held no filer on 2026-10-16.
+
+### 2026-10-16 - SCHEMA.md - the SEC's ticker file kept, and a company row saying where its filer came from
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros, null where the provider files none |
+Now:
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the provider's, or where it files none the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker`, null where neither does |
+> Added: `cik_source` on `company`, the table `sec_ticker` and its ownership row.
+Why: the quarters fetch takes the SEC's filer where the provider files none.
+
+### 2026-10-16 - RUNBOOK.md - the SEC's ticker file read by hand and in the monthly run, and the members with no filer asked again
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again ...
+Now:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, every index's history written again ...
+> Added: the paragraph on `sec-tickers` and `quarters --refetch-unfiled`.
+Why: the monthly run reads the ticker file first, and the operator runs it by hand once.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states the SEC's ticker file read, kept and taken
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> `fixture-expectations`: ... while a read without it passes the quarters recorded |
+Now:
+> Added without replacing anything: from the 17.3 correction the SEC's ticker file read as sent, the step keeping it under its run and naming the members the provider files no CIK for that it names and those it does not, the quarters fetch taking the newest read's filer where the answer files none and saying which it took, and the refetch by hand asking only the members whose newest company row carries no filer.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - ARCHITECTURE.html - the insiders' year is the one before the night, the night's own day read the night after
 Corrects: on every member's chart page and report the insider rows read not stored every night, since the view needed the night's own day, which the archive posts after the night runs; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
 Was:

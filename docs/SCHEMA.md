@@ -114,6 +114,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `filing_day` | FilingsRefresher | none | none |
 | `insider_trade` | InsiderTrades | none | none |
 | `insider_read` | InsiderTrades | none | none |
+| `sec_ticker` | SecTickers | none | none |
 | `taken_trade` | ReadApi | ReadApi, TakenFollower | ReadApi |
 | `taken_record` | TakenFollower | none | TakenFollower |
 | `dividend_reading` | QuarterFetcher | none | none |
@@ -1949,6 +1950,21 @@ Primary key: `first_day`, `source`.
 
 **What the insiders' history holds, so a reading tells a quiet company's nought from days no reader read** (see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted). Append-only, a span written once every filing of it was read: a day the refresh's limit stopped is not written and is read again on the next night from the filings not yet stored, and a weekday the archive posted no index for, a day it was closed, is written with no filing. A reading is none where these spans do not hold every weekday of its days.
 
+### sec_ticker
+Grain: one row per ticker per read of the SEC's own ticker file, from the 17.3 correction of 2026-10-16.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | a listed ticker as the file states it, a ticker the file lists twice kept once by its first line |
+| `cik` | TEXT | the filer the file names for it, ten digits with the leading zeros |
+| `title` | TEXT | the filer's name as the file states it |
+| `run_id` | TEXT | the read that stored it |
+| `read_at` | TEXT | UTC instant of the read |
+
+Primary key: `ticker`, `run_id`.
+
+Append-only, a read's rows written in one write, by the SEC tickers step by hand and in the monthly run's facts step and never by the night; the quarters fetch reads the newest read's filer for a member the provider files no CIK for (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file).
+
 ### taken_trade
 Grain: one row per trade the operator took from a pick's card.
 
@@ -2213,7 +2229,7 @@ Grain: one row per ticker per storing fetch.
 |---|---|---|
 | `ticker` | TEXT | |
 | `fetched_at` | TEXT | UTC instant of the fetch, the one its `reported_quarter` rows carry |
-| `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros, null where the provider files none |
+| `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the provider's, or where it files none the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker`, null where neither does |
 | `sector` | TEXT | the GICS sector the provider files, null where it files none |
 | `industry_group` | TEXT | the GICS industry group, null where none is filed |
 | `industry` | TEXT | the GICS industry, null where none is filed |
@@ -2221,6 +2237,7 @@ Grain: one row per ticker per storing fetch.
 | `strong_buy`, `buy`, `hold`, `sell`, `strong_sell` | INTEGER | from 15.2, the analysts' five rating counts the same answer files, null where it files none and on every row stored before |
 | `rating_mean` | REAL | from 18.2, the analysts' mean rating on the provider's scale from one, a strong sell, to five, a strong buy, a statistic, null where the answer files none and on every row stored before |
 | `target_price` | TEXT | from 18.2, decimal in code, the analysts' mean target price as the answer files it, null where it files none and on every row stored before |
+| `cik_source` | TEXT | from the 17.3 correction of 2026-10-16, where `cik` came from: `provider` for the provider's answer, `sec` for the SEC's own ticker file, null where `cik` is and on every row stored before (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file) |
 
 Primary key: `ticker`, `fetched_at`.
 

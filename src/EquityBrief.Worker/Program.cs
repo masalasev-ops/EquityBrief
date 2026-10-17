@@ -55,6 +55,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filings" => await FilingsRun(args),
     "insiders-history" => await InsidersHistoryRun(args),
     "insiders" => await InsidersRun(args),
+    "sec-tickers" => await SecTickersRun(args),
     "loop-test" => await LoopTestRun(args),
     "loop-rules" => await LoopRulesRun(args),
     "loop-links" => await LoopLinksRun(args),
@@ -76,7 +77,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 43 are built:'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 44 are built:'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -112,7 +113,8 @@ static int NoVerb()
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
         "sector and share counts beside its quarters, 'quarters --refetch-unread' asks instead every member whose newest " +
-        "fetch read no interest expense, and 'quarters --refetch-lines' every member whose newest fetch read none of the " +
+        "fetch read no interest expense, 'quarters --refetch-unfiled' every member whose newest company row carries no " +
+        "filer, and 'quarters --refetch-lines' every member whose newest fetch read none of the " +
         "gross profit and the cash flow lines, each stating its asks and their weighted calls before the first request, '--most <n>' " +
         "caps the asks a run makes, and '--index <MID or SML>' asks a wider index's members, " +
         "'members' runs the night's membership and backfill steps by hand, the S&P 400's and 600's members read " +
@@ -177,6 +179,8 @@ static int NoVerb()
         "'insiders --from <yyyy-MM-dd>' reads the members' Form 4 and 4/A filings of each weekday's index through " +
         "'--through <yyyy-MM-dd>' or the newest day the refresh has read, as the night's refresh does, with '--compare' " +
         "setting each filing the store holds already against its stored rows and writing nothing, " +
+        "'sec-tickers' reads the SEC's own file of every listed ticker and its filer, one request, and keeps it, which " +
+        "the quarters fetch reads for a member the provider files no CIK for, " +
         "'loop-test --index <MID or SML>' runs the walk-forward tester over Part 0's procedures, each run inside every " +
         "fold on the years before its test year and scored on that year against the index's current rule, and stores " +
         "each proposal's verdict and test years, with '--month <yyyy-MM>' naming the month the run is for and " +
@@ -826,7 +830,16 @@ static async Task<int> LoopMonthRun(string[] args)
             return (false, $"no archive contact: set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none");
         }
 
-        var whole = await new EquityBrief.Worker.Ledger.FilingsRefresher(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), clock, store.DatabaseFile)
+        // The SEC's ticker file first, so a member whose ticker changed is matched to its filer at its next quarters fetch.
+        var archive = SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact));
+        var tickers = await new EquityBrief.Worker.Ledger.SecTickers(clock, store.DatabaseFile).ReadAsync(archive, Console.Out, runId, cancellation);
+
+        if (tickers.Refusal is { } refused)
+        {
+            return (false, refused);
+        }
+
+        var whole = await new EquityBrief.Worker.Ledger.FilingsRefresher(archive, clock, store.DatabaseFile)
             .WholeAsync(runId, Console.Out, cancellation);
 
         return whole.Refusal is null
@@ -942,6 +955,35 @@ static async Task<int> FilingsRun(string[] args)
         [.. EquityBrief.Worker.Indices.IndexFamilies.Indices.Where(index => index != EquityBrief.Worker.Indices.IndexFamilies.LargeIndex)]);
 
     Console.WriteLine("filings: " + EquityBrief.Worker.Ledger.FilingsRefresher.Detail(outcome));
+
+    return outcome.Refusal is null ? 0 : 1;
+}
+
+// The SEC's own ticker file by hand, one request, kept under a run of its own for the quarters fetch to read where the
+// provider files no CIK; refused while a night holds the store.
+// see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+static async Task<int> SecTickersRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var contact = configuration[ArchiveAgent.ContactName];
+
+    if (string.IsNullOrWhiteSpace(contact))
+    {
+        Console.Error.WriteLine($"sec-tickers: no archive contact. Set '{ArchiveAgent.ContactName}' in appsettings.Secrets.json, since the archive refuses a request that names none.");
+
+        return 1;
+    }
+
+    if (EquityBrief.Core.Configuration.NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        Console.Error.WriteLine($"sec-tickers: the night holds the store ({holder}); run it once the night has finished.");
+
+        return 2;
+    }
+
+    var outcome = await new EquityBrief.Worker.Ledger.SecTickers(SystemClock.ForUnitedStatesSessions(), store.DatabaseFile)
+        .ReadAsync(SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(contact)), Console.Out);
 
     return outcome.Refusal is null ? 0 : 1;
 }

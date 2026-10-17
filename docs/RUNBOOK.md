@@ -59,6 +59,17 @@ dotnet run --project src/EquityBrief.Worker -- quarters --refetch-lines --most 2
 
 The S&P 500's first refetch of 2026-10-10 ran at 01:00Z, before 18.2 kept each quarter's gross profit and cash flow lines and the analysts' estimate trend, so 440 members' newest fetches read none of them and their analysts, their gross profit and their payout on free cash flow wait for each member's next report. This asks instead each member of the index whose newest fetch read none of those lines, once a session and in ticker order, as `--refetch-unread` does, and prints how many it will ask and the weighted calls they may spend, eleven an ask, before its first request. The operator's ruling of 2026-10-11 runs it on Tuesday 2026-10-13 and Wednesday 2026-10-14 at 220 asks a day, about 2,420 weighted calls, which keeps each day under 5,000 beside the night and Tuesday's A7 run. Read the provider's counter first, and run it when no night is running (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap).
 
+**A member the provider files no CIK for is matched to its filer by the SEC's own ticker file, and asked again by hand once the file is read.**
+
+```
+dotnet run --project src/EquityBrief.Worker -- sec-tickers
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --live
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --index MID --live
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --index SML --live
+```
+
+The provider files no CIK for a ticker changed since it last read the company, as for BNY, once BK: on 2026-10-16, 36 members of the three indices, 11 of the S&P 500, 3 of the 400 and 22 of the 600, held no filer, so their pages drew no share count of the filer's and no insider row and the ledger read none of their filings. `sec-tickers` reads the SEC's own file of every listed ticker and the filer it names, one request to the archive, free and keyless, under the archive's contact in `appsettings.Secrets.json`, keeps every line in `sec_ticker` under a run of its own and prints how many of the members the provider files no CIK for it names and which it does not; it is refused while a night holds the store, and the monthly run's facts step reads it first (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file). The quarters fetch, by night and by hand, then takes the newest read's filer where the provider's answer files none, and the company row's `cik_source` says which it took. `--refetch-unfiled` asks each member of the index whose newest company row carries no filer, once a session and in ticker order, as `--refetch-lines` does, and prints its asks and their weighted calls, eleven an ask, before its first request; left to the night, each is matched at its next report. A member the provider answers nothing for, as VYLR and HOS on 2026-10-16, holds no company row and stays unmatched. Run them when no night is running, and then the whole facts refresh and the insiders' history read again, below, so the filers newly matched have their facts and their Forms 4.
+
 **The S&P 400's and 600's members are loaded by hand before their first night, with their year of bars, their quarters and the four funds' history.** From 15.1 the night reads the S&P 400's and 600's members from their funds' holdings files beside the S&P 500's (see: The S&P 400's and 600's members are read each night from their funds' own holdings files). Left to the night, its first run would ask about a thousand new members for their year and fill their quarters 260 a night over four nights, so the remedy of 15.1 takes them by hand first, after the merge and when no night is running:
 
 ```
@@ -929,7 +940,7 @@ The live alarm reads each live rule's trades by the month they ended in, a secto
 
 ### The monthly run
 
-From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again beside the standing one, each index's point-in-time check, from 19.12 which readings go with winners on each index, each index's tester run, from 19.4 each index's per-rule test, and the month's report, a step at a time (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). Run it from the repository root on main, as the night is run, and it builds and runs a clean copy of main's commit:
+From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, every index's history written again beside the standing one, each index's point-in-time check, from 19.12 which readings go with winners on each index, each index's tester run, from 19.4 each index's per-rule test, and the month's report, a step at a time (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). Run it from the repository root on main, as the night is run, and it builds and runs a clean copy of main's commit:
 
 ```powershell
 tools/monthly.ps1

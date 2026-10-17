@@ -1524,6 +1524,13 @@
       "query": "https://www.sec.gov/files/datastandardsinnovation/data/insider-transactions-data-sets/2026q2_form345.zip",
       "fetchedAt": "2026-10-16T11:04:22Z",
       "trimmedTo": "the header and 108 of the 78,328 rows of NONDERIV_TRANS.tsv in the same zip: every row of the table of shares of the filings the cut of SUBMISSION.tsv keeps, in the file's own order. The tab closing a row whose last field is empty was written off."
+    },
+    {
+      "file": "sec-company-tickers.json",
+      "endpoint": "files/company_tickers.json",
+      "query": "https://www.sec.gov/files/company_tickers.json",
+      "fetchedAt": "2026-10-16T22:15:20Z",
+      "trimmedTo": "seven of the 10,444 entries of a file of 799,355 bytes whose SHA-256 is 5df1323d2c05ca6dea661d2b7c73cb8c86649bbf43f28e83280f484c214837d6: the fixture's four names, BNY, whose provider files no CIK, and Alphabet's two classes under one CIK, each under its key as sent, compact on one line as sent."
     }
   ]
 }
