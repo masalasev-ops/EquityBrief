@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states a labeller's limit ending exactly as a window opens
+Corrects: the roster named none of the 16.5 correction's assertion of 2026-10-17, a boundary 16.5 states that phase 16's first sign-off review found no test holding.
+Was:
+> `fixture-expectations`: ... and a dividend answer storing no member's date removing nothing the window held |
+Now:
+> Added without replacing anything: a labeller's limit ending exactly as a peak window opens ending there and not after the window.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states four of 16.3's boundaries no test held
 Corrects: the roster named none of the second 16.3 correction's assertions of 2026-10-17, each a boundary 16.3 states that phase 16's first sign-off review found no test holding.
 Was:
