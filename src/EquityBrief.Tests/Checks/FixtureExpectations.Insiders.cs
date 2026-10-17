@@ -460,6 +460,49 @@ public partial class FixtureExpectations
         Assert.Equal(["|||"], Query(store, "SELECT COALESCE(insider_net_buy, '') || '|' || COALESCE(insider_buyers, '') || '|' || COALESCE(insider_officer_buy, '') || '|' || COALESCE(insider_unplanned_sale, '') FROM setup;"));
     }
 
+    // The 19.13 correction of 2026-10-17: a member the store matches no filer for reads none on all four, its filings read
+    // by no reader, where a filer filing nothing in the window reads nought on its buyers and its officer, the history
+    // holding the window for both.
+    [Fact]
+    public async Task AMemberTheStoreMatchesNoFilerForReadsNoInsiderReadingWhereAFilerFilingNothingReadsNought()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var session = new DateOnly(2026, 9, 8);
+        static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('QUI', '2026-01-02T00:00:00.000Z', '0000000301');");
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('NOF', '2026-01-02T00:00:00.000Z', NULL);");
+
+        foreach (var ticker in new[] { "QUI", "NOF" })
+        {
+            foreach (var day in EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(new DateOnly(2026, 6, 30), session.AddDays(1)))
+            {
+                store.Execute($"INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES ('{ticker}', '{Day(day)}', '100', '100', '100', '100', 1000, 'eod', '2026-09-08T23:00:00Z', '100');");
+            }
+
+            store.Execute(
+                "INSERT INTO setup (index_code, family, ticker, session_date, rule, live_pass, entry, stop, cap, end, settled, source, pin) "
+                + $"VALUES ('GSPC', 'pullback', '{ticker}', '{Day(session)}', 'the live rule', 0, '100', '95', 21, 'open', 0, 'night', '{LedgerReadings.Version}');");
+            store.Execute(
+                "INSERT INTO ledger_reading (index_code, session_date, ticker, readings, pin) VALUES "
+                + $"('GSPC', '{Day(session)}', '{ticker}', '{JsonSerializer.Serialize(new double?[LedgerReadings.Count])}', '{LedgerReadings.Version}');");
+        }
+
+        store.Execute("INSERT INTO insider_read (first_day, last_day, source, run_id, read_at, filings, stored) VALUES ('2026-01-01', '2026-09-30', 'data-set', 'history', '2026-10-16T00:00:00Z', 0, 0);");
+
+        await new SetupLedger(FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 30, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).InsidersAgainAsync(session);
+
+        // The filer filing nothing: no buyer and no officer buying, the dollars none with no count filed to value them by.
+        Assert.Equal(
+            ["NOF||||", "QUI||0.0|0.0|"],
+            Query(store, "SELECT ticker || '|' || COALESCE(insider_net_buy, '') || '|' || COALESCE(insider_buyers, '') || '|' || COALESCE(insider_officer_buy, '') || '|' || COALESCE(insider_unplanned_sale, '') FROM setup ORDER BY ticker;"));
+
+        var unmatched = JsonSerializer.Deserialize<double?[]>(Query(store, "SELECT readings FROM ledger_reading WHERE ticker = 'NOF';").Single())!;
+
+        Assert.All(new[] { "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale" }, column => Assert.Null(unmatched[LedgerReadings.IndexOf(column)]));
+    }
+
     [Fact]
     public async Task KeysightsFourReadingsOnTheFixturesSessionAreWorkedByHandFromTheCut()
     {

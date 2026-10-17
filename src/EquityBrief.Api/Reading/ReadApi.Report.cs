@@ -292,7 +292,8 @@ public sealed partial class ReadApi
     }
 
     // The stock's filer's insiders' transactions filed in the year to the night, every code, and the spans the store's
-    // insider history holds; none for a stock no fetch filed a filer for.
+    // insider history holds; for a stock no fetch filed a filer for no transaction and no span, so its view is none and
+    // says the store holds no insider history for it, where a filer filing nothing reads nought.
     // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
     const string FilerOf = "SELECT cik FROM company WHERE ticker = $ticker AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1;";
 
@@ -334,7 +335,12 @@ public sealed partial class ReadApi
 
         var rows = new List<InsiderRow>();
 
-        if (cik is not null && night.DayNumber > InsiderView.YearDays)
+        if (cik is null)
+        {
+            return (rows, InsiderCoverage.None);
+        }
+
+        if (night.DayNumber > InsiderView.YearDays)
         {
             await using var command = connection.CreateCommand();
 

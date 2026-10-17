@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - a company the store matches no filer for reads no insider figure and never nought
+Corrects: with the insiders' history reaching the day before the night from the 19.13 correction of 2026-10-16, a company the store matched no filer for read nought on its four ledger readings and on its pages' insider figures, where it reads none, as VYLR's and HOS's chart pages drew on 2026-10-17; found reading the chart pages after that correction's remedy.
+Was:
+> Section 4, Insiders: ... or that the store holds no insider history reaching the day before the night; ...
+> 15.9, Insiders: ... a store holding no insider history reaching the day before the night saying so ...
+> 15.22, The figures: ... the insiders' where the store holds no insider history reaching the day before the night; ...
+> 17, Insiders' trades: the four insider readings over the insiders' filings filed in the 90 days before the session, the unplanned sales' none for a session whose days reach before 2023-04-01, ...
+Now:
+> Each adds the company the store matches to no filer: the region's line and not stored stand for it, and the four readings are none for it.
+Why: a reading its inputs do not reach is none and never nought.
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations and read-surface state the no-filer company's insiders as none
+Corrects: the roster named none of the correction's assertions.
+Was:
+> `fixture-expectations`: ... and the refetch by hand asking only the members whose newest company row carries no filer |
+> `read-surface`: ... named as the provider's, read off the store by the suite's own query |
+Now:
+> Added without replacing anything: a member the store matches no filer for reading none on all four insider readings where a filer filing nothing reads nought; and a company the store matches no filer for drawing its chart page's four insider figures not stored and its report's line saying so.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - a setup's card draws its live picks as rows of its own, each ticker opening its chart page
 Authorised by: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
 Was:

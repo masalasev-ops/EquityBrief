@@ -1893,11 +1893,10 @@ public sealed partial class SetupLedger : IComponent
             var prices = await PricesOnAsync(connection, ticker, filed, session, cancellation);
             var parts = ValuationReading.PartsOf(filed, session);
 
-            four[ticker] = InsiderReadings.Read(
-                insiders.Rows.GetValueOrDefault(ticker) ?? [],
-                insiders.Spans,
-                session,
-                dollars => prices is null ? null : ValuationReading.OverValue(dollars, parts, prices, session));
+            // A member the store matches no filer for holds no entry and reads none, where a filer filing nothing reads nought.
+            four[ticker] = insiders.Rows.GetValueOrDefault(ticker) is { } rows
+                ? InsiderReadings.Read(rows, insiders.Spans, session, dollars => prices is null ? null : ValuationReading.OverValue(dollars, parts, prices, session))
+                : InsiderFour.None;
         }
 
         var columns = new[] { "insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale" }.Select(LedgerReadings.IndexOf).ToArray();
