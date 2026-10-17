@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - Figure 11.4 draws the edge clock's looks as monitoring
+Corrects: the figure's lower lane ended on "earliest promotion" and its description and key said a look may promote a variant, where from 17.14 a look is monitoring and a rule changes only on the operator's approval of a tested proposal; carried since 19.7 and corrected before the sign-offs.
+Was:
+> desc: ... the edge clock gathers evidence and changes nothing by itself, its looks telling you when a variant may be retired or promoted.
+> the lower lane's third mark: earliest promotion
+> key: The lower lane is the edge clock, which reads each candidate's blocks and can first retire one at its first look and first promote one at the look after.
+Now:
+> desc: ... its looks monitoring and a rule changed only on your approval of a tested proposal. The third mark: second look: monitoring. Key: The lower lane is the edge clock, which reads each candidate's blocks at its looks as monitoring: a retirement its futility says is due is yours to take from the first look, and no look changes a rule, which changes only on your approval of a tested proposal.
+Why: the figure states what the system does, and the worked example's generator and the document change together, word for word.
+
+### 2026-10-17 - .claude/rules/checks.md - read-surface states a share under its floor never drawn at or above it
+Corrects: the roster named none of the 19.2 correction's assertions.
+Was:
+> `read-surface`: ... its report's line saying so, the year's spans held |
+Now:
+> Added without replacing anything: a share under its floor never drawn at or above it, worked by hand on both sides of the floor and at it, on the market line and on a card's line.
+Why: a roster row names what its check asserts.
+
+### 2026-10-17 - BUILD_PLAN.md - the two ideas of 2026-10-17 tabled for phase 21
+Corrects: the line saying no idea is written, which two ideas raised on 2026-10-17 and not ruled in make untrue, the 19.14 ruling writing each such idea here as one line.
+Was:
+> An idea raised meanwhile is written here as one line, with no checkpoint text. None is written yet.
+Now:
+> The same sentence, and two ideas raised on 2026-10-17 and not ruled in, one line each: the monthly run asking the quarters again of the members with no filer once it has read the SEC's ticker file, and asking the dividends history of every member no history run has kept dividends for.
+Why: under the 19.14 ruling an idea raised before the sign-offs and the monthly run is written here as one line with no checkpoint text.
+
 ### 2026-10-17 - ARCHITECTURE.html - a company the store matches no filer for reads no insider figure and never nought
 Corrects: with the insiders' history reaching the day before the night from the 19.13 correction of 2026-10-16, a company the store matched no filer for read nought on its four ledger readings and on its pages' insider figures, where it reads none, as VYLR's and HOS's chart pages drew on 2026-10-17; found reading the chart pages after that correction's remedy.
 Was:

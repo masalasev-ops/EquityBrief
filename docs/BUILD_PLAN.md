@@ -1880,4 +1880,7 @@ expectation nobody reads is the same object as a check that runs nothing.
 
 ## Tabled for phase 21
 
-On the operator's rulings of 2026-10-16 no checkpoint is added and phase 20 is not planned until the sign-offs of phases 16 to 19 are done and the monthly run of 2026-11-07 has run and its proposals are read. An idea raised meanwhile is written here as one line, with no checkpoint text. None is written yet.
+On the operator's rulings of 2026-10-16 no checkpoint is added and phase 20 is not planned until the sign-offs of phases 16 to 19 are done and the monthly run of 2026-11-07 has run and its proposals are read. An idea raised meanwhile is written here as one line, with no checkpoint text.
+
+- Raised 2026-10-17 and not ruled in: the monthly run asks the quarters again of every member whose company row carries no filer once it has read the SEC's ticker file, so a ticker changed since its last fetch is matched within a month rather than at its next report.
+- Raised 2026-10-17 and not ruled in: the monthly run asks the dividends history of every member no history run has kept dividends for, so a member joining an index draws its whole years of dividends within a month rather than only those paid after it joined.

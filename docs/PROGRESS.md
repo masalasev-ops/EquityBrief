@@ -2123,3 +2123,64 @@ Verified:   `tools/ci.ps1` green over the tree PR 479's entry records, and the c
 Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
             of its own the operator is asked for; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as
             45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.11 ruling - the page times are not sped up now, and two ideas tabled for phase 21   2026-10-17
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-17, word for word in `prompts/2026-10-17-19.11-ruling-page-times.md`: "you dont
+            need to fix the page speeds now." The Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's
+            693 at their medians, measured at 19.11 and carried since as a ruling of its own each, stand as they are.
+            Asked the same day whether the monthly run should ask the quarters again of the members whose company row
+            carries no filer once it has read the SEC's ticker file, and ask the dividends history of every member no
+            history run has kept dividends for, the operator ruled neither in, so each goes to the plan's Tabled for
+            phase 21 as one line under the 19.14 ruling.
+Plan:       `BUILD_PLAN.md`'s Tabled for phase 21 gains the two lines.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.14 correction's entry
+            below, as it records.
+Carried:    Figure 11.4's "earliest promotion" and the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%",
+            each corrected in an entry below; the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.2 - correction: a share under its floor is never drawn at or above it   2026-10-17
+
+Queue:      done, 19.0 to 19.14 with their corrections, records and rulings and the chart page's corrections with their
+            remedy and record, PRs 446 to 480; in progress, the two carried defects and the page times' ruling, in one
+            pull request; next, the sign-off of phase 16 by a fresh session, then those of phases 17, 18 and 19, then the
+            monthly run of 2026-11-07 and the operator reading its proposals.
+Found:      carried since 19.8: the S&P 600's breadth of 0.4497 drawn as 45.0% beside "below its floor of 45%", each
+            sentence drawing the share to one place with no regard to the floor it stands beside.
+Built:      one rule in the core drawing a share beside its floor: as written at or above the floor, and under it never
+            at or above it, a share that would round up to the floor drawn a tenth under it; read by the market line,
+            the closed market's lines on Tonight for the families, for an index and for an evening before them, the Run
+            page's index line and a card's line. The swing filter's stored gate reasons are left as written, its source
+            pinned by the filter's version and the candidates'. The roster and the changelog.
+Tests:      1 new: the rule worked by hand on both sides of the floor and at it, and the market line and a card's line
+            drawing 44.9% for 0.4497 under 0.45.
+Claims:     as the 17.14 correction's entry below records.
+Mutated:    the rule, stated before the runs for both corrections: one mutation a property each adds whose failure a
+            page would show, the smallest edit that breaks it, made in this checkout, each run against its own test. B1
+            the rule drawing a share under its floor as written: red at the rule's test. Reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.14 correction's entry
+            below, as it records.
+Carried:    the sign-offs of phases 16, 17, 18 and 19.
+
+### 17.14 - correction: Figure 11.4 draws the edge clock's looks as monitoring   2026-10-17
+
+Queue:      as the 19.2 correction's entry above states.
+Found:      carried since 19.7: Figure 11.4's lower lane ended on "earliest promotion" and its description and key said a
+            look may promote a variant, where from 17.14 a look is monitoring and a rule changes only on the operator's
+            approval of a tested proposal.
+Built:      the lower lane's third mark reads "second look: monitoring", and the figure's description and key say a look
+            is monitoring, a retirement its futility says is due the operator's to take from the first look, and a rule
+            changed only on the operator's approval of a tested proposal; the worked example's generator and the
+            document changed together. The changelog.
+Tests:      none new, 2415 in all: the worked example's test holds the generated figure to the document word for word.
+Claims:     1340, as before.
+Mutated:    under the rule the 19.2 correction's entry states. F1 the document's figure ending its lower lane on the
+            earliest promotion again: red at the worked example's test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2415 of 2415 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sign-offs of phases 16, 17, 18 and 19.

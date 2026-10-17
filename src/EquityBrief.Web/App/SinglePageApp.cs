@@ -3829,7 +3829,7 @@ public sealed partial class SinglePageApp : IComponent
             body.Append(Invariant($"<ul class=\"index-night\" data-members=\"{view.Members}\" data-passed=\"{view.Passed}\" data-listed=\"{view.Listed}\" data-held-back=\"{view.HeldBack}\" data-kept=\"{view.Kept}\" data-ended=\"{view.Ended}\" data-holdings=\"{view.Holdings}\" data-rebalanced=\"{(view.Rebalanced ? "true" : "false")}\">"));
             body.Append(Invariant($"<li>{view.Members} {Escaped(universe.Name)} members read on {night:yyyy-MM-dd}</li>"));
             body.Append(view.Breadth is { } breadth
-                ? Invariant($"<li>the {Escaped(universe.Possessive)} breadth: {breadth * 100:0.0}% of its members above their 200-day average, {(view.MarketOpen ? "at or above" : "below")} its floor of {view.Floor * 100:0.#}%, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>")
+                ? Invariant($"<li>the {Escaped(universe.Possessive)} breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, view.Floor)}% of its members above their 200-day average, {(view.MarketOpen ? "at or above" : "below")} its floor of {view.Floor * 100:0.#}%, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>")
                 : Invariant($"<li>the {Escaped(universe.Possessive)} breadth was not available, so its swing lists were {(view.MarketOpen ? "open" : "closed")}</li>"));
             body.Append(Invariant($"<li>{view.Passed} of {view.Members} {Escaped(universe.Name)} members passed a setup, {view.Listed} listed and {view.HeldBack} held back by a trade still open on any index's list</li>"));
             body.Append(Invariant($"<li>{view.Kept} {Escaped(universe.Name)} trade(s) kept tonight and {view.Ended} ended</li>"));

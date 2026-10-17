@@ -16,6 +16,29 @@ namespace EquityBrief.Tests.Reading;
 // see: Paper trading's accounts and a heavyweight's standing tonight are worked by one function in the core when a page is read
 public partial class ReadSurface
 {
+    // The 19.2 correction of 2026-10-17: a share under its floor is never drawn at or above it, the S&P 600's breadth of
+    // 0.4497 under a floor of 0.45 reading 44.9% beside "below its floor of 45%", where a share at or above its floor and
+    // one rounding under it are drawn as written; on the market line, on the closed market's lines and on a card's line.
+    [Fact]
+    public void ABreadthUnderItsFloorIsNeverDrawnAtOrAboveIt()
+    {
+        Assert.Equal(
+            ["44.9", "44.9", "44.9", "44.8", "45.0", "45.0", "55.0"],
+            new[] { (0.4497, 0.45), (0.44999, 0.45), (0.4495, 0.45), (0.448, 0.45), (0.45, 0.45), (0.4504, 0.45), (0.55, 0.45) }
+                .Select(pair => FloorShare.Percent(pair.Item1, pair.Item2)));
+
+        var closed = WebUtility.HtmlDecode(new MarkRenderer().MarketLine(new MarketLineView(false, 0.4497, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600")));
+        var open = WebUtility.HtmlDecode(new MarkRenderer().MarketLine(new MarketLineView(true, 0.45, 0.45, 0, 0, 4, 32, 0, "S&P 600", 1, 600, true, "600")));
+
+        Assert.Contains("the S&P 600's breadth: 44.9% of its members closed above their 200-day average, below its floor of 45%", closed, StringComparison.Ordinal);
+        Assert.DoesNotContain("45.0%", closed, StringComparison.Ordinal);
+        Assert.Contains("the S&P 600's breadth: 45.0% of its members closed above their 200-day average, at or above its floor of 45%", open, StringComparison.Ordinal);
+        Assert.Contains(
+            "S&P 600's breadth is 44.9% against its floor of 45%",
+            CardLines.Market(new MarketReading(0.4497, 0.45, true), null, "S&P 600", CardSettings.Defaults).Words,
+            StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task TonightOnAFamiliesNightDrawsNoNightCardNorWatchCardItsMarketLineCarryingWhatRanAndTheWatchList()
     {

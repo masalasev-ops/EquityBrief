@@ -224,7 +224,7 @@ internal static class WorkedExample
         foreach (var (x, label, lane) in new (double, string, double)[]
         {
             (60, "version opened", 96), (230, "ordinary nights counted", 96), (400, "a proposal, your ruling", 96), (590, "shape frozen", 96),
-            (60, "family registered", 196), (330, "first look: retire or leave", 196), (590, "earliest promotion", 196),
+            (60, "family registered", 196), (330, "first look: retire or leave", 196), (590, "second look: monitoring", 196),
         })
         {
             body.Append($"<circle cx=\"{N(x, "0.#")}\" cy=\"{N(lane, "0.#")}\" r=\"5\" fill=\"{(lane < 150 ? Support : Resistance)}\"/>\n");
@@ -238,10 +238,10 @@ internal static class WorkedExample
             700,
             262,
             "The swing filter's two clocks on one timeline, illustrative",
-            "Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing by itself, its looks telling you when a variant may be retired or promoted.",
+            "Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing by itself, its looks monitoring and a rule changed only on your approval of a tested proposal.",
             body.ToString(),
             "Figure 11.4. The two clocks on one timeline, illustrative.",
-            "Illustrative: the positions show the order the events come in and not when they fall. The upper lane is the shape clock, which counts ordinary nights under one filter version and proposes a setting for your ruling, and is frozen after the one further acceptance the bound allows. The lower lane is the edge clock, which reads each candidate's blocks and can first retire one at its first look and first promote one at the look after.",
+            "Illustrative: the positions show the order the events come in and not when they fall. The upper lane is the shape clock, which counts ordinary nights under one filter version and proposes a setting for your ruling, and is frozen after the one further acceptance the bound allows. The lower lane is the edge clock, which reads each candidate's blocks at its looks as monitoring: a retirement its futility says is due is yours to take from the first look, and no look changes a rule, which changes only on your approval of a tested proposal.",
             "Nothing on the edge clock moves a threshold before its looks, and nothing on the shape clock reads an outcome, which is why the list can be tuned early and judged only late.");
     }
 

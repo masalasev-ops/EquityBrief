@@ -443,7 +443,7 @@ public static partial class TonightScreen
         if (!rule.MarketOpen)
         {
             return rule.Breadth is { } breadth && rule.Floor is { } floor
-                ? FormattableString.Invariant($"The market check closed every list tonight: {breadth * 100:0.0}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%.")
+                ? FormattableString.Invariant($"The market check closed every list tonight: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, floor)}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%.")
                 : "The market check closed every list tonight: the night's breadth is not available.";
         }
 
