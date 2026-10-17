@@ -26,6 +26,22 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - the chart page draws five years as its longest span, and the provider's share count where the filer states none
+Corrects: a ten-year span the history pulled from 2018 never reaches was drawn on every chart page, and a filer stating its share count a class at a time drew no shares; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
+Was:
+> 15.22, The figures: ... the newest share count its filer's cover states; ... one and three and five and ten years over the long view's month-end closes, one year over the stored sessions where they reach it; ...
+Now:
+> ... the newest share count its filer's cover states or where its filer states none the provider's count off its newest quarter's balance sheet named as the provider's; ... one and three and five years over the long view's month-end closes, one year over the stored sessions where they reach it; five years the longest the history pulled from 2018 reaches; ...
+Why: a page draws a span the stored and pulled history can reach, and names a count by where it came from.
+
+### 2026-10-16 - .claude/rules/checks.md - read-surface states the chart page's five years and the provider's count
+Corrects: the roster named neither of the 19.11 correction's assertions.
+Was:
+> `read-surface`: ... each worked from the stored rows by the suite's own query |
+Now:
+> Added without replacing anything: every fixture name's chart page at every interval drawing five years as its longest span and no ten-year row, and a name whose filer files no share count drawing the provider's count off its newest quarter's balance sheet named as the provider's.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - CLAUDE.md - the Document lifecycle reads an archive as the earlier part of its record and the record as append only across the pair, and condition 8 states the figures before the run
 Authorised by: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
 Was:

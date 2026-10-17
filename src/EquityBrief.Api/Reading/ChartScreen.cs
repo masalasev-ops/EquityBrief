@@ -32,7 +32,8 @@ public sealed record ChartInputs(
     LongViewRow? LongView,
     IReadOnlyList<StoredPick> Peers,
     CalendarRow? NextEvent,
-    DateOnly? ReportWritten);
+    DateOnly? ReportWritten,
+    (DateOnly Quarter, decimal Shares)? ProviderShares = null);
 
 // The chart page's figures, worked when the page is read from what the store holds: the candles at the interval shown,
 // rolled up in the core, each with the averages the name page draws at its last session; and the grid, every figure
@@ -205,7 +206,9 @@ public static class ChartScreen
                 : Missing("Market value, the provider's"),
             count is { } shares
                 ? new GridFigure("Shares outstanding", FormattableString.Invariant($"{Figures.Shares(shares.Value)} as of {shares.End:yyyy-MM-dd}"), shares.Value.ToString(CultureInfo.InvariantCulture))
-                : Missing("Shares outstanding"),
+                : inputs.ProviderShares is { } provided
+                    ? new GridFigure("Shares outstanding", FormattableString.Invariant($"{Figures.Shares(provided.Shares)} at {provided.Quarter:yyyy-MM-dd}, the provider's balance sheet, the filer filing none"), provided.Shares.ToString(CultureInfo.InvariantCulture))
+                    : Missing("Shares outstanding"),
             inputs.Peers.Count > 0
                 ? new GridFigure("Peers", string.Join(", ", inputs.Peers.Select(peer => peer.Ticker)), Links: [.. inputs.Peers.Select(peer => (peer.Ticker, SinglePageApp.ChartRoute + Uri.EscapeDataString(peer.Ticker)))])
                 : Missing("Peers"),

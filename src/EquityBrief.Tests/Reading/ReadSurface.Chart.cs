@@ -104,8 +104,9 @@ public partial class ReadSurface
 
     // Each span is the newest close over the close it reaches back to, less one, worked by hand: the sessions spans over
     // the stored sessions, the year to date over the last close of the year before, one year over the store's own session
-    // a year back where it holds one and over the month-end closes where it does not, three years over them, and five and
-    // ten years none where they reach no further.
+    // a year back where it holds one and over the month-end closes where it does not, and three and five years over them,
+    // none where they reach no further. Five years is the longest, the one the history pulled from 2018 reaches, and no
+    // ten years is drawn.
     [Fact]
     public void EachSpanIsTheNewestCloseOverTheCloseItReachesBackToAndNoneWhereTheStoredFiguresAreShort()
     {
@@ -136,7 +137,7 @@ public partial class ReadSurface
 
         double Over(decimal from) => (double)((newest.Close / from) - 1);
 
-        Assert.Equal(["week", "month", "quarter", "half year", "year to date", "one year", "three years", "five years", "ten years"], ChartSeries.Performance(stored, monthEnds).Select(span => span.Span));
+        Assert.Equal(["week", "month", "quarter", "half year", "year to date", "one year", "three years", "five years"], ChartSeries.Performance(stored, monthEnds).Select(span => span.Span));
         Assert.Equal(Over(224m), spans["week"].Return!.Value, 12);
         Assert.Equal(stored[124].Session, spans["week"].From);
         Assert.Equal(Over(208m), spans["month"].Return!.Value, 12);
@@ -147,14 +148,14 @@ public partial class ReadSurface
 
         // The newest session is 2026-05-29. A year back the last month ended is April 2025's, which the month-ends do not
         // hold, May 2025's ending after the day: none for one year, and not the older 2023 close standing before it.
-        // Three years back April 2023's is held, 2023-04-28; five years back April 2021's, 2021-04-30; ten none.
+        // Three years back April 2023's is held, 2023-04-28; five years back April 2021's, 2021-04-30.
         Assert.Equal(Day("2026-05-29"), newest.Session);
         Assert.Null(spans["one year"].Return);
         Assert.Equal(Over(48m), spans["three years"].Return!.Value, 12);
         Assert.Equal(Day("2023-04-28"), spans["three years"].From);
         Assert.Equal(Over(30m), spans["five years"].Return!.Value, 12);
         Assert.Equal(Day("2021-04-30"), spans["five years"].From);
-        Assert.Null(spans["ten years"].Return);
+        Assert.DoesNotContain("ten years", spans.Keys);
         Assert.Equal(Over(80m), ChartSeries.Performance(stored, [.. monthEnds, (Day("2025-04-30"), 80m)]).Single(span => span.Span == "one year").Return!.Value, 12);
 
         // A store holding the day a year back reads one year off its own close of that session, as the store keeps a year
@@ -220,6 +221,36 @@ public partial class ReadSurface
             var daily = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAPL"));
             var weekly = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/AAPL?interval=weekly"));
 
+            // No chart page draws a span longer than the history pulled from 2018 reaches: every fixture name's page at every
+            // interval ends its performance on five years and draws no ten-year row.
+            var names = new List<string>();
+
+            using (var connection = store.Open())
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT DISTINCT ticker FROM bar ORDER BY ticker;";
+
+                using var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    names.Add(reader.GetString(0));
+                }
+            }
+
+            Assert.True(names.Count >= 4, $"The fixture holds {names.Count} names' bars.");
+
+            foreach (var held in names)
+            {
+                foreach (var interval in new[] { "daily", "weekly", "monthly" })
+                {
+                    var page = await client.GetStringAsync($"/screens/chart/{held}?interval={interval}");
+
+                    Assert.Contains("<dt>Five years</dt>", page, StringComparison.Ordinal);
+                    Assert.DoesNotContain("<dt>Ten years</dt>", page, StringComparison.Ordinal);
+                }
+            }
+
             // A week of the stored year worked by hand from its daily bars: a whole week whose highest high and lowest low
             // fall on neither its first session nor its last, so a candle reading either end's figures for the week's is
             // another candle.
@@ -248,9 +279,17 @@ public partial class ReadSurface
 
             Assert.Equal((double)((bars[^1].Close / bars[^64].Close) - 1), quarter, 12);
 
-            // The fixture files no fact for AAPL's filer, so its shares say not stored.
+            // The fixture files no fact for AAPL's filer, so its shares are the provider's balance sheet's, from the newest
+            // quarter its newest quarters fetch holds them for, read off the store by the suite's own query and named as the
+            // provider's, from the 19.11 correction of 2026-10-16.
             Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM filed_fact WHERE cik = (SELECT cik FROM company WHERE ticker = 'AAPL' AND cik IS NOT NULL ORDER BY fetched_at DESC LIMIT 1);"));
-            Assert.Contains($"<dt>Shares outstanding</dt><dd class=\"degraded\">{SinglePageApp.NotStored}</dd>", daily, StringComparison.Ordinal);
+
+            var provided = Assert.Single(Rows(store, "SELECT period_end, shares FROM reported_quarter WHERE ticker = 'AAPL' AND shares IS NOT NULL AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = 'AAPL') ORDER BY period_end DESC LIMIT 1;"));
+            var shares = decimal.Parse(provided[1], NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture);
+
+            Assert.Matches(
+                $"<dt>Shares outstanding</dt><dd data-value=\"{Regex.Escape(shares.ToString(CultureInfo.InvariantCulture))}\">[^<]+ at <span class=\"nw\">{provided[0]}</span>, the provider's balance sheet, the filer filing none</dd>",
+                daily);
 
             // The page asks for nothing but the delayed quote: no picture or script it loads, and no route on it but the
             // quote's, which the shell's script asks inside the session alone.

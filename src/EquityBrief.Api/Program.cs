@@ -300,7 +300,8 @@ app.MapGet("/screens/chart/{ticker}", async (string ticker, string? interval, st
         await read.LongViewAsync(ticker),
         NameScreen.PickedPeers(ticker, await read.PeerReadingsAsync()),
         await read.NextEventAsync(ticker, bars.Count > 0 ? bars[^1].SessionDate : DateOnly.MinValue),
-        member?.Researched));
+        member?.Researched,
+        await read.ProviderSharesAsync(ticker)));
 
     var mast = new NameMast(member?.Name, member?.Sector, member?.Industry, NameScreen.DayChange(ticker, bars), Universes.ByCode(indexCode ?? string.Empty)?.Name);
     var drawn = bars.Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume)).ToArray();
