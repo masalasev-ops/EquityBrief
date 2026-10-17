@@ -2304,3 +2304,91 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the sign-offs of phases 16, 17, 18 and 19, phase 16's by a fresh session, since this one committed code.
+
+### Phase 16 sign-off                                                        2026-10-17
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. This is the second review of phase 16. The first, over 7cc9a83a on
+            2026-10-17, signed nothing over G1 to G4, which the 16.2, 19.10, 16.3, 16.3 and 16.5 corrections of PR 482
+            and the 16.2 correction of PR 483 corrected. This review read 7cc9a83a..8cc8c8ca, 18 files, +491 -66, five
+            of them shipped source, +91 -37, and signs over 8cc8c8ca.
+Verified:   by re-running both gates on `main` at 8cc8c8ca before this entry: `tools/ci.ps1` green end to end,
+            19:34:04 to 19:57:10 UTC, all six steps, 0 warnings, 0 errors, 2417 of 2417 tests passing inside it,
+            migrations 0 to 97 applied against `data-ci/` and then none pending at schema version 97, exit 0;
+            `tools/verify-phase.ps1` green, reading that run's suite result over the same commit and a clean tree, at
+            60 tables, 1340 claims, 1340 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1351 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names, 43
+            checks on the roster, 43 carried and 43 passed, none failed or unrun, the suite 2417 of 2417. Over the
+            tree carrying this entry, a record entry alone, the checks that read the record ran filtered in place of
+            the full script, on the operator's standing ruling: 163 of 163 tests passing.
+            Hosted CI for PRs 482 and 483: 6 runs, each pull request's one pushed head under both events and main's
+            push runs for e499db0d and 8cc8c8ca, 12 jobs, case-sensitivity and macOS on each, all green. PR 482 merged
+            at 16:28:06 UTC, before any of its four jobs finished, the first at 16:30:23; all four went green. PR
+            483's four jobs were green before its merge at 17:17:56.
+Plan:       checkpoints 16.0 to 16.5 are in `BUILD_PLAN.md` and recorded with their rulings and corrections, 15
+            entries in `docs/archive/PROGRESS-phases-0-to-18.md` and the five corrections of 2026-10-17 above. The
+            carried obligations hold 116 rows, 83 discharged, 33 operating and none open; phase 16's operating row is
+            carried below.
+Read:       G1 to G4 against the corrected code and their six entries. G1: a Taken press refuses a fill dated before
+            the session after the pick's night, on a day that is no session, or past the calendar's table before the
+            session check is asked; the exit's one statement requires no exit, no end and a fill on or before its date,
+            and a refusal reads the trade back to say which. G2: the card, 15.18, Figure 15.2 and its key, section 16's
+            row, SCHEMA, the guide and the roster say the rule's own picks are bought at the next session's open; the
+            migration's comment alone keeps its words, as history. G3: a kept dividend paying in no whole year is read
+            at its bars' steps, and a later date is unread where the kept dividend holds no rate, no ex-date or no
+            count. G4: each of m6, m7, m10, m13 and m15 now red at its assertion.
+Store:      read-only, schema 97, newest session 2026-10-16: `decision_card` 27, the S&P 500's 12 and the S&P 600's
+            15; `rule_record` 12; `dividend_reading` 2,011, its newest rows 1,505, 1,001 paying, 504 at nothing and
+            none filing no rate; `taken_trade` and `taken_record` empty; no `data/account.json`. The decision cards'
+            stage took 5 s on 2026-10-15 and 2026-10-16 and the follower 0 s.
+Screens:    on 5152, the Release build of e499db0d, whose shipped source is main's, read by GET alone under each
+            Universe choice. TRV's S&P 500 and INDB's S&P 600 drift cards of 2026-10-16 match their rows, each
+            estimated ex-date worked by hand: TRV's 2026-09-10 plus a year over 2025's four, 91 days, 2026-12-10, 5.00
+            / 4 = 1.25 a share and 0.06 of its 20.91 risk; INDB's 2026-09-28 plus 91, 2026-12-28, 0.64 and 0.35 of
+            1.82. Neither draws the operator's record, `taken_record` being empty; the S&P 400 draws no card; Your
+            trades says none on each index; the Run page's decision cards and follower rows equal `run_log`; the
+            account page reads Not set. Nothing was pressed.
+Night:      2026-10-12, carried here by phase 15's sign-off. Its three scheduled tries stopped at the fetch on LUMN's
+            refused bar, and `night-20261013T013029Z`, started by hand at 01:30 UTC, ran it whole. The index families'
+            stage read the S&P 500's 502 members, the S&P 400's 400 at a breadth of 0.44 with its lists closed and the
+            S&P 600's 602 at 0.49, its own books carried with 7 held each. The S&P 600's two registered heavyweights
+            books, rows 284 and 285 registered again as 304 and 305 at 21:15:52 UTC that day, each waited, holding 251
+            sessions to 2026-10-12 against the 252 their readings need; they rebalanced on 2026-10-13, buying 7 and 6,
+            every holding with a lead, and carried the 13 through 2026-10-16.
+Swept:      25 mutations, each predicted before its run, made on this branch in this checkout over the file's own text
+            and restored from it, the tree's diff the same after the sweep as before, each filtered to the tests of
+            the files reaching it. The first review's m1 to m17, each red where predicted: m1 in 19.4's paper walk
+            alone, and m6, m7, m10, m13 and m15, which survived the first review, each at its new assertion. The
+            handoff's seven: (n1) the table's reach dropped from the fill's session check: red at the press test, a
+            fill dated 2028-01-03 answering 500. (n2) the exit's statement losing its no-exit clause: red there, a
+            second exit recorded. (n3) the read-back's first two arms swapped: green, as predicted. (n4) a kept rate
+            of nothing read as unread: red at the reading's test and two card tests. (n5) a kept row filing no rate
+            read as estimable: red at the reading's test. (n6) the steps read for every kept payer: green, as
+            predicted. (n7) the unread line back to its old words: red at both card tests drawing it. This review's
+            own (n8), the night's own year read as whole: red at the reading's test and the kept dividend's card test.
+            n3 and n6 together over the whole suite: 2417 of 2417 green, as predicted.
+Judged:     the handoff's five judgement calls stand. An exit date checked neither for a session nor for a day after
+            today: the follower reads an exit once the night reaches its date and needs no bar on it. A fill dated
+            after today: the default fill, the session after the night, is a future date when the card is pressed. G3
+            needing no new decision: the decision states the steps as the reading of a dividend's interval and an
+            interval the steps cannot read as leaving a hold unread, and the correction applies them where the kept
+            years give none. The one unread sentence: it names the last date and the usual interval, true of every
+            unread case the store can hold today; a kept row filing no rate, which the decision also leaves unread,
+            would hold both, and none of the 1,505 newest does. The same nights' card test's hand-written row: the
+            follower's buying at the open is held by its own same-open test.
+            (n6) is equivalent: `TimesAYear` reads the last whole year's count before the steps, so the steps change
+            no figure for a payer holding one.
+Found:      no defect in shipped code. One test defect, carried below: (n3) is a missing property. The exit press's
+            read-back names a recorded exit before the follower's end, and no test presses an exit on a trade holding
+            both, the state of a trade the operator exited that a night has since followed, which the follower ends
+            by its "exit"; swapped, that refusal says the night ended the trade by its rule's exit. The code is right;
+            the exit control is drawn only on open trades, so only a page loaded before the exit reaches it. Asked at
+            about 20:29 UTC on 2026-10-17 whether to sign with it carried or have it corrected first, the operator
+            ruled: "Sign now, n3 carried".
+Carried:    (n3), the press test pressing an exit on a trade holding both an exit and the follower's end, owed by the
+            next change to the exit press. Phase 16's operating row, "The card and the follower read within their time
+            on the first five nights": its time half, the two steps together under the 10 seconds proposed,
+            read 1, 1, 6, 8, 5, 1, 5 and 5 seconds on the eight nights from 2026-10-07 to 2026-10-16; its growth half
+            waits on ruling (a) of 2026-10-11, after 2026-11-01. No real trade followed, no card drawn in shares and
+            none of G3's seven payers on a card on the live store, each verified by the suite alone and read on the
+            first night one occurs. Phases 17, 18 and 19 are signed after this one, each by its own session.
+Signed:     phase 16, over 8cc8c8ca.
