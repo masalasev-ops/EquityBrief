@@ -40,7 +40,7 @@ public partial class ReadSurface
         (string Heading, string Classes, string Shown, string Says)[] fixedColumns =
         [
             ("#", "place tipped", "#", "The row's place in the order the list is drawn in, counted from one."),
-            ("Name", "tipped", "Name", "The ticker selects the row and draws its plan and levels beneath the list. Beside it, report opens the stock's written report, or not written opens its page where no report is written yet, and the company is named beneath."),
+            ("Name", "tipped", "Name", "The ticker opens the stock's chart page, and a press anywhere else on the row selects it and draws its plan and levels beneath the list. Beside it, report opens the stock's written report, or not written opens its page where no report is written yet, and the company is named beneath."),
             ("Close", "r tipped", "Close", "The stock's closing price on the evening."),
             ("Day", "r tipped", "Day", "How far the close moved on the day against the close before it, in per cent."),
             ("Trend", "tipped", "Trend", SaidOf("Trend") + " Beside it, where the night read one, the state the company's reported quarters gave it, with what its numbers say under the pointer."),

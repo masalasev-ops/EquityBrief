@@ -20,7 +20,7 @@ public sealed partial class MarkRenderer
     [
         ("Setup", "The setup that lists the stock tonight, in its hue."),
         ("#", "The row's place in the table, counted from one across every setup, each setup's picks in its own order."),
-        ("Stock", "The ticker selects the row and draws its plan and its card beneath it. Beside it, card opens the pick's card, report opens the stock's written report or not written its page, and the company is named beneath. A label names another setup the stock also qualified under tonight."),
+        ("Stock", "The ticker opens the stock's chart page, and a press anywhere else on the row selects it and draws its plan and its card beneath it. Beside it, card opens the pick's card, report opens the stock's written report or not written its page, and the company is named beneath. A label names another setup the stock also qualified under tonight."),
         ("Business", "The state the company's reported quarters gave it on the night, with what its numbers say under the pointer. It removes no stock from the table."),
         ("Buy", "The evening's close the plan is set at and sized from. The pick buys at the next open, the open of the session after tonight."),
         ("Stop", "The price a close beneath ends the trade at a loss, or the first level of a stop that trails the price."),
