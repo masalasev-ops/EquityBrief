@@ -56,7 +56,7 @@ public sealed record CardHitsView(
 // The operator's own record of the card's family on its index, as the night's follower wrote it.
 public sealed record CardOperatorRecordView(string Unit, int Won, int Lost, int Ended, int Open, double? Average, int Minimum, bool Trailing, CardSameNightsView? SameNights = null);
 
-// The rule's own picks listed on the nights the operator took one, each followed from the plan's buy: how many nights,
+// The rule's own picks listed on the nights the operator took one, each bought at the next session's open: how many nights,
 // how many picks, won, lost and ended, and the average once enough have ended.
 public sealed record CardSameNightsView(int Nights, int Listed, int Won, int Lost, int Ended, double? Average);
 
@@ -279,7 +279,7 @@ public sealed partial class MarkRenderer
         body.Append(hits.DividendDate is { } paid
             ? Formatted($"<li data-hit=\"dividend\" data-declared=\"{(hits.DividendDeclared ? "yes" : "no")}\">Ex-dividend {DayOf(paid)}, {(hits.DividendDeclared ? "declared" : "estimated from the company's last declared date and its usual interval")}{Paid(hits)}.</li>")
             : hits.DividendUnread
-                ? "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one from, so one later in the hold is not ruled out.</li>"
+                ? "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>"
                 : "<li data-hit=\"dividend\">No ex-dividend date inside the hold, declared or estimated.</li>");
 
         foreach (var (date, name) in hits.Events)
@@ -310,8 +310,9 @@ public sealed partial class MarkRenderer
 
     // The operator's own record of the card's family on its index, under the rule's heading and never the stock's:
     // won, lost and open, or ended for a rule setting no target, and the average result once enough have ended, a dashed
-    // outline saying how many have before. Beneath it the rule's own picks listed on the same nights, bought at the plan's
-    // buy and counted the same way, so what differs between the two is the operator's choices and fills.
+    // outline saying how many have before. Beneath it the rule's own picks listed on the same nights, bought at the next
+    // session's open as a taken trade's fill is and counted the same way, so what differs between the two is the
+    // operator's choices and fills.
     // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
     static string OperatorRecord(DecisionCardView card)
     {
@@ -347,7 +348,7 @@ public sealed partial class MarkRenderer
             ? Formatted($" An average of {read.ToString("0.00", Invariant)} {(mine.Unit == "percent" ? "per cent" : "of the risk")} a trade over the {rule.Ended} that ended.")
             : Formatted($" {rule.Ended} of {mine.Minimum} ended: the average is drawn once {mine.Minimum} have.");
 
-        return Formatted($"<p class=\"card-same-nights\" data-nights=\"{rule.Nights}\" data-listed=\"{rule.Listed}\" data-average=\"{(rule.Average is { } shown ? shown.ToString("0.00", Invariant) : "none")}\">The rule's own {rule.Listed} {picks} on the same {rule.Nights} {nights}, each bought at the plan's buy: {counts}.{average}</p>");
+        return Formatted($"<p class=\"card-same-nights\" data-nights=\"{rule.Nights}\" data-listed=\"{rule.Listed}\" data-average=\"{(rule.Average is { } shown ? shown.ToString("0.00", Invariant) : "none")}\">The rule's own {rule.Listed} {picks} on the same {rule.Nights} {nights}, each bought at the next session's open: {counts}.{average}</p>");
     }
 
     // The learned score's part beneath the rule's record, under the rule's heading and never as the stock's own: the pick's

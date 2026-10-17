@@ -265,6 +265,9 @@ public partial class FixtureExpectations
         Assert.Equal(At(2026, 10, 6, 23, 50), NewsLabelling.EndsBy(At(2026, 10, 6, 23, 30), limit, pricing));
         Assert.Equal(At(2026, 10, 7, 10, 10), NewsLabelling.EndsBy(At(2026, 10, 7, 5, 50), limit, pricing));
         Assert.Equal(At(2026, 10, 7, 4, 20), NewsLabelling.EndsBy(At(2026, 10, 7, 3, 59, 59), limit, pricing));
+
+        // A limit ending exactly as the second window opens, from 05:40, ends at 06:00 and does not wait the window out.
+        Assert.Equal(At(2026, 10, 7, 6, 0), NewsLabelling.EndsBy(At(2026, 10, 7, 5, 40), limit, pricing));
         Assert.Equal(At(2026, 10, 3, 2, 20), NewsLabelling.EndsBy(At(2026, 10, 3, 2, 0), limit, pricing));
         Assert.Equal(At(2026, 10, 7, 1, 55), NewsLabelling.EndsBy(At(2026, 10, 7, 1, 35), limit, null));
     }

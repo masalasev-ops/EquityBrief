@@ -26,6 +26,102 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states a labeller's limit ending exactly as a window opens
+Corrects: the roster named none of the 16.5 correction's assertion of 2026-10-17, a boundary 16.5 states that phase 16's first sign-off review found no test holding.
+Was:
+> `fixture-expectations`: ... and a dividend answer storing no member's date removing nothing the window held |
+Now:
+> Added without replacing anything: a labeller's limit ending exactly as a peak window opens ending there and not after the window.
+Why: a roster row names what its check asserts.
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states four of 16.3's boundaries no test held
+Corrects: the roster named none of the second 16.3 correction's assertions of 2026-10-17, each a boundary 16.3 states that phase 16's first sign-off review found no test holding.
+Was:
+> `fixture-expectations`: ... and one holding no rate, no ex-date or no count leaving a later date unread |
+Now:
+> Added without replacing anything: a raised stop never lowered by a falling close, an open exactly at the stop read at the plan's distance, a rise of exactly a fiftieth of a per cent read as a step, and a dividend answer storing no member's date removing nothing the window held.
+Why: a roster row names what its check asserts.
+
+### 2026-10-17 - ARCHITECTURE.html - a kept dividend paying in no whole year is read at its bars' steps, and a later date is unread where nothing kept carries one forward
+Corrects: a dividend the quarters fetch kept, paying above nothing, whose years held no whole year that paid estimated nothing, and the card marked a later date unread only where nothing was kept, so it said no ex-dividend date fell inside the hold, the shape the 16.3 correction of 2026-10-07 fixed for a company with nothing kept; 7 of the 1,001 kept payers on the store of 2026-10-16, PLMR, RNG, VTOL, MBGL, VGNT and VSNT on the S&P 600 and SOLS on the S&P 400; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, what could hit the trade: ... the dividend the quarters fetch kept, its interval a year over the count of its last whole year that paid, or where it has kept none the dividend part of the newest fundamentals fetch, ... Where the calendar declares none and the store holds no dividend of the company's to estimate from, the quarters fetch keeping one from the night after the company next reports and a fundamentals fetch standing in only where the bars show its interval, a hold running past the sessions the calendar is asked for says a later date is not ruled out, ...
+Now:
+> ... its interval a year over the count of its last whole year that paid, or where its years hold no whole one that paid, over the payments a year its bars' steps show, or where it has kept none ... Where the calendar declares none and the store holds no dividend of the company's with a last date and an interval to estimate from, the quarters fetch keeping one from the night after the company next reports, a fundamentals fetch standing in only where the bars show its interval, and a kept one holding no rate or no ex-date or showing no interval in its years or its bars, a hold running past the sessions the calendar is asked for says a later date is not ruled out, ...
+Why: a dividend kept that cannot be carried forward says nothing about the hold, as the decision says of a fetch filing no rate or no ex-date and of bars showing fewer than two steps (see: A pick's next ex-dividend date is the calendar's where it declares one, and otherwise estimated from the dividend the quarters fetch kept or else from the newest fundamentals fetch and the steps its dividends leave in the bars).
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations and read-surface state a kept dividend with no whole year read at its steps or left unread
+Corrects: the roster named none of the 16.3 correction's assertions of 2026-10-17.
+Was:
+> `fixture-expectations`: ... where a filer filing nothing in it reads nought on its buyers and its officer |
+> `read-surface`: ... an exit on a trade the follower ended each refused with why and nothing written |
+Now:
+> Added without replacing anything: a kept dividend paying in no whole year before the night's read at the payments a year its bars' steps show, and one holding no rate, no ex-date or no count leaving a later date unread; and a card whose kept dividend pays in no whole year before the night's drawing the date estimated at its bars' steps, and a later date unread where they show no interval or the dividend holds no ex-date.
+Why: a roster row names what its check asserts.
+
+### 2026-10-17 - ARCHITECTURE.html - the rule's own picks beside the operator's record are bought at the next session's open
+Corrects: from 19.10 the follower buys the rule's own picks on the nights the operator took one at the next session's open, as a taken trade's fill is (see: A trade's entry is priced at the next session's open by a fill step of its own, and no rule's version moves because of it), while 15.18, the card's figure and its key, and section 16's Taken records row still said each was bought at or followed from the plan's buy, and the card drew the same words; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, the operator's record: Beneath it stand the rule's own picks listed on the same nights, each followed from the plan's buy under the same management and counted the same way, ...
+> Figure 15.2's sixth part: The rule's own nn picks on the same n nights, each bought at the plan's buy: n won, n lost
+> Its key's part 6: ... and beneath them the rule's own picks on the same nights, each bought at the plan's buy.
+> 16, Taken records: ... and the same over the rule's own picks listed on the nights the operator took one, each followed from the plan's buy
+Now:
+> Each says the rule's own picks are bought at the next session's open, 15.18 adding as a taken trade's fill is, followed under the same management and counted the same way.
+Why: the card states how the rule's picks beside the operator's were bought, and since 19.10 that is the next session's open.
+
+### 2026-10-17 - SCHEMA.md - taken_record's rule columns are over picks bought at the next session's open
+Corrects: the table's `rule_won` note and its paragraph still said the rule's own picks were followed from the plan's buy, as the architecture's entry above states.
+Was:
+> `rule_won`: those picks ended at their target, followed from the plan's buy; none for a rule setting no target
+> ... each followed under the same management from the plan's buy as its night traded, so the two rows differ ...
+Now:
+> `rule_won`: those picks ended at their target, each bought at the next session's open; none for a rule setting no target
+> ... each bought at the next session's open as a taken trade's fill is and followed under the same management, so the two rows differ ...
+Why: the schema states what the follower writes.
+
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states the rule's own picks bought at the next session's open
+Corrects: the 16.3 clause said each pick was followed from the plan's buy and not the next session's open, where from 19.10 its test works each pick bought at the next session's open.
+Was:
+> `fixture-expectations`: ... and beside it the rule's own picks listed on the nights the operator took one, each followed from the plan's buy and not the next session's open, worked by hand at nineteen ended and at twenty ...
+Now:
+> ... each bought at the next session's open as a taken trade's fill is, worked by hand at nineteen ended and at twenty ...
+Why: a roster row names what its check asserts.
+
+### 2026-10-17 - ARCHITECTURE.html - a Taken press refuses a fill dated on no session or before the session after the pick's night, and an exit before its fill or on a trade the follower ended
+Corrects: a Taken press checked an entered date only for being a day, so a Saturday, the pick's own night and a day before it were stored, and the follower, which reads a trade only from its fill's own session after the night, never followed them, leaving the record counting them open for good; and an exit press checked only that no exit was recorded, so an exit dated before the fill ended the trade before it began and one on a trade the follower had ended was recorded, where section 18's row said an exit press on a trade already ended writes nothing; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, the card's presses: A fill at or under the stop, a stock already holding an open taken trade, a card stating no buy and a press without the page's own header are refused, ... and after that the operator records an exit with its price and its date.
+> 18, A press on a pick's card the card refuses: a Taken press with a fill at or under the stop, for a stock already holding an open taken trade, ... an exit press on a trade already ended, ...; why: ... and a trade a night has followed is already part of the operator's record
+Now:
+> 15.18 adds a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar among the refusals, and an exit refused where it is dated before the fill or the night's follower has ended the trade.
+> 18's row: a Taken press with a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and an exit press on a trade the operator has exited or the night's follower has ended or dated before its fill, each writes nothing and answers with why; its why adds that a fill dated where the follower reads no session of the trade's leaves it open in the record for good, and an exit before its fill or on a trade the follower ended ends a trade before it began or a second time.
+Why: a press the follower can never read, or one ending a trade before its fill or a second time, puts a figure in the operator's record that no session traded.
+
+### 2026-10-17 - SCHEMA.md - taken_trade's presses refuse a fill dated on no session or before the session after the pick's night, and an exit before its fill or on an ended row
+Corrects: the table's paragraph named the presses' refusals before the 16.2 correction of 2026-10-17, as the architecture's entry above states.
+Was:
+> A Taken press inserts a row from the card the store holds, refused for a stock already holding an open trade, a fill at or under the stop and a card stating no buy; ... and an exit press records the exit on an open row.
+Now:
+> ... refused for a stock already holding an open trade, a fill at or under the stop, a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and a card stating no buy; ... and an exit press records the exit on a row holding no exit and not ended by the follower, dated on or after its fill.
+Why: the paragraph states what each press writes and refuses.
+
+### 2026-10-17 - RUNBOOK.md - the Taken press's refusals name a fill's date and an exit's
+Corrects: the runbook named the presses' refusals before the 16.2 correction of 2026-10-17, as the architecture's entry above states.
+Was:
+> A fill at or under the stop and a second open trade in one stock are refused. Not taken removes a trade only before a night has followed it and while it holds no exit; after that, record its exit with its price and date.
+Now:
+> A fill at or under the stop, a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and a second open trade in one stock are refused. ... after that, record its exit with its price and date, which is refused where it is dated before the fill or the night has already ended the trade.
+Why: the runbook tells the operator what each press refuses.
+
+### 2026-10-17 - .claude/rules/checks.md - read-surface states the presses' date refusals and the exit's
+Corrects: the roster named none of the 16.2 correction's assertions of 2026-10-17.
+Was:
+> `read-surface`: ... on the market line and on a card's line |
+Now:
+> Added without replacing anything: a fill dated on a Saturday, on a holiday, past the calendar's table, on the pick's night and before it, an exit dated before its fill, a second exit and an exit on a trade the follower ended each refused with why and nothing written.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - Figure 11.4 draws the edge clock's looks as monitoring
 Corrects: the figure's lower lane ended on "earliest promotion" and its description and key said a look may promote a variant, where from 17.14 a look is monitoring and a rule changes only on the operator's approval of a tested proposal; carried since 19.7 and corrected before the sign-offs.
 Was:

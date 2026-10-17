@@ -78,6 +78,29 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task AnAnswerStoringNoMembersDateRemovesNothingTheWindowHeld()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // EIX on the S&P 500, its date of 10-09 stored inside the window; the answers name only LEN-B and a Hong Kong
+        // listing, members of no index the night reads, so no member's date is stored and EIX's stands.
+        store.Execute("INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) VALUES ('GSPC', 'EIX', NULL, NULL, '2026-10-01T21:00:00Z');");
+        store.Execute("INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) VALUES ('EIX', '2026-10-09', 'ex-dividend', 'unstated', '{}', '2026-10-05T23:40:00Z');");
+
+        var dividends = RecordedDividendCalendarFeed.Of(new Dictionary<DateOnly, string>
+        {
+            [new DateOnly(2026, 10, 7)] = DividendAnswer("2026-10-07", "LEN-B.US", "1339.HK"),
+        });
+
+        var outcome = await new CalendarFetcher(new RecordedEarningsCalendarFeed(string.Empty), new SweepClock(new DateTimeOffset(2026, 10, 6, 23, 40, 0, TimeSpan.Zero)), store.DatabaseFile, dividends)
+            .RunAsync("GSPC", new DateOnly(2026, 10, 6), "night-none-stored");
+
+        Assert.Equal((21, 0), (dividends.Requests, outcome.ExDividends));
+        Assert.Null(outcome.DividendsFault);
+        Assert.Equal(["EIX 2026-10-09"], Rows(store, "SELECT ticker || ' ' || event_date FROM calendar WHERE kind = 'ex-dividend';"));
+    }
+
+    [Fact]
     public async Task TheDividendAskCostsTwentyOneRequestsWhateverTheIndexsSize()
     {
         async Task<int> Asked(int members)

@@ -9,6 +9,15 @@ namespace EquityBrief.Tests.Reading;
 // see: The operator's own record states its average result once twenty of its trades in a family and index have ended
 public partial class ReadSurface
 {
+    // M1's stored closes stepping on 2025-11-10, 2026-02-09, 2026-05-11 and 2026-08-10, 91 days apart, against a raw
+    // close of 50.00: a dividend paid four times a year.
+    const string DividendStepBars =
+        "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+        "('M1', '2025-11-07', '48.92', '51', '48', '48.92', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2025-11-10', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+        "('M1', '2026-02-06', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-02-09', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+        "('M1', '2026-05-08', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-05-11', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
+        "('M1', '2026-08-07', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-08-10', '50', '51', '48', '50', 1000000, 'test', '2026-10-02T21:00:00Z', '50');";
+
     [Fact]
     public async Task APicksCardDrawsWhatCouldHitItAndTheOperatorsRecordOfItsFamily()
     {
@@ -50,7 +59,7 @@ public partial class ReadSurface
         // it; the stock's page for an earlier night draws none of it.
         Assert.Contains(
             "<section class=\"card-mine outline\"><h5>Your trades of the breakout on the S&P 400</h5><p>3 ended and 1 open.</p><p class=\"degraded\" data-average=\"none\">3 of 20 ended: the average is drawn once 20 have.</p>" +
-            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The rule's own 6 picks on the same 2 nights, each bought at the plan's buy: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
+            "<p class=\"card-same-nights\" data-nights=\"2\" data-listed=\"6\" data-average=\"none\">The rule's own 6 picks on the same 2 nights, each bought at the next session's open: 4 ended and 2 open. 4 of 20 ended: the average is drawn once 20 have.</p></section>",
             card,
             StringComparison.Ordinal);
         Assert.DoesNotContain("card-mine", System.Net.WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/M1/{IndexNight}")), StringComparison.Ordinal);
@@ -105,7 +114,7 @@ public partial class ReadSurface
             using var client = host.CreateClient();
 
             Assert.Contains(
-                "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and no dividend of the company's is stored yet to estimate a later one from, so one later in the hold is not ruled out.</li>",
+                "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>",
                 await CardRowOf(client, "MID", "breakout", "M1"),
                 StringComparison.Ordinal);
         }
@@ -131,12 +140,7 @@ public partial class ReadSurface
         // and an ex-date of 2026-08-10, and its stored closes step on 2025-11-10, 2026-02-09, 2026-05-11 and 2026-08-10,
         // 91 days apart, against a raw close of 50.00: four a year, so 2026-08-10 plus 91 days is 2026-11-09, inside the
         // breakout's hold through 2027-01-04, 1.08 / 4 = 0.27 a share and 0.27 / 2.70 = 0.10 of the risk.
-        const string Steps =
-            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
-            "('M1', '2025-11-07', '48.92', '51', '48', '48.92', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2025-11-10', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
-            "('M1', '2026-02-06', '49.19', '51', '48', '49.19', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-02-09', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
-            "('M1', '2026-05-08', '49.46', '51', '48', '49.46', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-05-11', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), " +
-            "('M1', '2026-08-07', '49.73', '51', '48', '49.73', 1000000, 'test', '2026-10-02T21:00:00Z', '50'), ('M1', '2026-08-10', '50', '51', '48', '50', 1000000, 'test', '2026-10-02T21:00:00Z', '50');";
+        const string Steps = DividendStepBars;
         const string Paying = "{\"dividend\":{\"forwardAnnualRate\":\"1.08\",\"forwardYield\":\"0.0216\",\"payoutRatio\":\"0.3\",\"exDividendDate\":\"2026-08-10\",\"payDate\":\"2026-08-13\"}}";
         const string PayingNone = "{\"dividend\":{\"forwardAnnualRate\":\"0\",\"forwardYield\":\"0\",\"payoutRatio\":\"0\",\"exDividendDate\":null,\"payDate\":null}}";
         const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\">Ex-dividend 2026-11-09, estimated from the company's last declared date and its usual interval, 0.27 a share, 0.10 of the risk.</li>";
@@ -155,6 +159,44 @@ public partial class ReadSurface
             ([Filing(Paying), Steps], Estimated),
             ([Copy(PayingNone), Filing(Paying), Steps], None),
             ([Copy(Paying)], Unread),
+        ];
+
+        foreach (var (rows, expected) in cases)
+        {
+            using var store = TakenStore();
+
+            foreach (var row in rows)
+            {
+                store.Execute(row);
+            }
+
+            await new DecisionCards(new WaitedClock(new DateTimeOffset(2026, 10, 2, 23, 50, 0, TimeSpan.Zero)), store.DatabaseFile).RunAsync("cards");
+
+            using var host = new Host(store.Root);
+            using var client = host.CreateClient();
+
+            Assert.Contains(expected, await CardRowOf(client, "MID", "breakout", "M1"), StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public async Task APicksCardReadsAKeptDividendWithNoWholeYearAtItsBarsStepsAndOtherwiseLeavesALaterDateUnread()
+    {
+        // M1's kept dividend pays 1.08 a year, three times so far in the night's year and in no whole year before it, the
+        // last on 2026-08-10. With the bars stepping four times a year: 2026-08-10 plus 91 days is 2026-11-09, inside the
+        // breakout's hold through 2027-01-04, 1.08 / 4 = 0.27 a share and 0.27 / 2.70 = 0.10 of the risk. With only the
+        // night's close stored, no interval is read, so a later date is unread and not ruled out; and a kept dividend
+        // holding no ex-date leaves it unread the same way, however its bars step.
+        const string Kept = "INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES ('M1', '2026-10-01T23:00:00Z', '1.08', '2026-08-10', '[{\"year\":2026,\"count\":3}]');";
+        const string KeptNoDate = "INSERT INTO dividend_reading (ticker, fetched_at, forward_rate, last_ex_date, by_year) VALUES ('M1', '2026-10-01T23:00:00Z', '1.08', NULL, '[{\"year\":2025,\"count\":4}]');";
+        const string Estimated = "<li data-hit=\"dividend\" data-declared=\"no\">Ex-dividend 2026-11-09, estimated from the company's last declared date and its usual interval, 0.27 a share, 0.10 of the risk.</li>";
+        const string Unread = "<li data-hit=\"dividend\" data-declared=\"unread\">No ex-dividend date is declared in the sessions the calendar is asked for, and the store holds no dividend of the company's with a last date and a usual interval to estimate a later one from, so one later in the hold is not ruled out.</li>";
+
+        (string[] Rows, string Expected)[] cases =
+        [
+            ([Kept, DividendStepBars], Estimated),
+            ([Kept], Unread),
+            ([KeptNoDate, DividendStepBars], Unread),
         ];
 
         foreach (var (rows, expected) in cases)

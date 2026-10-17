@@ -134,6 +134,11 @@ public partial class FixtureExpectations
         // 99.981 it is 0.00019004. Fewer than two steps read none.
         Assert.Equal(4, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.9998m), ("2026-01-05", 1.0000m), ("2026-04-02", 0.9998m), ("2026-04-06", 1.0000m))));
         Assert.Null(CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99981m), ("2026-01-05", 1.0000m), ("2026-04-02", 0.99981m), ("2026-04-06", 1.0000m))));
+
+        // A rise of exactly a fiftieth of a per cent is a step: 1.0002 over 1.0000, less one, is 0.0002, so with the step
+        // before it 91 days earlier the bars read four a year where one step alone would read none.
+        Assert.Equal(0.0002m, CardHitsReading.SmallestStep);
+        Assert.Equal(4, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99m), ("2026-01-05", 1.00m), ("2026-04-02", 1.00m), ("2026-04-06", 1.0002m))));
         Assert.Null(CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99m), ("2026-01-05", 1.00m))));
 
         // The payments a year a dividend's steps give estimate its next date where no year's count is filed: four a year
@@ -160,14 +165,26 @@ public partial class FixtureExpectations
         Assert.Equal((new DateOnly(2026, 11, 5), true), (Read(22, [], null).HoldThrough, Read(22, [], null).DividendUnread));
         Assert.True(Read(63, [], null).DividendUnread);
 
-        // A date the calendar declares is drawn whatever is kept, and a dividend kept estimates a date or reads none, so
-        // neither leaves one unread.
+        // A date the calendar declares is drawn whatever is kept, and a dividend kept with a rate, an ex-date and a whole
+        // year's count estimates a date, and one paying none reads none, so none of them leaves one unread.
         Assert.Equal((new DateOnly(2026, 10, 20), false), (Read(63, [new DateOnly(2026, 10, 20)], null).Dividend!.Date, Read(63, [new DateOnly(2026, 10, 20)], null).DividendUnread));
 
         var kept = new DividendKept(1.08m, new DateOnly(2026, 8, 10), [new DividendsInYear(2025, 4), new DividendsInYear(2026, 3)]);
 
         Assert.Equal((new DateOnly(2026, 11, 9), false), (Read(63, [], kept).Dividend!.Date, Read(63, [], kept).DividendUnread));
         Assert.Equal(((DividendAhead?)null, false), (Read(63, [], new DividendKept(0m, null, [])).Dividend, Read(63, [], new DividendKept(0m, null, [])).DividendUnread));
+
+        // A kept dividend paying three times in the night's year and in no whole year before it reads no count of its own:
+        // with no payments a year from its bars nothing carries a date forward, so a later one is unread, and with its
+        // bars' four a year 2026-08-10 plus 91 days is 2026-11-09, estimated. A kept dividend holding no ex-date or no rate
+        // leaves it unread the same way.
+        var partial = new DividendKept(1.08m, new DateOnly(2026, 8, 10), [new DividendsInYear(2026, 3)]);
+
+        Assert.Equal((false, true), (CardHitsReading.WholeYearPaid(HitsNight, partial), CardHitsReading.WholeYearPaid(HitsNight, kept)));
+        Assert.Equal(((DividendAhead?)null, true), (Read(63, [], partial).Dividend, Read(63, [], partial).DividendUnread));
+        Assert.Equal((new DateOnly(2026, 11, 9), false), (Read(63, [], partial with { PaymentsAYear = 4 }).Dividend!.Date, Read(63, [], partial with { PaymentsAYear = 4 }).DividendUnread));
+        Assert.True(Read(63, [], kept with { LastExDate = null }).DividendUnread);
+        Assert.True(Read(63, [], kept with { ForwardRate = null }).DividendUnread);
 
         // Read with no count of the calendar's sessions, as a caller stating none, nothing is unread.
         Assert.False(CardHitsReading.Read(HitsNight, 63, reactions, [], null, 100.00m, 97.00m).DividendUnread);

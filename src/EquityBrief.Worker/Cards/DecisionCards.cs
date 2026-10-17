@@ -631,6 +631,12 @@ public sealed class DecisionCards : IComponent
             }
         }
 
+        // A kept dividend paying whose years hold no whole one that paid is read at the payments a year its bars' steps show.
+        if (kept is { ForwardRate: > 0m, LastExDate: not null } paying && !CardHitsReading.WholeYearPaid(night, paying))
+        {
+            kept = paying with { PaymentsAYear = CardHitsReading.PaymentsAYear(await ClosesAsync(connection, transaction, ticker, night, cancellation)) };
+        }
+
         kept ??= await DividendFetchedAsync(connection, transaction, ticker, night, cancellation);
 
         decimal? close = null;
@@ -697,18 +703,22 @@ public sealed class DecisionCards : IComponent
             return null;
         }
 
+        return CardHitsReading.PaymentsAYear(await ClosesAsync(connection, transaction, ticker, night, cancellation)) is { } payments ? new DividendKept(paid, exDate, []) { PaymentsAYear = payments } : null;
+    }
+
+    static async Task<IReadOnlyList<(DateOnly Session, decimal Close, decimal RawClose)>> ClosesAsync(SqliteConnection connection, SqliteTransaction transaction, string ticker, DateOnly night, CancellationToken cancellation)
+    {
         var closes = new List<(DateOnly Session, decimal Close, decimal RawClose)>();
 
-        await using (var command = Command(connection, transaction, ClosesOf, [("$ticker", ticker), ("$night", Stamp(night))]))
-        await using (var reader = await command.ExecuteReaderAsync(cancellation))
+        await using var command = Command(connection, transaction, ClosesOf, [("$ticker", ticker), ("$night", Stamp(night))]);
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
         {
-            while (await reader.ReadAsync(cancellation))
-            {
-                closes.Add((Date(reader.GetString(0)), Money(reader.GetString(1)), Money(reader.GetString(2))));
-            }
+            closes.Add((Date(reader.GetString(0)), Money(reader.GetString(1)), Money(reader.GetString(2))));
         }
 
-        return CardHitsReading.PaymentsAYear(closes) is { } payments ? new DividendKept(paid, exDate, []) { PaymentsAYear = payments } : null;
+        return closes;
     }
 
     // What could hit the trade as a card stores it.

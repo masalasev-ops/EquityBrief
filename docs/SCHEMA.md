@@ -1994,7 +1994,7 @@ Grain: one row per trade the operator took from a pick's card.
 
 Primary key: `ticker`, `taken_at`.
 
-**The read surface writes it on the card's presses, and the night's follower follows it** (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then). A Taken press inserts a row from the card the store holds, refused for a stock already holding an open trade, a fill at or under the stop and a card stating no buy; a Not taken press deletes a row only while no night has followed it and no exit is recorded; and an exit press records the exit on an open row. The follower writes each open row's follow each night, the provisional fill replaced by its session's stored open, and where the trade ended. No row holds the account's size, its risk or its cap (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold).
+**The read surface writes it on the card's presses, and the night's follower follows it** (see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then). A Taken press inserts a row from the card the store holds, refused for a stock already holding an open trade, a fill at or under the stop, a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and a card stating no buy; a Not taken press deletes a row only while no night has followed it and no exit is recorded; and an exit press records the exit on a row holding no exit and not ended by the follower, dated on or after its fill. The follower writes each open row's follow each night, the provisional fill replaced by its session's stored open, and where the trade ended. No row holds the account's size, its risk or its cap (see: The account settings live in a file of their own under the data root and in nothing the store or the logs hold).
 
 Declared column sets, stated per operation because that is the grain the rule is written at: ReadApi updates `exit_price` and `exit_date` when the operator records an exit; TakenFollower updates `fill`, `provisional`, `followed_through`, `ended_on`, `end_price`, `end_reason` and `result` when it follows a trade. No column is written by both in one operation, which is what permits the split.
 
@@ -2013,7 +2013,7 @@ Grain: one row per index and family the operator has taken a trade under.
 | `average` | REAL | the mean result over the ended, in the unit, once twenty have ended; null before |
 | `same_nights` | INTEGER | the nights the operator took a trade of the family on the index |
 | `rule_listed` | INTEGER | the rule's own picks listed on those nights, each a card the night stored |
-| `rule_won` | INTEGER | those picks ended at their target, followed from the plan's buy; none for a rule setting no target |
+| `rule_won` | INTEGER | those picks ended at their target, each bought at the next session's open; none for a rule setting no target |
 | `rule_lost` | INTEGER | those picks ended at their stop; none for a rule setting no target |
 | `rule_ended` | INTEGER | those picks ended, however |
 | `rule_average` | REAL | the mean result over those ended, in the unit, once twenty have ended; null before |
@@ -2021,7 +2021,7 @@ Grain: one row per index and family the operator has taken a trade under.
 
 Primary key: `index_code`, `family`.
 
-**The night's follower writes it whole each night over every trade the operator took, and nothing that makes a pick reads it** (see: The operator's own record states its average result once twenty of its trades in a family and index have ended). Beside the operator's counts it writes the same counts over the rule's own picks listed on the nights the operator took one, each followed under the same management from the plan's buy as its night traded, so the two rows differ by the operator's choices and fills and not by the market of those weeks.
+**The night's follower writes it whole each night over every trade the operator took, and nothing that makes a pick reads it** (see: The operator's own record states its average result once twenty of its trades in a family and index have ended). Beside the operator's counts it writes the same counts over the rule's own picks listed on the nights the operator took one, each bought at the next session's open as a taken trade's fill is and followed under the same management, so the two rows differ by the operator's choices and fills and not by the market of those weeks.
 
 ### dividend_reading
 Grain: one row per member and fetch the quarters fetch stored, where the answer files a dividend part.

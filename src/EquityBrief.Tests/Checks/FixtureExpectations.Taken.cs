@@ -127,6 +127,12 @@ public partial class FixtureExpectations
         Assert.Equal(
             "50.00 0 2026-10-06 51.90 stop 0.6333 2026-10-06",
             await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "51.90")));
+
+        // A falling close never lowers the raised stop: 53.00 after 55.00 leaves it at 52.00 and not 50.00, so 51.00 is
+        // under it, (51.00 - 50.00) / 3.00, 0.3333, where a stop lowered to 50.00 would hold.
+        Assert.Equal(
+            "50.00 0 2026-10-07 51.00 stop 0.3333 2026-10-07",
+            await Followed(new TakenCase(Family: "breakout", Fill: "50.00", Target: null, Trail: "3"), Sessions("50.40", "52.00", "55.00", "53.00", "51.00")));
     }
 
     [Fact]
@@ -152,6 +158,11 @@ public partial class FixtureExpectations
         // The fill's session opened at 46.50, under the stop of 47.00: the fill is that open, and the risk the plan's own,
         // 50.00 less 47.00. Its close of 46.80 is under the stop: (46.80 - 46.50) / 3.00, 0.1000.
         Assert.Equal("46.50 0 2026-10-02 46.80 stop 0.1000 2026-10-02", await Followed(new TakenCase(), Sessions("46.50", "46.80")));
+
+        // An open exactly at the stop is at or under it, so its risk is the plan's own 3.00 and not the nothing the fill
+        // less the stop leaves: (46.80 - 47.00) / 3.00, -0.0667.
+        Assert.Equal("47.00 0 2026-10-02 46.80 stop -0.0667 2026-10-02", await Followed(new TakenCase(), Sessions("47.00", "46.80")));
+        Assert.Equal(((decimal?)3.00m, (decimal?)0.50m), (TakenWalk.Risk(47.00m, 47.00m, 50.00m), TakenWalk.Risk(47.50m, 47.00m, 50.00m)));
 
         // A sector heavyweight, with no stop, no target and no cap, held until its book sold it on 2026-10-06 at 63.00:
         // (63.00 / 60.00 - 1) in per cent, 5.0000.

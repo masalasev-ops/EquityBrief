@@ -3523,8 +3523,10 @@ public sealed partial class ReadApi : IComponent
 
     const string RecordExit = @"
         UPDATE taken_trade SET exit_price = $exit_price, exit_date = $exit_date
-        WHERE ticker = $ticker AND taken_at = $taken_at AND exit_date IS NULL;
+        WHERE ticker = $ticker AND taken_at = $taken_at AND exit_date IS NULL AND ended_on IS NULL AND fill_date <= $exit_date;
     ";
+
+    const string TakenOne = "SELECT " + TakenColumns + " FROM taken_trade WHERE ticker = $ticker AND taken_at = $taken_at;";
 
     // Every trade the operator holds open, which a card's concentration line counts.
     public Task<IReadOnlyList<TakenTradeRow>> OpenTakenTradesAsync() => TakenAsync(OpenTaken, []);
@@ -3578,7 +3580,9 @@ public sealed partial class ReadApi : IComponent
     // A trade taken from a card the night stored, read from the store and never from the press: its fill the price the
     // operator entered or, where none was, the plan's buy marked provisional until the next session's open replaces it,
     // dated the session after the pick's night unless the operator entered another. Refused for a card the store does
-    // not hold, a stock already holding an open taken trade, a fill at or under the stop and a card stating no buy.
+    // not hold, a card stating no buy, a fill at or under the stop, a fill dated before the session after the pick's
+    // night or on a day that is no session on the exchange's calendar, and a stock already holding an open taken trade,
+    // since the follower reads a trade only from its fill's own session after the night.
     // see: A taken trade's fill is the next session's open once its bar is stored, and the plan's buy marked provisional until then
     public async Task<RequestWritten> TakeAsync(string index, DateOnly night, string family, string ticker, decimal? price, DateOnly? date)
     {
@@ -3599,6 +3603,18 @@ public sealed partial class ReadApi : IComponent
         if (card.Stop is { } stop && fill <= stop)
         {
             return new RequestWritten(false, $"{ticker} was not taken: a fill of {fill.ToString(CultureInfo.InvariantCulture)} is at or under the stop of {stop.ToString(CultureInfo.InvariantCulture)}.");
+        }
+
+        var first = SessionAfter(card.Night);
+
+        if (date is { } early && early < first)
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: a fill dated {early.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} comes before {first.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}, the session after the pick's night.");
+        }
+
+        if (date is { } entered && (entered > EquityBrief.Core.Bars.ExchangeClosures.CoveredThrough || !EquityBrief.Core.Bars.ExchangeClosures.IsSession(entered)))
+        {
+            return new RequestWritten(false, $"{ticker} was not taken: {entered.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is no session on the exchange's calendar.");
         }
 
         await using var connection = Open();
@@ -3625,7 +3641,7 @@ public sealed partial class ReadApi : IComponent
         command.Parameters.AddWithValue("$night", card.Night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$sector", (object?)card.Sector ?? DBNull.Value);
         command.Parameters.AddWithValue("$fill", fill.ToString(CultureInfo.InvariantCulture));
-        command.Parameters.AddWithValue("$fill_date", (date ?? SessionAfter(card.Night)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$fill_date", (date ?? first).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$provisional", price is null ? 1 : 0);
         command.Parameters.AddWithValue("$entered", price is null ? 0 : 1);
         command.Parameters.AddWithValue("$stop", (object?)card.Stop?.ToString(CultureInfo.InvariantCulture) ?? DBNull.Value);
@@ -3647,13 +3663,31 @@ public sealed partial class ReadApi : IComponent
             ? new RequestWritten(true, $"{ticker} is no longer taken.")
             : new RequestWritten(false, $"{ticker} was not removed: a night has followed it or its exit is recorded, so record its exit instead.");
 
-    // The operator's own exit of an open taken trade, its price and its date.
-    public async Task<RequestWritten> ExitAsync(string ticker, string takenAt, decimal price, DateOnly date) =>
-        price <= 0m
-            ? new RequestWritten(false, $"{ticker}'s exit was not recorded: an exit price must be above nothing.")
-            : await ExecuteAsync(RecordExit, [("$ticker", ticker), ("$taken_at", takenAt), ("$exit_price", price.ToString(CultureInfo.InvariantCulture)), ("$exit_date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))]) == 1
-                ? new RequestWritten(true, $"{ticker}'s exit at {price.ToString(CultureInfo.InvariantCulture)} on {date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is recorded.")
-                : new RequestWritten(false, $"{ticker}'s exit was not recorded: it holds no open taken trade of that time.");
+    // The operator's own exit of an open taken trade, its price and its date, the one statement writing it refusing a
+    // trade already exited, one the night's follower has ended and an exit dated before the fill, so a refusal writes
+    // nothing and the trade read back says which.
+    public async Task<RequestWritten> ExitAsync(string ticker, string takenAt, decimal price, DateOnly date)
+    {
+        var on = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        if (price <= 0m)
+        {
+            return new RequestWritten(false, $"{ticker}'s exit was not recorded: an exit price must be above nothing.");
+        }
+
+        if (await ExecuteAsync(RecordExit, [("$ticker", ticker), ("$taken_at", takenAt), ("$exit_price", price.ToString(CultureInfo.InvariantCulture)), ("$exit_date", on)]) == 1)
+        {
+            return new RequestWritten(true, $"{ticker}'s exit at {price.ToString(CultureInfo.InvariantCulture)} on {on} is recorded.");
+        }
+
+        return (await TakenAsync(TakenOne, [("$ticker", ticker), ("$taken_at", takenAt)])).SingleOrDefault() switch
+        {
+            { ExitDate: { } exited } => new RequestWritten(false, $"{ticker}'s exit was not recorded: its exit on {exited.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is recorded already."),
+            { EndedOn: { } ended } trade => new RequestWritten(false, $"{ticker}'s exit was not recorded: the night ended the trade by its rule's {trade.EndReason ?? "end"} on {ended.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}."),
+            { FillDate: var filled } when date < filled => new RequestWritten(false, $"{ticker}'s exit was not recorded: an exit dated {on} comes before its fill on {filled.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}."),
+            _ => new RequestWritten(false, $"{ticker}'s exit was not recorded: it holds no open taken trade of that time."),
+        };
+    }
 
     // The session after a night on the exchange's calendar.
     static DateOnly SessionAfter(DateOnly night)

@@ -2184,3 +2184,103 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the sign-offs of phases 16, 17, 18 and 19.
+
+### 16.2 - correction: a Taken press refuses a fill dated on no session or before the session after the night, and an exit before its fill or on an ended trade   2026-10-17
+
+Queue:      done, phase 19 with its corrections through PR 481, and phase 16's first sign-off review of 2026-10-17, which
+            signed nothing over G1 to G4; in progress, the corrections of G1 to G4 in one pull request; next, the
+            sign-off of phase 16 by a fresh session, then those of phases 17, 18 and 19, then the monthly run of
+            2026-11-07.
+Found:      G1 of the review: a Taken press checked an entered date only for being a day, so a Saturday, the pick's
+            night and a day before it were stored and the follower, which reads a trade from its fill's own session,
+            never followed them; an exit press checked only that no exit was recorded, so an exit dated before the fill
+            ended the trade before it began and one on a trade the follower had ended was recorded.
+Built:      the Taken press refuses a fill dated before the session after the pick's night, or on a day that is no
+            session on the exchange's calendar, a day past its table among them; the exit press's one statement refuses
+            a trade exited, one the follower ended and an exit dated before the fill, the trade read back to say which.
+            Section 18's row and 15.18 name them; SCHEMA, the runbook, the guide, the roster and the changelog.
+Tests:      none new: the press test refuses a Saturday, Thanksgiving, a day past the table, the night, a day before it
+            and the Saturday before the session, an exit before its fill, a second exit and one on an ended trade.
+Claims:     1340, as before.
+Mutated:    the rule, stated before the runs for all five corrections: one mutation a property each adds or holds whose
+            failure the operator's record or a page would show, the smallest edit that breaks it, made in this checkout
+            over the committed correction, each run filtered to the tests named. A1 the fill's floor at the pick's night,
+            A2 the calendar's check dropped, A3 the exit's ended check dropped, A4 the exit's fill check dropped: each red
+            at the press test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.5 correction's entry
+            below, as it records.
+Carried:    the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.10 - correction: the rule's own picks beside the operator's record are drawn as bought at the next session's open   2026-10-17
+
+Queue:      as the 16.2 correction's entry above states.
+Found:      G2 of the review: from 19.10 the follower buys the rule's own picks on the nights the operator took one at
+            the next session's open, while the card's words, 15.18, Figure 15.2 and its key, section 16's Taken records
+            row, SCHEMA, the guide and the roster's 16.3 clause still said the plan's buy.
+Built:      the card says each was bought at the next session's open, and each of those places says so; two comments of
+            the follower and the renderer with them. The changelog.
+Tests:      none new: the card's test states the open.
+Claims:     1340, as before.
+Mutated:    under the rule the 16.2 correction's entry states. B1 the card's words back to the plan's buy: red at the
+            card's test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.5 correction's entry
+            below, as it records.
+Carried:    the sign-offs of phases 16, 17, 18 and 19.
+
+### 16.3 - correction: a kept dividend paying in no whole year is read at its bars' steps, and a later date is unread where nothing kept carries one forward   2026-10-17
+
+Queue:      as the 16.2 correction's entry above states.
+Found:      G3 of the review: a kept dividend paying whose years held no whole one that paid estimated nothing, and the
+            card marked a later date unread only where nothing was kept, so it said no date fell inside the hold; 7 of
+            the 1,001 kept payers on the store of 2026-10-16: PLMR, RNG, VTOL, MBGL, VGNT and VSNT on the S&P 600 and
+            SOLS on the S&P 400. None of the 1,001 holds no ex-date.
+Built:      such a dividend is read at the payments a year its bars' steps show, as the fundamentals fallback reads
+            them; a later date is unread where the kept dividend holds no rate, no ex-date or no count, a rate of nothing
+            still a company paying none; the unread line says the store holds no dividend with a last date and a usual
+            interval, true of both. 15.18, the guide, the roster and the changelog.
+Tests:      1 new: the card read back estimating from the steps, unread with none and unread with no ex-date; the
+            reading worked by hand for a dividend with no whole year, with steps, with no ex-date and with no rate.
+Claims:     1340, as before.
+Mutated:    under the rule the 16.2 correction's entry states. C1 the steps read for a payer with a whole year and not
+            one without: red at the card's new test. C2 the unread rule back to nothing kept: red at it and at the
+            reading's test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.5 correction's entry
+            below, as it records.
+Carried:    read off the store, RNG, VTOL, SOLS and VSNT step four times a year and PLMR, MBGL and VGNT once each, so a
+            card of any of the seven estimates its date or draws the unread line; read on the first night one is a
+            pick. The sign-offs of phases 16, 17, 18 and 19.
+
+### 16.3 - correction: four boundaries 16.3 states are held by assertions   2026-10-17
+
+Queue:      as the 16.2 correction's entry above states.
+Found:      G4 of the review, its four of 16.3: m6, m7, m10 and m13 survived the whole suite.
+Built:      assertions alone, no behaviour changed: a raised stop not lowered by a falling close, an open exactly at the
+            stop read at the plan's distance, a rise of exactly the floor read as a step, and a dividend answer storing
+            no member's date removing nothing the window held. The roster and the changelog.
+Tests:      1 new, the calendar's answer storing no member's date; three cases added to the follower's and the steps'
+            tests.
+Claims:     1340, as before.
+Mutated:    the review's own: m6 the trail set to the close less its distance, m7 the risk read from a fill equal to the
+            stop, m10 the step's floor strict, m13 the window cleared on no date stored: each red at its new assertion,
+            filtered to the follower's, the steps' and the calendar's tests. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 16.5 correction's entry
+            below, as it records.
+Carried:    the sign-offs of phases 16, 17, 18 and 19.
+
+### 16.5 - correction: a labeller's limit ending exactly as a peak window opens is held by an assertion   2026-10-17
+
+Queue:      as the 16.2 correction's entry above states.
+Found:      G4 of the review, its one of 16.5: m15 survived the whole suite.
+Built:      an assertion alone, no behaviour changed: a limit ending exactly as the second window opens ends there and
+            does not wait it out. The roster and the changelog.
+Tests:      none new: one case added to the latest end's test. 2417 in all.
+Claims:     1340, as before.
+Mutated:    the review's m15, the limit's comparison strict: red at the latest end's test. Reverted before anything was
+            committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2417 of 2417 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed. No migration and no
+            remedy: no taken trade is stored and the cards are written again each night.
+Carried:    the sign-offs of phases 16, 17, 18 and 19, phase 16's by a fresh session, since this one committed code.
