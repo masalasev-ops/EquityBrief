@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - BUILD_PLAN.md - the two ideas of 2026-10-17 tabled for phase 21
+Corrects: the line saying no idea is written, which two ideas raised on 2026-10-17 and not ruled in make untrue, the 19.14 ruling writing each such idea here as one line.
+Was:
+> An idea raised meanwhile is written here as one line, with no checkpoint text. None is written yet.
+Now:
+> The same sentence, and two ideas raised on 2026-10-17 and not ruled in, one line each: the monthly run asking the quarters again of the members with no filer once it has read the SEC's ticker file, and asking the dividends history of every member no history run has kept dividends for.
+Why: under the 19.14 ruling an idea raised before the sign-offs and the monthly run is written here as one line with no checkpoint text.
+
 ### 2026-10-17 - ARCHITECTURE.html - a company the store matches no filer for reads no insider figure and never nought
 Corrects: with the insiders' history reaching the day before the night from the 19.13 correction of 2026-10-16, a company the store matched no filer for read nought on its four ledger readings and on its pages' insider figures, where it reads none, as VYLR's and HOS's chart pages drew on 2026-10-17; found reading the chart pages after that correction's remedy.
 Was:

@@ -2123,3 +2123,19 @@ Verified:   `tools/ci.ps1` green over the tree PR 479's entry records, and the c
 Carried:    the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling
             of its own the operator is asked for; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as
             45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.11 ruling - the page times are not sped up now, and two ideas tabled for phase 21   2026-10-17
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-17, word for word in `prompts/2026-10-17-19.11-ruling-page-times.md`: "you dont
+            need to fix the page speeds now." The Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's
+            693 at their medians, measured at 19.11 and carried since as a ruling of its own each, stand as they are.
+            Asked the same day whether the monthly run should ask the quarters again of the members whose company row
+            carries no filer once it has read the SEC's ticker file, and ask the dividends history of every member no
+            history run has kept dividends for, the operator ruled neither in, so each goes to the plan's Tabled for
+            phase 21 as one line under the 19.14 ruling.
+Plan:       `BUILD_PLAN.md`'s Tabled for phase 21 gains the two lines.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.14 correction's entry
+            below, as it records.
+Carried:    Figure 11.4's "earliest promotion" and the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%",
+            each corrected in an entry below; the sign-offs of phases 16, 17, 18 and 19.
