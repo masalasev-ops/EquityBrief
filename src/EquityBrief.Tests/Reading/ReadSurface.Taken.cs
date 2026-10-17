@@ -328,6 +328,26 @@ public partial class ReadSurface
         Assert.Equal((HttpStatusCode.Conflict, true), (unheld.Status, unheld.Said.Contains("no card of the drift on MID for 2026-10-02 is stored", StringComparison.Ordinal)));
         Assert.Equal(string.Empty, Rows());
 
+        // A fill dated on no session of the exchange's calendar, a Saturday, Thanksgiving or a day past the calendar's
+        // table, and one dated before Monday's session after Friday's night, that night itself among them, are refused,
+        // and a Saturday before Monday is refused as before it.
+        foreach (var (day, why) in new[]
+        {
+            ("2026-10-10", "2026-10-10 is no session on the exchange's calendar"),
+            ("2026-11-26", "2026-11-26 is no session on the exchange's calendar"),
+            ("2028-01-03", "2028-01-03 is no session on the exchange's calendar"),
+            ("2026-10-02", "a fill dated 2026-10-02 comes before 2026-10-05, the session after the pick's night"),
+            ("2026-09-30", "a fill dated 2026-09-30 comes before 2026-10-05, the session after the pick's night"),
+            ("2026-10-03", "a fill dated 2026-10-03 comes before 2026-10-05, the session after the pick's night"),
+        })
+        {
+            var refused = await CardPress(client, take, [("price", "51"), ("date", day)]);
+
+            Assert.Equal((HttpStatusCode.Conflict, true), (refused.Status, refused.Said.Contains(why, StringComparison.Ordinal)));
+        }
+
+        Assert.Equal(string.Empty, Rows());
+
         // With no price: the plan's buy, provisional, for the session after Friday's night, Monday 2026-10-05, managed by
         // the card's stop, trail and cap.
         var taken = await CardPress(client, take, []);
@@ -366,9 +386,19 @@ public partial class ReadSurface
         Assert.Equal(HttpStatusCode.Conflict, (await CardPress(client, $"{SinglePageApp.NotTakenPostRoute}M1/{entered}", [])).Status);
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy -", Rows());
         Assert.Equal(HttpStatusCode.Forbidden, (await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "55"), ("date", "2026-10-09")], fromThePage: false)).Status);
+
+        // An exit dated before the fill's session is refused and writes nothing.
+        var early = await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "55"), ("date", "2026-10-05")]);
+
+        Assert.Equal((HttpStatusCode.Conflict, true), (early.Status, early.Said.Contains("an exit dated 2026-10-05 comes before its fill on 2026-10-06", StringComparison.Ordinal)));
+        Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy -", Rows());
+
         Assert.Equal(HttpStatusCode.OK, (await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "55"), ("date", "2026-10-09")])).Status);
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy 55", Rows());
-        Assert.Equal(HttpStatusCode.Conflict, (await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "56"), ("date", "2026-10-12")])).Status);
+
+        var second = await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "56"), ("date", "2026-10-12")]);
+
+        Assert.Equal((HttpStatusCode.Conflict, true), (second.Status, second.Said.Contains("its exit on 2026-10-09 is recorded already", StringComparison.Ordinal)));
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy 55", Rows());
 
         // The card draws the ended trade and its Taken press again.
@@ -376,6 +406,16 @@ public partial class ReadSurface
 
         Assert.Contains("Taken at 51.25 for 2026-10-06; exited at 55.00 on 2026-10-09.", ended, StringComparison.Ordinal);
         Assert.Contains($"action=\"{take}\"", ended, StringComparison.Ordinal);
+
+        // A trade the night's follower has ended by its stop, written as the follower writes one, takes no exit.
+        store.Execute(
+            "INSERT INTO taken_trade (ticker, taken_at, index_code, family, night, sector, fill, fill_date, provisional, entered, stop, target, trail, cap, exit_price, exit_date, followed_through, ended_on, end_price, end_reason, result) VALUES " +
+            $"('S1', '2026-10-02T14:00:00Z', 'SML', 'breakout', '{IndexNight}', 'Energy', '50', '2026-10-05', 0, 1, '47', NULL, '3', 63, NULL, NULL, '2026-10-07', '2026-10-07', '46.90', 'stop', -1.0333);");
+
+        var stopped = await CardPress(client, $"{SinglePageApp.ExitPostRoute}S1/2026-10-02T14:00:00Z", [("price", "48"), ("date", "2026-10-08")]);
+
+        Assert.Equal((HttpStatusCode.Conflict, true), (stopped.Status, stopped.Said.Contains("the night ended the trade by its rule's stop on 2026-10-07", StringComparison.Ordinal)));
+        Assert.Equal("- -", WatchRows(store, "SELECT IFNULL(exit_price, '-') || ' ' || IFNULL(exit_date, '-') FROM taken_trade WHERE ticker = 'S1';").Single());
 
         // The account page's press: refused without the header and with settings the page cannot keep, each writing nothing.
         Assert.Equal(HttpStatusCode.Forbidden, (await CardPress(client, SinglePageApp.AccountPostRoute, [("size", "10000"), ("risk", "1"), ("cap", "0.2")], fromThePage: false)).Status);

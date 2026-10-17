@@ -26,6 +26,40 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - a Taken press refuses a fill dated on no session or before the session after the pick's night, and an exit before its fill or on a trade the follower ended
+Corrects: a Taken press checked an entered date only for being a day, so a Saturday, the pick's own night and a day before it were stored, and the follower, which reads a trade only from its fill's own session after the night, never followed them, leaving the record counting them open for good; and an exit press checked only that no exit was recorded, so an exit dated before the fill ended the trade before it began and one on a trade the follower had ended was recorded, where section 18's row said an exit press on a trade already ended writes nothing; found by phase 16's first sign-off review on 2026-10-17.
+Was:
+> 15.18, the card's presses: A fill at or under the stop, a stock already holding an open taken trade, a card stating no buy and a press without the page's own header are refused, ... and after that the operator records an exit with its price and its date.
+> 18, A press on a pick's card the card refuses: a Taken press with a fill at or under the stop, for a stock already holding an open taken trade, ... an exit press on a trade already ended, ...; why: ... and a trade a night has followed is already part of the operator's record
+Now:
+> 15.18 adds a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar among the refusals, and an exit refused where it is dated before the fill or the night's follower has ended the trade.
+> 18's row: a Taken press with a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and an exit press on a trade the operator has exited or the night's follower has ended or dated before its fill, each writes nothing and answers with why; its why adds that a fill dated where the follower reads no session of the trade's leaves it open in the record for good, and an exit before its fill or on a trade the follower ended ends a trade before it began or a second time.
+Why: a press the follower can never read, or one ending a trade before its fill or a second time, puts a figure in the operator's record that no session traded.
+
+### 2026-10-17 - SCHEMA.md - taken_trade's presses refuse a fill dated on no session or before the session after the pick's night, and an exit before its fill or on an ended row
+Corrects: the table's paragraph named the presses' refusals before the 16.2 correction of 2026-10-17, as the architecture's entry above states.
+Was:
+> A Taken press inserts a row from the card the store holds, refused for a stock already holding an open trade, a fill at or under the stop and a card stating no buy; ... and an exit press records the exit on an open row.
+Now:
+> ... refused for a stock already holding an open trade, a fill at or under the stop, a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and a card stating no buy; ... and an exit press records the exit on a row holding no exit and not ended by the follower, dated on or after its fill.
+Why: the paragraph states what each press writes and refuses.
+
+### 2026-10-17 - RUNBOOK.md - the Taken press's refusals name a fill's date and an exit's
+Corrects: the runbook named the presses' refusals before the 16.2 correction of 2026-10-17, as the architecture's entry above states.
+Was:
+> A fill at or under the stop and a second open trade in one stock are refused. Not taken removes a trade only before a night has followed it and while it holds no exit; after that, record its exit with its price and date.
+Now:
+> A fill at or under the stop, a fill dated before the session after the pick's night or on a day that is no session on the exchange's calendar, and a second open trade in one stock are refused. ... after that, record its exit with its price and date, which is refused where it is dated before the fill or the night has already ended the trade.
+Why: the runbook tells the operator what each press refuses.
+
+### 2026-10-17 - .claude/rules/checks.md - read-surface states the presses' date refusals and the exit's
+Corrects: the roster named none of the 16.2 correction's assertions of 2026-10-17.
+Was:
+> `read-surface`: ... on the market line and on a card's line |
+Now:
+> Added without replacing anything: a fill dated on a Saturday, on a holiday, past the calendar's table, on the pick's night and before it, an exit dated before its fill, a second exit and an exit on a trade the follower ended each refused with why and nothing written.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - Figure 11.4 draws the edge clock's looks as monitoring
 Corrects: the figure's lower lane ended on "earliest promotion" and its description and key said a look may promote a variant, where from 17.14 a look is monitoring and a rule changes only on the operator's approval of a tested proposal; carried since 19.7 and corrected before the sign-offs.
 Was:
