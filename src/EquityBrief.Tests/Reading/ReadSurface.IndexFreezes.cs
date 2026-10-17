@@ -109,7 +109,7 @@ public partial class ReadSurface
         Assert.DoesNotContain(SweepLineDrawn, frozen.Card, StringComparison.Ordinal);
         Assert.DoesNotContain(SetupFamilies.ProvisionalStatus, frozen.Card, StringComparison.Ordinal);
         Assert.Single(Regex.Matches(frozen.Page, Regex.Escape(FrozenRule)));
-        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M1\"", frozen.Card, StringComparison.Ordinal);
+        Assert.Equal(["M1"], CardPicksOf(frozen.Card));
         Assert.Contains("<tr data-ticker=\"M1\" data-family=\"breakout\"", frozen.Page, StringComparison.Ordinal);
 
         // A sweep recorded after the freeze that found none draws the line again beneath the live rule's standing.

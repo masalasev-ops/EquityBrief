@@ -69,7 +69,7 @@ public partial class ReadSurface
         Assert.Contains("data-place=\"4\" data-of=\"4\" data-picks=\"1\"", midCard, StringComparison.Ordinal);
         Assert.Contains(SetupFamilies.FundamentalsFirst.Heading, Read(midCard), StringComparison.Ordinal);
         Assert.Contains("revenue up more than 0 per cent on the year-earlier quarter and growing faster than the quarter before", Read(midCard), StringComparison.Ordinal);
-        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M2\"", midCard, StringComparison.Ordinal);
+        Assert.Equal(["M2"], CardPicksOf(midCard));
         Assert.Contains("<tr data-ticker=\"M2\" data-family=\"fundamentals\"", Assert.Single(Blocks(mid, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
         Assert.True(mid.IndexOf("data-family=\"drift\"", StringComparison.Ordinal) < mid.IndexOf("data-family=\"fundamentals\"", StringComparison.Ordinal));
 
@@ -108,7 +108,7 @@ public partial class ReadSurface
 
         // After the S&P 500's three cards, the fourth of four, its rule read on the S&P 500 by the index families' step.
         Assert.Equal(["pullback|1|4", "breakout|2|4", "drift|3|4", "fundamentals|4|4"], families);
-        Assert.Contains("<a class=\"card-pick\" data-ticker=\"FF1\"", card, StringComparison.Ordinal);
+        Assert.Equal(["FF1"], CardPicksOf(card));
         Assert.Contains("Read on the S&P 500 by the S&P 400's and 600's step, apart from its own families.", Read(card), StringComparison.Ordinal);
         Assert.Contains("<tr data-ticker=\"FF1\" data-family=\"fundamentals\"", Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), StringComparison.Ordinal);
     }

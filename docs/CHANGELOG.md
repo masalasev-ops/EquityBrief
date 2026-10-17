@@ -26,6 +26,26 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - a setup's card draws its live picks as rows of its own, each ticker opening its chart page
+Authorised by: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
+Was:
+> A family's card: ... its live rule's picks named by their place among tonight's buy points, each opening its row there; on that row, drawn there once for every setup: the stock with a label ...
+> A family's card's rule: ... its own picks with their plans and the family's three numbers in place of the live rule's picks named by place ...
+> The fundamentals-first family's card: ... its picks named by their place among tonight's buy points, whose rows draw their plans; ...
+> Tonight's buy points: ... and its positive and negative stories of the thirty days before, since every setup's picks are drawn here alone. ...
+> Each of the four rows cited "Live picks are drawn once in tonight's buy points, and a setup's card names them by their place".
+Now:
+> A family's card draws its live picks as rows of its own in the setup's order, each ticker opening the stock's chart page with the company beneath it, each row's business and plan read from the cell its buy point's row reads; a chosen variant's picks stand in place of the live rule's rows; the fundamentals-first family's card the same; and the buy points are the summary across every setup. Each row cites the new decision.
+Why: on the operator's ruling of 2026-10-17 a card's pick opens the stock's chart page, as every other stock link does, and each card shows its picks as the heavyweights card shows its holdings.
+
+### 2026-10-17 - .claude/rules/checks.md - read-surface states the card's own pick rows and that no link selects a row
+Authorised by: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
+Was:
+> `read-surface`: ... its live picks named by their place among tonight's buy points and drawn once there with their report's state, business and stories, ...
+Now:
+> ... its live picks drawn among tonight's buy points with their report's state, business and stories and, from the 19.3 correction of 2026-10-17, as rows of the card's own in the setup's order, each ticker opening the stock's chart page and each row's business and plan the buy point's own, no link on any screen naming a stock to select its row, ...
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - ARCHITECTURE.html - a member the provider files no CIK for is matched to its filer by the SEC's own ticker file
 Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
 Was:

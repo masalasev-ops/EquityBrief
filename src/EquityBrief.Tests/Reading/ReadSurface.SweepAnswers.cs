@@ -43,7 +43,7 @@ public partial class ReadSurface
         // The breakout's card alone draws the line, beneath its standing, and still lists M1.
         Assert.Contains("<span class=\"status-pill provisional\" title=\"Provisional: not yet frozen\">Provisional</span> <span class=\"fam-count\">1 pick tonight</span>", breakout, StringComparison.Ordinal);
         Assert.Contains("</details></header>" + SweepLineDrawn, breakout, StringComparison.Ordinal);
-        Assert.Contains("<a class=\"card-pick\" data-ticker=\"M1\"", breakout, StringComparison.Ordinal);
+        Assert.Equal(["M1"], CardPicksOf(breakout));
         Assert.Single(Regex.Matches(page, Regex.Escape(SweepLineDrawn)));
         Assert.DoesNotContain(SweepLineDrawn, FamilyCardOf(page, SetupFamilies.Pullback), StringComparison.Ordinal);
         Assert.DoesNotContain(SweepLineDrawn, FamilyCardOf(page, DriftRule.Name), StringComparison.Ordinal);

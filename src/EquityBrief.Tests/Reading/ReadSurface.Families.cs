@@ -133,7 +133,22 @@ public partial class ReadSurface
     static string FamilyCardOf(string page, string family) =>
         Assert.Single(Blocks(page, $"<section class=\"family-card\" data-family=\"{family}\".*?</section>"));
 
-    // A pick's row off tonight's buy points, where from 19.3 every setup's live picks are drawn and no card draws its own.
+    // The tickers of a card's own pick rows in the order the card draws them, from the 19.3 correction of 2026-10-17.
+    static IReadOnlyList<string> CardPicksOf(string card) =>
+        [.. Regex.Matches(Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>")), "<tr data-ticker=\"([^\"]+)\" data-card-pick=\"true\">").Select(match => match.Groups[1].Value)];
+
+    // A pick's row a card draws of its own.
+    static string CardPickRowOf(string card, string ticker)
+    {
+        var picks = Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>"));
+        var at = picks.IndexOf($"<tr data-ticker=\"{ticker}\" data-card-pick=\"true\">", StringComparison.Ordinal);
+
+        Assert.True(at >= 0, $"no row of the card's own for {ticker}");
+
+        return picks[at..picks.IndexOf("</tr>", at, StringComparison.Ordinal)];
+    }
+
+    // A pick's row off tonight's buy points, the summary across every setup.
     static string PickRowOf(string page, string ticker)
     {
         var points = Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>"));
@@ -172,14 +187,18 @@ public partial class ReadSurface
         Assert.Contains("<details class=\"rule-sentence\"><summary>The rule in a sentence</summary><p class=\"rule-words\">A stock stronger than 50% of the members, in an uptrend, falls 1 to 5 typical moves into a support band on volume under 1.5 times its average and turns back up within 3 sessions, with no report due in the next 15. Stop 0.5 to 4 typical moves below, target at the next band above and at least 1.5 times the risk.</p></details>", card, StringComparison.Ordinal);
         Assert.Equal(SetupFamilies.InPageOrder.Count, Regex.Matches(page, "data-card=\"family\"").Count);
 
-        // The picks, named by their place among the buy points above, F1 to F5, and no name for the two past five, the
-        // one held back or the one that failed a gate; the card draws no row of a pick of its own.
-        Assert.Equal(
-            ["F1", "F2", "F3", "F4", "F5"],
-            Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
-        Assert.All(new[] { "F6", "F7", "HELD", "N1" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\"", Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), StringComparison.Ordinal));
+        // The picks drawn as rows of the card's own, from the 19.3 correction of 2026-10-17, F1 to F5 in the setup's order
+        // and none for the two past five, the one held back or the one that failed a gate; each ticker opening the stock's
+        // chart page and no link on the card selecting a buy point's row.
+        Assert.Equal(["F1", "F2", "F3", "F4", "F5"], CardPicksOf(card));
+        Assert.All(new[] { "F6", "F7", "HELD", "N1" }, ticker => Assert.DoesNotContain($"data-ticker=\"{ticker}\"", Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>")), StringComparison.Ordinal));
+        Assert.All(new[] { "F1", "F2", "F3", "F4", "F5" }, ticker => Assert.Contains($"<a class=\"name-link\" href=\"#/chart/{ticker}\">{ticker}</a>", CardPickRowOf(card, ticker), StringComparison.Ordinal));
+        Assert.DoesNotMatch("<a [^>]*href=\"[^\"]*\\?name=", card);
         Assert.DoesNotContain("variant-table", card, StringComparison.Ordinal);
         Assert.DoesNotContain("data-selects=", card, StringComparison.Ordinal);
+        Assert.Equal(
+            ["#", "Stock", "Business", "Buy", "Stop", "Target", "Reward to risk"],
+            Regex.Matches(Assert.Single(Blocks(card, "<table class=\"list-table card-picks\".*?</table>")), "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Equal(BuyPointHeadingsDrawn, Regex.Matches(Assert.Single(Blocks(page, "<table class=\"list-table buy-points\".*?</table>")), "<th class=\"[^\"]*tipped\"[^>]*data-heading=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
 
         // F1's trade on its buy point's row: bought at 100, stopped at 96, won at 110, the reward to risk the 3 its
@@ -188,6 +207,13 @@ public partial class ReadSurface
 
         Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"100\">100.00</td><td class=\"r num plan-stop\" data-stop=\"96\">96.00</td><td class=\"r num plan-target\" data-target=\"110\">110.00</td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"3\">3.00</td>", first, StringComparison.Ordinal);
+
+        // The card's own row states the same plan and business as the buy point's row, read from the same pick cell.
+        var own = CardPickRowOf(card, "F1");
+
+        Assert.Contains("<td class=\"r num plan-buy\" data-buy=\"100\">100.00</td><td class=\"r num plan-stop\" data-stop=\"96\">96.00</td><td class=\"r num plan-target\" data-target=\"110\">110.00</td><td class=\"r num\" data-reward-to-risk=\"3\">3.00</td>", own, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"business-cell\"> <span class=\"business\" tabindex=\"0\" data-state=\"improving\">improving", own, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"business-cell\"><span class=\"degraded\" data-state=\"none\">not read</span></td>", CardPickRowOf(card, "F2"), StringComparison.Ordinal);
 
         // The state its reported quarters gave it, and its stories of the thirty days before: two positive
         // and one negative. F2 holds no reading and no label, and its row says so.
@@ -219,11 +245,11 @@ public partial class ReadSurface
         Assert.DoesNotContain("data-list=\"listed\"", page, StringComparison.Ordinal);
         Assert.DoesNotContain("data-card=\"still-open\"", page, StringComparison.Ordinal);
 
-        // Read back against the store in both directions: the picks named are the stocks the page's list holds as
-        // listed, in their places, and no other.
+        // Read back against the store in both directions: the card's rows are the stocks the page's list holds as listed,
+        // in their places, and no other.
         Assert.Equal(
             Strings(store, $"SELECT ticker FROM family_pick WHERE session_date = '{TheSwitch}' AND state = 'listed' ORDER BY place;"),
-            Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+            CardPicksOf(card));
 
         // The night before, which the families did not draw, is drawn as it was listed: the one list, and no card.
         var before = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}"));

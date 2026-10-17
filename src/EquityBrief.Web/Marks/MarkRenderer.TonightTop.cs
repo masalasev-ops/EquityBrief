@@ -50,10 +50,10 @@ public sealed partial class MarkRenderer
 
     // Tonight's buy points across every setup, in the one family order and each setup's own order, each row tagged with
     // its setup; the row selected followed by a row drawing its plan and, where the night wrote one, its pick's card, and
-    // every other pick's card in a row of its own beneath it, opened by the control in its name cell, since the setups'
-    // cards draw their picks here alone. The query given follows each row's link, so a page reading one index selects a
-    // row on it.
-    // see: Live picks are drawn once in tonight's buy points, and a setup's card names them by their place
+    // every other pick's card in a row of its own beneath it, opened by the control in its name cell. The summary across
+    // the setups, whose cards draw their own picks as rows from the same cells. The query given follows each row's link,
+    // so a page reading one index selects a row on it.
+    // see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
     public string BuyPoints(IReadOnlyList<BuyPointView> points, string? selected, string plan, string query = "")
     {
         if (points.Count == 0)
@@ -92,9 +92,7 @@ public sealed partial class MarkRenderer
             body.Append(PriceCell("buy", pick.Buy, null));
             body.Append(PriceCell("stop", pick.Stop, null));
             body.Append(PriceCell("target", pick.Target, pick.Trailing ? "trailing" : null));
-            body.Append(pick.RewardToRisk is { } ratio
-                ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
-                : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>");
+            body.Append(RewardCell(pick));
             body.Append(PickNewsCell(pick));
             body.Append("</tr>");
 
@@ -117,4 +115,10 @@ public sealed partial class MarkRenderer
 
         return body.ToString();
     }
+
+    // A pick's reward to risk as its plan states it, open where the plan trails its stop.
+    static string RewardCell(FamilyPickCell pick) =>
+        pick.RewardToRisk is { } ratio
+            ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
+            : $"<td class=\"r num\" data-reward-to-risk=\"none\">{(pick.Trailing ? "open" : pick.Stop is not null && pick.Target is not null ? "<span class=\"degraded\">not stored</span>" : "<span class=\"degraded\">none</span>")}</td>";
 }

@@ -65,8 +65,10 @@ public partial class ReadSurface
         // on twice the volume and a target at 2.5 times the risk, a click away beneath its chips.
         Assert.Contains("<p class=\"rule-words\">A company beats its estimate and the stock closes up at least 0.5 typical moves on 2 times its usual volume. Bought within 3 sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.</p>", card, StringComparison.Ordinal);
 
-        // Its picks named by their place among the buy points, E1 sixth and E2 seventh.
-        Assert.Equal(["E1", "E2"], Regex.Matches(Assert.Single(Blocks(card, "<p class=\"card-picks\".*?</p>")), "data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+        // Its picks drawn as rows of its own, E1 and E2, each ticker opening its chart page, and among the buy points E1
+        // sixth and E2 seventh.
+        Assert.Equal(["E1", "E2"], CardPicksOf(card));
+        Assert.Contains("<a class=\"name-link\" href=\"#/chart/E1\">E1</a>", CardPickRowOf(card, "E1"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"place\" data-place=\"6\">6</td>", PickRowOf(page, "E1"), StringComparison.Ordinal);
         Assert.Contains("<td class=\"place\" data-place=\"7\">7</td>", PickRowOf(page, "E2"), StringComparison.Ordinal);
 

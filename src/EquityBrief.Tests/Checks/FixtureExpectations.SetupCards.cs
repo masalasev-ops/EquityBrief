@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // lists nothing on the night; the one family whose rule's night the index stores says in one line which gate stopped the
 // most of the members reaching it, worked by the suite from the stored funnel by its own arithmetic, and that no usual
 // stretch is read under the floors; the others say Nothing tonight with their reason beneath and draw no tabs or funnel.
-// see: Live picks are drawn once in tonight's buy points, and a setup's card names them by their place
+// see: A setup's card draws its live picks as rows of its own, each ticker opening its chart page
 public partial class FixtureExpectations
 {
     [Fact]
