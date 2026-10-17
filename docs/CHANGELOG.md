@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - ARCHITECTURE.html - Figure 11.4 draws the edge clock's looks as monitoring
+Corrects: the figure's lower lane ended on "earliest promotion" and its description and key said a look may promote a variant, where from 17.14 a look is monitoring and a rule changes only on the operator's approval of a tested proposal; carried since 19.7 and corrected before the sign-offs.
+Was:
+> desc: ... the edge clock gathers evidence and changes nothing by itself, its looks telling you when a variant may be retired or promoted.
+> the lower lane's third mark: earliest promotion
+> key: The lower lane is the edge clock, which reads each candidate's blocks and can first retire one at its first look and first promote one at the look after.
+Now:
+> desc: ... its looks monitoring and a rule changed only on your approval of a tested proposal. The third mark: second look: monitoring. Key: The lower lane is the edge clock, which reads each candidate's blocks at its looks as monitoring: a retirement its futility says is due is yours to take from the first look, and no look changes a rule, which changes only on your approval of a tested proposal.
+Why: the figure states what the system does, and the worked example's generator and the document change together, word for word.
+
 ### 2026-10-17 - .claude/rules/checks.md - read-surface states a share under its floor never drawn at or above it
 Corrects: the roster named none of the 19.2 correction's assertions.
 Was:
