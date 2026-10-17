@@ -330,13 +330,16 @@ public sealed class InsiderTrades : IComponent
     // recorded, one request a quarter and one for the page; each quarter's Forms 4 and 4/A of every company the store
     // knows stored in one transaction, the originals before the amendments so an amendment finds its original, and the
     // quarter recorded in the same transaction once all of it is stored.
+    // `again` reads every quarter the bounds take, a quarter recorded already among them, storing only the filings not
+    // stored, so a company the store has come to know since, as a member matched to its filer later, gets its history.
     public async Task<InsiderOutcome> HistoryAsync(
         IInsiderDataSetFeed feed,
         string? from,
         string? through,
         string runId,
         TextWriter output,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        bool again = false)
     {
         var startedAt = clock.UtcNow;
         var watch = Stopwatch.StartNew();
@@ -373,7 +376,7 @@ public sealed class InsiderTrades : IComponent
             {
                 var (firstDay, lastDay) = SecEdgarInsiderDataSet.Span(quarter);
 
-                if (read.Contains(Stamp(firstDay)))
+                if (!again && read.Contains(Stamp(firstDay)))
                 {
                     continue;
                 }

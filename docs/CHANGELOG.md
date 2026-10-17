@@ -26,6 +26,32 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - the insiders' year is the one before the night, the night's own day read the night after
+Corrects: on every member's chart page and report the insider rows read not stored every night, since the view needed the night's own day, which the archive posts after the night runs; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
+Was:
+> Section 4, Insiders: ... open-market purchases and sales filed in the year to the night, a row each ...; or that the store holds no insider history reaching the night; ...
+> 15.9, Insiders: ... a store holding no insider history reaching the night saying so ...
+> 15.22, The figures: ... the insiders' where the store holds no insider history reaching the night; ...
+Now:
+> The insiders' year is the one before the night, the night's own day read the night after, and the line and not stored stand where the history does not reach the day before the night.
+Why: a page reads the filings the night can hold, as the night's own setups' readings do.
+
+### 2026-10-16 - RUNBOOK.md - the insiders' history read again with its word
+Corrects: a company the store came to know after its quarters were read, as a member matched to its filer later, could not be given its history, since a quarter read once was never read again.
+Was:
+> A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold ...
+Now:
+> ... as 2026q3. With `--again` it reads every quarter its bounds take, those read already among them, and stores only the filings not stored, so a company the store has come to know since, as a member matched to its filer by the SEC's ticker file, gets its history, each quarter keeping its first record. The data sets hold ...
+Why: the filers the 17.3 correction matches need the years before the nightly reader.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states the view to the day before the night and the history read again
+Corrects: the roster named none of the 19.13 correction's assertions.
+Was:
+> `fixture-expectations`: ... the name page's table saying not stored |
+Now:
+> Added without replacing anything: from the 19.13 correction the view on a night reading the filings filed before it, a filing filed on the night read the night after, and the history needed only through the day before the night; and the history read again with its word reading every quarter its bounds take, storing the filings of a company known since and none it stored, each quarter keeping its first record, while a read without it passes the quarters recorded.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - ARCHITECTURE.html - raised in a row is none where fewer than two whole years of dividends are kept
 Corrects: the chart page and the name page drew nought years raised where no two whole years of dividends were kept to compare; found by the operator on BNY's chart page of 2026-10-15.
 Was:

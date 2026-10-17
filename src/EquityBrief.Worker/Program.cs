@@ -172,7 +172,8 @@ static int NoVerb()
         "not yet stored as first filed, " +
         "'insiders-history' reads each quarter of the SEC's insider data sets from 2018q1 through the newest posted that " +
         "no earlier read recorded, one request a quarter and one for the page listing them, and stores every company's " +
-        "Forms 4 and 4/A, with '--from <quarter>' and '--through <quarter>' as 2026q3 bounding the quarters, and " +
+        "Forms 4 and 4/A, with '--from <quarter>' and '--through <quarter>' as 2026q3 bounding the quarters and " +
+        "'--again' reading every quarter again and storing only the filings not stored, and " +
         "'insiders --from <yyyy-MM-dd>' reads the members' Form 4 and 4/A filings of each weekday's index through " +
         "'--through <yyyy-MM-dd>' or the newest day the refresh has read, as the night's refresh does, with '--compare' " +
         "setting each filing the store holds already against its stored rows and writing nothing, " +
@@ -976,7 +977,8 @@ static async Task<int> InsidersHistoryRun(string[] args)
         VerbArguments.Value(args, "--from"),
         VerbArguments.Value(args, "--through"),
         FormattableString.Invariant($"insiders-history-{clock.UtcNow:yyyyMMddTHHmmssZ}"),
-        Console.Out);
+        Console.Out,
+        again: args.Contains("--again"));
 
     return outcome.Refusal is null ? 0 : 1;
 }

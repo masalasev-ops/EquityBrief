@@ -20,7 +20,7 @@ public sealed record InsiderTotals(decimal Bought, decimal Sold, int Buyers, int
 }
 
 // What the report's Insiders region and the chart page's Insiders group draw for a stock on a night, worked once here:
-// the year's open-market purchases and sales newest first, the totals over the ninety days and the year to the night,
+// the year's open-market purchases and sales newest first, the totals over the ninety days and the year before the night,
 // how many transactions of every other kind the year held, which neither total counts, and the newest purchase's day.
 // None where the history does not hold the year, which both pages draw as not stored.
 // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
@@ -43,19 +43,20 @@ public sealed record InsiderView(
 
     public static IReadOnlyList<string> WithholdingCodes { get; } = ["F"];
 
-    // The view on a night: the filings filed on or before it, as its next session's readings read them.
+    // The view on a night: the filings filed before it, as the night's own setups' readings read them. The archive posts a
+    // day's index after the night has run, so the night's own day is read the night after and no view waits on it.
     public static InsiderView? Of(IReadOnlyList<InsiderRow> rows, InsiderCoverage coverage, DateOnly night)
     {
-        // A night no year can stand before or no session follow, the page's own for a stock holding no bar, holds none.
+        // A night no year can stand before, or the page's own for a stock holding no bar, holds none.
         if (night.DayNumber <= YearDays || night == DateOnly.MaxValue)
         {
             return null;
         }
 
-        var session = night.AddDays(1);
+        var session = night;
         var yearFrom = session.AddDays(-YearDays);
 
-        if (!coverage.Holds(yearFrom, night))
+        if (!coverage.Holds(yearFrom, session.AddDays(-1)))
         {
             return null;
         }

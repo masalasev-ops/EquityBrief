@@ -830,7 +830,7 @@ The history before the nightly reader is read by hand from the SEC's quarterly i
 dotnet run --project src/EquityBrief.Worker -- insiders-history
 ```
 
-A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand for every company the store knows, as the history reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
+A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. With `--again` it reads every quarter its bounds take, those read already among them, and stores only the filings not stored, so a company the store has come to know since, as a member matched to its filer by the SEC's ticker file, gets its history, each quarter keeping its first record. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand for every company the store knows, as the history reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- insiders --from 2026-10-01
