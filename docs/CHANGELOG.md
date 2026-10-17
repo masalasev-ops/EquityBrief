@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states four of 16.3's boundaries no test held
+Corrects: the roster named none of the second 16.3 correction's assertions of 2026-10-17, each a boundary 16.3 states that phase 16's first sign-off review found no test holding.
+Was:
+> `fixture-expectations`: ... and one holding no rate, no ex-date or no count leaving a later date unread |
+Now:
+> Added without replacing anything: a raised stop never lowered by a falling close, an open exactly at the stop read at the plan's distance, a rise of exactly a fiftieth of a per cent read as a step, and a dividend answer storing no member's date removing nothing the window held.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - ARCHITECTURE.html - a kept dividend paying in no whole year is read at its bars' steps, and a later date is unread where nothing kept carries one forward
 Corrects: a dividend the quarters fetch kept, paying above nothing, whose years held no whole year that paid estimated nothing, and the card marked a later date unread only where nothing was kept, so it said no ex-dividend date fell inside the hold, the shape the 16.3 correction of 2026-10-07 fixed for a company with nothing kept; 7 of the 1,001 kept payers on the store of 2026-10-16, PLMR, RNG, VTOL, MBGL, VGNT and VSNT on the S&P 600 and SOLS on the S&P 400; found by phase 16's first sign-off review on 2026-10-17.
 Was:

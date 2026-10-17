@@ -134,6 +134,11 @@ public partial class FixtureExpectations
         // 99.981 it is 0.00019004. Fewer than two steps read none.
         Assert.Equal(4, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.9998m), ("2026-01-05", 1.0000m), ("2026-04-02", 0.9998m), ("2026-04-06", 1.0000m))));
         Assert.Null(CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99981m), ("2026-01-05", 1.0000m), ("2026-04-02", 0.99981m), ("2026-04-06", 1.0000m))));
+
+        // A rise of exactly a fiftieth of a per cent is a step: 1.0002 over 1.0000, less one, is 0.0002, so with the step
+        // before it 91 days earlier the bars read four a year where one step alone would read none.
+        Assert.Equal(0.0002m, CardHitsReading.SmallestStep);
+        Assert.Equal(4, CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99m), ("2026-01-05", 1.00m), ("2026-04-02", 1.00m), ("2026-04-06", 1.0002m))));
         Assert.Null(CardHitsReading.PaymentsAYear(Bars(("2026-01-02", 0.99m), ("2026-01-05", 1.00m))));
 
         // The payments a year a dividend's steps give estimate its next date where no year's count is filed: four a year
