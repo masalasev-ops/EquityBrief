@@ -59,6 +59,17 @@ dotnet run --project src/EquityBrief.Worker -- quarters --refetch-lines --most 2
 
 The S&P 500's first refetch of 2026-10-10 ran at 01:00Z, before 18.2 kept each quarter's gross profit and cash flow lines and the analysts' estimate trend, so 440 members' newest fetches read none of them and their analysts, their gross profit and their payout on free cash flow wait for each member's next report. This asks instead each member of the index whose newest fetch read none of those lines, once a session and in ticker order, as `--refetch-unread` does, and prints how many it will ask and the weighted calls they may spend, eleven an ask, before its first request. The operator's ruling of 2026-10-11 runs it on Tuesday 2026-10-13 and Wednesday 2026-10-14 at 220 asks a day, about 2,420 weighted calls, which keeps each day under 5,000 beside the night and Tuesday's A7 run. Read the provider's counter first, and run it when no night is running (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap).
 
+**A member the provider files no CIK for is matched to its filer by the SEC's own ticker file, and asked again by hand once the file is read.**
+
+```
+dotnet run --project src/EquityBrief.Worker -- sec-tickers
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --live
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --index MID --live
+dotnet run --project src/EquityBrief.Worker -- quarters --refetch-unfiled --index SML --live
+```
+
+The provider files no CIK for a ticker changed since it last read the company, as for BNY, once BK: on 2026-10-16, 36 members of the three indices, 11 of the S&P 500, 3 of the 400 and 22 of the 600, held no filer, so their pages drew no share count of the filer's and no insider row and the ledger read none of their filings. `sec-tickers` reads the SEC's own file of every listed ticker and the filer it names, one request to the archive, free and keyless, under the archive's contact in `appsettings.Secrets.json`, keeps every line in `sec_ticker` under a run of its own and prints how many of the members the provider files no CIK for it names and which it does not; it is refused while a night holds the store, and the monthly run's facts step reads it first (see: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file). The quarters fetch, by night and by hand, then takes the newest read's filer where the provider's answer files none, and the company row's `cik_source` says which it took. `--refetch-unfiled` asks each member of the index whose newest company row carries no filer, once a session and in ticker order, as `--refetch-lines` does, and prints its asks and their weighted calls, eleven an ask, before its first request; left to the night, each is matched at its next report. A member the provider answers nothing for, as VYLR and HOS on 2026-10-16, holds no company row and stays unmatched. Run them when no night is running, and then the whole facts refresh and the insiders' history read again, below, so the filers newly matched have their facts and their Forms 4.
+
 **The S&P 400's and 600's members are loaded by hand before their first night, with their year of bars, their quarters and the four funds' history.** From 15.1 the night reads the S&P 400's and 600's members from their funds' holdings files beside the S&P 500's (see: The S&P 400's and 600's members are read each night from their funds' own holdings files). Left to the night, its first run would ask about a thousand new members for their year and fill their quarters 260 a night over four nights, so the remedy of 15.1 takes them by hand first, after the merge and when no night is running:
 
 ```
@@ -830,7 +841,7 @@ The history before the nightly reader is read by hand from the SEC's quarterly i
 dotnet run --project src/EquityBrief.Worker -- insiders-history
 ```
 
-A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand for every company the store knows, as the history reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
+A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. With `--again` it reads every quarter its bounds take, those read already among them, and stores only the filings not stored, so a company the store has come to know since, as a member matched to its filer by the SEC's ticker file, gets its history, each quarter keeping its first record. The data sets hold shares, prices and the shares held after to two places where a filing states more. The days after the newest quarter posted, up to the newest day the refresh has read, are read by hand for every company the store knows, as the history reads them, at the archive's pace and under no limit, each day recorded once it is read whole and its asks and time printed:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- insiders --from 2026-10-01
@@ -859,6 +870,18 @@ tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --aga
 tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
 tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
 ```
+
+The chart page correction of 2026-10-16, from main after its merge and with no night or off-peak run writing, runs its file, which migrates to 97, reads the SEC's ticker file, asks again on each index the members whose newest company row carries no filer, asks every filer's facts whole, reads the insiders' history again and the days since 2026-10-01 for every company the store knows, keeps each index's dividends from 2018 and runs the ledger's night step over the newest night; then builds each index's history again, since the filers newly matched bring their facts and their Forms 4, and checks it:
+
+```
+powershell -File tools/remedy.ps1 tools/remedies/2026-10-16-19.11-correction-chart-page-figures.txt
+tools/ledger-build.ps1 --index GSPC --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index MID --from 2019-01-02 --through 2026-10-05 --again
+tools/ledger-build.ps1 --index SML --from 2019-01-02 --through 2026-10-05 --again
+dotnet run --project src/EquityBrief.Worker -- ledger-check --index GSPC
+```
+
+each check run for MID and SML as for GSPC. It asks the provider about 1,901 weighted calls, 396 for the 36 members' quarters at eleven an ask and about 1,505 for the dividends at one a member, and the SEC's archive the rest, free and keyless; no model call. No source a rule's version or the readings' version pins moves, so nothing is registered again.
 
 ### The walk-forward tester and the Loop page
 
@@ -929,7 +952,7 @@ The live alarm reads each live rule's trades by the month they ended in, a secto
 
 ### The monthly run
 
-From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again beside the standing one, each index's point-in-time check, from 19.12 which readings go with winners on each index, each index's tester run, from 19.4 each index's per-rule test, and the month's report, a step at a time (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). Run it from the repository root on main, as the night is run, and it builds and runs a clean copy of main's commit:
+From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, every index's history written again beside the standing one, each index's point-in-time check, from 19.12 which readings go with winners on each index, each index's tester run, from 19.4 each index's per-rule test, and the month's report, a step at a time (see: The monthly run refreshes the SEC's facts and writes each index's history again before its point-in-time check, and puts at most one proposal a family an index to the operator). Run it from the repository root on main, as the night is run, and it builds and runs a clean copy of main's commit:
 
 ```powershell
 tools/monthly.ps1
@@ -1063,7 +1086,7 @@ A name's page draws the latest quarter line by line, what management said, the s
 The years of dividends before the first night that kept one come from one history run, by hand, an index at a time:
 
 ```
-dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2016-01-01 --index GSPC
+dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2018-01-01 --index GSPC
 ```
 
 It asks the provider's dividends of each member the index holds today once, from the date given, at one weighted call a member, about 503 for the S&P 500, 400 for the S&P 400 under `--index MID` and 603 for the S&P 600 under `--index SML`, prints its asks and their weighted calls before the first request, and is refused before it asks anything past the stop a pull is held at unless the stop's word is given (see: Every pull states its provider calls before it runs and stops for the operator at the day's cap). `--names` with codes between commas asks only those members. Read the provider's own counter before the run and keep the day under the operator's 5,000 weighted calls with the night's own spend. It keeps each dividend under the stage `dividends-history` and a run of its own, `dividends-history-<instant>`, a date already kept left standing, and names each member the provider did not serve.

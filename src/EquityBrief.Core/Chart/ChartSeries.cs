@@ -57,13 +57,13 @@ public static class ChartSeries
 
     // The spans read in years, one year off the stored sessions where they reach the day a year back and every span
     // otherwise off the long view's month-end closes, which the night stores over the pulled history and the stored year
-    // at the store's scale, so no span reads a pulled bar when the page is drawn.
+    // at the store's scale, so no span reads a pulled bar when the page is drawn. The longest is the one the history
+    // pulled from 2018 reaches; no history before it is pulled, so no span longer is drawn.
     public static IReadOnlyList<(string Span, int Years)> YearSpans { get; } =
     [
         ("one year", 1),
         ("three years", 3),
         ("five years", 5),
-        ("ten years", 10),
     ];
 
     // A pulled price brought to the store's scale: the ratio of the store's close to the pull's on the store's first

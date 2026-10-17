@@ -360,6 +360,40 @@ public partial class FixtureExpectations
         Assert.Null(AnalystView.Of(null, [], [], night, 150m));
     }
 
+    // From the 18.2 correction of 2026-10-16: the years raised in a row are none where fewer than two whole years of a
+    // payer's dividends are kept, since a raise is a whole year against the one before it, and the name page and its file
+    // say not stored there rather than nought.
+    [Fact]
+    public void RaisedInARowIsNoneUnderTwoWholeYearsKeptAndTheNamePageSaysNotStored()
+    {
+        var night = new DateOnly(2026, 10, 8);
+
+        static KeptDividend[] Paid(int year, decimal amount, params int[] months) =>
+            [.. months.Select(month => new KeptDividend(new DateOnly(year, month, 10), amount))];
+
+        // One whole year and the night's own: nothing to compare a raise against.
+        KeptDividend[] one = [.. Paid(2025, 1.00m, 2, 5, 8, 11), .. Paid(2026, 1.05m, 2, 5, 8)];
+
+        var under = DividendSafety.Of(4.20m, 100m, 8.00m, [], one, [], [], night)!;
+
+        Assert.Single(under.Years, year => year.Whole);
+        Assert.Null(under.RaisedInARow);
+
+        // A forward rate with no dividend kept at all reads none as well.
+        Assert.Null(DividendSafety.Of(4.20m, 100m, 8.00m, [], [], [], [], night)!.RaisedInARow);
+
+        // Two whole years: a raise counts one, and a year held level counts nought, which is then a measured nought.
+        Assert.Equal(1, DividendSafety.Of(4.20m, 100m, 8.00m, [], [.. Paid(2024, 0.95m, 2, 5, 8, 11), .. one], [], [], night)!.RaisedInARow);
+        Assert.Equal(0, DividendSafety.Of(4.20m, 100m, 8.00m, [], [.. Paid(2024, 1.00m, 2, 5, 8, 11), .. one], [], [], night)!.RaisedInARow);
+        Assert.Equal(2, DividendSafety.WholeYearsToCompare);
+
+        // The name page's dividend table, which its exported file draws through the same renderer, says not stored.
+        var drawn = new EquityBrief.Web.Marks.MarkRenderer().DividendTable(under, 100m, false, "USD");
+
+        Assert.Contains("<span class=\"degraded\" data-raised=\"absent\">not stored: fewer than two whole years of its dividends are kept to compare</span>", drawn, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-raised=\"0\"", drawn, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void APayersDividendSafetyIsWorkedByHand()
     {

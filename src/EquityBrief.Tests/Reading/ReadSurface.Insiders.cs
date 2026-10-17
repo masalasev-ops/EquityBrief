@@ -42,12 +42,12 @@ public partial class ReadSurface
 
         Assert.Equal(4, Regex.Matches(group, "<dd class=\"degraded\">not stored</dd>").Count);
 
-        // Given the spans of the year before them, the region draws the year's rows: Keysight's open-market sales filed from
-        // the year before the night's next session to the night, read off the store by the suite's own query, newest traded
-        // first, each planned where its filing ticks the box.
+        // Given the spans of the year before them, the region draws the year's rows: Keysight's open-market sales filed in
+        // the year before the night, the night's own day read the night after, read off the store by the suite's own query,
+        // newest traded first, each planned where its filing ticks the box.
         store.Execute("INSERT INTO insider_read (first_day, last_day, source, run_id, read_at, filings, stored) VALUES ('2025-07-01', '2026-03-31', 'data-set', 'constructed', '2026-10-16T00:00:00Z', 0, 0);");
 
-        const string Year = "filed >= '2025-09-09' AND filed <= '2026-09-08' AND cik = '0001601046'";
+        const string Year = "filed >= '2025-09-08' AND filed <= '2026-09-07' AND cik = '0001601046'";
         var sales = Rows(store, $"SELECT traded, filed, shares, price, COALESCE(planned, 0) FROM insider_trade WHERE {Year} AND code = 'S' ORDER BY traded DESC, filed DESC, accession, sequence;");
         var drawn = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/KEYS"));
         var card = Regex.Match(drawn, InsidersCard, RegexOptions.Singleline).Value;
@@ -60,12 +60,12 @@ public partial class ReadSurface
         Assert.Equal(sales.Count(row => row[4] == "1"), Regex.Matches(card, "<span class=\"planned\">planned</span>").Count);
         Assert.DoesNotContain("data-kind=\"purchase\"", card, StringComparison.Ordinal);
 
-        // The totals: the ninety days' sales filed from 2026-06-11, ninety days before the next session, and the year's,
-        // each the shares times the price summed, and the sellers by their owners, none bought.
+        // The totals: the ninety days' sales filed from 2026-06-10, ninety days before the night, and the year's, each the
+        // shares times the price summed, and the sellers by their owners, none bought.
         decimal Sold(string where) => Rows(store, $"SELECT shares, price FROM insider_trade WHERE {where} AND code = 'S';")
             .Sum(row => decimal.Parse(row[0], CultureInfo.InvariantCulture) * decimal.Parse(row[1], CultureInfo.InvariantCulture));
 
-        var ninety = Sold(Year + " AND filed >= '2026-06-11'");
+        var ninety = Sold(Year + " AND filed >= '2026-06-10'");
         var year = Sold(Year);
         var sellers = Rows(store, $"SELECT DISTINCT owner_ciks FROM insider_trade WHERE {Year} AND code = 'S';").Count;
 

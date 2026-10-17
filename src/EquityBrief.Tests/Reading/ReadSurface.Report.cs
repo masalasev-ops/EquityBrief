@@ -579,13 +579,15 @@ public partial class ReadSurface
         Assert.Contains("data-mark=\"estimate-trend\" data-lines=\"2\"", page, StringComparison.Ordinal);
 
         // The yield at the last close, the spread on the 10-year with its sign, the earnings the payout was read from, and
-        // a payer the store keeps no dividend of saying it reads no years and drawing no bars.
+        // a payer the store keeps no dividend of drawing its years raised as not stored, from the 18.2 correction of
+        // 2026-10-16, and no bars.
         var close = Rows(store, "SELECT close FROM bar WHERE ticker = 'MSFT' ORDER BY session_date DESC LIMIT 1;").Single()[0];
 
         Assert.Contains($"<td>Yield at {Figures.Price(Held(close))}, the last close</td>", page, StringComparison.Ordinal);
         Assert.Matches("<tr data-row=\"spread\"><td>The yield against the 10-year</td><td class=\"num\"><span class=\"loss\" data-spread=\"-[0-9.]+\">-[0-9.]+ points</span>", page);
         Assert.Contains(FormattableString.Invariant($"</span> of {Figures.PerShare(Held(newest.Row[8]))}</td>"), page, StringComparison.Ordinal);
-        Assert.Contains("<span data-raised=\"0\">0</span> (no dividend is kept to read years from)", page, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"degraded\" data-raised=\"absent\">not stored: fewer than two whole years of its dividends are kept to compare</span>", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-raised=\"0\"", page, StringComparison.Ordinal);
         Assert.Contains("<p class=\"mark-short\" data-mark=\"dividend-bars\" data-years=\"0\">", page, StringComparison.Ordinal);
 
         // The valuation's line says why no multiple was read on the night, the fixture's year being too short for one.

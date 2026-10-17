@@ -19,7 +19,8 @@ public sealed record YieldPoint(DateOnly Session, double? Yield, double? TenYear
 
 // The dividend's safety for a payer: the rate a share and the yield at the price drawn, the 10-year and the spread over it
 // in points, the payout on earnings and on free cash flow in per cent with what each was read from, every year's
-// dividends with the raises, how many whole years in a row it raised, and the yield against the 10-year over the sessions.
+// dividends with the raises, how many whole years in a row it raised, none where fewer than two whole years are kept to
+// compare, and the yield against the 10-year over the sessions.
 public sealed record DividendSafetyReading(
     decimal Rate,
     bool RateIsForward,
@@ -33,7 +34,7 @@ public sealed record DividendSafetyReading(
     decimal? DividendsPaid,
     decimal? FreeCashFlow,
     IReadOnlyList<DividendYear> Years,
-    int RaisedInARow,
+    int? RaisedInARow,
     IReadOnlyList<YieldPoint> Series);
 
 // The dividend's safety, worked by one function from stored figures at the price the page draws, so the page and its file
@@ -120,9 +121,15 @@ public static class DividendSafety
         ];
     }
 
-    // How many whole years in a row, back from the newest, the dividend was raised.
-    public static int InARow(IReadOnlyList<DividendYear> years) =>
-        years.Where(year => year.Whole).Reverse().TakeWhile(year => year.Raised == true).Count();
+    // How many whole years in a row, back from the newest, the dividend was raised, read over the whole years kept; none
+    // where fewer than two whole years are kept, since a raise is a year against the one before and nought would say the
+    // dividend was held level where the kept years do not reach a comparison.
+    public const int WholeYearsToCompare = 2;
+
+    public static int? InARow(IReadOnlyList<DividendYear> years) =>
+        years.Count(year => year.Whole) < WholeYearsToCompare
+            ? null
+            : years.Where(year => year.Whole).Reverse().TakeWhile(year => year.Raised == true).Count();
 
     // Each session's trailing yield, read only where the kept dividends reach back a year before it, beside that session's
     // 10-year where one is held.

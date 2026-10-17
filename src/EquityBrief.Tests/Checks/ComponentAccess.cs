@@ -52,6 +52,13 @@ public partial class ComponentAccess
         CheckReach.Key(Scope.MatrixTable, "Insider trades"),
     ];
 
+    // The 17.3 correction of 2026-10-16, the SEC's own ticker file read by a step of its own.
+    internal static string[] SecTickerRows =>
+    [
+        CheckReach.Key(Scope.CatalogueTable, "SEC tickers"),
+        CheckReach.Key(Scope.MatrixTable, "SEC tickers"),
+    ];
+
     internal static CheckReach Reach => new(
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
@@ -71,6 +78,9 @@ public partial class ComponentAccess
 
             // 19.13, the insiders' trades.
             .. InsiderTradeRows,
+
+            // The 17.3 correction, the SEC's ticker file.
+            .. SecTickerRows,
 
             // The 3.1 correction, the chart's averages from the history pulled before the store's year.
             CheckReach.Key(Scope.CatalogueTable, "Chart averager"),

@@ -45,6 +45,10 @@ public enum ArchiveDocument
     InsiderDataSetListing,
 
     InsiderDataSet,
+
+    // From the 17.3 correction of 2026-10-16 the SEC's own file of every listed ticker and the filer it names, read by
+    // hand and by the monthly run where the provider files no CIK for a member.
+    CompanyTickers,
 }
 
 // One document the archive is asked for.

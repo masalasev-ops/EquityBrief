@@ -1852,3 +1852,127 @@ Carried:    the chart page's empty figures, the operator's correction of 2026-10
             operator is asked for; the first night's fill step and ledger step on 19.10's build; the first night's ledger
             step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as 45.0% beside "below
             its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.11 - correction: the chart page draws five years as its longest span, and the provider's share count where the filer states none   2026-10-16
+
+Queue:      done, 19.0 to 19.14 with their corrections, records and rulings, PRs 446 to 476; in progress, the
+            corrections of the chart page's empty figures the operator added on 2026-10-16, labelled 19.11, 18.2, 19.13
+            and 17.3, and their remedy; next, the sign-offs of phases 16, 17, 18 and 19, each by a fresh session, then
+            the monthly run of 2026-11-07 and the operator reading its proposals.
+Ruled:      by the operator on 2026-10-16, word for word in
+            `prompts/2026-10-16-19.11-correction-chart-page-empty-figures.md`, with the answers of the same day to the
+            read below in `prompts/2026-10-16-19.11-correction-operator-answers.md`: the SEC's ticker file for a member
+            the provider files no CIK for, the provider's count where the filer states none, the insiders' year ending
+            the day before the night, and the dividends history run from 2018. The stock the prompt names is BNY.
+Found:      the read the correction asked for, read-only on the operator's store on 2026-10-16 over the night of
+            2026-10-15. BNY, which the store holds as BK until 2026-05-21, held three company rows, the newest fetched
+            2026-10-14, and a pulled company row, none carrying a CIK, so its pages read no filer, no filed fact and no
+            insider row. 36 members of the three indices held no CIK on their newest company row, 11 of the S&P 500, 3
+            of the 400 and 22 of the 600, each a ticker the SEC's own ticker file names and 19 of them filers the store
+            knew under a former ticker; VYLR and HOS held no company row, the provider answering nothing for either; and
+            124 filers, 40, 33 and 51, held facts and no share count, which a filer stating its count a class at a time
+            does not file in the archive's facts. The insiders' history held every weekday from 2025-10-16 to
+            2026-10-15 but the night's own day, which the archive posts after the night that would read it, so every
+            view of the year to the night read none. The store kept 28 dividends, each from a night's bulk answer with
+            its ex-date from 2026-10-13 to 2026-10-15 and none of BNY's, the dividends history never having run. Of
+            every member's chart page computed for 2026-10-15, read through the read surface, the S&P 500's 503, the
+            400's 400 and the 600's 602: shares outstanding not stored on 69, 50 and 98; paid in its last whole year,
+            ten years and each of the four insider rows not stored on every page; and raised in a row nought years on
+            401, 258 and 341 and not stored on 102, 142 and 261.
+Built:      the chart page's spans end at five years, the longest the history pulled from 2018 reaches, its ten-year
+            row gone; and a member whose filer states no share count draws the provider's count off its newest
+            quarter's balance sheet with the quarter's day, named as the provider's. Section 15.22's figures, the
+            guide, the roster and the changelog.
+Tests:      none new: the chart page's tests read every fixture name's page at every interval drawing five years as
+            its longest span and no ten-year row, and AAPL's shares as the provider's count read off the store.
+Claims:     as the 17.3 correction's entry below records.
+Mutated:    the rule, stated before the runs for the four corrections together: one mutation a property each adds
+            whose failure a page, the store or a reading would show, the smallest edit to shipped source that breaks
+            it, made in this checkout, each run against its own tests. M1 the ten-year span put back: red at the spans'
+            test and the chart page's fixture test. M2 the provider's count never drawn: red at the chart page's
+            fixture test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.3 correction's entry
+            below, as it records.
+Carried:    the remedy of the four corrections run from main and its record, every member's chart page read again
+            per index; the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians,
+            each a ruling of its own the operator is asked for; the first night's fill step and ledger step on
+            19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P
+            600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
+
+### 18.2 - correction: raised in a row is none where fewer than two whole years of dividends are kept   2026-10-16
+
+Queue:      as the 19.11 correction's entry above states.
+Built:      a payer's years raised in a row are read over the whole years kept and are none where fewer than two are
+            kept, a raise counting one and a year held level nought from two; the chart page, the name page's table
+            and the exported file say not stored. Section 15.22, the runbook's dividends history from 2018, the
+            roster and the changelog.
+Found:      as the 19.11 correction's entry above records: nought years on 1,000 pages, no member then holding a whole
+            year of dividends kept.
+Tests:      1 new, over a constructed store holding under two whole years of dividends: raised in a row none on the
+            reading and not stored on the chart page and the name page, and a raise one and a level year nought from
+            two; and the report's regions test reads MSFT's years raised as not stored.
+Claims:     as the 17.3 correction's entry below records.
+Mutated:    under the rule the 19.11 correction's entry states. M3 raised in a row nought where fewer than two whole
+            years are kept: red at the new test. M4 the name page drawing nought where it is none: red at the new test
+            and the report's regions test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.3 correction's entry
+            below, as it records.
+Carried:    as the 19.11 correction's entry above states.
+
+### 19.13 - correction: the insiders' year is the one before the night, and the history is read again for a company known since   2026-10-16
+
+Queue:      as the 19.11 correction's entry above states.
+Built:      the insiders' view on a night reads the filings filed before it, as the night's own setups' readings do,
+            and needs the history only through the day before the night, a filing filed on the night read the night
+            after; and `insiders-history --again` reads every quarter its bounds take, those read already among them,
+            storing only the filings not stored, so a company the store comes to know after its quarters were read
+            gets its history, each quarter keeping its first record. Sections 4, 15.9 and 15.22, the runbook, the
+            roster and the changelog.
+Found:      as the 19.11 correction's entry above records: the four insider rows not stored on every page.
+Tests:      2 new, the view on a night reading the filings filed before it and needing the history only through the
+            day before, and the history read again storing a company known since and nothing twice; the region's
+            test reads its year to the day before the night.
+Claims:     as the 17.3 correction's entry below records.
+Mutated:    under the rule the 19.11 correction's entry states. M5 the view needing the history through the night's own
+            day: red at the view's test. M6 the history read again passing the quarters recorded: red at the read
+            again's test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 17.3 correction's entry
+            below, as it records.
+Carried:    as the 19.11 correction's entry above states.
+
+### 17.3 - correction: a member the provider files no CIK for is matched to its filer by the SEC's own ticker file   2026-10-16
+
+Queue:      as the 19.11 correction's entry above states.
+Built:      the `sec-tickers` step reads the SEC's own file of every listed ticker and its filer, one request to the
+            archive, free and keyless, by hand and in the monthly run's facts step and never by the night, keeping
+            each line in `sec_ticker` under its run, a ticker listed twice kept by its first line, and names on its row
+            the members the provider files no CIK for that the file names and those it does not; the quarters fetch,
+            the one writer of a company's row, takes the newest read's filer where the provider's answer files none and
+            says which it took in the row's `cik_source`; and `quarters --refetch-unfiled` asks each member of the
+            index whose newest company row carries no filer, once a session, stating its asks and their weighted
+            calls. Migration 97. The catalogue's, the matrix's and the stores' rows, the decision, the schema, the
+            runbook, the guide, the roster, the remedy file and the changelog. No source a rule's version or the
+            readings' version pins moves.
+Found:      as the 19.11 correction's entry above records: 36 members with no CIK, 11, 3 and 22.
+Tests:      3 new, 2412 in all: the file read as sent, its cut of seven lines as the archive sent them; the step
+            keeping it under its run and naming the members; and the quarters fetch taking the SEC's filer, saying
+            which it took, and the refetch asking only the member left with none.
+Claims:     1340, 1337 before: the catalogue's, the matrix's and the stores' rows for the SEC tickers step.
+Remedy:     `tools/remedies/2026-10-16-19.11-correction-chart-page-figures.txt`, from main after the merge with no night
+            or off-peak run writing: migration 97, the ticker file read, the members with no filer asked again on each
+            index, every filer's facts asked whole, the insiders' history read again and the days since 2026-10-01,
+            each index's dividends from 2018 and the ledger's night step; then each index's history built again with
+            `--again` and checked, as the runbook states. About 1,901 of the provider's weighted calls, 396 for the
+            quarters and about 1,505 for the dividends, the SEC's archive free; no model call.
+Mutated:    under the rule the 19.11 correction's entry states. M7 the fetch never taking the SEC's filer, its first form
+            reading the answer as possibly none and refused by the compiler, made again as a condition never true: red
+            at the quarters fetch's test. M8 the SEC's filer said to be the provider's: red, same. M9 the refetch asking
+            the members holding a filer: red, same. M10 a ticker listed twice read by both lines: red at the file's
+            test. M11 the step naming the members the file names in place of those it does not: red at the step's
+            test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2412 of 2412 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    as the 19.11 correction's entry above states.

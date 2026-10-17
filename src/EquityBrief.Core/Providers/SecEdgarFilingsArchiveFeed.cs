@@ -38,7 +38,7 @@ namespace EquityBrief.Core.Providers;
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,
-    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed, IFilingsRefreshFeed, IInsiderDataSetFeed
+    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed, IFilingsRefreshFeed, IInsiderDataSetFeed, ISecTickersFeed
 {
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -143,6 +143,9 @@ public sealed class SecEdgarFilingsArchiveFeed(
 
     public Task<string?> ListingAsync(CancellationToken cancellation = default) =>
         FetchAsync(new ArchiveRequest(ArchiveDocument.InsiderDataSetListing, SecEdgarArchive.DocumentHost, SecEdgarInsiderDataSet.ListingPath), cancellation);
+
+    public Task<string?> TickersAsync(CancellationToken cancellation = default) =>
+        FetchAsync(new ArchiveRequest(ArchiveDocument.CompanyTickers, SecEdgarArchive.DocumentHost, SecEdgarTickers.Path), cancellation);
 
     public async Task<byte[]?> QuarterAsync(string path, CancellationToken cancellation = default)
     {

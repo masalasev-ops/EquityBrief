@@ -47,6 +47,31 @@ public sealed partial class ReadApi
         ORDER BY concept, period_end, period_start;
     ";
 
+    // The shares outstanding the provider's balance sheet files for a name's newest quarter holding them, from its newest
+    // quarters fetch, which the chart page draws where the filer's facts hold no share count, as a filer reporting its
+    // count by share class files none the SEC's facts carry.
+    const string ProviderSharesOf = @"
+        SELECT period_end, shares FROM reported_quarter
+        WHERE ticker = $ticker AND shares IS NOT NULL
+          AND fetched_at = (SELECT MAX(fetched_at) FROM reported_quarter WHERE ticker = $ticker)
+        ORDER BY period_end DESC LIMIT 1;
+    ";
+
+    public async Task<(DateOnly Quarter, decimal Shares)?> ProviderSharesAsync(string ticker)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ProviderSharesOf;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? (Day(reader.GetString(0)), decimal.Parse(reader.GetString(1), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture))
+            : null;
+    }
+
     public async Task<IReadOnlyList<EquityBrief.Core.Ledger.FiledFactRow>> FiledFactsAsync(string ticker, DateOnly from, DateOnly? on = null)
     {
         await using var connection = Open();

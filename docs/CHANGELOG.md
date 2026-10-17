@@ -26,6 +26,108 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - a member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> Quarter fetcher: reads "... reported quarters, quarter asks, companies"; "... and from the same answer the member's company, its filer and its GICS classification, with no request of its own, and from 18.2 ..."; "... and <code>quarters --refetch-lines</code> every member whose newest fetch read none of the gross profit and the cash flow lines in the same way (see: A fetch made before the gross profit and the cash flow lines were kept is asked again by hand under a stated cap). It records every ask ..."
+> Monthly run: "runs the month's steps in order, the SEC's facts asked whole by the filings refresher, every index's history ..."
+> The loop, once a month: "Its steps run in order: the SEC's facts asked whole; every index's history computed again ..."
+Now:
+> The Quarter fetcher reads the SEC tickers, takes the filer the SEC's own ticker file names at its newest read where the answer files none with the row saying which it took, and `quarters --refetch-unfiled` asks every member whose newest company row carries no filer; a catalogue row, a matrix row and a stores row for the SEC tickers step and its store; and the monthly run reads the ticker file before it asks the facts whole.
+Why: the provider files no CIK for a ticker changed since it last read the company, and 36 members of the three indices held no filer on 2026-10-16.
+
+### 2026-10-16 - SCHEMA.md - the SEC's ticker file kept, and a company row saying where its filer came from
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros, null where the provider files none |
+Now:
+> | `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros: the provider's, or where it files none the filer the SEC's own ticker file names for the ticker at its newest read in `sec_ticker`, null where neither does |
+> Added: `cik_source` on `company`, the table `sec_ticker` and its ownership row.
+Why: the quarters fetch takes the SEC's filer where the provider files none.
+
+### 2026-10-16 - RUNBOOK.md - the SEC's ticker file read by hand and in the monthly run, and the members with no filer asked again
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, every index's history written again ...
+Now:
+> From 17.10 the loop runs once a month: the SEC's facts asked whole, from the 17.3 correction of 2026-10-16 after the SEC's own ticker file is read, every index's history written again ...
+> Added: the paragraph on `sec-tickers` and `quarters --refetch-unfiled`.
+Why: the monthly run reads the ticker file first, and the operator runs it by hand once.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states the SEC's ticker file read, kept and taken
+Authorised by: A member the provider files no CIK for is matched to its filer by the SEC's own ticker file
+Was:
+> `fixture-expectations`: ... while a read without it passes the quarters recorded |
+Now:
+> Added without replacing anything: from the 17.3 correction the SEC's ticker file read as sent, the step keeping it under its run and naming the members the provider files no CIK for that it names and those it does not, the quarters fetch taking the newest read's filer where the answer files none and saying which it took, and the refetch by hand asking only the members whose newest company row carries no filer.
+Why: a roster row names what its check asserts.
+
+### 2026-10-16 - ARCHITECTURE.html - the insiders' year is the one before the night, the night's own day read the night after
+Corrects: on every member's chart page and report the insider rows read not stored every night, since the view needed the night's own day, which the archive posts after the night runs; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
+Was:
+> Section 4, Insiders: ... open-market purchases and sales filed in the year to the night, a row each ...; or that the store holds no insider history reaching the night; ...
+> 15.9, Insiders: ... a store holding no insider history reaching the night saying so ...
+> 15.22, The figures: ... the insiders' where the store holds no insider history reaching the night; ...
+Now:
+> The insiders' year is the one before the night, the night's own day read the night after, and the line and not stored stand where the history does not reach the day before the night.
+Why: a page reads the filings the night can hold, as the night's own setups' readings do.
+
+### 2026-10-16 - RUNBOOK.md - the insiders' history read again with its word
+Corrects: a company the store came to know after its quarters were read, as a member matched to its filer later, could not be given its history, since a quarter read once was never read again.
+Was:
+> A quarter read once is not read again, so a run stopped on a refusal goes on from the first quarter it had not finished; `--from` and `--through` take a quarter, as 2026q3. The data sets hold ...
+Now:
+> ... as 2026q3. With `--again` it reads every quarter its bounds take, those read already among them, and stores only the filings not stored, so a company the store has come to know since, as a member matched to its filer by the SEC's ticker file, gets its history, each quarter keeping its first record. The data sets hold ...
+Why: the filers the 17.3 correction matches need the years before the nightly reader.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states the view to the day before the night and the history read again
+Corrects: the roster named none of the 19.13 correction's assertions.
+Was:
+> `fixture-expectations`: ... the name page's table saying not stored |
+Now:
+> Added without replacing anything: from the 19.13 correction the view on a night reading the filings filed before it, a filing filed on the night read the night after, and the history needed only through the day before the night; and the history read again with its word reading every quarter its bounds take, storing the filings of a company known since and none it stored, each quarter keeping its first record, while a read without it passes the quarters recorded.
+Why: a roster row names what its check asserts.
+
+### 2026-10-16 - ARCHITECTURE.html - raised in a row is none where fewer than two whole years of dividends are kept
+Corrects: the chart page and the name page drew nought years raised where no two whole years of dividends were kept to compare; found by the operator on BNY's chart page of 2026-10-15.
+Was:
+> 15.22, The figures: ... its years raised in a row; ...
+Now:
+> ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; ...
+Why: a reading its inputs do not reach is none and never nought.
+
+### 2026-10-16 - RUNBOOK.md - the dividends history run reads from 2018
+Corrects: the command read from 2016-01-01 though no history before 2018 is pulled, on the operator's word of 2026-10-16.
+Was:
+> dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2016-01-01 --index GSPC
+Now:
+> ... --from 2018-01-01 --index GSPC
+Why: the operator does not want history before 2018 pulled.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states raised in a row none under two whole years
+Corrects: the roster named none of the 18.2 correction's assertions.
+Was:
+> `fixture-expectations`: ... and a filer it knows no company of read on none |
+Now:
+> Added without replacing anything: from the 18.2 correction the years raised in a row none where fewer than two whole years of a payer's dividends are kept, a raise counting one and a year held level nought from two, the name page's table saying not stored.
+Why: a roster row names what its check asserts.
+
+### 2026-10-16 - ARCHITECTURE.html - the chart page draws five years as its longest span, and the provider's share count where the filer states none
+Corrects: a ten-year span the history pulled from 2018 never reaches was drawn on every chart page, and a filer stating its share count a class at a time drew no shares; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
+Was:
+> 15.22, The figures: ... the newest share count its filer's cover states; ... one and three and five and ten years over the long view's month-end closes, one year over the stored sessions where they reach it; ...
+Now:
+> ... the newest share count its filer's cover states or where its filer states none the provider's count off its newest quarter's balance sheet named as the provider's; ... one and three and five years over the long view's month-end closes, one year over the stored sessions where they reach it; five years the longest the history pulled from 2018 reaches; ...
+Why: a page draws a span the stored and pulled history can reach, and names a count by where it came from.
+
+### 2026-10-16 - .claude/rules/checks.md - read-surface states the chart page's five years and the provider's count
+Corrects: the roster named neither of the 19.11 correction's assertions.
+Was:
+> `read-surface`: ... each worked from the stored rows by the suite's own query |
+Now:
+> Added without replacing anything: every fixture name's chart page at every interval drawing five years as its longest span and no ten-year row, and a name whose filer files no share count drawing the provider's count off its newest quarter's balance sheet named as the provider's.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - CLAUDE.md - the Document lifecycle reads an archive as the earlier part of its record and the record as append only across the pair, and condition 8 states the figures before the run
 Authorised by: A record's earlier entries move whole to an archive that takes no new entry and is read with its live file as one record
 Was:

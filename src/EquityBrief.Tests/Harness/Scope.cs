@@ -3322,6 +3322,19 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+        // The 17.3 correction of 2026-10-16, the SEC's own ticker file: its step's catalogue and matrix rows and its store.
+        [CheckReach.Key(CatalogueTable, "SEC tickers")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the filings archive and companies it reads and the SEC tickers and run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "SEC tickers")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "SEC tickers")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(LimitsTable, "Insiders' trades")] = new Scoped(
             Verdict.Pass,
             "Keysight's four readings on the fixture's session worked by hand from the cut of the data sets, a filing on or after the session and one before the ninety days read by none, the box's reading none for a session whose days reach before its day, an amendment counted in its original's place and one holding no row of the table of shares leaving it standing, awards and withholding in neither total, and the history and the archive's filings compared field by field with a difference past two places named apart; the figures read off the document against the constants",

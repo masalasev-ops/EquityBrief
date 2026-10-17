@@ -228,6 +228,39 @@ public partial class FixtureExpectations
             filings.Single(filing => filing.Accession == "0001268406-26-000009").Transactions.Select(row => (row.Code, row.Shares, row.Price, row.Direct)));
     }
 
+    // From the 19.13 correction of 2026-10-16: the view on a night reads the filings filed before it, as the night's own
+    // setups' readings read them, and needs the history only through the day before, since the archive posts a day's
+    // index after the night has run and the night's own day is read the night after.
+    [Fact]
+    public void TheViewOnANightReadsTheFilingsFiledBeforeItAndNeedsTheHistoryOnlyThroughTheDayBefore()
+    {
+        var night = new DateOnly(2026, 10, 15);
+
+        InsiderRow Bought(DateOnly filed) =>
+            new($"0000000001-26-{filed.DayNumber:D6}", filed, "4", null, null, "0000000002", "An Officer", false, true, "Chief Executive", false, 1, filed.AddDays(-1), InsiderReadings.Purchase, 100m, 10m, true, false, true);
+
+        InsiderRow[] rows = [Bought(night.AddDays(-1)), Bought(night)];
+
+        // The history read through the day before the night, as the night's refresh leaves it: the view reads the purchase
+        // filed the day before and not the one filed on the night, which is the night after's.
+        var through = new InsiderCoverage([(night.AddDays(-InsiderView.YearDays - 10), night.AddDays(-1))]);
+        var view = InsiderView.Of(rows, through, night)!;
+
+        Assert.Equal((1000m, 1), (view.Year.Bought, view.Year.Buyers));
+        Assert.Equal((DateOnly?)night.AddDays(-2), view.NewestPurchase);
+        Assert.Equal(new InsiderFour(1000, 1, 1, 0), InsiderReadings.Read(rows, through, night, Dollars));
+
+        // The night after, once its own day is read, reads both.
+        var after = new InsiderCoverage([(night.AddDays(-InsiderView.YearDays - 10), night)]);
+
+        Assert.Equal(2000m, InsiderView.Of(rows, after, night.AddDays(1))!.Year.Bought);
+
+        // A weekday in the year not read leaves the view none, the day before the night among them.
+        Assert.Null(InsiderView.Of(rows, new InsiderCoverage([(night.AddDays(-InsiderView.YearDays - 10), night.AddDays(-2))]), night));
+        Assert.NotNull(InsiderView.Of(rows, new InsiderCoverage([(night.AddDays(-InsiderView.YearDays), night.AddDays(-1))]), night));
+        Assert.Null(InsiderView.Of(rows, new InsiderCoverage([(night.AddDays(-InsiderView.YearDays + 1), night.AddDays(-1))]), night));
+    }
+
     [Fact]
     public void AwardsAndWithholdingAreCountedInNeitherTotalAndAPurchasesBuyerIsCountedOnce()
     {
@@ -235,8 +268,10 @@ public partial class FixtureExpectations
 
         // The award and its withholding: drawn as neither a purchase nor a sale, counted on the region's last line, and
         // in neither total nor any reading.
+        // The view on a night reads the filings filed before it, as that night's own readings do, so each is read here on
+        // the night after, beside the readings of its session.
         var award = RowsOf(CapturedForm("0000789019-26-000153"));
-        var view = InsiderView.Of(award, Whole, night)!;
+        var view = InsiderView.Of(award, Whole, night.AddDays(1))!;
 
         Assert.Empty(view.Lines);
         Assert.Equal((0m, 0m, 0, 0), (view.Year.Bought, view.Year.Sold, view.Year.Buyers, view.Year.Sellers));
@@ -246,7 +281,7 @@ public partial class FixtureExpectations
         // Vistra's chief executive's two purchases: one buyer, an officer, 2200 at 135.99 and 4465 at 135.25, 903,069.25
         // dollars, the newest purchase the second's day traded.
         var purchase = RowsOf(CapturedForm("0001268406-26-000009"));
-        var bought = InsiderView.Of(purchase, Whole, night)!;
+        var bought = InsiderView.Of(purchase, Whole, night.AddDays(1))!;
 
         Assert.Equal(2, bought.Lines.Count);
         Assert.All(bought.Lines, line => Assert.True(line.Purchase));
@@ -260,7 +295,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(-43388532.4067, sold.NetBuy!.Value, 4);
         Assert.Equal((0.0, 0.0, 0.0), (sold.Buyers!.Value, sold.OfficerBuy!.Value, sold.UnplannedSale!.Value));
-        Assert.All(InsiderView.Of(plan, Whole, night)!.Lines, line => Assert.True(line.Planned));
+        Assert.All(InsiderView.Of(plan, Whole, night.AddDays(1))!.Lines, line => Assert.True(line.Planned));
     }
 
     [Fact]
@@ -307,7 +342,7 @@ public partial class FixtureExpectations
         Assert.Equal([(new DateOnly(2026, 8, 24), "0000080424-26-000160")], effect.Select(one => (one.Day, one.Row.Accession)));
         Assert.Equal(-438990.87, InsiderReadings.Read(both, Whole, night.AddDays(1), Dollars).NetBuy!.Value, 6);
 
-        var view = InsiderView.Of(both, Whole, night)!;
+        var view = InsiderView.Of(both, Whole, night.AddDays(1))!;
 
         Assert.Equal((new DateOnly(2026, 8, 20), new DateOnly(2026, 8, 24)), (Assert.Single(view.Lines).Traded, view.Lines[0].Filed));
         Assert.Equal((438990.87m, 1), (view.Year.Sold, view.Year.Sellers));
@@ -600,7 +635,7 @@ public partial class FixtureExpectations
         // Two purchases by the same two owners, listed in two orders: one insider, in the readings and in the region.
         Assert.NotEqual(first.OwnerKey, second.OwnerKey);
         Assert.Equal(1.0, InsiderReadings.Read(both, Whole, new DateOnly(2026, 9, 1), Dollars).Buyers);
-        Assert.Equal(1, InsiderView.Of(both, Whole, new DateOnly(2026, 8, 31))!.Ninety.Buyers);
+        Assert.Equal(1, InsiderView.Of(both, Whole, new DateOnly(2026, 9, 1))!.Ninety.Buyers);
         Assert.Equal("0001222526,0001222527", InsiderReadings.Insider(second.OwnerKey));
 
         // The amendment of the first, its owners listed as the data set lists them, finds its original.
@@ -702,5 +737,46 @@ public partial class FixtureExpectations
         Assert.Equal((0, 0), (second.Spans, second.Stored));
         Assert.Equal(["insider-data-sets.htm"], again.Asked);
         Assert.Equal(["insiders-history|ok", "insiders-history|ok"], Query(store, "SELECT stage || '|' || outcome FROM run_log ORDER BY run_id;"));
+    }
+
+    // The 19.13 correction of 2026-10-16: a company the store comes to know after its quarters were read, as a member
+    // matched to its filer by the SEC's ticker file, gets its history from a read again, which stores nothing twice.
+    [Fact]
+    public async Task TheHistoryReadAgainStoresTheFilingsOfACompanyKnownSinceAndNoneItStored()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('MSFT', '2026-09-01T23:40:00.000Z', '0000789019');");
+
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var first = await new InsiderTrades(clock, store.DatabaseFile, (_, _) => Task.CompletedTask).HistoryAsync(RecordedInsiderDataSetFeed.FromFolder(Folder()), "2026q2", "2026q3", "history-first", TextWriter.Null);
+
+        Assert.Equal(["0000789019"], Query(store, "SELECT DISTINCT cik FROM insider_trade ORDER BY cik;"));
+
+        store.Execute("INSERT INTO company (ticker, fetched_at, cik) VALUES ('KEYS', '2026-10-16T04:00:00.000Z', '0001601046');");
+
+        // Read again without the word, the quarters recorded are passed over and Keysight's filings stay unread.
+        var passed = RecordedInsiderDataSetFeed.FromFolder(Folder());
+        var none = await new InsiderTrades(clock, store.DatabaseFile, (_, _) => Task.CompletedTask).HistoryAsync(passed, "2026q2", "2026q3", "history-passed", TextWriter.Null);
+
+        Assert.Equal((0, 0), (none.Spans, none.Stored));
+        Assert.Equal(["0000789019"], Query(store, "SELECT DISTINCT cik FROM insider_trade ORDER BY cik;"));
+
+        // Read again with it, both quarters are asked, Keysight's filings stored and Microsoft's not a second time, and
+        // each quarter still recorded once.
+        var asked = RecordedInsiderDataSetFeed.FromFolder(Folder());
+        var again = await new InsiderTrades(clock, store.DatabaseFile, (_, _) => Task.CompletedTask).HistoryAsync(asked, "2026q2", "2026q3", "history-again", TextWriter.Null, again: true);
+
+        Assert.Equal(["insider-data-sets.htm", "2026q2", "2026q3"], asked.Asked);
+        Assert.Equal(2, again.Spans);
+        Assert.Equal(["0000789019", "0001601046"], Query(store, "SELECT DISTINCT cik FROM insider_trade ORDER BY cik;"));
+        Assert.Equal(
+            [first.Stored.ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM insider_trade WHERE cik = '0000789019';"));
+        Assert.Equal(
+            [again.Stored.ToString(CultureInfo.InvariantCulture)],
+            Query(store, "SELECT COUNT(*) FROM insider_trade WHERE cik = '0001601046';"));
+        Assert.True(again.Stored > 0);
+        Assert.Equal(["2026-04-01|history-first", "2026-07-01|history-first"], Query(store, "SELECT first_day || '|' || run_id FROM insider_read ORDER BY first_day;"));
     }
 }

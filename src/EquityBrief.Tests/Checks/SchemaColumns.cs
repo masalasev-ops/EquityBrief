@@ -44,6 +44,12 @@ public class SchemaColumns
         CheckReach.Key(Scope.StoresTable, "Insider reads"),
     ];
 
+    // The 17.3 correction of 2026-10-16: the SEC's own ticker file a read at a time.
+    internal static string[] SecTickerStoreRows =>
+    [
+        CheckReach.Key(Scope.StoresTable, "SEC tickers"),
+    ];
+
     internal static CheckReach Reach => new(
         "schema-columns",
         ["docs/SCHEMA.md"],
@@ -140,6 +146,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Reading links"),
             // 19.13, the insiders' trades and the spans their readers read whole.
             .. InsiderStoreRows,
+
+            // The 17.3 correction, the SEC's ticker file.
+            .. SecTickerStoreRows,
 
             // 16.2, the operator's taken trades, and 16.3 their record and the dividend readings.
             CheckReach.Key(Scope.StoresTable, "Taken trades"),
