@@ -2284,3 +2284,23 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed. No migration and no
             remedy: no taken trade is stored and the cards are written again each night.
 Carried:    the sign-offs of phases 16, 17, 18 and 19, phase 16's by a fresh session, since this one committed code.
+
+### 16.2 - correction: the presses' accepted edges are held by assertions   2026-10-17
+
+Queue:      done, the corrections of G1 to G4, PR 482; in progress, this correction; next, the sign-off of phase 16 by
+            a fresh session, then those of phases 17, 18 and 19, then the monthly run of 2026-11-07.
+Found:      preparing phase 16's sign-off: the first 16.2 correction of this day left three edges of its refusals with
+            no test, a fill dated the session after the pick's night, one dated the last day the calendar's table holds,
+            and an exit dated on its fill's own session, each accepted by the code and entered by no test.
+Built:      assertions alone, no behaviour changed: each of the three taken or recorded. The roster and the changelog.
+Tests:      none new: the press test enters both fills and exits on the fill's session. 2417 in all.
+Claims:     1340, as before.
+Mutated:    under the rule the first 16.2 correction's entry of this day states. P1 the fill's floor refusing the
+            session after the night itself, P2 the exit refusing its fill's own session, P3 the table's last day read as
+            past it: each red at the press test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2417 of 2417 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the sign-offs of phases 16, 17, 18 and 19, phase 16's by a fresh session, since this one committed code.

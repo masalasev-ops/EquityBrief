@@ -373,6 +373,16 @@ public partial class ReadSurface
         Assert.Equal(HttpStatusCode.OK, (await CardPress(client, $"{SinglePageApp.NotTakenPostRoute}M1/{takenAt}", [])).Status);
         Assert.Equal(string.Empty, Rows());
 
+        // A fill dated the session after the pick's night itself, and one dated the last day the calendar's table holds, a
+        // Friday session, are each taken, and removed again before a night has followed them.
+        foreach (var day in new[] { "2026-10-05", "2027-12-31" })
+        {
+            Assert.Equal(HttpStatusCode.OK, (await CardPress(client, take, [("price", "51"), ("date", day)])).Status);
+            Assert.Equal($"M1 51 {day} 0 1 47.30 2.70 63 Energy -", Rows());
+            Assert.Equal(HttpStatusCode.OK, (await CardPress(client, $"{SinglePageApp.NotTakenPostRoute}M1/{WatchRows(store, "SELECT taken_at FROM taken_trade;").Single()}", [])).Status);
+            Assert.Equal(string.Empty, Rows());
+        }
+
         // An entered price and date are kept as entered, never provisional.
         Assert.Equal(HttpStatusCode.OK, (await CardPress(client, take, [("price", "51.25"), ("date", "2026-10-06")])).Status);
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy -", Rows());
@@ -393,18 +403,19 @@ public partial class ReadSurface
         Assert.Equal((HttpStatusCode.Conflict, true), (early.Status, early.Said.Contains("an exit dated 2026-10-05 comes before its fill on 2026-10-06", StringComparison.Ordinal)));
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy -", Rows());
 
-        Assert.Equal(HttpStatusCode.OK, (await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "55"), ("date", "2026-10-09")])).Status);
+        // An exit dated on the fill's own session is recorded.
+        Assert.Equal(HttpStatusCode.OK, (await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "55"), ("date", "2026-10-06")])).Status);
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy 55", Rows());
 
         var second = await CardPress(client, $"{SinglePageApp.ExitPostRoute}M1/{entered}", [("price", "56"), ("date", "2026-10-12")]);
 
-        Assert.Equal((HttpStatusCode.Conflict, true), (second.Status, second.Said.Contains("its exit on 2026-10-09 is recorded already", StringComparison.Ordinal)));
+        Assert.Equal((HttpStatusCode.Conflict, true), (second.Status, second.Said.Contains("its exit on 2026-10-06 is recorded already", StringComparison.Ordinal)));
         Assert.Equal("M1 51.25 2026-10-06 0 1 47.30 2.70 63 Energy 55", Rows());
 
         // The card draws the ended trade and its Taken press again.
         var ended = await CardRowOf(client, "MID", "breakout", "M1");
 
-        Assert.Contains("Taken at 51.25 for 2026-10-06; exited at 55.00 on 2026-10-09.", ended, StringComparison.Ordinal);
+        Assert.Contains("Taken at 51.25 for 2026-10-06; exited at 55.00 on 2026-10-06.", ended, StringComparison.Ordinal);
         Assert.Contains($"action=\"{take}\"", ended, StringComparison.Ordinal);
 
         // A trade the night's follower has ended by its stop, written as the follower writes one, takes no exit.

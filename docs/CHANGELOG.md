@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - .claude/rules/checks.md - read-surface states the presses' accepted edges
+Corrects: the roster named none of the second 16.2 correction's assertions of 2026-10-17, three edges the first 16.2 correction of that day left no test holding, found preparing phase 16's sign-off.
+Was:
+> `read-surface`: ... and a later date unread where they show no interval or the dividend holds no ex-date |
+Now:
+> Added without replacing anything: a fill dated the session after the pick's night and one dated the last day the calendar's table holds each taken, and an exit dated on its fill's own session recorded.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - .claude/rules/checks.md - fixture-expectations states a labeller's limit ending exactly as a window opens
 Corrects: the roster named none of the 16.5 correction's assertion of 2026-10-17, a boundary 16.5 states that phase 16's first sign-off review found no test holding.
 Was:
