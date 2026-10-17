@@ -179,6 +179,39 @@ public partial class FixtureExpectations
         Assert.Equal(new SetupAnchor(LedgerDay, 100, 97, null, 4.5, 63, 3), new SetupPlan(3, null, 4.5, 63).On(LedgerDay, 100, 1.0));
     }
 
+    // The 19.13 correction of 2026-10-17: the readings the night's step and the point-in-time check read through the
+    // ledger's context, a member the store matches no filer for none on all four and a filer filing nothing nought on its
+    // buyers and its officer, the history holding the window for both.
+    [Fact]
+    public void AMemberWithNoFilerReadsNoInsiderReadingThroughTheContextWhereAFilerFilingNothingReadsNought()
+    {
+        var calendar = Enumerable.Range(0, 80).Select(at => new DateOnly(2026, 1, 2).AddDays(at)).ToArray();
+        var bars = calendar.Select(session => new SweepBar(session, 101m, 99m, 100m, 1_000_000, 100m, 100m)).ToArray();
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new[] { SweepColumns.Series(new SweepName("AAA", bars, [(null, null)], [calendar[70]]), sessionAt) };
+        var sessions = SweepColumns.Sessions(series, calendar);
+        var members = SweepBenchmark.On(series, calendar.Length);
+        var closes = series[0].Bars.Select(one => Core.Prices.Statistic.FromPrice(one.Close)).ToArray();
+        var (highs, lows) = SweepIdeas.HighsAndLows(series, members, calendar.Length);
+        var market = new LedgerMarket(new Dictionary<string, IReadOnlyList<(DateOnly, double)>>(StringComparer.Ordinal));
+        var spans = new Core.Insiders.InsiderCoverage([(new DateOnly(2025, 1, 1), new DateOnly(2026, 12, 31))]);
+
+        double?[] ReadWith(IReadOnlyDictionary<string, IReadOnlyList<Core.Insiders.InsiderRow>> insiders) =>
+            LedgerSetups.Readings("GSPC", 0, series[0], closes, 60, sessions[60], members, calendar, 60, market,
+                new LedgerContext(new Dictionary<string, IReadOnlyList<Core.Readings.FiledIncome>>(), new Dictionary<string, string?>(), highs, lows)
+                {
+                    Insiders = insiders,
+                    InsiderSpans = spans,
+                });
+
+        string[] four = ["insider_net_buy", "insider_buyers", "insider_officer_buy", "insider_unplanned_sale"];
+        var unmatched = ReadWith(new Dictionary<string, IReadOnlyList<Core.Insiders.InsiderRow>>(StringComparer.Ordinal));
+        var quiet = ReadWith(new Dictionary<string, IReadOnlyList<Core.Insiders.InsiderRow>>(StringComparer.Ordinal) { ["AAA"] = [] });
+
+        Assert.All(four, column => Assert.Null(unmatched[LedgerReadings.IndexOf(column)]));
+        Assert.Equal((0.0, 0.0), (quiet[LedgerReadings.IndexOf("insider_buyers")], quiet[LedgerReadings.IndexOf("insider_officer_buy")]));
+    }
+
     [Fact]
     public void AReadingIsReadAsItStoodWhateverTheSeriesHoldsAfterTheSession()
     {

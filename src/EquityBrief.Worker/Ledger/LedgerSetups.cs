@@ -91,23 +91,30 @@ public sealed record LedgerContext(
 
     // From 19.13 each member's insiders' transactions by ticker, its filer's, and the spans the store's insider history
     // holds, which the four insider readings read from the filings filed before the session; none where the readings are
-    // read without them, and the readings none with them.
+    // read without them, and the readings none with them. A ticker the store matches no filer for holds no entry.
     // see: Insiders' trades are read from their Form 4 filings, and only open-market purchases and sales are counted
     public IReadOnlyDictionary<string, IReadOnlyList<InsiderRow>>? Insiders { get; init; }
 
     public InsiderCoverage InsiderSpans { get; init; } = InsiderCoverage.None;
 
     // A member's four insider readings on a session, each dollar figure over the company's value as the valuation
-    // reading works it from the same facts and closes.
+    // reading works it from the same facts and closes; all four none for a member the store matches no filer for, whose
+    // filings no reader read, where a filer filing nothing reads nought.
     public InsiderFour InsidersOf(SweepSeries one, DateOnly session)
     {
         var ticker = one.Name.Ticker;
+
+        if (Insiders?.GetValueOrDefault(ticker) is not { } rows)
+        {
+            return InsiderFour.None;
+        }
+
         var facts = Facts?.GetValueOrDefault(ticker) ?? [];
         var filed = facts.Count(fact => fact.Filed < session);
         var parts = valuation.GetOrAdd((ticker, filed), _ => ValuationReading.PartsOf(facts, session));
         var history = prices.GetValue(one, series => (BeforeTheYear?.GetValueOrDefault(ticker) ?? PriceHistory.None).Then(PriceHistory.Of(series.Bars)));
 
-        return InsiderReadings.Read(Insiders?.GetValueOrDefault(ticker) ?? [], InsiderSpans, session, dollars => ValuationReading.OverValue(dollars, parts, history, session));
+        return InsiderReadings.Read(rows, InsiderSpans, session, dollars => ValuationReading.OverValue(dollars, parts, history, session));
     }
 
     public BusinessReading Business(string ticker, DateOnly session)

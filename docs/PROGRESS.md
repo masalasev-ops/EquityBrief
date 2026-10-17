@@ -2031,3 +2031,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    as the 19.3 correction's entry above states.
+
+### 19.13 - correction: a company the store matches no filer for reads no insider figure and never nought   2026-10-17
+
+Queue:      done, 19.0 to 19.14 with their corrections, records and rulings, the four corrections of the chart page's
+            empty figures and the card's rows, PRs 446 to 478; in progress, this correction and the chart page
+            corrections' remedy, whose history builds wait on it; next, that remedy's record, then the sign-offs of
+            phases 16, 17, 18 and 19, each by a fresh session, then the monthly run of 2026-11-07 and the operator
+            reading its proposals.
+Found:      reading the chart pages once the 19.13 correction of 2026-10-16 ended the insiders' window the day before
+            the night: VYLR's and HOS's, whose companies the store matches to no filer, drew $0 net bought and no
+            insider buying where they read nothing, and the ledger's four readings of a member with no filer read
+            nought on its buyers and its officer wherever the history held the window, an empty list standing for a
+            filer that filed nothing.
+Built:      a member the store matches no filer for reads none on all four insider readings, through the ledger's
+            context the night's step and the point-in-time check read and through the night's reading again after the
+            refresh, where a filer filing nothing reads nought; and the report's region and the chart page's group draw
+            their line and not stored for such a company. The readings' version moves from 9223ff040777 to f858ebd1ac63
+            with the ledger's source; no source a rule, the hooks, the learned score or a candidate pins changes.
+            Sections 4, 15.9, 15.22 and 17, the roster and the changelog.
+Tests:      2 new, 2414 in all: a member with no filer none on all four through the context and through the reading again, each
+            beside a filer filing nothing reading nought; and the region's test reading a company with no filer as not
+            stored, the year's spans held.
+Claims:     1340, as before: words added to four rows and no part.
+Remedy:     none of its own: the chart page corrections' remedy builds each index's history again after this merges,
+            so the history carries the readings as corrected, and runs the ledger's night step over the newest night
+            again first.
+Mutated:    the rule, stated before the runs: one mutation each path that reads a member's insiders, the smallest edit
+            putting the empty list back for a member with no filer, each run against its own tests. N1 the context:
+            red at the context's test. N2 the reading again: red at its test. N3 the pages: red at the region's test.
+            Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2414 of 2414 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    the remedy of the chart page's four corrections, BNY's and MRSH's filers, facts and Forms 4 owed by it, its
+            builds and checks and its record; the Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's
+            693 at their medians, each a ruling of its own the operator is asked for; the first night's fill step and
+            ledger step on 19.10's build; the first night's ledger step on 19.9's build; Figure 11.4's "earliest
+            promotion"; the S&P 600's breadth drawn as 45.0% beside "below its floor of 45%"; the sign-offs of phases 16,
+            17, 18 and 19.

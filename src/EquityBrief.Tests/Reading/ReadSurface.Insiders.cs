@@ -91,5 +91,15 @@ public partial class ReadSurface
             Regex.Matches(figures, "<dd[^>]* data-value=\"([^\"]+)\">").Select(match => match.Groups[1].Value));
         Assert.Equal(2, Regex.Matches(figures, "<dd class=\"loss\" data-value=").Count);
         Assert.Contains("<dt>Newest purchase</dt><dd>none in the year</dd>", figures, StringComparison.Ordinal);
+
+        // From the 19.13 correction of 2026-10-17, a company the store matches no filer for reads no insider figure and
+        // never nought, the year's spans held: its chart page's four figures not stored and its report's line saying so.
+        store.Execute("UPDATE company SET cik = NULL WHERE ticker = 'MSFT';");
+
+        var unmatched = Regex.Match(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/chart/MSFT")), "<section class=\"grid-group\" data-group=\"insiders\">.*?</section>", RegexOptions.Singleline).Value;
+
+        Assert.Equal(4, Regex.Matches(unmatched, "<dd class=\"degraded\">not stored</dd>").Count);
+        Assert.DoesNotContain("data-value=", unmatched, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded\" data-absent=\"insiders\">", Regex.Match(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/MSFT")), InsidersCard, RegexOptions.Singleline).Value, StringComparison.Ordinal);
     }
 }
