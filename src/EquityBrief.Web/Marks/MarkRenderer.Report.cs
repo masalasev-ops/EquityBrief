@@ -531,7 +531,9 @@ public sealed partial class MarkRenderer
             "payout-cash");
         Row(
             "Whole years in a row it raised the dividend",
-            Formatted($"<span data-raised=\"{dividend.RaisedInARow}\">{dividend.RaisedInARow}</span>{(dividend.Years.Count == 0 ? " (no dividend is kept to read years from)" : string.Empty)}"),
+            dividend.RaisedInARow is { } raised
+                ? Formatted($"<span data-raised=\"{raised}\">{raised}</span>")
+                : "<span class=\"degraded\" data-raised=\"absent\">not stored: fewer than two whole years of its dividends are kept to compare</span>",
             "raised");
 
         return table.Append("</table></div>").ToString();

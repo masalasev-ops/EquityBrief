@@ -1063,7 +1063,7 @@ A name's page draws the latest quarter line by line, what management said, the s
 The years of dividends before the first night that kept one come from one history run, by hand, an index at a time:
 
 ```
-dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2016-01-01 --index GSPC
+dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2018-01-01 --index GSPC
 ```
 
 It asks the provider's dividends of each member the index holds today once, from the date given, at one weighted call a member, about 503 for the S&P 500, 400 for the S&P 400 under `--index MID` and 603 for the S&P 600 under `--index SML`, prints its asks and their weighted calls before the first request, and is refused before it asks anything past the stop a pull is held at unless the stop's word is given (see: Every pull states its provider calls before it runs and stops for the operator at the day's cap). `--names` with codes between commas asks only those members. Read the provider's own counter before the run and keep the day under the operator's 5,000 weighted calls with the night's own spend. It keeps each dividend under the stage `dividends-history` and a run of its own, `dividends-history-<instant>`, a date already kept left standing, and names each member the provider did not serve.

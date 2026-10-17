@@ -290,8 +290,8 @@ public static class ChartScreen
             dividend?.PayoutOnEarnings is { } payout
                 ? new GridFigure("Paid out of earnings", FormattableString.Invariant($"{payout:0.0}%"), payout.ToString(CultureInfo.InvariantCulture))
                 : Missing("Paid out of earnings"),
-            dividend is { } safety
-                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{safety.RaisedInARow} years"), safety.RaisedInARow.ToString(CultureInfo.InvariantCulture))
+            dividend?.RaisedInARow is { } raised
+                ? new GridFigure("Raised in a row", FormattableString.Invariant($"{raised} years"), raised.ToString(CultureInfo.InvariantCulture))
                 : Missing("Raised in a row"),
         ]);
     }

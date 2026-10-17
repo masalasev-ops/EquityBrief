@@ -26,6 +26,30 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-16 - ARCHITECTURE.html - raised in a row is none where fewer than two whole years of dividends are kept
+Corrects: the chart page and the name page drew nought years raised where no two whole years of dividends were kept to compare; found by the operator on BNY's chart page of 2026-10-15.
+Was:
+> 15.22, The figures: ... its years raised in a row; ...
+Now:
+> ... its years raised in a row over the whole years kept and not stored where fewer than two are kept; ...
+Why: a reading its inputs do not reach is none and never nought.
+
+### 2026-10-16 - RUNBOOK.md - the dividends history run reads from 2018
+Corrects: the command read from 2016-01-01 though no history before 2018 is pulled, on the operator's word of 2026-10-16.
+Was:
+> dotnet run --project src/EquityBrief.Worker -- dividends --history --from 2016-01-01 --index GSPC
+Now:
+> ... --from 2018-01-01 --index GSPC
+Why: the operator does not want history before 2018 pulled.
+
+### 2026-10-16 - .claude/rules/checks.md - fixture-expectations states raised in a row none under two whole years
+Corrects: the roster named none of the 18.2 correction's assertions.
+Was:
+> `fixture-expectations`: ... and a filer it knows no company of read on none |
+Now:
+> Added without replacing anything: from the 18.2 correction the years raised in a row none where fewer than two whole years of a payer's dividends are kept, a raise counting one and a year held level nought from two, the name page's table saying not stored.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-16 - ARCHITECTURE.html - the chart page draws five years as its longest span, and the provider's share count where the filer states none
 Corrects: a ten-year span the history pulled from 2018 never reaches was drawn on every chart page, and a filer stating its share count a class at a time drew no shares; found by the operator on BNY's chart page of 2026-10-15 and the read of every member's page.
 Was:
