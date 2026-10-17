@@ -3157,7 +3157,7 @@ public sealed partial class MarkRenderer : IComponent
         {
             list.Append(Invariant, $"<p class=\"degraded\" data-market=\"closed\" data-breadth=\"{(closed.Breadth is { } share ? share.ToString("R", Invariant) : "none")}\">");
             list.Append(closed.Breadth is { } breadth && closed.Floor is { } floor
-                ? Formatted($"The market gate closed tonight: {breadth * 100:0.0}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%, so no name is listed.")
+                ? Formatted($"The market gate closed tonight: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, floor)}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%, so no name is listed.")
                 : "The market gate closed tonight: the night's breadth is not available, so no name is listed.");
             list.Append("</p></section>");
 

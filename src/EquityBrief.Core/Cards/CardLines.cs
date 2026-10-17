@@ -190,7 +190,7 @@ public static class CardLines
     public static CardLine Market(MarketReading market, SectorPlace? sector, string index, CardSettings settings)
     {
         var breadth = market.Breadth is { } read
-            ? FormattableString.Invariant($"the {index}'s breadth is {read:0.0%} against its floor of {market.Floor:0%}")
+            ? FormattableString.Invariant($"the {index}'s breadth is {FloorShare.Percent(read, market.Floor)}% against its floor of {market.Floor:0%}")
             : $"the {index}'s breadth was not read";
         var check = market.ReadByTheFamily ? breadth : breadth + ", a check this rule does not read";
 

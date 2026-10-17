@@ -345,7 +345,7 @@ public sealed partial class MarkRenderer
     public string MarketLine(MarketLineView line)
     {
         var check = line.Breadth is { } breadth && line.Floor is { } floor
-            ? Formatted($"the {line.Index}'s breadth: {breadth * 100:0.0}% of its members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
+            ? Formatted($"the {line.Index}'s breadth: {EquityBrief.Core.Cards.FloorShare.Percent(breadth, floor)}% of its members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
             : $"the {line.Index}'s breadth is not available tonight";
 
         var body = new StringBuilder();

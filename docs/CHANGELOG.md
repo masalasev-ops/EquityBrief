@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-17 - .claude/rules/checks.md - read-surface states a share under its floor never drawn at or above it
+Corrects: the roster named none of the 19.2 correction's assertions.
+Was:
+> `read-surface`: ... its report's line saying so, the year's spans held |
+Now:
+> Added without replacing anything: a share under its floor never drawn at or above it, worked by hand on both sides of the floor and at it, on the market line and on a card's line.
+Why: a roster row names what its check asserts.
+
 ### 2026-10-17 - BUILD_PLAN.md - the two ideas of 2026-10-17 tabled for phase 21
 Corrects: the line saying no idea is written, which two ideas raised on 2026-10-17 and not ruled in make untrue, the 19.14 ruling writing each such idea here as one line.
 Was:
