@@ -1976,3 +1976,58 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    as the 19.11 correction's entry above states.
+
+### 19.3 - correction: each setup card draws its live picks as rows of its own, each ticker opening the stock's chart page   2026-10-17
+
+Queue:      done, 19.0 to 19.14 with their corrections, records and rulings and the four corrections of the chart
+            page's empty figures, PRs 446 to 477; in progress, this correction and that remedy's builds and checks;
+            next, the remedy's record, then the sign-offs of phases 16, 17, 18 and 19, each by a fresh session, then
+            the monthly run of 2026-11-07 and the operator reading its proposals.
+Ruled:      by the operator on 2026-10-17, word for word in `prompts/2026-10-17-19.3-ruling-card-picks-as-rows.md`:
+            the drift card's pick on Tonight's page of 2026-10-16 opened TRV's row among the buy points where it should
+            open the stock's chart page, and each card should show its picks alike; asked how, they chose rows like the
+            heavyweights card's holdings, the buy points staying as the summary. A new decision under Presentation
+            supersedes "Live picks are drawn once in tonight's buy points, and a setup's card names them by their
+            place", which moves to Previously decided with its reasoning.
+Found:      the card's line linked each pick to its row among the buy points, the one link on Tonight's page of
+            2026-10-16 naming a stock that opened neither its chart page nor its report, beside 72 opening the chart
+            page; 19.11's link test forbade a stock link to the name page and never one selecting a row.
+Built:      each setup card draws its live or provisional rule's picks as a table of its own in the setup's order: the
+            place, the ticker opening the stock's chart page with the company beneath it, the business state, the buy,
+            the stop, the target and the reward to risk, read from the same pick cells the buy points read, a chosen
+            variant's picks standing in its place. The four architecture rows, the decision, the guide, the roster and
+            the changelog.
+Tests:      none new: the card tests read each card's own rows against the stocks the night listed in their places,
+            each ticker's link to its chart page and each row's plan and business against its buy point's row, and the
+            link test holds that no link on any of its seven screens selects a row.
+Claims:     as the 19.11 correction's entry below records: two parts of the card's rows renamed and none added.
+Mutated:    the rule, stated before the runs: one mutation a property the correction adds whose failure the page would
+            show, the smallest edit to shipped source that breaks it, made in this checkout, each run against its own
+            tests. K1 the card's ticker linking its buy point's row again: red at the families' and the drift's card
+            tests. K2 the card drawing no rows of its own: red at five card tests. K3 a card's row reading its stop as
+            its buy: red at the families' card test. Each reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 19.11 correction's entry
+            below, as it records.
+Carried:    the remedy of the chart page's four corrections, its builds and checks still to run, and its record; the
+            Run page's 4.2 seconds, Tonight's 786 milliseconds and a name page's 693 at their medians, each a ruling of
+            its own the operator is asked for; the first night's fill step and ledger step on 19.10's build; the first
+            night's ledger step on 19.9's build; Figure 11.4's "earliest promotion"; the S&P 600's breadth drawn as
+            45.0% beside "below its floor of 45%"; the sign-offs of phases 16, 17, 18 and 19.
+
+### 19.11 - correction: the list's and the buy points' headings say the ticker opens the stock's chart page   2026-10-17
+
+Queue:      as the 19.3 correction's entry above states.
+Found:      while building the 19.3 correction: from 19.11 the ticker on tonight's list and among the buy points opens
+            the stock's chart page and a press elsewhere on the row selects it, while both columns' headings still said
+            the ticker selects the row.
+Built:      both headings say the ticker opens the stock's chart page and a press anywhere else on the row selects it.
+Tests:      none new, 2412 in all: the list's heading test holds its words.
+Claims:     1340, as before.
+Mutated:    under the rule the 19.3 correction's entry states. K4 the list's heading saying the ticker selects the row:
+            red at its heading test. Reverted before anything was committed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the figures below
+            stated before the run: all six steps, 0 warnings, 0 errors, 2412 of 2412 tests ran with none failed,
+            migrations 0 to 97 with none pending, schema version 97, against `data-ci` and never `data`; the phase
+            report 60 tables, 1340 claims, 1340 passing, none out of scope and none unexamined, 1351 placements and
+            verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
+Carried:    as the 19.3 correction's entry above states.
