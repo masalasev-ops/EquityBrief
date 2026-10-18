@@ -2560,3 +2560,82 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             verdicts reconciled against a floor of 34, 43 checks on the roster run and passed.
 Carried:    the remedy, the operator's, before the night of 2026-10-19; phase 17's second sign-off review by a fresh
             session, since this one committed code; then those of phases 18 and 19.
+
+### Phase 17 sign-off                                                        2026-10-18
+Signed by a session that has committed no code to this repository. Its only commit is this entry, which is a document,
+            so the fresh session rule permits it. This is the second review of phase 17. The first, over 3475252f on
+            2026-10-18, signed nothing over F1 to F3, with F4 found beyond phase 17, which the 17.3, 17.4, 17.15 and
+            13.9 corrections of PR 485 corrected with the 15.5 and 14.6 siblings the operator added. This review read
+            3475252f..171cc021, 25 files, +665 -69, nine of them shipped source, +77 -41, and signs over 171cc021.
+Verified:   by re-running both gates on `main` at 171cc021 before this entry: `tools/ci.ps1` green end to end,
+            04:41:13 to 05:03:44 UTC, all six steps, 0 warnings, 0 errors, 2420 of 2420 tests passing inside it,
+            migrations 0 to 97 applied against `data-ci/` and then none pending at schema version 97, exit 0;
+            `tools/verify-phase.ps1` green, 05:03:59 to 05:04:04 UTC, reading that run's suite result over the same
+            commit and a clean tree, at 60 tables, 1340 claims, 1340 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 1351
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT with 1 captured over 6
+            constituents and 4 names, 43 checks on the roster, 43 carried and 43 passed, none failed or unrun, the
+            record line holding the 14.6 correction's stated figures. Over the tree carrying this entry, a record entry
+            alone, the checks that read the record ran filtered in place of the full script, on the operator's standing
+            ruling: 163 of 163 tests passing.
+            Hosted CI for PR 485: 3 runs, its one pushed head 049c1d7e under both events and main's push run for
+            171cc021, whose tree is 049c1d7e's, 6 jobs, case-sensitivity and macOS on each, all green. PR 485 merged at
+            04:19:38 UTC, before any of its four jobs finished, the first at 04:21:33; all four went green, and main's
+            macOS job ended green at 04:47:26.
+Read:       F1 to F4 and the two siblings against the corrected code and their six entries. F1: `sec-tickers` counts a
+            ticker as a member where a span of any of the three indices holds it on the session the clock falls on in
+            New York, as the quarters fetch reads members, and declares the membership read. F2 and F3: assertions
+            alone, at 24 and 25 blocks and at a tree's split. F4: the family recorder deletes a rule's trades of the
+            night only for a rule it lists; one holding no verdict, one whose hooks read readings the night did not
+            supply and one no longer standing keep theirs. 15.5: the index rule trades delete a rule's trades of the
+            night after its hooks are held against the readings and before its holdings are read, and none on a night
+            with no inputs. 14.6: the heavyweight book undoes a registered rule's night only where it keeps that rule's
+            book. No third sibling: the S&P 400's and 600's heavyweights books already undo each rule's night inside
+            the loop over the rules the night reads, and the index families' night-wide clear is the provisional
+            page's, drawn again each night as the S&P 500 lister's is.
+Store:      read-only, schema 97, newest session 2026-10-16. The `sec-tickers` row of 2026-10-17 01:45 UTC reads 38 of
+            38; the corrected query over the company rows fetched before it, at the session 2026-10-16, counts 36, 11
+            of the S&P 500, 3 of the 400 and 22 of the 600, and passes over PARA and PSKY, whose S&P 500 spans left on
+            2026-10-14 and 2026-10-15; over today's rows it counts none. `family_trade` holds nothing for 2026-10-02,
+            and 17.5's replay of 2026-10-09 14:13 UTC read 16 rules, 2 differing and 14 reproduced. `index_rule_trade`
+            9, 2 of the S&P 400 and 7 of the 600, from 2026-10-12. The remedy at 2026-10-18 04:37:57 UTC:
+            `register-20261018T043757.3114652Z` "registered", 24 rows, and four family-replay rows naming the S&P 500
+            heavyweights not replayed; `candidate_register` 351, each of the 12 registrations the same candidate,
+            rule, test, evaluator and parameters as the row it follows, and all 37 standing rules at the version their
+            evaluator carries on `main`.
+Swept:      26 mutations, each predicted before its run, made on this branch in this checkout over the file's own text
+            and restored from it, the tree's diff the same after the sweep as before, each filtered to the tests of
+            the files reaching it and the pin tests, a pin test reddening at an edit of a pinned source discounted.
+            The handoff's six, each red where predicted: (n1) the stored count reading every rule's trades of the
+            night: red at the run-again test and the recorder's first test. (n2) the stored count's words dropped: red
+            at the run-again test. (n3) the index rules' clear keyed on the index and the night alone: red at the
+            hooks' index test, the moved rules' test and the frozen rules' test. (n4) the rule readings' delete losing
+            its candidate clause: red at the heavyweights freeze test. (n5) the membership read held to the S&P 500's
+            spans: red at the step's test. (n6) the gate's draws one short: red at the gate's limit test. The first
+            review's m1 to m18: m1 to m17 red where it recorded them, m1 now at the gate's limit test and m16 at the
+            threshold test and the tree-hooked rule's test; m18 green, equivalent as before. This review's own two,
+            each a correction's per-rule clear run ahead of its skip: (n7) the heavyweight book's: red at the
+            heavyweights freeze test. (n8) the family recorder's: red at the run-again test. m18 alone over the whole
+            suite: 2420 of 2420 green, as predicted.
+Judged:     the handoff's four judgement calls stand. A rule the night's rows hold no verdict of read as not evaluated
+            whatever the cause: a run again holding no verdict of a rule did not evaluate it, which is the reading the
+            15.5 correction gives a night with no inputs, and the trades a run that did evaluate it stored stay its
+            record. The index families' row not naming a skipped rule's trades: the row names a moved rule's fault
+            already, and no figure on it counts a rule's trades. The recorder's reason on every night: it adds words to
+            a row and changes no count. The 12 records restarted at the remedy: a moved pin restarts a record unless a
+            replay reproduces it, the S&P 400's and 600's rules and the heavyweights are replayed by none, and the
+            design holds no exemption for an edit that leaves what a rule evaluates unchanged.
+Found:      no defect in shipped code. One document defect, carried below: (G1) SCHEMA's `family_trade` sentence from
+            the 13.9 correction ends "and one no longer standing, each its run log row naming", where the recorder's
+            row names only rules standing, so a rule no longer standing keeps its trades of the night unnamed; the code
+            and the 13.9 entry, "its row naming the first two", agree. Asked at about 05:19 UTC on 2026-10-18 whether to
+            sign with it carried or have it corrected first, the operator ruled: "Sign now, G1 carried".
+Carried:    (G1), SCHEMA's `family_trade` sentence saying the recorder's row names a rule no longer standing, owed by
+            the next edit of that section. Phase 17's seven operating rows, as the first review read them: the
+            night's added time and the ledger's growth over the five nights from 2026-10-09, the night's growth after
+            the store's growth change (ruling (a), after 2026-11-01), the first scheduled monthly run on 2026-11-07,
+            the alarm's first two months, a replaced rule's 63 sessions as a variant, and a history build past its
+            span's end. Phase 19's, owed before its sign-off: the Loop summary's "not read" for the fundamentals-first
+            family's rule today, and 17.8's S&P 500 Past picks and Run page drawing the family's S&P 500 trades. Phase
+            16's (n3), owed by the next change to the exit press. The night of 2026-10-19 is the first to read the 12
+            rules at their new versions. Phases 18 and 19 are signed after this one, each by its own session.
+Signed:     phase 17, over 171cc021.
