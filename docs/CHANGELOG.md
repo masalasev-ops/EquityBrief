@@ -61,7 +61,7 @@ Corrects: the index families deleted every registered rule's trade of the night 
 Was:
 > `fixture-expectations`: ... one whose hooks read readings the run was handed none of and one retired between the runs, its row naming the first two with their trades left and a rule holding no verdict and no trade of the night with why |
 Now:
-> Added without replacing anything: an S&P 400 night run again over a rule registered at a version the code no longer carries and one at a setting its grid refuses leaving every trade the first run kept as it stored it, field by field, and a night whose index's inputs could not be read keeping no trade and leaving them as they stood.
+> Added without replacing anything: an S&P 400 night run again over a rule registered at a version the code no longer carries and one at a setting its grid refuses leaving every trade the first run kept as it stored it, field by field, a run again handed no readings leaving a hooked rule's trades as the run reading them stored them, and a night whose index's inputs could not be read keeping no trade and leaving them as they stood.
 Why: a roster row names what its check asserts.
 
 ### 2026-10-18 - SCHEMA.md - an index night run again keeps the trades of a rule it keeps no list for
