@@ -2715,3 +2715,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the sign-offs of phases 18 and 19, owed to fresh sessions after 20.4; the two items phase 17's sign-off
             carried as owed before phase 19's sign-off, corrected after 20.4; (G1), SCHEMA's `family_trade` sentence,
             owed by the next edit of that section.
+
+### 20.0 - correction: research passes have stored 70 results releases, and the 52 the planning entry names are those whose exhibit's file name carries its number   2026-10-18
+
+Not a checkpoint entry: it corrects 20.0's record and lands nothing.
+Corrects:   the 20.0 planning entry above, whose Measured line says the sample drew "50 of the 52 results releases
+            research passes have stored" and sizes the history "at 32.5 KB of text a release compressing 3.2 to 1, as
+            the 52 stored releases measure". Research passes have stored 70 results releases, each titled as a results
+            release or the previous one; the 52 are those whose exhibit's file name carries its exhibit number, the
+            filter the sample's script read them by.
+Found:      by this session at 20.1, reading the store again for the twice-read, which reads every stored results
+            release by its title and found 70.
+Repaired:   `BUILD_PLAN.md`'s phase 20 findings, with their prior text in the changelog; 20.1's own text where 20.1
+            amends its done condition below. Each figure the planning entry states stands over the releases it says it
+            read: the 50 drawn are among the 70, and the mean size is over the 52. A record is corrected by a new dated
+            entry, and this is that entry.
+Tests:      none of its own; the 20.1 entry below states the suite.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying the 20.1 entry below, as it
+            records.
+Carried:    nothing.

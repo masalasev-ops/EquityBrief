@@ -26,6 +26,16 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - BUILD_PLAN.md - phase 20's findings count the 70 results releases research passes have stored
+Corrects: the 20.0 pass counted 52 stored releases by their exhibits' file names where research passes have stored 70 results releases by title, found reading the store again at 20.1
+Was:
+> Findings: **What a release costs to read.** 50 of the 52 releases research passes have stored, drawn at seed 20261018 and read once under the four questions ...
+> Findings: The samples are drawn at seed 20261018 by index in proportion to members: the 52 stored releases read twice at 20.1, and at 20.3 ...
+Now:
+> Findings: ... 50 of the 70 results releases research passes have stored, drawn at seed 20261018 from the 52 whose exhibit's file name carries its exhibit number, and read once ...
+> Findings: ... every one of the 70 stored results releases read twice at 20.1, and at 20.3 ...
+Why: the store holds 70 results releases by the titles research passes give them, the 52 being the ones whose exhibit's file name carries its number, and the 50 the sample drew are among the 70; the 20.0 correction in the record says so.
+
 ### 2026-10-18 - .claude/rules/checks.md - rules-choose-the-stocks cites the decision that narrows the one it cited
 Authorised by: Rules choose the stocks from stored data and a pinned local model's readings of documents with their names removed, and no model judges a stock
 Was:
