@@ -26,6 +26,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-10-18 - ARCHITECTURE.html - 13.10's benchmark is bought at each member's own next open
+Corrects: 13.10 still entered the setup ledger's benchmark at the close, which 19.10 moved to each member's own next open as the same paragraph's earlier sentence says, found by the operator's review of the corpus
+Was:
+> The benchmark is the same plan, in typical moves, entered at the close on every member of the index that session, and a setup's edge is its result less the benchmark; ...
+Now:
+> The benchmark is the same plan, in typical moves, entered on every member of the index that session and bought at each member's own next open, and a setup's edge is its result less the benchmark; ...
+Why: the ledger stores the benchmark priced at each member's next open through the core's one pricing function, as SCHEMA's `setup.benchmark` says, so the sentence contradicted the code and the paragraph it stands in.
+
 ### 2026-10-18 - CLAUDE.md - the nightly hard rule's ninth carve-out, the local run
 Authorised by: A member's results release is the EX-99 exhibit of its 8-K carrying item 2.02, stored compressed with the instant the SEC accepted it
 Was:

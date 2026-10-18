@@ -2904,3 +2904,14 @@ Carried:    20.2's remedy from main and its record; the slots' first runs, which
             first to fetch, in 20.3's entry; the sign-offs of phases 18 and 19, owed to fresh sessions after 20.4; the
             two items phase 17's sign-off carried, corrected after 20.4; (G1), SCHEMA's `family_trade` sentence, owed
             by the next edit of that section.
+
+### 19.10 - correction: 13.10 says the setup ledger's benchmark is bought at each member's own next open   2026-10-18
+
+Found:      by the operator's review of the corpus: 13.10 still entered the ledger's benchmark at the close, which 19.10
+            moved to each member's own next open, as the same paragraph's earlier sentence says.
+Built:      the sentence says the benchmark is entered on every member that session and bought at each member's own
+            next open, checked first against the code, which prices it through `TradeFills.Swing` at the open; the
+            changelog holds the prior text. Documents alone, with the guide's new text beside it in this pull request.
+Tests:      none new; no code changes.
+Verified:   as the 19.11 correction's entry below records.
+Carried:    as the 19.11 correction's entry below records.
